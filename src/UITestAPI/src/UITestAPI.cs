@@ -24,7 +24,7 @@ namespace Microsoft.UITests.API
     {
         protected const string PowerToysPath = @"\..\..\..\WinUI3Apps\PowerToys.Settings.exe";
 
-        public Dictionary<PowerToysModule, ModuleConfigData> ModuleConfig { get; private set; }
+        public Dictionary<PowerToysModuleWindow, ModuleConfigData> ModuleConfig { get; private set; }
 
         public APPManager APPManager { get; private set; }
 
@@ -32,11 +32,11 @@ namespace Microsoft.UITests.API
 
         public UITestAPI()
         {
-            ModuleConfig = new Dictionary<PowerToysModule, ModuleConfigData>();
-            ModuleConfig[PowerToysModule.Fancyzone] = new ModuleConfigData("Fancyzone", "FancyZones Layout");
-            ModuleConfig[PowerToysModule.KeyboardManagerKeys] = new ModuleConfigData("KeyboardManagerKeys", "Remap keys");
-            ModuleConfig[PowerToysModule.KeyboardManagerShortcuts] = new ModuleConfigData("KeyboardManagerShortcuts", "Remap shortcuts");
-            ModuleConfig[PowerToysModule.Hosts] = new ModuleConfigData("Hosts", "Hosts File Editor");
+            ModuleConfig = new Dictionary<PowerToysModuleWindow, ModuleConfigData>();
+            ModuleConfig[PowerToysModuleWindow.Fancyzone] = new ModuleConfigData("Fancyzone", "FancyZones Layout");
+            ModuleConfig[PowerToysModuleWindow.KeyboardManagerKeys] = new ModuleConfigData("KeyboardManagerKeys", "Remap keys");
+            ModuleConfig[PowerToysModuleWindow.KeyboardManagerShortcuts] = new ModuleConfigData("KeyboardManagerShortcuts", "Remap shortcuts");
+            ModuleConfig[PowerToysModuleWindow.Hosts] = new ModuleConfigData("Hosts", "Hosts File Editor");
 
             APPManager = new APPManager();
         }
@@ -87,30 +87,30 @@ namespace Microsoft.UITests.API
         }
 
         // Take control of an application that already exists
-        public void LaunchModule(PowerToysModule module)
+        public void LaunchModuleWithWindowName(PowerToysModuleWindow module)
         {
-            APPManager.LaunchModule(ModuleConfig[module].ModuleName, ModuleConfig[module].WindowName);
+            APPManager.LaunchModuleWithWindowName(ModuleConfig[module].ModuleName, ModuleConfig[module].WindowName);
         }
 
         // Use the name to switch the current driver
-        public void SwitchModule(PowerToysModule module)
+        public void SwitchModule(PowerToysModuleWindow module)
         {
             APPManager.SwitchApp(ModuleConfig[module].ModuleName);
         }
 
-        public void CloseModule(PowerToysModule module)
+        public void CloseModule(PowerToysModuleWindow module)
         {
             APPManager.CloseApp(ModuleConfig[module].ModuleName);
         }
 
-        public WindowsDriver<WindowsElement>? GetWindowInList(PowerToysModule module)
+        public WindowsDriver<WindowsElement>? GetWindowInList(PowerToysModuleWindow module)
         {
             return APPManager.GetWindowInList(ModuleConfig[module].ModuleName);
         }
 
-        public WindowsDriver<WindowsElement>? GetSession(PowerToysModule module = PowerToysModule.None)
+        public WindowsDriver<WindowsElement>? GetSession(PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
-            if (module == PowerToysModule.None)
+            if (module == PowerToysModuleWindow.None)
             {
                 return APPManager.GetCurrentWindow();
             }
@@ -121,7 +121,7 @@ namespace Microsoft.UITests.API
         }
 
         // ===================================Control API================================================
-        private WindowsElement? GetElement(string elementName, PowerToysModule module = PowerToysModule.None)
+        private WindowsElement? GetElement(string elementName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             var item = session?.FindElementByName(elementName);
@@ -129,7 +129,7 @@ namespace Microsoft.UITests.API
             return item;
         }
 
-        private ReadOnlyCollection<WindowsElement> GetElements(string elementName, PowerToysModule module = PowerToysModule.None)
+        private ReadOnlyCollection<WindowsElement> GetElements(string elementName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             var listItem = session?.FindElementsByName(elementName);
@@ -137,7 +137,7 @@ namespace Microsoft.UITests.API
             return listItem;
         }
 
-        public WindowsElement? NewOpenContextMenu(string elementName, PowerToysModule module = PowerToysModule.None)
+        public WindowsElement? NewOpenContextMenu(string elementName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             RightClick_Element(elementName);
@@ -146,7 +146,7 @@ namespace Microsoft.UITests.API
             return menu;
         }
 
-        public void Click_Element(string elementName, PowerToysModule module = PowerToysModule.None)
+        public void Click_Element(string elementName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             var element = GetElement(elementName);
@@ -156,7 +156,7 @@ namespace Microsoft.UITests.API
             actions.Build().Perform();
         }
 
-        public void Click_Elements(string elementName, PowerToysModule module = PowerToysModule.None)
+        public void Click_Elements(string elementName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             var elements = GetElements(elementName);
@@ -171,7 +171,7 @@ namespace Microsoft.UITests.API
             }
         }
 
-        public void Click_Element(string elementName, string helpText, PowerToysModule module = PowerToysModule.None)
+        public void Click_Element(string elementName, string helpText, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             var elements = GetElements(elementName);
@@ -193,7 +193,7 @@ namespace Microsoft.UITests.API
             Assert.IsTrue(buttonClicked, $"No button with elementName '{elementName}' and HelpText '{helpText}' was found.");
         }
 
-        public void Enable_Module_from_Dashboard(string moduleName, PowerToysModule module = PowerToysModule.None)
+        public void Enable_Module_from_Dashboard(string moduleName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             var elements = GetElements("Enable module");
@@ -219,7 +219,7 @@ namespace Microsoft.UITests.API
             Assert.IsTrue(buttonFound, $"No button with elementName '{moduleName}' and HelpText '{moduleName}' was found.");
         }
 
-        public void Disable_Module_from_Dashboard(string moduleName, PowerToysModule module = PowerToysModule.None)
+        public void Disable_Module_from_Dashboard(string moduleName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             var elements = GetElements("Enable module");
@@ -245,7 +245,7 @@ namespace Microsoft.UITests.API
             Assert.IsTrue(buttonFound, $"No button with elementName '{moduleName}' and HelpText '{moduleName}' was found.");
         }
 
-        public void RightClick_Element(string elementName, PowerToysModule module = PowerToysModule.None)
+        public void RightClick_Element(string elementName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             var element = GetElement(elementName);
@@ -256,7 +256,7 @@ namespace Microsoft.UITests.API
             actions.Build().Perform();
         }
 
-        private WindowsElement? GetLayout(string layoutName, PowerToysModule module = PowerToysModule.None)
+        private WindowsElement? GetLayout(string layoutName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             var listItem = session?.FindElementByName(layoutName);
@@ -264,7 +264,7 @@ namespace Microsoft.UITests.API
             return listItem;
         }
 
-        public WindowsElement? OpenContextMenu(string layoutName, PowerToysModule module = PowerToysModule.None)
+        public WindowsElement? OpenContextMenu(string layoutName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             RightClick_Layout(layoutName);
@@ -273,7 +273,7 @@ namespace Microsoft.UITests.API
             return menu;
         }
 
-        public void Click_CreateNewLayout(PowerToysModule module = PowerToysModule.None)
+        public void Click_CreateNewLayout(PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             var button = session?.FindElementByAccessibilityId("NewLayoutButton");
@@ -281,7 +281,7 @@ namespace Microsoft.UITests.API
             button?.Click();
         }
 
-        public void Click_EditLayout(string layoutName, PowerToysModule module = PowerToysModule.None)
+        public void Click_EditLayout(string layoutName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             var layout = GetLayout(layoutName, module);
             var editButton = layout?.FindElementByAccessibilityId("EditLayoutButton");
@@ -289,7 +289,7 @@ namespace Microsoft.UITests.API
             editButton.Click();
         }
 
-        public void RightClick_Layout(string layoutName, PowerToysModule module = PowerToysModule.None)
+        public void RightClick_Layout(string layoutName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             WindowsDriver<WindowsElement>? session = GetSession(module);
             var layout = GetLayout(layoutName, module);

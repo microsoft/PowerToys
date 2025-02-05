@@ -14,6 +14,14 @@ namespace Microsoft.UITests.API
     {
         None,
         Fancyzone,
+        KeyboardManager,
+        Hosts,
+    }
+
+    public enum PowerToysModuleWindow
+    {
+        None,
+        Fancyzone,
         KeyboardManagerKeys,
         KeyboardManagerShortcuts,
         Hosts,

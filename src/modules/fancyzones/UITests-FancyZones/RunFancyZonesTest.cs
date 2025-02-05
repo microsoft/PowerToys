@@ -88,7 +88,7 @@ namespace UITests_FancyZones
             Assert.IsNotNull(mUITestAPI);
             mUITestAPI.Click_Element("Launch layout editor");
             Thread.Sleep(4000);
-            mUITestAPI.LaunchModule(PowerToysModule.Fancyzone);
+            mUITestAPI.LaunchModuleWithWindowName(PowerToysModuleWindow.Fancyzone);
             mUITestAPI?.Click_CreateNewLayout();
         }
     }

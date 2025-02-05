@@ -149,7 +149,7 @@ namespace UITests_FancyZonesEditor
             Assert.IsNotNull(mUITestAPI);
             mUITestAPI.Click_Element("Launch layout editor");
             Thread.Sleep(4000);
-            mUITestAPI.LaunchModule(PowerToysModule.Fancyzone);
+            mUITestAPI.LaunchModuleWithWindowName(PowerToysModuleWindow.Fancyzone);
         }
 
         [ClassCleanup]

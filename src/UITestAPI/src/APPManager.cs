@@ -85,7 +85,7 @@ namespace Microsoft.UITests.API
         }
 
         // Take control of an application that already exists
-        public void LaunchModule(string appName, string windowName)
+        public void LaunchModuleWithWindowName(string appName, string windowName)
         {
             if (Root != null)
             {

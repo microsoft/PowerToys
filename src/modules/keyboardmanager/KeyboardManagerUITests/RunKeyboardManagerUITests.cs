@@ -72,10 +72,10 @@ namespace UITests_KeyboardManager
             mUITestAPI.Enable_Module_from_Dashboard("Keyboard Manager");
             mUITestAPI.Click_Element("Remap a key");
             Thread.Sleep(5000);
-            mUITestAPI.LaunchModule(PowerToysModule.KeyboardManagerKeys);
+            mUITestAPI.LaunchModuleWithWindowName(PowerToysModuleWindow.KeyboardManagerKeys);
             mUITestAPI.Click_Element("Add key remapping");
             mUITestAPI.Click_Element("Cancel");
-            mUITestAPI.CloseModule(PowerToysModule.KeyboardManagerKeys);
+            mUITestAPI.CloseModule(PowerToysModuleWindow.KeyboardManagerKeys);
             mUITestAPI.Disable_Module_from_Dashboard("Keyboard Manager");
         }
     }
