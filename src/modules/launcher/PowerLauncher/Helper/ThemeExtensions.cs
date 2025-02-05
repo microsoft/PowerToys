@@ -31,19 +31,16 @@ namespace PowerLauncher.Helper
             const string registryKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
             const string registryValue = "AppsUseLightTheme";
 
-            // Retrieve the registry value, which is a DWORD (0 or 1)
             object registryValueObj = Registry.GetValue(registryKey, registryValue, null);
             if (registryValueObj != null)
             {
-                // 0 = Dark mode, 1 = Light mode
-                bool isLightMode = Convert.ToBoolean((int)registryValueObj, CultureInfo.InvariantCulture);
-                return !isLightMode; // Invert because 0 = Dark
+                // The registry value should be a DWORD of 0x0 for Dark mode or 0x1 for Light mode.
+                int themeValue = Convert.ToInt32(registryValueObj, CultureInfo.InvariantCulture);
+                return themeValue == 0;
             }
-            else
-            {
-                // Default to Light theme if the registry key is missing
-                return false; // Default to dark mode assumption
-            }
+
+            // Default to Light mode if the value could not be retrieved.
+            return false;
         }
 
         public static Theme GetHighContrastBaseType()
