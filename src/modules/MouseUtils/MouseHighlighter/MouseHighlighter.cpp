@@ -273,7 +273,7 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
                 }
                 if (instance->m_leftButtonPressed)
                 {
-                    // There might be a stray point from the user unpressing the mouse button on an elevated window, which wasn't caught by us.
+                    // There might be a stray point from the user releasing the mouse button on an elevated window, which wasn't caught by us.
                     instance->StartDrawingPointFading(MouseButton::Left);
                 }
                 instance->AddDrawingPoint(MouseButton::Left);
@@ -297,7 +297,7 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
                 }
                 if (instance->m_rightButtonPressed)
                 {
-                    // There might be a stray point from the user unpressing the mouse button on an elevated window, which wasn't caught by us.
+                    // There might be a stray point from the user releasing the mouse button on an elevated window, which wasn't caught by us.
                     instance->StartDrawingPointFading(MouseButton::Right);
                 }
                 instance->AddDrawingPoint(MouseButton::Right);
