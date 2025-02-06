@@ -26,8 +26,10 @@ AFFINETRANSFORM
 affordances
 AFX
 AGGREGATABLE
+ahk
 AHybrid
 akv
+ALIGNRIGHT
 ALarger
 ALIGNRIGHT
 ALLAPPS
@@ -140,6 +142,7 @@ boxmodel
 BPBF
 bpmf
 bpp
+Breadcrumb
 Browsable
 BROWSEINFO
 bsd
@@ -174,6 +177,7 @@ CCom
 CContext
 CDeclaration
 cdn
+CDEF
 CElems
 CENTERALIGN
 certlm
@@ -272,6 +276,8 @@ cswin
 CTest
 CTEXT
 Ctl
+CTest
+CTEXT
 CTLCOLORSTATIC
 currentculture
 CURRENTDIR
@@ -359,6 +365,11 @@ DEVMODEW
 devpal
 DIALOGEX
 dic
+DEVMON
+DEVSOURCE
+DGR
+DIALOGEX
+DIIRFLAG
 dimm
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -367,6 +378,7 @@ DISPLAYCHANGE
 DISPLAYCONFIG
 DISPLAYFLAGS
 DISPLAYFREQUENCY
+DISPLAYORIENTATION
 displayname
 DISPLAYORIENTATION
 divyan
@@ -394,6 +406,8 @@ drivedetectionwarning
 Droid
 DROPFILES
 DROPTARGET
+DROPFILES
+dshow
 DSTINVERT
 DSurface
 DTexture
@@ -493,6 +507,7 @@ fff
 FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
+FILEINFOSIG
 FILELOCKSMITH
 FILELOCKSMITHCONTEXTMENU
 FILELOCKSMITHEXT
@@ -508,6 +523,7 @@ Filetime
 FILEVERSION
 Filterkeyboard
 FILTERMODE
+Filterx
 findfast
 Fira
 FIXEDFILEINFO
@@ -556,6 +572,7 @@ GETDPISCALEDSIZE
 getfilesiginforedist
 GETHOTKEY
 GETICON
+GETHOTKEY
 GETMINMAXINFO
 GETNONCLIENTMETRICS
 GETPROPERTYSTOREFLAGS
@@ -701,6 +718,12 @@ IGo
 iid
 Iindex
 Ijwhost
+IGNOREUNKNOWN
+iid
+Iindex
+Ijwhost
+IKs
+iljxck
 IMAGEHLP
 IMAGERESIZERCONTEXTMENU
 IMAGERESIZEREXT
@@ -721,6 +744,9 @@ INITDIALOG
 INITGUID
 INITTOLOGFONTSTRUCT
 INLINEPREFIX
+INITDIALOG
+INITGUID
+INITTOLOGFONTSTRUCT
 inorder
 INPC
 inproc
@@ -792,6 +818,7 @@ KILLFOCUS
 killrunner
 kinda
 kmph
+KSPROPERTY
 Kybd
 lastcodeanalysissucceeded
 Lastdevice
@@ -801,6 +828,7 @@ LCIDTo
 Lclean
 Ldone
 Ldr
+ldx
 LEFTSCROLLBAR
 LEFTTEXT
 LError
@@ -817,6 +845,7 @@ LINKOVERLAY
 LINQTo
 listview
 LIVEZOOM
+lld
 LLKH
 llkhf
 LMEM
@@ -835,6 +864,7 @@ logon
 LOGPIXELSX
 LOGPIXELSY
 longdate
+LONGLONG
 LONGNAMES
 lowlevel
 LOWORD
@@ -870,6 +900,7 @@ lpv
 LPW
 lpwcx
 lpwndpl
+lpv
 LReader
 LRESULT
 LSTATUS
@@ -879,6 +910,7 @@ lstrcpyn
 lstrlen
 LTEXT
 LTk
+LTRB
 LTRREADING
 luid
 LUMA
@@ -890,6 +922,8 @@ LWA
 lwin
 LZero
 MAGTRANSFORM
+majortype
+makecab
 MAKEINTRESOURCE
 MAKEINTRESOURCEA
 MAKEINTRESOURCEW
@@ -922,6 +956,7 @@ MERGEPAINT
 Metadatas
 metafile
 mfc
+mfplat
 Mgmt
 Microwaved
 midl
@@ -978,6 +1013,8 @@ MSIDXSPROP
 msiexec
 MSIFASTINSTALL
 MSIHANDLE
+Msimg
+msiquery
 MSIRESTARTMANAGERCONTROL
 msixbundle
 MSIXCA
@@ -1156,6 +1193,8 @@ OWMt
 OWNDC
 OWNERDRAWFIXED
 OWRj
+OWNDC
+OWNERDRAWFIXED
 Packagemanager
 PACL
 PAINTSTRUCT
@@ -1229,6 +1268,9 @@ Podcasts
 POINTERID
 POINTERUPDATE
 Pokedex
+Pnp
+POINTERID
+POINTERUPDATE
 Popups
 POPUPWINDOW
 POSITIONITEM
@@ -1282,6 +1324,8 @@ projectname
 PROPERTYKEY
 Propset
 PROPVARIANT
+PROPVARIANT
+propvarutil
 PRTL
 prvpane
 psapi
@@ -1348,6 +1392,8 @@ rectp
 RECTSOURCE
 recyclebin
 Redist
+reencode
+reencoded
 REFCLSID
 REFIID
 REGCLS
@@ -1599,6 +1645,8 @@ STGM
 STGMEDIUM
 STICKYKEYS
 sticpl
+STICKYKEYS
+stl
 storelogo
 stprintf
 streamjsonrpc
@@ -1607,6 +1655,8 @@ stringtable
 stringval
 Strm
 strret
+strsafe
+strutil
 stscanf
 sttngs
 Stubless
@@ -1615,6 +1665,7 @@ STYLECHANGING
 subkeys
 sublang
 SUBMODULEUPDATE
+subquery
 Superbar
 sut
 svchost
@@ -1688,6 +1739,7 @@ throughs
 TIcon
 TILEDWINDOW
 TILEINFO
+TILEDWINDOW
 TILLSON
 timedate
 timediff
@@ -1701,6 +1753,7 @@ TLayout
 tlb
 tlbimp
 tlc
+TMPVAR
 TNP
 Toolhelp
 toolkitconverters
@@ -1793,6 +1846,7 @@ vcgtq
 VCINSTALLDIR
 Vcpkg
 VCRT
+VCENTER
 vcruntime
 vcvars
 VDesktop
@@ -1808,6 +1862,11 @@ vget
 vgetq
 videourl
 viewmodel
+vid
+VIDCAP
+VIDEOINFOHEADER
+viewmodel
+vih
 VIRTKEY
 VIRTUALDESK
 VISEGRADRELAY

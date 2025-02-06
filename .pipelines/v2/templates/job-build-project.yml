@@ -195,13 +195,13 @@ jobs:
            "packages.config" | "$(Agent.OS)"
            "packages.config"
         path: packages
-
+  
   - ${{ if eq(parameters.useLatestWinAppSDK, true)}}:
     - template: .\steps-update-winappsdk-and-restore-nuget.yml
       parameters:
         versionNumber: ${{ parameters.winAppSDKVersionNumber }}
         useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
-
+  
   - ${{ if eq(parameters.useLatestWinAppSDK, false)}}:
     - template: .\steps-restore-nuget.yml
 
