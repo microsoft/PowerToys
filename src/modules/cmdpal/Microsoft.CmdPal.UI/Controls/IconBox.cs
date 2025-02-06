@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.Deferred;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -90,14 +91,14 @@ public partial class IconBox : ContentControl
             {
                 // TODO GH #239 switch back when using the new MD text block
                 // _ = @this._queue.EnqueueAsync(() =>
-                @this._queue.TryEnqueue(new(() =>
+                @this._queue.TryEnqueue(new(async () =>
                 {
                     var requestedTheme = @this.ActualTheme;
                     var eventArgs = new SourceRequestedEventArgs(e.NewValue, requestedTheme);
 
                     if (@this.SourceRequested != null)
                     {
-                        @this.SourceRequested.Invoke(@this, eventArgs);
+                        await @this.SourceRequested.InvokeAsync(@this, eventArgs);
 
                         @this.Source = eventArgs.Value;
 
@@ -131,7 +132,7 @@ public partial class IconBox : ContentControl
                                 // The range of MDL2 Icons isn't explicitly defined, but
                                 // we're using this based off the table on:
                                 // https://docs.microsoft.com/en-us/windows/uwp/design/style/segoe-ui-symbol-font
-                                var isMDL2Icon = ch >= '\uE700' && ch <= '\uF8FF';
+                                var isMDL2Icon = ch is >= '\uE700' and <= '\uF8FF';
                                 if (!isMDL2Icon)
                                 {
                                     @this.Padding = new Thickness(-4);
