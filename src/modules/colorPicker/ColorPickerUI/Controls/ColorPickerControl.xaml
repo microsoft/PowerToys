@@ -375,7 +375,7 @@
                                 Grid.ColumnSpan="4"
                                 Margin="0,32,0,0"
                                 HorizontalAlignment="Stretch"
-                                Style="{StaticResource AccentButtonStyle}"
+                                Style="{StaticResource CustomAccentButtonStyle}"
                                 AutomationProperties.Name="{x:Static p:Resources.Select}"
                                 Click="OKButton_Click"
                                 Content="{x:Static p:Resources.Select}" />
