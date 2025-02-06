@@ -16,7 +16,7 @@ public class RegistryService : IRegistryService
     /// If the name is not found in the specified key, returns the specified default value, or
     /// <c>null</c> if the specified key does not exist.
     /// </summary>
-    /// <param name="keyName">The full registry path of the key, beginning withh a valid registry
+    /// <param name="keyName">The full registry path of the key, beginning with a valid registry
     /// root, such as "HKEY_CURRENT_USER".</param>
     /// <param name="valueName">The name of the name/value pair.</param>
     /// <param name="defaultValue">The value to return if <see cref="valueName"/> does not exist.

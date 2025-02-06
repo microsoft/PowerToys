@@ -123,7 +123,7 @@ public class ThemeHelperTest
 
     // GetHighContrastTheme tests
     [TestMethod]
-    public void WhenAHighContrastThemeIsActiveTheHighContrastThemeIsReturned()
+    public void WhenHighContrastThemeIsActiveTheMatchingThemeIsReturned()
     {
         var mockService = new Mock<IRegistryService>();
         mockService
@@ -134,7 +134,7 @@ public class ThemeHelperTest
     }
 
     [TestMethod]
-    public void WhenAnUnknownHighContrastThemeIsSetNullIsReturned()
+    public void WhenUnknownHighContrastThemeIsSetNullIsReturned()
     {
         var mockService = new Mock<IRegistryService>();
         mockService
@@ -145,7 +145,7 @@ public class ThemeHelperTest
     }
 
     [TestMethod]
-    public void WhenTheCurrentThemeRegistryValueIsMissingNullIsReturned()
+    public void WhenCurrentThemeRegistryValueIsMissingNullIsReturned()
     {
         var mockService = new Mock<IRegistryService>();
         mockService
@@ -156,7 +156,7 @@ public class ThemeHelperTest
     }
 
     [TestMethod]
-    public void WhenTheCurrentThemeIsBlankNullIsReturned()
+    public void WhenCurrentThemeIsBlankNullIsReturned()
     {
         var mockService = new Mock<IRegistryService>();
         mockService
@@ -168,7 +168,7 @@ public class ThemeHelperTest
 
     // GetCurrentTheme tests
     [TestMethod]
-    public void WhenAHighContrastThemeIsNotActiveTheAppsThemeIsReturned()
+    public void WhenHighContrastThemeIsNotActiveAppsThemeIsReturned()
     {
         var mockService = new Mock<IRegistryService>();
         mockService
