@@ -1203,7 +1203,7 @@ interface IFormContent requires IContent {
     String TemplateJson { get; };
     String DataJson { get; };
     String StateJson { get; };
-    ICommandResult SubmitForm(String payload);
+    ICommandResult SubmitForm(String inputs, String data);
 }
 
 interface IMarkdownContent requires IContent {

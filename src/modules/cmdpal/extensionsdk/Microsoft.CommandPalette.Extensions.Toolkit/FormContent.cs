@@ -42,5 +42,7 @@ public partial class FormContent : BaseObservable, IFormContent
 
 = string.Empty;
 
-    public virtual ICommandResult SubmitForm(string payload) => CommandResult.KeepOpen();
+    public virtual ICommandResult SubmitForm(string inputs, string data) => SubmitForm(inputs);
+
+    public virtual ICommandResult SubmitForm(string inputs) => CommandResult.KeepOpen();
 }

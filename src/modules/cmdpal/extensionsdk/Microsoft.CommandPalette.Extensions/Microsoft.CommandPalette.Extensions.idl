@@ -327,7 +327,7 @@ namespace Microsoft.CommandPalette.Extensions
         String TemplateJson { get; };
         String DataJson { get; };
         String StateJson { get; };
-        ICommandResult SubmitForm(String payload);
+        ICommandResult SubmitForm(String inputs, String data);
     }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
