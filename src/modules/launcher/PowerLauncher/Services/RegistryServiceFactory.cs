@@ -4,10 +4,14 @@
 
 namespace PowerLauncher.Services;
 
+/// <summary>
+/// Factory for creating instances of <see cref="IRegistryService"/>.
+/// </summary>
 public static class RegistryServiceFactory
 {
-    public static IRegistryService Create()
-    {
-        return new RegistryService();
-    }
+    /// <summary>
+    /// Creates the default implementation of <see cref="IRegistryService"/>.
+    /// </summary>
+    /// <returns>An instance of the default <see cref="IRegistryService"/> implementation.</returns>
+    public static IRegistryService Create() => new RegistryService();
 }
