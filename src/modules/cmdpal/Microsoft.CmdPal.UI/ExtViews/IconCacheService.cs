@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -28,7 +28,6 @@ public sealed class IconCacheService(DispatcherQueue dispatcherQueue)
             if (!string.IsNullOrEmpty(icon.Icon))
             {
                 var source = IconPathConverter.IconSourceMUX(icon.Icon, false);
-
                 return source;
             }
             else if (icon.Data != null)

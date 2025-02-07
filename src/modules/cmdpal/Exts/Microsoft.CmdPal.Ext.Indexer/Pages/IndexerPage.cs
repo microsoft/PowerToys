@@ -12,6 +12,7 @@ using Microsoft.CmdPal.Ext.Indexer.Indexer;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.Indexer;
 
@@ -90,13 +91,21 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
                 while (!_searchQuery.SearchResults.IsEmpty && _searchQuery.SearchResults.TryDequeue(out result) && ++index <= limit)
                 {
+                    IconInfo icon = null;
+                    var stream = ThumbnailHelper.GetThumbnail(result.LaunchUri).Result;
+                    if (stream != null)
+                    {
+                        var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+                        icon = new IconInfo(data, data);
+                    }
+
                     _indexerListItems.Add(new IndexerListItem(new IndexerItem
                     {
                         FileName = result.ItemDisplayName,
                         FullPath = result.LaunchUri,
                     })
                     {
-                        Icon = new IconInfo(result.IsFolder ? "\uE838" : "\uE8E5"),
+                        Icon = icon,
                     });
                 }
 
