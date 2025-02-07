@@ -70,6 +70,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
         public static Action<string> IPCMessageReceivedCallback { get; set; }
 
+        public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
         /// Initializes the singleton application object. This is the first line of authored code
@@ -88,6 +90,13 @@ namespace Microsoft.PowerToys.Settings.UI
             InitializeComponent();
 
             UnhandledException += App_UnhandledException;
+
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.PowerToysRunnerTerminateSettingsEvent(), () =>
+            {
+                EtwTrace?.Dispose();
+                Environment.Exit(0);
+            });
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -232,6 +241,10 @@ namespace Microsoft.PowerToys.Settings.UI
                 // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
                 // Need to call SetForegroundWindow to actually gain focus.
                 WindowHelpers.BringToForeground(settingsWindow.GetWindowHandle());
+
+                // https://github.com/microsoft/microsoft-ui-xaml/issues/8948 - A window's top border incorrectly
+                // renders as black on Windows 10.
+                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
             }
             else
             {
@@ -246,6 +259,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     OobeWindow oobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.Overview);
                     oobeWindow.Activate();
                     oobeWindow.ExtendsContentIntoTitleBar = true;
+                    WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                     SetOobeWindow(oobeWindow);
                 }
                 else if (ShowScoobe)
@@ -254,6 +268,7 @@ namespace Microsoft.PowerToys.Settings.UI
                     OobeWindow scoobeWindow = new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew);
                     scoobeWindow.Activate();
                     scoobeWindow.ExtendsContentIntoTitleBar = true;
+                    WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                     SetOobeWindow(scoobeWindow);
                 }
                 else if (ShowFlyout)
@@ -301,6 +316,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 // Window is also needed to show MessageDialog
                 settingsWindow = new MainWindow();
                 settingsWindow.ExtendsContentIntoTitleBar = true;
+                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(settingsWindow));
                 settingsWindow.Activate();
                 settingsWindow.NavigateToSection(StartupPage);
                 ShowMessageDialog("The application is running in Debug mode.", "DEBUG");
@@ -424,7 +440,6 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "FileExplorer": return typeof(PowerPreviewPage);
                 case "ShortcutGuide": return typeof(ShortcutGuidePage);
                 case "PowerOcr": return typeof(PowerOcrPage);
-                case "VideoConference": return typeof(VideoConferencePage);
                 case "MeasureTool": return typeof(MeasureToolPage);
                 case "Hosts": return typeof(HostsPage);
                 case "RegistryPreview": return typeof(RegistryPreviewPage);
@@ -433,6 +448,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);
                 case "NewPlus": return typeof(NewPlusPage);
                 case "Workspaces": return typeof(WorkspacesPage);
+                case "ZoomIt": return typeof(ZoomItPage);
                 default:
                     // Fallback to Dashboard
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");

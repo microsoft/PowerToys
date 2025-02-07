@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 
 namespace MouseWithoutBorders.Class
 {
@@ -36,12 +37,12 @@ namespace MouseWithoutBorders.Class
     /// </remarks>
     internal class MachinePool
     {
-        private readonly object @lock;
+        private readonly Lock @lock;
         private readonly List<MachineInf> list;
 
         public MachinePool()
         {
-            @lock = new object();
+            @lock = new Lock();
             list = new List<MachineInf>();
         }
 

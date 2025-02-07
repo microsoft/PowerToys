@@ -16,7 +16,7 @@
   "Author": string,
   "Version": "1.0.0", // For future compatibility
   "Language": "csharp", // So far we support only csharp 
-  "Website": "https://aka.ms/powertoys",
+  "Website": "https://aka.ms/powertoys", // Has to be an absolute uri starting with "http://" or "https://".
   "ExecuteFileName": string, // Should be {Type}.PowerToys.Run.Plugin.{PluginName}.dll
   "IcoPathDark": string, // Path to dark theme icon. The path is relative to the root plugin folder 
   "IcoPathLight": string // Path to light theme icon. The path is relative to the root plugin folder
@@ -42,3 +42,4 @@ In the PR that adds a new plugin, reference a new issue to track the work for fu
 
 - [ ] Add the resource folder to https://github.com/microsoft/PowerToys/blob/21247c0bb09a1bee3d14d6efa53d0c247f7236af/installer/PowerToysSetup/Product.wxs#L825
 - [ ] Add the resource files under the section https://github.com/microsoft/PowerToys/blob/21247c0bb09a1bee3d14d6efa53d0c247f7236af/installer/PowerToysSetup/Product.wxs#L882
+- [ ] Your plugin's executable file (DLL) has to have correct version informations after building it. (This version information will be shown on the settings page.)

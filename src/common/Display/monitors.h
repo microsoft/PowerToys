@@ -1,4 +1,5 @@
 #pragma once
+#pragma comment(lib, "Gdi32.lib")
 #include <Windows.h>
 
 #include <compare>
@@ -42,6 +43,15 @@ struct Box
 
 class MonitorInfo
 {
+public:
+    typedef struct Size
+    {
+        uint32_t width_logical, height_logical;
+        uint32_t width_physical, height_physical;
+        float width_mm, height_mm;
+    } Size;
+
+private:
     HMONITOR handle;
     MONITORINFOEX info = {};
 
@@ -53,8 +63,14 @@ public:
     }
     Box GetScreenSize(const bool includeNonWorkingArea) const;
     bool IsPrimary() const;
+    Size GetSize() const;
 
     // Returns monitor rects ordered from left to right
     static std::vector<MonitorInfo> GetMonitors(bool includeNonWorkingArea);
     static MonitorInfo GetPrimaryMonitor();
+    static MonitorInfo GetFromWindow(HWND);
+    static MonitorInfo GetFromPoint(int32_t, int32_t);
+
+private:
+    static Size GetSize(const MONITORINFOEX&);
 };

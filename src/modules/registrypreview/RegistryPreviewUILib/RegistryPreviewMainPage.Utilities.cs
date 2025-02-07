@@ -11,7 +11,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -21,12 +22,15 @@ namespace RegistryPreviewUILib
 {
     public sealed partial class RegistryPreviewMainPage : Page
     {
+        private static SemaphoreSlim _dialogSemaphore = new(1);
+        private string lastKeyPath;
+
         public delegate void UpdateWindowTitleFunction(string title);
 
         /// <summary>
         /// Method that opens and processes the passed in file name; expected to be an absolute path and a first time open
         /// </summary>
-        private bool OpenRegistryFile(string filename)
+        private async Task<bool> OpenRegistryFile(string filename)
         {
             // clamp to prevent attempts to open a file larger than 10MB
             try
@@ -46,7 +50,7 @@ namespace RegistryPreviewUILib
 
             // Disable parts of the UI that can cause trouble when loading
             ChangeCursor(gridPreview, true);
-            textBox.Text = string.Empty;
+            await MonacoEditor.SetTextAsync(string.Empty);
 
             // clear the treeView and dataGrid no matter what
             treeView.RootNodes.Clear();
@@ -55,7 +59,7 @@ namespace RegistryPreviewUILib
             // update the current window's title with the current filename
             _updateWindowTitleFunction(filename);
 
-            // Load in the whole file in one call and plop it all into textBox
+            // Load in the whole file in one call and plop it all into editor
             FileStream fileStream = null;
             try
             {
@@ -68,15 +72,15 @@ namespace RegistryPreviewUILib
                 StreamReader streamReader = new StreamReader(fileStream);
 
                 string filenameText = streamReader.ReadToEnd();
-                textBox.Text = filenameText;
+                await MonacoEditor.SetTextAsync(filenameText);
                 streamReader.Close();
             }
             catch
             {
                 // restore TextChanged handler to make for clean UI
-                textBox.TextChanged += TextBox_TextChanged;
+                MonacoEditor.TextChanged += MonacoEditor_TextChanged;
 
-                // Reset the cursor but leave textBox disabled as no content got loaded
+                // Reset the cursor but leave editor disabled as no content got loaded
                 ChangeCursor(gridPreview, false);
                 return false;
             }
@@ -89,8 +93,8 @@ namespace RegistryPreviewUILib
                 }
             }
 
-            // now that the file is loaded and in textBox, parse the data
-            ParseRegistryFile(textBox.Text);
+            // now that the file is loaded and in editor, parse the data
+            ParseRegistryFile(MonacoEditor.Text);
 
             // Getting here means that the entire REG file was parsed without incident
             // so select the root of the tree and celebrate
@@ -120,8 +124,8 @@ namespace RegistryPreviewUILib
             treeView.RootNodes.Clear();
             ClearTable();
 
-            // the existing text is still in textBox so parse the data again
-            ParseRegistryFile(textBox.Text);
+            // the existing text is still in editor so parse the data again
+            ParseRegistryFile(MonacoEditor.Text);
 
             // check to see if there was a key in treeView before the refresh happened
             if (currentNode != null)
@@ -164,7 +168,7 @@ namespace RegistryPreviewUILib
         }
 
         /// <summary>
-        /// Parses the text that is passed in, which should be the same text that's in textBox
+        /// Parses the text that is passed in, which should be the same text that's in editor
         /// </summary>
         private bool ParseRegistryFile(string filenameText)
         {
@@ -181,10 +185,10 @@ namespace RegistryPreviewUILib
             // As we'll be processing the text one line at a time, this string will be the current line
             string registryLine;
 
-            // Brute force editing: for textBox to show Cr-Lf corrected, we need to strip out the \n's
+            // Brute force editing: for editor to show Cr-Lf corrected, we need to strip out the \n's
             filenameText = filenameText.Replace("\r\n", "\r");
 
-            // split apart all of the text in textBox, where one element in the array represents one line
+            // split apart all of the text in editor, where one element in the array represents one line
             string[] registryLines = filenameText.Split("\r");
             if (registryLines.Length <= 1)
             {
@@ -193,7 +197,7 @@ namespace RegistryPreviewUILib
                 return false;
             }
 
-            // REG files have to start with one of two headers and it's case insensitive
+            // REG files have to start with one of two headers and it's case-insensitive
             registryLine = registryLines[0];
             registryLine = registryLine.ToLowerInvariant();
 
@@ -229,7 +233,7 @@ namespace RegistryPreviewUILib
                 }
                 else if (registryLine.StartsWith("@=", StringComparison.InvariantCulture))
                 {
-                    // This is the a Value called "(Default)" so we tweak the line for the UX
+                    // This is the Value called "(Default)" so we tweak the line for the UX
                     registryLine = registryLine.Replace("@=", "\"(Default)\"=");
                 }
 
@@ -258,6 +262,7 @@ namespace RegistryPreviewUILib
                     registryLine = StripFirstAndLast(registryLine);
 
                     treeViewNode = AddTextToTree(registryLine, imageName);
+                    lastKeyPath = registryLine;
                 }
                 else if (registryLine.StartsWith('"') && registryLine.EndsWith("=-", StringComparison.InvariantCulture))
                 {
@@ -268,7 +273,7 @@ namespace RegistryPreviewUILib
                     registryLine = StripFirstAndLast(registryLine);
 
                     // Create a new listview item that will be used to display the delete value and store it
-                    registryValue = new RegistryValue(registryLine, string.Empty, string.Empty);
+                    registryValue = new RegistryValue(registryLine, string.Empty, string.Empty, lastKeyPath);
                     SetValueToolTip(registryValue);
 
                     // store the ListViewItem, if we have a valid Key to attach to
@@ -307,7 +312,7 @@ namespace RegistryPreviewUILib
                     value = value.Trim();
 
                     // Create a new listview item that will be used to display the value
-                    registryValue = new RegistryValue(name, "REG_SZ", string.Empty);
+                    registryValue = new RegistryValue(name, "REG_SZ", string.Empty, lastKeyPath);
 
                     // if the first character is a " then this is a string value, so find the last most " which will avoid comments
                     if (value.StartsWith('"'))
@@ -550,19 +555,10 @@ namespace RegistryPreviewUILib
                                 var bytes = value.Split(',').Select(
                                     c => c.Length == 2 ? byte.Parse(c, NumberStyles.HexNumber, CultureInfo.InvariantCulture) : throw null).ToArray();
 
-                                if (registryValue.Type == "REG_MULTI_SZ")
-                                {
-                                    // Replace zeros (00,00) with spaces
-                                    for (int i = 0; i < bytes.Length; i += 2)
-                                    {
-                                        if (bytes[i] == 0 && bytes[i + 1] == 0)
-                                        {
-                                            bytes[i] = 0x20;
-                                        }
-                                    }
-                                }
-
                                 value = Encoding.Unicode.GetString(bytes);
+
+                                // Correctly format line breaks and remove trailing line breaks. (GitHub PowerToys #36629)
+                                value = value.Replace('\0', '\r').TrimEnd('\r');
                             }
                             catch
                             {
@@ -655,8 +651,8 @@ namespace RegistryPreviewUILib
         }
 
         /// <summary>
-        /// Enable command bar buttons and textBox.
-        /// Note that writeButton and textBox all update with the same value on purpose
+        /// Enable command bar buttons
+        /// Note that writeButton and editor all update with the same value on purpose
         /// </summary>
         private void UpdateToolBarAndUI(bool enableWrite, bool enableRefresh, bool enableEdit)
         {
@@ -776,21 +772,34 @@ namespace RegistryPreviewUILib
         /// </summary>
         private async void ShowMessageBox(string title, string content, string closeButtonText)
         {
-            ContentDialog contentDialog = new ContentDialog()
+            if (_dialogSemaphore.CurrentCount == 0)
             {
-                Title = title,
-                Content = content,
-                CloseButtonText = closeButtonText,
-            };
-
-            // Use this code to associate the dialog to the appropriate AppWindow by setting
-            // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
-            if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
-            {
-                contentDialog.XamlRoot = this.Content.XamlRoot;
+                return;
             }
 
-            await contentDialog.ShowAsync();
+            try
+            {
+                await _dialogSemaphore.WaitAsync();
+                ContentDialog contentDialog = new ContentDialog()
+                {
+                    Title = title,
+                    Content = content,
+                    CloseButtonText = closeButtonText,
+                };
+
+                // Use this code to associate the dialog to the appropriate AppWindow by setting
+                // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
+                if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
+                {
+                    contentDialog.XamlRoot = this.Content.XamlRoot;
+                }
+
+                await contentDialog.ShowAsync();
+            }
+            finally
+            {
+                _dialogSemaphore.Release();
+            }
         }
 
         /// <summary>
@@ -894,7 +903,7 @@ namespace RegistryPreviewUILib
         }
 
         /// <summary>
-        /// Wrapper method that saves the current file in place, using the current text in textBox.
+        /// Wrapper method that saves the current file in place, using the current text in editor.
         /// </summary>
         private void SaveFile()
         {
@@ -914,8 +923,8 @@ namespace RegistryPreviewUILib
                 fileStream = new FileStream(_appFileName, fileStreamOptions);
                 StreamWriter streamWriter = new StreamWriter(fileStream, System.Text.Encoding.Unicode);
 
-                // if we get here, the file is open and writable so dump the whole contents of textBox
-                string filenameText = textBox.Text;
+                // if we get here, the file is open and writable so dump the whole contents of editor
+                string filenameText = MonacoEditor.Text;
                 streamWriter.Write(filenameText);
                 streamWriter.Flush();
                 streamWriter.Close();

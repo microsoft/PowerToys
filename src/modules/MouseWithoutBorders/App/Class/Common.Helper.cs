@@ -22,7 +22,7 @@ using System.Windows.Forms;
 // </history>
 using Microsoft.Win32;
 using MouseWithoutBorders.Class;
-
+using MouseWithoutBorders.Core;
 using static System.Windows.Forms.Control;
 
 namespace MouseWithoutBorders
@@ -61,7 +61,7 @@ namespace MouseWithoutBorders
                     Process p = Process.GetCurrentProcess();
                     string procInfo = $"{p.PrivateMemorySize64 / 1024 / 1024}MB, {p.TotalProcessorTime}, {Environment.ProcessorCount}.";
                     string threadStacks = $"{procInfo} {Thread.DumpThreadsStack()}";
-                    Common.TelemetryLogTrace(threadStacks, SeverityLevel.Error);
+                    Logger.TelemetryLogTrace(threadStacks, SeverityLevel.Error);
                     break;
                 }
 
@@ -72,6 +72,10 @@ namespace MouseWithoutBorders
 
         private static void HelperThread()
         {
+            // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+            // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+            using var asyncFlowControl = System.Threading.ExecutionContext.SuppressFlow();
+
             try
             {
                 while (true)
@@ -95,7 +99,7 @@ namespace MouseWithoutBorders
                             Common.SwitchLocation.Count--;
 
                             // When we want to move mouse by pixels, we add 300k to x and y (search for XY_BY_PIXEL for other related code).
-                            Common.LogDebug($"+++++ Moving mouse to {Common.SwitchLocation.X}, {Common.SwitchLocation.Y}");
+                            Logger.LogDebug($"+++++ Moving mouse to {Common.SwitchLocation.X}, {Common.SwitchLocation.Y}");
 
                             // MaxXY = 65535 so 100k is safe.
                             if (Common.SwitchLocation.X > XY_BY_PIXEL - 100000 || Common.SwitchLocation.Y > XY_BY_PIXEL - 100000)
@@ -119,16 +123,16 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Log(e);
+                Logger.Log(e);
             }
 
             signalHelperToExit = false;
-            LogDebug("^^^Helper Thread exiting...^^^");
+            Logger.LogDebug("^^^Helper Thread exiting...^^^");
         }
 
         internal static void MainFormDotEx(bool bCheckTS)
         {
-            LogDebug("***** MainFormDotEx:");
+            Logger.LogDebug("***** MainFormDotEx:");
 
             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
             {
@@ -178,7 +182,7 @@ namespace MouseWithoutBorders
                     }
                     catch (Exception e)
                     {
-                        Log(e);
+                        Logger.Log(e);
                     }
                 }
             }
@@ -188,7 +192,7 @@ namespace MouseWithoutBorders
 
         internal static void MainForm3Pixels()
         {
-            LogDebug("***** MainFormDotLarge:");
+            Logger.LogDebug("***** MainFormDotLarge:");
 
             DoSomethingInUIThread(
                 () =>
@@ -254,7 +258,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Log(e);
+                Logger.Log(e);
             }
         }
 
@@ -277,7 +281,7 @@ namespace MouseWithoutBorders
                 }
                 catch (Exception e)
                 {
-                    Log(e);
+                    Logger.Log(e);
                     _ = Common.SendMessageToHelper(SharedConst.QUIT_CMD, IntPtr.Zero, IntPtr.Zero);
                 }
 
@@ -291,7 +295,7 @@ namespace MouseWithoutBorders
 
             if (!Common.IpcChannelCreated)
             {
-                TelemetryLogTrace($"{nameof(Common.IpcChannelCreated)} = {Common.IpcChannelCreated}. {GetStackTrace(new StackTrace())}", SeverityLevel.Warning);
+                Logger.TelemetryLogTrace($"{nameof(Common.IpcChannelCreated)} = {Common.IpcChannelCreated}. {Logger.GetStackTrace(new StackTrace())}", SeverityLevel.Warning);
                 return;
             }
 
@@ -317,12 +321,12 @@ namespace MouseWithoutBorders
                 var processes = Process.GetProcessesByName(HelperProcessName);
                 if (processes?.Length == 0)
                 {
-                    Log("Unable to start helper process.");
+                    Logger.Log("Unable to start helper process.");
                     Common.ShowToolTip("Error starting Mouse Without Borders Helper, clipboard sharing will not work!", 5000, ToolTipIcon.Error);
                 }
                 else
                 {
-                    Log("Helper process started.");
+                    Logger.Log("Helper process started.");
                 }
             }
             else
@@ -330,11 +334,11 @@ namespace MouseWithoutBorders
                 var processes = Process.GetProcessesByName(HelperProcessName);
                 if (processes?.Length > 0)
                 {
-                    Log("Helper process found running.");
+                    Logger.Log("Helper process found running.");
                 }
                 else
                 {
-                    Log("Invalid helper process found running.");
+                    Logger.Log("Invalid helper process found running.");
                     Common.ShowToolTip("Error finding Mouse Without Borders Helper, clipboard sharing will not work!", 5000, ToolTipIcon.Error);
                 }
             }
@@ -354,7 +358,7 @@ namespace MouseWithoutBorders
 
             if (log)
             {
-                Common.LogDebug($"SendMessageToHelper: HelperWindow={h}, Return={rv}, msg={msg}, w={wparam.ToInt32()}, l={lparam.ToInt32()}, Post={!wait}");
+                Logger.LogDebug($"SendMessageToHelper: HelperWindow={h}, Return={rv}, msg={msg}, w={wparam.ToInt32()}, l={lparam.ToInt32()}, Post={!wait}");
             }
 
             return rv;
@@ -424,7 +428,7 @@ namespace MouseWithoutBorders
 
             log += "Last 10 trace messages:\r\n";
 
-            log += string.Join(Environment.NewLine, LogCounter.Select(item => $"({item.Value}): {item.Key}").Take(10));
+            log += string.Join(Environment.NewLine, Logger.LogCounter.Select(item => $"({item.Value}): {item.Key}").Take(10));
 
             log += "\r\n=============================================================================================================================";
 
@@ -447,7 +451,7 @@ namespace MouseWithoutBorders
                     Setting.Values.Username = Program.User;
                 }
 
-                Common.LogDebug("[Username] = " + Setting.Values.Username);
+                Logger.LogDebug("[Username] = " + Setting.Values.Username);
             }
 
             return !string.IsNullOrEmpty(Setting.Values.Username);
@@ -490,7 +494,7 @@ Please use the keyboard and Mouse from the SAW device.
             }
             catch (Exception e)
             {
-                Log(e);
+                Logger.Log(e);
             }
         }
     }

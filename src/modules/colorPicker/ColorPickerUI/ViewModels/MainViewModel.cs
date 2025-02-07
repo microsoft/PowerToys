@@ -58,6 +58,12 @@ namespace ColorPicker.ViewModels
             _keyboardMonitor = keyboardMonitor;
 
             NativeEventWaiter.WaitForEventLoop(
+                Constants.TerminateColorPickerSharedEvent(),
+                Application.Current.Shutdown,
+                Application.Current.Dispatcher,
+                exitToken);
+
+            NativeEventWaiter.WaitForEventLoop(
                 Constants.ShowColorPickerSharedEvent(),
                 _appStateHandler.StartUserSession,
                 Application.Current.Dispatcher,

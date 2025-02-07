@@ -133,6 +133,8 @@ HRESULT CPowerRenameMenu::InvokeCommand(_In_ LPCMINVOKECOMMANDINFO pici)
 
 HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray)
 {
+    m_etwTrace.UpdateState(true);
+
     HRESULT hr = E_FAIL;
 
     if (CSettingsInstance().GetEnabled() &&
@@ -246,6 +248,9 @@ HRESULT CPowerRenameMenu::RunPowerRename(CMINVOKECOMMANDINFO* pici, IShellItemAr
     }
     Trace::InvokedRet(hr);
 
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
+
     return hr;
 }
 
@@ -295,6 +300,8 @@ HRESULT __stdcall CPowerRenameMenu::Invoke(IShellItemArray* psiItemArray, IBindC
     swprintf_s(buffer, L"%d", GetCurrentProcessId());
     MessageBoxW(nullptr, buffer, L"PID", MB_OK);
 #endif
+    m_etwTrace.UpdateState(true);
+
     Trace::Invoked();
     InvokeStruct* pInvokeData = new (std::nothrow) InvokeStruct;
     HRESULT hr = E_OUTOFMEMORY;
@@ -311,6 +318,9 @@ HRESULT __stdcall CPowerRenameMenu::Invoke(IShellItemArray* psiItemArray, IBindC
         hr = RunPowerRename(nullptr, psiItemArray);
     }
     Trace::InvokedRet(hr);
+
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
     return S_OK;
 }
 

@@ -43,7 +43,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredShortcutGuideEnabledValue();
             static GpoRuleConfigured GetConfiguredTextExtractorEnabledValue();
             static GpoRuleConfigured GetConfiguredAdvancedPasteEnabledValue();
-            static GpoRuleConfigured GetConfiguredVideoConferenceMuteEnabledValue();
+            static GpoRuleConfigured GetConfiguredZoomItEnabledValue();
             static GpoRuleConfigured GetConfiguredPeekEnabledValue();
             static GpoRuleConfigured GetDisableNewUpdateToastValue();
             static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
@@ -65,6 +65,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredMwbDisableUserDefinedIpMappingRulesValue();
             static String GetConfiguredMwbPolicyDefinedIpMappingRules();
             static GpoRuleConfigured GetConfiguredNewPlusHideTemplateFilenameExtensionValue();
+            static GpoRuleConfigured GetAllowDataDiagnosticsValue();
         }
     }
 }

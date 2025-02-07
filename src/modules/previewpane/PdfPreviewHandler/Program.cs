@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Windows.Threading;
 
 using Common.UI;
+using Microsoft.PowerToys.Telemetry;
 using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.PreviewHandler.Pdf
@@ -26,6 +27,8 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
             {
                 if (args.Length == 6)
                 {
+                    ETWTrace etwTrace = new ETWTrace(Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw"));
+
                     string filePath = args[0];
                     IntPtr hwnd = IntPtr.Parse(args[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
@@ -51,12 +54,16 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                             Rectangle s = default;
                             if (!_previewHandlerControl.SetRect(s))
                             {
+                                etwTrace?.Dispose();
+
                                 // When the parent HWND became invalid, the application won't respond to Application.Exit().
                                 Environment.Exit(0);
                             }
                         },
                         Dispatcher.CurrentDispatcher,
                         _tokenSource.Token);
+
+                    etwTrace?.Dispose();
                 }
                 else
                 {

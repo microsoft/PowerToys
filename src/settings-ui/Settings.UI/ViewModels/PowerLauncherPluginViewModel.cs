@@ -38,6 +38,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _enabledGpoRuleConfiguration = (GpoRuleConfigured)settings.EnabledPolicyUiState;
             _enabledGpoRuleIsConfigured = _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+
+            _hasValidWebsiteUri = Uri.IsWellFormedUriString(settings.Website, UriKind.Absolute);
+            _websiteUri = _hasValidWebsiteUri ? settings.Website : WebsiteFallbackUri;
         }
 
         public string Id { get => settings.Id; }
@@ -46,7 +49,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Description { get => settings.Description; }
 
+        public string Version { get => settings.Version; }
+
         public string Author { get => settings.Author; }
+
+        // Fallback value for the website in case the uri from json is not well formatted
+        private const string WebsiteFallbackUri = "https://aka.ms/PowerToys";
+        private string _websiteUri;
+        private bool _hasValidWebsiteUri;
+
+        public string WebsiteUri => _websiteUri;
+
+        public bool HasValidWebsiteUri => _hasValidWebsiteUri;
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledGpoRuleIsConfigured;

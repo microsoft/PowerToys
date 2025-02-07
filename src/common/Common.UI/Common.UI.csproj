@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>PowerToys.Common.UI</AssemblyName>
   </PropertyGroup>
 

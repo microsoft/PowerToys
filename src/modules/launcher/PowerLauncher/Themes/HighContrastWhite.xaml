@@ -6,6 +6,7 @@
     xmlns:system="clr-namespace:System;assembly=System.Runtime"
     mc:Ignorable="options">
 
+    <Color x:Key="LauncherBackgroundColor">#d7dad7</Color>
     <!--  Metadata  -->
     <system:String x:Key="Theme.Name">HighContrast.Accent5</system:String>
     <system:String x:Key="Theme.Origin">PowerToysRun</system:String>

@@ -14,7 +14,7 @@ void ZipFolder(std::filesystem::path zipPath, std::filesystem::path folderPath)
     struct zip_t* zip = zip_open(tmpZipPath.string().c_str(), ZIP_DEFAULT_COMPRESSION_LEVEL, 'w');
     if (!zip)
     {
-        printf("Can not open zip.");
+        printf("Cannot open zip.");
         throw -1;
     }
 

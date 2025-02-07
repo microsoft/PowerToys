@@ -35,7 +35,7 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        Trace::RegisterProvider();
+        Trace::AlwaysOnTop::RegisterProvider();
         break;
 
     case DLL_THREAD_ATTACH:
@@ -43,7 +43,7 @@ BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lp
         break;
 
     case DLL_PROCESS_DETACH:
-        Trace::UnregisterProvider();
+        Trace::AlwaysOnTop::UnregisterProvider();
         break;
     }
     return TRUE;
@@ -174,6 +174,7 @@ public:
         app_name = L"AlwaysOnTop"; //TODO: localize
         app_key = NonLocalizable::ModuleKey;
         m_hPinEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_PIN_EVENT);
+        m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::ALWAYS_ON_TOP_TERMINATE_EVENT);
         init_settings();
     }
 
@@ -221,6 +222,12 @@ private:
             Trace::AlwaysOnTop::Enable(false);
         }
 
+        SetEvent(m_hTerminateEvent);
+
+        // Wait for 1.5 seconds for the process to end correctly and stop etw tracer
+        WaitForSingleObject(m_hProcess, 1500);
+
+        // If process is still running, terminate it
         if (m_hProcess)
         {
             TerminateProcess(m_hProcess, 0);
@@ -294,6 +301,7 @@ private:
 
     // Handle to event used to pin/unpin windows
     HANDLE m_hPinEvent;
+    HANDLE m_hTerminateEvent;
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

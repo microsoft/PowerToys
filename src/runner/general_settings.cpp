@@ -65,7 +65,7 @@ json::JsonObject load_general_settings()
     show_new_updates_toast_notification = loaded.GetNamedBoolean(L"show_new_updates_toast_notification", true);
     download_updates_automatically = loaded.GetNamedBoolean(L"download_updates_automatically", true) && check_user_is_admin();
     show_whats_new_after_updates = loaded.GetNamedBoolean(L"show_whats_new_after_updates", true);
-    enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation",true);
+    enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation", true);
     enable_warnings_elevated_apps = loaded.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
 
     return loaded;
@@ -241,8 +241,7 @@ void start_enabled_powertoys()
             {
                 std::wstring disable_module_name{ static_cast<std::wstring_view>(disabled_element.Key()) };
 
-                if (powertoys_gpo_configuration.find(disable_module_name)!=powertoys_gpo_configuration.end() 
-                    && (powertoys_gpo_configuration[disable_module_name]==powertoys_gpo::gpo_rule_configured_enabled || powertoys_gpo_configuration[disable_module_name]==powertoys_gpo::gpo_rule_configured_disabled))
+                if (powertoys_gpo_configuration.find(disable_module_name) != powertoys_gpo_configuration.end() && (powertoys_gpo_configuration[disable_module_name] == powertoys_gpo::gpo_rule_configured_enabled || powertoys_gpo_configuration[disable_module_name] == powertoys_gpo::gpo_rule_configured_disabled))
                 {
                     // If gpo forces the enabled setting, no need to check the setting for this PowerToy. It will be applied later on this function.
                     continue;
