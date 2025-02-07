@@ -7,35 +7,30 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.CommandPalette.Extensions;
 
-namespace TemplateExtension;
+namespace TemplateCmdPalExtension;
 
 [ComVisible(true)]
 [Guid("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")]
 [ComDefaultInterface(typeof(IExtension))]
-public sealed partial class SampleExtension : IExtension, IDisposable
+public sealed partial class TemplateCmdPalExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 
-    private readonly TemplateExtensionCommandsProvider _provider = new();
+    private readonly TemplateCmdPalExtensionCommandsProvider _provider = new();
 
-    public SampleExtension(ManualResetEvent extensionDisposedEvent)
+    public TemplateCmdPalExtension(ManualResetEvent extensionDisposedEvent)
     {
         this._extensionDisposedEvent = extensionDisposedEvent;
     }
 
-    public object GetProvider(ProviderType providerType)
+    public object? GetProvider(ProviderType providerType)
     {
-        switch (providerType)
+        return providerType switch
         {
-            case ProviderType.Commands:
-                return _provider;
-            default:
-                return null;
-        }
+            ProviderType.Commands => _provider,
+            _ => null,
+        };
     }
 
-    public void Dispose()
-    {
-        this._extensionDisposedEvent.Set();
-    }
+    public void Dispose() => this._extensionDisposedEvent.Set();
 }

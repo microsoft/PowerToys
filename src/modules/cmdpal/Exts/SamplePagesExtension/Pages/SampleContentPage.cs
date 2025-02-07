@@ -19,7 +19,7 @@ internal sealed partial class SampleContentPage : ContentPage
     public SampleContentPage()
     {
         Name = "Sample Content";
-        Icon = new IconInfo(string.Empty);
+        Icon = new IconInfo("\uECA5"); // Tiles
     }
 }
 

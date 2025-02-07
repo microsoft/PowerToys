@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\CmdPalVersion.props" />
   <Import Project="CmdPal.pre.props" />
   <Import Project="CmdPal.Branding.props" />
 
@@ -12,6 +13,8 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <Version>$(CmdPalVersion)</Version>
 
     <!-- OutputPath is set in CmdPal.Branding.props  -->
 

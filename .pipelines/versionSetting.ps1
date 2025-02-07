@@ -44,6 +44,17 @@ $verProps.Project.PropertyGroup.DevEnvironment = $DevEnvironment;
 Write-Host "xml" $verProps.Project.PropertyGroup.Version
 $verProps.Save($verPropWriteFileLocation);
 
+
+#### The same thing as above, but for the CmdPal version
+$verPropWriteFileLocation = $PSScriptRoot + '/../src/CmdPalVersion.props';
+$verPropReadFileLocation = $verPropWriteFileLocation;
+[XML]$verProps = Get-Content $verPropReadFileLocation
+$verProps.Project.PropertyGroup.CmdPalVersion = $cmdPalVersionNumber;
+$verProps.Project.PropertyGroup.DevEnvironment = $DevEnvironment;
+Write-Host "xml" $verProps.Project.PropertyGroup.Version
+$verProps.Save($verPropWriteFileLocation);
+#######
+
 # Set PowerRenameContextMenu package version in AppManifest.xml
 $powerRenameContextMenuAppManifestWriteFileLocation = $PSScriptRoot + '/../src/modules/powerrename/PowerRenameContextMenu/AppxManifest.xml';
 $powerRenameContextMenuAppManifestReadFileLocation = $powerRenameContextMenuAppManifestWriteFileLocation;

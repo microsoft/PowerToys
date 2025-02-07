@@ -9,7 +9,7 @@
   IgnorableNamespaces="uap uap3 rescap">
 
   <Identity
-    Name="TemplateExtension"
+    Name="TemplateCmdPalExtension"
     Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
     Version="0.0.1.0" />
 
@@ -20,8 +20,8 @@
   </Properties>
 
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
-    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.19041.0" MaxVersionTested="10.0.19041.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.19041.0" />
   </Dependencies>
 
   <Resources>
@@ -44,7 +44,7 @@
       <Extensions>
         <com:Extension Category="windows.comServer">
           <com:ComServer>
-            <com:ExeServer Executable="TemplateExtension.exe" Arguments="-RegisterProcessAsComServer" DisplayName="TemplateDisplayName">
+            <com:ExeServer Executable="TemplateCmdPalExtension.exe" Arguments="-RegisterProcessAsComServer" DisplayName="TemplateDisplayName">
               <com:Class Id="FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF" DisplayName="TemplateDisplayName" />
             </com:ExeServer>
           </com:ComServer>
