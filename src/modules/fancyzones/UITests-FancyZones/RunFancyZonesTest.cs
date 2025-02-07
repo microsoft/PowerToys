@@ -48,44 +48,13 @@ namespace UITests_FancyZones
             _context = null;
         }
 
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern int EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool IsWindowVisible(IntPtr hWnd);
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
-
-        private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
-
         [TestMethod]
         public void RunFancyZones()
         {
-            List<string> windowTitles = new List<string>();
-            _ = EnumWindows(
-                (hWnd, lParam) =>
-            {
-                if (IsWindowVisible(hWnd))
-                {
-                    StringBuilder windowText = new StringBuilder(256);
-                    _ = GetWindowText(hWnd, windowText, windowText.Capacity);
-                    if (windowText.Length > 0)
-                    {
-                        windowTitles.Add(windowText.ToString());
-                    }
-                }
-
-                return true;
-            },
-                IntPtr.Zero);
-
-            foreach (string title in windowTitles)
-            {
-                Console.WriteLine(title);
-            }
-
             Assert.IsNotNull(mUITestAPI);
+            Thread.Sleep(2000);
+            mUITestAPI.TestCode("Launch layout editor");
+            Thread.Sleep(2000);
             mUITestAPI.Click_Element("Launch layout editor");
             Thread.Sleep(4000);
             mUITestAPI.LaunchModuleWithWindowName(PowerToysModuleWindow.Fancyzone);

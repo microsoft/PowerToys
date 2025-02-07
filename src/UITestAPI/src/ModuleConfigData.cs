@@ -27,7 +27,31 @@ namespace Microsoft.UITests.API
         Hosts,
     }
 
-    public struct ModuleConfigData(string moduleName, string windowName)
+    public class ModuleConfigData
+    {
+        private static readonly Lazy<ModuleConfigData> MInstance = new Lazy<ModuleConfigData>(() => new ModuleConfigData());
+
+        public static ModuleConfigData Instance
+        {
+            get
+            {
+                return MInstance.Value;
+            }
+        }
+
+        public Dictionary<PowerToysModuleWindow, ModuleWindowData> ModuleWindowName { get; private set; }
+
+        private ModuleConfigData()
+        {
+            ModuleWindowName = new Dictionary<PowerToysModuleWindow, ModuleWindowData>();
+            ModuleWindowName[PowerToysModuleWindow.Fancyzone] = new ModuleWindowData("Fancyzone", "FancyZones Layout");
+            ModuleWindowName[PowerToysModuleWindow.KeyboardManagerKeys] = new ModuleWindowData("KeyboardManagerKeys", "Remap keys");
+            ModuleWindowName[PowerToysModuleWindow.KeyboardManagerShortcuts] = new ModuleWindowData("KeyboardManagerShortcuts", "Remap shortcuts");
+            ModuleWindowName[PowerToysModuleWindow.Hosts] = new ModuleWindowData("Hosts", "Hosts File Editor");
+        }
+    }
+
+    public struct ModuleWindowData(string moduleName, string windowName)
     {
         public string ModuleName = moduleName;
         public string WindowName = windowName;

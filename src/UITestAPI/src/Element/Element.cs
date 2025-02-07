@@ -1,0 +1,123 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Appium.Windows;
+using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Remote;
+using OpenQA.Selenium.Support.Events;
+using static Microsoft.UITests.API.APPManager;
+
+namespace Microsoft.UITests.API
+{
+    public class Element
+    {
+        public WindowsElement? WindowsElement { get; set; }
+
+        public Element()
+        {
+            WindowsElement = null;
+        }
+
+        public void SetWindowsElement(WindowsElement windowsElement)
+        {
+            WindowsElement = windowsElement;
+        }
+
+        public string GetName()
+        {
+            if (WindowsElement == null)
+            {
+                Assert.IsNotNull(null);
+                return " ";
+            }
+
+            return WindowsElement.GetAttribute("Name");
+        }
+
+        public string GetText()
+        {
+            if (WindowsElement == null)
+            {
+                Assert.IsNotNull(null);
+                return " ";
+            }
+
+            return WindowsElement.GetAttribute("Value");
+        }
+
+        public string GetAutomationId()
+        {
+            if (WindowsElement == null)
+            {
+                Assert.IsNotNull(null);
+                return " ";
+            }
+
+            return WindowsElement.GetAttribute("AutomationId");
+        }
+
+        public string GetClassName()
+        {
+            if (WindowsElement == null)
+            {
+                Assert.IsNotNull(null);
+                return " ";
+            }
+
+            return WindowsElement.GetAttribute("ClassName");
+        }
+
+        public bool IsEnable()
+        {
+            if (WindowsElement == null)
+            {
+                Assert.IsNotNull(null);
+            }
+
+            return WindowsElement?.GetAttribute("IsEnabled") == "True" ? true : false;
+        }
+
+        public bool IsSelected()
+        {
+            if (WindowsElement == null)
+            {
+                Assert.IsNotNull(null);
+            }
+
+            return WindowsElement?.GetAttribute("IsSelected") == "True" ? true : false;
+        }
+
+        public void Click()
+        {
+            WindowsDriver<WindowsElement>? session = APPManager.Instance.GetCurrentWindow();
+            var element = WindowsElement;
+            Actions actions = new Actions(session);
+            actions.MoveToElement(element);
+            actions.Click();
+            actions.Build().Perform();
+        }
+
+        public T? FindElementByName<T>(string name)
+            where T : Element, new()
+        {
+            var item = WindowsElement?.FindElementByName(name);
+            Assert.IsNotNull(item, "Can`t find this element");
+            T element = new T();
+            return element;
+        }
+
+        public Screenshot? GetScreenShot()
+        {
+            if (WindowsElement == null)
+            {
+                Assert.IsNotNull(null);
+                return null;
+            }
+
+            return WindowsElement?.GetScreenshot();
+        }
+    }
+}

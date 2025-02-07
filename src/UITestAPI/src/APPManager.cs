@@ -19,6 +19,16 @@ namespace Microsoft.UITests.API
 {
     public class APPManager
     {
+        private static readonly Lazy<APPManager> MInstance = new Lazy<APPManager>(() => new APPManager());
+
+        public static APPManager Instance
+        {
+            get
+            {
+                return MInstance.Value;
+            }
+        }
+
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
@@ -33,7 +43,7 @@ namespace Microsoft.UITests.API
 
         public struct WinDriver
         {
-            public WindowsDriver<WindowsElement>? Session { get; set; }
+            public WindowsDriverWrapper Session { get; set; }
 
             public string AppName;
             public string WindowName;
@@ -41,7 +51,7 @@ namespace Microsoft.UITests.API
 
         protected const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
 
-        public WindowsDriver<WindowsElement>? Root { get; private set; }
+        public WindowsDriverWrapper Root { get; private set; }
 
         public WinDriver CurrentDriver { get; private set; }
 
@@ -49,7 +59,7 @@ namespace Microsoft.UITests.API
 
         private Stack<WinDriver> mWindowListTemp = new Stack<WinDriver>();
 
-        public APPManager()
+        private APPManager()
         {
             if (mWindowList == null)
             {
@@ -63,7 +73,7 @@ namespace Microsoft.UITests.API
 
             var desktopCapabilities = new AppiumOptions();
             desktopCapabilities.AddAdditionalCapability("app", "Root");
-            Root = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), desktopCapabilities);
+            Root = new WindowsDriverWrapper(new Uri(WindowsApplicationDriverUrl), desktopCapabilities);
         }
 
         // Create a new application and take control of it
@@ -71,7 +81,7 @@ namespace Microsoft.UITests.API
         {
             AppiumOptions opts = new AppiumOptions();
             opts.AddAdditionalCapability("app", appPath);
-            var session = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), opts);
+            var session = new WindowsDriverWrapper(new Uri(WindowsApplicationDriverUrl), opts);
             WinDriver winDriver = default(WinDriver);
             winDriver.Session = session;
             winDriver.AppName = appName;
@@ -102,7 +112,7 @@ namespace Microsoft.UITests.API
                 var appCapabilities = new AppiumOptions();
                 appCapabilities.AddAdditionalCapability("appTopLevelWindow", hexWindowHandle);
                 appCapabilities.AddAdditionalCapability("deviceName", "WindowsPC");
-                var appSession = new WindowsDriver<WindowsElement>(new Uri(WindowsApplicationDriverUrl), appCapabilities);
+                var appSession = new WindowsDriverWrapper(new Uri(WindowsApplicationDriverUrl), appCapabilities);
                 WinDriver winDriver = default(WinDriver);
                 winDriver.Session = appSession;
                 winDriver.AppName = appName;
@@ -192,12 +202,12 @@ namespace Microsoft.UITests.API
             Assert.IsNotNull(null, "appName not found");
         }
 
-        public WindowsDriver<WindowsElement>? GetCurrentWindow()
+        public WindowsDriverWrapper? GetCurrentWindow()
         {
             return CurrentDriver.Session;
         }
 
-        public WindowsDriver<WindowsElement>? GetWindowInList(string appName)
+        public WindowsDriverWrapper? GetWindowInList(string appName)
         {
             while (mWindowList.Count > 0)
             {
