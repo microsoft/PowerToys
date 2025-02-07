@@ -55,6 +55,7 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource AccentButtonBackgroundPointerOver}" />
                             <Setter TargetName="ContentBorder" Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+                            <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="{DynamicResource AccentButtonForegroundPointerOver}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="ContentBorder" Property="Background" Value="{DynamicResource AccentButtonBackgroundPressed}" />
