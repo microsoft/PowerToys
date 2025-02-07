@@ -136,6 +136,8 @@ extends:
                 akvName: $(SigningAKVName)
                 authCertName: $(SigningAuthCertName)
                 signCertName: $(SigningSignCertName)
+                useManagedIdentity: $(SigningUseManagedIdentity)
+                clientId: $(SigningOriginalClientId)
 
       - stage: Publish
         displayName: Publish
