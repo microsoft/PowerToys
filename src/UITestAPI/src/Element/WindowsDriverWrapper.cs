@@ -29,6 +29,7 @@ namespace Microsoft.UITests.API
             var item = this.FindElementByName(name);
             Assert.IsNotNull(item, "Can`t find this element");
             T element = new T();
+            element.SetWindowsElement(item);
             return element;
         }
     }

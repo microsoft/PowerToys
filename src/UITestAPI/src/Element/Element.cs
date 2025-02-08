@@ -103,9 +103,10 @@ namespace Microsoft.UITests.API
         public T? FindElementByName<T>(string name)
             where T : Element, new()
         {
-            var item = WindowsElement?.FindElementByName(name);
+            var item = WindowsElement?.FindElementByName(name) as WindowsElement;
             Assert.IsNotNull(item, "Can`t find this element");
             T element = new T();
+            element.SetWindowsElement(item);
             return element;
         }
 
