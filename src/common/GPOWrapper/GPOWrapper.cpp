@@ -200,6 +200,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMwbDisallowBlockingScreensaverValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMwbAllowServiceModeValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMwbAllowServiceModeValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredMwbSameSubnetOnlyValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMwbSameSubnetOnlyValue());

@@ -56,6 +56,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredMwbFileTransferEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbUseOriginalUserInterfaceValue();
         static GpoRuleConfigured GetConfiguredMwbDisallowBlockingScreensaverValue();
+        static GpoRuleConfigured GetConfiguredMwbAllowServiceModeValue();
         static GpoRuleConfigured GetConfiguredMwbSameSubnetOnlyValue();
         static GpoRuleConfigured GetConfiguredMwbValidateRemoteIpValue();
         static GpoRuleConfigured GetConfiguredMwbDisableUserDefinedIpMappingRulesValue();
