@@ -135,6 +135,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool UseServiceSettingIsEnabled => _allowServiceModeIsGPOConfigured == false;
+
         public bool ConnectFieldsVisible
         {
             get => _connectFieldsVisible;
@@ -1248,14 +1250,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendCustomAction("uninstall_service");
         }
 
+        public bool ShowPolicyConfiguredInfoForServiceSettings
+        {
+            get
+            {
+                return IsEnabled && _allowServiceModeIsGPOConfigured;
+            }
+        }
+
         public bool ShowPolicyConfiguredInfoForBehaviorSettings
         {
             get
             {
                 return IsEnabled && (_disallowBlockingScreensaverIsGPOConfigured
                     || _clipboardSharingEnabledIsGPOConfigured || _fileTransferEnabledIsGPOConfigured
-                    || _sameSubnetOnlyIsGPOConfigured || _validateRemoteIpIsGPOConfigured
-                    || _allowServiceModeIsGPOConfigured);
+                    || _sameSubnetOnlyIsGPOConfigured || _validateRemoteIpIsGPOConfigured);
             }
         }
 
