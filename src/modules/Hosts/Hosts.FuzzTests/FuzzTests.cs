@@ -94,7 +94,7 @@ namespace Hosts.FuzzTests
 
                 Console.WriteLine("Finished Mock");
 
-                HostsService hostservice = new HostsService(mockFileSystem.Object, mockUserSettings.Object, mockElevationHelper.Object);
+                HostsService hostsService = new HostsService(mockFileSystem.Object, mockUserSettings.Object, mockElevationHelper.Object);
 
                 // fuzzing input
                 string input = System.Text.Encoding.UTF8.GetString(data);
@@ -119,7 +119,7 @@ namespace Hosts.FuzzTests
                 Console.WriteLine("Finished Fuzzing input");
 
                 // fuzzing WriteAsync
-                _ = Task.Run(async () => await hostservice.WriteAsync(additionalLines, entries));
+                _ = Task.Run(async () => await hostsService.WriteAsync(additionalLines, entries));
 
                 Console.WriteLine("Finished WriteAsync");
             }
