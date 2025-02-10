@@ -92,8 +92,6 @@ namespace Hosts.FuzzTests
                 // Set up the mock IFileSystem to return the mock file info
                 mockFileSystem.Setup(fs => fs.FileInfo.New(It.IsAny<string>())).Returns(mockFileInfo.Object);
 
-                Console.WriteLine("Finished Mock");
-
                 HostsService hostsService = new HostsService(mockFileSystem.Object, mockUserSettings.Object, mockElevationHelper.Object);
 
                 // fuzzing input
@@ -108,24 +106,16 @@ namespace Hosts.FuzzTests
                 string hosts = parts[0];
                 string address = parts[1];
                 string comments = parts[2];
-
-                Console.WriteLine($"INPUT DATA IS  hosts:{hosts} address:{address} comments: {comments}");
-
                 var entries = new List<Entry>
                 {
                     new Entry(1, hosts, address, comments, true),
                 };
 
-                Console.WriteLine("Finished Fuzzing input");
-
                 // fuzzing WriteAsync
                 _ = Task.Run(async () => await hostsService.WriteAsync(additionalLines, entries));
-
-                Console.WriteLine("Finished WriteAsync");
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is ArgumentException)
             {
-                Console.WriteLine($" An Error occured: {ex.Message}");
                 throw;
             }
         }
