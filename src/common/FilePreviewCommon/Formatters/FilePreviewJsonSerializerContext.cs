@@ -7,7 +7,6 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.FilePreviewCommon.Monaco.Formatters;
 
-[JsonSourceGenerationOptions(WriteIndented = true)]
 [JsonSerializable(typeof(JsonDocument))]
 internal sealed partial class FilePreviewJsonSerializerContext : JsonSerializerContext
 {

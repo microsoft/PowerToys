@@ -172,7 +172,6 @@ jobs:
   - pwsh: |-
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\WebcamReportTool\WebcamReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
     displayName: Verify ARM64 configurations
@@ -243,103 +242,6 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
-  - ${{ if eq(parameters.codeSign, true) }}:
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: Sign Utilities
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: 'src/modules'
-          signType: batchSigning
-          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_abstracted_utils_dll.json'
-          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
-
-  - task: VSBuild@1
-    displayName: Create Hosts File Editor package
-    inputs:
-      solution: '**\HostsUILib.csproj'
-      vsVersion: 17.0
-      msbuildArgs: >-
-        /p:CIBuild=true;NoBuild=true -t:pack
-        /bl:$(LogOutputDirectory)\build-hosts.binlog
-        /p:NoWarn=NU5104
-        $(RestoreAdditionalProjectSourcesArg)
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - task: VSBuild@1
-    displayName: Create Environment Variables Editor package
-    inputs:
-      solution: '**\EnvironmentVariablesUILib.csproj'
-      vsVersion: 17.0
-      msbuildArgs: >-
-        /p:CIBuild=true;NoBuild=true -t:pack
-        /bl:$(LogOutputDirectory)\build-env-var-editor.binlog
-        /p:NoWarn=NU5104
-        $(RestoreAdditionalProjectSourcesArg)
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - task: VSBuild@1
-    displayName: Create Registry Preview package
-    inputs:
-      solution: '**\RegistryPreviewUILib.csproj'
-      vsVersion: 17.0
-      msbuildArgs: >-
-        /p:CIBuild=true;NoBuild=true -t:pack
-        /bl:$(LogOutputDirectory)\build-registry-preview.binlog
-        /p:NoWarn=NU5104
-        $(RestoreAdditionalProjectSourcesArg)
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - task: CopyFiles@2
-    displayName: Stage NuGet packages
-    inputs:
-      contents: "**/bin/Release/PowerToys*.nupkg"
-      flattenFolders: True
-      targetFolder: $(JobOutputDirectory)/nupkg
-
-  - ${{ if eq(parameters.codeSign, true) }}:
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: Sign NuGet packages
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: $(JobOutputDirectory)/nupkg
-          Pattern: '*.nupkg'
-          UseMinimatch: true
-          signConfigType: inlineSignParams
-          inlineOperation: >-
-            [
-                {
-                    "KeyCode": "CP-401405",
-                    "OperationCode": "NuGetSign",
-                    "Parameters": {},
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                },
-                {
-                    "KeyCode": "CP-401405",
-                    "OperationCode": "NuGetVerify",
-                    "Parameters": {},
-                    "ToolName": "sign",
-                    "ToolVersion": "1.0"
-                }
-            ]
-
   - task: VSBuild@1
     displayName: Build BugReportTool
     inputs:
@@ -350,27 +252,6 @@ jobs:
         /p:RestorePackagesConfig=true
         /p:CIBuild=true
         /bl:$(LogOutputDirectory)\build-bug-report.binlog
-        ${{ parameters.additionalBuildOptions }}
-        $(MSBuildCacheParameters)
-        $(RestoreAdditionalProjectSourcesArg)
-      platform: $(BuildPlatform)
-      configuration: $(BuildConfiguration)
-      msbuildArchitecture: x64
-      maximumCpuCount: true
-    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - task: VSBuild@1
-    displayName: Build WebcamReportTool
-    inputs:
-      solution: '**/tools/WebcamReportTool/WebcamReportTool.sln'
-      vsVersion: 17.0
-      msbuildArgs: >-
-        -restore -graph
-        /p:RestorePackagesConfig=true
-        /p:CIBuild=true
-        /bl:$(LogOutputDirectory)\build-webcam-report.binlog
         ${{ parameters.additionalBuildOptions }}
         $(MSBuildCacheParameters)
         $(RestoreAdditionalProjectSourcesArg)
@@ -484,7 +365,7 @@ jobs:
         displayName: Sign Core PowerToys
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
-          FolderPath: '$(BuildPlatform)/$(BuildConfiguration)' # Video conf uses x86 and x64.
+          FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_core.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
@@ -497,16 +378,6 @@ jobs:
           FolderPath: 'src/dsc/Microsoft.PowerToys.Configure'
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_DSC.json'
-          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
-
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: Sign x86 DirectShow VCM
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: 'x86/$(BuildConfiguration)' # Video conf uses x86 and x64.
-          signType: batchSigning
-          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_vcm.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
   - template: steps-build-installer.yml

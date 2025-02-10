@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Data.Json;
 using Windows.System;
+using WinRT.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -421,6 +422,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // A custom title bar is required for full window theme and Mica support.
                 // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
                 u.ExtendsContentIntoTitleBar = true;
+                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(u));
                 u.SetTitleBar(AppTitleBar);
                 var loader = ResourceLoaderInstance.ResourceLoader;
                 AppTitleBarText.Text = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");

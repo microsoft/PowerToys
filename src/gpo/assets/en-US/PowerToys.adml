@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.14" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.15" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -13,6 +13,7 @@
       <string id="MouseWithoutBorders">Mouse Without Borders</string>
       <string id="GeneralSettings">General settings</string>
       <string id="NewPlus">New+</string>
+      <string id="DeprecatedPolicies">Deprecated policies</string>
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
@@ -29,6 +30,8 @@
       <string id="SUPPORTED_POWERTOYS_0_84_0">PowerToys version 0.84.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_85_0">PowerToys version 0.85.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_86_0">PowerToys version 0.86.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_88_0">PowerToys version 0.88.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
@@ -245,6 +248,7 @@ If you don't configure this policy, the user takes control over the setting and 
       <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityVideoConferenceMute">Video Conference Mute: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityZoomIt">Zoom It: Configure enabled state</string>
       <string id="DisablePerUserInstallation">Disable per-user installation</string>
       <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
       <string id="DoNotShowWhatsNewAfterUpdates">Do not show the release notes after updates</string>

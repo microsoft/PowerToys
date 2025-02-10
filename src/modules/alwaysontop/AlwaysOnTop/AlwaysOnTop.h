@@ -9,6 +9,7 @@
 #include <WindowBorder.h>
 
 #include <common/hooks/WinHookEvent.h>
+#include <common/notifications/NotificationUtil.h>
 
 class AlwaysOnTop : public SettingsObserver
 {
@@ -53,6 +54,7 @@ private:
     std::thread m_thread;
     const bool m_useCentralizedLLKH;
     bool m_running = true;
+    std::unique_ptr<notifications::NotificationUtil> m_notificationUtil;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
     void HandleWinHookEvent(WinHookEvent* data) noexcept;
