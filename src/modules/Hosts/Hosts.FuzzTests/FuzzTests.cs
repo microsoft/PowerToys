@@ -78,10 +78,10 @@ namespace Hosts.FuzzTests
                 var mockFileInfo = new Mock<IFileInfo>();
                 mockFileInfo.Setup(f => f.IsReadOnly).Returns(true); // Simulate a non-read-only file
 
-                // mock Ifilesystem
+                // mock FileSystem
                 var mockFileSystem = new Mock<IFileSystem>();
 
-                // Mocking the IFileSystem methods
+                // Mocking the FileSystem methods
                 var mockFileSystemWatcher = new Mock<IFileSystemWatcher>();
                 mockFileSystem.Setup(fs => fs.FileSystemWatcher.New()).Returns(mockFileSystemWatcher.Object);
                 var mockPath = new Mock<IPath>();
@@ -89,7 +89,7 @@ namespace Hosts.FuzzTests
                 mockPath.Setup(p => p.GetDirectoryName(It.IsAny<string>())).Returns(@"C:\Windows\System32\drivers\etc");
                 mockPath.Setup(p => p.GetFileName(It.IsAny<string>())).Returns("hosts");
 
-                // Set up the mock IFileSystem to return the mock file info
+                // Set up the mock FileSystem to return the mock file info
                 mockFileSystem.Setup(fs => fs.FileInfo.New(It.IsAny<string>())).Returns(mockFileInfo.Object);
 
                 HostsService hostsService = new HostsService(mockFileSystem.Object, mockUserSettings.Object, mockElevationHelper.Object);
