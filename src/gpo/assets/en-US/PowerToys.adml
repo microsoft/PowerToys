@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.15" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.16" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -31,6 +31,7 @@
       <string id="SUPPORTED_POWERTOYS_0_85_0">PowerToys version 0.85.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_86_0">PowerToys version 0.86.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_88_0">PowerToys version 0.88.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_89_0">PowerToys version 0.89.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
@@ -111,6 +112,16 @@ If this setting is disabled, experimentation is not allowed.
 If this setting is enabled or not configured, the user can control diagnostic data sending in the PowerToys settings menu.
 
 If this setting is disabled, diagnostic data sending is not allowed.
+</string>
+      <string id="ConfigureRunAtStartupDescription">This policy configures the "run at startup" setting of PowerToys.
+
+If you enable this setting, the "run at startup" setting will be always enabled and the user won't be able to disable it.
+
+If you disable this setting, the "run at startup" setting will be always disabled and the user won't be able to enable it.
+
+If you don't configure this setting, users are able to enable or disable "run at startup" at will.
+
+Note: This only controls the PowerToys method that creates a scheduled task to start PowerToys at login. It doesn't control other custom auto-start methods that the user might try to use outside of PowerToys or manually creating/deleting a scheduled task.
 </string>
       <string id="PowerToysRunAllPluginsEnabledStateDescription">This policy configures the enabled state for all PowerToys Run plugins. All plugins will have the same state.
 
@@ -270,6 +281,7 @@ If you don't configure this policy, the user takes control over the setting and 
       <string id="MwbPolicyDefinedIpMappingRules">Predefined IP Address mapping rules</string>
       <string id="NewPlusHideTemplateFilenameExtension">Hide template filename extension</string>
       <string id="AllowDiagnosticData">Allow sending diagnostic data</string>
+      <string id="ConfigureRunAtStartup">Configure the run at startup setting</string>
     </stringTable>
 
     <presentationTable>

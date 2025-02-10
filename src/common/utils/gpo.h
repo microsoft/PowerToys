@@ -73,6 +73,7 @@ namespace powertoys_gpo {
     // The registry value names for other PowerToys policies.
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
     const std::wstring POLICY_ALLOW_DATA_DIAGNOSTICS = L"AllowDataDiagnostics";
+    const std::wstring POLICY_CONFIGURE_RUN_AT_STARTUP = L"ConfigureRunAtStartup";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS = L"PowerLauncherAllPluginsEnabledState";
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS = L"AllowPowerToysAdvancedPasteOnlineAIModels";
     const std::wstring POLICY_MWB_CLIPBOARD_SHARING_ENABLED = L"MwbClipboardSharingEnabled";
@@ -491,6 +492,11 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getAllowDataDiagnosticsValue()
     {
         return getConfiguredValue(POLICY_ALLOW_DATA_DIAGNOSTICS);
+    }
+
+    inline gpo_rule_configured_t getConfiguredRunAtStartupValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_RUN_AT_STARTUP);
     }
 
     inline gpo_rule_configured_t getRunPluginEnabledValue(std::string pluginID)
