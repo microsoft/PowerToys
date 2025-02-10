@@ -61,10 +61,21 @@ jobs:
       displayName: "Enable WebView2 Canary Channel"
       
   - download: current
-    displayName: Download artifacts
+    displayName: Download artifacts-1
     artifact: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
     patterns: |-
       **
+      !**\*.pdb
+      !**\*.lib
+      !**\TemporaryBuild\**
+      !**\WinUI3Apps\**
+
+  - download: current
+    displayName: Download artifacts-2
+    artifact: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
+    patterns: |-
+      **\TemporaryBuild\**
+      **\WinUI3Apps\**
       !**\*.pdb
       !**\*.lib
 
