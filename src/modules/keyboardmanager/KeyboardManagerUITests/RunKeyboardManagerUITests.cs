@@ -14,9 +14,6 @@ namespace UITests_KeyboardManager
     [TestClass]
     public class RunKeyboardManagerUITests
     {
-        private const string PowerToysSettingsPath = @"\..\..\..\WinUI3Apps\PowerToys.Settings.exe";
-        private static UITestAPI? mUITestAPI;
-
         private static TestContext? _context;
 
         [AssemblyInitialize]
@@ -34,20 +31,19 @@ namespace UITests_KeyboardManager
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
-            mUITestAPI = new UITestAPI();
-            mUITestAPI.Init();
+            UITestManager.Init();
             Debug.WriteLine("ClassInitialize executed");
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            if (mUITestAPI != null && _context != null)
+            UITestManager.Close();
+            if (_context != null)
             {
-                mUITestAPI.Close(_context);
+                _context = null;
             }
 
-            _context = null;
             Debug.WriteLine("ClassCleanup executed");
         }
 
@@ -67,16 +63,16 @@ namespace UITests_KeyboardManager
         public void EnableKeyboardManager() // verify the session is initialized
         {
             Debug.WriteLine("Test method executed");
-            Assert.IsNotNull(mUITestAPI);
+            var session = UITestManager.GetSession();
 
-            mUITestAPI.Enable_Module_from_Dashboard("Keyboard Manager");
-            mUITestAPI.Click_Element("Remap a key");
+            UITestManager.Enable_Module_from_Dashboard("Keyboard Manager");
+            session?.FindElementByName<Element>("Remap a key")?.Click();
             Thread.Sleep(5000);
-            mUITestAPI.LaunchModuleWithWindowName(PowerToysModuleWindow.KeyboardManagerKeys);
-            mUITestAPI.Click_Element("Add key remapping");
-            mUITestAPI.Click_Element("Cancel");
-            mUITestAPI.CloseModule(PowerToysModuleWindow.KeyboardManagerKeys);
-            mUITestAPI.Disable_Module_from_Dashboard("Keyboard Manager");
+            UITestManager.LaunchModuleWithWindowName(PowerToysModuleWindow.KeyboardManagerKeys);
+            session?.FindElementByName<Element>("Add key remapping")?.Click();
+            session?.FindElementByName<Element>("Cancel")?.Click();
+            UITestManager.CloseModule(PowerToysModuleWindow.KeyboardManagerKeys);
+            UITestManager.Disable_Module_from_Dashboard("Keyboard Manager");
         }
     }
 }

@@ -17,11 +17,11 @@ using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext
 
 namespace Microsoft.UITests.API
 {
-    public class APPManager
+    public class UITestBase
     {
-        private static readonly Lazy<APPManager> MInstance = new Lazy<APPManager>(() => new APPManager());
+        private static readonly Lazy<UITestBase> MInstance = new Lazy<UITestBase>(() => new UITestBase());
 
-        public static APPManager Instance
+        public static UITestBase Instance
         {
             get
             {
@@ -59,7 +59,7 @@ namespace Microsoft.UITests.API
 
         private Stack<WinDriver> mWindowListTemp = new Stack<WinDriver>();
 
-        private APPManager()
+        protected UITestBase()
         {
             if (mWindowList == null)
             {

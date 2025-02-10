@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -31,6 +32,23 @@ namespace Microsoft.UITests.API
             T element = new T();
             element.SetWindowsElement(item);
             return element;
+        }
+
+        public ReadOnlyCollection<T>? FindElementsByName<T>(string name)
+            where T : Element, new()
+        {
+            var items = this.FindElementsByName(name);
+            Assert.IsNotNull(items, "Can`t find this element");
+            List<T> res = new List<T>();
+            foreach (var item in items)
+            {
+                T element = new T();
+                element.SetWindowsElement(item);
+                res.Add(element);
+            }
+
+            var resReadOnlyCollection = new ReadOnlyCollection<T>(res);
+            return resReadOnlyCollection;
         }
     }
 }
