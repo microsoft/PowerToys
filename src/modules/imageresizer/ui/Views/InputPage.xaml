@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:m="clr-namespace:ImageResizer.Models"
     xmlns:p="clr-namespace:ImageResizer.Properties"
+    xmlns:v="clr-namespace:ImageResizer.Views"
     xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
 
     <Grid>
@@ -107,12 +108,16 @@
                     KeyDown="Button_KeyDown"
                     Minimum="0"
                     SpinButtonPlacementMode="Inline">
+                    <ui:NumberBox.NumberFormatter>
+                        <v:ZeroToEmptyStringNumberFormatter />
+                    </ui:NumberBox.NumberFormatter>
                     <ui:NumberBox.Value>
                         <Binding
                             ElementName="SizeComboBox"
                             Mode="TwoWay"
                             Path="SelectedValue.Width"
-                            UpdateSourceTrigger="PropertyChanged" />
+                            UpdateSourceTrigger="PropertyChanged"
+                            Converter="{StaticResource NumberBoxValueConverter}" />
                     </ui:NumberBox.Value>
                 </ui:NumberBox>
 
@@ -136,12 +141,16 @@
                     Minimum="0"
                     SpinButtonPlacementMode="Inline"
                     Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}">
+                    <ui:NumberBox.NumberFormatter>
+                        <v:ZeroToEmptyStringNumberFormatter />
+                    </ui:NumberBox.NumberFormatter>
                     <ui:NumberBox.Value>
                         <Binding
                             ElementName="SizeComboBox"
                             Mode="TwoWay"
                             Path="SelectedValue.Height"
-                            UpdateSourceTrigger="PropertyChanged" />
+                            UpdateSourceTrigger="PropertyChanged"
+                            Converter="{StaticResource NumberBoxValueConverter}" />
                     </ui:NumberBox.Value>
                 </ui:NumberBox>
 
