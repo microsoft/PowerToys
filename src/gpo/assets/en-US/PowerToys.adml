@@ -175,6 +175,8 @@ If you disable or don't configure this policy, the user takes control over the s
 If this setting is enabled or not configured, the user can enable and use Mouse Without Borders in Service Mode.
 
 If this setting is disabled, the user won't be able to enable or use Mouse Without Borders in Service Mode.
+
+Note: As most other PowerToys policies, a restart of PowerToys is required for a change in this policy to take full effect.
 </string>
       <string id="MwbSameSubnetOnlyDescription">This policy configures if connections are only allowed in the same subnet.
 
