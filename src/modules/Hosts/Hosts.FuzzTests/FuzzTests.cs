@@ -65,11 +65,11 @@ namespace Hosts.FuzzTests
         {
             try
             {
-                // mock IElevationHelper
+                // mock ElevationHelper
                 var mockElevationHelper = new Mock<IElevationHelper>();
                 mockElevationHelper.Setup(eh => eh.IsElevated).Returns(true);
 
-                // mock IuserSetting
+                // mock userSetting
                 var mockUserSettings = new Mock<IUserSettings>();
                 mockUserSettings.Setup(us => us.AdditionalLinesPosition).Returns(HostsAdditionalLinesPosition.Top);
                 mockUserSettings.Setup(us => us.Encoding).Returns(HostsEncoding.Utf8);
