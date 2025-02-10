@@ -2,7 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System;
+using System.IO;
+using System.IO.Abstractions;
 using HostsUILib.Helpers;
+using HostsUILib.Models;
+using HostsUILib.Settings;
+using Moq;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Hosts.FuzzTests
 {
@@ -54,12 +60,91 @@ namespace Hosts.FuzzTests
             }
         }
 
-        // public static void FuzzWriteAsync(ReadOnlySpan<byte> input)
-        // {
-        //     var additionalLines = System.Text.Encoding.UTF8.GetString(input);
-        //     var entries = new List<Entry>();
-        //     entries.Add(new Entry(0, System.Text.Encoding.UTF8.GetString(input)));
-        //     HostsService.WriteAsync(additionalLines, entries).Wait();
-        //     }
+        // Case4 fuzzing method for WriteAsync;
+        public static void FuzzWriteAsync(ReadOnlySpan<byte> data)
+        {
+            try
+            {
+                // mock IElevationHelper
+                var mockElevationHelper = new Mock<IElevationHelper>();
+                mockElevationHelper.Setup(eh => eh.IsElevated).Returns(true);
+
+                // mock IuserSetting
+                var mockUserSettings = new Mock<IUserSettings>();
+                mockUserSettings.Setup(us => us.AdditionalLinesPosition).Returns(HostsAdditionalLinesPosition.Top);
+                mockUserSettings.Setup(us => us.Encoding).Returns(HostsEncoding.Utf8);
+
+                // Mock FileInfo.New(HostsFilePath)
+                var mockFileInfo = new Mock<IFileInfo>();
+                mockFileInfo.Setup(f => f.IsReadOnly).Returns(true); // Simulate a non-read-only file
+
+                // mock Ifilesystem
+                var mockFileSystem = new Mock<IFileSystem>();
+
+                // Mocking the IFileSystem methods
+                var mockFileSystemWatcher = new Mock<IFileSystemWatcher>();
+                mockFileSystem.Setup(fs => fs.FileSystemWatcher.New()).Returns(mockFileSystemWatcher.Object);
+                var mockPath = new Mock<IPath>();
+                mockFileSystem.Setup(fs => fs.Path).Returns(mockPath.Object);
+                mockPath.Setup(p => p.GetDirectoryName(It.IsAny<string>())).Returns(@"C:\Windows\System32\drivers\etc");
+                mockPath.Setup(p => p.GetFileName(It.IsAny<string>())).Returns("hosts");
+
+                // Set up the mock IFileSystem to return the mock file info
+                mockFileSystem.Setup(fs => fs.FileInfo.New(It.IsAny<string>())).Returns(mockFileInfo.Object);
+
+                Console.WriteLine("Finished Mock");
+
+                HostsService hostservice = new HostsService(mockFileSystem.Object, mockUserSettings.Object, mockElevationHelper.Object);
+
+                // fuzzing input
+                string input = System.Text.Encoding.UTF8.GetString(data);
+                string additionalLines = " ";
+                if (input.Length <= 2)
+                {
+                    return;
+                }
+
+                var parts = SplitStringRandomly(input);
+                string hosts = parts[0];
+                string address = parts[1];
+                string comments = parts[2];
+
+                Console.WriteLine($"INPUT DATA IS  hosts:{hosts} address:{address} comments: {comments}");
+
+                var entries = new List<Entry>
+                {
+                    new Entry(1, hosts, address, comments, true),
+                };
+
+                Console.WriteLine("Finished Fuzzing input");
+
+                // fuzzing WriteAsync
+                _ = Task.Run(async () => await hostservice.WriteAsync(additionalLines, entries));
+
+                Console.WriteLine("Finished WriteAsync");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($" An Error occured: {ex.Message}");
+                throw;
+            }
+        }
+
+        public static string[] SplitStringRandomly(string input)
+        {
+            Random rand = new Random();
+            int length = input.Length;
+
+            // Ensure the split points are valid
+            int firstSplit = rand.Next(1, length - 1);  // Between 1 and length-1
+            int secondSplit = rand.Next(firstSplit + 1, length);  // Between firstSplit+1 and length
+
+            // Split the string into three parts using the split points
+            string part1 = input.Substring(0, firstSplit);
+            string part2 = input.Substring(firstSplit, secondSplit - firstSplit);
+            string part3 = input.Substring(secondSplit);
+
+            return new string[] { part1, part2, part3 };
+        }
     }
 }
