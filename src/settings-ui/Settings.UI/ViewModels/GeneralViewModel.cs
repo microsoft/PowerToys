@@ -388,14 +388,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool SomeAppearanceBehaviorSettingsAreGpoManaged
-        {
-            get
-            {
-                return _runAtStartupIsGPOConfigured;
-            }
-        }
-
         public bool ShowNewUpdatesToastNotification
         {
             get

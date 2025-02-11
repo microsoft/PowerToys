@@ -233,18 +233,6 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="True">
-                    <InfoBar
-                        x:Uid="GPO_SomeSettingsAreManaged"
-                        BorderThickness="0"
-                        CornerRadius="0"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.SomeAppearanceBehaviorSettingsAreGpoManaged, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.SomeAppearanceBehaviorSettingsAreGpoManaged, Mode=OneWay}"
-                        Severity="Informational">
-                        <InfoBar.IconSource>
-                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                        </InfoBar.IconSource>
-                    </InfoBar>
                     <tkcontrols:SettingsCard x:Uid="LanguageHeader" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
                         <ComboBox
                             x:Name="Languages_ComboBox"
@@ -278,6 +266,18 @@
                     <tkcontrols:SettingsCard x:Uid="GeneralPage_RunAtStartUp" IsEnabled="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_SettingIsManaged"
+                        BorderThickness="0"
+                        CornerRadius="0"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay}"
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
