@@ -39,7 +39,11 @@
         "Hosts.FuzzTests.pdb",
         "Microsoft.Windows.SDK.NET.dll",
         "Newtonsoft.Json.dll",
-        "WinRT.Runtime.dll"
+        "WinRT.Runtime.dll",
+        "Moq.dll",
+        "Castle.Core.dll",
+        "System.IO.Abstractions.dll",
+        "CommunityToolkit.Mvvm.dll"
       ],
       "SdlWorkItemId": 49911822
     },
