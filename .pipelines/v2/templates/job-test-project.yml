@@ -59,14 +59,6 @@ jobs:
     - script: 
         reg add "HKLM\Software\Policies\Microsoft\Edge\WebView2\ReleaseChannels" /v PowerToys.exe /t REG_SZ /d "3"
       displayName: "Enable WebView2 Canary Channel"
-      
-  - download: current
-    displayName: Download artifacts
-    artifact: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
-    patterns: |-
-      **
-      !**\*.pdb
-      !**\*.lib
 
   - download: current
     displayName: Download artifacts

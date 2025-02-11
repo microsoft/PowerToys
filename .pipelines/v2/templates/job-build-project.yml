@@ -456,12 +456,11 @@ jobs:
       Copy-Item src\gpo\assets\* "$(JobOutputDirectory)/gpo" -Recurse
     displayName: Stage GPO files
 
-  - task: CopyFiles@2
-    displayName: Copy Build Output
-    inputs:
-      sourceFolder: '$(JobOutputDirectory)'
-      contents: '**/*'
-      targetFolder: '$(JobOutputDirectory)\Build'
+  - ${{ if eq(parameters.publishArtifacts, true) }}:
+    - publish: $(JobOutputDirectory)
+      artifact: $(JobOutputArtifactName)
+      displayName: Publish all outputs
+      condition: always()
 
   # Running the tests may result in future jobs consuming artifacts out of this build
   - ${{ if eq(parameters.runTests, true) }}:
@@ -470,15 +469,19 @@ jobs:
       inputs:
         sourceFolder: '$(Build.SourcesDirectory)'
         contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
-        targetFolder: '$(JobOutputDirectory)\TestResults\$(BuildPlatform)\$(BuildConfiguration)'
+        targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
 
-    - publish: $(JobOutputDirectory)/TestResults
-      artifact: '$(JobOutputArtifactName)-TestArtifacts'
-      displayName: Publish Test Outputs
-      condition: always()
+    - task: CopyFiles@2
+      displayName: Stage entire build output
+      inputs:
+        sourceFolder: $(JobOutputDirectory)
+        contents: |-
+          **
+          !**\*.pdb
+          !**\*.lib
+        targetFolder: '$(JobOutputDirectory)\TestArtifacts'
 
-  - ${{ if eq(parameters.publishArtifacts, true) }}:
-    - publish: '$(JobOutputDirectory)\Build'
-      artifact: $(JobOutputArtifactName)
-      displayName: Publish all outputs
+    - publish: $(JobOutputDirectory)\TestArtifacts
+      artifact: $(JobOutputArtifactName)-TestArtifacts
+      displayName: Publish all outputs for testing
       condition: always()
