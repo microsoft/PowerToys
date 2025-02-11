@@ -91,7 +91,7 @@ jobs:
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       testSelector: 'testAssemblies'
-      searchFolder: '$(Pipeline.Workspace)\build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}'
+      searchFolder: '$(Pipeline.Workspace)\build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}-TestArtifacts'
       vsTestVersion: 'toolsInstaller'
       uiTests: true
       rerunFailedTests: true
