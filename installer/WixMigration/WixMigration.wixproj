@@ -1,2 +1,10 @@
-﻿<Project Sdk="WixToolset.Sdk/5.0.2">
+﻿<Project Sdk="WixToolset.Sdk/4.0.5">
+  <PropertyGroup>
+    <OutputName>Wix4-$(Version)-$(Platform)</OutputName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DefineConstants>$(DefineConstants);PerUser=false</DefineConstants>
+    <SuppressSpecificWarnings>1026;1076</SuppressSpecificWarnings>
+    <OutputPath>$(OutputPath)\</OutputPath>
+  </PropertyGroup>
 </Project>

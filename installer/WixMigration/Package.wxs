@@ -1,5 +1,8 @@
 ﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
-  <Package Name="WixMigration" Manufacturer="TODO Manufacturer" Version="1.0.0.0" UpgradeCode="23a627a4-f871-40df-8144-b41bcfa2b3ab">
+  <Package Name="WixMigration" 
+            Manufacturer="TODO Manufacturer" 
+            Version="1.0.0.0" 
+            UpgradeCode="23a627a4-f871-40df-8144-b41bcfa2b3ab">
     <MajorUpgrade DowngradeErrorMessage="!(loc.DowngradeError)" />
 
     <Feature Id="Main">
