@@ -1275,7 +1275,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowInfobarRunAsAdminText
         {
-            get { return !CanToggleUseService && IsEnabled; }
+            get { return !CanToggleUseService && IsEnabled && !ShowPolicyConfiguredInfoForServiceSettings; }
         }
     }
 }
