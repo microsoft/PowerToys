@@ -1,17 +1,19 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace RegistryPreview.FuzzTests
 {
     public class FuzzTests
     {
-        public static void FuzzTargetMethod(ReadOnlySpan<byte> input)
+        public static void FuzzParseRegistryFile(ReadOnlySpan<byte> input)
         {
             try
             {
-                // … use input parameter in code under test …
-                //
-                // TargetMethod(…);
+                var text = System.Text.Encoding.UTF8.GetString(input);
+                
             }
             catch (Exception ex) when (ex is ArgumentException)
             {
