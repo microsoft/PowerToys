@@ -96,15 +96,17 @@ namespace PowerLauncher.Helper
         }
 
         /// <summary>
-        /// Updates the application's theme based on the user's preference. If the Theme setting is
-        /// <see cref="Theme.System"/>, the current system theme is used; otherwise, the selected
-        /// theme is applied directly.
+        /// Updates the application's theme based on system settings and user preferences.
         /// </summary>
+        /// <remarks>
+        /// This considers:
+        /// - Whether a High Contrast theme is active in Windows.
+        /// - The system-wide app mode preference (Light or Dark).
+        /// - The user's preference override for Light or Dark mode in the application settings.
+        /// </remarks>
         public void UpdateTheme()
         {
-            Theme newTheme = _settings.Theme == Theme.System ?
-                _themeHelper.GetCurrentTheme() :
-                _settings.Theme;
+            Theme newTheme = _themeHelper.DetermineTheme(_settings.Theme);
 
             _mainWindow.Dispatcher.Invoke(() =>
             {

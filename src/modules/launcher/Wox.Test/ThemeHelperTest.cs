@@ -15,169 +15,110 @@ namespace Wox.Test;
 [TestClass]
 public class ThemeHelperTest
 {
+    // Registry key paths.
     private const string ThemesKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes";
     private const string PersonalizeKey = ThemesKey + "\\Personalize";
-    private const string TestHighContrastThemePath = @"C:\WINDOWS\resources\Ease of Access Themes\hcwhite.theme";
-    private const Theme TestHighContrastTheme = Theme.HighContrastWhite;
 
-    private static readonly Expression<Func<IRegistryService, object>> _getAppsUseLightThemeFn = (service) =>
-        service.GetValue(PersonalizeKey, "AppsUseLightTheme", 1);
+    // Theme paths.
+    private const string HighContrastThemePath = @"C:\WINDOWS\resources\Ease of Access Themes\hcwhite.theme";
+    private const string NonHighContrastThemePath = @"C:\Users\Test\AppData\Local\Microsoft\Windows\Themes\Custom.theme";
 
-    private static readonly Expression<Func<IRegistryService, object>> _getCurrentThemeFn = (service) =>
+    /// <summary>
+    /// The expected High Contrast theme when the <see cref="HighContrastThemePath"/> is returned
+    /// from the registry.
+    /// </summary>
+    private const Theme HighContrastTheme = Theme.HighContrastWhite;
+
+    /// <summary>
+    /// Mock <see cref="IRegistryService.GetValue"/>, to return the value of the AppsUseLightTheme
+    /// key.
+    /// </summary>
+    private static readonly Expression<Func<IRegistryService, object>> _mockAppsUseLightTheme = (service) =>
+        service.GetValue(PersonalizeKey, "AppsUseLightTheme", ThemeHelper.AppsUseLightThemeDefault);
+
+    /// <summary>
+    /// Mock <see cref="IRegistryService.GetValue"/> to return the value of the CurrentTheme key.
+    /// </summary>
+    /// <remarks>
+    /// The default value given here - string.Empty - must be the same as the default value in the
+    /// actual code for tests using this mock to be valid.
+    /// </remarks>
+    private static readonly Expression<Func<IRegistryService, object>> _mockCurrentTheme = (service) =>
         service.GetValue(ThemesKey, "CurrentTheme", string.Empty);
 
-    [TestMethod]
-    public void When_AppsUseLightTheme_RegistryValueIs1TheLightThemeIsReturned()
+    /// <summary>
+    /// Test GetAppsTheme method.
+    /// </summary>
+    /// <param name="registryValue">The mocked value for the AppsUseLightTheme registry key.</param>
+    /// <param name="expectedTheme">The expected <see cref="Theme"/> output from the call to
+    /// <see cref="ThemeHelper.GetAppsTheme"/>.</param>
+    [DataTestMethod]
+    [DataRow(ThemeHelper.AppsUseLightThemeLight, Theme.Light)]
+    [DataRow(ThemeHelper.AppsUseLightThemeDark, Theme.Dark)]
+    [DataRow(int.MaxValue, Theme.Light)] // Out of range values should default to Light
+    [DataRow(null, Theme.Light)] // Missing keys or values should default to Light
+    [DataRow("RandomString", Theme.Light)] // Invalid string values should default to Light
+    public void GetAppsTheme_ReturnsExpectedTheme(object registryValue, Theme expectedTheme)
     {
         var mockService = new Mock<IRegistryService>();
+        mockService.Setup(_mockAppsUseLightTheme).Returns(registryValue);
 
-        mockService
-            .Setup(_getAppsUseLightThemeFn)
-            .Returns(1);
         var helper = new ThemeHelper(mockService.Object);
 
-        Assert.AreEqual(Theme.Light, helper.GetAppsTheme());
+        Assert.AreEqual(expectedTheme, helper.GetAppsTheme());
     }
 
-    [TestMethod]
-    public void When_AppsUseLightTheme_RegistryValueIs0TheDarkThemeIsReturned()
+    /// <summary>
+    /// Test <see cref="ThemeHelper.GetHighContrastTheme"/>.
+    /// </summary>
+    /// <param name="registryValue">The mocked value for the CurrentTheme registry key.</param>
+    /// <param name="expectedTheme">The expected <see cref="Theme"/> output from the call to
+    /// <see cref="ThemeHelper.GetHighContrastTheme"/>.</param>
+    [DataTestMethod]
+    [DataRow(HighContrastThemePath, HighContrastTheme)] // Valid High Contrast theme
+    [DataRow(NonHighContrastThemePath, null)] // Non-High Contrast theme should return null
+    [DataRow(null, null)] // Missing keys or values should default to null
+    [DataRow("", null)] // Empty string values should default to null
+    public void GetHighContrastTheme_ReturnsExpectedTheme(string registryValue, Theme? expectedTheme)
     {
         var mockService = new Mock<IRegistryService>();
+        mockService.Setup(_mockCurrentTheme).Returns(registryValue);
 
-        mockService
-            .Setup(_getAppsUseLightThemeFn)
-            .Returns(0);
         var helper = new ThemeHelper(mockService.Object);
 
-        Assert.AreEqual(Theme.Dark, helper.GetAppsTheme());
+        Assert.AreEqual(expectedTheme, helper.GetHighContrastTheme());
     }
 
-    [TestMethod]
-    public void When_AppsUseLightTheme_RegistryValueIsOutOfRangeTheLightThemeIsReturned()
+    /// <summary>
+    /// Test <see cref="ThemeHelper.DetermineTheme"/>.
+    /// </summary>
+    /// <param name="registryTheme">The mocked value for the CurrentTheme registry key.</param>
+    /// <param name="requestedTheme">The <see cref="Theme"/> value from the application's settings.
+    /// </param>
+    /// <param name="expectedTheme">The expected <see cref="Theme"/> output from the call to
+    /// <see cref="ThemeHelper.DetermineTheme"/>.</param>
+    /// <param name="appsUseLightTheme">The mocked value for the AppsUseLightTheme registry key,
+    /// representing the system preference for Light or Dark mode.</param>
+    [DataTestMethod]
+    [DataRow(HighContrastThemePath, Theme.System, HighContrastTheme)] // High Contrast theme active
+    [DataRow(HighContrastThemePath, Theme.Light, HighContrastTheme)] // High Contrast theme active - Light mode override ignored
+    [DataRow(HighContrastThemePath, Theme.Dark, HighContrastTheme)] // High Contrast theme active - Dark mode override ignored
+    [DataRow(NonHighContrastThemePath, Theme.System, Theme.Light)] // System preference with default light theme
+    [DataRow(NonHighContrastThemePath, Theme.System, Theme.Dark, ThemeHelper.AppsUseLightThemeDark)] // System preference with dark mode
+    [DataRow(NonHighContrastThemePath, Theme.Light, Theme.Light, ThemeHelper.AppsUseLightThemeDark)] // Light mode override
+    [DataRow(NonHighContrastThemePath, Theme.Dark, Theme.Dark, ThemeHelper.AppsUseLightThemeLight)] // Dark mode override
+    [DataRow(null, Theme.System, Theme.Light)] // Missing keys or values should default to Light
+    [DataRow("", Theme.System, Theme.Light)] // Empty current theme paths should default to Light
+    [DataRow("RandomString", Theme.System, Theme.Light)] // Invalid current theme paths should default to Light
+    [DataRow(NonHighContrastThemePath, (Theme)int.MaxValue, Theme.Light)] // Invalid theme values should default to Light
+    public void DetermineTheme_ReturnsExpectedTheme(string registryTheme, Theme requestedTheme, Theme expectedTheme, int? appsUseLightTheme = 1)
     {
         var mockService = new Mock<IRegistryService>();
+        mockService.Setup(_mockCurrentTheme).Returns(registryTheme);
+        mockService.Setup(_mockAppsUseLightTheme).Returns(appsUseLightTheme);
 
-        // Only 0 and 1 are valid values for AppsUseLightTheme.
-        mockService
-            .Setup(_getAppsUseLightThemeFn)
-            .Returns(2);
         var helper = new ThemeHelper(mockService.Object);
 
-        Assert.AreEqual(Theme.Light, helper.GetAppsTheme());
-    }
-
-    [TestMethod]
-    public void When_AppsUseLightTheme_RegistryValueIsNullTheLightThemeIsReturned()
-    {
-        var mockService = new Mock<IRegistryService>();
-
-        mockService
-            .Setup(_getAppsUseLightThemeFn)
-            .Returns(null);
-        var helper = new ThemeHelper(mockService.Object);
-
-        Assert.AreEqual(Theme.Light, helper.GetAppsTheme());
-    }
-
-    [TestMethod]
-    public void When_AppsUseLightTheme_RegistryValueIsMissingTheLightThemeIsReturned()
-    {
-        var mockService = new Mock<IRegistryService>();
-
-        // When valueName does not exist, the default value is returned.
-        // https://learn.microsoft.com/en-us/dotnet/api/microsoft.win32.registry.getvalue?view=net-9.0
-        mockService
-            .Setup(_getAppsUseLightThemeFn)
-            .Returns(1);
-        var helper = new ThemeHelper(mockService.Object);
-
-        Assert.AreEqual(Theme.Light, helper.GetAppsTheme());
-    }
-
-    [TestMethod]
-    public void When_AppsUseLightTheme_RegistryValueIsAStringTheLightThemeIsReturned()
-    {
-        var mockService = new Mock<IRegistryService>();
-        mockService
-            .Setup(_getAppsUseLightThemeFn)
-            .Returns("RandomString");
-        var helper = new ThemeHelper(mockService.Object);
-
-        Assert.AreEqual(Theme.Light, helper.GetAppsTheme());
-    }
-
-    [TestMethod]
-    public void WhenPersonalizeRegistryKeyIsMissingTheLightThemeIsReturned()
-    {
-        var mockService = new Mock<IRegistryService>();
-
-        // When the registry key itself is missing, null is returned.
-        // https://learn.microsoft.com/en-us/dotnet/api/microsoft.win32.registry.getvalue?view=net-9.0
-        mockService
-            .Setup(_getAppsUseLightThemeFn)
-            .Returns(null);
-        var helper = new ThemeHelper(mockService.Object);
-
-        Assert.AreEqual(Theme.Light, helper.GetAppsTheme());
-    }
-
-    // GetHighContrastTheme tests
-    [TestMethod]
-    public void WhenHighContrastThemeIsActiveTheMatchingThemeIsReturned()
-    {
-        var mockService = new Mock<IRegistryService>();
-        mockService
-            .Setup(_getCurrentThemeFn)
-            .Returns(TestHighContrastThemePath);
-        var helper = new ThemeHelper(mockService.Object);
-        Assert.AreEqual(TestHighContrastTheme, helper.GetHighContrastTheme());
-    }
-
-    [TestMethod]
-    public void WhenUnknownHighContrastThemeIsSetNullIsReturned()
-    {
-        var mockService = new Mock<IRegistryService>();
-        mockService
-            .Setup(_getCurrentThemeFn)
-            .Returns(@"C:\WINDOWS\resources\Ease of Access Themes\unknown.theme");
-        var helper = new ThemeHelper(mockService.Object);
-        Assert.IsNull(helper.GetHighContrastTheme());
-    }
-
-    [TestMethod]
-    public void WhenCurrentThemeRegistryValueIsMissingNullIsReturned()
-    {
-        var mockService = new Mock<IRegistryService>();
-        mockService
-            .Setup(_getCurrentThemeFn)
-            .Returns(null);
-        var helper = new ThemeHelper(mockService.Object);
-        Assert.IsNull(helper.GetHighContrastTheme());
-    }
-
-    [TestMethod]
-    public void WhenCurrentThemeIsBlankNullIsReturned()
-    {
-        var mockService = new Mock<IRegistryService>();
-        mockService
-            .Setup(_getCurrentThemeFn)
-            .Returns(string.Empty);
-        var helper = new ThemeHelper(mockService.Object);
-        Assert.IsNull(helper.GetHighContrastTheme());
-    }
-
-    // GetCurrentTheme tests
-    [TestMethod]
-    public void WhenHighContrastThemeIsNotActiveAppsThemeIsReturned()
-    {
-        var mockService = new Mock<IRegistryService>();
-        mockService
-            .Setup(_getCurrentThemeFn)
-            .Returns(@"C:\WINDOWS\resources\Ease of Access Themes\random.theme");
-        mockService
-            .Setup(_getAppsUseLightThemeFn)
-            .Returns(1);
-        var helper = new ThemeHelper(mockService.Object);
-        Assert.AreEqual(Theme.Light, helper.GetCurrentTheme());
+        Assert.AreEqual(expectedTheme, helper.DetermineTheme(requestedTheme));
     }
 }
