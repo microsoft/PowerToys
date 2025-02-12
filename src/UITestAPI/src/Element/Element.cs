@@ -132,7 +132,7 @@ namespace Microsoft.UITests.API
             return elements?.GetAttribute(attributeKey) == attributeValue;
         }
 
-        public T? FindElementByName<T>(string name)
+        public T FindElementByName<T>(string name)
             where T : Element, new()
         {
             var item = WindowsElement?.FindElementByName(name) as WindowsElement;
