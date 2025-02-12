@@ -91,16 +91,20 @@ namespace Microsoft.UITests.API
             return UITestBase.Instance.GetWindowInList(ModuleConfigData.Instance.ModuleWindowName[module].ModuleName);
         }
 
-        public static WindowsDriverWrapper? GetSession(PowerToysModuleWindow module = PowerToysModuleWindow.None)
+        public static WindowsDriverWrapper GetSession(PowerToysModuleWindow module = PowerToysModuleWindow.None)
         {
             if (module == PowerToysModuleWindow.None)
             {
                 return UITestBase.Instance.GetCurrentWindow();
             }
-            else
+
+            var session = UITestBase.Instance.GetWindowInList(ModuleConfigData.Instance.ModuleWindowName[module].ModuleName);
+            if (session == null)
             {
-                return UITestBase.Instance.GetWindowInList(ModuleConfigData.Instance.ModuleWindowName[module].ModuleName);
+                return UITestBase.Instance.GetCurrentWindow();
             }
+
+            return session;
         }
 
         public static void TestCode(string elementName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
