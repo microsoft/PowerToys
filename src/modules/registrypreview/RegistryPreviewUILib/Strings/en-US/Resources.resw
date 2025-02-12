@@ -257,4 +257,28 @@
   <data name="ZeroLength" xml:space="preserve">
     <value>(zero-length binary value)</value>
   </data>
+  <data name="ContextMenu_CopyKeyPath.Text" xml:space="preserve">
+    <value>Copy path</value>
+    <comment>Like "Copy item"</comment>
+  </data>
+  <data name="ContextMenu_CopyName.Text" xml:space="preserve">
+    <value>Copy name</value>
+    <comment>Like "Copy item"</comment>
+  </data>
+  <data name="ContextMenu_CopyType.Text" xml:space="preserve">
+    <value>Copy type</value>
+    <comment>Like "Copy item"</comment>
+  </data>
+  <data name="ContextMenu_CopyData.Text" xml:space="preserve">
+    <value>Copy data</value>
+    <comment>Like "Copy item"</comment>
+  </data>
+  <data name="ContextMenu_CopyValue.Text" xml:space="preserve">
+    <value>Copy value</value>
+    <comment>Like "Copy item"</comment>
+  </data>
+  <data name="ContextMenu_CopyValueWithPath.Text" xml:space="preserve">
+    <value>Copy value with key path</value>
+    <comment>Like "Copy item"</comment>
+  </data>
 </root>

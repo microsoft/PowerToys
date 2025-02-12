@@ -35,6 +35,7 @@ using Newtonsoft.Json;
 using StreamJsonRpc;
 
 using Logger = MouseWithoutBorders.Core.Logger;
+using Thread = MouseWithoutBorders.Core.Thread;
 
 [module: SuppressMessage("Microsoft.MSInternal", "CA904:DeclareTypesInMicrosoftOrSystemNamespace", Scope = "namespace", Target = "MouseWithoutBorders", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Design", "CA1014:MarkAssembliesWithClsCompliant", Justification = "Dotnet port with style preservation")]
@@ -378,6 +379,10 @@ namespace MouseWithoutBorders.Class
 
         private static void InputCallbackThread()
         {
+            // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+            // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+            using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
             Common.InputCallbackThreadID = Thread.CurrentThread.ManagedThreadId;
             while (!Common.InitDone)
             {
