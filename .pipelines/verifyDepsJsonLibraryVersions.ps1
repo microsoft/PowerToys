@@ -19,6 +19,13 @@ Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude UITests-FancyZone
     # Temporarily exclude FancyZones UI tests because of Appium.WebDriver dependencies
     $depsJsonFullFileName = $_.FullName
     $depsJsonFileName = $_.Name
+
+    # print all PowerToys.AdvancedPaste.deps.json content
+    if ($depsJsonFileName -eq "PowerToys.AdvancedPaste.deps.json") {
+        Write-Host "Contents of PowerToys.AdvancedPaste.deps.json:"
+        Get-Content $depsJsonFullFileName | Write-Host
+    }
+
     $depsJson = Get-Content $depsJsonFullFileName | ConvertFrom-Json
 
     # We're doing a breadth first search to look for every runtime object.
