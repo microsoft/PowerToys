@@ -19,6 +19,7 @@ $versionExceptions = @(
     "Microsoft.Xaml.Interactions.dll",
     "Microsoft.Xaml.Interactivity.dll",
     "hyjiacan.py4n.dll",
+    "TraceReloggerLib.dll",
     "Microsoft.WindowsAppRuntime.Release.Net.dll",
     "Microsoft.Windows.Widgets.Projection.dll",
     "WinRT.Host.Shim.dll") -join '|';
