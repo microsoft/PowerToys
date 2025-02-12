@@ -222,7 +222,7 @@
                     Placement="Top">
                     <Border
                         CornerRadius="16"
-                        BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+                        BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
                         BorderThickness="1"
                         Background="{DynamicResource ApplicationBackgroundBrush}"
                         Padding="15">
