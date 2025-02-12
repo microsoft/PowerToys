@@ -19,6 +19,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.Utilities;
+using Microsoft.Win32;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -31,7 +32,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private const string PowerToyName = KeyboardManagerSettings.ModuleName;
         private const string JsonFileType = ".json";
 
-        private const string KeyboardManagerEditorPath = "KeyboardManagerEditorUI\\PowerToys.KeyboardManagerEditorUI.exe";
+        // Default editor path. Can be removed once the new WinUI3 editor is released.
+        private const string KeyboardManagerEditorPath = "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe";
+
+        // New WinUI3 editor path. Still in development and do NOT use it in production.
+        private const string KeyboardManagerEditorUIPath = "KeyboardManagerEditorUI\\PowerToys.KeyboardManagerEditorUI.exe";
+
         private Process editor;
 
         private enum KeyboardManagerEditorType
@@ -261,7 +267,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorPath);
+                // Check if the new WinUI3 editor is enabled in the registry. The registry value does not exist by default and is only used for development purposes.
+                string editorPath = KeyboardManagerEditorPath;
+                try
+                {
+                    var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\PowerToys\Keyboard Manager");
+                    if (key != null && (int?)key.GetValue("UseNewEditor") == 1)
+                    {
+                        editorPath = KeyboardManagerEditorUIPath;
+                    }
+                }
+                catch (Exception e)
+                {
+                    // Use the old editor if the registry value cannot be read
+                    Logger.LogError("Failed to read registry value to launch the new WinUI3 Editor", e);
+                }
+
+                string path = Path.Combine(Environment.CurrentDirectory, editorPath);
                 Logger.LogInfo($"Starting {PowerToyName} editor from {path}");
 
                 // InvariantCulture: type represents the KeyboardManagerEditorType enum value

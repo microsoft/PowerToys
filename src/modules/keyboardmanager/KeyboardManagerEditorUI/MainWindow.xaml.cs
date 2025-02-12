@@ -18,8 +18,6 @@ using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace KeyboardManagerEditorUI
 {
     /// <summary>
@@ -27,11 +25,8 @@ namespace KeyboardManagerEditorUI
     /// </summary>
     public sealed partial class MainWindow : Window
     {
-        // [DllImport("KeyboardManagerLibraryDLL.dll", CallingConvention = CallingConvention.Cdecl)]
-        // private static extern int Add();
-        // [LibraryImport("KeyboardManagerLibraryDLL.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
-        [DllImport("KeyboardManagerLibraryDLL.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Add();
+        [DllImport("KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool CheckIfRemappingsAreValid();
 
         public MainWindow()
         {
@@ -40,9 +35,8 @@ namespace KeyboardManagerEditorUI
 
         private void MyButton_Click(object sender, RoutedEventArgs e)
         {
-            // Call the C++ function to display it in the button content
-            int result = Add();
-            myButton.Content = result;
+            // Call the C++ function to check if the current remappings are valid
+            myButton.Content = CheckIfRemappingsAreValid() ? "Valid" : "Invalid";
         }
     }
 }

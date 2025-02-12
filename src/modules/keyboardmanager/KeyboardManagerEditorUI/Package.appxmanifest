@@ -9,14 +9,14 @@
 
   <Identity
     Name="edb1d2cd-ef93-4f89-9db6-4edf04ff20a5"
-    Publisher="CN=haoliu3"
+    Publisher="CN=haoliuu"
     Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="edb1d2cd-ef93-4f89-9db6-4edf04ff20a5" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>KeyboardManagerEditorUI</DisplayName>
-    <PublisherDisplayName>haoliu3</PublisherDisplayName>
+    <PublisherDisplayName>haoliuu</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

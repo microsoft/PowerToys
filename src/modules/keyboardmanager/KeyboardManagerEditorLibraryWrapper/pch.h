@@ -9,12 +9,10 @@
 
 // add headers that you want to pre-compile here
 #include "framework.h"
-#include <vector>
-#include <string>
-#include <iostream>
-#include <unordered_map>
 #include <winrt/base.h>
 #include "../KeyboardManagerEditorLibrary/LoadingAndSavingRemappingHelper.h"
-#include "../common/Shortcut.h"
+
+#include <common/logger/logger.h>
+#include <common/utils/resources.h>
 
 #endif //PCH_H

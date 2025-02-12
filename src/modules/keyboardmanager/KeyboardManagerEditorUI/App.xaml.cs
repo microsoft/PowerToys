@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -20,8 +21,6 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace KeyboardManagerEditorUI
 {
     /// <summary>
@@ -36,6 +35,8 @@ namespace KeyboardManagerEditorUI
         public App()
         {
             this.InitializeComponent();
+            Logger.InitializeLogger("\\Keyboard Manager\\WinUI3Editor\\Logs");
+            Logger.LogInfo("keyboard-manager WinUI3 editor logger is initialized");
         }
 
         /// <summary>
@@ -46,6 +47,7 @@ namespace KeyboardManagerEditorUI
         {
             window = new MainWindow();
             window.Activate();
+            Logger.LogInfo("keyboard-manager WinUI3 editor window is launched");
         }
 
         private Window? window;

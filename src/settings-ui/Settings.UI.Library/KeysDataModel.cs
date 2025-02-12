@@ -81,7 +81,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
 
             const string PowerToyName = KeyboardManagerSettings.ModuleName;
-            const string KeyboardManagerEditorPath = "KeyboardManagerEditorUI\\PowerToys.KeyboardManagerEditorUI.exe";
+            const string KeyboardManagerEditorPath = "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe";
             try
             {
                 if (editor != null && editor.HasExited)
