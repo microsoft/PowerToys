@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.15" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.16" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -31,6 +31,7 @@
       <string id="SUPPORTED_POWERTOYS_0_85_0">PowerToys version 0.85.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_86_0">PowerToys version 0.86.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_88_0">PowerToys version 0.88.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_89_0">PowerToys version 0.89.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
@@ -169,7 +170,14 @@ If you enable this policy, the user won't be able to enable the "block screensav
 
 If you disable or don't configure this policy, the user takes control over the setting and can block the screensaver.
 </string>
+      <string id="MwbAllowServiceModeDescription">This policy configures if the user is allowed to use Mouse Without Borders in Service Mode.
 
+If this setting is enabled or not configured, the user can enable and use Mouse Without Borders in Service Mode.
+
+If this setting is disabled, the user won't be able to enable or use Mouse Without Borders in Service Mode.
+
+Note: As most other PowerToys policies, a restart of PowerToys is required for a change in this policy to take full effect.
+</string>
       <string id="MwbSameSubnetOnlyDescription">This policy configures if connections are only allowed in the same subnet.
 
 If you enable this policy, the setting is enabled and only connections in the same subnet are allowed.
@@ -264,6 +272,7 @@ If you don't configure this policy, the user takes control over the setting and 
       <string id="MwbFileTransferEnabled">File transfer enabled</string>
       <string id="MwbUseOriginalUserInterface">Original user interface is available</string>
       <string id="MwbDisallowBlockingScreensaver">Disallow blocking screensaver on other machines</string>
+      <string id="MwbAllowServiceMode">Allow Service Mode</string>
       <string id="MwbSameSubnetOnly">Connect only in same subnet</string>
       <string id="MwbValidateRemoteIp">Validate remote machine IP Address</string>
       <string id="MwbDisableUserDefinedIpMappingRules">Disable user defined IP Address mapping rules</string>

@@ -79,6 +79,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_MWB_FILE_TRANSFER_ENABLED = L"MwbFileTransferEnabled";
     const std::wstring POLICY_MWB_USE_ORIGINAL_USER_INTERFACE = L"MwbUseOriginalUserInterface";
     const std::wstring POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER = L"MwbDisallowBlockingScreensaver";
+    const std::wstring POLICY_MWB_ALLOW_SERVICE_MODE = L"MwbAllowServiceMode";
     const std::wstring POLICY_MWB_SAME_SUBNET_ONLY = L"MwbSameSubnetOnly";
     const std::wstring POLICY_MWB_VALIDATE_REMOTE_IP = L"MwbValidateRemoteIp";
     const std::wstring POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES = L"MwbDisableUserDefinedIpMappingRules";
@@ -556,6 +557,11 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getConfiguredMwbDisallowBlockingScreensaverValue()
     {
         return getConfiguredValue(POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbAllowServiceModeValue()
+    {
+        return getConfiguredValue(POLICY_MWB_ALLOW_SERVICE_MODE);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbSameSubnetOnlyValue()
