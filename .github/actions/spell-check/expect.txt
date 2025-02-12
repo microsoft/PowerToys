@@ -1302,6 +1302,7 @@ regroot
 regsvr
 REINSTALLMODE
 reloadable
+Relogger
 remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
