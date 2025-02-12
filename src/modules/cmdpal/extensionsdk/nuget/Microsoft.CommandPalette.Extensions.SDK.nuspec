@@ -7,12 +7,13 @@
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
     <description>Command Palette SDK provides support for creating Command Palette extensions on Windows.</description>
     <releaseNotes>Release notes are available in the Power Toys repository.</releaseNotes>
     <tags>Command Palette Extension SDK</tags>
     <copyright>© Microsoft Corporation. All rights reserved.</copyright>
-    <!-- TODO! : <license type="file">LICENSE</license> -->
     <projectUrl>https://github.com/microsoft/powertoys</projectUrl>
+    <readme>docs\README.md</readme>
     <dependencies>
       <group targetFramework="net8.0-windows10.0.19041.0">
         <dependency id="Microsoft.Windows.CsWinRT" version="2.1.1" />
@@ -34,5 +35,7 @@
 
     <!-- Not putting in the following the lib folder because we don't want plugin project to directly reference the winmd -->
     <file src="..\Microsoft.CommandPalette.Extensions\x64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" target="winmd\"/>
+
+    <file src="..\README.md" target="docs\" />
   </files>
 </package>
