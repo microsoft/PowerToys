@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.UITests.API
+namespace Microsoft.PowerToys.UITest
 {
     public enum PowerToysModule
     {
@@ -21,6 +21,7 @@ namespace Microsoft.UITests.API
     public enum PowerToysModuleWindow
     {
         None,
+        PowerToys,
         Fancyzone,
         KeyboardManagerKeys,
         KeyboardManagerShortcuts,
@@ -41,13 +42,30 @@ namespace Microsoft.UITests.API
 
         public Dictionary<PowerToysModuleWindow, ModuleWindowData> ModuleWindowName { get; private set; }
 
+        private Dictionary<PowerToysModule, string> ModulePath { get; set; }
+
         private ModuleConfigData()
         {
             ModuleWindowName = new Dictionary<PowerToysModuleWindow, ModuleWindowData>();
+            ModuleWindowName[PowerToysModuleWindow.Fancyzone] = new ModuleWindowData("PowerToys", "PowerToys Settings");
             ModuleWindowName[PowerToysModuleWindow.Fancyzone] = new ModuleWindowData("Fancyzone", "FancyZones Layout");
             ModuleWindowName[PowerToysModuleWindow.KeyboardManagerKeys] = new ModuleWindowData("KeyboardManagerKeys", "Remap keys");
             ModuleWindowName[PowerToysModuleWindow.KeyboardManagerShortcuts] = new ModuleWindowData("KeyboardManagerShortcuts", "Remap shortcuts");
             ModuleWindowName[PowerToysModuleWindow.Hosts] = new ModuleWindowData("Hosts", "Hosts File Editor");
+
+            ModulePath = new Dictionary<PowerToysModule, string>();
+            ModulePath[PowerToysModule.Fancyzone] = @"\..\..\..\PowerToys.FancyZones.exe";
+            ModulePath[PowerToysModule.Hosts] = @"\..\..\..\WinUI3Apps\PowerToys.Hosts.exe";
+        }
+
+        public string GetModulePath(PowerToysModule scope)
+        {
+            return ModulePath[scope];
+        }
+
+        public ModuleWindowData GetModuleWindowData(PowerToysModuleWindow scope)
+        {
+            return ModuleWindowName[scope];
         }
     }
 

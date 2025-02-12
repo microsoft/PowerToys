@@ -6,13 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using Microsoft.UITests.API;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UITests_KeyboardManager
 {
     [TestClass]
-    public class RunKeyboardManagerUITests
+    public class RunKeyboardManagerUITests : UITestBase
     {
         private static TestContext? _context;
 
@@ -31,14 +31,14 @@ namespace UITests_KeyboardManager
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
-            UITestManager.Init();
+            UITestBase.ClassInit(testContext);
             Debug.WriteLine("ClassInitialize executed");
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            UITestManager.Close();
+            UITestBase.ClassClean();
             if (_context != null)
             {
                 _context = null;
@@ -50,12 +50,14 @@ namespace UITests_KeyboardManager
         [TestInitialize]
         public void TestInitialize()
         {
+            this.TestInit();
             Debug.WriteLine("TestInitialize executed");
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
+            this.TestClean();
             Debug.WriteLine("TestCleanup executed");
         }
 
@@ -63,29 +65,27 @@ namespace UITests_KeyboardManager
         public void EnableKeyboardManager() // verify the session is initialized
         {
             Debug.WriteLine("Test method executed");
-            var session = UITestManager.GetSession();
+            Session = SessionManager.Current;
 
-            UITestManager.Enable_Module_from_Dashboard("Keyboard Manager");
+            UITestBase.Enable_Module_from_Dashboard("Keyboard Manager");
 
             // Launch to KeyboardManagerEditor
             // session.FindElementByName<Button>("Remap a key").Click();
-            session.FindElement<Button>(By.Name("Remap a key")).Click();
+            Session?.FindElement<Button>(By.Name("Remap a key")).Click();
             Thread.Sleep(3000);
-            UITestManager.LaunchModuleWithWindowName(PowerToysModuleWindow.KeyboardManagerKeys);
-            session = UITestManager.GetSession();
+            Session = SessionManager.AttachSession(PowerToysModuleWindow.KeyboardManagerKeys);
 
             // Maximize window
-            session.FindElementByName<Window>("Remap keys").Maximize();
+            Session?.FindElementByName<Window>("Remap keys").Maximize();
 
             // Add Key Remapping
-            session.FindElementByName<Button>("Add key remapping").Click();
-            session.FindElementByName<Button>("Select").Click();
+            Session?.FindElementByName<Button>("Add key remapping").Click();
+            Session?.FindElementByName<Button>("Select").Click();
             Thread.Sleep(3000);
-            session.FindElementByName<Button>("Cancel").Click();
+            Session?.FindElementByName<Button>("Cancel").Click();
 
-            session.FindElement<Button>(By.Name("Cancel")).Click();
-            UITestManager.CloseModule(PowerToysModuleWindow.KeyboardManagerKeys);
-            UITestManager.Disable_Module_from_Dashboard("Keyboard Manager");
+            Session?.FindElement<Button>(By.Name("Cancel")).Click();
+            UITestBase.Disable_Module_from_Dashboard("Keyboard Manager");
         }
     }
 }

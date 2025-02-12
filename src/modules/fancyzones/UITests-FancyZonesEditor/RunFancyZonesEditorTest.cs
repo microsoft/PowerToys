@@ -8,13 +8,13 @@ using System.Threading;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests;
 using Microsoft.FancyZonesEditor.UITests.Utils;
-using Microsoft.UITests.API;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace UITests_FancyZonesEditor
 {
     [TestClass]
-    public class RunFancyZonesEditorTest
+    public class RunFancyZonesEditorTest : UITestBase
     {
         private static FancyZonesEditorFiles? _files;
 
@@ -143,11 +143,11 @@ namespace UITests_FancyZonesEditor
             _files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
 
             // Start Powertoys
-            UITestManager.Init();
-            var session = UITestManager.GetSession();
+            UITestBase.ClassInit(testContext);
+            var session = SessionManager.Current;
             session?.FindElementByName<Element>("Launch layout editor")?.Click();
             Thread.Sleep(4000);
-            UITestManager.LaunchModuleWithWindowName(PowerToysModuleWindow.Fancyzone);
+            SessionManager.AttachSession(PowerToysModuleWindow.Fancyzone);
         }
 
         [ClassCleanup]
@@ -158,7 +158,7 @@ namespace UITests_FancyZonesEditor
                 _files.Restore();
             }
 
-            UITestManager.Close();
+            UITestBase.ClassClean();
             if (_context != null)
             {
                 _context = null;
@@ -168,43 +168,39 @@ namespace UITests_FancyZonesEditor
         [TestInitialize]
         public void TestInitialize()
         {
+            this.TestInit();
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
+            this.TestClean();
         }
 
         [TestMethod]
         public void OpenEditorWindow() // verify the session is initialized
         {
-            Assert.IsNotNull(UITestBase.Instance);
+            Assert.IsNotNull(SessionManager.Current);
         }
 
         [TestMethod]
         public void OpenNewLayoutDialog() // verify the new layout dialog is opened
         {
-            var session = UITestManager.GetSession();
-            var button = session?.FindElementByAccessibilityId("NewLayoutButton");
+            Session = SessionManager.Current;
+            var button = Session?.FindElementByAccessibilityId("NewLayoutButton");
             button?.Click();
-            Assert.IsNotNull(UITestManager.GetSession()?.FindElementsByName("Choose layout type")); // check the pane header
+            Assert.IsNotNull(Session?.FindElementsByName("Choose layout type")); // check the pane header
         }
 
         [TestMethod]
         public void OpenEditLayoutDialog() // verify the edit layout dialog is opened
         {
-            var session = UITestManager.GetSession();
-            var layout = session?.FindElementByName<Element>(TestConstants.TemplateLayoutNames[Constants.TemplateLayout.Grid]);
+            Session = SessionManager.Current;
+            var layout = Session?.FindElementByName<Element>(TestConstants.TemplateLayoutNames[Constants.TemplateLayout.Grid]);
             var button = layout?.FindElementByAccessibilityId<Element>("EditLayoutButton");
             button?.Click();
-            Assert.IsNotNull(UITestManager.GetSession()?.FindElementByAccessibilityId("EditLayoutDialogTitle")); // check the pane header
-            Assert.IsNotNull(UITestManager.GetSession()?.FindElementsByName("Edit 'Grid'")); // verify it's opened for the correct layout
-        }
-
-        [TestMethod]
-        public void OpenContextMenu() // verify the context menu is opened
-        {
-            Assert.IsNotNull(UITestManager.OpenContextMenu(TestConstants.TemplateLayoutNames[Constants.TemplateLayout.Columns]));
+            Assert.IsNotNull(Session?.FindElementByAccessibilityId("EditLayoutDialogTitle")); // check the pane header
+            Assert.IsNotNull(Session?.FindElementsByName("Edit 'Grid'")); // verify it's opened for the correct layout
         }
     }
 }

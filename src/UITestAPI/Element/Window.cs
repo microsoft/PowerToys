@@ -9,7 +9,7 @@ using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.Events;
 
-namespace Microsoft.UITests.API
+namespace Microsoft.PowerToys.UITest
 {
     public class Window : Element
     {

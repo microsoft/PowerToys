@@ -13,13 +13,11 @@ using OpenQA.Selenium.Appium.Service;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Remote;
 
-namespace Microsoft.UITests.API
+namespace Microsoft.PowerToys.UITest
 {
-#pragma warning disable SA1649 // File name should match first type name
-    public class WindowsDriverWrapper : WindowsDriver<WindowsElement>
-#pragma warning restore SA1649 // File name should match first type name
+    public class Session : WindowsDriver<WindowsElement>
     {
-        public WindowsDriverWrapper(Uri remoteAddress, AppiumOptions appiumOptions)
+        public Session(Uri remoteAddress, AppiumOptions appiumOptions)
             : base(remoteAddress, appiumOptions)
         {
         }
@@ -27,7 +25,7 @@ namespace Microsoft.UITests.API
         public T FindElement<T>(By by)
              where T : Element, new()
         {
-            var item = this.FindElement(by.ToSeleniumBy());
+            var item = FindElement(by.ToSeleniumBy());
             Assert.IsNotNull(item, "Can`t find this element");
             T element = new T();
             element.SetWindowsElement(item);
@@ -37,7 +35,7 @@ namespace Microsoft.UITests.API
         public T FindElementByName<T>(string name)
             where T : Element, new()
         {
-            var item = this.FindElementByName(name);
+            var item = FindElementByName(name);
             Assert.IsNotNull(item, "Can`t find this element");
             T element = new T();
             element.SetWindowsElement(item);
@@ -47,7 +45,7 @@ namespace Microsoft.UITests.API
         public ReadOnlyCollection<T>? FindElementsByName<T>(string name)
             where T : Element, new()
         {
-            var items = this.FindElementsByName(name);
+            var items = FindElementsByName(name);
             Assert.IsNotNull(items, "Can`t find this element");
             List<T> res = new List<T>();
             foreach (var item in items)

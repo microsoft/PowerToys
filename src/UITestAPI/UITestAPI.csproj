@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <RootNamespace>Microsoft.PowerToys.UITest</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,5 +19,4 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-
 </Project>

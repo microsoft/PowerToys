@@ -9,9 +9,9 @@ using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.Events;
-using static Microsoft.UITests.API.UITestBase;
+using static Microsoft.PowerToys.UITest.UITestBase;
 
-namespace Microsoft.UITests.API
+namespace Microsoft.PowerToys.UITest
 {
     public class Element
     {
@@ -93,7 +93,7 @@ namespace Microsoft.UITests.API
 
         public void Click()
         {
-            WindowsDriverWrapper? session = UITestBase.Instance.GetCurrentWindow();
+            Session? session = SessionManager.Current;
             var element = WindowsElement;
             Actions actions = new Actions(session);
             actions.MoveToElement(element);
@@ -103,7 +103,7 @@ namespace Microsoft.UITests.API
 
         public void RightClick()
         {
-            WindowsDriverWrapper? session = UITestBase.Instance.GetCurrentWindow();
+            Session? session = SessionManager.Current;
             var element = WindowsElement;
             Actions actions = new Actions(session);
             actions.MoveToElement(element);
@@ -114,7 +114,7 @@ namespace Microsoft.UITests.API
 
         public void ClickCheckAttribute(string attributeKey, string attributeValue)
         {
-            WindowsDriverWrapper? session = UITestBase.Instance.GetCurrentWindow();
+            Session? session = SessionManager.Current;
             var elements = WindowsElement;
             Actions actions = new Actions(session);
             if (elements?.GetAttribute(attributeKey) == attributeValue)
