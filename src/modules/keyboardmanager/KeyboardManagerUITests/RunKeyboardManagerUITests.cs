@@ -66,15 +66,24 @@ namespace UITests_KeyboardManager
             var session = UITestManager.GetSession();
 
             UITestManager.Enable_Module_from_Dashboard("Keyboard Manager");
-            session?.FindElementByName<Element>("Remap a key")?.Click();
-            Thread.Sleep(5000);
+
+            // Launch to KeyboardManagerEditor
+            // session.FindElementByName<Button>("Remap a key").Click();
+            session.FindElement<Button>(By.Name("Remap a key")).Click();
+            Thread.Sleep(3000);
             UITestManager.LaunchModuleWithWindowName(PowerToysModuleWindow.KeyboardManagerKeys);
             session = UITestManager.GetSession();
-            Thread.Sleep(1000);
-            session?.FindElementByName<Element>("Add key remapping")?.Click();
-            Thread.Sleep(1000);
-            session?.FindElementByName<Element>("Cancel")?.Click();
-            Thread.Sleep(1000);
+
+            // Maximize window
+            session.FindElementByName<Window>("Remap keys").Maximize();
+
+            // Add Key Remapping
+            session.FindElementByName<Button>("Add key remapping").Click();
+            session.FindElementByName<Button>("Select").Click();
+            Thread.Sleep(3000);
+            session.FindElementByName<Button>("Cancel").Click();
+
+            session.FindElement<Button>(By.Name("Cancel")).Click();
             UITestManager.CloseModule(PowerToysModuleWindow.KeyboardManagerKeys);
             UITestManager.Disable_Module_from_Dashboard("Keyboard Manager");
         }

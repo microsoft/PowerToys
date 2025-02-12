@@ -24,7 +24,17 @@ namespace Microsoft.UITests.API
         {
         }
 
-        public T? FindElementByName<T>(string name)
+        public T FindElement<T>(By by)
+             where T : Element, new()
+        {
+            var item = this.FindElement(by.ToSeleniumBy());
+            Assert.IsNotNull(item, "Can`t find this element");
+            T element = new T();
+            element.SetWindowsElement(item);
+            return element;
+        }
+
+        public T FindElementByName<T>(string name)
             where T : Element, new()
         {
             var item = this.FindElementByName(name);

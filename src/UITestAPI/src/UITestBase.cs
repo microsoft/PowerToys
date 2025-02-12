@@ -202,7 +202,7 @@ namespace Microsoft.UITests.API
             Assert.IsNotNull(null, "appName not found");
         }
 
-        public WindowsDriverWrapper? GetCurrentWindow()
+        public WindowsDriverWrapper GetCurrentWindow()
         {
             return CurrentDriver.Session;
         }
