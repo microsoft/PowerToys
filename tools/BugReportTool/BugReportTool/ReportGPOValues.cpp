@@ -95,4 +95,5 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredNewPlusEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredNewPlusEnabledValue()) << std::endl;
     report << "getConfiguredNewPlusHideTemplateFilenameExtensionValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue()) << std::endl;
     report << "getAllowDataDiagnosticsValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowDataDiagnosticsValue()) << std::endl;
+    report << "getConfiguredRunAtStartupValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredRunAtStartupValue()) << std::endl;
 }

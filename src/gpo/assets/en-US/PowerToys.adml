@@ -113,6 +113,16 @@ If this setting is enabled or not configured, the user can control diagnostic da
 
 If this setting is disabled, diagnostic data sending is not allowed.
 </string>
+      <string id="ConfigureRunAtStartupDescription">This policy configures the "run at startup" setting of PowerToys.
+
+If you enable this setting, the "run at startup" setting will be always enabled and the user won't be able to disable it.
+
+If you disable this setting, the "run at startup" setting will be always disabled and the user won't be able to enable it.
+
+If you don't configure this setting, users are able to enable or disable "run at startup" at will.
+
+Note: This only controls the PowerToys method that creates a scheduled task to start PowerToys at login. It doesn't control other custom auto-start methods that the user might try to use outside of PowerToys or manually creating/deleting a scheduled task.
+</string>
       <string id="PowerToysRunAllPluginsEnabledStateDescription">This policy configures the enabled state for all PowerToys Run plugins. All plugins will have the same state.
 
 If you enable this setting, the plugins will be always enabled and the user won't be able to disable it.
@@ -279,6 +289,7 @@ If you don't configure this policy, the user takes control over the setting and 
       <string id="MwbPolicyDefinedIpMappingRules">Predefined IP Address mapping rules</string>
       <string id="NewPlusHideTemplateFilenameExtension">Hide template filename extension</string>
       <string id="AllowDiagnosticData">Allow sending diagnostic data</string>
+      <string id="ConfigureRunAtStartup">Configure the run at startup setting</string>
     </stringTable>
 
     <presentationTable>

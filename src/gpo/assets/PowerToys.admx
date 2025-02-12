@@ -536,6 +536,16 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <policy name="ConfigureRunAtStartup" class="Both" displayName="$(string.ConfigureRunAtStartup)" explainText="$(string.ConfigureRunAtStartupDescription)" key="Software\Policies\PowerToys" valueName="ConfigureRunAtStartup">
+      <parentCategory ref="GeneralSettings" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_89_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
     <policy name="PowerToysRunAllPluginsEnabledState" class="Both" displayName="$(string.PowerToysRunAllPluginsEnabledState)" explainText="$(string.PowerToysRunAllPluginsEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="PowerLauncherAllPluginsEnabledState">
       <parentCategory ref="PowerToysRun" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0" />
