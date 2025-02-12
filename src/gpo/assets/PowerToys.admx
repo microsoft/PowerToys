@@ -603,7 +603,7 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="MwbAllowServiceMode" class="Both" displayName="$(string.MwbAllowServiceMode)" explainText="$(string.MwbAllowServiceModeDescription)" key="Software\Policies\PowerToys" valueName="MwbAllowServiceMode">
+    <policy name="MwbAllowServiceMode" class="Machine" displayName="$(string.MwbAllowServiceMode)" explainText="$(string.MwbAllowServiceModeDescription)" key="Software\Policies\PowerToys" valueName="MwbAllowServiceMode">
       <parentCategory ref="MouseWithoutBorders" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_89_0" />
       <enabledValue>
