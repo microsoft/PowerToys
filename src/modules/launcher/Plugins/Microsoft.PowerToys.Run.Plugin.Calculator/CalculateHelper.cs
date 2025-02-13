@@ -326,7 +326,6 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 modifiedInput = ModifyMathFunction(modifiedInput, "rad", RadToGrad);
             }
 
-            System.Diagnostics.Debug.WriteLine($"ExpandTrigConversions: \"{input}\" -> \"{modifiedInput}\"");
             return modifiedInput;
         }
     }
