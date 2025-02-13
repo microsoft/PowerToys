@@ -69,11 +69,8 @@ jobs:
   #     !**\*.pdb
   #     !**\*.lib
 
-  - bash: |
-      az pipelines runs artifact download
-          --artifact-name $(TestArtifactsName)
-          --path "$(Pipeline.Workspace)"
-          --run-id $(Build.BuildId)
+  - pwsh: |
+      az pipelines runs artifact download --artifact-name $(TestArtifactsName) --path "$(Pipeline.Workspace)" --run-id $(Build.BuildId)
     displayName: 'Download Pipeline Artifact'
     env:
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
