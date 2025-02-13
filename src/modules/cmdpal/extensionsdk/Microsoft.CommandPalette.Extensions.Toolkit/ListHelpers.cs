@@ -89,7 +89,7 @@ public partial class ListHelpers
             for (var j = i; j < original.Count; j++)
             {
                 var og_2 = original[j];
-                var areEqual_2 = og_2.Equals(newItem);
+                var areEqual_2 = og_2?.Equals(newItem) ?? false;
                 if (areEqual_2)
                 {
                     for (var k = i; k < j; k++)
@@ -103,7 +103,7 @@ public partial class ListHelpers
             }
 
             var og = original[i];
-            var areEqual = og.Equals(newItem);
+            var areEqual = og?.Equals(newItem) ?? false;
 
             // Is this new item already in the list?
             if (areEqual)

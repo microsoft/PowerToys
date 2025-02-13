@@ -82,7 +82,11 @@ public partial class ListViewModel : PageViewModel
         else
         {
             // But for all normal pages, we should run our fuzzy match on them.
-            ApplyFilter();
+            lock (FilteredItems)
+            {
+                ApplyFilterUnderLock();
+            }
+
             ItemsUpdated?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -113,9 +117,12 @@ public partial class ListViewModel : PageViewModel
                 }
             }
 
-            // Now that we have new ViewModels for everything from the
-            // extension, smartly update our list of VMs
-            ListHelpers.InPlaceUpdateList(Items, newViewModels);
+            lock (Items)
+            {
+                // Now that we have new ViewModels for everything from the
+                // extension, smartly update our list of VMs
+                ListHelpers.InPlaceUpdateList(Items, newViewModels);
+            }
 
             // TODO: Iterate over everything in Items, and prune items from the
             // cache if we don't need them anymore
@@ -131,18 +138,21 @@ public partial class ListViewModel : PageViewModel
         Task.Factory.StartNew(
             () =>
             {
-                // Now that our Items contains everything we want, it's time for us to
-                // re-evaluate our Filter on those items.
-                if (!_isDynamic)
+                lock (FilteredItems)
                 {
-                    // A static list? Great! Just run the filter.
-                    ApplyFilter();
-                }
-                else
-                {
-                    // A dynamic list? Even better! Just stick everything into
-                    // FilteredItems. The extension already did any filtering it cared about.
-                    ListHelpers.InPlaceUpdateList(FilteredItems, Items);
+                    // Now that our Items contains everything we want, it's time for us to
+                    // re-evaluate our Filter on those items.
+                    if (!_isDynamic)
+                    {
+                        // A static list? Great! Just run the filter.
+                        ApplyFilterUnderLock();
+                    }
+                    else
+                    {
+                        // A dynamic list? Even better! Just stick everything into
+                        // FilteredItems. The extension already did any filtering it cared about.
+                        ListHelpers.InPlaceUpdateList(FilteredItems, Items);
+                    }
                 }
 
                 ItemsUpdated?.Invoke(this, EventArgs.Empty);
@@ -156,7 +166,7 @@ public partial class ListViewModel : PageViewModel
     /// Apply our current filter text to the list of items, and update
     /// FilteredItems to match the results.
     /// </summary>
-    private void ApplyFilter() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, Filter));
+    private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, Filter));
 
     /// <summary>
     /// Helper to generate a weighting for a given list item, based on title,
@@ -226,6 +236,8 @@ public partial class ListViewModel : PageViewModel
                {
                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
                }
+
+               TextToSuggest = item.TextToSuggest;
            },
            CancellationToken.None,
            TaskCreationOptions.None,

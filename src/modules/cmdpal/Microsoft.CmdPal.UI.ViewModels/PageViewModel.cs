@@ -36,6 +36,9 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     public virtual partial string PlaceholderText { get; private set; } = "Type here to search...";
 
     [ObservableProperty]
+    public virtual partial string TextToSuggest { get; protected set; } = string.Empty;
+
+    [ObservableProperty]
     public partial CommandPaletteHost ExtensionHost { get; private set; }
 
     public bool HasStatusMessage => MostRecentStatusMessage != null;
