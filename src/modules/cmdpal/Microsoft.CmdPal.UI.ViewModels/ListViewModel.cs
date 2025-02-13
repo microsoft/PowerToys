@@ -29,6 +29,8 @@ public partial class ListViewModel : PageViewModel
 
     private readonly ExtensionObject<IListPage> _model;
 
+    private readonly Lock _listLock = new();
+
     public event TypedEventHandler<ListViewModel, object>? ItemsUpdated;
 
     // Remember - "observable" properties from the model (via PropChanged)
@@ -82,7 +84,7 @@ public partial class ListViewModel : PageViewModel
         else
         {
             // But for all normal pages, we should run our fuzzy match on them.
-            lock (FilteredItems)
+            lock (_listLock)
             {
                 ApplyFilterUnderLock();
             }
@@ -117,7 +119,7 @@ public partial class ListViewModel : PageViewModel
                 }
             }
 
-            lock (Items)
+            lock (_listLock)
             {
                 // Now that we have new ViewModels for everything from the
                 // extension, smartly update our list of VMs
@@ -138,7 +140,7 @@ public partial class ListViewModel : PageViewModel
         Task.Factory.StartNew(
             () =>
             {
-                lock (FilteredItems)
+                lock (_listLock)
                 {
                     // Now that our Items contains everything we want, it's time for us to
                     // re-evaluate our Filter on those items.
