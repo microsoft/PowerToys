@@ -69,6 +69,17 @@ jobs:
   #     !**\*.pdb
   #     !**\*.lib
 
+  - script: |
+      Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
+      Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.9.7/python-3.9.7.exe -OutFile python_installer.exe
+      Start-Process -FilePath python_installer.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -NoNewWindow -Wait
+      Remove-Item -Force python_installer.exe
+    displayName: 'Install Python on ARM64 Windows'
+
+  # Update to latest Azure CLI version, min version required for Azure DevOps is 2.10.1
+  - pwsh: pip install --pre azure-cli
+    displayName: 'Upgrade Azure CLI'
+
   - pwsh: |
       az pipelines runs artifact download --artifact-name $(TestArtifactsName) --path "$(Pipeline.Workspace)" --run-id $(Build.BuildId)
     displayName: 'Download Pipeline Artifact'
