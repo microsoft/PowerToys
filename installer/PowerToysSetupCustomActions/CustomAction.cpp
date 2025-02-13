@@ -38,11 +38,11 @@ TRACELOGGING_DEFINE_PROVIDER(
 const DWORD USERNAME_DOMAIN_LEN = DNLEN + UNLEN + 2; // Domain Name + '\' + User Name + '\0'
 const DWORD USERNAME_LEN = UNLEN + 1;                // User Name + '\0'
 
-static const wchar_t* POWERTOYS_EXE_COMPONENT = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
-static const wchar_t* POWERTOYS_UPGRADE_CODE = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
+static const wchar_t *POWERTOYS_EXE_COMPONENT = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
+static const wchar_t *POWERTOYS_UPGRADE_CODE = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
 
-constexpr inline const wchar_t* DataDiagnosticsRegKey = L"Software\\Classes\\PowerToys";
-constexpr inline const wchar_t* DataDiagnosticsRegValueName = L"AllowDataDiagnostics";
+constexpr inline const wchar_t *DataDiagnosticsRegKey = L"Software\\Classes\\PowerToys";
+constexpr inline const wchar_t *DataDiagnosticsRegValueName = L"AllowDataDiagnostics";
 
 #define TraceLoggingWriteWrapper(provider, eventName, ...)   \
     if (isDataDiagnosticEnabled())                           \
@@ -53,16 +53,16 @@ constexpr inline const wchar_t* DataDiagnosticsRegValueName = L"AllowDataDiagnos
         trace.UpdateState(false);                            \
     }
 
-static Shared::Trace::ETWTrace trace{ L"PowerToys_Installer" };
+static Shared::Trace::ETWTrace trace{L"PowerToys_Installer"};
 
 inline bool isDataDiagnosticEnabled()
 {
     HKEY key{};
     if (RegOpenKeyExW(HKEY_CURRENT_USER,
-        DataDiagnosticsRegKey,
-        0,
-        KEY_READ,
-        &key) != ERROR_SUCCESS)
+                      DataDiagnosticsRegKey,
+                      0,
+                      KEY_READ,
+                      &key) != ERROR_SUCCESS)
     {
         return false;
     }
@@ -71,13 +71,13 @@ inline bool isDataDiagnosticEnabled()
     DWORD size = sizeof(isDataDiagnosticsEnabled);
 
     if (RegGetValueW(
-        HKEY_CURRENT_USER,
-        DataDiagnosticsRegKey,
-        DataDiagnosticsRegValueName,
-        RRF_RT_REG_DWORD,
-        nullptr,
-        &isDataDiagnosticsEnabled,
-        &size) != ERROR_SUCCESS)
+            HKEY_CURRENT_USER,
+            DataDiagnosticsRegKey,
+            DataDiagnosticsRegValueName,
+            RRF_RT_REG_DWORD,
+            nullptr,
+            &isDataDiagnosticsEnabled,
+            &size) != ERROR_SUCCESS)
     {
         RegCloseKey(key);
         return false;
@@ -87,7 +87,7 @@ inline bool isDataDiagnosticEnabled()
     return isDataDiagnosticsEnabled == 1;
 }
 
-HRESULT getInstallFolder(MSIHANDLE hInstall, std::wstring& installationDir)
+HRESULT getInstallFolder(MSIHANDLE hInstall, std::wstring &installationDir)
 {
     DWORD len = 0;
     wchar_t _[1];
@@ -116,13 +116,13 @@ BOOL IsLocalSystem()
 
     // open process token
     if (!OpenProcessToken(GetCurrentProcess(),
-        TOKEN_QUERY,
-        &hToken))
+                          TOKEN_QUERY,
+                          &hToken))
         return FALSE;
 
     // retrieve user SID
     if (!GetTokenInformation(hToken, TokenUser, pTokenUser,
-        sizeof(bTokenUser), &cbTokenUser))
+                             sizeof(bTokenUser), &cbTokenUser))
     {
         CloseHandle(hToken);
         return FALSE;
@@ -132,7 +132,7 @@ BOOL IsLocalSystem()
 
     // allocate LocalSystem well-known SID
     if (!AllocateAndInitializeSid(&siaNT, 1, SECURITY_LOCAL_SYSTEM_RID,
-        0, 0, 0, 0, 0, 0, 0, &pSystemSid))
+                                  0, 0, 0, 0, 0, 0, 0, &pSystemSid))
         return FALSE;
 
     // compare the user SID from the token with the LocalSystem SID
@@ -194,7 +194,7 @@ static std::filesystem::path GetUserPowerShellModulesPath()
 
     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &myDocumentsBlockPtr)))
     {
-        const std::wstring myDocuments{ myDocumentsBlockPtr };
+        const std::wstring myDocuments{myDocumentsBlockPtr};
         CoTaskMemFree(myDocumentsBlockPtr);
         return std::filesystem::path(myDocuments) / "PowerShell" / "Modules";
     }
@@ -231,37 +231,37 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
     {
 
         auto action = [&commandLine](HANDLE userToken)
+        {
+            STARTUPINFO startupInfo{.cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL};
+            PROCESS_INFORMATION processInformation;
+
+            PVOID lpEnvironment = NULL;
+            CreateEnvironmentBlock(&lpEnvironment, userToken, FALSE);
+
+            CreateProcessAsUser(
+                userToken,
+                NULL,
+                commandLine.data(),
+                NULL,
+                NULL,
+                FALSE,
+                CREATE_DEFAULT_ERROR_MODE | CREATE_UNICODE_ENVIRONMENT,
+                lpEnvironment,
+                NULL,
+                &startupInfo,
+                &processInformation);
+
+            if (!CloseHandle(processInformation.hProcess))
             {
-                STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL };
-                PROCESS_INFORMATION processInformation;
+                return false;
+            }
+            if (!CloseHandle(processInformation.hThread))
+            {
+                return false;
+            }
 
-                PVOID lpEnvironment = NULL;
-                CreateEnvironmentBlock(&lpEnvironment, userToken, FALSE);
-
-                CreateProcessAsUser(
-                    userToken,
-                    NULL,
-                    commandLine.data(),
-                    NULL,
-                    NULL,
-                    FALSE,
-                    CREATE_DEFAULT_ERROR_MODE | CREATE_UNICODE_ENVIRONMENT,
-                    lpEnvironment,
-                    NULL,
-                    &startupInfo,
-                    &processInformation);
-
-                if (!CloseHandle(processInformation.hProcess))
-                {
-                    return false;
-                }
-                if (!CloseHandle(processInformation.hThread))
-                {
-                    return false;
-                }
-
-                return true;
-            };
+            return true;
+        };
 
         if (!ImpersonateLoggedInUserAndDoSomething(action))
         {
@@ -271,7 +271,7 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
     }
     else
     {
-        STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL };
+        STARTUPINFO startupInfo{.cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL};
 
         PROCESS_INFORMATION processInformation;
 
@@ -315,7 +315,7 @@ UINT __stdcall CheckGPOCA(MSIHANDLE hInstall)
     LPWSTR currentScope = nullptr;
     hr = WcaGetProperty(L"InstallScope", &currentScope);
 
-    if (std::wstring{ currentScope } == L"perUser")
+    if (std::wstring{currentScope} == L"perUser")
     {
         if (powertoys_gpo::getDisablePerUserInstallationValue() == powertoys_gpo::gpo_rule_configured_enabled)
         {
@@ -356,7 +356,7 @@ UINT __stdcall ApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
     hr = getInstallFolder(hInstall, installationFolder);
     ExitOnFailure(hr, "Failed to get installFolder.");
 
-    for (const auto& changeSet : getAllOnByDefaultModulesChangeSets(installationFolder))
+    for (const auto &changeSet : getAllOnByDefaultModulesChangeSets(installationFolder))
     {
         if (!changeSet.apply())
         {
@@ -384,7 +384,7 @@ UINT __stdcall UnApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
     ExitOnFailure(hr, "Failed to initialize");
     hr = getInstallFolder(hInstall, installationFolder);
     ExitOnFailure(hr, "Failed to get installFolder.");
-    for (const auto& changeSet : getAllModulesChangeSets(installationFolder))
+    for (const auto &changeSet : getAllModulesChangeSets(installationFolder))
     {
         changeSet.unApply();
     }
@@ -398,8 +398,8 @@ LExit:
     return WcaFinalize(er);
 }
 
-const wchar_t* DSC_CONFIGURE_PSD1_NAME = L"Microsoft.PowerToys.Configure.psd1";
-const wchar_t* DSC_CONFIGURE_PSM1_NAME = L"Microsoft.PowerToys.Configure.psm1";
+const wchar_t *DSC_CONFIGURE_PSD1_NAME = L"Microsoft.PowerToys.Configure.psd1";
+const wchar_t *DSC_CONFIGURE_PSM1_NAME = L"Microsoft.PowerToys.Configure.psm1";
 
 UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
 {
@@ -431,7 +431,7 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
             ExitOnFailure(hr, "Unable to create Powershell modules folder");
         }
 
-        for (const auto* filename : { DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME })
+        for (const auto *filename : {DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME})
         {
             fs::copy_file(fs::path(installationFolder) / "DSCModules" / filename, modulesPath / filename, fs::copy_options::overwrite_existing, errorCode);
 
@@ -479,7 +479,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
 
         std::error_code errorCode;
 
-        for (const auto* filename : { DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME })
+        for (const auto *filename : {DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME})
         {
             fs::remove(versionedModulePath / filename, errorCode);
 
@@ -490,7 +490,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
             }
         }
 
-        for (const auto* modulePath : { &versionedModulePath, &powerToysModulePath })
+        for (const auto *modulePath : {&versionedModulePath, &powerToysModulePath})
         {
             fs::remove(*modulePath, errorCode);
 
@@ -537,7 +537,7 @@ UINT __stdcall InstallEmbeddedMSIXCA(MSIHANDLE hInstall)
         using namespace winrt::Windows::Management::Deployment;
         using namespace winrt::Windows::Foundation;
 
-        Uri msix_uri{ msix_path.wstring() };
+        Uri msix_uri{msix_path.wstring()};
         PackageManager pm;
         auto result = pm.AddPackageAsync(msix_uri, nullptr, DeploymentOptions::None).get();
         if (!result)
@@ -571,7 +571,7 @@ UINT __stdcall UninstallEmbeddedMSIXCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "UninstallEmbeddedMSIXCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    for (const auto& p : pm.FindPackagesForUser({}, package_name, publisher))
+    for (const auto &p : pm.FindPackagesForUser({}, package_name, publisher))
     {
         auto result = pm.RemovePackageAsync(p.Id().FullName()).get();
         if (result)
@@ -739,10 +739,10 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
 
-    ITaskService* pService = nullptr;
-    ITaskFolder* pTaskFolder = nullptr;
-    IRegisteredTaskCollection* pTaskCollection = nullptr;
-    ITaskFolder* pRootFolder = nullptr;
+    ITaskService *pService = nullptr;
+    ITaskFolder *pTaskFolder = nullptr;
+    IRegisteredTaskCollection *pTaskCollection = nullptr;
+    ITaskFolder *pRootFolder = nullptr;
     LONG numTasks = 0;
 
     hr = WcaInitialize(hInstall, "RemoveScheduledTasksCA");
@@ -755,10 +755,10 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     // ------------------------------------------------------
     // Create an instance of the Task Service.
     hr = CoCreateInstance(CLSID_TaskScheduler,
-        nullptr,
-        CLSCTX_INPROC_SERVER,
-        IID_ITaskService,
-        reinterpret_cast<void**>(&pService));
+                          nullptr,
+                          CLSCTX_INPROC_SERVER,
+                          IID_ITaskService,
+                          reinterpret_cast<void **>(&pService));
     ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
 
     // Connect to the task service.
@@ -786,7 +786,7 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     {
         // Delete all the tasks found.
         // If some tasks can't be deleted, the folder won't be deleted later and the user will still be notified.
-        IRegisteredTask* pRegisteredTask = nullptr;
+        IRegisteredTask *pRegisteredTask = nullptr;
         hr = pTaskCollection->get_Item(_variant_t(i + 1), &pRegisteredTask);
         if (SUCCEEDED(hr))
         {
@@ -1028,7 +1028,7 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
 
     try
     {
-        if (auto install_path = GetMsiPackageInstalledPath(std::wstring{ currentScope } == L"perUser"))
+        if (auto install_path = GetMsiPackageInstalledPath(std::wstring{currentScope} == L"perUser"))
         {
             MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", install_path->data());
         }
@@ -1068,9 +1068,9 @@ UINT __stdcall InstallCmdPalPackageCA(MSIHANDLE hInstall)
             }
         }
     }
-    catch (std::exception& e)
+    catch (std::exception &e)
     {
-        std::string errorMessage{ "Exception thrown while trying to install CmdPal package: " };
+        std::string errorMessage{"Exception thrown while trying to install CmdPal package: "};
         errorMessage += e.what();
         Logger::error(errorMessage);
 
@@ -1094,9 +1094,9 @@ UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
     try
     {
         // Packages to unregister
-        const std::vector<std::wstring> packagesToRemoveDisplayName{ {L"PowerRenameContextMenu"}, {L"ImageResizerContextMenu"}, {L"FileLocksmithContextMenu"}, {L"NewPlusContextMenu"}, {L"Microsoft.CmdPal"} };
+        const std::vector<std::wstring> packagesToRemoveDisplayName{{L"PowerRenameContextMenu"}, {L"ImageResizerContextMenu"}, {L"FileLocksmithContextMenu"}, {L"NewPlusContextMenu"}, {L"Microsoft.CmdPal"}};
 
-        for (auto const& package : packagesToRemoveDisplayName)
+        for (auto const &package : packagesToRemoveDisplayName)
         {
             if (!package::UnRegisterPackage(package))
             {
@@ -1105,9 +1105,9 @@ UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
             }
         }
     }
-    catch (std::exception& e)
+    catch (std::exception &e)
     {
-        std::string errorMessage{ "Exception thrown while trying to unregister sparse packages: " };
+        std::string errorMessage{"Exception thrown while trying to unregister sparse packages: "};
         errorMessage += e.what();
         Logger::error(errorMessage);
 
@@ -1185,7 +1185,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         }
         wchar_t processName[MAX_PATH] = L"<unknown>";
 
-        HANDLE hProcess{ OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_TERMINATE, FALSE, procID) };
+        HANDLE hProcess{OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_TERMINATE, FALSE, procID)};
         if (!hProcess)
         {
             continue;
@@ -1206,17 +1206,17 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
             {
                 const DWORD timeout = 500;
                 auto windowEnumerator = [](HWND hwnd, LPARAM procIDPtr) -> BOOL
+                {
+                    auto targetProcID = *reinterpret_cast<const DWORD *>(procIDPtr);
+                    DWORD windowProcID = 0;
+                    GetWindowThreadProcessId(hwnd, &windowProcID);
+                    if (windowProcID == targetProcID)
                     {
-                        auto targetProcID = *reinterpret_cast<const DWORD*>(procIDPtr);
-                        DWORD windowProcID = 0;
-                        GetWindowThreadProcessId(hwnd, &windowProcID);
-                        if (windowProcID == targetProcID)
-                        {
-                            DWORD_PTR _{};
-                            SendMessageTimeoutA(hwnd, WM_CLOSE, 0, 0, SMTO_BLOCK, timeout, &_);
-                        }
-                        return TRUE;
-                    };
+                        DWORD_PTR _{};
+                        SendMessageTimeoutA(hwnd, WM_CLOSE, 0, 0, SMTO_BLOCK, timeout, &_);
+                    }
+                    return TRUE;
+                };
                 EnumWindows(windowEnumerator, reinterpret_cast<LPARAM>(&procID));
                 Sleep(timeout);
                 TerminateProcess(hProcess, 0);
@@ -1234,7 +1234,7 @@ void initSystemLogger()
 {
     static std::once_flag initLoggerFlag;
     std::call_once(initLoggerFlag, []()
-        {
+                   {
             WCHAR temp_path[MAX_PATH];
             auto ret = GetTempPath(MAX_PATH, temp_path);
 

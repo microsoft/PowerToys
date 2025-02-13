@@ -4923,6 +4923,6 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="SettingsPage_NewInfoBadge.Text" xml:space="preserve">
     <value>NEW</value>
-	<comment>Must be all caps</comment>
+    <comment>Must be all caps</comment>
   </data>
 </root>
