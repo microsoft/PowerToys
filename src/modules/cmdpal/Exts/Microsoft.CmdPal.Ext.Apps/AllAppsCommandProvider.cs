@@ -20,6 +20,7 @@ public partial class AllAppsCommandProvider : CommandProvider
         Id = "AllApps";
         DisplayName = Resources.installed_apps;
         Icon = new IconInfo("\ue71d");
+        Settings = AllAppsSettings.Instance.Settings;
 
         _listItem = new(Page) { Subtitle = Resources.search_installed_apps };
     }

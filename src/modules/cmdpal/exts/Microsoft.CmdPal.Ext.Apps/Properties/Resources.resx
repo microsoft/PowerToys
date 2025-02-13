@@ -59,10 +59,7 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root"
-    xmlns=""
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -171,5 +168,17 @@
   </data>
   <data name="run_as_different_user" xml:space="preserve">
     <value>Run as different user</value>
+  </data>
+  <data name="enable_start_menu_source" xml:space="preserve">
+    <value>Include apps found in the Start Menu</value>
+  </data>
+  <data name="enable_desktop_source" xml:space="preserve">
+    <value>Include apps found on the desktop</value>
+  </data>
+  <data name="enable_registry_source" xml:space="preserve">
+    <value>Include apps registered in the Registry</value>
+  </data>
+  <data name="enable_path_environment_variable_source" xml:space="preserve">
+    <value>Include apps anywhere on the %PATH%</value>
   </data>
 </root>

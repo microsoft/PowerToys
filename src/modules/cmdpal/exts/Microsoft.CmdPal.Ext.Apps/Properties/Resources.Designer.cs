@@ -79,6 +79,42 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Include apps found on the desktop.
+        /// </summary>
+        internal static string enable_desktop_source {
+            get {
+                return ResourceManager.GetString("enable_desktop_source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Include apps anywhere on the %PATH%.
+        /// </summary>
+        internal static string enable_path_environment_variable_source {
+            get {
+                return ResourceManager.GetString("enable_path_environment_variable_source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Include apps registered in the Registry.
+        /// </summary>
+        internal static string enable_registry_source {
+            get {
+                return ResourceManager.GetString("enable_registry_source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Include apps found in the Start Menu.
+        /// </summary>
+        internal static string enable_start_menu_source {
+            get {
+                return ResourceManager.GetString("enable_start_menu_source", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to File.
         /// </summary>
         internal static string file {
