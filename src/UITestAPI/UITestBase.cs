@@ -26,35 +26,18 @@ namespace Microsoft.PowerToys.UITest
 
         public UITestBase()
         {
+            SessionManager.Init();
         }
 
         public UITestBase(PowerToysModule scope)
         {
             SessionManager.SetScope(scope);
-        }
-
-        public static void ClassInit(TestContext testContext)
-        {
             SessionManager.Init();
         }
 
-        public static void ClassClean()
+        ~UITestBase()
         {
             SessionManager.UnInit();
-        }
-
-        public void TestInit()
-        {
-            Session = SessionManager.Current;
-            if (Session == null)
-            {
-                Assert.IsNotNull(Session);
-            }
-        }
-
-        public void TestClean()
-        {
-            Session = null;
         }
 
         public static void Enable_Module_from_Dashboard(string moduleName, PowerToysModuleWindow module = PowerToysModuleWindow.None)

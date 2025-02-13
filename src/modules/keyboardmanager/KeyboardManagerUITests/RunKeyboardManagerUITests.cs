@@ -29,36 +29,20 @@ namespace UITests_KeyboardManager
         }
 
         [ClassInitialize]
-        public static void ClassInitialize(TestContext testContext)
+        public static void ClassInit(TestContext testContext)
         {
-            UITestBase.ClassInit(testContext);
             Debug.WriteLine("ClassInitialize executed");
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            UITestBase.ClassClean();
             if (_context != null)
             {
                 _context = null;
             }
 
             Debug.WriteLine("ClassCleanup executed");
-        }
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            this.TestInit();
-            Debug.WriteLine("TestInitialize executed");
-        }
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            this.TestClean();
-            Debug.WriteLine("TestCleanup executed");
         }
 
         [TestMethod]

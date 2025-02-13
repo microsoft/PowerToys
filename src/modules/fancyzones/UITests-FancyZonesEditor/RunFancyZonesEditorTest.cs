@@ -31,7 +31,7 @@ namespace UITests_FancyZonesEditor
         }
 
         [ClassInitialize]
-        public static void ClassInitialize(TestContext testContext)
+        public static void ClassInit(TestContext testContext)
         {
             _context = testContext;
 
@@ -141,13 +141,6 @@ namespace UITests_FancyZonesEditor
                 AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
             };
             _files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
-
-            // Start Powertoys
-            UITestBase.ClassInit(testContext);
-            var session = SessionManager.Current;
-            session?.FindElementByName<Element>("Launch layout editor")?.Click();
-            Thread.Sleep(4000);
-            SessionManager.AttachSession(PowerToysModuleWindow.Fancyzone);
         }
 
         [ClassCleanup]
@@ -158,23 +151,10 @@ namespace UITests_FancyZonesEditor
                 _files.Restore();
             }
 
-            UITestBase.ClassClean();
             if (_context != null)
             {
                 _context = null;
             }
-        }
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            this.TestInit();
-        }
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            this.TestClean();
         }
 
         [TestMethod]

@@ -16,41 +16,12 @@ namespace UITests_FancyZones
     [TestClass]
     public class RunFancyZonesTest : UITestBase
     {
-        private static TestContext? _context;
-
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext testContext)
-        {
-            UITestBase.ClassInit(testContext);
-        }
-
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            UITestBase.ClassClean();
-        }
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            this.TestInit();
-        }
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            this.TestClean();
-        }
-
         [TestMethod]
         public void RunFancyZones()
         {
             Thread.Sleep(2000);
             Session = SessionManager.Current;
-            if (Session == null)
-            {
-                Assert.IsNull(Session);
-            }
+            Assert.IsNotNull(Session, "Session is null");
 
             Session?.FindElementByName<Element>("Launch layout editor").Click();
             Thread.Sleep(4000);

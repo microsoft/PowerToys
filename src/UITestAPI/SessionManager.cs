@@ -48,6 +48,10 @@ namespace Microsoft.PowerToys.UITest
 
         protected SessionManager()
         {
+        }
+
+        static SessionManager()
+        {
             if (mWindowList == null)
             {
                 mWindowList = new Stack<WinDriver>();
@@ -111,11 +115,16 @@ namespace Microsoft.PowerToys.UITest
         // Take control of an application that already exists
         public static Session? AttachSession(PowerToysModuleWindow module)
         {
-            string windowName = ModuleConfigData.Instance.GetModuleWindowData(module).ModuleName;
-            string appName = ModuleConfigData.Instance.GetModuleWindowData(module).WindowName;
+            string windowName = ModuleConfigData.Instance.GetModuleWindowData(module).WindowName;
+            string appName = ModuleConfigData.Instance.GetModuleWindowData(module).ModuleName;
 
-            if (Root != null && SwitchApp(appName) == false)
+            if (Root != null)
             {
+                if (SwitchApp(appName) == true)
+                {
+                    return Current;
+                }
+
                 var window = Root.FindElementByName(windowName);
                 if (window == null)
                 {
@@ -144,7 +153,7 @@ namespace Microsoft.PowerToys.UITest
             }
             else
             {
-                Assert.IsNotNull(null, "Root driver is null");
+                Assert.IsNotNull(Root, "Root driver is null");
             }
 
             return null;
