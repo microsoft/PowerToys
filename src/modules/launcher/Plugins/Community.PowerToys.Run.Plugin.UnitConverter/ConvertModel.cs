@@ -12,6 +12,8 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
 
         public string ToUnit { get; set; }
 
+        public string Standard { get; set; }
+
         public ConvertModel()
         {
         }
