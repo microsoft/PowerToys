@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Linq;
+using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace Microsoft.CmdPal.Ext.Apps.Programs;
+namespace Microsoft.CmdPal.Ext.Apps;
 
 public partial class AllAppsCommandProvider : CommandProvider
 {
@@ -17,10 +18,10 @@ public partial class AllAppsCommandProvider : CommandProvider
     public AllAppsCommandProvider()
     {
         Id = "AllApps";
-        DisplayName = "Installed apps";
+        DisplayName = Resources.installed_apps;
         Icon = new IconInfo("\ue71d");
 
-        _listItem = new(Page) { Subtitle = "Search installed apps" };
+        _listItem = new(Page) { Subtitle = Resources.search_installed_apps };
     }
 
     public override ICommandItem[] TopLevelCommands() => [_listItem];

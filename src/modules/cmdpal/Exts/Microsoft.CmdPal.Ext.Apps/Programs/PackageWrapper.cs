@@ -51,7 +51,6 @@ public class PackageWrapper : IPackage
         }
         catch (Exception e) when (e is ArgumentException || e is FileNotFoundException || e is DirectoryNotFoundException)
         {
-            // ProgramLogger.Exception($"Exception {package.Id.Name}", e, MethodBase.GetCurrentMethod().DeclaringType, "Path could not be determined");
             return new PackageWrapper(
                 package.Id.Name,
                 package.Id.FullName,

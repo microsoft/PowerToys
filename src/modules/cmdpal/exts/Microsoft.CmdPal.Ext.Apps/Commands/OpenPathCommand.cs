@@ -4,14 +4,24 @@
 
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace Microsoft.CmdPal.Ext.Apps.Programs;
+namespace Microsoft.CmdPal.Ext.Apps.Commands;
 
-// NOTE this is pretty close to what we'd put in the SDK
-internal sealed partial class OpenPathCommand(string target) : InvokableCommand
+internal sealed partial class OpenPathCommand : InvokableCommand
 {
-    private readonly string _target = target;
+    private static readonly IconInfo TheIcon = new("\ue838");
+
+    private readonly string _target;
+
+    public OpenPathCommand(string target)
+    {
+        Name = Resources.open_location;
+        Icon = TheIcon;
+
+        _target = target;
+    }
 
     internal static async Task LaunchTarget(string t)
     {
@@ -25,6 +35,6 @@ internal sealed partial class OpenPathCommand(string target) : InvokableCommand
     {
         _ = LaunchTarget(_target).ConfigureAwait(false);
 
-        return CommandResult.GoHome();
+        return CommandResult.Dismiss();
     }
 }

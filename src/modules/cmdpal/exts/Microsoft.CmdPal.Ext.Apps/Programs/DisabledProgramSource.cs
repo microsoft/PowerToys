@@ -4,15 +4,6 @@
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
-public interface IProgram
+public class DisabledProgramSource : ProgramSource
 {
-    string UniqueIdentifier { get; set; }
-
-    string Name { get; }
-
-    string Description { get; set; }
-
-    string Location { get; }
-
-    bool Enabled { get; set; }
 }

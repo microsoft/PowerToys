@@ -4,23 +4,34 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
+using System.Reflection;
 using System.Security;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Microsoft.CmdPal.Ext.Apps.Commands;
+using Microsoft.CmdPal.Ext.Apps.Properties;
+using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 [Serializable]
-public class Win32Program // : IProgram
+public class Win32Program : IProgram
 {
-    public static readonly Win32Program InvalidProgram = new()
-    {
-        Valid = false,
-        Enabled = false,
-    };
+    public static readonly Win32Program InvalidProgram = new Win32Program { Valid = false, Enabled = false };
+
+    private static readonly IFileSystem FileSystem = new FileSystem();
+    private static readonly IPath Path = FileSystem.Path;
+    private static readonly IFile File = FileSystem.File;
+    private static readonly IDirectory Directory = FileSystem.Directory;
 
     public string Name { get; set; } = string.Empty;
 
@@ -66,12 +77,15 @@ public class Win32Program // : IProgram
 
     public ApplicationType AppType { get; set; }
 
-    public static IShellLinkHelper ShellLinkHelper { get; set; } = new ShellLinkHelper();
+    // Wrappers for File Operations
+    public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
+
+    public static IFile FileWrapper { get; set; } = new FileSystem().File;
 
     private const string ShortcutExtension = "lnk";
     private const string ApplicationReferenceExtension = "appref-ms";
     private const string InternetShortcutExtension = "url";
-    private static readonly HashSet<string> ExecutableApplicationExtensions = new(StringComparer.OrdinalIgnoreCase) { "exe", "bat", "bin", "com", "cpl", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
+    private static readonly HashSet<string> ExecutableApplicationExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "exe", "bat", "bin", "com", "cpl", "msc", "msi", "cmd", "ps1", "job", "msp", "mst", "sct", "ws", "wsh", "wsf" };
 
     private const string ProxyWebApp = "_proxy.exe";
     private const string AppIdArgument = "--app-id";
@@ -88,12 +102,6 @@ public class Win32Program // : IProgram
         GenericFile = 7,
     }
 
-    // Function to calculate the score of a result
-    private int Score(string query)
-    {
-        return query.Length + Name.Length;
-    }
-
     public bool IsWebApplication()
     {
         // To Filter PWAs when the user searches for the main application
@@ -101,9 +109,9 @@ public class Win32Program // : IProgram
         // Reference : https://codereview.chromium.org/399045
         // Using Ordinal IgnoreCase since this is used internally
         return !string.IsNullOrEmpty(FullPath) &&
-               !string.IsNullOrEmpty(Arguments) &&
-               FullPath.Contains(ProxyWebApp, StringComparison.OrdinalIgnoreCase) &&
-               Arguments.Contains(AppIdArgument, StringComparison.OrdinalIgnoreCase);
+                !string.IsNullOrEmpty(Arguments) &&
+                FullPath.Contains(ProxyWebApp, StringComparison.OrdinalIgnoreCase) &&
+                Arguments.Contains(AppIdArgument, StringComparison.OrdinalIgnoreCase);
     }
 
     // Condition to Filter pinned Web Applications or PWAs when searching for the main application
@@ -138,10 +146,24 @@ public class Win32Program // : IProgram
     }
 
     // Function to set the subtitle based on the Type of application
-    private string GetSubtitle()
+    public string Type()
     {
         switch (AppType)
         {
+            case ApplicationType.Win32Application:
+            case ApplicationType.ShortcutApplication:
+            case ApplicationType.ApprefApplication:
+                return Resources.application;
+            case ApplicationType.InternetShortcutApplication:
+                return Resources.internet_shortcut_application;
+            case ApplicationType.WebApplication:
+                return Resources.web_application;
+            case ApplicationType.RunCommand:
+                return Resources.run_command;
+            case ApplicationType.Folder:
+                return Resources.folder;
+            case ApplicationType.GenericFile:
+                return Resources.file;
             default:
                 return string.Empty;
         }
@@ -161,23 +183,26 @@ public class Win32Program // : IProgram
         return true;
     }
 
-    private ProcessStartInfo GetProcessStartInfo(string programArguments, RunAsType runAs = RunAsType.None)
+    public List<CommandContextItem> GetCommands()
     {
-        return new ProcessStartInfo
-        {
-            FileName = LnkFilePath ?? FullPath,
-            WorkingDirectory = ParentDirectory,
-            UseShellExecute = true,
-            Arguments = programArguments,
-            Verb = runAs == RunAsType.Administrator ? "runAs" : runAs == RunAsType.OtherUser ? "runAsUser" : string.Empty,
-        };
-    }
+        List<CommandContextItem> commands = new List<CommandContextItem>();
 
-    private enum RunAsType
-    {
-        None,
-        Administrator,
-        OtherUser,
+        if (AppType != ApplicationType.InternetShortcutApplication && AppType != ApplicationType.Folder && AppType != ApplicationType.GenericFile)
+        {
+            commands.Add(new CommandContextItem(
+                    new RunAsAdminCommand(!string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath, ParentDirectory, false)));
+
+            commands.Add(new CommandContextItem(
+                    new RunAsUserCommand(!string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath, ParentDirectory)));
+        }
+
+        commands.Add(new CommandContextItem(
+                    new OpenPathCommand(ParentDirectory)));
+
+        commands.Add(new CommandContextItem(
+                    new OpenInConsoleCommand(ParentDirectory)));
+
+        return commands;
     }
 
     public override string ToString()
@@ -189,7 +214,8 @@ public class Win32Program // : IProgram
     {
         try
         {
-            var parDir = Directory.GetParent(path)?.FullName ?? string.Empty;
+            var parentDir = Directory.GetParent(path);
+
             return new Win32Program
             {
                 Name = Path.GetFileNameWithoutExtension(path),
@@ -199,31 +225,29 @@ public class Win32Program // : IProgram
                 // Using InvariantCulture since this is user facing
                 FullPath = path,
                 UniqueIdentifier = path,
-                ParentDirectory = parDir,
+                ParentDirectory = parentDir is null ? string.Empty : parentDir.FullName,
                 Description = string.Empty,
                 Valid = true,
                 Enabled = true,
                 AppType = ApplicationType.Win32Application,
 
                 // Localized name, path and executable based on windows display language
-                NameLocalized = Path.GetFileNameWithoutExtension(path), //  Main.ShellLocalizationHelper.GetLocalizedName(path),
-                FullPathLocalized = path, // Main.ShellLocalizationHelper.GetLocalizedPath(path),
-                ExecutableNameLocalized = Path.GetFileName(path), // Path.GetFileName(Main.ShellLocalizationHelper.GetLocalizedPath(path)),
+                NameLocalized = ShellLocalization.Instance.GetLocalizedName(path),
+                FullPathLocalized = ShellLocalization.Instance.GetLocalizedPath(path),
+                ExecutableNameLocalized = Path.GetFileName(ShellLocalization.Instance.GetLocalizedPath(path)),
             };
         }
         catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
         {
-            // ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
         catch (Exception)
         {
-            // ProgramLogger.Exception($"|An unexpected error occurred in the calling method CreateWin32Program at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
     }
 
-    private static readonly Regex InternetShortcutURLPrefixes = new(@"^steam:\/\/(rungameid|run|open)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled);
+    private static readonly Regex InternetShortcutURLPrefixes = new Regex(@"^steam:\/\/(rungameid|run|open)\/|^com\.epicgames\.launcher:\/\/apps\/", RegexOptions.Compiled);
 
     // This function filters Internet Shortcut programs
     private static Win32Program InternetShortcutProgram(string path)
@@ -231,7 +255,7 @@ public class Win32Program // : IProgram
         try
         {
             // We don't want to read the whole file if we don't need to
-            var lines = File.ReadLines(path);
+            var lines = FileWrapper.ReadLines(path);
             var iconPath = string.Empty;
             var urlPath = string.Empty;
             var validApp = false;
@@ -248,7 +272,6 @@ public class Win32Program // : IProgram
 
                     if (!Uri.TryCreate(urlPath, UriKind.RelativeOrAbsolute, out var _))
                     {
-                        // ProgramLogger.Warn("url could not be parsed", null, MethodBase.GetCurrentMethod().DeclaringType, urlPath);
                         return InvalidProgram;
                     }
 
@@ -277,6 +300,8 @@ public class Win32Program // : IProgram
 
             try
             {
+                var parentDir = Directory.GetParent(path);
+
                 return new Win32Program
                 {
                     Name = Path.GetFileNameWithoutExtension(path),
@@ -284,7 +309,7 @@ public class Win32Program // : IProgram
                     IcoPath = iconPath,
                     FullPath = urlPath,
                     UniqueIdentifier = path,
-                    ParentDirectory = Directory.GetParent(path)?.FullName ?? string.Empty,
+                    ParentDirectory = parentDir is null ? string.Empty : parentDir.FullName,
                     Valid = true,
                     Enabled = true,
                     AppType = ApplicationType.InternetShortcutApplication,
@@ -306,7 +331,8 @@ public class Win32Program // : IProgram
         try
         {
             var program = CreateWin32Program(path);
-            var target = ShellLinkHelper.RetrieveTargetPath(path);
+            var shellLinkHelper = new ShellLinkHelper();
+            var target = shellLinkHelper.RetrieveTargetPath(path);
 
             if (!string.IsNullOrEmpty(target))
             {
@@ -318,28 +344,27 @@ public class Win32Program // : IProgram
 
                 program.LnkFilePath = program.FullPath;
                 program.LnkResolvedExecutableName = Path.GetFileName(target);
-                program.LnkResolvedExecutableNameLocalized = Path.GetFileName(target); // Path.GetFileName(Main.ShellLocalizationHelper.GetLocalizedPath(target));
+                program.LnkResolvedExecutableNameLocalized = Path.GetFileName(ShellLocalization.Instance.GetLocalizedPath(target));
 
                 // Using CurrentCulture since this is user facing
                 program.FullPath = Path.GetFullPath(target);
-                program.FullPathLocalized = Path.GetFullPath(target); // Main.ShellLocalizationHelper.GetLocalizedPath(target);
+                program.FullPathLocalized = ShellLocalization.Instance.GetLocalizedPath(target);
 
-                program.Arguments = ShellLinkHelper.Arguments;
+                program.Arguments = shellLinkHelper.Arguments;
 
                 // A .lnk could be a (Chrome) PWA, set correct AppType
                 program.AppType = program.IsWebApplication()
                     ? ApplicationType.WebApplication
                     : GetAppTypeFromPath(target);
 
-                var description = ShellLinkHelper.Description;
+                var description = shellLinkHelper.Description;
                 if (!string.IsNullOrEmpty(description))
                 {
                     program.Description = description;
                 }
                 else
                 {
-                    var info = FileVersionInfo.GetVersionInfo(path);
-
+                    var info = FileVersionInfoWrapper.GetVersionInfo(target);
                     if (!string.IsNullOrEmpty(info?.FileDescription))
                     {
                         program.Description = info.FileDescription;
@@ -351,7 +376,6 @@ public class Win32Program // : IProgram
         }
         catch (System.IO.FileLoadException)
         {
-            // ProgramLogger.Warn($"Couldn't load the link file at {path}. This might be caused by a new link being created and locked by the OS.", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
 
@@ -359,7 +383,6 @@ public class Win32Program // : IProgram
         // Error caused likely due to trying to get the description of the program
         catch (Exception)
         {
-            // ProgramLogger.Exception($"|An unexpected error occurred in the calling method LnkProgram at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
     }
@@ -369,7 +392,7 @@ public class Win32Program // : IProgram
         try
         {
             var program = CreateWin32Program(path);
-            var info = FileVersionInfo.GetVersionInfo(path);
+            var info = FileVersionInfoWrapper.GetVersionInfo(path);
             if (!string.IsNullOrEmpty(info?.FileDescription))
             {
                 program.Description = info.FileDescription;
@@ -379,17 +402,14 @@ public class Win32Program // : IProgram
         }
         catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
         {
-            // ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
         catch (FileNotFoundException)
         {
-            // ProgramLogger.Warn($"|Unable to locate exe file at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
         catch (Exception)
         {
-            // ProgramLogger.Exception($"|An unexpected error occurred in the calling method ExeProgram at {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return InvalidProgram;
         }
     }
@@ -418,7 +438,7 @@ public class Win32Program // : IProgram
         {
             return ApplicationType.InternetShortcutApplication;
         }
-        else if (string.IsNullOrEmpty(extension))
+        else if (string.IsNullOrEmpty(extension) && System.IO.Directory.Exists(path))
         {
             return ApplicationType.Folder;
         }
@@ -497,17 +517,14 @@ public class Win32Program // : IProgram
                     }
                     catch (DirectoryNotFoundException)
                     {
-                        // ProgramLogger.Warn("|The directory trying to load the program from does not exist", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
                     }
                 }
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                // ProgramLogger.Warn($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
             }
             catch (Exception)
             {
-                // ProgramLogger.Exception($"|An unexpected error occurred in the calling method ProgramPaths at {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
             }
 
             try
@@ -531,11 +548,9 @@ public class Win32Program // : IProgram
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
-                // ProgramLogger.Warn($"|Permission denied when trying to load programs from {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
             }
             catch (Exception)
             {
-                // ProgramLogger.Exception($"|An unexpected error occurred in the calling method ProgramPaths at {currentDirectory}", e, MethodBase.GetCurrentMethod().DeclaringType, currentDirectory);
             }
         }
         while (folderQueue.Count > 0);
@@ -562,19 +577,22 @@ public class Win32Program // : IProgram
     private static List<string> PathEnvironmentProgramPaths(IList<string> suffixes)
     {
         // To get all the locations stored in the PATH env variable
-        var pathEnvVariable = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
-        var searchPaths = pathEnvVariable.Split(Path.PathSeparator);
+        var pathEnvVariable = Environment.GetEnvironmentVariable("PATH");
+        var searchPaths = pathEnvVariable?.Split(Path.PathSeparator);
         var toFilterAllPaths = new List<string>();
         var isRecursiveSearch = true;
 
-        foreach (var path in searchPaths)
+        if (searchPaths is not null)
         {
-            if (path.Length > 0)
+            foreach (var path in searchPaths)
             {
-                // to expand any environment variables present in the path
-                var directory = Environment.ExpandEnvironmentVariables(path);
-                var paths = ProgramPaths(directory, suffixes, !isRecursiveSearch);
-                toFilterAllPaths.AddRange(paths);
+                if (path.Length > 0)
+                {
+                    // to expand any environment variables present in the path
+                    var directory = Environment.ExpandEnvironmentVariables(path);
+                    var paths = ProgramPaths(directory, suffixes, !isRecursiveSearch);
+                    toFilterAllPaths.AddRange(paths);
+                }
             }
         }
 
@@ -582,7 +600,7 @@ public class Win32Program // : IProgram
     }
 
     private static List<string> IndexPath(IList<string> suffixes, List<string> indexLocations)
-         => indexLocations
+            => indexLocations
             .SelectMany(indexLocation => ProgramPaths(indexLocation, suffixes))
             .ToList();
 
@@ -629,6 +647,7 @@ public class Win32Program // : IProgram
         return paths
             .Where(path => suffixes.Any(suffix => path.EndsWith(suffix, StringComparison.InvariantCultureIgnoreCase)))
             .Select(ExpandEnvironmentVariables)
+            .Where(path => path is not null)
             .ToList();
     }
 
@@ -663,39 +682,37 @@ public class Win32Program // : IProgram
         }
         catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
         {
-            // ProgramLogger.Warn($"|Permission denied when trying to load the program from {path}", e, MethodBase.GetCurrentMethod().DeclaringType, path);
             return string.Empty;
         }
     }
 
-    private static string ExpandEnvironmentVariables(string path)
-    {
-        return path != null
+    private static string ExpandEnvironmentVariables(string path) =>
+        !string.IsNullOrEmpty(path)
             ? Environment.ExpandEnvironmentVariables(path)
             : string.Empty;
-    }
 
     // Overriding the object.GetHashCode() function to aid in removing duplicates while adding and removing apps from the concurrent dictionary storage
     public override int GetHashCode()
         => Win32ProgramEqualityComparer.Default.GetHashCode(this);
 
     public override bool Equals(object? obj)
-    {
-        return obj is Win32Program win32Program && Win32ProgramEqualityComparer.Default.Equals(this, win32Program);
-    }
+        => obj is Win32Program win32Program && Win32ProgramEqualityComparer.Default.Equals(this, win32Program);
 
     private sealed class Win32ProgramEqualityComparer : IEqualityComparer<Win32Program>
     {
-        public static readonly Win32ProgramEqualityComparer Default = new();
+        public static readonly Win32ProgramEqualityComparer Default = new Win32ProgramEqualityComparer();
 
         public bool Equals(Win32Program? app1, Win32Program? app2)
         {
-            return app1 == null && app2 == null
-                ? true
-                : app1 != null
-                   && app2 != null
-                   && (app1.Name?.ToUpperInvariant(), app1.ExecutableName?.ToUpperInvariant(), app1.FullPath?.ToUpperInvariant())
-                   .Equals((app2.Name?.ToUpperInvariant(), app2.ExecutableName?.ToUpperInvariant(), app2.FullPath?.ToUpperInvariant()));
+            if (app1 == null && app2 == null)
+            {
+                return true;
+            }
+
+            return app1 != null
+                    && app2 != null
+                    && (app1.Name?.ToUpperInvariant(), app1.ExecutableName?.ToUpperInvariant(), app1.FullPath?.ToUpperInvariant())
+                    .Equals((app2.Name?.ToUpperInvariant(), app2.ExecutableName?.ToUpperInvariant(), app2.FullPath?.ToUpperInvariant()));
         }
 
         public int GetHashCode(Win32Program obj)
@@ -722,13 +739,13 @@ public class Win32Program // : IProgram
             case InternetShortcutExtension:
                 return InternetShortcutProgram(path);
             default:
-                return new Win32Program();
+                return InvalidProgram;
         }
     }
 
-    private static bool TryGetIcoPathForRunCommandProgram(Win32Program program, out string icoPath)
+    private static bool TryGetIcoPathForRunCommandProgram(Win32Program program, out string? icoPath)
     {
-        icoPath = string.Empty;
+        icoPath = null;
 
         if (program.AppType != ApplicationType.RunCommand)
         {
@@ -743,7 +760,7 @@ public class Win32Program // : IProgram
         // https://msdn.microsoft.com/library/windows/desktop/ee872121
         try
         {
-            var redirectionPath = string.Empty; // ReparsePoint.GetTarget(program.FullPath);
+            var redirectionPath = ReparsePoint.GetTarget(program.FullPath);
             if (string.IsNullOrEmpty(redirectionPath))
             {
                 return false;
@@ -754,30 +771,32 @@ public class Win32Program // : IProgram
         }
         catch (IOException)
         {
-            // ProgramLogger.Warn($"|Error whilst retrieving the redirection path from app execution alias {program.FullPath}", e, MethodBase.GetCurrentMethod().DeclaringType, program.FullPath);
         }
 
+        icoPath = null;
         return false;
     }
 
     private static Win32Program GetRunCommandProgramFromPath(string path)
     {
-        var program = GetProgramFromPath(path) ?? new Win32Program();
-        program.AppType = ApplicationType.RunCommand;
-
-        if (TryGetIcoPathForRunCommandProgram(program, out var icoPath))
+        var program = GetProgramFromPath(path);
+        if (program.Valid)
         {
-            program.IcoPath = icoPath;
+            program.AppType = ApplicationType.RunCommand;
+
+            if (TryGetIcoPathForRunCommandProgram(program, out var icoPath))
+            {
+                program.IcoPath = icoPath ?? string.Empty;
+            }
         }
 
         return program;
     }
 
-    public static IList<Win32Program> All()
+    public static IList<Win32Program> All(AllAppsSettings settings)
     {
-        // ArgumentNullException.ThrowIfNull(settings);
-        var settings_ProgramSuffixes = new List<string>() { "bat", "appref-ms", "exe", "lnk", "url" };
-        var settings_RunCommandSuffixes = new List<string>() { "bat", "appref-ms", "exe", "lnk", "url", "cpl", "msc" };
+        ArgumentNullException.ThrowIfNull(settings);
+
         try
         {
             // Set an initial size to an expected size to prevent multiple hashSet resizes
@@ -790,26 +809,30 @@ public class Win32Program // : IProgram
             // Parallelize multiple sources, and priority based on paths which most likely contain .lnks which are formatted
             var sources = new (bool IsEnabled, Func<IEnumerable<string>> GetPaths)[]
             {
-                // (true, () => CustomProgramPaths(settings.ProgramSources, settings.ProgramSuffixes)),
-                (/*settings.EnableStartMenuSource*/ true, () => StartMenuProgramPaths(settings_ProgramSuffixes)),
-                (/*settings.EnableDesktopSource*/true, () => DesktopProgramPaths(settings_ProgramSuffixes)),
-                (/*settings.EnableRegistrySource*/true, () => RegistryAppProgramPaths(settings_ProgramSuffixes)),
+                (true, () => CustomProgramPaths(settings.ProgramSources, settings.ProgramSuffixes)),
+                (settings.EnableStartMenuSource, () => StartMenuProgramPaths(settings.ProgramSuffixes)),
+                (settings.EnableDesktopSource, () => DesktopProgramPaths(settings.ProgramSuffixes)),
+                (settings.EnableRegistrySource, () => RegistryAppProgramPaths(settings.ProgramSuffixes)),
             };
 
             // Run commands are always set as AppType "RunCommand"
             var runCommandSources = new (bool IsEnabled, Func<IEnumerable<string>> GetPaths)[]
             {
-                (/*settings.EnablePathEnvironmentVariableSource*/ false, () => PathEnvironmentProgramPaths(settings_RunCommandSuffixes)),
+                (settings.EnablePathEnvironmentVariableSource, () => PathEnvironmentProgramPaths(settings.RunCommandSuffixes)),
             };
+
+            var disabledProgramsList = settings.DisabledProgramSources;
 
             // Get all paths but exclude all normal .Executables
             paths.UnionWith(sources
                 .AsParallel()
                 .SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>())
+                .Where(programPath => disabledProgramsList.All(x => x.UniqueIdentifier != programPath))
                 .Where(path => !ExecutableApplicationExtensions.Contains(Extension(path))));
             runCommandPaths.UnionWith(runCommandSources
                 .AsParallel()
-                .SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>()));
+                .SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>())
+                .Where(programPath => disabledProgramsList.All(x => x.UniqueIdentifier != programPath)));
 
             var programs = paths.AsParallel().Select(source => GetProgramFromPath(source));
             var runCommandPrograms = runCommandPaths.AsParallel().Select(source => GetRunCommandProgramFromPath(source));
@@ -818,7 +841,6 @@ public class Win32Program // : IProgram
         }
         catch (Exception)
         {
-            // ProgramLogger.Exception("An unexpected error occurred", e, MethodBase.GetCurrentMethod().DeclaringType, "Not available");
             return Array.Empty<Win32Program>();
         }
     }

@@ -2,82 +2,99 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Properties;
+using Microsoft.CmdPal.Ext.Apps.Storage;
+using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace Microsoft.CmdPal.Ext.Apps.Programs;
+namespace Microsoft.CmdPal.Ext.Apps;
 
 public sealed partial class AllAppsPage : ListPage
 {
     private IListItem[] allAppsSection = [];
 
+    private object l = new();
+
     public AllAppsPage()
     {
-        StringMatcher.Instance = new StringMatcher();
-        this.Name = "All Apps";
+        this.Name = Resources.all_apps;
         this.Icon = new IconInfo("\ue71d");
         this.ShowDetails = true;
         this.IsLoading = true;
-        this.PlaceholderText = "Search installed apps...";
+        this.PlaceholderText = Resources.search_installed_apps_placeholder;
+
+        Task.Run(() =>
+        {
+            lock (l)
+            {
+                this.allAppsSection = GetPrograms()
+                                .Select((app) => new AppListItem(app))
+                                .ToArray();
+
+                this.IsLoading = false;
+            }
+        });
     }
 
     public override IListItem[] GetItems()
     {
-        if (this.allAppsSection == null || allAppsSection.Length == 0)
+        if (this.allAppsSection == null || allAppsSection.Length == 0 || AppCache.Instance.Value.ShouldReload())
         {
-            var apps = GetPrograms();
-            this.IsLoading = false;
-            this.allAppsSection = apps
-                            .Select((app) => new AppListItem(app))
-                            .ToArray();
+            lock (l)
+            {
+                this.IsLoading = true;
+
+                var apps = GetPrograms();
+                this.allAppsSection = apps
+                                .Select((app) => new AppListItem(app))
+                                .ToArray();
+
+                this.IsLoading = false;
+
+                AppCache.Instance.Value.ResetReloadFlag();
+            }
         }
 
         return allAppsSection;
     }
 
-    internal static List<AppItem> GetPrograms()
+    internal List<AppItem> GetPrograms()
     {
-        // NOTE TO SELF:
-        //
-        // There's logic in Win32Program.All() here to pick the "sources" for programs.
-        // I've manually hardcoded it to:
-        // * StartMenuProgramPaths
-        // * DesktopProgramPaths
-        // * RegistryAppProgramPaths
-        // for now. I've disabled the "PATH" source too, because it's n o i s y
-        //
-        // This also doesn't include Packaged apps, cause they're enumerated entirely separately.
-        var cache = AppCache.Instance.Value;
-        var uwps = cache.UWPs;
-        var win32s = cache.Win32s;
-        var uwpResults = uwps
-            .Where((application) => application.Enabled /*&& application.Valid*/)
+        var uwpResults = AppCache.Instance.Value.UWPs
+            .Where((application) => application.Enabled)
             .Select(app =>
-                new AppItem
+                new AppItem()
                 {
                     Name = app.Name,
                     Subtitle = app.Description,
+                    Type = UWPApplication.Type(),
                     IcoPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty,
                     DirPath = app.Location,
                     UserModelId = app.UserModelId,
-
-                    // ExePath = app.FullPath,
+                    IsPackaged = true,
+                    Commands = app.GetCommands(),
                 });
-        var win32Results = win32s
-            .Where((application) => application.Enabled /*&& application.Valid*/)
+
+        var win32Results = AppCache.Instance.Value.Win32s
+            .Where((application) => application.Enabled && application.Valid)
             .Select(app =>
             {
-                return new AppItem
+                return new AppItem()
                 {
                     Name = app.Name,
                     Subtitle = app.Description,
-                    IcoPath = app.AppType == Win32Program.ApplicationType.InternetShortcutApplication ?
-                       app.IcoPath :
-                       app.FullPath,
+                    Type = app.Type(),
+                    IcoPath = app.IcoPath,
                     ExePath = !string.IsNullOrEmpty(app.LnkFilePath) ? app.LnkFilePath : app.FullPath,
                     DirPath = app.Location,
+                    Commands = app.GetCommands(),
                 };
             });
 

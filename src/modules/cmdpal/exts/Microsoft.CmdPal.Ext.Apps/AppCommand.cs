@@ -3,10 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Properties;
+using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Storage.Streams;
 
-namespace Microsoft.CmdPal.Ext.Apps.Programs;
+namespace Microsoft.CmdPal.Ext.Apps;
 
 internal sealed partial class AppCommand : InvokableCommand
 {
@@ -16,8 +21,30 @@ internal sealed partial class AppCommand : InvokableCommand
     {
         _app = app;
 
-        Name = "Run";
-        Icon = new IconInfo(_app.IcoPath);
+        Name = Resources.run_command_action;
+
+        if (_app.IsPackaged)
+        {
+            Icon = new IconInfo(_app.IcoPath);
+        }
+        else
+        {
+            IconInfo? icon = null;
+            try
+            {
+                var stream = ThumbnailHelper.GetThumbnail(_app.ExePath).Result;
+                if (stream != null)
+                {
+                    var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+                    icon = new IconInfo(data, data);
+                }
+            }
+            catch
+            {
+            }
+
+            Icon = icon ?? new IconInfo(_app.IcoPath);
+        }
     }
 
     internal static async Task StartApp(string aumid)
@@ -49,7 +76,7 @@ internal sealed partial class AppCommand : InvokableCommand
 
     internal async Task Launch()
     {
-        if (string.IsNullOrEmpty(_app.ExePath))
+        if (_app.IsPackaged)
         {
             await StartApp(_app.UserModelId);
         }

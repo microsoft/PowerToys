@@ -5,7 +5,7 @@
 using System.Collections.Specialized;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -26,9 +26,6 @@ public partial class MainListPage : DynamicListPage,
     private readonly TopLevelCommandManager _tlcManager;
     private IEnumerable<IListItem>? _filteredItems;
 
-    private bool _appsLoading = true;
-    private bool _startedAppLoad;
-
     public MainListPage(IServiceProvider serviceProvider)
     {
         Name = "Command Palette";
@@ -38,6 +35,17 @@ public partial class MainListPage : DynamicListPage,
         _tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
+
+        // The all apps page will kick off a BG thread to start loading apps.
+        // We just want to know when it is done.
+        var allApps = AllAppsCommandProvider.Page;
+        allApps.PropChanged += (s, p) =>
+        {
+            if (p.PropertyName == nameof(allApps.IsLoading))
+            {
+                IsLoading = ActuallyLoading();
+            }
+        };
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
@@ -61,12 +69,6 @@ public partial class MainListPage : DynamicListPage,
 
     public override IListItem[] GetItems()
     {
-        if (!_startedAppLoad)
-        {
-            StartAppLoad();
-            _startedAppLoad = true;
-        }
-
         if (string.IsNullOrEmpty(SearchText))
         {
             lock (_tlcManager.TopLevelCommands)
@@ -139,20 +141,8 @@ public partial class MainListPage : DynamicListPage,
     private bool ActuallyLoading()
     {
         var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
-        return _appsLoading || tlcManager.IsLoading;
-    }
-
-    private void StartAppLoad()
-    {
-        // This _should_ start a background thread to start loading all the apps.
-        // It _feels_ like it does it's work on the main thread though, like it
-        // slows down startup... which doesn't make sense.
-        _ = Task.Run(() =>
-        {
-            _ = AppCache.Instance.Value;
-            _appsLoading = false;
-            IsLoading = ActuallyLoading();
-        });
+        var allApps = AllAppsCommandProvider.Page;
+        return allApps.IsLoading || tlcManager.IsLoading;
     }
 
     // Almost verbatim ListHelpers.ScoreListItem, but also accounting for the
@@ -187,9 +177,9 @@ public partial class MainListPage : DynamicListPage,
 
         var scores = new[]
         {
-            nameMatch.Score,
-            (descriptionMatch.Score - 4) / 2,
-            isFallback ? 1 : 0, // Always give fallbacks a chance
+             nameMatch.Score,
+             (descriptionMatch.Score - 4) / 2,
+             isFallback ? 1 : 0, // Always give fallbacks a chance
         };
         var max = scores.Max();
         var finalScore = (max / (isFallback ? 3 : 1))

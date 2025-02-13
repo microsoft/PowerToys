@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Windows.Win32.System.Com;
+using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
@@ -32,10 +33,9 @@ public static class AppxPackageHelper
         }
     }
 
-    public static T CheckHRAndReturnOrThrow<T>(int hr, T result)
+    internal static T CheckHRAndReturnOrThrow<T>(HRESULT hr, T result)
     {
-        // HRESULT.S_OK
-        if (hr != 0)
+        if (hr != HRESULT.S_OK)
         {
             Marshal.ThrowExceptionForHR((int)hr);
         }

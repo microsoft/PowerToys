@@ -100,6 +100,18 @@ public partial class IconBox : ContentControl
                     {
                         await @this.SourceRequested.InvokeAsync(@this, eventArgs);
 
+                        // After the await:
+                        // Is the icon we're looking up now, the one we still
+                        // want to find? Since this IconBox might be used in a
+                        // list virtualization situation, it's very possible we
+                        // may have already been set to a new icon before we
+                        // even got back from the await.
+                        if (eventArgs.Key != @this.SourceKey)
+                        {
+                            // If the requested icon has changed, then just bail
+                            return;
+                        }
+
                         @this.Source = eventArgs.Value;
 
                         // Here's a little lesson in trickery:

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
-namespace Microsoft.CmdPal.Ext.Apps.Programs;
+namespace Microsoft.CmdPal.Ext.Apps.Utils;
 
 public class ShellLinkHelper : IShellLinkHelper
 {
@@ -63,10 +63,10 @@ public class ShellLinkHelper : IShellLinkHelper
         void GetPath([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cchMaxPath, ref WIN32_FIND_DATAW pfd, SLGP_FLAGS fFlags);
 
         /// <summary>Retrieves the list of item identifiers for a Shell link object</summary>
-        void GetIDList(out IntPtr ppidl);
+        void GetIDList(out nint ppidl);
 
         /// <summary>Sets the pointer to an item identifier list (PIDL) for a Shell link object.</summary>
-        void SetIDList(IntPtr pidl);
+        void SetIDList(nint pidl);
 
         /// <summary>Retrieves the description string for a Shell link object</summary>
         void GetDescription([Out, MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszName, int cchMaxName);
@@ -108,7 +108,7 @@ public class ShellLinkHelper : IShellLinkHelper
         void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string pszPathRel, int dwReserved);
 
         /// <summary>Attempts to find the target of a Shell link, even if it has been moved or renamed</summary>
-        void Resolve(ref IntPtr hwnd, SLR_FLAGS fFlags);
+        void Resolve(ref nint hwnd, SLR_FLAGS fFlags);
 
         /// <summary>Sets the path and file name of a Shell link object</summary>
         void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
@@ -144,7 +144,7 @@ public class ShellLinkHelper : IShellLinkHelper
             return string.Empty;
         }
 
-        var hwnd = default(IntPtr);
+        var hwnd = default(nint);
         ((IShellLinkW)link).Resolve(ref hwnd, 0);
 
         const int MAX_PATH = 260;
@@ -163,7 +163,7 @@ public class ShellLinkHelper : IShellLinkHelper
                 ((IShellLinkW)link).GetDescription(buffer, MAX_PATH);
                 Description = buffer.ToString();
             }
-            catch (System.Exception )
+            catch (Exception)
             {
                 // Log.Exception($"Failed to fetch description for {target}, {e.Message}", e, GetType());
                 Description = string.Empty;

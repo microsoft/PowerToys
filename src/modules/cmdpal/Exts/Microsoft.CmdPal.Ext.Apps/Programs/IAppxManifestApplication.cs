@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
@@ -11,8 +12,8 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 public interface IAppxManifestApplication
 {
     [PreserveSig]
-    int GetStringValue([MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] out string value);
+    HRESULT GetStringValue([MarshalAs(UnmanagedType.LPWStr)] string name, [MarshalAs(UnmanagedType.LPWStr)] out string value);
 
     [PreserveSig]
-    int GetAppUserModelId([MarshalAs(UnmanagedType.LPWStr)] out string value);
+    HRESULT GetAppUserModelId([MarshalAs(UnmanagedType.LPWStr)] out string value);
 }
