@@ -217,6 +217,12 @@ jobs:
 
   - ${{ parameters.beforeBuildSteps }}
 
+  - bash: |
+      az pipelines build list --organization '$(System.TeamFoundationCollectionUri)' --project '$(System.TeamProject)'
+    displayName: 'Show build list'
+    env:
+      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+
   - task: VSBuild@1
     ${{ if eq(parameters.runTests, true) }}:
       displayName: Build and Test PowerToys main project
