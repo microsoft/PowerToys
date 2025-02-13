@@ -171,8 +171,7 @@
         "Castle.Core.dll",
         "System.IO.Abstractions.dll",
         "CommunityToolkit.Mvvm.dll",
-        "System.IO.Abstractions.TestingHelpers.dll",
-        "System.Diagnostics.EventLog.dll"
+        "System.IO.Abstractions.TestingHelpers.dll"
       ],
       "SdlWorkItemId": 49911822
     }
