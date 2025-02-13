@@ -113,4 +113,10 @@ public sealed partial class CommandBar : UserControl,
                 showOptions: new FlyoutShowOptions() { ShowMode = FlyoutShowMode.Standard });
         }
     }
+
+    private void SettingsIcon_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
+        e.Handled = true;
+    }
 }

@@ -85,7 +85,6 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
-        services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
@@ -94,6 +93,7 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
         services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
+        services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
 
         // Models
         services.AddSingleton<TopLevelCommandManager>();

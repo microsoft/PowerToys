@@ -167,6 +167,11 @@
     <Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" Link="AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
+    <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Styles\Settings.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

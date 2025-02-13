@@ -24,7 +24,13 @@ public sealed partial class ContentFormControl : UserControl
 
     static ContentFormControl()
     {
-        _renderer = new AdaptiveCardRenderer();
+        // We can't use `CardOverrideStyles` here yet, because we haven't called InitializeComponent once.
+        // But also, the default value isn't `null` here. It's... some other default empty value.
+        // So clear it out so that we know when the first time we get created is
+        _renderer = new AdaptiveCardRenderer()
+        {
+            OverrideStyles = null,
+        };
     }
 
     public ContentFormControl()
@@ -32,6 +38,14 @@ public sealed partial class ContentFormControl : UserControl
         this.InitializeComponent();
         var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
         _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
+
+        // 5% bodgy: if we set this multiple times over the lifetime of the app,
+        // then the second call will explode, because "CardOverrideStyles is already the child of another element".
+        // SO only set this once.
+        if (_renderer.OverrideStyles == null)
+        {
+            _renderer.OverrideStyles = CardOverrideStyles;
+        }
 
         // TODO in the future, we should handle ActualThemeChanged and replace
         // our rendered card with one for that theme. But today is not that day

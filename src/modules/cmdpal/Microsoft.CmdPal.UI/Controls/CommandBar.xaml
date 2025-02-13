@@ -20,6 +20,10 @@
                 x:Key="StringNotEmptyToVisibilityConverter"
                 EmptyValue="Collapsed"
                 NotEmptyValue="Visible" />
+            <converters:BoolToVisibilityConverter
+                x:Key="BoolToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                TrueValue="Collapsed" />
 
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
 
@@ -65,7 +69,8 @@
         <Grid
             x:Name="IconRoot"
             Margin="8,0,0,0"
-            Tapped="PageIcon_Tapped">
+            Tapped="PageIcon_Tapped"
+            Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}">
 
             <cpcontrols:IconBox
                 x:Name="IconBorder"
@@ -105,12 +110,32 @@
                 </Flyout>
             </Grid.ContextFlyout>
         </Grid>
+        <Button
+            x:Name="SettingsIconButton"
+            Margin="0,0,0,0"
+            Style="{StaticResource SubtleButtonStyle}"
+            Tapped="SettingsIcon_Tapped"
+            Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <FontIcon
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    Glyph="&#xE713;" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="Settings" />
+            </StackPanel>
+        </Button>
 
         <TextBlock
             Grid.Column="1"
             VerticalAlignment="Center"
             FontSize="12"
-            Text="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}" />
+            Text="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}"
+            Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}" />
         <!--  TO DO: Replace with ItemsRepeater and bind "Primary commands"?  -->
         <StackPanel
             Grid.Column="2"

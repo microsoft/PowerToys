@@ -34,4 +34,8 @@
 
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Assets\template.zip" />
+  </ItemGroup>
+
 </Project>

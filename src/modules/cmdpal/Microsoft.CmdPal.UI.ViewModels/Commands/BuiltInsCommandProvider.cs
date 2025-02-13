@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -18,10 +17,12 @@ public partial class BuiltInsCommandProvider : CommandProvider
     private readonly QuitCommand quitCommand = new();
     private readonly FallbackReloadItem _fallbackReloadItem = new();
     private readonly FallbackLogItem _fallbackLogItem = new();
+    private readonly NewExtensionPage _newExtension = new();
 
     public override ICommandItem[] TopLevelCommands() =>
         [
             new CommandItem(openSettings) { Subtitle = "Open Command Palette settings" },
+            new CommandItem(_newExtension) { Title = _newExtension.Title, Subtitle = "Creates a project for a new Command Palette extension" },
         ];
 
     public override IFallbackCommandItem[] FallbackCommands() =>
@@ -37,4 +38,6 @@ public partial class BuiltInsCommandProvider : CommandProvider
         DisplayName = "Built-in commands";
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
     }
+
+    public override void InitializeWithHost(IExtensionHost host) => BuiltinsExtensionHost.Instance.Initialize(host);
 }

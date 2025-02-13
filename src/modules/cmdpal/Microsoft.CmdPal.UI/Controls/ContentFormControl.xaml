@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Controls.ContentFormControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -13,11 +13,10 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <ResourceDictionary>
-            <converters:StringVisibilityConverter
-                x:Key="StringNotEmptyToVisibilityConverter"
-                EmptyValue="Collapsed"
-                NotEmptyValue="Visible" />
+        <ResourceDictionary x:Name="CardOverrideStyles">
+            <Style x:Key="Adaptive.TextBlock" TargetType="TextBlock">
+                <Setter Property="IsTextSelectionEnabled" Value="True" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
