@@ -158,49 +158,6 @@ public:
     }
     IFACEMETHODIMP GetSite(_In_ REFIID riid, _COM_Outptr_ void** site) noexcept { return m_site.CopyTo(riid, site); }
 
-protected:
-    ComPtr<IUnknown> m_site;
-
-private:
-
-    HRESULT StartNamedPipeServerAndSendData(std::wstring pipe_name)
-    {
-        hPipe = CreateNamedPipe(
-            pipe_name.c_str(),
-            PIPE_ACCESS_DUPLEX |
-                WRITE_DAC,
-            PIPE_TYPE_MESSAGE |
-                PIPE_READMODE_MESSAGE |
-                PIPE_WAIT,
-            PIPE_UNLIMITED_INSTANCES,
-            BUFSIZE,
-            BUFSIZE,
-            0,
-            NULL);
-
-        if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
-        {
-            return E_FAIL;
-        }
-
-        // This call blocks until a client process connects to the pipe
-        BOOL connected = ConnectNamedPipe(hPipe, NULL);
-        if (!connected)
-        {
-            if (GetLastError() == ERROR_PIPE_CONNECTED)
-            {
-                return S_OK;
-            }
-            else
-            {
-                CloseHandle(hPipe);
-            }
-            return E_FAIL;
-        }
-
-        return S_OK;
-    }
-
     HRESULT RunPowerRename(IShellItemArray* psiItemArray)
     {
         if (CSettingsInstance().GetEnabled())
@@ -267,6 +224,49 @@ private:
 
         return S_OK;
     }
+protected:
+    ComPtr<IUnknown> m_site;
+
+private:
+
+    HRESULT StartNamedPipeServerAndSendData(std::wstring pipe_name)
+    {
+        hPipe = CreateNamedPipe(
+            pipe_name.c_str(),
+            PIPE_ACCESS_DUPLEX |
+                WRITE_DAC,
+            PIPE_TYPE_MESSAGE |
+                PIPE_READMODE_MESSAGE |
+                PIPE_WAIT,
+            PIPE_UNLIMITED_INSTANCES,
+            BUFSIZE,
+            BUFSIZE,
+            0,
+            NULL);
+
+        if (hPipe == NULL || hPipe == INVALID_HANDLE_VALUE)
+        {
+            return E_FAIL;
+        }
+
+        // This call blocks until a client process connects to the pipe
+        BOOL connected = ConnectNamedPipe(hPipe, NULL);
+        if (!connected)
+        {
+            if (GetLastError() == ERROR_PIPE_CONNECTED)
+            {
+                return S_OK;
+            }
+            else
+            {
+                CloseHandle(hPipe);
+            }
+            return E_FAIL;
+        }
+
+        return S_OK;
+    }
+
 
 
     std::thread create_pipe_thread;
@@ -290,4 +290,10 @@ STDAPI DllCanUnloadNow()
 STDAPI DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _COM_Outptr_ void** instance)
 {
     return Module<InProc>::GetModule().GetClassObject(rclsid, riid, instance);
+}
+
+extern "C" __declspec(dllexport) void RunPowerRename(IShellItemArray * psiItemArray)
+{
+	PowerRenameContextMenuCommand contextMenuCommand;
+	contextMenuCommand.RunPowerRename(psiItemArray);
 }

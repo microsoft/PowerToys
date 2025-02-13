@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <FileActionsMenuPluginName>PowerToys</FileActionsMenuPluginName>
+  </PropertyGroup>
+
+  <Import Project="..\FileActionsMenuPlugin.Props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
+    <ProjectReference Include="..\..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\..\..\peek\Peek.Common\Peek.Common.csproj" />
+  </ItemGroup>
+</Project>

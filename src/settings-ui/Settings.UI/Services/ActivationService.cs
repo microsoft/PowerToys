@@ -41,11 +41,13 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
                 // Do not repeat app initialization when the Window already has content,
                 // just ensure that the window is active
+#pragma warning disable WinUIEx1001 // The member will always be null.
                 if (Window.Current.Content == null)
                 {
                     // Create a Shell or Frame to act as the navigation context
                     Window.Current.Content = shell?.Value ?? new Frame();
                 }
+#pragma warning restore WinUIEx1001 // The member will always be null.
             }
 
             // Depending on activationArgs one of ActivationHandlers or DefaultActivationHandler
@@ -56,7 +58,9 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             if (IsInteractive(activationArgs))
             {
                 // Ensure the current window is active
+#pragma warning disable WinUIEx1001 // The member will always be null.
                 Window.Current.Activate();
+#pragma warning restore WinUIEx1001 // The member will always be null.
 
                 // Tasks after activation
                 await StartupAsync().ConfigureAwait(false);

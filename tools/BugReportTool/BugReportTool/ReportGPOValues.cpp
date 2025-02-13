@@ -48,6 +48,7 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredColorPickerEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredColorPickerEnabledValue()) << std::endl;
     report << "getConfiguredCropAndLockEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredCropAndLockEnabledValue()) << std::endl;
     report << "getConfiguredFancyZonesEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFancyZonesEnabledValue()) << std::endl;
+	report << "getConfiguredFileActionsMenuEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFileActionsMenuEnabledValue()) << std::endl;
     report << "getConfiguredFileLocksmithEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFileLocksmithEnabledValue()) << std::endl;
     report << "getConfiguredSvgPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredSvgPreviewEnabledValue()) << std::endl;
     report << "getConfiguredMarkdownPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMarkdownPreviewEnabledValue()) << std::endl;

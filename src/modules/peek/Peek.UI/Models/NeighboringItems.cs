@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using Peek.Common.Models;
-using Peek.UI.Extensions;
+using Peek.Helpers.Extensions;
 
 namespace Peek.UI.Models
 {
