@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
@@ -130,7 +131,7 @@ public sealed class KernelServiceIntegrationTests : IDisposable
 
     private async Task<DataPackageView> GetKernelOutputAsync(string prompt, DataPackage input)
     {
-        var output = await _kernelService.TransformClipboardAsync(prompt, input.GetView(), isSavedQuery: false);
+        var output = await _kernelService.TransformClipboardAsync(prompt, input.GetView(), isSavedQuery: false, CancellationToken.None, new NoOpProgress());
 
         Assert.AreEqual(1, _eventListener.SemanticKernelEvents.Count);
         Assert.IsTrue(_eventListener.SemanticKernelTokens > 0);

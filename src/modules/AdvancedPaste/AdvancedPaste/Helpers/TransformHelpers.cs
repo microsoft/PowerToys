@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Models;
@@ -17,17 +18,19 @@ namespace AdvancedPaste.Helpers;
 
 public static class TransformHelpers
 {
-    public static async Task<DataPackage> TransformAsync(PasteFormats format, DataPackageView clipboardData)
+    public static async Task<DataPackage> TransformAsync(PasteFormats format, DataPackageView clipboardData, CancellationToken cancellationToken, IProgress<double> progress)
     {
         return format switch
         {
             PasteFormats.PlainText => await ToPlainTextAsync(clipboardData),
             PasteFormats.Markdown => await ToMarkdownAsync(clipboardData),
             PasteFormats.Json => await ToJsonAsync(clipboardData),
-            PasteFormats.ImageToText => await ImageToTextAsync(clipboardData),
-            PasteFormats.PasteAsTxtFile => await ToTxtFileAsync(clipboardData),
-            PasteFormats.PasteAsPngFile => await ToPngFileAsync(clipboardData),
-            PasteFormats.PasteAsHtmlFile => await ToHtmlFileAsync(clipboardData),
+            PasteFormats.ImageToText => await ImageToTextAsync(clipboardData, cancellationToken),
+            PasteFormats.PasteAsTxtFile => await ToTxtFileAsync(clipboardData, cancellationToken),
+            PasteFormats.PasteAsPngFile => await ToPngFileAsync(clipboardData, cancellationToken),
+            PasteFormats.PasteAsHtmlFile => await ToHtmlFileAsync(clipboardData, cancellationToken),
+            PasteFormats.TranscodeToMp3 => await TranscodeHelpers.TranscodeToMp3Async(clipboardData, cancellationToken, progress),
+            PasteFormats.TranscodeToMp4 => await TranscodeHelpers.TranscodeToMp4Async(clipboardData, cancellationToken, progress),
             PasteFormats.KernelQuery => throw new ArgumentException($"Unsupported format {format}", nameof(format)),
             PasteFormats.CustomTextTransformation => throw new ArgumentException($"Unsupported format {format}", nameof(format)),
             _ => throw new ArgumentException($"Unknown value {format}", nameof(format)),
@@ -52,16 +55,16 @@ public static class TransformHelpers
         return CreateDataPackageFromText(await JsonHelper.ToJsonFromXmlOrCsvAsync(clipboardData));
     }
 
-    private static async Task<DataPackage> ImageToTextAsync(DataPackageView clipboardData)
+    private static async Task<DataPackage> ImageToTextAsync(DataPackageView clipboardData, CancellationToken cancellationToken)
     {
         Logger.LogTrace();
 
         var bitmap = await clipboardData.GetImageContentAsync() ?? throw new ArgumentException("No image content found in clipboard", nameof(clipboardData));
-        var text = await OcrHelpers.ExtractTextAsync(bitmap);
+        var text = await OcrHelpers.ExtractTextAsync(bitmap, cancellationToken);
         return CreateDataPackageFromText(text);
     }
 
-    private static async Task<DataPackage> ToPngFileAsync(DataPackageView clipboardData)
+    private static async Task<DataPackage> ToPngFileAsync(DataPackageView clipboardData, CancellationToken cancellationToken)
     {
         Logger.LogTrace();
 
@@ -72,25 +75,25 @@ public static class TransformHelpers
         encoder.SetSoftwareBitmap(clipboardBitmap);
         await encoder.FlushAsync();
 
-        return await CreateDataPackageFromFileContentAsync(pngStream.AsStreamForRead(), "png");
+        return await CreateDataPackageFromFileContentAsync(pngStream.AsStreamForRead(), "png", cancellationToken);
     }
 
-    private static async Task<DataPackage> ToTxtFileAsync(DataPackageView clipboardData)
+    private static async Task<DataPackage> ToTxtFileAsync(DataPackageView clipboardData, CancellationToken cancellationToken)
     {
         Logger.LogTrace();
 
         var text = await clipboardData.GetTextOrHtmlTextAsync();
-        return await CreateDataPackageFromFileContentAsync(text, "txt");
+        return await CreateDataPackageFromFileContentAsync(text, "txt", cancellationToken);
     }
 
-    private static async Task<DataPackage> ToHtmlFileAsync(DataPackageView clipboardData)
+    private static async Task<DataPackage> ToHtmlFileAsync(DataPackageView clipboardData, CancellationToken cancellationToken)
     {
         Logger.LogTrace();
 
         var cfHtml = await clipboardData.GetHtmlContentAsync();
         var html = RemoveHtmlMetadata(cfHtml);
 
-        return await CreateDataPackageFromFileContentAsync(html, "html");
+        return await CreateDataPackageFromFileContentAsync(html, "html", cancellationToken);
     }
 
     /// <summary>
@@ -114,7 +117,7 @@ public static class TransformHelpers
         return (startFragmentIndex == null || endFragmentIndex == null) ? cfHtml : cfHtml[startFragmentIndex.Value..endFragmentIndex.Value];
     }
 
-    private static async Task<DataPackage> CreateDataPackageFromFileContentAsync(string data, string fileExtension)
+    private static async Task<DataPackage> CreateDataPackageFromFileContentAsync(string data, string fileExtension, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(data))
         {
@@ -123,16 +126,16 @@ public static class TransformHelpers
 
         var path = GetPasteAsFileTempFilePath(fileExtension);
 
-        await File.WriteAllTextAsync(path, data);
+        await File.WriteAllTextAsync(path, data, cancellationToken);
         return await DataPackageHelpers.CreateFromFileAsync(path);
     }
 
-    private static async Task<DataPackage> CreateDataPackageFromFileContentAsync(Stream stream, string fileExtension)
+    private static async Task<DataPackage> CreateDataPackageFromFileContentAsync(Stream stream, string fileExtension, CancellationToken cancellationToken)
     {
         var path = GetPasteAsFileTempFilePath(fileExtension);
 
         using var fileStream = File.Create(path);
-        await stream.CopyToAsync(fileStream);
+        await stream.CopyToAsync(fileStream, cancellationToken);
 
         return await DataPackageHelpers.CreateFromFileAsync(path);
     }

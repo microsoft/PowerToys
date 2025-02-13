@@ -24,6 +24,7 @@ namespace AdvancedPaste
     {
         private readonly WindowMessageMonitor _msgMonitor;
         private readonly IUserSettings _userSettings;
+        private readonly OptionsViewModel _optionsViewModel;
 
         private bool _disposedValue;
 
@@ -32,8 +33,7 @@ namespace AdvancedPaste
             InitializeComponent();
 
             _userSettings = App.GetService<IUserSettings>();
-
-            var optionsViewModel = App.GetService<OptionsViewModel>();
+            _optionsViewModel = App.GetService<OptionsViewModel>();
 
             var baseHeight = MinHeight;
             var coreActionCount = PasteFormat.MetadataDict.Values.Count(metadata => metadata.IsCoreAction);
@@ -43,7 +43,7 @@ namespace AdvancedPaste
                 double GetHeight(int maxCustomActionCount) =>
                     baseHeight +
                     new PasteFormatsToHeightConverter().GetHeight(coreActionCount + _userSettings.AdditionalActions.Count) +
-                    new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.GetHeight(optionsViewModel.IsCustomAIServiceEnabled ? _userSettings.CustomActions.Count : 0);
+                    new PasteFormatsToHeightConverter() { MaxItems = maxCustomActionCount }.GetHeight(_optionsViewModel.IsCustomAIServiceEnabled ? _userSettings.CustomActions.Count : 0);
 
                 MinHeight = GetHeight(1);
                 Height = GetHeight(5);
@@ -52,9 +52,9 @@ namespace AdvancedPaste
             UpdateHeight();
 
             _userSettings.Changed += (_, _) => UpdateHeight();
-            optionsViewModel.PropertyChanged += (_, e) =>
+            _optionsViewModel.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(optionsViewModel.IsCustomAIServiceEnabled))
+                if (e.PropertyName == nameof(_optionsViewModel.IsCustomAIServiceEnabled))
                 {
                     UpdateHeight();
                 }
@@ -111,8 +111,9 @@ namespace AdvancedPaste
             GC.SuppressFinalize(this);
         }
 
-        private void WindowEx_Closed(object sender, Microsoft.UI.Xaml.WindowEventArgs args)
+        private async void WindowEx_Closed(object sender, Microsoft.UI.Xaml.WindowEventArgs args)
         {
+            await _optionsViewModel.CancelPasteActionAsync();
             Hide();
             args.Handled = true;
         }

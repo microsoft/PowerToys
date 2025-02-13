@@ -276,6 +276,37 @@
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
 
+                        <tkcontrols:SettingsExpander
+                            x:Uid="Transcode"
+                            DataContext="{x:Bind ViewModel.AdditionalActions.Transcode, Mode=OneWay}"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xEA69;}"
+                            IsExpanded="{Binding IsShown, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.Content>
+                                <ToggleSwitch
+                                    IsOn="{Binding IsShown, Mode=TwoWay}"
+                                    OffContent=""
+                                    OnContent="" />
+                            </tkcontrols:SettingsExpander.Content>
+                            <tkcontrols:SettingsExpander.Items>
+                                <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
+                                <tkcontrols:SettingsCard Visibility="Collapsed" />
+                                <tkcontrols:SettingsCard
+                                    x:Uid="TranscodeToMp3"
+                                    DataContext="{Binding TranscodeToMp3, Mode=TwoWay}"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.Transcode.IsShown, Mode=OneWay}">
+                                    <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Uid="TranscodeToMp4"
+                                    DataContext="{Binding TranscodeToMp4, Mode=TwoWay}"
+                                    IsEnabled="{x:Bind ViewModel.AdditionalActions.Transcode.IsShown, Mode=OneWay}">
+                                    <ContentControl ContentTemplate="{StaticResource AdditionalActionTemplate}" />
+                                </tkcontrols:SettingsCard>
+                                <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
+                                <tkcontrols:SettingsCard Visibility="Collapsed" />
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+
                         <InfoBar
                             x:Uid="AdvancedPaste_ShortcutWarning"
                             IsClosable="False"

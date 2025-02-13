@@ -30,7 +30,7 @@ public sealed class PasteActionError
     public static PasteActionError FromException(Exception ex) =>
         new()
         {
-            Text = ex is PasteActionException ? ex.Message : ResourceLoaderInstance.ResourceLoader.GetString("PasteError"),
+            Text = ex is PasteActionException ? ex.Message : ResourceLoaderInstance.ResourceLoader.GetString(ex is OperationCanceledException ? "PasteActionCanceled" : "PasteError"),
             Details = (ex as PasteActionException)?.AIServiceMessage ?? string.Empty,
         };
 }
