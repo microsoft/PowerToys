@@ -80,6 +80,7 @@ namespace Hosts.FuzzTests
                 var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
 
                 string input = System.Text.Encoding.UTF8.GetString(data);
+
                 // Since the WriteAsync method does not involve content parsing, we won't fuzz the additionalLines in the hosts file.
                 string additionalLines = " ";
                 if (input.Length <= 2)
