@@ -16,7 +16,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace AdvancedPaste.Settings
 {
-    internal sealed class UserSettings : IUserSettings, IDisposable
+    internal sealed partial class UserSettings : IUserSettings, IDisposable
     {
         private readonly SettingsUtils _settingsUtils;
         private readonly TaskScheduler _taskScheduler;

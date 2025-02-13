@@ -74,7 +74,7 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredShortcutGuideEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredShortcutGuideEnabledValue()) << std::endl;
     report << "getConfiguredTextExtractorEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredTextExtractorEnabledValue()) << std::endl;
     report << "getConfiguredPeekEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPeekEnabledValue()) << std::endl;
-    report << "getConfiguredVideoConferenceMuteEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredVideoConferenceMuteEnabledValue()) << std::endl;
+    report << "getConfiguredZoomItEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredZoomItEnabledValue()) << std::endl;
     report << "getDisableAutomaticUpdateDownloadValue: " << gpo_rule_configured_to_string(powertoys_gpo::getDisableAutomaticUpdateDownloadValue()) << std::endl;
     report << "getSuspendNewUpdateToastValue: " << gpo_rule_configured_to_string(powertoys_gpo::getSuspendNewUpdateToastValue()) << std::endl;
     report << "getDisableNewUpdateToastValue: " << gpo_rule_configured_to_string(powertoys_gpo::getDisableNewUpdateToastValue()) << std::endl;
@@ -87,6 +87,7 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredMwbFileTransferEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbFileTransferEnabledValue()) << std::endl;
     report << "getConfiguredMwbUseOriginalUserInterfaceValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbUseOriginalUserInterfaceValue()) << std::endl;
     report << "getConfiguredMwbDisallowBlockingScreensaverValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbDisallowBlockingScreensaverValue()) << std::endl;
+    report << "getConfiguredMwbAllowServiceModeValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbAllowServiceModeValue()) << std::endl;
     report << "getConfiguredMwbSameSubnetOnlyValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbSameSubnetOnlyValue()) << std::endl;
     report << "getConfiguredMwbValidateRemoteIpValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbValidateRemoteIpValue()) << std::endl;
     report << "getConfiguredMwbDisableUserDefinedIpMappingRulesValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMwbDisableUserDefinedIpMappingRulesValue()) << std::endl;
@@ -94,4 +95,5 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredNewPlusEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredNewPlusEnabledValue()) << std::endl;
     report << "getConfiguredNewPlusHideTemplateFilenameExtensionValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue()) << std::endl;
     report << "getAllowDataDiagnosticsValue: " << gpo_rule_configured_to_string(powertoys_gpo::getAllowDataDiagnosticsValue()) << std::endl;
+    report << "getConfiguredRunAtStartupValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredRunAtStartupValue()) << std::endl;
 }

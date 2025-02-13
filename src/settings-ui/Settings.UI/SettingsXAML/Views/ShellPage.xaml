@@ -110,6 +110,9 @@
                     x:Uid="Shell_TopLevelSystemTools"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SystemTools.png}"
                     SelectsOnInvoked="False">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Uid="Shell_AdvancedPaste"
@@ -139,6 +142,14 @@
                             x:Uid="Shell_TextExtractor"
                             helpers:NavHelper.NavigateTo="views:PowerOcrPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_ZoomIt"
+                            helpers:NavHelper.NavigateTo="views:ZoomItPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 
@@ -191,12 +202,6 @@
                             x:Uid="Shell_QuickAccent"
                             helpers:NavHelper.NavigateTo="views:PowerAccentPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}" />
-                        <!--  Mouse pointer cross hair  -->
-                        <NavigationViewItem
-                            x:Uid="Shell_VideoConference"
-                            helpers:NavHelper.NavigateTo="views:VideoConferencePage"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
-                            IsEnabled="{x:Bind ViewModel.IsVideoConferenceBuild, Mode=OneWay}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 

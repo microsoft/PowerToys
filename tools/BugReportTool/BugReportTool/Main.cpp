@@ -269,13 +269,6 @@ void ReportDotNetInstallationInfo(const filesystem::path& tmpDir)
     }
 }
 
-void ReportVCMLogs(const filesystem::path& tmpDir, const filesystem::path& reportDir)
-{
-    error_code ec;
-    copy(tmpDir / "PowerToysVideoConference_x86.log", reportDir, ec);
-    copy(tmpDir / "PowerToysVideoConference_x64.log", reportDir, ec);
-}
-
 void ReportInstallerLogs(const filesystem::path& tmpDir, const filesystem::path& reportDir)
 {
     const char* bootstrapperLogFilePrefix = "powertoys-bootstrapper-msi-";
@@ -388,8 +381,6 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     // Write event viewer logs info to the temporary folder
     EventViewer::ReportEventViewerInfo(reportDir);
 
-    ReportVCMLogs(tempDir, reportDir);
-    
     ReportInstallerLogs(tempDir, reportDir);
 
     ReportInstalledContextMenuPackages(reportDir);

@@ -19,6 +19,7 @@ $versionExceptions = @(
     "Microsoft.Xaml.Interactions.dll",
     "Microsoft.Xaml.Interactivity.dll",
     "hyjiacan.py4n.dll",
+    "TraceReloggerLib.dll",
     "Microsoft.WindowsAppRuntime.Release.Net.dll",
     "Microsoft.Windows.Widgets.Projection.dll",
     "WinRT.Host.Shim.dll") -join '|';
@@ -59,6 +60,11 @@ if ($items.Count -eq 0) {
 }
 
 $items | ForEach-Object {
+    if ($_.VersionInfo.FileVersion -eq "0.0.0.0" -and $_.Name -notmatch $versionExceptions) {
+        # These items are exceptions that actually have the 0.0.0.0 version.
+        Write-Host "Version set to 0.0.0.0: " + $_.FullName
+        $totalFailure++;
+    }
     if ($_.VersionInfo.FileVersion -eq "1.0.0.0" -and $_.Name -notmatch $versionExceptions) {
         # These items are exceptions that actually have the 1.0.0.0 version.
         Write-Host "Version set to 1.0.0.0: " + $_.FullName

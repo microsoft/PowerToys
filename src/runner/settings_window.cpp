@@ -674,8 +674,6 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "FileExplorer";
     case ESettingsWindowNames::ShortcutGuide:
         return "ShortcutGuide";
-    case ESettingsWindowNames::VideoConference:
-        return "VideoConference";
     case ESettingsWindowNames::Hosts:
         return "Hosts";
     case ESettingsWindowNames::MeasureTool:
@@ -696,6 +694,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "AdvancedPaste";
     case ESettingsWindowNames::NewPlus:
         return "NewPlus";
+    case ESettingsWindowNames::ZoomIt:
+        return "ZoomIt";
     default:
     {
         Logger::error(L"Can't convert ESettingsWindowNames value={} to string", static_cast<int>(value));
@@ -751,10 +751,6 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     {
         return ESettingsWindowNames::ShortcutGuide;
     }
-    else if (value == "VideoConference")
-    {
-        return ESettingsWindowNames::VideoConference;
-    }
     else if (value == "Hosts")
     {
         return ESettingsWindowNames::Hosts;
@@ -794,6 +790,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "NewPlus")
     {
         return ESettingsWindowNames::NewPlus;
+    }
+    else if (value == "ZoomIt")
+    {
+        return ESettingsWindowNames::ZoomIt;
     }
     else
     {

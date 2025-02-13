@@ -146,7 +146,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     // This is only for single chars
                     if (content.Length > 1)
                     {
-                        throw new ArgumentException($"Invalid Query: {query.RawUserQuery} (To many characters.)");
+                        throw new ArgumentException($"Invalid Query: {query.RawUserQuery} (Too many characters.)");
                     }
                     else if (content.Length == 0)
                     {

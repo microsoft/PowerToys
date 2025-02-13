@@ -51,9 +51,9 @@ body:
     - Shortcut Guide
     - System tray interaction
     - TextExtractor
-    - Video Conference Mute
     - Workspaces
     - Welcome / PowerToys Tour window
+    - ZoomIt
   validations:
     required: true
 - type: input

@@ -35,6 +35,7 @@ using Newtonsoft.Json;
 using StreamJsonRpc;
 
 using Logger = MouseWithoutBorders.Core.Logger;
+using Thread = MouseWithoutBorders.Core.Thread;
 
 [module: SuppressMessage("Microsoft.MSInternal", "CA904:DeclareTypesInMicrosoftOrSystemNamespace", Scope = "namespace", Target = "MouseWithoutBorders", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Design", "CA1014:MarkAssembliesWithClsCompliant", Justification = "Dotnet port with style preservation")]
@@ -90,6 +91,17 @@ namespace MouseWithoutBorders.Class
                 Logger.Log(Environment.CommandLine);
 
                 bool serviceMode = firstArg == ServiceModeArg;
+
+                if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMwbAllowServiceModeValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+                {
+                    if (runningAsSystem)
+                    {
+                        Logger.Log("Can't run as a service. It's not allowed according to GPO policy. Please contact your systems administrator.");
+                        return;
+                    }
+
+                    serviceMode = false;
+                }
 
                 // If we're started from the .dll module or from the service process, we should
                 // assume the service mode.
@@ -378,6 +390,10 @@ namespace MouseWithoutBorders.Class
 
         private static void InputCallbackThread()
         {
+            // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+            // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+            using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
             Common.InputCallbackThreadID = Thread.CurrentThread.ManagedThreadId;
             while (!Common.InitDone)
             {

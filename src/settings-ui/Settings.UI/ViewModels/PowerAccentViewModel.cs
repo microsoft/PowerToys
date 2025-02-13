@@ -115,6 +115,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 SelectedLanguageOptions = _powerAccentSettings.Properties.SelectedLang.Value.Split(',')
                    .Select(l => Languages.Find(lang => lang.LanguageCode == l))
+                   .Where(l => l != null) // Wrongly typed languages will appear as null after find. We want to remove those to avoid crashes.
                    .ToArray();
             }
             else if (_powerAccentSettings.Properties.SelectedLang.Value.Contains("ALL"))
