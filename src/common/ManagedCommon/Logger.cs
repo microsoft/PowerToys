@@ -46,7 +46,7 @@ namespace ManagedCommon
                 Directory.CreateDirectory(applicationLogPath);
             }
 
-            var logFilePath = Path.Combine(applicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
+            var logFilePath = Path.Combine(applicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
