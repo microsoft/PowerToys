@@ -116,7 +116,11 @@ jobs:
       $env:Path = "C:\Program Files\Python39;C:\Program Files\Python39\Scripts;" + $env:Path
       python -m pip install --upgrade pip
       pip install --pre azure-cli
+      az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
+      az pipelines runs artifact download --artifact-name $(TestArtifactsName) --path "$(Pipeline.Workspace)" --run-id $(Build.BuildId)
     displayName: 'Install Azure CLI'
+    env:
+      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
 
   - pwsh: az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
     displayName: 'Set default Azure DevOps organization and project'
