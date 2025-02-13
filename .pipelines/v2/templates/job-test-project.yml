@@ -69,7 +69,7 @@ jobs:
   #     !**\*.pdb
   #     !**\*.lib
 
-  - script: |
+  - powershell: |
       Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
       Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.9.7/python-3.9.7.exe -OutFile python_installer.exe
       Start-Process -FilePath python_installer.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -NoNewWindow -Wait
