@@ -3,10 +3,15 @@
 // See the LICENSE file in the project root for more information.
 using System;
 using System.IO;
-using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
+using System.Threading.Tasks;
+
+using Hosts.Tests.Mocks;
 using HostsUILib.Helpers;
 using HostsUILib.Models;
 using HostsUILib.Settings;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -14,6 +19,9 @@ namespace Hosts.FuzzTests
 {
     public class FuzzTests
     {
+        private static Mock<IUserSettings> _userSettings;
+        private static Mock<IElevationHelper> _elevationHelper;
+
         // Case1： Fuzzing method for ValidIPv4
         public static void FuzzValidIPv4(ReadOnlySpan<byte> input)
         {
@@ -52,7 +60,7 @@ namespace Hosts.FuzzTests
             }
             catch (Exception ex) when (ex is OutOfMemoryException)
             {
-                // This is an example. It's important to filter out any *expected* exceptions from our code here.
+                // It's important to filter out any *expected* exceptions from our code here.
                 // However, catching all exceptions is considered an anti-pattern because it may suppress legitimate
                 // issues, such as a NullReferenceException thrown by our code. In this case, we still re-throw
                 // the exception, as the ToJsonFromXmlOrCsvAsync method is not expected to throw any exceptions.
@@ -60,41 +68,18 @@ namespace Hosts.FuzzTests
             }
         }
 
-        // Case4 fuzzing method for WriteAsync;
         public static void FuzzWriteAsync(ReadOnlySpan<byte> data)
         {
             try
             {
-                // mock ElevationHelper
-                var mockElevationHelper = new Mock<IElevationHelper>();
-                mockElevationHelper.Setup(eh => eh.IsElevated).Returns(true);
+                _userSettings = new Mock<IUserSettings>();
+                _elevationHelper = new Mock<IElevationHelper>();
+                _elevationHelper.Setup(m => m.IsElevated).Returns(true);
 
-                // mock userSetting
-                var mockUserSettings = new Mock<IUserSettings>();
-                mockUserSettings.Setup(us => us.AdditionalLinesPosition).Returns(HostsAdditionalLinesPosition.Top);
-                mockUserSettings.Setup(us => us.Encoding).Returns(HostsEncoding.Utf8);
+                // cause no content parse process in writeasync we won't fuzz content in hosts file.
+                var fileSystem = new CustomMockFileSystem();
+                var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
 
-                // Mock FileInfo.New(HostsFilePath)
-                var mockFileInfo = new Mock<IFileInfo>();
-                mockFileInfo.Setup(f => f.IsReadOnly).Returns(true); // Simulate a non-read-only file
-
-                // mock FileSystem
-                var mockFileSystem = new Mock<IFileSystem>();
-
-                // Mocking the FileSystem methods
-                var mockFileSystemWatcher = new Mock<IFileSystemWatcher>();
-                mockFileSystem.Setup(fs => fs.FileSystemWatcher.New()).Returns(mockFileSystemWatcher.Object);
-                var mockPath = new Mock<IPath>();
-                mockFileSystem.Setup(fs => fs.Path).Returns(mockPath.Object);
-                mockPath.Setup(p => p.GetDirectoryName(It.IsAny<string>())).Returns(@"C:\Windows\System32\drivers\etc");
-                mockPath.Setup(p => p.GetFileName(It.IsAny<string>())).Returns("hosts");
-
-                // Set up the mock FileSystem to return the mock file info
-                mockFileSystem.Setup(fs => fs.FileInfo.New(It.IsAny<string>())).Returns(mockFileInfo.Object);
-
-                HostsService hostsService = new HostsService(mockFileSystem.Object, mockUserSettings.Object, mockElevationHelper.Object);
-
-                // fuzzing input
                 string input = System.Text.Encoding.UTF8.GetString(data);
                 string additionalLines = " ";
                 if (input.Length <= 2)
@@ -112,7 +97,7 @@ namespace Hosts.FuzzTests
                 };
 
                 // fuzzing WriteAsync
-                _ = Task.Run(async () => await hostsService.WriteAsync(additionalLines, entries));
+                _ = Task.Run(async () => await service.WriteAsync(additionalLines, entries));
             }
             catch (Exception ex) when (ex is ArgumentException)
             {
