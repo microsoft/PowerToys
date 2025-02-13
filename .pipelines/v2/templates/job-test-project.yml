@@ -76,6 +76,10 @@ jobs:
       Remove-Item -Force python_installer.exe
     displayName: 'Install Python on ARM64 Windows'
 
+  # Update pip to latest
+  - pwsh: python -m pip install --upgrade pip
+    displayName: 'Upgrade pip'
+
   # Update to latest Azure CLI version, min version required for Azure DevOps is 2.10.1
   - pwsh: pip install --pre azure-cli
     displayName: 'Upgrade Azure CLI'
