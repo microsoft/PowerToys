@@ -117,7 +117,7 @@ jobs:
       python -m pip install --upgrade pip
       pip install --pre azure-cli
       az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
-      az pipelines runs artifact download --artifact-name $(TestArtifactsName) --path "$(Pipeline.Workspace)/$(TestArtifactsName)" --run-id $(Build.BuildId)
+      az pipelines runs artifact download --artifact-name $(TestArtifactsName) --path "$(Pipeline.Workspace)/$(TestArtifactsName)" --run-id $(Build.BuildId) --debug
     displayName: 'Download artifacts with Azure CLI'
     env:
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
