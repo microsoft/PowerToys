@@ -75,8 +75,6 @@ stages:
     - ${{ if eq(parameters.runTests, true) }}:
       - stage: Test_${{ platform }}
         displayName: Test ${{ platform }}
-        dependsOn:
-          - Build_${{platform}}
         jobs:
           - template: job-test-project.yml
             parameters:
