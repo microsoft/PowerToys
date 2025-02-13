@@ -122,15 +122,6 @@ jobs:
     env:
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
 
-  - pwsh: az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
-    displayName: 'Set default Azure DevOps organization and project'
-  
-  - pwsh: |
-      az pipelines runs artifact download --artifact-name $(TestArtifactsName) --path "$(Pipeline.Workspace)" --run-id $(Build.BuildId)
-    displayName: 'Download Pipeline Artifact'
-    env:
-      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
-
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
