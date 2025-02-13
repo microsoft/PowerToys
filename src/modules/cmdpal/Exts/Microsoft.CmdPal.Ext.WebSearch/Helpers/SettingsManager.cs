@@ -22,14 +22,14 @@ public class SettingsManager : JsonSettingsManager
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
-    private static readonly List<ChoiceSetSetting.Choice> _choices = new()
-    {
+    private static readonly List<ChoiceSetSetting.Choice> _choices =
+    [
         new ChoiceSetSetting.Choice(Resources.history_none, Resources.history_none),
         new ChoiceSetSetting.Choice(Resources.history_1, Resources.history_1),
         new ChoiceSetSetting.Choice(Resources.history_5, Resources.history_5),
         new ChoiceSetSetting.Choice(Resources.history_10, Resources.history_10),
         new ChoiceSetSetting.Choice(Resources.history_20, Resources.history_20),
-    };
+    ];
 
     private readonly ToggleSetting _globalIfURI = new(
         Namespaced(nameof(GlobalIfURI)),
@@ -45,7 +45,7 @@ public class SettingsManager : JsonSettingsManager
 
     public bool GlobalIfURI => _globalIfURI.Value;
 
-    public string ShowHistory => _showHistory.Value != null ? _showHistory.Value : string.Empty;
+    public string ShowHistory => _showHistory.Value ?? string.Empty;
 
     internal static string SettingsJsonPath()
     {
@@ -80,11 +80,11 @@ public class SettingsManager : JsonSettingsManager
             if (File.Exists(_historyPath))
             {
                 var existingContent = File.ReadAllText(_historyPath);
-                historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(existingContent) ?? new List<HistoryItem>();
+                historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(existingContent) ?? [];
             }
             else
             {
-                historyItems = new List<HistoryItem>();
+                historyItems = [];
             }
 
             // Add the new history item
@@ -154,6 +154,8 @@ public class SettingsManager : JsonSettingsManager
 
         // Load settings from file upon initialization
         LoadSettings();
+
+        Settings.SettingsChanged += (s, a) => this.SaveSettings();
     }
 
     private void ClearHistory()
@@ -196,7 +198,7 @@ public class SettingsManager : JsonSettingsManager
                 if (File.Exists(_historyPath))
                 {
                     var existingContent = File.ReadAllText(_historyPath);
-                    var historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(existingContent) ?? new List<HistoryItem>();
+                    var historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(existingContent) ?? [];
 
                     // Check if trimming is needed
                     if (historyItems.Count > maxHistoryItems)

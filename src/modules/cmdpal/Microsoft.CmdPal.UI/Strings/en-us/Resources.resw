@@ -155,12 +155,20 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Command Palette settings</value>
     <comment>A section header for app-wide settings. "Command Palette" is the name of the app.</comment>
   </data>
+  <data name="AboutSettingsHeader.Text" xml:space="preserve">
+    <value>About</value>
+    <comment>A section header for information about the app</comment>
+  </data>
+  <data name="ExtensionAboutHeader.Text" xml:space="preserve">
+    <value>About</value>
+    <comment>A section header for information about the app</comment>
+  </data>
   <data name="ExtensionSettingsHeader.Text" xml:space="preserve">
     <value>Extension settings</value>
     <comment>A section header for extension-specific settings.</comment>
   </data>
-  <data name="AboutSettingsHeader.Text" xml:space="preserve">
-    <value>About</value>
+  <data name="ExtensionCommandsHeader.Text" xml:space="preserve">
+    <value>Commands</value>
     <comment>A section header for information about the app</comment>
   </data>
 </root>

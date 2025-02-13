@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Window
     x:Class="Microsoft.CmdPal.UI.SettingsWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -51,7 +51,28 @@
                     Icon="{ui:FontIcon Glyph=&#xEA86;}"
                     Tag="Extensions" />
             </NavigationView.MenuItems>
-            <Frame x:Name="NavFrame" />
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <BreadcrumbBar
+                    x:Name="NavigationBreadcrumbBar"
+                    MaxWidth="1000"
+                    ItemClicked="NavigationBreadcrumbBar_ItemClicked"
+                    ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
+                    <BreadcrumbBar.ItemTemplate>
+                        <DataTemplate x:DataType="local:Crumb">
+                            <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="{x:Bind Label, Mode=OneWay}" />
+                        </DataTemplate>
+                    </BreadcrumbBar.ItemTemplate>
+                </BreadcrumbBar>
+
+                <Frame x:Name="NavFrame" Grid.Row="1" />
+
+            </Grid>
         </NavigationView>
     </Grid>
 </Window>

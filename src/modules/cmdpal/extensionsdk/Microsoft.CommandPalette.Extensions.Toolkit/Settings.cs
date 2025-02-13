@@ -8,7 +8,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public sealed class Settings
+public sealed partial class Settings : ICommandSettings
 {
     private readonly Dictionary<string, object> _settings = [];
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new() { WriteIndented = true };
@@ -83,8 +83,6 @@ public sealed class Settings
         return $"{{\n{content}\n}}";
     }
 
-    public IForm[] ToForms() => [new SettingsForm(this)];
-
     public void Update(string data)
     {
         var formInput = JsonNode.Parse(data)?.AsObject();
@@ -108,4 +106,22 @@ public sealed class Settings
         var handlers = SettingsChanged;
         handlers?.Invoke(this, this);
     }
+
+    private sealed partial class SettingsContentPage : ContentPage
+    {
+        private readonly Settings _settings;
+
+        public override IContent[] GetContent() => _settings.ToContent();
+
+        public SettingsContentPage(Settings settings)
+        {
+            _settings = settings;
+            Name = "Settings";
+            Icon = new IconInfo("\uE713"); // Settings icon
+        }
+    }
+
+    public IContentPage SettingsPage => new SettingsContentPage(this);
+
+    public IContent[] ToContent() => [new SettingsForm(this)];
 }

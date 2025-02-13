@@ -47,7 +47,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         var builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
         foreach (var provider in builtInCommands)
         {
-            CommandProviderWrapper wrapper = new(provider);
+            CommandProviderWrapper wrapper = new(provider, _taskScheduler);
             _builtInCommands.Add(wrapper);
             await LoadTopLevelCommandsFromProvider(wrapper);
         }
@@ -92,13 +92,11 @@ public partial class TopLevelCommandManager : ObservableObject,
         commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
     }
 
-    private void CommandProvider_CommandsChanged(CommandProviderWrapper sender, IItemsChangedEventArgs args)
-    {
-        // By all accounts, we're already on a background thread (the COM call
-        // to handle the event shouldn't be on the main thread.). But just to
-        // be sure we don't block the caller, hop off this thread
+    // By all accounts, we're already on a background thread (the COM call
+    // to handle the event shouldn't be on the main thread.). But just to
+    // be sure we don't block the caller, hop off this thread
+    private void CommandProvider_CommandsChanged(CommandProviderWrapper sender, IItemsChangedEventArgs args) =>
         _ = Task.Run(async () => await UpdateCommandsForProvider(sender, args));
-    }
 
     /// <summary>
     /// Called when a command provider raises its ItemsChanged event. We'll
@@ -238,7 +236,7 @@ public partial class TopLevelCommandManager : ObservableObject,
                 await extension.StartExtensionAsync();
 
                 // ... and fetch the command provider from it.
-                CommandProviderWrapper wrapper = new(extension);
+                CommandProviderWrapper wrapper = new(extension, _taskScheduler);
                 _extensionCommandProviders.Add(wrapper);
                 await LoadTopLevelCommandsFromProvider(wrapper);
             }

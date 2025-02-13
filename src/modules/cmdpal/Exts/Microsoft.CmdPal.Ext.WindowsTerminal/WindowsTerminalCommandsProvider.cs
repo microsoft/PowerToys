@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
-using Microsoft.CmdPal.Ext.WindowsTerminal.Pages;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -23,10 +22,13 @@ public partial class WindowsTerminalCommandsProvider : CommandProvider
         Id = "WindowsTerminalProfiles";
         DisplayName = Resources.extension_name;
         Icon = TerminalIcon;
+        Settings = _settingsManager.Settings;
 
         _terminalCommand = new TerminalTopLevelCommandItem(_settingsManager)
         {
-            MoreCommands = [new CommandContextItem(new SettingsPage(_settingsManager))],
+            MoreCommands = [
+                new CommandContextItem(Settings.SettingsPage),
+            ],
         };
     }
 

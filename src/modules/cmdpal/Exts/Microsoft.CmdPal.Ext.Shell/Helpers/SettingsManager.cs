@@ -15,8 +15,8 @@ public class SettingsManager : JsonSettingsManager
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
-    private static readonly List<ChoiceSetSetting.Choice> _choices = new()
-    {
+    private static readonly List<ChoiceSetSetting.Choice> _choices =
+    [
         new ChoiceSetSetting.Choice(Resources.find_executable_file_and_run_it, "2"), // idk why but this is how PT Run did it? Maybe ordering matters there
         new ChoiceSetSetting.Choice(Resources.run_command_in_command_prompt, "0"),
         new ChoiceSetSetting.Choice(Resources.run_command_in_powershell, "1"),
@@ -24,7 +24,7 @@ public class SettingsManager : JsonSettingsManager
         new ChoiceSetSetting.Choice(Resources.run_command_in_windows_terminal_cmd, "5"),
         new ChoiceSetSetting.Choice(Resources.run_command_in_windows_terminal_powershell, "3"),
         new ChoiceSetSetting.Choice(Resources.run_command_in_windows_terminal_powershell_seven, "4"),
-    };
+    ];
 
     private readonly ToggleSetting _leaveShellOpen = new(
         Namespaced(nameof(LeaveShellOpen)),
@@ -40,16 +40,13 @@ public class SettingsManager : JsonSettingsManager
 
     public bool LeaveShellOpen => _leaveShellOpen.Value;
 
-    public string ShellCommandExecution => _shellCommandExecution.Value != null ? _shellCommandExecution.Value : string.Empty;
+    public string ShellCommandExecution => _shellCommandExecution.Value ?? string.Empty;
 
     public bool RunAsAdministrator { get; set; }
 
-    public Dictionary<string, int> Count { get; } = new Dictionary<string, int>();
+    public Dictionary<string, int> Count { get; } = [];
 
-    public void AddCmdHistory(string cmdName)
-    {
-        Count[cmdName] = Count.TryGetValue(cmdName, out var currentCount) ? currentCount + 1 : 1;
-    }
+    public void AddCmdHistory(string cmdName) => Count[cmdName] = Count.TryGetValue(cmdName, out var currentCount) ? currentCount + 1 : 1;
 
     internal static string SettingsJsonPath()
     {
@@ -69,5 +66,7 @@ public class SettingsManager : JsonSettingsManager
 
         // Load settings from file upon initialization
         LoadSettings();
+
+        Settings.SettingsChanged += (s, a) => this.SaveSettings();
     }
 }

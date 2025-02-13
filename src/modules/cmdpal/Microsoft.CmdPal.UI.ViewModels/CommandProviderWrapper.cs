@@ -18,6 +18,8 @@ public sealed class CommandProviderWrapper
 
     private readonly ExtensionObject<ICommandProvider> _commandProvider;
 
+    private readonly TaskScheduler _taskScheduler;
+
     public ICommandItem[] TopLevelItems { get; private set; } = [];
 
     public IFallbackCommandItem[] FallbackItems { get; private set; } = [];
@@ -34,13 +36,16 @@ public sealed class CommandProviderWrapper
 
     public IconInfoViewModel Icon { get; private set; } = new(null);
 
+    public CommandSettingsViewModel? Settings { get; private set; }
+
     public string ProviderId => $"{Extension?.PackageFamilyName ?? string.Empty}/{Id}";
 
-    public CommandProviderWrapper(ICommandProvider provider)
+    public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
         // This ctor is only used for in-proc builtin commands. So the Unsafe!
         // calls are pretty dang safe actually.
         _commandProvider = new(provider);
+        _taskScheduler = mainThread;
 
         // Hook the extension back into us
         ExtensionHost = new CommandPaletteHost(provider);
@@ -53,10 +58,13 @@ public sealed class CommandProviderWrapper
         DisplayName = provider.DisplayName;
         Icon = new(provider.Icon);
         Icon.InitializeProperties();
+        Settings = new(provider.Settings, this, _taskScheduler);
+        Settings.InitializeProperties();
     }
 
-    public CommandProviderWrapper(IExtensionWrapper extension)
+    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread)
     {
+        _taskScheduler = mainThread;
         Extension = extension;
         ExtensionHost = new CommandPaletteHost(extension);
         if (!Extension.IsRunning())
@@ -80,8 +88,6 @@ public sealed class CommandProviderWrapper
             // Hook the extension back into us
             model.InitializeWithHost(ExtensionHost);
             model.ItemsChanged += CommandProvider_ItemsChanged;
-
-            DisplayName = model.DisplayName;
 
             isValid = true;
         }
@@ -120,6 +126,9 @@ public sealed class CommandProviderWrapper
             DisplayName = model.DisplayName;
             Icon = new(model.Icon);
             Icon.InitializeProperties();
+
+            Settings = new(model.Settings, this, _taskScheduler);
+            Settings.InitializeProperties();
         }
         catch (Exception e)
         {

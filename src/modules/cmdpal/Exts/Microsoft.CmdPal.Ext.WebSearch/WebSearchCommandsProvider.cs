@@ -4,7 +4,6 @@
 
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
-using Microsoft.CmdPal.Ext.WebSearch.Pages;
 using Microsoft.CmdPal.Ext.WebSearch.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -18,7 +17,11 @@ public partial class WebSearchCommandsProvider : CommandProvider
 
     public WebSearchCommandsProvider()
     {
+        Id = "WebSearch";
         DisplayName = Resources.extension_name;
+        Icon = new IconInfo("\uf6fa");
+        Settings = _settingsManager.Settings;
+
         _fallbackItem = new FallbackExecuteSearchItem(_settingsManager);
     }
 
@@ -26,7 +29,9 @@ public partial class WebSearchCommandsProvider : CommandProvider
     {
         return [new WebSearchTopLevelCommandItem(_settingsManager)
         {
-            MoreCommands = [new CommandContextItem(new SettingsPage(_settingsManager))],
+            MoreCommands = [
+                new CommandContextItem(Settings!.SettingsPage),
+            ],
         }
         ];
     }

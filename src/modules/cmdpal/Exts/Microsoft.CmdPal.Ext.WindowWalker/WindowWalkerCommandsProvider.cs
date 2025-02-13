@@ -21,13 +21,14 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
         Id = "WindowWalker";
         DisplayName = Resources.windowwalker_name;
         Icon = new IconInfo("\ue8f9"); // SwitchApps
+        Settings = SettingsManager.Instance.Settings;
 
         _windowWalkerPageItem = new CommandItem(new WindowWalkerListPage())
         {
             Title = Resources.window_walker_top_level_command_title,
             Subtitle = Resources.windowwalker_name,
             MoreCommands = [
-                new CommandContextItem(new SettingsPage()),
+                new CommandContextItem(Settings.SettingsPage),
             ],
         };
     }

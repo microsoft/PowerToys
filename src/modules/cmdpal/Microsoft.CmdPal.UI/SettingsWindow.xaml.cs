@@ -2,29 +2,22 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Windows.Graphics;
 
 namespace Microsoft.CmdPal.UI;
 
-public sealed partial class SettingsWindow : Window
+public sealed partial class SettingsWindow : Window,
+    IRecipient<NavigateToExtensionSettingsMessage>
 {
+    public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
+
     public SettingsWindow()
     {
         this.InitializeComponent();
@@ -32,6 +25,8 @@ public sealed partial class SettingsWindow : Window
         this.AppWindow.SetIcon("ms-appx:///Assets/Icons/StoreLogo.png");
         this.AppWindow.Title = "Command Palette Settings";
         this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+        PositionCentered();
+        WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
     }
 
     private void NavView_Loaded(object sender, RoutedEventArgs e)
@@ -60,7 +55,59 @@ public sealed partial class SettingsWindow : Window
         };
         if (pageType is not null)
         {
+            BreadCrumbs.Clear();
+            BreadCrumbs.Add(new(page, page));
             NavFrame.Navigate(pageType);
         }
     }
+
+    private void Navigate(ProviderSettingsViewModel extension)
+    {
+        NavFrame.Navigate(typeof(ExtensionPage), extension);
+        BreadCrumbs.Add(new(extension.DisplayName, string.Empty));
+    }
+
+    private void PositionCentered()
+    {
+        AppWindow.Resize(new SizeInt32 { Width = 1280, Height = 720 });
+        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
+        if (displayArea is not null)
+        {
+            var centeredPosition = AppWindow.Position;
+            centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
+            centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
+            AppWindow.Move(centeredPosition);
+        }
+    }
+
+    public void Receive(NavigateToExtensionSettingsMessage message) => Navigate(message.ProviderSettingsVM);
+
+    private void NavigationBreadcrumbBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
+    {
+        if (args.Item is Crumb crumb)
+        {
+            if (crumb.Data is string data)
+            {
+                if (!string.IsNullOrEmpty(data))
+                {
+                    Navigate(data);
+                }
+            }
+        }
+    }
+}
+
+public readonly struct Crumb
+{
+    public Crumb(string label, object data)
+    {
+        Label = label;
+        Data = data;
+    }
+
+    public string Label { get; }
+
+    public object Data { get; }
+
+    public override string ToString() => Label;
 }

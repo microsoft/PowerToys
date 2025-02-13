@@ -6,25 +6,25 @@ using System.Text.Json.Nodes;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class SettingsForm : Form
+public partial class SettingsForm : FormContent
 {
     private readonly Settings _settings;
 
     internal SettingsForm(Settings settings)
     {
         _settings = settings;
-        Template = _settings.ToFormJson();
+        TemplateJson = _settings.ToFormJson();
     }
 
-    public override ICommandResult SubmitForm(string payload)
+    public override ICommandResult SubmitForm(string inputs, string data)
     {
-        var formInput = JsonNode.Parse(payload)?.AsObject();
+        var formInput = JsonNode.Parse(inputs)?.AsObject();
         if (formInput == null)
         {
             return CommandResult.KeepOpen();
         }
 
-        _settings.Update(payload);
+        _settings.Update(inputs);
         _settings.RaiseSettingsChanged();
 
         return CommandResult.GoHome();

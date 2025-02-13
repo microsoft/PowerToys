@@ -21,6 +21,7 @@ public partial class ShellCommandsProvider : CommandProvider
         Id = "Run";
         DisplayName = Resources.cmd_plugin_name;
         Icon = new IconInfo("\uE756");
+        Settings = _settingsManager.Settings;
 
         _fallbackItem = new FallbackExecuteItem(_settingsManager);
 
@@ -29,7 +30,9 @@ public partial class ShellCommandsProvider : CommandProvider
             Icon = new IconInfo("\uE756"),
             Title = Resources.shell_command_name,
             Subtitle = Resources.cmd_plugin_description,
-            MoreCommands = [new CommandContextItem(new SettingsPage(_settingsManager))],
+            MoreCommands = [
+                new CommandContextItem(Settings.SettingsPage),
+            ],
         };
     }
 

@@ -59,5 +59,7 @@ public class SettingsManager : JsonSettingsManager
 
         // Load settings from file upon initialization
         LoadSettings();
+
+        Settings.SettingsChanged += (s, a) => this.SaveSettings();
     }
 }
