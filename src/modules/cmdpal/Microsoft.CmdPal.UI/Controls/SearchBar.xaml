@@ -50,7 +50,7 @@
                 VerticalAlignment="Center"
                 FontSize="8"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Glyph="&#xEBE7;" /> 
+                Glyph="&#xEBE7;" />
             <!--  Right Arrow Key  -->
         </Border>
         <TextBlock
