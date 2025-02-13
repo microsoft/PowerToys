@@ -116,15 +116,11 @@ jobs:
       $env:Path = "C:\Program Files\Python39;C:\Program Files\Python39\Scripts;" + $env:Path
       python -m pip install --upgrade pip
       pip install --pre azure-cli
-      az pipelines runs artifact download --artifact-name $(TestArtifactsName) --path "$(Pipeline.Workspace)" --run-id $(Build.BuildId)
-    displayName: 'Download Pipeline Artifact'
-    env:
-      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+    displayName: 'Install Azure CLI'
 
-  # Update to latest Azure CLI version, min version required for Azure DevOps is 2.10.1
-  - pwsh: pip install --pre azure-cli
-    displayName: 'Upgrade Azure CLI'
-
+  - pwsh: az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
+    displayName: 'Set default Azure DevOps organization and project'
+  
   - pwsh: |
       az pipelines runs artifact download --artifact-name $(TestArtifactsName) --path "$(Pipeline.Workspace)" --run-id $(Build.BuildId)
     displayName: 'Download Pipeline Artifact'
