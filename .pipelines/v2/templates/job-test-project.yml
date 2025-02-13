@@ -74,6 +74,11 @@ jobs:
       Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.9.7/python-3.9.7.exe -OutFile python_installer.exe
       Start-Process -FilePath python_installer.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -NoNewWindow -Wait
       Remove-Item -Force python_installer.exe
+      $pythonPath = "C:\Program Files\Python39"
+      if (!(Test-Path "$pythonPath\python.exe")) {
+          Write-Host "Python was not installed correctly!"
+          exit 1
+      }
       setx PATH "C:\Program Files\Python39;C:\Program Files\Python39\Scripts;%PATH%" /M
       $env:Path = "C:\Program Files\Python39;C:\Program Files\Python39\Scripts;" + $env:Path
       python --version
