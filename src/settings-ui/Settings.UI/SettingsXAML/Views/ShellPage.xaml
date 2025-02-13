@@ -110,6 +110,9 @@
                     x:Uid="Shell_TopLevelSystemTools"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SystemTools.png}"
                     SelectsOnInvoked="False">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Uid="Shell_AdvancedPaste"
@@ -142,7 +145,11 @@
                         <NavigationViewItem
                             x:Uid="Shell_ZoomIt"
                             helpers:NavHelper.NavigateTo="views:ZoomItPage"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 

@@ -112,9 +112,21 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
 
     enable_experimentation = general_configs.GetNamedBoolean(L"enable_experimentation", true);
 
+    // apply_general_settings is called by the runner's WinMain, so we can just force the run at startup gpo rule here.
+    auto gpo_run_as_startup = powertoys_gpo::getConfiguredRunAtStartupValue();
+
     if (json::has(general_configs, L"startup", json::JsonValueType::Boolean))
     {
-        const bool startup = general_configs.GetNamedBoolean(L"startup");
+        bool startup = general_configs.GetNamedBoolean(L"startup");
+
+        if (gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_enabled)
+        {
+            startup = true;
+        }
+        else if (gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_disabled)
+        {
+            startup = false;
+        }
 
         if (startup)
         {
@@ -147,7 +159,9 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     else
     {
         delete_auto_start_task_for_this_user();
-        create_auto_start_task_for_this_user(run_as_elevated);
+        if (gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_enabled || gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_not_configured) {
+            create_auto_start_task_for_this_user(run_as_elevated);
+        }
     }
 
     if (json::has(general_configs, L"enabled"))
