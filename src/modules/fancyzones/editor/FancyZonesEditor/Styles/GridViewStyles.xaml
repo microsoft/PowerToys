@@ -26,11 +26,11 @@
     <Style x:Key="MonitorItemContainerStyle" TargetType="ui:GridViewItem">
         <Setter Property="Background" Value="{DynamicResource LayoutItemBackgroundBrush}" />
         <Setter Property="IsSelected" Value="{Binding Selected, Mode=OneWay}" />
-        <Setter Property="AutomationProperties.Name" Value="{Binding Index}" />
+        <Setter Property="AutomationProperties.Name" Value="{Binding AccessibleName}" />
+        <Setter Property="AutomationProperties.HelpText" Value="{Binding AccessibleHelpText}" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="Local" />
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="MinHeight" Value="0" />
-        <!--<Setter Property="IsHoldingEnabled" Value="True" />-->
         <Setter Property="CornerRadius" Value="4" />
         <Setter Property="Margin" Value="8" />
         <Setter Property="UseSystemFocusVisuals" Value="{DynamicResource UseSystemFocusVisuals}" />
