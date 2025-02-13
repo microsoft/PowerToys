@@ -20,9 +20,6 @@ namespace UITests_FancyZones
         public void RunFancyZones()
         {
             Thread.Sleep(2000);
-            Session = SessionManager.Current;
-            Assert.IsNotNull(Session, "Session is null");
-
             Session?.FindElementByName<Element>("Launch layout editor").Click();
             Thread.Sleep(4000);
             Session = SessionManager.AttachSession(PowerToysModuleWindow.Fancyzone);

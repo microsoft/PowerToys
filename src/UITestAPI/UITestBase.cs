@@ -27,17 +27,20 @@ namespace Microsoft.PowerToys.UITest
         public UITestBase()
         {
             SessionManager.Init();
+            Session = SessionManager.Current;
         }
 
         public UITestBase(PowerToysModule scope)
         {
             SessionManager.SetScope(scope);
             SessionManager.Init();
+            Session = SessionManager.Current;
         }
 
         ~UITestBase()
         {
             SessionManager.UnInit();
+            Session = null;
         }
 
         public static void Enable_Module_from_Dashboard(string moduleName, PowerToysModuleWindow module = PowerToysModuleWindow.None)
