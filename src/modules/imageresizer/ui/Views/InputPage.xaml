@@ -22,12 +22,19 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             VerticalContentAlignment="Stretch"
+            AutomationProperties.HelpText="{Binding Settings.SelectedSize, Converter={StaticResource SizeTypeToHelpTextConverter}}"
             AutomationProperties.Name="{x:Static p:Resources.Image_Sizes}"
             ItemsSource="{Binding Settings.AllSizes}"
             SelectedIndex="{Binding Settings.SelectedSizeIndex}">
+            <ComboBox.ItemContainerStyle>
+                <Style BasedOn="{StaticResource {x:Type ComboBoxItem}}" TargetType="ComboBoxItem">
+                    <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+                    <Setter Property="AutomationProperties.HelpText" Value="{Binding ., Converter={StaticResource SizeTypeToHelpTextConverter}}" />
+                </Style>
+            </ComboBox.ItemContainerStyle>
             <ComboBox.Resources>
                 <DataTemplate DataType="{x:Type m:ResizeSize}">
-                    <Grid VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}">
+                    <Grid VerticalAlignment="Center">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -55,7 +62,7 @@
                 </DataTemplate>
 
                 <DataTemplate DataType="{x:Type m:CustomSize}">
-                    <Grid VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}">
+                    <Grid VerticalAlignment="Center">
                         <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
                     </Grid>
                 </DataTemplate>
