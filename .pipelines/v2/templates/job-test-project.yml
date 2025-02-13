@@ -112,7 +112,9 @@ jobs:
     displayName: 'Install Python on ARM64 Windows'
 
   # Update pip to latest
-  - pwsh: python -m pip install --upgrade pip
+  - pwsh: |
+      $env:Path = "C:\Program Files\Python39;C:\Program Files\Python39\Scripts;" + $env:Path
+      python -m pip install --upgrade pip
     displayName: 'Upgrade pip'
 
   # Update to latest Azure CLI version, min version required for Azure DevOps is 2.10.1
