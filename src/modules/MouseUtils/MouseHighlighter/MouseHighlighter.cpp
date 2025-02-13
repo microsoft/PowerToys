@@ -233,6 +233,12 @@ void Highlighter::ClearDrawingPoint(MouseButton _button)
 {
     winrt::Windows::UI::Composition::CompositionSpriteShape circleShape{ nullptr };
 
+    if (nullptr == m_alwaysPointer)
+    {
+        // Guard against alwaysPointer not being initialized.
+        return;
+    }
+
     // always
     circleShape = m_alwaysPointer;
 
@@ -265,6 +271,11 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
                     // Clear AlwaysPointer only when it's enabled and RightPointer is not active
                     instance->ClearDrawingPoint(MouseButton::None);
                 }
+                if (instance->m_leftButtonPressed)
+                {
+                    // There might be a stray point from the user releasing the mouse button on an elevated window, which wasn't caught by us.
+                    instance->StartDrawingPointFading(MouseButton::Left);
+                }
                 instance->AddDrawingPoint(MouseButton::Left);
                 instance->m_leftButtonPressed = true;
                 // start a timer for the scenario, when the user clicks a pinned window which has no focus.
@@ -283,6 +294,11 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
                 {
                     // Clear AlwaysPointer only when it's enabled and LeftPointer is not active
                     instance->ClearDrawingPoint(MouseButton::None);
+                }
+                if (instance->m_rightButtonPressed)
+                {
+                    // There might be a stray point from the user releasing the mouse button on an elevated window, which wasn't caught by us.
+                    instance->StartDrawingPointFading(MouseButton::Right);
                 }
                 instance->AddDrawingPoint(MouseButton::Right);
                 instance->m_rightButtonPressed = true;
