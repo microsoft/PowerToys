@@ -115,7 +115,11 @@ jobs:
   - pwsh: |
       $env:Path = "C:\Program Files\Python39;C:\Program Files\Python39\Scripts;" + $env:Path
       python -m pip install --upgrade pip
-    displayName: 'Upgrade pip'
+      pip install --pre azure-cli
+      az pipelines runs artifact download --artifact-name $(TestArtifactsName) --path "$(Pipeline.Workspace)" --run-id $(Build.BuildId)
+    displayName: 'Download Pipeline Artifact'
+    env:
+      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
 
   # Update to latest Azure CLI version, min version required for Azure DevOps is 2.10.1
   - pwsh: pip install --pre azure-cli
