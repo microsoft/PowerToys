@@ -213,18 +213,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 var optionReplaceInput = settings.AdditionalOptions.FirstOrDefault(x => x.Key == ReplaceInput);
                 replaceInput = optionReplaceInput?.Value ?? replaceInput;
 
-                try
-                {
-                    var optionTrigMode = settings.AdditionalOptions.FirstOrDefault(x => x.Key == TrigMode);
-                    if (optionTrigMode != null)
-                    {
-                        trigMode = (CalculateEngine.TrigMode)int.Parse(optionTrigMode.ComboBoxValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.Exception("Error while trying to load Trigonometry Mode setting: {ex.Message}", ex, GetType());
-                }
+                var optionTrigMode = settings.AdditionalOptions.FirstOrDefault(x => x.Key == TrigMode);
+                trigMode = (CalculateEngine.TrigMode)int.Parse(optionTrigMode.ComboBoxValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
             }
 
             _inputUseEnglishFormat = inputUseEnglishFormat;
