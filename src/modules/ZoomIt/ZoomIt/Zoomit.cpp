@@ -1820,7 +1820,7 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
         break;
 
     case WM_PAINT:
-        if( (hTextPreview = GetDlgItem( hDlg, IDC_TEXT_FONT ))) {
+        if( (hTextPreview = GetDlgItem( hDlg, IDC_TEXT_FONT )) != 0 ) {
 
             // 16-pt preview
             LOGFONT _lf = g_LogFont;
@@ -6022,6 +6022,12 @@ LRESULT APIENTRY MainWndProc(
 
         // Apply tray icon setting
         EnableDisableTrayIcon(hWnd, g_ShowTrayIcon);
+
+        // This is also called by ZoomIt when it starts and loads the Settings. Opacity is added after loading from registry, so we use the same pattern.
+        if ((g_PenColor >> 24) == 0)
+        {
+            g_PenColor |= 0xFF << 24;
+        }
 
         // Apply hotkey settings
         UnregisterAllHotkeys(hWnd);

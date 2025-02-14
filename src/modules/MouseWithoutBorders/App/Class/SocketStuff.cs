@@ -681,6 +681,10 @@ namespace MouseWithoutBorders.Class
 
         private void TCPServerThread(object param)
         {
+            // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+            // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+            using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
             try
             {
                 TcpListener server = param as TcpListener;
@@ -768,6 +772,10 @@ namespace MouseWithoutBorders.Class
         {
             void ServerThread()
             {
+                // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+                // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+                using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                 try
                 {
                     // Receiving packages
@@ -876,6 +884,10 @@ namespace MouseWithoutBorders.Class
         {
             void ClientThread(object obj)
             {
+                // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+                // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+                using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                 IPHostEntry host;
                 bool useName2IP = false;
                 List<IPAddress> validAddresses = new();
@@ -1117,6 +1129,10 @@ namespace MouseWithoutBorders.Class
         {
             void NewTcpClient()
             {
+                // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+                // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+                using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                 TcpClient tcpClient = null;
 
                 try
@@ -1549,6 +1565,10 @@ namespace MouseWithoutBorders.Class
 
         private static void AcceptConnectionAndSendClipboardData(object param)
         {
+            // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+            // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+            using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
             TcpListener server = param as TcpListener;
 
             do
@@ -1590,6 +1610,10 @@ namespace MouseWithoutBorders.Class
                     {
                         new Task(() =>
                         {
+                            // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+                            // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+                            using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                             System.Threading.Thread thread = Thread.CurrentThread;
                             thread.Name = $"{nameof(SendOrReceiveClipboardData)}.{thread.ManagedThreadId}";
                             Thread.UpdateThreads(thread);
