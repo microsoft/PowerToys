@@ -15,9 +15,7 @@ namespace UITests_FancyZones
         [TestMethod]
         public void RunFancyZones()
         {
-            Assert.IsNotNull(Session);
             Session.FindElementByName<Button>("Launch layout editor").Click();
-            Thread.Sleep(4000);
             Session.AttachSession(PowerToysModuleWindow.FancyZone);
             Session.FindElementByName<Button>("Create new layout").Click();
         }

@@ -13,27 +13,34 @@ using static Microsoft.PowerToys.UITest.UITestBase;
 
 namespace Microsoft.PowerToys.UITest
 {
+    // Class representing a UI element in the application
     public class Element
     {
+        // Property to hold the Windows element
         public WindowsElement? WindowsElement { get; set; }
 
+        // Property to hold the Windows driver
         private WindowsDriver<WindowsElement>? driver;
 
+        // Constructor to initialize the element
         public Element()
         {
             WindowsElement = null;
         }
 
+        // Method to set the Windows element
         public void SetWindowsElement(WindowsElement windowsElement)
         {
             WindowsElement = windowsElement;
         }
 
+        // Method to set the session driver
         public void SetSession(WindowsDriver<WindowsElement> driver)
         {
             this.driver = driver;
         }
 
+        // Method to get the name attribute of the element
         public string GetName()
         {
             if (WindowsElement == null)
@@ -45,6 +52,7 @@ namespace Microsoft.PowerToys.UITest
             return WindowsElement.GetAttribute("Name");
         }
 
+        // Method to get the text attribute of the element
         public string GetText()
         {
             if (WindowsElement == null)
@@ -56,6 +64,7 @@ namespace Microsoft.PowerToys.UITest
             return WindowsElement.GetAttribute("Value");
         }
 
+        // Method to get the automation ID of the element
         public string GetAutomationId()
         {
             if (WindowsElement == null)
@@ -67,6 +76,7 @@ namespace Microsoft.PowerToys.UITest
             return WindowsElement.GetAttribute("AutomationId");
         }
 
+        // Method to get the class name of the element
         public string GetClassName()
         {
             if (WindowsElement == null)
@@ -78,6 +88,7 @@ namespace Microsoft.PowerToys.UITest
             return WindowsElement.GetAttribute("ClassName");
         }
 
+        // Method to get the help text of the element
         public string GetHelpText()
         {
             if (WindowsElement == null)
@@ -89,6 +100,7 @@ namespace Microsoft.PowerToys.UITest
             return WindowsElement.GetAttribute("HelpText");
         }
 
+        // Method to check if the element is enabled
         public bool IsEnable()
         {
             if (WindowsElement == null)
@@ -99,6 +111,7 @@ namespace Microsoft.PowerToys.UITest
             return WindowsElement?.GetAttribute("IsEnabled") == "True" ? true : false;
         }
 
+        // Method to check if the element is selected
         public bool IsSelected()
         {
             if (WindowsElement == null)
@@ -109,6 +122,7 @@ namespace Microsoft.PowerToys.UITest
             return WindowsElement?.GetAttribute("IsSelected") == "True" ? true : false;
         }
 
+        // Method to click the element
         public void Click()
         {
             var element = WindowsElement;
@@ -118,6 +132,7 @@ namespace Microsoft.PowerToys.UITest
             actions.Build().Perform();
         }
 
+        // Method to right-click the element
         public void RightClick()
         {
             var element = WindowsElement;
@@ -128,6 +143,7 @@ namespace Microsoft.PowerToys.UITest
             actions.Build().Perform();
         }
 
+        // Method to click the element if a specific attribute matches a value
         public void ClickCheckAttribute(string attributeKey, string attributeValue)
         {
             var elements = WindowsElement;
@@ -141,12 +157,14 @@ namespace Microsoft.PowerToys.UITest
             }
         }
 
+        // Method to check if a specific attribute matches a value
         public bool CheckAttribute(string attributeKey, string attributeValue)
         {
             var elements = WindowsElement;
             return elements?.GetAttribute(attributeKey) == attributeValue;
         }
 
+        // Method to find an element by its name
         public T FindElementByName<T>(string name)
             where T : Element, new()
         {
@@ -157,6 +175,7 @@ namespace Microsoft.PowerToys.UITest
             return element;
         }
 
+        // Method to find an element by its accessibility ID
         public T? FindElementByAccessibilityId<T>(string name)
             where T : Element, new()
         {
@@ -167,6 +186,7 @@ namespace Microsoft.PowerToys.UITest
             return element;
         }
 
+        // Method to find multiple elements by their name
         public ReadOnlyCollection<T>? FindElementsByName<T>(string name)
             where T : Element, new()
         {
@@ -189,6 +209,7 @@ namespace Microsoft.PowerToys.UITest
             return resReadOnlyCollection;
         }
 
+        // Method to take a screenshot of the element
         public Screenshot? GetScreenShot()
         {
             if (WindowsElement == null)

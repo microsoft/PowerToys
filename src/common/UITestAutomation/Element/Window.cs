@@ -11,19 +11,23 @@ using OpenQA.Selenium.Support.Events;
 
 namespace Microsoft.PowerToys.UITest
 {
+    // Class representing a window in the application
     public class Window : Element
     {
+        // Class representing a window in the application
         public Window()
             : base()
         {
         }
 
+        // Method to check if the window is visible
         public bool IsVisible()
         {
             Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");
             return WindowsElement.Displayed;
         }
 
+        // Method to maximize the window
         public Window Maximize()
         {
             Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");
@@ -32,6 +36,7 @@ namespace Microsoft.PowerToys.UITest
             return this;
         }
 
+        // Method to restore the window to its original size
         public Window Restore()
         {
             Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");
@@ -40,6 +45,7 @@ namespace Microsoft.PowerToys.UITest
             return this;
         }
 
+        // Method to minimize the window
         public Window Minimize()
         {
             Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");

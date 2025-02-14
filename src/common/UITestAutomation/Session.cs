@@ -15,21 +15,27 @@ using OpenQA.Selenium.Interactions;
 
 namespace Microsoft.PowerToys.UITest
 {
+    // Class representing a session for UI testing
     public class Session
     {
+        // Property to hold the root driver
         private WindowsDriver<WindowsElement> Root { get; set; }
 
+        // Property to hold the Windows driver
         private WindowsDriver<WindowsElement> WindowsDriver { get; set; }
 
+        // Importing user32.dll to set the foreground window
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(nint hWnd);
 
+        // Constructor to initialize the session with root and Windows driver
         public Session(WindowsDriver<WindowsElement> root, WindowsDriver<WindowsElement> windowsDriver)
         {
             Root = root;
             WindowsDriver = windowsDriver;
         }
 
+        // Method to find an element by a given selector
         public T FindElement<T>(By by)
              where T : Element, new()
         {
@@ -38,6 +44,7 @@ namespace Microsoft.PowerToys.UITest
             return NewElement<T>(item);
         }
 
+        // Method to find an element by its name
         public T FindElementByName<T>(string name)
             where T : Element, new()
         {
@@ -46,6 +53,7 @@ namespace Microsoft.PowerToys.UITest
             return NewElement<T>(item);
         }
 
+        // Method to find multiple elements by their name
         public ReadOnlyCollection<T>? FindElementsByName<T>(string name)
             where T : Element, new()
         {
@@ -62,6 +70,7 @@ namespace Microsoft.PowerToys.UITest
             return resReadOnlyCollection;
         }
 
+        // Method to create a new element of type T
         private T NewElement<T>(WindowsElement element)
              where T : Element, new()
         {
@@ -71,9 +80,10 @@ namespace Microsoft.PowerToys.UITest
             return newElement;
         }
 
-        // Take control of an application that already exists
+        // Method to take control of an existing application
         public Session? AttachSession(PowerToysModuleWindow module)
         {
+            Thread.Sleep(4000);
             string windowName = ModuleConfigData.Instance.GetModuleWindowData(module).WindowName;
             string appName = ModuleConfigData.Instance.GetModuleWindowData(module).ModuleName;
 

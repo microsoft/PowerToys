@@ -30,8 +30,10 @@ namespace Microsoft.PowerToys.UITest
 
     public class ModuleConfigData
     {
+        // URL for Windows Application Driver
         public const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
 
+        // Singleton instance of ModuleConfigData
         private static readonly Lazy<ModuleConfigData> MInstance = new Lazy<ModuleConfigData>(() => new ModuleConfigData());
 
         public static ModuleConfigData Instance
@@ -42,10 +44,13 @@ namespace Microsoft.PowerToys.UITest
             }
         }
 
+        // Dictionary to hold module window names
         public Dictionary<PowerToysModuleWindow, ModuleWindowData> ModuleWindowName { get; private set; }
 
+        // Dictionary to hold module paths
         private Dictionary<PowerToysModule, string> ModulePath { get; set; }
 
+        // Private constructor to initialize module data
         private ModuleConfigData()
         {
             ModuleWindowName = new Dictionary<PowerToysModuleWindow, ModuleWindowData>();
@@ -60,28 +65,33 @@ namespace Microsoft.PowerToys.UITest
             ModulePath[PowerToysModule.Hosts] = @"\..\..\..\WinUI3Apps\PowerToys.Hosts.exe";
         }
 
+        // Method to get the path of a module
         public string GetModulePath(PowerToysModule scope)
         {
             return ModulePath[scope];
         }
 
+        // Method to get the URL of the Windows Application Driver
         public string GetWindowsApplicationDriverUrl()
         {
             return WindowsApplicationDriverUrl;
         }
 
+        // Method to get the window data of a module
         public ModuleWindowData GetModuleWindowData(PowerToysModuleWindow scope)
         {
             return ModuleWindowName[scope];
         }
     }
 
+    // Struct to hold module window data
     public struct ModuleWindowData
     {
         public string ModuleName { get; set; }
 
         public string WindowName { get; set; }
 
+        // Constructor to initialize module window data
         public ModuleWindowData(string moduleName, string windowName)
         {
             ModuleName = moduleName;

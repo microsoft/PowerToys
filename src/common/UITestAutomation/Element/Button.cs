@@ -11,13 +11,16 @@ using OpenQA.Selenium.Support.Events;
 
 namespace Microsoft.PowerToys.UITest
 {
+    // Class representing a button element in the application
     public class Button : Element
     {
+        // Constructor to initialize the button
         public Button()
             : base()
         {
         }
 
+        // Method to get the type of the button
         public string GetButtonType()
         {
             Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");
