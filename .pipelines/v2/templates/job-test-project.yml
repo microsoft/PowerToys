@@ -66,7 +66,6 @@ jobs:
       artifactName: $(TestArtifactsName)
       downloadPath: $(Pipeline.Workspace)/$(TestArtifactsName)
       downloadRunId: $(Build.BuildId)
-      architecture: ${{ parameters.platform }}
 
   - template: steps-ensure-dotnet-version.yml
     parameters:

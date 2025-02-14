@@ -8,19 +8,13 @@ parameters:
   - name: downloadRunId
     type: string
     default: ''
-  - name: architecture
-    type: string
-    default: 'x64'
 
-# Why use az cli to download? → The ARM agent (32-bit) may run into OutOfMemory issues.  
+# Why use az cli to download? → The ARM agent may run into OutOfMemory issues.  
 # Why install Python? → Azure CLI requires Python to run.  
 # Why install Azure CLI? → It is not pre-installed on the agent.  
 # Why not use AzureCLI@2 task? → It requires azureSubscription, which is unnecessary for downloading artifacts.
 steps:
   - powershell: |
-      Write-Host "Installing Python"
-
-      Write-Host "Downloading Python installer..."
       $pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.1/python-3.11.1-amd64.exe"
       $pythonPath = "C:\Program Files\Python311"
       $pythonInstaller = "python_installer.exe"
