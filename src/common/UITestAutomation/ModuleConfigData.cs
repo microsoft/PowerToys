@@ -35,15 +35,13 @@ namespace Microsoft.PowerToys.UITest
 
         public static ModuleConfigData Instance => MInstance.Value;
 
-        // Dictionary to hold module window names
         public Dictionary<PowerToysModuleWindow, ModuleWindowData> ModuleWindowName { get; }
 
-        // Dictionary to hold module paths
         private Dictionary<PowerToysModule, string> ModulePath { get; }
 
-        // Private constructor to initialize module data
         private ModuleConfigData()
         {
+            // Module name and Window name
             ModuleWindowName = new Dictionary<PowerToysModuleWindow, ModuleWindowData>
             {
                 [PowerToysModuleWindow.PowerToysSettings] = new ModuleWindowData("PowerToys", "PowerToys Settings"),
@@ -53,6 +51,7 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModuleWindow.Hosts] = new ModuleWindowData("Hosts", "Hosts File Editor"),
             };
 
+            // Exe start path when scope is set to module
             ModulePath = new Dictionary<PowerToysModule, string>
             {
                 [PowerToysModule.FancyZone] = @"\..\..\..\PowerToys.FancyZones.exe",
@@ -60,24 +59,19 @@ namespace Microsoft.PowerToys.UITest
             };
         }
 
-        // Method to get the path of a module
         public string GetModulePath(PowerToysModule scope) => ModulePath[scope];
 
-        // Method to get the URL of the Windows Application Driver
         public string GetWindowsApplicationDriverUrl() => WindowsApplicationDriverUrl;
 
-        // Method to get the window data of a module
         public ModuleWindowData GetModuleWindowData(PowerToysModuleWindow scope) => ModuleWindowName[scope];
     }
 
-    // Struct to hold module window data
     public struct ModuleWindowData
     {
         public string ModuleName { get; set; }
 
         public string WindowName { get; set; }
 
-        // Constructor to initialize module window data
         public ModuleWindowData(string moduleName, string windowName)
         {
             ModuleName = moduleName;

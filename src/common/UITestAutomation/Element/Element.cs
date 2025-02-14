@@ -16,55 +16,54 @@ using static Microsoft.PowerToys.UITest.UITestBase;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // Class representing a UI element in the application
+    // The basic class for all UI elements
     public class Element
     {
-        // Property to hold the Windows element
         public WindowsElement? WindowsElement { get; set; }
 
-        // Property to hold the Windows driver
         private WindowsDriver<WindowsElement>? driver;
 
-        // Constructor to initialize the element
         public Element() => WindowsElement = null;
 
-        // Method to set the Windows element
         internal void SetWindowsElement(WindowsElement windowsElement) => WindowsElement = windowsElement;
 
-        // Method to set the session driver
         internal void SetSession(WindowsDriver<WindowsElement> driver) => this.driver = driver;
 
-        // Method to get the name attribute of the element
+        // Get the name of the element
         public string GetName() => GetAttribute("Name");
 
-        // Method to get the text attribute of the element
+        // Get the text of the element
         public string GetText() => GetAttribute("Value");
 
-        // Method to get the automation ID of the element
+        // Get the automation ID of the element
         public string GetAutomationId() => GetAttribute("AutomationId");
 
-        // Method to get the class name of the element
+        // Get the class name of the element
         public string GetClassName() => GetAttribute("ClassName");
 
-        // Method to get the help text of the element
+        // Get the help text of the element
         public string GetHelpText() => GetAttribute("HelpText");
 
-        // Method to check if the element is enabled
-        public bool IsEnable() => GetAttribute("IsEnabled") == "True";
+        // Check if the element is enabled
+        public bool IsEnabled() => GetAttribute("IsEnabled") == "True";
 
-        // Method to check if the element is selected
+        // Check if the element is selected
         public bool IsSelected() => GetAttribute("IsSelected") == "True";
 
-        // Method to click the element
+        // Click the element
         public void Click() => PerformAction(actions => actions.Click());
 
-        // Method to right-click the element
+        // Right click the element
         public void RightClick() => PerformAction(actions => actions.ContextClick());
 
-        // Method to check if a specific attribute matches a value
-        public bool CheckAttribute(string attributeKey, string attributeValue) => GetAttribute(attributeKey) == attributeValue;
+        // Get an attribute of the element
+        private string GetAttribute(string attributeName)
+        {
+            Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");
+            return WindowsElement?.GetAttribute(attributeName) ?? string.Empty;
+        }
 
-        // Method to find an element by its name
+        // Find element by Name
         public T FindElementByName<T>(string name)
             where T : Element, new()
         {
@@ -73,7 +72,7 @@ namespace Microsoft.PowerToys.UITest
             return NewElement<T>(item);
         }
 
-        // Method to find an element by its accessibility ID
+        // Method element by AccessibilityId
         public T? FindElementByAccessibilityId<T>(string name)
             where T : Element, new()
         {
@@ -82,7 +81,7 @@ namespace Microsoft.PowerToys.UITest
             return NewElement<T>(item);
         }
 
-        // Method to find multiple elements by their name
+        // Find elements by name
         public ReadOnlyCollection<T>? FindElementsByName<T>(string name)
             where T : Element, new()
         {
@@ -101,17 +100,9 @@ namespace Microsoft.PowerToys.UITest
             return res == null ? null : new ReadOnlyCollection<T>((IList<T>)res);
         }
 
-        // Method to take a screenshot of the element
         public Screenshot? GetScreenShot() => WindowsElement?.GetScreenshot();
 
-        // Helper method to get an attribute of the element
-        private string GetAttribute(string attributeName)
-        {
-            Assert.IsNotNull(WindowsElement, $"{attributeName} should not be null");
-            return WindowsElement?.GetAttribute(attributeName) ?? string.Empty;
-        }
-
-        // Helper method to perform an action on the element
+        // Simulate manual operation
         private void PerformAction(Action<Actions> action)
         {
             var element = WindowsElement;
@@ -121,7 +112,6 @@ namespace Microsoft.PowerToys.UITest
             actions.Build().Perform();
         }
 
-        // Method to create a new element of type T
         private T NewElement<T>(WindowsElement element)
              where T : Element, new()
         {

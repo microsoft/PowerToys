@@ -15,27 +15,23 @@ using OpenQA.Selenium.Interactions;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // Class representing a session for UI testing
+    // Wrap WinAppDriver and provide interfaces to users
     public class Session
     {
-        // Property to hold the root driver
         private WindowsDriver<WindowsElement> Root { get; set; }
 
-        // Property to hold the Windows driver
         private WindowsDriver<WindowsElement> WindowsDriver { get; set; }
 
-        // Importing user32.dll to set the foreground window
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(nint hWnd);
 
-        // Constructor to initialize the session with root and Windows driver
         public Session(WindowsDriver<WindowsElement> root, WindowsDriver<WindowsElement> windowsDriver)
         {
             Root = root;
             WindowsDriver = windowsDriver;
         }
 
-        // Method to find an element by a given selector
+        // Find element by selector
         public T FindElement<T>(By by)
             where T : Element, new()
         {
@@ -44,7 +40,7 @@ namespace Microsoft.PowerToys.UITest
             return NewElement<T>(item);
         }
 
-        // Method to find an element by its name
+        // Find element by name
         public T FindElementByName<T>(string name)
             where T : Element, new()
         {
@@ -53,7 +49,7 @@ namespace Microsoft.PowerToys.UITest
             return NewElement<T>(item);
         }
 
-        // Method to find multiple elements by their name
+        // ind elements by name
         public ReadOnlyCollection<T>? FindElementsByName<T>(string name)
             where T : Element, new()
         {
@@ -63,7 +59,6 @@ namespace Microsoft.PowerToys.UITest
             return new ReadOnlyCollection<T>(res);
         }
 
-        // Method to create a new element of type T
         private T NewElement<T>(WindowsElement element)
             where T : Element, new()
         {
@@ -73,7 +68,7 @@ namespace Microsoft.PowerToys.UITest
             return newElement;
         }
 
-        // Method to take control of an existing application
+        // Attach to an existing exe by window name
         public Session? Attach(PowerToysModuleWindow module)
         {
             Thread.Sleep(4000);
