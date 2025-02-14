@@ -79,7 +79,40 @@
       if not "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform)
       if "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(NormalizedPerUserValue)
       </Command>
-      <Message>Backing up original files and populating .NET and WPF Runtime dependencies </Message>
+      <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX3 based installer</Message>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Command>
+      call cmd /C "copy ""$(ProjectDir)DepsFilesLists.h"" ""$(ProjectDir)DepsFilesLists.h.bk"""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\AdvancedPaste.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\AdvancedPaste.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Awake.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Awake.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\BaseApplications.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\BaseApplications.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\ColorPicker.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Core.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Core.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\EnvironmentVariables.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\EnvironmentVariables.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\FileExplorerPreview.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\FileExplorerPreview.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\FileLocksmith.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\FileLocksmith.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Hosts.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Hosts.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\ImageResizer.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\ImageResizer.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\KeyboardManager.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\KeyboardManager.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\MouseWithoutBorders.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\MouseWithoutBorders.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\NewPlus.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\NewPlus.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Peek.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Peek.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\PowerRename.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\PowerRename.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Product.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Product.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\RegistryPreview.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\RegistryPreview.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Resources.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Resources.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Run.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Run.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Settings.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Settings.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\ShortcutGuide.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\ShortcutGuide.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Tools.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Tools.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\WinAppSDK.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\WinUI3Applications.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\WinUI3Applications.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Workspaces.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Workspaces.wxs.bk""""
+      if not "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform)
+      if "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(NormalizedPerUserValue)
+      </Command>
+      <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX4/5 based installer</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(RunBuildEvents)'=='false'">
