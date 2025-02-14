@@ -61,66 +61,11 @@ jobs:
         reg add "HKLM\Software\Policies\Microsoft\Edge\WebView2\ReleaseChannels" /v PowerToys.exe /t REG_SZ /d "3"
       displayName: "Enable WebView2 Canary Channel"
 
-  # - download: current
-  #   displayName: Download artifacts
-  #   artifact: $(TestArtifactsName)
-  #   patterns: |-
-  #     **
-  #     !**\*.pdb
-  #     !**\*.lib
-
-  - powershell: |
-      Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
-
-      $pythonPath = "C:\Program Files\Python39"
-
-      Write-Host "Downloading Python installer..."
-      Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.9.7/python-3.9.7-amd64.exe" -OutFile "python_installer.exe"
-
-      if (!(Test-Path "python_installer.exe")) {
-          Write-Host "Python installer download failed!"
-          exit 1
-      }
-
-      Write-Host "Installing Python..."
-      Start-Process -FilePath "python_installer.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -NoNewWindow -Wait
-
-      Remove-Item -Force "python_installer.exe"
-
-      Start-Sleep -Seconds 5
-
-      if (!(Test-Path "$pythonPath\python.exe")) {
-          Write-Host "Python was not installed correctly!"
-          Write-Host "Listing contents of C:\Program Files\"
-          Get-ChildItem "C:\Program Files\"
-
-          Write-Host "Listing contents of C:\Program Files\Python39"
-          if (Test-Path "$pythonPath") {
-              Get-ChildItem "$pythonPath"
-          } else {
-              Write-Host "Python installation directory does not exist!"
-          }
-          exit 1
-      }
-
-      setx PATH "$pythonPath;$pythonPath\Scripts;%PATH%" /M
-
-      $env:Path = "$pythonPath;$pythonPath\Scripts;" + $env:Path
-
-      Write-Host "Python installed successfully!"
-      python --version
-    displayName: 'Install Python on ARM64 Windows'
-
-  # Update pip to latest
-  - pwsh: |
-      $env:Path = "C:\Program Files\Python39;C:\Program Files\Python39\Scripts;" + $env:Path
-      python -m pip install --upgrade pip
-      pip install --pre azure-cli
-      az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
-      az pipelines runs artifact download --artifact-name $(TestArtifactsName) --path "$(Pipeline.Workspace)/$(TestArtifactsName)" --run-id $(Build.BuildId) --debug
-    displayName: 'Download artifacts with Azure CLI'
-    env:
-      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+  - template: steps-download-artifacts-with-azcli.yml
+    parameters:
+      artifactName: $(TestArtifactsName)
+      downloadPath: $(Pipeline.Workspace)/$(TestArtifactsName)
+      downloadRunId: $(Build.BuildId)
 
   - template: steps-ensure-dotnet-version.yml
     parameters:
