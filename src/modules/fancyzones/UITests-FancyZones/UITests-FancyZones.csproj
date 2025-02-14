@@ -18,11 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" />
     <PackageReference Include="MSTest" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
     <Folder Include="Properties\" />
   </ItemGroup>
 </Project>
