@@ -40,10 +40,9 @@ namespace Microsoft.PowerToys.UITest
         }
 
         // Click the Close button of the window
-        public Window Close()
+        public void Close()
         {
             FindElementByName<Button>("Close").Click();
-            return this;
         }
     }
 }

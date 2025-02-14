@@ -11,10 +11,10 @@ namespace UITests_KeyboardManager
     public class RunKeyboardManagerUITests : UITestBase
     {
         [TestMethod]
-        public void EnableKeyboardManager()
+        public void OpenKeyboardManagerEditor()
         {
+            // Open KeyboardManagerEditor
             Session.FindElement<Button>(By.Name("Remap a key")).Click();
-
             Session.Attach(PowerToysModuleWindow.KeyboardManagerKeys);
 
             // Maximize window
@@ -24,15 +24,10 @@ namespace UITests_KeyboardManager
             Session.FindElementByName<Button>("Add key remapping").Click();
             Session.FindElementByName<Element>("Row 1, Select:").FindElementByName<Button>("Select").Click();
             Session.FindElementByName<Window>("Select a key on selected keyboard").FindElementByName<Button>("Cancel").Click();
-
             window.Close();
 
+            // Back to Settings
             Session.Attach(PowerToysModuleWindow.PowerToysSettings);
-
-            Session.FindElement<Button>(By.Name("Remap a key")).Click();
-
-            Session.Attach(PowerToysModuleWindow.KeyboardManagerKeys);
-            Session.FindElementByName<Window>("Remap keys").Maximize();
         }
     }
 }

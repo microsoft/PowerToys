@@ -21,22 +21,22 @@ namespace Microsoft.PowerToys.UITest
 {
     internal static class FindElementHelper
     {
-        public static T FindElement<T, TW>(Func<TW> findElementFunc, int timeoutInMilliseconds, WindowsDriver<WindowsElement>? driver)
+        public static T FindElement<T, TW>(Func<TW> findElementFunc, int timeoutMS, WindowsDriver<WindowsElement>? driver)
             where T : Element, new()
         {
             Assert.IsNotNull(driver, "driver is null");
-            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromMilliseconds(timeoutInMilliseconds);
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromMilliseconds(timeoutMS);
             var item = findElementFunc() as WindowsElement;
             Assert.IsNotNull(item, "Can't find this element");
 
             return NewElement<T>(item, driver);
         }
 
-        public static ReadOnlyCollection<T>? FindElements<T, TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, int timeoutInMilliseconds, WindowsDriver<WindowsElement>? driver)
+        public static ReadOnlyCollection<T>? FindElements<T, TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, int timeoutMS, WindowsDriver<WindowsElement>? driver)
             where T : Element, new()
         {
             Assert.IsNotNull(driver, "driver is null");
-            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromMilliseconds(timeoutInMilliseconds);
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromMilliseconds(timeoutMS);
             var items = findElementsFunc();
             var res = items.Select(item =>
             {
@@ -47,8 +47,9 @@ namespace Microsoft.PowerToys.UITest
                 }
 
                 return element;
-            }).ToList();
-            return res == null ? null : new ReadOnlyCollection<T>((IList<T>)res);
+            }).Where(element => element != null).ToList();
+
+            return new ReadOnlyCollection<T>((IList<T>)res);
         }
 
         // Create a new element of type T
@@ -56,9 +57,9 @@ namespace Microsoft.PowerToys.UITest
              where T : Element, new()
         {
             T newElement = new T();
-            Assert.IsNotNull(driver, "[Element.cs] driver is null");
+            Assert.IsNotNull(driver, "[FindElementHelper.cs] driver is null");
             newElement.SetSession(driver);
-            Assert.IsNotNull(element, "[Element.cs] element is null");
+            Assert.IsNotNull(element, "[FindElementHelper] element is null");
             newElement.SetWindowsElement(element);
             return newElement;
         }

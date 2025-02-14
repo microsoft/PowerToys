@@ -51,7 +51,7 @@ public class RunFancyZonesTest : UITestBase
     }
 }
 ```
->Specify Score:
+>Specify Scope:
 ```
 [TestClass]
 public class RunFancyZonesTest : UITestBase
