@@ -8,43 +8,72 @@ parameters:
   - name: downloadRunId
     type: string
     default: ''
+  - name: architecture
+    type: string
+    default: 'x64'
 
 # Why use az cli to download? → The ARM agent (32-bit) may run into OutOfMemory issues.  
 # Why install Python? → Azure CLI requires Python to run.  
 # Why install Azure CLI? → It is not pre-installed on the agent.  
 # Why not use AzureCLI@2 task? → It requires azureSubscription, which is unnecessary for downloading artifacts.  
+
 steps:
   - powershell: |
-      Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
+      Write-Host "Installing Python for architecture: ${{parameters.architecture}}"
+
+      if ("${{parameters.architecture}}" -eq "arm64") {
+          Write-Host "Downloading ARM64 Python installer..."
+          $pythonInstallerUrl = "https://www.python.org/ftp/python/3.9.7/python-3.9.7-arm64.exe"
+      } else {
+          Write-Host "Downloading x64 Python installer..."
+          $pythonInstallerUrl = "https://www.python.org/ftp/python/3.9.7/python-3.9.7-amd64.exe"
+      }
 
       $pythonPath = "C:\Program Files\Python39"
+      $pythonInstaller = "python_installer.exe"
 
       Write-Host "Downloading Python installer..."
-      Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.9.7/python-3.9.7-amd64.exe" -OutFile "python_installer.exe"
+      Invoke-WebRequest -Uri $pythonInstallerUrl -OutFile $pythonInstaller
 
-      if (!(Test-Path "python_installer.exe")) {
-          Write-Host "Python installer download failed!"
+      if (!(Test-Path $pythonInstaller)) {
+          Write-Error "Python installer download failed!"
           exit 1
       }
 
       Write-Host "Installing Python..."
-      Start-Process -FilePath "python_installer.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -NoNewWindow -Wait
-
-      Remove-Item -Force "python_installer.exe"
+      Start-Process -FilePath $pythonInstaller -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -NoNewWindow -Wait
+      Remove-Item -Force $pythonInstaller
 
       Start-Sleep -Seconds 5
 
-      $env:Path = "$pythonPath;$pythonPath\Scripts;" + $env:Path
+      if (!(Test-Path "$pythonPath\python.exe")) {
+          Write-Error "Python installation failed!"
+          exit 1
+      }
 
       Write-Host "Python installed successfully!"
-      python --version
-    displayName: 'Install Python on ARM64 Windows'
+      & "$pythonPath\python.exe" --version
+    displayName: 'Install Python (Configurable Architecture)'
 
   - pwsh: |
-      $env:Path = "C:\Program Files\Python39;C:\Program Files\Python39\Scripts;" + $env:Path
+      Write-Host "Configuring environment variables..."
+
+      $pythonPath = "C:\Program Files\Python39"
+      $env:Path = "$pythonPath;$pythonPath\Scripts;" + $env:Path
+
+      Write-Host "Upgrading pip..."
       python -m pip install --upgrade pip
+
+      Write-Host "Installing Azure CLI..."
       pip install --pre azure-cli
+
+      Write-Host "Verifying Azure CLI installation..."
+      az --version
+
+      Write-Host "Configuring Azure DevOps defaults..."
       az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
+
+      Write-Host "Downloading artifacts..."
       az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "${{parameters.downloadPath}}" --run-id ${{parameters.downloadRunId}} --debug
     displayName: 'Download artifacts with Azure CLI'
     env:
