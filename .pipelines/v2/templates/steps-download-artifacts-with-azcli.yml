@@ -18,17 +18,11 @@ parameters:
 # Why not use AzureCLI@2 task? → It requires azureSubscription, which is unnecessary for downloading artifacts.
 steps:
   - powershell: |
-      Write-Host "Installing Python for architecture: ${{parameters.architecture}}"
+      Write-Host "Installing Python"
 
-      if ("${{parameters.architecture}}" -eq "arm64") {
-          Write-Host "Downloading ARM64 Python installer..."
-          $pythonInstallerUrl = "https://www.python.org/ftp/python/3.13.2/python-3.13.2-arm64.exe"
-      } else {
-          Write-Host "Downloading x64 Python installer..."
-          $pythonInstallerUrl = "https://www.python.org/ftp/python/3.13.2/python-3.13.2-amd64.exe"
-      }
-
-      $pythonPath = "C:\Program Files\Python313"
+      Write-Host "Downloading Python installer..."
+      $pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.11/python-3.11.11-amd64.exe"
+      $pythonPath = "C:\Program Files\Python311"
       $pythonInstaller = "python_installer.exe"
 
       Write-Host "Downloading Python installer..."
@@ -52,12 +46,12 @@ steps:
 
       Write-Host "Python installed successfully!"
       & "$pythonPath\python.exe" --version
-    displayName: 'Install Python (Configurable Architecture)'
+    displayName: 'Install Python for Azure CLI'
 
   - pwsh: |
       Write-Host "Configuring environment variables..."
 
-      $pythonPath = "C:\Program Files\Python313"
+      $pythonPath = "C:\Program Files\Python311"
       $env:Path = "$pythonPath;$pythonPath\Scripts;" + $env:Path
 
       Write-Host "Upgrading pip..."
