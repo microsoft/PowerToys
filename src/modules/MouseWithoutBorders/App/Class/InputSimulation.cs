@@ -162,10 +162,10 @@ namespace MouseWithoutBorders.Class
             uint rv = 0;
             NativeMethods.INPUT mouse_input = default;
 
-            long w65535 = (Common.DesktopBounds.Right - Common.DesktopBounds.Left) * 65535 / Common.ScreenWidth;
-            long h65535 = (Common.DesktopBounds.Bottom - Common.DesktopBounds.Top) * 65535 / Common.ScreenHeight;
-            long l65535 = Common.DesktopBounds.Left * 65535 / Common.ScreenWidth;
-            long t65535 = Common.DesktopBounds.Top * 65535 / Common.ScreenHeight;
+            long w65535 = (MachineStuff.DesktopBounds.Right - MachineStuff.DesktopBounds.Left) * 65535 / Common.ScreenWidth;
+            long h65535 = (MachineStuff.DesktopBounds.Bottom - MachineStuff.DesktopBounds.Top) * 65535 / Common.ScreenHeight;
+            long l65535 = MachineStuff.DesktopBounds.Left * 65535 / Common.ScreenWidth;
+            long t65535 = MachineStuff.DesktopBounds.Top * 65535 / Common.ScreenHeight;
             mouse_input.type = 0;
             long dx = (md.X * w65535 / 65535) + l65535;
             long dy = (md.Y * h65535 / 65535) + t65535;
@@ -221,7 +221,7 @@ namespace MouseWithoutBorders.Class
                 rv = SendInputEx(mouse_input);
             });
 
-            if (Common.MainFormVisible && !Common.IsDropping)
+            if (Common.MainFormVisible && !DragDrop.IsDropping)
             {
                 Common.MainFormDot();
             }
@@ -233,10 +233,10 @@ namespace MouseWithoutBorders.Class
         {
             NativeMethods.INPUT mouse_input = default;
 
-            long w65535 = (Common.DesktopBounds.Right - Common.DesktopBounds.Left) * 65535 / Common.ScreenWidth;
-            long h65535 = (Common.DesktopBounds.Bottom - Common.DesktopBounds.Top) * 65535 / Common.ScreenHeight;
-            long l65535 = Common.DesktopBounds.Left * 65535 / Common.ScreenWidth;
-            long t65535 = Common.DesktopBounds.Top * 65535 / Common.ScreenHeight;
+            long w65535 = (MachineStuff.DesktopBounds.Right - MachineStuff.DesktopBounds.Left) * 65535 / Common.ScreenWidth;
+            long h65535 = (MachineStuff.DesktopBounds.Bottom - MachineStuff.DesktopBounds.Top) * 65535 / Common.ScreenHeight;
+            long l65535 = MachineStuff.DesktopBounds.Left * 65535 / Common.ScreenWidth;
+            long t65535 = MachineStuff.DesktopBounds.Top * 65535 / Common.ScreenHeight;
             mouse_input.type = 0;
             long dx = (x * w65535 / 65535) + l65535;
             long dy = (y * h65535 / 65535) + t65535;

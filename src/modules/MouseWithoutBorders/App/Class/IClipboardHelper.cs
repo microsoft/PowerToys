@@ -154,7 +154,7 @@ namespace MouseWithoutBorders
 
         public void SendDragFile(string fileName)
         {
-            Common.DragDropStep05Ex(fileName);
+            DragDrop.DragDropStep05Ex(fileName);
         }
 
         public void SendClipboardData(ByteArrayOrString data, bool isFilePath)
