@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.UITest
             return res == null ? null : new ReadOnlyCollection<T>((IList<T>)res);
         }
 
-        // Method to create a new element of type T
+        // Create a new element of type T
         public static T NewElement<T>(WindowsElement element, WindowsDriver<WindowsElement>? driver)
              where T : Element, new()
         {

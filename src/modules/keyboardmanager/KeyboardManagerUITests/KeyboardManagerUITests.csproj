@@ -18,7 +18,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="MSTest" />
-		<PackageReference Include="System.IO.Abstractions" />
 	</ItemGroup>
 
 	<ItemGroup>
