@@ -4,9 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -21,7 +18,7 @@ namespace Microsoft.PowerToys.UITest
     public enum PowerToysModuleWindow
     {
         None,
-        PowerToys,
+        PowerToysSettings,
         FancyZone,
         KeyboardManagerKeys,
         KeyboardManagerShortcuts,
@@ -36,52 +33,41 @@ namespace Microsoft.PowerToys.UITest
         // Singleton instance of ModuleConfigData
         private static readonly Lazy<ModuleConfigData> MInstance = new Lazy<ModuleConfigData>(() => new ModuleConfigData());
 
-        public static ModuleConfigData Instance
-        {
-            get
-            {
-                return MInstance.Value;
-            }
-        }
+        public static ModuleConfigData Instance => MInstance.Value;
 
         // Dictionary to hold module window names
-        public Dictionary<PowerToysModuleWindow, ModuleWindowData> ModuleWindowName { get; private set; }
+        public Dictionary<PowerToysModuleWindow, ModuleWindowData> ModuleWindowName { get; }
 
         // Dictionary to hold module paths
-        private Dictionary<PowerToysModule, string> ModulePath { get; set; }
+        private Dictionary<PowerToysModule, string> ModulePath { get; }
 
         // Private constructor to initialize module data
         private ModuleConfigData()
         {
-            ModuleWindowName = new Dictionary<PowerToysModuleWindow, ModuleWindowData>();
-            ModuleWindowName[PowerToysModuleWindow.FancyZone] = new ModuleWindowData("PowerToys", "PowerToys Settings");
-            ModuleWindowName[PowerToysModuleWindow.FancyZone] = new ModuleWindowData("Fancyzone", "FancyZones Layout");
-            ModuleWindowName[PowerToysModuleWindow.KeyboardManagerKeys] = new ModuleWindowData("KeyboardManagerKeys", "Remap keys");
-            ModuleWindowName[PowerToysModuleWindow.KeyboardManagerShortcuts] = new ModuleWindowData("KeyboardManagerShortcuts", "Remap shortcuts");
-            ModuleWindowName[PowerToysModuleWindow.Hosts] = new ModuleWindowData("Hosts", "Hosts File Editor");
+            ModuleWindowName = new Dictionary<PowerToysModuleWindow, ModuleWindowData>
+            {
+                [PowerToysModuleWindow.PowerToysSettings] = new ModuleWindowData("PowerToys", "PowerToys Settings"),
+                [PowerToysModuleWindow.FancyZone] = new ModuleWindowData("Fancyzone", "FancyZones Layout"),
+                [PowerToysModuleWindow.KeyboardManagerKeys] = new ModuleWindowData("KeyboardManagerKeys", "Remap keys"),
+                [PowerToysModuleWindow.KeyboardManagerShortcuts] = new ModuleWindowData("KeyboardManagerShortcuts", "Remap shortcuts"),
+                [PowerToysModuleWindow.Hosts] = new ModuleWindowData("Hosts", "Hosts File Editor"),
+            };
 
-            ModulePath = new Dictionary<PowerToysModule, string>();
-            ModulePath[PowerToysModule.FancyZone] = @"\..\..\..\PowerToys.FancyZones.exe";
-            ModulePath[PowerToysModule.Hosts] = @"\..\..\..\WinUI3Apps\PowerToys.Hosts.exe";
+            ModulePath = new Dictionary<PowerToysModule, string>
+            {
+                [PowerToysModule.FancyZone] = @"\..\..\..\PowerToys.FancyZones.exe",
+                [PowerToysModule.Hosts] = @"\..\..\..\WinUI3Apps\PowerToys.Hosts.exe",
+            };
         }
 
         // Method to get the path of a module
-        public string GetModulePath(PowerToysModule scope)
-        {
-            return ModulePath[scope];
-        }
+        public string GetModulePath(PowerToysModule scope) => ModulePath[scope];
 
         // Method to get the URL of the Windows Application Driver
-        public string GetWindowsApplicationDriverUrl()
-        {
-            return WindowsApplicationDriverUrl;
-        }
+        public string GetWindowsApplicationDriverUrl() => WindowsApplicationDriverUrl;
 
         // Method to get the window data of a module
-        public ModuleWindowData GetModuleWindowData(PowerToysModuleWindow scope)
-        {
-            return ModuleWindowName[scope];
-        }
+        public ModuleWindowData GetModuleWindowData(PowerToysModuleWindow scope) => ModuleWindowName[scope];
     }
 
     // Struct to hold module window data

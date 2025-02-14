@@ -8,15 +8,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
-using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
-using static Microsoft.PowerToys.UITest.ModuleConfigData;
-using static Microsoft.PowerToys.UITest.UITestBase;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -27,7 +23,7 @@ namespace Microsoft.PowerToys.UITest
         public Session Session { get; set; }
 
         // Instance of TestInit class
-        private TestInit testInit = new TestInit();
+        private readonly TestInit testInit = new TestInit();
 
         // Default constructor
         public UITestBase()
@@ -71,15 +67,17 @@ namespace Microsoft.PowerToys.UITest
                 var desktopCapabilities = new AppiumOptions();
                 desktopCapabilities.AddAdditionalCapability("app", "Root");
                 Root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
-
-                Driver = null;
             }
 
             // Method to initialize the test
             [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
             public void Init()
             {
-                appDriver = Process.Start(new ProcessStartInfo() { FileName = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe", Verb = "runas" });
+                appDriver = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe",
+                    Verb = "runas",
+                });
 
                 // Launch the executable
                 string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -88,7 +86,7 @@ namespace Microsoft.PowerToys.UITest
 
                 Assert.IsNotNull(Driver, "Session not initialized");
 
-                // Set implicit timeout to make element search to retry every 500 ms
+                // Set implicit timeout to make element search retry every 500 ms
                 Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
             }
 
@@ -101,13 +99,14 @@ namespace Microsoft.PowerToys.UITest
                 }
                 catch
                 {
+                    // Handle exceptions if needed
                 }
             }
 
             // Create a new application and take control of it
             public void StartExe(string appName, string windowName, string appPath)
             {
-                AppiumOptions opts = new AppiumOptions();
+                var opts = new AppiumOptions();
                 opts.AddAdditionalCapability("app", appPath);
                 Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
             }
@@ -119,10 +118,7 @@ namespace Microsoft.PowerToys.UITest
             }
 
             // Method to get the root driver
-            public WindowsDriver<WindowsElement> GetRoot()
-            {
-                return Root;
-            }
+            public WindowsDriver<WindowsElement> GetRoot() => Root;
 
             // Method to get the driver
             public WindowsDriver<WindowsElement> GetDriver()

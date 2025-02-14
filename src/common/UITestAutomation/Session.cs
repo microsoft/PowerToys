@@ -37,10 +37,10 @@ namespace Microsoft.PowerToys.UITest
 
         // Method to find an element by a given selector
         public T FindElement<T>(By by)
-             where T : Element, new()
+            where T : Element, new()
         {
             var item = WindowsDriver.FindElement(by.ToSeleniumBy());
-            Assert.IsNotNull(item, "Can`t find this element");
+            Assert.IsNotNull(item, "Can't find this element");
             return NewElement<T>(item);
         }
 
@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.UITest
             where T : Element, new()
         {
             var item = WindowsDriver.FindElementByName(name);
-            Assert.IsNotNull(item, "Can`t find this element");
+            Assert.IsNotNull(item, "Can't find this element");
             return NewElement<T>(item);
         }
 
@@ -58,21 +58,14 @@ namespace Microsoft.PowerToys.UITest
             where T : Element, new()
         {
             var items = WindowsDriver.FindElementsByName(name);
-            Assert.IsNotNull(items, "Can`t find this element");
-            List<T> res = new List<T>();
-            foreach (var item in items)
-            {
-                var element = NewElement<T>(item);
-                res.Add(element);
-            }
-
-            var resReadOnlyCollection = new ReadOnlyCollection<T>(res);
-            return resReadOnlyCollection;
+            Assert.IsNotNull(items, "Can't find this element");
+            var res = items.Select(NewElement<T>).ToList();
+            return new ReadOnlyCollection<T>(res);
         }
 
         // Method to create a new element of type T
         private T NewElement<T>(WindowsElement element)
-             where T : Element, new()
+            where T : Element, new()
         {
             T newElement = new T();
             newElement.SetSession(WindowsDriver);
@@ -85,12 +78,11 @@ namespace Microsoft.PowerToys.UITest
         {
             Thread.Sleep(4000);
             string windowName = ModuleConfigData.Instance.GetModuleWindowData(module).WindowName;
-            string appName = ModuleConfigData.Instance.GetModuleWindowData(module).ModuleName;
 
             if (Root != null)
             {
                 var window = Root.FindElementByName(windowName);
-                Assert.IsNotNull(window, windowName + " not found");
+                Assert.IsNotNull(window, $"{windowName} not found");
 
                 var windowHandle = new nint(int.Parse(window.GetAttribute("NativeWindowHandle")));
                 SetForegroundWindow(windowHandle);
