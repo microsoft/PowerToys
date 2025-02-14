@@ -21,7 +21,7 @@ steps:
       Write-Host "Installing Python"
 
       Write-Host "Downloading Python installer..."
-      $pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.11/python-3.11.11-amd64.exe"
+      $pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.1/python-3.11.1-amd64.exe"
       $pythonPath = "C:\Program Files\Python311"
       $pythonInstaller = "python_installer.exe"
 
