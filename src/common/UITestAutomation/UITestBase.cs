@@ -67,6 +67,9 @@ namespace Microsoft.PowerToys.UITest
                 var desktopCapabilities = new AppiumOptions();
                 desktopCapabilities.AddAdditionalCapability("app", "Root");
                 Root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
+
+                // Set implicit timeout to make element search retry every 500 ms
+                Root.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
             }
 
             // Method to initialize the test
@@ -87,7 +90,7 @@ namespace Microsoft.PowerToys.UITest
                 Assert.IsNotNull(Driver, "Session not initialized");
 
                 // Set implicit timeout to make element search retry every 500 ms
-                Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
+                Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
             }
 
             // Method to uninitialize the test

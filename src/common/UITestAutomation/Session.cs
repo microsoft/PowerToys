@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -36,47 +37,32 @@ namespace Microsoft.PowerToys.UITest
         }
 
         // Method to find an element by a given selector
-        public T FindElement<T>(By by)
+        public T FindElement<T>(By by, int timeoutInMilliseconds = 3000)
             where T : Element, new()
         {
-            var item = WindowsDriver.FindElement(by.ToSeleniumBy());
-            Assert.IsNotNull(item, "Can't find this element");
-            return NewElement<T>(item);
+            Assert.IsNotNull(WindowsDriver, "WindowsElement is null");
+            return FindElementHelper.FindElement<T, WindowsElement>(() => WindowsDriver.FindElement(by.ToSeleniumBy()), timeoutInMilliseconds, WindowsDriver);
         }
 
         // Method to find an element by its name
-        public T FindElementByName<T>(string name)
+        public T FindElementByName<T>(string name, int timeoutInMilliseconds = 3000)
             where T : Element, new()
         {
-            var item = WindowsDriver.FindElementByName(name);
-            Assert.IsNotNull(item, "Can't find this element");
-            return NewElement<T>(item);
+            Assert.IsNotNull(WindowsDriver, "WindowsElement is null");
+            return FindElementHelper.FindElement<T, WindowsElement>(() => WindowsDriver.FindElementByName(name), timeoutInMilliseconds, WindowsDriver);
         }
 
         // Method to find multiple elements by their name
-        public ReadOnlyCollection<T>? FindElementsByName<T>(string name)
+        public ReadOnlyCollection<T>? FindElementsByName<T>(string name, int timeoutInMilliseconds = 3000)
             where T : Element, new()
         {
-            var items = WindowsDriver.FindElementsByName(name);
-            Assert.IsNotNull(items, "Can't find this element");
-            var res = items.Select(NewElement<T>).ToList();
-            return new ReadOnlyCollection<T>(res);
-        }
-
-        // Method to create a new element of type T
-        private T NewElement<T>(WindowsElement element)
-            where T : Element, new()
-        {
-            T newElement = new T();
-            newElement.SetSession(WindowsDriver);
-            newElement.SetWindowsElement(element);
-            return newElement;
+            Assert.IsNotNull(WindowsDriver, "WindowsElement is null");
+            return FindElementHelper.FindElements<T, WindowsElement>(() => WindowsDriver.FindElementsByName(name), timeoutInMilliseconds, WindowsDriver);
         }
 
         // Method to take control of an existing application
         public Session? Attach(PowerToysModuleWindow module)
         {
-            Thread.Sleep(4000);
             string windowName = ModuleConfigData.Instance.GetModuleWindowData(module).WindowName;
 
             if (Root != null)
@@ -92,6 +78,9 @@ namespace Microsoft.PowerToys.UITest
                 appCapabilities.AddAdditionalCapability("deviceName", "WindowsPC");
                 WindowsDriver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
                 Assert.IsNotNull(WindowsDriver, "Attach WindowsDriver is null");
+
+                // Set implicit timeout to make element search retry every 500 ms
+                WindowsDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
             }
             else
             {

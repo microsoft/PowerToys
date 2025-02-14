@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Remote;
@@ -65,40 +67,27 @@ namespace Microsoft.PowerToys.UITest
         public bool CheckAttribute(string attributeKey, string attributeValue) => GetAttribute(attributeKey) == attributeValue;
 
         // Method to find an element by its name
-        public T FindElementByName<T>(string name)
+        public T FindElementByName<T>(string name, int timeoutInMilliseconds = 3000)
             where T : Element, new()
         {
-            var item = WindowsElement?.FindElementByName(name) as WindowsElement;
-            Assert.IsNotNull(item, "Can't find this element");
-            return NewElement<T>(item);
+            Assert.IsNotNull(WindowsElement, "WindowsElement is null");
+            return FindElementHelper.FindElement<T, AppiumWebElement>(() => WindowsElement.FindElementByName(name), timeoutInMilliseconds, driver);
         }
 
         // Method to find an element by its accessibility ID
-        public T? FindElementByAccessibilityId<T>(string name)
+        public T? FindElementByAccessibilityId<T>(string name, int timeoutInMilliseconds = 3000)
             where T : Element, new()
         {
-            var item = WindowsElement?.FindElementByAccessibilityId(name) as WindowsElement;
-            Assert.IsNotNull(item, "Can't find this element");
-            return NewElement<T>(item);
+            Assert.IsNotNull(WindowsElement, "WindowsElement is null");
+            return FindElementHelper.FindElement<T, AppiumWebElement>(() => WindowsElement.FindElementByAccessibilityId(name), timeoutInMilliseconds, driver);
         }
 
         // Method to find multiple elements by their name
-        public ReadOnlyCollection<T>? FindElementsByName<T>(string name)
+        public ReadOnlyCollection<T>? FindElementsByName<T>(string name, int timeoutInMilliseconds = 3000)
             where T : Element, new()
         {
-            var items = WindowsElement?.FindElementsByName(name);
-            Assert.IsNotNull(items, "Can't find this element");
-            var res = items.Select(item =>
-            {
-                var element = item as WindowsElement;
-                if (element != null)
-                {
-                    NewElement<T>(element);
-                }
-
-                return element;
-            }).ToList();
-            return res == null ? null : new ReadOnlyCollection<T>((IList<T>)res);
+            Assert.IsNotNull(WindowsElement, "WindowsElement is null");
+            return FindElementHelper.FindElements<T, AppiumWebElement>(() => WindowsElement.FindElementsByName(name), timeoutInMilliseconds, driver);
         }
 
         // Method to take a screenshot of the element
@@ -119,18 +108,6 @@ namespace Microsoft.PowerToys.UITest
             actions.MoveToElement(element);
             action(actions);
             actions.Build().Perform();
-        }
-
-        // Method to create a new element of type T
-        private T NewElement<T>(WindowsElement element)
-             where T : Element, new()
-        {
-            T newElement = new T();
-            Assert.IsNotNull(driver, "[Element.cs] driver is null");
-            newElement.SetSession(driver);
-            Assert.IsNotNull(element, "[Element.cs] element is null");
-            newElement.SetWindowsElement(element);
-            return newElement;
         }
     }
 }
