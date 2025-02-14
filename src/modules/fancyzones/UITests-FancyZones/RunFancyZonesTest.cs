@@ -12,11 +12,16 @@ namespace UITests_FancyZones
     [TestClass]
     public class RunFancyZonesTest : UITestBase
     {
+        public RunFancyZonesTest()
+            : base(PowerToysModule.FancyZone)
+        {
+        }
+
         [TestMethod]
         public void RunFancyZones()
         {
-            Session.FindElementByName<Button>("Launch layout editor").Click();
-            Session.Attach(PowerToysModuleWindow.FancyZone);
+            // Session.FindElementByName<Button>("Launch layout editor").Click();
+            // Session.Attach(PowerToysModuleWindow.FancyZone);
             Session.FindElementByName<Button>("Create new layout").Click();
         }
     }

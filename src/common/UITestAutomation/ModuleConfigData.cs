@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.UITest
             // Exe start path when scope is set to module
             ModulePath = new Dictionary<PowerToysModule, string>
             {
-                [PowerToysModule.FancyZone] = @"\..\..\..\PowerToys.FancyZones.exe",
+                [PowerToysModule.FancyZone] = @"\..\..\..\PowerToys.FancyZonesEditor.exe",
                 [PowerToysModule.Hosts] = @"\..\..\..\WinUI3Apps\PowerToys.Hosts.exe",
             };
         }
