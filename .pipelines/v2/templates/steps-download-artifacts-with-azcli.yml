@@ -15,8 +15,7 @@ parameters:
 # Why use az cli to download? → The ARM agent (32-bit) may run into OutOfMemory issues.  
 # Why install Python? → Azure CLI requires Python to run.  
 # Why install Azure CLI? → It is not pre-installed on the agent.  
-# Why not use AzureCLI@2 task? → It requires azureSubscription, which is unnecessary for downloading artifacts.  
-
+# Why not use AzureCLI@2 task? → It requires azureSubscription, which is unnecessary for downloading artifacts.
 steps:
   - powershell: |
       Write-Host "Installing Python for architecture: ${{parameters.architecture}}"
