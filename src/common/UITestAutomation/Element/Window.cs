@@ -11,33 +11,38 @@ using OpenQA.Selenium.Support.Events;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // Class representing a window in the application
     public class Window : Element
     {
-        // Class representing a window in the application
         public Window()
             : base()
         {
         }
 
-        // Method to maximize the window
+        // Click the Maximize button of the window
         public Window Maximize()
         {
             FindElementByName<Button>("Maximize").Click();
             return this;
         }
 
-        // Method to restore the window to its original size
+        // Click the Restore button of the window
         public Window Restore()
         {
             FindElementByName<Button>("Restore").Click();
             return this;
         }
 
-        // Method to minimize the window
+        // Click the Minimize button of the window
         public Window Minimize()
         {
             FindElementByName<Button>("Minimize").Click();
+            return this;
+        }
+
+        // Click the Close button of the window
+        public Window Close()
+        {
+            FindElementByName<Button>("Close").Click();
             return this;
         }
     }

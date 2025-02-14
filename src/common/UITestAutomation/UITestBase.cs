@@ -16,23 +16,20 @@ using OpenQA.Selenium.Interactions;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // Base class for UI tests
+    // Base class that should be interited by all Test Classes
     public class UITestBase
     {
-        // Property to hold the session
         public Session Session { get; set; }
 
-        // Instance of TestInit class
         private readonly TestInit testInit = new TestInit();
 
-        // Default constructor
         public UITestBase()
         {
             testInit.Init();
             Session = new Session(testInit.GetRoot(), testInit.GetDriver());
         }
 
-        // Constructor with scope parameter
+        // The default scope starts from the PowerToys settings UI.Set scope here to specify starting module
         public UITestBase(PowerToysModule scope)
         {
             testInit.SetScope(scope);
@@ -40,7 +37,6 @@ namespace Microsoft.PowerToys.UITest
             Session = new Session(testInit.GetRoot(), testInit.GetDriver());
         }
 
-        // Destructor to uninitialize test
         ~UITestBase()
         {
             testInit.UnInit();
@@ -49,19 +45,15 @@ namespace Microsoft.PowerToys.UITest
         // Nested class for test initialization
         private sealed class TestInit
         {
-            // Property to hold the root driver
             private WindowsDriver<WindowsElement> Root { get; set; }
 
-            // Property to hold the driver
             private WindowsDriver<WindowsElement>? Driver { get; set; }
 
-            // Static field to hold the application driver process
             private static Process? appDriver;
 
-            // Static field to hold the session path
+            // Default session path
             private static string sessionPath = @"\..\..\..\WinUI3Apps\PowerToys.Settings.exe";
 
-            // Constructor to initialize the root driver
             public TestInit()
             {
                 var desktopCapabilities = new AppiumOptions();
@@ -72,7 +64,7 @@ namespace Microsoft.PowerToys.UITest
                 Root.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
             }
 
-            // Method to initialize the test
+            // Initialize WinAppDriver
             [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
             public void Init()
             {
@@ -82,7 +74,6 @@ namespace Microsoft.PowerToys.UITest
                     Verb = "runas",
                 });
 
-                // Launch the executable
                 string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 path += sessionPath;
                 StartExe("PowerToys", "PowerToys Settings", path);
@@ -106,7 +97,7 @@ namespace Microsoft.PowerToys.UITest
                 }
             }
 
-            // Create a new application and take control of it
+            // Start a new exe and take control of it
             public void StartExe(string appName, string windowName, string appPath)
             {
                 var opts = new AppiumOptions();
@@ -114,16 +105,14 @@ namespace Microsoft.PowerToys.UITest
                 Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
             }
 
-            // Method to set the scope of the test
+            // Set scope to the Test Class
             public void SetScope(PowerToysModule scope)
             {
                 sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
             }
 
-            // Method to get the root driver
             public WindowsDriver<WindowsElement> GetRoot() => Root;
 
-            // Method to get the driver
             public WindowsDriver<WindowsElement> GetDriver()
             {
                 Assert.IsNotNull(Driver);

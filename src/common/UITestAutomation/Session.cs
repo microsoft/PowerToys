@@ -16,51 +16,47 @@ using OpenQA.Selenium.Interactions;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // Class representing a session for UI testing
+    // Wrap WinAppDriver and provide interfaces to users
     public class Session
     {
-        // Property to hold the root driver
         private WindowsDriver<WindowsElement> Root { get; set; }
 
-        // Property to hold the Windows driver
         private WindowsDriver<WindowsElement> WindowsDriver { get; set; }
 
-        // Importing user32.dll to set the foreground window
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(nint hWnd);
 
-        // Constructor to initialize the session with root and Windows driver
         public Session(WindowsDriver<WindowsElement> root, WindowsDriver<WindowsElement> windowsDriver)
         {
             Root = root;
             WindowsDriver = windowsDriver;
         }
 
-        // Method to find an element by a given selector
-        public T FindElement<T>(By by, int timeoutInMilliseconds = 3000)
+        // Find element by selector
+        public T FindElement<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(WindowsDriver, "WindowsElement is null");
-            return FindElementHelper.FindElement<T, WindowsElement>(() => WindowsDriver.FindElement(by.ToSeleniumBy()), timeoutInMilliseconds, WindowsDriver);
+            return FindElementHelper.FindElement<T, WindowsElement>(() => WindowsDriver.FindElement(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
         }
 
-        // Method to find an element by its name
-        public T FindElementByName<T>(string name, int timeoutInMilliseconds = 3000)
+        // Find element by name
+        public T FindElementByName<T>(string name, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(WindowsDriver, "WindowsElement is null");
-            return FindElementHelper.FindElement<T, WindowsElement>(() => WindowsDriver.FindElementByName(name), timeoutInMilliseconds, WindowsDriver);
+            return FindElementHelper.FindElement<T, WindowsElement>(() => WindowsDriver.FindElementByName(name), timeoutMS, WindowsDriver);
         }
 
-        // Method to find multiple elements by their name
-        public ReadOnlyCollection<T>? FindElementsByName<T>(string name, int timeoutInMilliseconds = 3000)
+        // ind elements by name
+        public ReadOnlyCollection<T>? FindElementsByName<T>(string name, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(WindowsDriver, "WindowsElement is null");
-            return FindElementHelper.FindElements<T, WindowsElement>(() => WindowsDriver.FindElementsByName(name), timeoutInMilliseconds, WindowsDriver);
+            return FindElementHelper.FindElements<T, WindowsElement>(() => WindowsDriver.FindElementsByName(name), timeoutMS, WindowsDriver);
         }
 
-        // Method to take control of an existing application
+        // Attach to an existing exe by window name
         public Session? Attach(PowerToysModuleWindow module)
         {
             string windowName = ModuleConfigData.Instance.GetModuleWindowData(module).WindowName;
