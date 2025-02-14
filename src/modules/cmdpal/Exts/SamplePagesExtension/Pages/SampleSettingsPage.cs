@@ -3,13 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Reflection.Emit;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
-internal sealed partial class SampleSettingsPage : FormPage
+internal sealed partial class SampleSettingsPage : ContentPage
 {
     private readonly Settings _settings = new();
 
@@ -22,9 +21,9 @@ internal sealed partial class SampleSettingsPage : FormPage
         new ChoiceSetSetting.Choice("So many choices", "4"),
     };
 
-    public override IForm[] Forms()
+    public override IContent[] GetContent()
     {
-        var s = _settings.ToForms();
+        var s = _settings.ToContent();
         return s;
     }
 
@@ -33,20 +32,20 @@ internal sealed partial class SampleSettingsPage : FormPage
         Name = "Sample Settings";
         Icon = new IconInfo(string.Empty);
         _settings.Add(new ToggleSetting("onOff", true)
-            {
-                Label = "This is a toggle",
-                Description = "It produces a simple checkbox",
-            });
+        {
+            Label = "This is a toggle",
+            Description = "It produces a simple checkbox",
+        });
         _settings.Add(new TextSetting("someText", "initial value")
-            {
-                Label = "This is a text box",
-                Description = "For some string of text",
-            });
+        {
+            Label = "This is a text box",
+            Description = "For some string of text",
+        });
         _settings.Add(new ChoiceSetSetting("choiceSetExample", _choices)
-            {
-                Label = "It also has a label",
-                Description = "Describe your choice set setting here",
-            });
+        {
+            Label = "It also has a label",
+            Description = "Describe your choice set setting here",
+        });
 
         _settings.SettingsChanged += SettingsChanged;
     }
