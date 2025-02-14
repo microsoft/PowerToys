@@ -16,7 +16,7 @@ namespace UITests_FancyZones
         public void RunFancyZones()
         {
             Session.FindElementByName<Button>("Launch layout editor").Click();
-            Session.AttachSession(PowerToysModuleWindow.FancyZone);
+            Session.Attach(PowerToysModuleWindow.FancyZone);
             Session.FindElementByName<Button>("Create new layout").Click();
         }
     }

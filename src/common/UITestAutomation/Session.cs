@@ -81,7 +81,7 @@ namespace Microsoft.PowerToys.UITest
         }
 
         // Method to take control of an existing application
-        public Session? AttachSession(PowerToysModuleWindow module)
+        public Session? Attach(PowerToysModuleWindow module)
         {
             Thread.Sleep(4000);
             string windowName = ModuleConfigData.Instance.GetModuleWindowData(module).WindowName;

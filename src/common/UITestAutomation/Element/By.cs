@@ -2,7 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using OpenQA.Selenium;
+using System.Xml.Linq;
+using static OpenQA.Selenium.By;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -20,45 +21,24 @@ namespace Microsoft.PowerToys.UITest
         }
 
         // Factory method to create a By object using the element's name.
-        public static By Name(string name)
-        {
-            return new By(OpenQA.Selenium.By.Name(name));
-        }
+        public static By Name(string name) => new By(OpenQA.Selenium.By.Name(name));
 
         // Factory method to create a By object using the element's ID.
-        public static By Id(string id)
-        {
-            return new By(OpenQA.Selenium.By.Id(id));
-        }
+        public static By Id(string id) => new By(OpenQA.Selenium.By.Id(id));
 
         // Factory method to create a By object using an XPath expression.
-        public static By XPath(string xpath)
-        {
-            return new By(OpenQA.Selenium.By.XPath(xpath));
-        }
+        public static By XPath(string xpath) => new By(OpenQA.Selenium.By.XPath(xpath));
 
         // Factory method to create a By object using a CSS selector.
-        public static By CssSelector(string cssSelector)
-        {
-            return new By(OpenQA.Selenium.By.CssSelector(cssSelector));
-        }
+        public static By CssSelector(string cssSelector) => new By(OpenQA.Selenium.By.CssSelector(cssSelector));
 
         // Factory method to create a By object using the link text.
-        public static By LinkText(string linkText)
-        {
-            return new By(OpenQA.Selenium.By.LinkText(linkText));
-        }
+        public static By LinkText(string linkText) => new By(OpenQA.Selenium.By.LinkText(linkText));
 
         // Factory method to create a By object using the tag name.
-        public static By TagName(string tagName)
-        {
-            return new By(OpenQA.Selenium.By.TagName(tagName));
-        }
+        public static By TagName(string tagName) => new By(OpenQA.Selenium.By.TagName(tagName));
 
         // Method to convert this By object to an OpenQA.Selenium.By object.
-        public OpenQA.Selenium.By ToSeleniumBy()
-        {
-            return by;
-        }
+        public OpenQA.Selenium.By ToSeleniumBy() => by;
     }
 }

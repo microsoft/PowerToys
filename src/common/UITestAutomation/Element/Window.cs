@@ -20,18 +20,9 @@ namespace Microsoft.PowerToys.UITest
         {
         }
 
-        // Method to check if the window is visible
-        public bool IsVisible()
-        {
-            Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");
-            return WindowsElement.Displayed;
-        }
-
         // Method to maximize the window
         public Window Maximize()
         {
-            Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");
-            Assert.IsTrue(IsVisible(), "Window is not visible");
             FindElementByName<Button>("Maximize").Click();
             return this;
         }
@@ -39,8 +30,6 @@ namespace Microsoft.PowerToys.UITest
         // Method to restore the window to its original size
         public Window Restore()
         {
-            Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");
-            Assert.IsTrue(IsVisible(), "Window is not visible");
             FindElementByName<Button>("Restore").Click();
             return this;
         }
@@ -48,8 +37,6 @@ namespace Microsoft.PowerToys.UITest
         // Method to minimize the window
         public Window Minimize()
         {
-            Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");
-            Assert.IsTrue(IsVisible(), "Window is not visible");
             FindElementByName<Button>("Minimize").Click();
             return this;
         }
