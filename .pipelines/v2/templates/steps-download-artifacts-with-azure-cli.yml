@@ -14,54 +14,27 @@ parameters:
 # Why install Azure CLI? → It is not pre-installed on the agent.  
 # Why not use AzureCLI@2 task? → It requires azureSubscription, which is unnecessary for downloading artifacts.
 steps:
-  - powershell: |
-      $pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.1/python-3.11.1-amd64.exe"
-      $pythonPath = "C:\Program Files\Python311"
-      $pythonInstaller = "python_installer.exe"
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.11'
+      addToPath: true
+      architecture: 'x64'
 
-      Write-Host "Downloading Python installer..."
-      Invoke-WebRequest -Uri $pythonInstallerUrl -OutFile $pythonInstaller
+  # Update pip to latest
+  - pwsh: python -m pip install --upgrade pip
+    displayName: 'Upgrade pip'
 
-      if (!(Test-Path $pythonInstaller)) {
-          Write-Error "Python installer download failed!"
-          exit 1
-      }
+  # Update to latest Azure CLI version, min version required for Azure DevOps is 2.10.1
+  - pwsh: pip install --pre azure-cli
+    displayName: 'Upgrade Azure CLI'
 
-      Write-Host "Installing Python..."
-      Start-Process -FilePath $pythonInstaller -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -NoNewWindow -Wait
-      Remove-Item -Force $pythonInstaller
+  - pwsh: az --version
+    displayName: 'Show Azure CLI version'
 
-      Start-Sleep -Seconds 5
+  - pwsh: az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
+    displayName: 'Set default Azure DevOps organization and project'
 
-      if (!(Test-Path "$pythonPath\python.exe")) {
-          Write-Error "Python installation failed!"
-          exit 1
-      }
-
-      Write-Host "Python installed successfully!"
-      & "$pythonPath\python.exe" --version
-    displayName: 'Install Python for Azure CLI'
-
-  - pwsh: |
-      Write-Host "Configuring environment variables..."
-
-      $pythonPath = "C:\Program Files\Python311"
-      $env:Path = "$pythonPath;$pythonPath\Scripts;" + $env:Path
-
-      Write-Host "Upgrading pip..."
-      python -m pip install --upgrade pip
-
-      Write-Host "Installing Azure CLI..."
-      pip install --pre azure-cli
-
-      Write-Host "Verifying Azure CLI installation..."
-      az --version
-
-      Write-Host "Configuring Azure DevOps defaults..."
-      az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
-
-      Write-Host "Downloading artifacts..."
-      az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "${{parameters.downloadPath}}" --run-id ${{parameters.downloadRunId}} --debug
+  - pwsh: az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "${{parameters.downloadPath}}" --run-id ${{parameters.downloadRunId}} --debug
     displayName: 'Download artifacts with Azure CLI'
     env:
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
