@@ -2,12 +2,6 @@ parameters:
 - name: artifactName
   type: string
   default: ""
-- name: downloadPath
-  type: string
-  default: ''
-- name: downloadRunId
-  type: string
-  default: ''
 
 # Why use az cli to download? → The ARM agent may run into OutOfMemory issues.  
 # Why use the Azure CLI ZIP version? → It comes with its own Python and works fine under emulation on ARM64.
@@ -32,7 +26,7 @@ steps:
     Write-Host "Configuring Azure DevOps defaults..."
     & "$azCli" devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
     Write-Host "Downloading artifacts..."
-    & "$azCli" pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "${{parameters.downloadPath}}" --run-id ${{parameters.downloadRunId}} --debug
+    & "$azCli" pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "$(Pipeline.Workspace)/${{parameters.artifactName}}" --run-id $(Build.BuildId) --debug
   displayName: 'Download artifacts with Azure CLI'
   env:
     AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)

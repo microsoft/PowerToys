@@ -43,11 +43,43 @@ stages:
         - template: job-ci-precheck.yml
 
   - ${{ each platform in parameters.buildPlatforms }}:
-    - stage: Test_${{ platform }}
-      displayName: Test ${{ platform }}
+    - stage: Build_${{ platform }}
+      displayName: Build ${{ platform }}
+      ${{ if ne(variables['Build.Reason'], 'Manual') }}:
+        dependsOn: [Precheck]
+        condition: and(succeeded(), ne(dependencies.Precheck.outputs['Precheck.verifyBuildRequest.skipBuild'], 'Yes'))
+      ${{ else }}:
+        dependsOn: []
       jobs:
-        - template: job-test-project.yml
+        - template: job-build-project.yml
           parameters:
-            platform: ${{ platform }}
-            configuration: Release
-            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+            pool:
+              ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+                name: SHINE-INT-L
+              ${{ else }}:
+                name: SHINE-OSS-L
+              ${{ if eq(parameters.useVSPreview, true) }}:
+                demands: ImageOverride -equals SHINE-VS17-Preview
+            buildPlatforms:
+              - ${{ platform }}
+            buildConfigurations: [Release]
+            enablePackageCaching: true
+            enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+            runTests: ${{ parameters.runTests }}
+            useVSPreview: ${{ parameters.useVSPreview }}
+            useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
+            ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
+              winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
+              useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+
+    - ${{ if eq(parameters.runTests, true) }}:
+      - stage: Test_${{ platform }}
+        displayName: Test ${{ platform }}
+        dependsOn:
+          - Build_${{platform}}
+        jobs:
+          - template: job-test-project.yml
+            parameters:
+              platform: ${{ platform }}
+              configuration: Release
+              useLatestWebView2: ${{ parameters.useLatestWebView2 }}
