@@ -22,11 +22,12 @@ steps:
     destinationFolder: '$(Build.ArtifactStagingDirectory)\AzureCLI'
 
 - pwsh: |
-    $azCli = "$(Build.ArtifactStagingDirectory)\AzureCLI\bin\az.cmd"
+    $azureCliPath = "$(Build.ArtifactStagingDirectory)\AzureCLI\bin"
+    $env:Path = "$azureCliPath;" + $env:Path
     Write-Host "Configuring Azure DevOps defaults..."
-    & "$azCli" devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
+    az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
     Write-Host "Downloading artifacts..."
-    & "$azCli" pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "$(Pipeline.Workspace)/${{parameters.artifactName}}" --run-id $(Build.BuildId) --debug
+    az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "$(Pipeline.Workspace)/${{parameters.artifactName}}" --run-id $(Build.BuildId) --debug
   displayName: 'Download artifacts with Azure CLI'
   env:
     AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
