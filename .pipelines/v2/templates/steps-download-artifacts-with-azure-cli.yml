@@ -18,7 +18,7 @@ steps:
     inputs:
       versionSpec: '3.11'
       addToPath: true
-      architecture: 'x64'
+      architecture: 'x86'
 
   # Update pip to latest
   - pwsh: python -m pip install --upgrade pip
