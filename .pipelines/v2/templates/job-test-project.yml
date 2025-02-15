@@ -64,8 +64,6 @@ jobs:
   - template: steps-download-artifacts-with-azure-cli.yml
     parameters:
       artifactName: $(TestArtifactsName)
-      downloadPath: $(Pipeline.Workspace)/$(TestArtifactsName)
-      downloadRunId: $(Build.BuildId)
 
   - template: steps-ensure-dotnet-version.yml
     parameters:

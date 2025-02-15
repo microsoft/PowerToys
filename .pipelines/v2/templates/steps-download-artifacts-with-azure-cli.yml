@@ -1,67 +1,33 @@
 parameters:
-  - name: artifactName
-    type: string
-    default: ""
-  - name: downloadPath
-    type: string
-    default: ''
-  - name: downloadRunId
-    type: string
-    default: ''
+- name: artifactName
+  type: string
+  default: ""
 
 # Why use az cli to download? → The ARM agent may run into OutOfMemory issues.  
-# Why install Python? → Azure CLI requires Python to run.  
-# Why install Azure CLI? → It is not pre-installed on the agent.  
+# Why use the Azure CLI ZIP version? → It comes with its own Python and works fine under emulation on ARM64.
 # Why not use AzureCLI@2 task? → It requires azureSubscription, which is unnecessary for downloading artifacts.
+
 steps:
-  - powershell: |
-      $pythonInstallerUrl = "https://www.python.org/ftp/python/3.11.1/python-3.11.1-amd64.exe"
-      $pythonPath = "C:\Program Files\Python311"
-      $pythonInstaller = "python_installer.exe"
+- powershell: |
+    Write-Host "Downloading Azure CLI ZIP..."
+    $azCliUrl = "https://azcliprod.blob.core.windows.net/zip/azure-cli-2.69.0-x64.zip"
+    $azCliZip = "$(Build.ArtifactStagingDirectory)\azure-cli-2.69.0-x64.zip"
 
-      Write-Host "Downloading Python installer..."
-      Invoke-WebRequest -Uri $pythonInstallerUrl -OutFile $pythonInstaller
+    Invoke-WebRequest -Uri $azCliUrl -OutFile $azCliZip
+  displayName: 'Install Azure CLI from ZIP'
 
-      if (!(Test-Path $pythonInstaller)) {
-          Write-Error "Python installer download failed!"
-          exit 1
-      }
+- task: ExtractFiles@1
+  inputs:
+    archiveFilePatterns: '$(Build.ArtifactStagingDirectory)\azure-cli-2.69.0-x64.zip'
+    destinationFolder: '$(Build.ArtifactStagingDirectory)\AzureCLI'
 
-      Write-Host "Installing Python..."
-      Start-Process -FilePath $pythonInstaller -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -NoNewWindow -Wait
-      Remove-Item -Force $pythonInstaller
-
-      Start-Sleep -Seconds 5
-
-      if (!(Test-Path "$pythonPath\python.exe")) {
-          Write-Error "Python installation failed!"
-          exit 1
-      }
-
-      Write-Host "Python installed successfully!"
-      & "$pythonPath\python.exe" --version
-    displayName: 'Install Python for Azure CLI'
-
-  - pwsh: |
-      Write-Host "Configuring environment variables..."
-
-      $pythonPath = "C:\Program Files\Python311"
-      $env:Path = "$pythonPath;$pythonPath\Scripts;" + $env:Path
-
-      Write-Host "Upgrading pip..."
-      python -m pip install --upgrade pip
-
-      Write-Host "Installing Azure CLI..."
-      pip install --pre azure-cli
-
-      Write-Host "Verifying Azure CLI installation..."
-      az --version
-
-      Write-Host "Configuring Azure DevOps defaults..."
-      az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
-
-      Write-Host "Downloading artifacts..."
-      az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "${{parameters.downloadPath}}" --run-id ${{parameters.downloadRunId}} --debug
-    displayName: 'Download artifacts with Azure CLI'
-    env:
-      AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+- pwsh: |
+    $azureCliPath = "$(Build.ArtifactStagingDirectory)\AzureCLI\bin"
+    $env:Path = "$azureCliPath;" + $env:Path
+    Write-Host "Configuring Azure DevOps defaults..."
+    az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
+    Write-Host "Downloading artifacts..."
+    az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "$(Pipeline.Workspace)/${{parameters.artifactName}}" --run-id $(Build.BuildId) --debug
+  displayName: 'Download artifacts with Azure CLI'
+  env:
+    AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
