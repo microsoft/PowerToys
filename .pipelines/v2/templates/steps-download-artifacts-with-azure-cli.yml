@@ -1,0 +1,33 @@
+parameters:
+- name: artifactName
+  type: string
+  default: ""
+
+# Why use az cli to download? → The ARM agent may run into OutOfMemory issues.  
+# Why use the Azure CLI ZIP version? → It comes with its own Python and works fine under emulation on ARM64.
+# Why not use AzureCLI@2 task? → It requires azureSubscription, which is unnecessary for downloading artifacts.
+
+steps:
+- powershell: |
+    Write-Host "Downloading Azure CLI ZIP..."
+    $azCliUrl = "https://aka.ms/installazurecliwindowszipx64"
+    $azCliZip = "$(Build.ArtifactStagingDirectory)\azure-cli.zip"
+
+    Invoke-WebRequest -Uri $azCliUrl -OutFile $azCliZip
+  displayName: 'Install Azure CLI from ZIP'
+
+- task: ExtractFiles@1
+  inputs:
+    archiveFilePatterns: '$(Build.ArtifactStagingDirectory)\azure-cli.zip'
+    destinationFolder: '$(Build.ArtifactStagingDirectory)\AzureCLI'
+
+- pwsh: |
+    $azureCliPath = "$(Build.ArtifactStagingDirectory)\AzureCLI\bin"
+    $env:Path = "$azureCliPath;" + $env:Path
+    Write-Host "Configuring Azure DevOps defaults..."
+    az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
+    Write-Host "Downloading artifacts..."
+    az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "$(Pipeline.Workspace)/${{parameters.artifactName}}" --run-id $(Build.BuildId) --debug
+  displayName: 'Download artifacts with Azure CLI'
+  env:
+    AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
