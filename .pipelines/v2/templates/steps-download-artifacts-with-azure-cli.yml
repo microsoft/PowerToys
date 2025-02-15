@@ -10,7 +10,7 @@ parameters:
 steps:
 - powershell: |
     Write-Host "Downloading Azure CLI ZIP..."
-    $azCliUrl = "https://azcliprod.blob.core.windows.net/zip/azure-cli-2.69.0-x64.zip"
+    $azCliUrl = "https://aka.ms/installazurecliwindowszipx64"
     $azCliZip = "$(Build.ArtifactStagingDirectory)\azure-cli-2.69.0-x64.zip"
 
     Invoke-WebRequest -Uri $azCliUrl -OutFile $azCliZip
