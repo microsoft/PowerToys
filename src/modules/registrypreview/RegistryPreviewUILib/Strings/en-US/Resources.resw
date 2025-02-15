@@ -178,6 +178,22 @@
   <data name="OpenDialogTitle" xml:space="preserve">
     <value>Open Registry file</value>
   </data>
+  <data name="OpenUriDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Dialog showed when an URI is clicked. Button to close the dialog.</comment>
+  </data>
+  <data name="OpenUriDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Open</value>
+    <comment>Dialog showed when an URI is clicked. Button to open the URI.</comment>
+  </data>
+  <data name="OpenUriDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Dialog showed when an URI is clicked. Button to copy the URI.</comment>
+  </data>
+  <data name="OpenUriDialog.Title" xml:space="preserve">
+    <value>Do you want RegistryPreview to open the external application?</value>
+    <comment>Title of the dialog showed when an URI is clicked,"RegistryPreview" is the name of the utility. </comment>
+  </data>
   <data name="RefreshButton.Label" xml:space="preserve">
     <value>Reload</value>
   </data>

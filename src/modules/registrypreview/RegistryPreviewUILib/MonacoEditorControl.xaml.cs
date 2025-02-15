@@ -13,6 +13,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
 
@@ -93,11 +94,12 @@ namespace RegistryPreviewUILib
 
         private async void CoreWebView2_NewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
         {
-            // Mark the event as handled, to stop WebView2 from loading it anyway
-            args.Handled = true;
-
-            // Launch the default web browser with the Uri
-            await Launcher.LaunchUriAsync(new Uri(args.Uri));
+            // Monaco opens URI in a new window. We open the URI in the default web browser.
+            if (args.Uri != null && args.IsUserInitiated)
+            {
+                args.Handled = true;
+                await ShowOpenUriDialogAsync(new Uri(args.Uri));
+            }
         }
 
         private void CoreWebView2_PermissionRequested(CoreWebView2 sender, CoreWebView2PermissionRequestedEventArgs args)
@@ -175,6 +177,24 @@ namespace RegistryPreviewUILib
         public void Dispose()
         {
             _textChangedThrottle?.Dispose();
+        }
+
+        private async Task ShowOpenUriDialogAsync(Uri uri)
+        {
+            OpenUriDialog.Content = uri.ToString();
+            var result = await OpenUriDialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                await Launcher.LaunchUriAsync(uri);
+            }
+        }
+
+        private void OpenUriDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            var dataPackage = new DataPackage();
+            dataPackage.SetText(sender.Content.ToString());
+            Clipboard.SetContent(dataPackage);
         }
     }
 }
