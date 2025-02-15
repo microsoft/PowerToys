@@ -24,7 +24,7 @@ steps:
   - pwsh: python -m pip install --upgrade pip
     displayName: 'Upgrade pip'
 
-  # Update to latest Azure CLI version, min version required for Azure DevOps is 2.10.1
+  # Update to latest Azure CLI version
   - pwsh: pip install --pre azure-cli
     displayName: 'Upgrade Azure CLI'
 
