@@ -59,8 +59,14 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             input = CalculateHelper.FixHumanMultiplicationExpressions(input);
 
+            // Get the user selected trigonometry unit
+            TrigMode trigMode = Main.GetTrigMode();
+
             // Modify trig functions depending on angle unit setting
-            input = CalculateHelper.UpdateTrigFunctions(input, Main.GetTrigMode());
+            input = CalculateHelper.UpdateTrigFunctions(input, trigMode);
+
+            // Expand conversions between trig units
+            input = CalculateHelper.ExpandTrigConversions(input, trigMode);
 
             var result = _magesEngine.Interpret(input);
 
