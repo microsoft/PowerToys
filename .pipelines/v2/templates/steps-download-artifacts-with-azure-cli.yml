@@ -11,14 +11,14 @@ steps:
 - powershell: |
     Write-Host "Downloading Azure CLI ZIP..."
     $azCliUrl = "https://aka.ms/installazurecliwindowszipx64"
-    $azCliZip = "$(Build.ArtifactStagingDirectory)\azure-cli-2.69.0-x64.zip"
+    $azCliZip = "$(Build.ArtifactStagingDirectory)\azure-cli.zip"
 
     Invoke-WebRequest -Uri $azCliUrl -OutFile $azCliZip
   displayName: 'Install Azure CLI from ZIP'
 
 - task: ExtractFiles@1
   inputs:
-    archiveFilePatterns: '$(Build.ArtifactStagingDirectory)\azure-cli-2.69.0-x64.zip'
+    archiveFilePatterns: '$(Build.ArtifactStagingDirectory)\azure-cli.zip'
     destinationFolder: '$(Build.ArtifactStagingDirectory)\AzureCLI'
 
 - pwsh: |
