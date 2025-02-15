@@ -10,31 +10,32 @@ parameters:
     default: ''
 
 # Why use az cli to download? → The ARM agent may run into OutOfMemory issues.  
-# Why install Python? → Azure CLI requires Python to run.  
-# Why install Azure CLI? → It is not pre-installed on the agent.  
+# Why use the Azure CLI ZIP version? → It comes with its own Python and works fine under emulation on ARM64.
 # Why not use AzureCLI@2 task? → It requires azureSubscription, which is unnecessary for downloading artifacts.
+
 steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.11'
-      addToPath: true
-      architecture: 'x86'
+  - powershell: |
+      Write-Host "Downloading Azure CLI ZIP..."
+      $azCliUrl = "https://aka.ms/installazureclizip"
+      $azCliZip = "azure-cli.zip"
+      $azCliPath = "C:\AzureCLI"
 
-  # Update pip to latest
-  - pwsh: python -m pip install --upgrade pip
-    displayName: 'Upgrade pip'
+      Invoke-WebRequest -Uri $azCliUrl -OutFile $azCliZip
+      Expand-Archive -Path $azCliZip -DestinationPath $azCliPath
+      Remove-Item -Force $azCliZip
 
-  # Update to latest Azure CLI version
-  - pwsh: pip install --pre azure-cli
-    displayName: 'Upgrade Azure CLI'
+      Write-Host "Adding Azure CLI to PATH..."
+      [System.Environment]::SetEnvironmentVariable("Path", "$azCliPath;" + [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine), [System.EnvironmentVariableTarget]::Machine)
 
-  - pwsh: az --version
-    displayName: 'Show Azure CLI version'
+      Write-Host "Verifying Azure CLI installation..."
+      & "$azCliPath\az.cmd" --version
+    displayName: 'Install Azure CLI from ZIP'
 
-  - pwsh: az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
-    displayName: 'Set default Azure DevOps organization and project'
-
-  - pwsh: az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "${{parameters.downloadPath}}" --run-id ${{parameters.downloadRunId}} --debug
+  - pwsh: |
+      Write-Host "Configuring Azure DevOps defaults..."
+      az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
+      Write-Host "Downloading artifacts..."
+      az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "${{parameters.downloadPath}}" --run-id ${{parameters.downloadRunId}} --debug
     displayName: 'Download artifacts with Azure CLI'
     env:
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
