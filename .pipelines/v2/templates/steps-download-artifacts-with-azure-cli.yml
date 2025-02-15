@@ -9,6 +9,11 @@ parameters:
     type: string
     default: ''
 
+variables:
+  AzureCliDir: '$(Build.ArtifactStagingDirectory)\AzureCLI'
+  AzureCliPath: '$(AzureCLIDir)\bin'
+  AzureCli: '$(AzCliPath)\az.cmd'
+
 # Why use az cli to download? → The ARM agent may run into OutOfMemory issues.  
 # Why use the Azure CLI ZIP version? → It comes with its own Python and works fine under emulation on ARM64.
 # Why not use AzureCLI@2 task? → It requires azureSubscription, which is unnecessary for downloading artifacts.
@@ -18,7 +23,6 @@ steps:
       Write-Host "Downloading Azure CLI ZIP..."
       $azCliUrl = "https://azcliprod.blob.core.windows.net/zip/azure-cli-2.69.0-x64.zip"
       $azCliZip = "$(Build.ArtifactStagingDirectory)\azure-cli-2.69.0-x64.zip"
-      $azCliPath = "C:\AzureCLI"
 
       Invoke-WebRequest -Uri $azCliUrl -OutFile $azCliZip
     displayName: 'Install Azure CLI from ZIP'
@@ -26,22 +30,14 @@ steps:
   - task: ExtractFiles@1
     inputs:
       archiveFilePatterns: '$(Build.ArtifactStagingDirectory)\azure-cli-2.69.0-x64.zip'
-      destinationFolder: '$(Build.ArtifactStagingDirectory)\AzureCLI'
-
-  - powershell: |
-      Write-Host "Adding Azure CLI to PATH..."
-      $azCliPath = "$(Build.ArtifactStagingDirectory)\AzureCLI\bin"
-      [System.Environment]::SetEnvironmentVariable("Path", "$azCliPath;" + [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Process), [System.EnvironmentVariableTarget]::Process)
-
-      Write-Host "Verifying Azure CLI installation..."
-      & "$azCliPath\az.cmd" --version
-    displayName: 'Configure Azure CLI and Verify Installation'
+      destinationFolder: '${{variables.AzureCliDir}}'
 
   - pwsh: |
+      $azCliPath = "${{variables.AzureCliPath}}"
       Write-Host "Configuring Azure DevOps defaults..."
-      az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
+      & "$azCliPath\az.cmd" devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
       Write-Host "Downloading artifacts..."
-      az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "${{parameters.downloadPath}}" --run-id ${{parameters.downloadRunId}} --debug
+      & "$azCliPath\az.cmd"z pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "${{parameters.downloadPath}}" --run-id ${{parameters.downloadRunId}} --debug
     displayName: 'Download artifacts with Azure CLI'
     env:
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
