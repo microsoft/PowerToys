@@ -17,19 +17,25 @@ steps:
   - powershell: |
       Write-Host "Downloading Azure CLI ZIP..."
       $azCliUrl = "https://azcliprod.blob.core.windows.net/zip/azure-cli-2.69.0-x64.zip"
-      $azCliZip = "azure-cli-2.69.0-x64.zip"
+      $azCliZip = "$(Build.ArtifactStagingDirectory)\azure-cli-2.69.0-x64.zip"
       $azCliPath = "C:\AzureCLI"
 
-      Invoke-WebRequest -Uri $azCliUrl
-      Expand-Archive -Path $azCliZip -DestinationPath $azCliPath
-      Remove-Item -Force $azCliZip
-
-      Write-Host "Adding Azure CLI to PATH..."
-      [System.Environment]::SetEnvironmentVariable("Path", "$azCliPath;" + [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine), [System.EnvironmentVariableTarget]::Machine)
-
-      Write-Host "Verifying Azure CLI installation..."
-      & "$azCliPath\az.cmd" --version
+      Invoke-WebRequest -Uri $azCliUrl -OutFile $azCliZip
     displayName: 'Install Azure CLI from ZIP'
+
+  - task: ExtractFiles@1
+    inputs:
+      archiveFilePatterns: '$(Build.ArtifactStagingDirectory)\azure-cli-2.69.0-x64.zip'
+      destinationFolder: '$(Build.ArtifactStagingDirectory)\AzureCLI'
+
+  - powershell: |
+        Write-Host "Adding Azure CLI to PATH..."
+        $azCliPath = "$(Build.ArtifactStagingDirectory)\AzureCLI"
+        [System.Environment]::SetEnvironmentVariable("Path", "$azCliPath;" + [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Process), [System.EnvironmentVariableTarget]::Process)
+
+        Write-Host "Verifying Azure CLI installation..."
+        & "$azCliPath\az.cmd" --version
+      displayName: 'Configure Azure CLI and Verify Installation'
 
   - pwsh: |
       Write-Host "Configuring Azure DevOps defaults..."
