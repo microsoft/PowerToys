@@ -69,8 +69,21 @@ IFACEMETHODIMP shell_context_menu::GetFlags(_Out_ EXPCMDFLAGS* returned_menu_ite
 
 IFACEMETHODIMP shell_context_menu::EnumSubCommands(_COM_Outptr_ IEnumExplorerCommand** returned_enum_commands)
 {
-    auto e = Make<shell_context_sub_menu>(site_of_folder);
-    return e->QueryInterface(IID_PPV_ARGS(returned_enum_commands));
+    try
+    {
+        auto e = Make<shell_context_sub_menu>(site_of_folder);
+        return e->QueryInterface(IID_PPV_ARGS(returned_enum_commands));
+    }
+    catch (const std::exception& ex)
+    {
+        Logger::error("New+ create submenu error: {}", ex.what());
+        return E_FAIL;
+    }
+    catch (...)
+    {
+        Logger::error("New+ create submenu error");
+        return E_FAIL;
+    }
 }
 #pragma endregion
 
@@ -80,8 +93,8 @@ IFACEMETHODIMP shell_context_menu::SetSite(_In_ IUnknown* site) noexcept
     this->site_of_folder = site;
     return S_OK;
 }
-IFACEMETHODIMP shell_context_menu::GetSite(_In_ REFIID riid, _COM_Outptr_ void** returned_site) noexcept
+IFACEMETHODIMP shell_context_menu::GetSite(_In_ REFIID interface_type, _COM_Outptr_ void** returned_site) noexcept
 {
-    return this->site_of_folder.CopyTo(riid, returned_site);
+    return this->site_of_folder.CopyTo(interface_type, returned_site);
 }
 #pragma endregion
