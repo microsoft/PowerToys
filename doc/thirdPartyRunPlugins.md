@@ -54,6 +54,7 @@ Below are community created plugins that target a website or software.  They are
 | [Everything](https://github.com/lin-ycv/EverythingPowerToys) | [Yu Chieh (Victor) Lin](https://github.com/Lin-ycv) | Get search results from Everything |
 | [GitKraken](https://github.com/davidegiacometti/PowerToys-Run-GitKraken) | [davidegiacometti](https://github.com/davidegiacometti) | Open GitKraken repositories |
 | [RDP](https://github.com/anthony81799/PowerToysRun-RDP) | [anthony81799](https://github.com/anthony81799) | Open Remote Desktop connections |
+| [RemoteDesktopUWP](https://github.com/8LWXpg/PowerToysRun-RemoteDesktopUWP) | [8LWXpg](https://github.com/8LWXpg) | Open connections in Remote Desktop UWP app |
 | [Visual Studio Recents](https://github.com/davidegiacometti/PowerToys-Run-VisualStudio) | [davidegiacometti](https://github.com/davidegiacometti) | Open Visual Studio recents |
 | [WinGet](https://github.com/bostrot/PowerToysRunPluginWinget) | [bostrot](https://github.com/bostrot) | Search and install packages from WinGet |
 | [Scoop](https://github.com/Quriz/PowerToysRunScoop) | [Quriz](https://github.com/Quriz) | Search and install packages from Scoop |
@@ -63,4 +64,3 @@ Below are community created plugins that target a website or software.  They are
 | [SSH](https://github.com/8LWXpg/PowerToysRun-SSH) | [8LWXpg](https://github.com/8LWXpg) | Connect to ssh clients |
 | [Bilibili](https://github.com/Whuihuan/PowerToysRun-Bilibili) | [Whuihuan](https://github.com/Whuihuan) | Use AVID or BVID to parse and jump to Bilibili |
 | [YubicoOauthOTP](https://github.com/dlnilsson/Community.PowerToys.Run.Plugin.YubicoOauthOTP) | [dlnilsson](https://github.com/dlnilsson) | Display generated codes from OATH accounts stored on the YubiKey in powerToys Run  |
-| [RemoteDesktopUWP](https://github.com/8LWXpg/PowerToysRun-RemoteDesktopUWP) | [8LWXpg](https://github.com/8LWXpg) | Open connections in Remote Desktop UWP app |
