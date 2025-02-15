@@ -30,7 +30,7 @@ steps:
 
   - powershell: |
       Write-Host "Adding Azure CLI to PATH..."
-      $azCliPath = "$(Build.ArtifactStagingDirectory)\AzureCLI\azure-cli-2.69.0-x64\bin"
+      $azCliPath = "$(Build.ArtifactStagingDirectory)\AzureCLI\bin"
       [System.Environment]::SetEnvironmentVariable("Path", "$azCliPath;" + [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Process), [System.EnvironmentVariableTarget]::Process)
 
       Write-Host "Verifying Azure CLI installation..."
