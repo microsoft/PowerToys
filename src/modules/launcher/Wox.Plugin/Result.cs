@@ -187,5 +187,11 @@ namespace Wox.Plugin
         /// Gets plugin ID that generated this result
         /// </summary>
         public string PluginID { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the selected data should be applied to this result.
+        /// </summary>
+        /// <remarks>Enabling this option will affect the sort ordering of this result</remarks>
+        public bool DisableSelectedDataRetrieval { get; set; }
     }
 }
