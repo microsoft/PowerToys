@@ -106,7 +106,7 @@ namespace Wox.Plugin
         {
             ArgumentNullException.ThrowIfNull(result);
 
-            if (result != null && Records.TryGetValue(result.ToString(), out var value))
+            if (result != null && !result.DisableSelectedDataRetrieval && Records.TryGetValue(result.ToString(), out var value))
             {
                 return value;
             }
