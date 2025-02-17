@@ -193,7 +193,7 @@ namespace Wox.Plugin
         /// </summary>
         public bool DisableUsageBasedScoring { get; set; }
 
-        public int GetSortOrder(int selectedItemMultiplier)
+        public int GetSortOrderScore(int selectedItemMultiplier)
         {
             if (DisableUsageBasedScoring)
             {
