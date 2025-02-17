@@ -14,7 +14,7 @@ jobs:
     pool:
       vmImage: windows-2022
     variables:
-      ArtifactName: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}-TestArtifacts
+      ArtifactName: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
     steps:
       - checkout: self
         submodules: false
