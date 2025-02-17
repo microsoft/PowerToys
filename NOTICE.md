@@ -1322,6 +1322,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.CodeAnalysis.NetAnalyzers 9.0.0
 - Microsoft.Data.Sqlite 9.0.2
 - Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16
+- Microsoft.DotNet.ILCompiler (A)
 - Microsoft.Extensions.DependencyInjection 9.0.2
 - Microsoft.Extensions.Hosting 9.0.2
 - Microsoft.Extensions.Hosting.WindowsServices 9.0.2
