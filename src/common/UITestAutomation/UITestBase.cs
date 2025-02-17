@@ -16,7 +16,7 @@ using OpenQA.Selenium.Interactions;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // Base class that should be interited by all Test Classes
+    // Base class that should be inherited by all Test Classes
     public class UITestBase
     {
         public Session Session { get; set; }

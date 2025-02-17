@@ -31,9 +31,9 @@ namespace Microsoft.PowerToys.UITest
         public const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
 
         // Singleton instance of ModuleConfigData
-        private static readonly Lazy<ModuleConfigData> MInstance = new Lazy<ModuleConfigData>(() => new ModuleConfigData());
+        private static readonly Lazy<ModuleConfigData> SingletonInstance = new Lazy<ModuleConfigData>(() => new ModuleConfigData());
 
-        public static ModuleConfigData Instance => MInstance.Value;
+        public static ModuleConfigData Instance => SingletonInstance.Value;
 
         public Dictionary<PowerToysModuleWindow, ModuleWindowData> ModuleWindowName { get; }
 
@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.UITest
             ModuleWindowName = new Dictionary<PowerToysModuleWindow, ModuleWindowData>
             {
                 [PowerToysModuleWindow.PowerToysSettings] = new ModuleWindowData("PowerToys", "PowerToys Settings"),
-                [PowerToysModuleWindow.FancyZone] = new ModuleWindowData("Fancyzone", "FancyZones Layout"),
+                [PowerToysModuleWindow.FancyZone] = new ModuleWindowData("FancyZone", "FancyZones Layout"),
                 [PowerToysModuleWindow.KeyboardManagerKeys] = new ModuleWindowData("KeyboardManagerKeys", "Remap keys"),
                 [PowerToysModuleWindow.KeyboardManagerShortcuts] = new ModuleWindowData("KeyboardManagerShortcuts", "Remap shortcuts"),
                 [PowerToysModuleWindow.Hosts] = new ModuleWindowData("Hosts", "Hosts File Editor"),
