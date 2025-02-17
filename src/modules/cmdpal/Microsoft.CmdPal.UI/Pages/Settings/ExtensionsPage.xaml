@@ -31,82 +31,23 @@
                             <DataTemplate x:DataType="viewmodels:ProviderSettingsViewModel">
                                 <controls:SettingsCard
                                     Click="SettingsCard_Click"
-                                    ContentAlignment="Left"
                                     DataContext="{x:Bind}"
+                                    Description="{x:Bind ExtensionSubtext, Mode=OneWay}"
+                                    Header="{x:Bind DisplayName, Mode=OneWay}"
                                     IsClickEnabled="True">
-                                    <!--
-                                        What we're doing here is 90% stupid.
-                                        
-                                        The SettingsCard APIs only explicitly allow an
-                                        Icon as the content for the HeaderIcon property.
-                                        We of course, have to do the goofy async IconBox thing.
-                                        
-                                        To manage this, we have to basically re-create
-                                        the layout of the SettingsCard HeaderIcon,
-                                        Header & Description, all within the Content.
-                                        
-                                        Most of what follows is lifted directly from
-                                        https://github.com/CommunityToolkit/Windows/blob/main/components/SettingsControls/src/SettingsCard/SettingsCard.xaml
-                                    -->
-                                    <Grid Margin="0,-12,0,0" HorizontalAlignment="Stretch">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" MinWidth="0" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <Viewbox
-                                            Grid.RowSpan="1"
-                                            MaxWidth="20"
-                                            MaxHeight="20"
-                                            Margin="2,0,20,0">
-                                            <cpcontrols:IconBox
-                                                Width="20"
-                                                Height="20"
-                                                Margin="0,0,0,0"
-                                                AutomationProperties.AccessibilityView="Raw"
-                                                SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
-                                        </Viewbox>
-
-                                        <StackPanel
-                                            Grid.Column="1"
-                                            Margin="0,0,24,0"
-                                            VerticalAlignment="Center"
-                                            Orientation="Vertical">
-                                            <ContentPresenter
-                                                Grid.Column="1"
-                                                HorizontalAlignment="Left"
-                                                Content="{x:Bind DisplayName, Mode=OneWay}"
-                                                HighContrastAdjustment="None"
-                                                TextWrapping="Wrap" />
-
-                                            <ContentPresenter
-                                                Content="{x:Bind ExtensionSubtext, Mode=OneWay}"
-                                                FontSize="12"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <!--
-                                            Because of this insane XAML thing we're
-                                            doing, we can't effectively put content
-                                            here on the right. Sad.
-                                        -->
-
-                                        <!--<ContentPresenter
-                                Grid.Column="2"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                HorizontalContentAlignment="Right">
-                                <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}"/>
-                            </ContentPresenter>-->
-                                    </Grid>
+                                    <controls:SettingsCard.HeaderIcon>
+                                        <cpcontrols:ContentIcon>
+                                            <cpcontrols:ContentIcon.Content>
+                                                <cpcontrols:IconBox
+                                                    Width="20"
+                                                    Height="20"
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                                    SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                            </cpcontrols:ContentIcon.Content>
+                                        </cpcontrols:ContentIcon>
+                                    </controls:SettingsCard.HeaderIcon>
+                                    <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
                                 </controls:SettingsCard>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>

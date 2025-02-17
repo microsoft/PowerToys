@@ -33,7 +33,6 @@
                   <EntranceThemeTransition FromVerticalOffset="50" />
                   <RepositionThemeTransition IsStaggeringEnabled="False" />
               </StackPanel.ChildrenTransitions>-->
-
                     <controls:SettingsExpander
                         Description="This key will open the Command Palette"
                         Header="Activation key"

@@ -69,9 +69,7 @@
                         </DataTemplate>
                     </BreadcrumbBar.ItemTemplate>
                 </BreadcrumbBar>
-
                 <Frame x:Name="NavFrame" Grid.Row="1" />
-
             </Grid>
         </NavigationView>
     </Grid>
