@@ -1,2 +1,3 @@
 ﻿## Something
 <img src="./a.jpg" \>
+# Local fallback improvement: appended a small comment.
