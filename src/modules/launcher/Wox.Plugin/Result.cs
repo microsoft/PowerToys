@@ -189,9 +189,18 @@ namespace Wox.Plugin
         public string PluginID { get; internal set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the selected data should be applied to this result.
+        /// Gets or sets a value indicating whether usage based sorting should be applied to this result.
         /// </summary>
-        /// <remarks>Enabling this option will affect the sort ordering of this result</remarks>
-        public bool DisableSelectedDataRetrieval { get; set; }
+        public bool DisableUsageBasedScoring { get; set; }
+
+        public int GetSortOrder(int selectedItemMultiplier)
+        {
+            if (DisableUsageBasedScoring)
+            {
+                return Metadata.WeightBoost + Score;
+            }
+
+            return Metadata.WeightBoost + Score + (SelectedCount * selectedItemMultiplier);
+        }
     }
 }
