@@ -21,28 +21,28 @@ namespace Microsoft.PowerToys.UITest
         // Click the Maximize button of the window
         public Window Maximize()
         {
-            FindElementByName<Button>("Maximize").Click();
+            FindElement<Button>(By.Name("Maximize")).Click();
             return this;
         }
 
         // Click the Restore button of the window
         public Window Restore()
         {
-            FindElementByName<Button>("Restore").Click();
+            FindElement<Button>(By.Name("Restore")).Click();
             return this;
         }
 
         // Click the Minimize button of the window
         public Window Minimize()
         {
-            FindElementByName<Button>("Minimize").Click();
+            FindElement<Button>(By.Name("Minimize")).Click();
             return this;
         }
 
         // Click the Close button of the window
         public void Close()
         {
-            FindElementByName<Button>("Close").Click();
+            FindElement<Button>(By.Name("Close")).Click();
         }
     }
 }

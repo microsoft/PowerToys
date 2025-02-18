@@ -4,6 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("UITestBase")]
+[assembly: InternalsVisibleTo("Session")]
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -25,7 +29,7 @@ namespace Microsoft.PowerToys.UITest
         Hosts,
     }
 
-    public class ModuleConfigData
+    internal class ModuleConfigData
     {
         // URL for Windows Application Driver
         public const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
@@ -35,20 +39,20 @@ namespace Microsoft.PowerToys.UITest
 
         public static ModuleConfigData Instance => SingletonInstance.Value;
 
-        public Dictionary<PowerToysModuleWindow, ModuleWindowData> ModuleWindowName { get; }
+        public Dictionary<PowerToysModuleWindow, string> ModuleWindowName { get; }
 
         private Dictionary<PowerToysModule, string> ModulePath { get; }
 
         private ModuleConfigData()
         {
             // Module name and Window name
-            ModuleWindowName = new Dictionary<PowerToysModuleWindow, ModuleWindowData>
+            ModuleWindowName = new Dictionary<PowerToysModuleWindow, string>
             {
-                [PowerToysModuleWindow.PowerToysSettings] = new ModuleWindowData("PowerToys", "PowerToys Settings"),
-                [PowerToysModuleWindow.FancyZone] = new ModuleWindowData("FancyZone", "FancyZones Layout"),
-                [PowerToysModuleWindow.KeyboardManagerKeys] = new ModuleWindowData("KeyboardManagerKeys", "Remap keys"),
-                [PowerToysModuleWindow.KeyboardManagerShortcuts] = new ModuleWindowData("KeyboardManagerShortcuts", "Remap shortcuts"),
-                [PowerToysModuleWindow.Hosts] = new ModuleWindowData("Hosts", "Hosts File Editor"),
+                [PowerToysModuleWindow.PowerToysSettings] = "PowerToys Settings",
+                [PowerToysModuleWindow.FancyZone] = "FancyZones Layout",
+                [PowerToysModuleWindow.KeyboardManagerKeys] = "Remap keys",
+                [PowerToysModuleWindow.KeyboardManagerShortcuts] = "Remap shortcuts",
+                [PowerToysModuleWindow.Hosts] = "Hosts File Editor",
             };
 
             // Exe start path when scope is set to module
@@ -63,19 +67,6 @@ namespace Microsoft.PowerToys.UITest
 
         public string GetWindowsApplicationDriverUrl() => WindowsApplicationDriverUrl;
 
-        public ModuleWindowData GetModuleWindowData(PowerToysModuleWindow scope) => ModuleWindowName[scope];
-    }
-
-    public struct ModuleWindowData
-    {
-        public string ModuleName { get; set; }
-
-        public string WindowName { get; set; }
-
-        public ModuleWindowData(string moduleName, string windowName)
-        {
-            ModuleName = moduleName;
-            WindowName = windowName;
-        }
+        public string GetModuleWindowData(PowerToysModuleWindow scope) => ModuleWindowName[scope];
     }
 }

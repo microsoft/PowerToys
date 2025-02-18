@@ -80,20 +80,11 @@ namespace Microsoft.PowerToys.UITest
             return WindowsElement?.GetAttribute(attributeName) ?? string.Empty;
         }
 
-        // Find element by Name
-        public T FindElementByName<T>(string name, int timeoutMS = 3000)
+        public T FindElement<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(WindowsElement, "WindowsElement is null");
-            return FindElementHelper.FindElement<T, AppiumWebElement>(() => WindowsElement.FindElementByName(name), timeoutMS, driver);
-        }
-
-        // Find element by AccessibilityId
-        public T? FindElementByAccessibilityId<T>(string name, int timeoutMS = 3000)
-            where T : Element, new()
-        {
-            Assert.IsNotNull(WindowsElement, "WindowsElement is null");
-            return FindElementHelper.FindElement<T, AppiumWebElement>(() => WindowsElement.FindElementByAccessibilityId(name), timeoutMS, driver);
+            return FindElementHelper.FindElement<T, AppiumWebElement>(() => WindowsElement.FindElement(by.ToSeleniumBy()), timeoutMS, driver);
         }
 
         // Find elements by name

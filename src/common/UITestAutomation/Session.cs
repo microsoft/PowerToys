@@ -51,14 +51,6 @@ namespace Microsoft.PowerToys.UITest
             return FindElementHelper.FindElement<T, WindowsElement>(() => WindowsDriver.FindElement(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
         }
 
-        // Find element by name
-        public T FindElementByName<T>(string name, int timeoutMS = 3000)
-            where T : Element, new()
-        {
-            Assert.IsNotNull(WindowsDriver, "WindowsElement is null");
-            return FindElementHelper.FindElement<T, WindowsElement>(() => WindowsDriver.FindElementByName(name), timeoutMS, WindowsDriver);
-        }
-
         // ind elements by name
         public ReadOnlyCollection<T>? FindElementsByName<T>(string name, int timeoutMS = 3000)
             where T : Element, new()
@@ -75,7 +67,7 @@ namespace Microsoft.PowerToys.UITest
         //   Session?: The attached session.
         public Session? Attach(PowerToysModuleWindow module)
         {
-            string windowName = ModuleConfigData.Instance.GetModuleWindowData(module).WindowName;
+            string windowName = ModuleConfigData.Instance.GetModuleWindowData(module);
 
             if (Root != null)
             {
