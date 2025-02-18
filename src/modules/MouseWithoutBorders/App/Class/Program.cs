@@ -92,6 +92,17 @@ namespace MouseWithoutBorders.Class
 
                 bool serviceMode = firstArg == ServiceModeArg;
 
+                if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMwbAllowServiceModeValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+                {
+                    if (runningAsSystem)
+                    {
+                        Logger.Log("Can't run as a service. It's not allowed according to GPO policy. Please contact your systems administrator.");
+                        return;
+                    }
+
+                    serviceMode = false;
+                }
+
                 // If we're started from the .dll module or from the service process, we should
                 // assume the service mode.
                 if (serviceMode && !runningAsSystem)
