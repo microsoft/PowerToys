@@ -28,7 +28,8 @@ namespace MouseWithoutBordersService
         [STAThread]
         private static void Main()
         {
-            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMouseWithoutBordersEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled
+                || PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMwbAllowServiceModeValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled )
             {
                 // TODO: Add logging.
                 // Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
