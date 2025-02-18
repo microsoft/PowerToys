@@ -44,19 +44,19 @@ namespace Microsoft.PowerToys.UITest
         //   int timeoutMS: The timeout in milliseconds (default is 3000).
         // Returns:
         //   T: The found element.
-        public T FindElement<T>(By by, int timeoutMS = 3000)
+        public T Find<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(WindowsDriver, "WindowsElement is null");
-            return FindElementHelper.FindElement<T, WindowsElement>(() => WindowsDriver.FindElement(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
+            return FindElementHelper.Find<T, WindowsElement>(() => WindowsDriver.FindElement(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
         }
 
         // Find elements by name
-        public ReadOnlyCollection<T>? FindElements<T>(By by, int timeoutMS = 3000)
+        public ReadOnlyCollection<T>? FindAll<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(WindowsDriver, "WindowsElement is null");
-            return FindElementHelper.FindElements<T, WindowsElement>(() => WindowsDriver.FindElements(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
+            return FindElementHelper.FindAll<T, WindowsElement>(() => WindowsDriver.FindElements(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
         }
 
         // Attaches to an existing exe by window name.
@@ -64,11 +64,9 @@ namespace Microsoft.PowerToys.UITest
         // Parameters:
         //   PowerToysModuleWindow module: The module window to attach to.
         // Returns:
-        //   Session?: The attached session.
-        public Session? Attach(PowerToysModuleWindow module)
+        //   Session: The attached session.
+        public Session AttachByWindowName(string windowName)
         {
-            string windowName = ModuleConfigData.Instance.GetModuleWindowData(module);
-
             if (Root != null)
             {
                 var window = Root.FindElementByName(windowName);
@@ -91,7 +89,7 @@ namespace Microsoft.PowerToys.UITest
                 Assert.IsNotNull(Root, "Root driver is null");
             }
 
-            return null;
+            return this;
         }
     }
 }

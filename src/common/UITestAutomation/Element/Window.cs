@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.UITest
         //   Window: The current Window instance.
         public Window Maximize()
         {
-            FindElement<Button>(By.Name("Maximize")).Click();
+            Find<Button>(By.Name("Maximize")).LeftClick();
             return this;
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.UITest
         //   Window: The current Window instance.
         public Window Restore()
         {
-            FindElement<Button>(By.Name("Restore")).Click();
+            Find<Button>(By.Name("Restore")).LeftClick();
             return this;
         }
 
@@ -42,7 +42,7 @@ namespace Microsoft.PowerToys.UITest
         //   Window: The current Window instance.
         public Window Minimize()
         {
-            FindElement<Button>(By.Name("Minimize")).Click();
+            Find<Button>(By.Name("Minimize")).LeftClick();
             return this;
         }
 
@@ -50,7 +50,7 @@ namespace Microsoft.PowerToys.UITest
         //   Window: The current Window instance.
         public void Close()
         {
-            FindElement<Button>(By.Name("Close")).Click();
+            Find<Button>(By.Name("Close")).LeftClick();
         }
     }
 }

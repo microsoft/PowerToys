@@ -26,36 +26,44 @@ namespace Microsoft.PowerToys.UITest
 
         private WindowsDriver<WindowsElement>? driver;
 
-        public Element() => WindowsElement = null;
+        // The name of the UI element.
+        public string Name
+        {
+            get { return GetAttribute("Name"); }
+        }
+
+        // The text of the UI element.
+        public string Test
+        {
+            get { return GetAttribute("Value"); }
+        }
+
+        // The automation ID of the UI element.
+        public string AutomationId
+        {
+            get { return GetAttribute("AutomationId"); }
+        }
+
+        // The class name of the UI element.
+        public string ClassName
+        {
+            get { return GetAttribute("ClassName"); }
+        }
+
+        // The help text of the UI element.
+        public string HelpText
+        {
+            get { return GetAttribute("HelpText"); }
+        }
 
         internal void SetWindowsElement(WindowsElement windowsElement) => this.WindowsElement = windowsElement;
 
         internal void SetSession(WindowsDriver<WindowsElement> driver) => this.driver = driver;
 
-        // Gets the name of the UI element.
-        // Returns:
-        //   string: The Name attribute of the element.
-        public string GetName() => GetAttribute("Name");
-
-        // Gets the text of the UI element.
-        // Returns:
-        //   string: The Value attribute of the element.
-        public string GetText() => GetAttribute("Value");
-
-        // Gets the automation ID of the UI element.
-        // Returns:
-        //   string: The AutomationID attribute of the element.
-        public string GetAutomationId() => GetAttribute("AutomationId");
-
-        // Gets the class name of the UI element.
-        // Returns:
-        //   string: The ClassName attribute of the element.
-        public string GetClassName() => GetAttribute("ClassName");
-
-        // Gets the help text of the UI element.
-        // Returns:
-        //   string: The HelpText attribute of the element.
-        public string GetHelpText() => GetAttribute("HelpText");
+        public Element()
+        {
+            WindowsElement = null;
+        }
 
         // Checks if the UI element is enabled.
         // Returns:
@@ -68,7 +76,7 @@ namespace Microsoft.PowerToys.UITest
         public bool IsSelected() => GetAttribute("IsSelected") == "True";
 
         // Click the UI element
-        public void Click() => PerformAction(actions => actions.Click());
+        public void LeftClick() => PerformAction(actions => actions.Click());
 
         // Right click the UI element
         public void RightClick() => PerformAction(actions => actions.ContextClick());
@@ -80,19 +88,19 @@ namespace Microsoft.PowerToys.UITest
             return this.WindowsElement?.GetAttribute(attributeName) ?? string.Empty;
         }
 
-        public T FindElement<T>(By by, int timeoutMS = 3000)
+        public T Find<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(this.WindowsElement, "WindowsElement is null");
-            return FindElementHelper.FindElement<T, AppiumWebElement>(() => this.WindowsElement.FindElement(by.ToSeleniumBy()), timeoutMS, this.driver);
+            return FindElementHelper.Find<T, AppiumWebElement>(() => this.WindowsElement.FindElement(by.ToSeleniumBy()), timeoutMS, this.driver);
         }
 
         // Find elements by name
-        public ReadOnlyCollection<T>? FindElements<T>(By by, int timeoutMS = 3000)
+        public ReadOnlyCollection<T>? FindAll<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(this.WindowsElement, "WindowsElement is null");
-            return FindElementHelper.FindElements<T, AppiumWebElement>(() => this.WindowsElement.FindElements(by.ToSeleniumBy()), timeoutMS, this.driver);
+            return FindElementHelper.FindAll<T, AppiumWebElement>(() => this.WindowsElement.FindElements(by.ToSeleniumBy()), timeoutMS, this.driver);
         }
 
         // Simulate manual operation

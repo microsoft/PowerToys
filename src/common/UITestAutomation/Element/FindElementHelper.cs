@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.UITest
     // Helper class for finding elements
     internal static class FindElementHelper
     {
-        public static T FindElement<T, TW>(Func<TW> findElementFunc, int timeoutMS, WindowsDriver<WindowsElement>? driver)
+        public static T Find<T, TW>(Func<TW> findElementFunc, int timeoutMS, WindowsDriver<WindowsElement>? driver)
             where T : Element, new()
         {
             Assert.IsNotNull(driver, "driver is null");
@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.UITest
             return NewElement<T>(item, driver);
         }
 
-        public static ReadOnlyCollection<T>? FindElements<T, TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, int timeoutMS, WindowsDriver<WindowsElement>? driver)
+        public static ReadOnlyCollection<T>? FindAll<T, TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, int timeoutMS, WindowsDriver<WindowsElement>? driver)
             where T : Element, new()
         {
             Assert.IsNotNull(driver, "driver is null");
