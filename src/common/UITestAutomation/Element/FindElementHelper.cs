@@ -19,6 +19,7 @@ using OpenQA.Selenium.Appium.Windows;
 
 namespace Microsoft.PowerToys.UITest
 {
+    // Helper class for finding elements
     internal static class FindElementHelper
     {
         public static T FindElement<T, TW>(Func<TW> findElementFunc, int timeoutMS, WindowsDriver<WindowsElement>? driver)
@@ -52,7 +53,7 @@ namespace Microsoft.PowerToys.UITest
             return new ReadOnlyCollection<T>((IList<T>)res);
         }
 
-        // Create a new element of type T
+        // Creates a new element of type T.
         public static T NewElement<T>(WindowsElement element, WindowsDriver<WindowsElement>? driver)
              where T : Element, new()
         {

@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.UITest
             return FindElementHelper.FindElement<T, WindowsElement>(() => WindowsDriver.FindElement(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
         }
 
-        // ind elements by name
+        // Find elements by name
         public ReadOnlyCollection<T>? FindElements<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {

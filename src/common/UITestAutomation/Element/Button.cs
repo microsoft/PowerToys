@@ -20,7 +20,8 @@ namespace Microsoft.PowerToys.UITest
         }
 
         // Gets the type of the button.
-        // Returns: The control type of the button as a string.
+        // Returns:
+        //   string: The control type of the button as a string.
         public string GetButtonType()
         {
             return GetAttribute("ControlType");

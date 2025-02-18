@@ -80,12 +80,12 @@ namespace UITests_KeyboardManager
             Session.Attach(PowerToysModuleWindow.KeyboardManagerKeys);
 
             // Maximize window
-            var window = Session.FindElementByName<Window>("Remap keys").Maximize();
+            var window = Session.FindElement<Window>(By.Name("Remap keys")).Maximize();
 
             // Click button
-            Session.FindElementByName<Button>("Add key remapping").Click();
-            Session.FindElementByName<Element>("Row 1, Select:").FindElementByName<Button>("Select").Click();
-            Session.FindElementByName<Window>("Select a key on selected keyboard").FindElementByName<Button>("Cancel").Click();
+            Session.FindElement<Button>(By.Name("Add key remapping")).Click();
+            Session.FindElement<Element>(By.Name("Row 1, Select:")).FindElement<Button>(By.Name("Select")).Click();
+            Session.FindElement<Window>(By.Name("Select a key on selected keyboard")).FindElement<Button>(By.Name("Cancel")).Click();
             window.Close();
 
             // Back to Settings
