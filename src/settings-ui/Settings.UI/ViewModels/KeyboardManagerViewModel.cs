@@ -267,20 +267,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                // Check if the new WinUI3 editor is enabled in the registry. The registry value does not exist by default and is only used for development purposes.
+                // Launch the new editor if:
+                // 1. the experimentation toggle is enabled in the settings
+                // 2. the new WinUI3 editor is enabled in the registry. The registry value does not exist by default and is only used for development purposes
                 string editorPath = KeyboardManagerEditorPath;
                 try
                 {
-                    var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\PowerToys\Keyboard Manager");
-                    if (key != null && (int?)key.GetValue("UseNewEditor") == 1)
+                    // Check if the experimentation toggle is enabled in the settings
+                    var settingsUtils = new SettingsUtils();
+                    bool isExperimentationEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
+
+                    // Only read the registry value if the experimentation toggle is enabled
+                    if (isExperimentationEnabled)
                     {
-                        editorPath = KeyboardManagerEditorUIPath;
+                        // Read the registry value to determine which editor to launch
+                        var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\PowerToys\Keyboard Manager");
+                        if (key != null && (int?)key.GetValue("UseNewEditor") == 1)
+                        {
+                            editorPath = KeyboardManagerEditorUIPath;
+                        }
+
+                        // Close the registry key
+                        key?.Close();
                     }
                 }
                 catch (Exception e)
                 {
-                    // Use the old editor if the registry value cannot be read
-                    Logger.LogError("Failed to read registry value to launch the new WinUI3 Editor", e);
+                    // Fall back to the default editor path if any exception occurs
+                    Logger.LogError("Failed to launch the new WinUI3 Editor", e);
                 }
 
                 string path = Path.Combine(Environment.CurrentDirectory, editorPath);
