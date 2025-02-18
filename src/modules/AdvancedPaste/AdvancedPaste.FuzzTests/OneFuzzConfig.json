@@ -16,11 +16,11 @@
         // project, where bugs will be filed 
         "org": "microsoft",
         "project": "OS",
-        "AssignedTo": "mengyuanchen@microsoft.com",
+        "AssignedTo": "leilzh@microsoft.com",
         "AreaPath": "OS\\Windows Client and Services\\WinPD\\DEEP-Developer Experience, Ecosystem and Partnerships\\SHINE\\PowerToys",
         "IterationPath": "OS\\Future"
       },
-      "jobNotificationEmail": "mengyuanchen@microsoft.com",
+      "jobNotificationEmail": "leilzh@microsoft.com",
       "skip": false,
       "rebootAfterSetup": false,
       "oneFuzzJobs": [
