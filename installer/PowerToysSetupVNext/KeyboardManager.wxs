@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
@@ -12,42 +10,42 @@
 
     <!-- KBM Editor -->
     <DirectoryRef Id="KeyboardManagerEditorInstallFolder" FileSource="$(var.BinDir)KeyboardManagerEditor">
-      <Component Id="Module_KeyboardManager_Editor" Win64="yes" Guid="E9C74E78-970F-4DF5-9CC0-FFD3CCF285B4">
+      <Component Id="Module_KeyboardManager_Editor" Guid="E9C74E78-970F-4DF5-9CC0-FFD3CCF285B4" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="Module_KeyboardManager_Editor" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="Module_KeyboardManager_Editor" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe" />
-        <File Source="$(var.BinDir)KeyboardManagerEditor\Microsoft.Toolkit.Win32.UI.XamlHost.dll" />
-        <File Source="$(var.BinDir)KeyboardManagerEditor\Microsoft.UI.Xaml.dll" />
-        <File Source="$(var.BinDir)KeyboardManagerEditor\msvcp140_app.dll" />
-        <File Source="$(var.BinDir)KeyboardManagerEditor\resources.pri" />
-        <File Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140_app.dll" />
+        <File Id="PowerToys.KeyboardManagerEditor.exe" Source="$(var.BinDir)KeyboardManagerEditor\PowerToys.KeyboardManagerEditor.exe" />
+        <File Id="Microsoft.Toolkit.Win32.UI.XamlHost.dll" Source="$(var.BinDir)KeyboardManagerEditor\Microsoft.Toolkit.Win32.UI.XamlHost.dll" />
+        <File Id="Microsoft.UI.Xaml.dll" Source="$(var.BinDir)KeyboardManagerEditor\Microsoft.UI.Xaml.dll" />
+        <File Id="msvcp140_app.dll" Source="$(var.BinDir)KeyboardManagerEditor\msvcp140_app.dll" />
+        <File Id="resources.pri" Source="$(var.BinDir)KeyboardManagerEditor\resources.pri" />
+        <File Id="vcruntime140_app.dll" Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140_app.dll" />
         <?if $(sys.BUILDARCH) = x64 ?>
-          <File Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140_1_app.dll" />
-        <?endif ?>
-        <File Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140.dll" />
-        <File Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140_1.dll" />
-        <File Source="$(var.BinDir)KeyboardManagerEditor\msvcp140.dll" />
+          <File Id="vcruntime140_1_app.dll" Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140_1_app.dll" />
+        <?endif?>
+        <File Id="vcruntime140.dll" Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140.dll" />
+        <File Id="vcruntime140_1.dll" Source="$(var.BinDir)KeyboardManagerEditor\vcruntime140_1.dll" />
+        <File Id="msvcp140.dll" Source="$(var.BinDir)KeyboardManagerEditor\msvcp140.dll" />
       </Component>
     </DirectoryRef>
 
     <!-- KBM Engine -->
     <DirectoryRef Id="KeyboardManagerEngineInstallFolder" FileSource="$(var.BinDir)KeyboardManagerEngine">
-      <Component Id="Module_KeyboardManager_Engine" Win64="yes" Guid="3F58FCE3-B44D-4676-94E9-C59F1FE42FFD">
+      <Component Id="Module_KeyboardManager_Engine" Guid="3F58FCE3-B44D-4676-94E9-C59F1FE42FFD" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="Module_KeyboardManager_Engine" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="Module_KeyboardManager_Engine" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe" />
+        <File Id="PowerToys.KeyboardManagerEngine.exe" Source="$(var.BinDir)KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe" />
       </Component>
     </DirectoryRef>
 
     <ComponentGroup Id="KeyboardManagerComponentGroup">
-      <Component Id="RemoveKeyboardManagerFolder" Guid="C411CB11-4617-40A4-B6DA-1823B49FB9FF" Directory="INSTALLFOLDER" >
+      <Component Id="RemoveKeyboardManagerFolder" Guid="C411CB11-4617-40A4-B6DA-1823B49FB9FF" Directory="INSTALLFOLDER">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="RemoveKeyboardManagerFolder" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="RemoveKeyboardManagerFolder" Value="" KeyPath="yes" />
         </RegistryKey>
-        <RemoveFolder Id="RemoveFolderKeyboardManagerEditorFolder" Directory="KeyboardManagerEditorInstallFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderKeyboardManagerEngineFolder" Directory="KeyboardManagerEngineInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderKeyboardManagerEditorFolder" Directory="KeyboardManagerEditorInstallFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderKeyboardManagerEngineFolder" Directory="KeyboardManagerEngineInstallFolder" On="uninstall" />
       </Component>
       <ComponentRef Id="Module_KeyboardManager_Editor" />
       <ComponentRef Id="Module_KeyboardManager_Engine" />
