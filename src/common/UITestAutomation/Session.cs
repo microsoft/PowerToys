@@ -59,6 +59,12 @@ namespace Microsoft.PowerToys.UITest
             return FindElementHelper.FindAll<T, WindowsElement>(() => WindowsDriver.FindElements(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
         }
 
+        public Session Attach(PowerToysModuleWindow module)
+        {
+            string windowName = ModuleConfigData.Instance.GetModuleWindowName(module);
+            return AttachByWindowName(windowName);
+        }
+
         // Attaches to an existing exe by window name.
         // The session should be attached when a new app is started. e.g. launching KeyboardmanagerEditor from settings.
         // Parameters:

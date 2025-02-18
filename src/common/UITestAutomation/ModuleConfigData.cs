@@ -26,6 +26,18 @@ namespace Microsoft.PowerToys.UITest
         Hosts,
     }
 
+    // Represents the windows of PowerToys modules.
+    // One module could have multiple windows.
+    public enum PowerToysModuleWindow
+    {
+        None,
+        PowerToysSettings,
+        FancyZone,
+        KeyboardManagerKeys,
+        KeyboardManagerShortcuts,
+        Hosts,
+    }
+
     internal class ModuleConfigData
     {
         // Mapping module to exe path
@@ -34,14 +46,26 @@ namespace Microsoft.PowerToys.UITest
         // Singleton instance of ModuleConfigData
         private static readonly Lazy<ModuleConfigData> SingletonInstance = new Lazy<ModuleConfigData>(() => new ModuleConfigData());
 
+        public static ModuleConfigData Instance => SingletonInstance.Value;
+
         // URL for Windows Application Driver
         public const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
 
-        public static ModuleConfigData Instance => SingletonInstance.Value;
+        // Mapping window to string name
+        public Dictionary<PowerToysModuleWindow, string> ModuleWindowName { get; }
 
-        // Function
         private ModuleConfigData()
         {
+            // Set a string window name for each module.
+            ModuleWindowName = new Dictionary<PowerToysModuleWindow, string>
+            {
+                [PowerToysModuleWindow.PowerToysSettings] = "PowerToys Settings",
+                [PowerToysModuleWindow.FancyZone] = "FancyZones Layout",
+                [PowerToysModuleWindow.KeyboardManagerKeys] = "Remap keys",
+                [PowerToysModuleWindow.KeyboardManagerShortcuts] = "Remap shortcuts",
+                [PowerToysModuleWindow.Hosts] = "Hosts File Editor",
+            };
+
             // Exe start path for the module if it exists.
             ModulePath = new Dictionary<PowerToysModule, string>
             {
@@ -59,5 +83,11 @@ namespace Microsoft.PowerToys.UITest
         // Gets the URL for the Windows Application Driver.
         // Returns: The URL for the Windows Application Driver.
         public string GetWindowsApplicationDriverUrl() => WindowsApplicationDriverUrl;
+
+        // Gets the window name for the specified PowerToys module window.
+        // Parameters:
+        //   scope: The PowerToys module window.
+        // Returns: The window name for the specified module window.
+        public string GetModuleWindowName(PowerToysModuleWindow scope) => ModuleWindowName[scope];
     }
 }
