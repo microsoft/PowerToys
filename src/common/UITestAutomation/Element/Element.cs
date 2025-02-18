@@ -22,13 +22,13 @@ namespace Microsoft.PowerToys.UITest
     public class Element
     {
         // WindowsElement and WindowsDriver are components of WinAppDriver that provide underlying element operations.
-        public WindowsElement? WindowsElement { get; set; }
+        private WindowsElement? WindowsElement { get; set; }
 
         private WindowsDriver<WindowsElement>? driver;
 
         public Element() => WindowsElement = null;
 
-        internal void SetWindowsElement(WindowsElement windowsElement) => WindowsElement = windowsElement;
+        internal void SetWindowsElement(WindowsElement windowsElement) => this.WindowsElement = windowsElement;
 
         internal void SetSession(WindowsDriver<WindowsElement> driver) => this.driver = driver;
 
@@ -74,32 +74,32 @@ namespace Microsoft.PowerToys.UITest
         public void RightClick() => PerformAction(actions => actions.ContextClick());
 
         // Underlying function to get attribute by WindowsElement
-        private string GetAttribute(string attributeName)
+        public string GetAttribute(string attributeName)
         {
-            Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");
-            return WindowsElement?.GetAttribute(attributeName) ?? string.Empty;
+            Assert.IsNotNull(this.WindowsElement, "WindowsElement should not be null");
+            return this.WindowsElement?.GetAttribute(attributeName) ?? string.Empty;
         }
 
         public T FindElement<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
-            Assert.IsNotNull(WindowsElement, "WindowsElement is null");
-            return FindElementHelper.FindElement<T, AppiumWebElement>(() => WindowsElement.FindElement(by.ToSeleniumBy()), timeoutMS, driver);
+            Assert.IsNotNull(this.WindowsElement, "WindowsElement is null");
+            return FindElementHelper.FindElement<T, AppiumWebElement>(() => this.WindowsElement.FindElement(by.ToSeleniumBy()), timeoutMS, this.driver);
         }
 
         // Find elements by name
         public ReadOnlyCollection<T>? FindElements<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
-            Assert.IsNotNull(WindowsElement, "WindowsElement is null");
-            return FindElementHelper.FindElements<T, AppiumWebElement>(() => WindowsElement.FindElements(by.ToSeleniumBy()), timeoutMS, driver);
+            Assert.IsNotNull(this.WindowsElement, "WindowsElement is null");
+            return FindElementHelper.FindElements<T, AppiumWebElement>(() => this.WindowsElement.FindElements(by.ToSeleniumBy()), timeoutMS, this.driver);
         }
 
         // Simulate manual operation
         private void PerformAction(Action<Actions> action)
         {
-            var element = WindowsElement;
-            Actions actions = new Actions(driver);
+            var element = this.WindowsElement;
+            Actions actions = new Actions(this.driver);
             actions.MoveToElement(element);
             action(actions);
             actions.Build().Perform();

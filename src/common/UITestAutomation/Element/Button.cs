@@ -23,8 +23,7 @@ namespace Microsoft.PowerToys.UITest
         // Returns: The control type of the button as a string.
         public string GetButtonType()
         {
-            Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");
-            return WindowsElement.GetAttribute("ControlType");
+            return GetAttribute("ControlType");
         }
     }
 }
