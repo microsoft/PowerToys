@@ -52,11 +52,11 @@ namespace Microsoft.PowerToys.UITest
         }
 
         // ind elements by name
-        public ReadOnlyCollection<T>? FindElementsByName<T>(string name, int timeoutMS = 3000)
+        public ReadOnlyCollection<T>? FindElements<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(WindowsDriver, "WindowsElement is null");
-            return FindElementHelper.FindElements<T, WindowsElement>(() => WindowsDriver.FindElementsByName(name), timeoutMS, WindowsDriver);
+            return FindElementHelper.FindElements<T, WindowsElement>(() => WindowsDriver.FindElements(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
         }
 
         // Attaches to an existing exe by window name.

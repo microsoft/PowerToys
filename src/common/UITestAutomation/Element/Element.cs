@@ -88,11 +88,11 @@ namespace Microsoft.PowerToys.UITest
         }
 
         // Find elements by name
-        public ReadOnlyCollection<T>? FindElementsByName<T>(string name, int timeoutMS = 3000)
+        public ReadOnlyCollection<T>? FindElements<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(WindowsElement, "WindowsElement is null");
-            return FindElementHelper.FindElements<T, AppiumWebElement>(() => WindowsElement.FindElementsByName(name), timeoutMS, driver);
+            return FindElementHelper.FindElements<T, AppiumWebElement>(() => WindowsElement.FindElements(by.ToSeleniumBy()), timeoutMS, driver);
         }
 
         // Simulate manual operation
