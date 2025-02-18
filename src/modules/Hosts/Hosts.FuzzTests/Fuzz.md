@@ -14,8 +14,6 @@ Configuring **OneFuzzConfig.json**:
 3. Set the jobNotificationEmail to your Microsoft email account.
 4. Update the projectName and targetName fields in the oneFuzzJobs list.
 5. Define job dependencies in the following directory:
-```*\PowerToys\x64\Debug\tests\yourprojectname.FuzzTests\yourbuildversion```
-
 Example:
 ```PowerToys\x64\Debug\tests\Hosts.FuzzTests\net8.0-windows10.0.19041.0```
 
