@@ -18,7 +18,6 @@ namespace Microsoft.PowerToys.UITest
     // 4. If the module has an executable path, add it to the ModulePath dictionary in the ModuleConfigData constructor.
 
     // Represents the modules in PowerToys.
-    // Add a new module:
     public enum PowerToysModule
     {
         None,
