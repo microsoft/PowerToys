@@ -11,6 +11,7 @@ using OpenQA.Selenium.Support.Events;
 
 namespace Microsoft.PowerToys.UITest
 {
+    // Represents a window in the UI test framework.
     public class Window : Element
     {
         public Window()
@@ -18,21 +19,24 @@ namespace Microsoft.PowerToys.UITest
         {
         }
 
-        // Click the Maximize button of the window
+        // Click the Maximize button of the window.
+        // Returns: The current Window instance.
         public Window Maximize()
         {
             FindElementByName<Button>("Maximize").Click();
             return this;
         }
 
-        // Click the Restore button of the window
+        // Click the Restore button of the window.
+        // Returns: The current Window instance.
         public Window Restore()
         {
             FindElementByName<Button>("Restore").Click();
             return this;
         }
 
-        // Click the Minimize button of the window
+        // Click the Minimize button of the window.
+        // Returns: The current Window instance.
         public Window Minimize()
         {
             FindElementByName<Button>("Minimize").Click();
