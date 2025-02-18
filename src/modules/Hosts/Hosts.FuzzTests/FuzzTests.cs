@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Hosts.Tests.Mocks;
@@ -30,7 +31,7 @@ namespace Hosts.FuzzTests
                 string address = System.Text.Encoding.UTF8.GetString(input);
                 bool isValid = ValidationHelper.ValidIPv4(address);
             }
-            catch (Exception ex) when (ex is OutOfMemoryException)
+            catch (Exception ex) when (ex is RegexMatchTimeoutException)
             {
                 throw;
             }
@@ -44,7 +45,7 @@ namespace Hosts.FuzzTests
                 string address = System.Text.Encoding.UTF8.GetString(input);
                 bool isValid = ValidationHelper.ValidIPv6(address);
             }
-            catch (Exception ex) when (ex is OutOfMemoryException)
+            catch (Exception ex) when (ex is RegexMatchTimeoutException)
             {
                 throw;
             }
@@ -58,7 +59,7 @@ namespace Hosts.FuzzTests
                 string hosts = System.Text.Encoding.UTF8.GetString(input);
                 bool isValid = ValidationHelper.ValidHosts(hosts, true);
             }
-            catch (Exception ex) when (ex is OutOfMemoryException)
+            catch (Exception ex) when (ex is RegexMatchTimeoutException)
             {
                 // It's important to filter out any *expected* exceptions from our code here.
                 // However, catching all exceptions is considered an anti-pattern because it may suppress legitimate
