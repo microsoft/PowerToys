@@ -1,6 +1,6 @@
 # Create Fuzzing Tests in your .NET Code Project
 
-This document provides a step-by-step guide for integrating fuzzing tests into your .NET project using OneFuzz.
+This document provides a step-by-step guide for integrating fuzzing tests into your .NET project.
 
 ### Step1: Add a Fuzzing Test Project
 Create a new test project within your module folder. Ensure the project name follows the format *.FuzzTests*.
@@ -35,14 +35,3 @@ Example:
 
 # step4:  Submit OneFuzz Pipeline and Verify Results on the OneFuzz Platform 
 After executing the tests, check your email for the job link. Click the link to review the fuzzing test results.
-
-
-
-
-
-
-
-
-
-
-
