@@ -18,9 +18,10 @@ using static Microsoft.PowerToys.UITest.UITestBase;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // The basic class for all UI elements
+    // Represents a basic UI element in the application.
     public class Element
     {
+        // WindowsElement and WindowsDriver are components of WinAppDriver that provide underlying element operations.
         public WindowsElement? WindowsElement { get; set; }
 
         private WindowsDriver<WindowsElement>? driver;
@@ -31,34 +32,48 @@ namespace Microsoft.PowerToys.UITest
 
         internal void SetSession(WindowsDriver<WindowsElement> driver) => this.driver = driver;
 
-        // Get the name of the element
+        // Gets the name of the UI element.
+        // Returns:
+        //   string: The Name attribute of the element.
         public string GetName() => GetAttribute("Name");
 
-        // Get the text of the element
+        // Gets the text of the UI element.
+        // Returns:
+        //   string: The Value attribute of the element.
         public string GetText() => GetAttribute("Value");
 
-        // Get the automation ID of the element
+        // Gets the automation ID of the UI element.
+        // Returns:
+        //   string: The AutomationID attribute of the element.
         public string GetAutomationId() => GetAttribute("AutomationId");
 
-        // Get the class name of the element
+        // Gets the class name of the UI element.
+        // Returns:
+        //   string: The ClassName attribute of the element.
         public string GetClassName() => GetAttribute("ClassName");
 
-        // Get the help text of the element
+        // Gets the help text of the UI element.
+        // Returns:
+        //   string: The HelpText attribute of the element.
         public string GetHelpText() => GetAttribute("HelpText");
 
-        // Check if the element is enabled
+        // Checks if the UI element is enabled.
+        // Returns:
+        //   bool: True if the element is enabled; otherwise, false.
         public bool IsEnabled() => GetAttribute("IsEnabled") == "True";
 
-        // Check if the element is selected
+        // Checks if the UI element is selected.
+        // Returns:
+        //   bool: True if the element is selected; otherwise, false.
         public bool IsSelected() => GetAttribute("IsSelected") == "True";
 
-        // Click the element
+        // Click the UI element
         public void Click() => PerformAction(actions => actions.Click());
 
-        // Right click the element
+        // Right click the UI element
         public void RightClick() => PerformAction(actions => actions.ContextClick());
 
-        // Get an attribute of the element
+        // Underlying function to get attribute by WindowsElement
         private string GetAttribute(string attributeName)
         {
             Assert.IsNotNull(WindowsElement, "WindowsElement should not be null");
@@ -88,8 +103,6 @@ namespace Microsoft.PowerToys.UITest
             Assert.IsNotNull(WindowsElement, "WindowsElement is null");
             return FindElementHelper.FindElements<T, AppiumWebElement>(() => WindowsElement.FindElementsByName(name), timeoutMS, driver);
         }
-
-        public Screenshot? GetScreenShot() => WindowsElement?.GetScreenshot();
 
         // Simulate manual operation
         private void PerformAction(Action<Actions> action)

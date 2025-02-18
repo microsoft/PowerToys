@@ -26,13 +26,24 @@ namespace Microsoft.PowerToys.UITest
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(nint hWnd);
 
+        // Initializes a new instance of the Session class.
+        // Parameters:
+        //   WindowsDriver<WindowsElement> root: The root WindowsDriver for the desktop.
+        //   WindowsDriver<WindowsElement> windowsDriver: The WindowsDriver for the application.
         public Session(WindowsDriver<WindowsElement> root, WindowsDriver<WindowsElement> windowsDriver)
         {
             Root = root;
             WindowsDriver = windowsDriver;
         }
 
-        // Find element by selector
+        // Finds an element by selector.
+        // Type parameters:
+        //   T: The class of the element, should be Element or its derived class.
+        // Parameters:
+        //   By by: The selector to find the element.
+        //   int timeoutMS: The timeout in milliseconds (default is 3000).
+        // Returns:
+        //   T: The found element.
         public T FindElement<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
@@ -56,7 +67,12 @@ namespace Microsoft.PowerToys.UITest
             return FindElementHelper.FindElements<T, WindowsElement>(() => WindowsDriver.FindElementsByName(name), timeoutMS, WindowsDriver);
         }
 
-        // Attach to an existing exe by window name
+        // Attaches to an existing exe by window name.
+        // The session should be attached when a new app is started. e.g. launching KeyboardmanagerEditor from settings.
+        // Parameters:
+        //   PowerToysModuleWindow module: The module window to attach to.
+        // Returns:
+        //   Session?: The attached session.
         public Session? Attach(PowerToysModuleWindow module)
         {
             string windowName = ModuleConfigData.Instance.GetModuleWindowData(module).WindowName;
