@@ -38,7 +38,6 @@
         "Hosts.FuzzTests.dll",
         "Hosts.FuzzTests.pdb",
         "Microsoft.Windows.SDK.NET.dll",
-        "Newtonsoft.Json.dll",
         "WinRT.Runtime.dll"
       ],
       "SdlWorkItemId": 49911822
@@ -80,7 +79,6 @@
         "Hosts.FuzzTests.dll",
         "Hosts.FuzzTests.pdb",
         "Microsoft.Windows.SDK.NET.dll",
-        "Newtonsoft.Json.dll",
         "WinRT.Runtime.dll"
       ],
       "SdlWorkItemId": 49911822
@@ -122,7 +120,6 @@
         "Hosts.FuzzTests.dll",
         "Hosts.FuzzTests.pdb",
         "Microsoft.Windows.SDK.NET.dll",
-        "Newtonsoft.Json.dll",
         "WinRT.Runtime.dll"
       ],
       "SdlWorkItemId": 49911822
