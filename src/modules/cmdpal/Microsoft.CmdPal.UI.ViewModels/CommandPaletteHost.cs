@@ -19,7 +19,9 @@ public sealed partial class CommandPaletteHost : IExtensionHost
 
     private static readonly GlobalLogPageContext _globalLogPageContext = new();
 
-    public ulong HostingHwnd { get; private set; }
+    private static ulong _hostingHwnd;
+
+    public ulong HostingHwnd => _hostingHwnd;
 
     public string LanguageOverride => string.Empty;
 
@@ -173,7 +175,7 @@ public sealed partial class CommandPaletteHost : IExtensionHost
             _globalLogPageContext.Scheduler);
     }
 
-    public void SetHostHwnd(ulong hostHwnd) => HostingHwnd = hostHwnd;
+    public static void SetHostHwnd(ulong hostHwnd) => _hostingHwnd = hostHwnd;
 
     public void DebugLog(string message)
     {

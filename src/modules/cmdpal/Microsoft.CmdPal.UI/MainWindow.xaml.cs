@@ -5,7 +5,6 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -59,7 +58,7 @@ public sealed partial class MainWindow : Window,
         InitializeComponent();
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
-        CommandPaletteHost.Instance.SetHostHwnd((ulong)_hwnd.Value);
+        CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
 
         // TaskbarCreated is the message that's broadcast when explorer.exe
         // restarts. We need to know when that happens to be able to bring our
