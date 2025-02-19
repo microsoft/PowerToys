@@ -172,7 +172,7 @@
                 ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}">
                 <Button.Content>
                     <TextBlock
-                        FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                        FontFamily="{StaticResource IconFontFamily}"
                         Text="&#xE8C8;" />
                 </Button.Content>
             </Button>

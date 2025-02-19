@@ -3,6 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:ColorPicker.Converters"
     xmlns:helpers="clr-namespace:ColorPicker.Helpers">
+    
+    <FontFamily x:Key="IconFontFamily">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
     <!--  CONVERTERS  -->
     <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
     <converters:BoolToInvertedVisibilityConverter x:Key="bool2InvertedVisibilityConverter" />
