@@ -62,11 +62,10 @@ namespace PlacementHelper
         else
         {
             placement.showCmd = SW_RESTORE;
-
-            ScreenToWorkAreaCoords(window, monitor, rect);
-            placement.rcNormalPosition = rect;
         }
 
+        ScreenToWorkAreaCoords(window, monitor, rect);
+        placement.rcNormalPosition = rect;
         placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
 
         auto result = ::SetWindowPlacement(window, &placement);
@@ -430,9 +429,11 @@ bool WindowArranger::moveWindow(HWND window, const WorkspacesData::WorkspacesPro
         Logger::error(L"No monitor saved for launching the app");
         return false;
     }
+    UINT snapDPI = snapMonitorIter->dpi;
 
     bool launchMinimized = app.isMinimized;
     bool launchMaximized = app.isMaximized;
+    RECT rect = app.position.toRect();
 
     HMONITOR currentMonitor{};
     UINT currentDpi = DPIAware::DEFAULT_DPI;
@@ -446,12 +447,18 @@ bool WindowArranger::moveWindow(HWND window, const WorkspacesData::WorkspacesPro
     {
         currentMonitor = MonitorFromPoint(POINT{ 0, 0 }, MONITOR_DEFAULTTOPRIMARY);
         DPIAware::GetScreenDPIForMonitor(currentMonitor, currentDpi);
+        snapDPI = DPIAware::DEFAULT_DPI;
         launchMinimized = true;
         launchMaximized = false;
+        MONITORINFOEX monitorInfo;
+        monitorInfo.cbSize = sizeof(monitorInfo);
+        if (GetMonitorInfo(currentMonitor, &monitorInfo))
+        {
+            rect = monitorInfo.rcWork;
+        }
     }
 
-    RECT rect = app.position.toRect();
-    float mult = static_cast<float>(snapMonitorIter->dpi) / currentDpi;
+    float mult = static_cast<float>(snapDPI) / currentDpi;
     rect.left = static_cast<long>(std::round(rect.left * mult));
     rect.right = static_cast<long>(std::round(rect.right * mult));
     rect.top = static_cast<long>(std::round(rect.top * mult));
