@@ -2,15 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
-using Microsoft.CmdPal.Ext.Apps.Storage;
-using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -18,9 +15,8 @@ namespace Microsoft.CmdPal.Ext.Apps;
 
 public sealed partial class AllAppsPage : ListPage
 {
-    private IListItem[] allAppsSection = [];
-
-    private object l = new();
+    private readonly Lock _listLock = new();
+    private AppListItem[] allAppsSection = [];
 
     public AllAppsPage()
     {
@@ -32,37 +28,45 @@ public sealed partial class AllAppsPage : ListPage
 
         Task.Run(() =>
         {
-            lock (l)
+            lock (_listLock)
             {
-                this.allAppsSection = GetPrograms()
-                                .Select((app) => new AppListItem(app))
-                                .ToArray();
-
-                this.IsLoading = false;
+                BuildListItems();
             }
         });
     }
 
     public override IListItem[] GetItems()
     {
-        if (this.allAppsSection == null || allAppsSection.Length == 0 || AppCache.Instance.Value.ShouldReload())
+        if (allAppsSection.Length == 0 || AppCache.Instance.Value.ShouldReload())
         {
-            lock (l)
+            lock (_listLock)
             {
-                this.IsLoading = true;
-
-                var apps = GetPrograms();
-                this.allAppsSection = apps
-                                .Select((app) => new AppListItem(app))
-                                .ToArray();
-
-                this.IsLoading = false;
-
-                AppCache.Instance.Value.ResetReloadFlag();
+                BuildListItems();
             }
         }
 
         return allAppsSection;
+    }
+
+    private void BuildListItems()
+    {
+        this.IsLoading = true;
+
+        var apps = GetPrograms();
+        this.allAppsSection = apps
+                        .Select((app) => new AppListItem(app))
+                        .ToArray();
+
+        this.IsLoading = false;
+
+        AppCache.Instance.Value.ResetReloadFlag();
+        Task.Run(async () =>
+        {
+            foreach (var appListItem in this.allAppsSection)
+            {
+                await appListItem.FetchIcon();
+            }
+        });
     }
 
     internal List<AppItem> GetPrograms()

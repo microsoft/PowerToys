@@ -117,6 +117,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         };
 
         model.PropChanged += Model_PropChanged;
+        UpdateProperty(nameof(Name));
+        UpdateProperty(nameof(Title));
+        UpdateProperty(nameof(Subtitle));
+        UpdateProperty(nameof(Icon));
 
         // _initialized = true;
     }

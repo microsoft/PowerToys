@@ -2,8 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
@@ -28,5 +29,30 @@ internal sealed partial class AppListItem : ListItem
         };
 
         MoreCommands = _app.Commands!.ToArray();
+    }
+
+    public async Task FetchIcon()
+    {
+        if (_app.IsPackaged)
+        {
+            Icon = new IconInfo(_app.IcoPath);
+            return;
+        }
+
+        IconInfo? icon = null;
+        try
+        {
+            var stream = await ThumbnailHelper.GetThumbnail(_app.ExePath);
+            if (stream != null)
+            {
+                var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+                icon = new IconInfo(data, data);
+            }
+        }
+        catch
+        {
+        }
+
+        Icon = icon ?? new IconInfo(_app.IcoPath);
     }
 }

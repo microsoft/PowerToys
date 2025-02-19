@@ -24,30 +24,39 @@ public class ThumbnailHelper
         ".ico",
     ];
 
-    public static async Task<IRandomAccessStream> GetThumbnail(string path)
+    public static Task<IRandomAccessStream?> GetThumbnail(string path)
     {
         var extension = Path.GetExtension(path).ToLower(CultureInfo.InvariantCulture);
-        if (ImageExtensions.Contains(extension))
+        try
         {
-            try
+            if (ImageExtensions.Contains(extension))
             {
-                return await GetImageThumbnailAsync(path);
+                return GetImageThumbnailAsync(path);
             }
-            catch (Exception)
+            else
             {
+                return GetFileIconStream(path);
             }
         }
+        catch (Exception)
+        {
+        }
 
-        return await Task.FromResult(GetFileIconStream(path));
+        return Task.FromResult<IRandomAccessStream?>(null);
     }
 
     private const uint SHGFIICON = 0x000000100;
     private const uint SHGFILARGEICON = 0x000000000;
 
-    private static IRandomAccessStream GetFileIconStream(string filePath)
+    private static async Task<IRandomAccessStream?> GetFileIconStream(string filePath)
     {
         var shinfo = default(NativeMethods.SHFILEINFO);
-        NativeMethods.SHGetFileInfo(filePath, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFIICON | SHGFILARGEICON);
+        var hr = NativeMethods.SHGetFileInfo(filePath, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFIICON | SHGFILARGEICON);
+
+        if (hr == 0 || shinfo.hIcon == 0)
+        {
+            return null;
+        }
 
         using var icon = Icon.FromHandle(shinfo.hIcon);
         var stream = new InMemoryRandomAccessStream();
@@ -59,13 +68,16 @@ public class ThumbnailHelper
             using var outputStream = stream.GetOutputStreamAt(0);
             using var dataWriter = new DataWriter(outputStream);
             dataWriter.WriteBytes(memoryStream.ToArray());
-            dataWriter.StoreAsync().GetAwaiter().GetResult();
+
+            // dataWriter.StoreAsync().GetAwaiter().GetResult();
+            await dataWriter.StoreAsync();
+            await dataWriter.FlushAsync();
         }
 
         return stream;
     }
 
-    private static async Task<IRandomAccessStream> GetImageThumbnailAsync(string filePath)
+    private static async Task<IRandomAccessStream?> GetImageThumbnailAsync(string filePath)
     {
         var file = await StorageFile.GetFileFromPathAsync(filePath);
         var thumbnail = await file.GetThumbnailAsync(ThumbnailMode.PicturesView);
