@@ -132,8 +132,11 @@
   <data name="RegExCheatSheet_MatchAny" xml:space="preserve">
     <value>Matches any character</value>
   </data>
-  <data name="RegExCheatSheet_MatchAnyOrNone" xml:space="preserve">
-    <value>Matches zero or more of any character</value>
+  <data name="RegExCheatSheet_ZeroOrMore" xml:space="preserve">
+    <value>Matches zero or more of the preceeding token</value>
+  </data>
+  <data name="RegExCheatSheet_OneOrMore" xml:space="preserve">
+    <value>Matches one or more of the preceeding token</value>
   </data>
   <data name="RegExCheatSheet_MatchDigit" xml:space="preserve">
     <value>Any digit, short for [0-9]</value>
@@ -146,9 +149,6 @@
   </data>
   <data name="RegExCheatSheet_MatchWordChar" xml:space="preserve">
     <value>A word character, short for [a-zA-Z_0-9]</value>
-  </data>
-  <data name="RegExCheatSheet_MatchOneOrMoreWS" xml:space="preserve">
-    <value>One or more non-whitespace characters</value>
   </data>
   <data name="RegExCheatSheet_MatchWordBoundary" xml:space="preserve">
     <value>Matches a word boundary where a word character is [a-zA-Z0-9_].</value>

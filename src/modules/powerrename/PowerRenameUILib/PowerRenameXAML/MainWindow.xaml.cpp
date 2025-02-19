@@ -173,12 +173,12 @@ namespace winrt::PowerRenameUI::implementation
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"^", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_StartOfString").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"$", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_EndOfString").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L".", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchAny").ValueAsString()));
-        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L".*", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchAnyOrNone").ValueAsString()));
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"*", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_ZeroOrMore").ValueAsString()));
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"+", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_OneOrMore").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\d", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchDigit").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\D", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchNonDigit").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\w", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchWordChar").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\S", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchNonWS").ValueAsString()));
-        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\S+", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchOneOrMoreWS").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\b", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchWordBoundary").ValueAsString()));
 
         m_dateTimeShortcuts = winrt::single_threaded_observable_vector<PowerRenameUI::PatternSnippet>();
