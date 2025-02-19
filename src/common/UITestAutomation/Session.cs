@@ -62,7 +62,7 @@ namespace Microsoft.PowerToys.UITest
         public Session Attach(PowerToysModuleWindow module)
         {
             string windowName = ModuleConfigData.Instance.GetModuleWindowName(module);
-            return AttachByWindowName(windowName);
+            return Attach(windowName);
         }
 
         // Attaches to an existing exe by window name.
@@ -71,7 +71,7 @@ namespace Microsoft.PowerToys.UITest
         //   PowerToysModuleWindow module: The module window to attach to.
         // Returns:
         //   Session: The attached session.
-        public Session AttachByWindowName(string windowName)
+        public Session Attach(string windowName)
         {
             if (Root != null)
             {
