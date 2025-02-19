@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.15" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.16" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.15"/><!-- Last changed with PowerToys v0.88.0 -->
+  <resources minRequiredRevision="1.16"/><!-- Last changed with PowerToys v0.89.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -24,6 +24,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_85_0" displayName="$(string.SUPPORTED_POWERTOYS_0_85_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_86_0" displayName="$(string.SUPPORTED_POWERTOYS_0_86_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_88_0" displayName="$(string.SUPPORTED_POWERTOYS_0_88_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_89_0" displayName="$(string.SUPPORTED_POWERTOYS_0_89_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
@@ -535,6 +536,16 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <policy name="ConfigureRunAtStartup" class="Both" displayName="$(string.ConfigureRunAtStartup)" explainText="$(string.ConfigureRunAtStartupDescription)" key="Software\Policies\PowerToys" valueName="ConfigureRunAtStartup">
+      <parentCategory ref="GeneralSettings" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_89_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
     <policy name="PowerToysRunAllPluginsEnabledState" class="Both" displayName="$(string.PowerToysRunAllPluginsEnabledState)" explainText="$(string.PowerToysRunAllPluginsEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="PowerLauncherAllPluginsEnabledState">
       <parentCategory ref="PowerToysRun" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_75_0" />
@@ -595,6 +606,16 @@
     <policy name="MwbDisallowBlockingScreensaver" class="Both" displayName="$(string.MwbDisallowBlockingScreensaver)" explainText="$(string.MwbDisallowBlockingScreensaverDescription)" key="Software\Policies\PowerToys" valueName="MwbDisallowBlockingScreensaver">
       <parentCategory ref="MouseWithoutBorders" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="MwbAllowServiceMode" class="Machine" displayName="$(string.MwbAllowServiceMode)" explainText="$(string.MwbAllowServiceModeDescription)" key="Software\Policies\PowerToys" valueName="MwbAllowServiceMode">
+      <parentCategory ref="MouseWithoutBorders" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_89_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

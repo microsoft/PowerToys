@@ -73,12 +73,14 @@ namespace powertoys_gpo {
     // The registry value names for other PowerToys policies.
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
     const std::wstring POLICY_ALLOW_DATA_DIAGNOSTICS = L"AllowDataDiagnostics";
+    const std::wstring POLICY_CONFIGURE_RUN_AT_STARTUP = L"ConfigureRunAtStartup";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS = L"PowerLauncherAllPluginsEnabledState";
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS = L"AllowPowerToysAdvancedPasteOnlineAIModels";
     const std::wstring POLICY_MWB_CLIPBOARD_SHARING_ENABLED = L"MwbClipboardSharingEnabled";
     const std::wstring POLICY_MWB_FILE_TRANSFER_ENABLED = L"MwbFileTransferEnabled";
     const std::wstring POLICY_MWB_USE_ORIGINAL_USER_INTERFACE = L"MwbUseOriginalUserInterface";
     const std::wstring POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER = L"MwbDisallowBlockingScreensaver";
+    const std::wstring POLICY_MWB_ALLOW_SERVICE_MODE = L"MwbAllowServiceMode";
     const std::wstring POLICY_MWB_SAME_SUBNET_ONLY = L"MwbSameSubnetOnly";
     const std::wstring POLICY_MWB_VALIDATE_REMOTE_IP = L"MwbValidateRemoteIp";
     const std::wstring POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES = L"MwbDisableUserDefinedIpMappingRules";
@@ -493,6 +495,11 @@ namespace powertoys_gpo {
         return getConfiguredValue(POLICY_ALLOW_DATA_DIAGNOSTICS);
     }
 
+    inline gpo_rule_configured_t getConfiguredRunAtStartupValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_RUN_AT_STARTUP);
+    }
+
     inline gpo_rule_configured_t getRunPluginEnabledValue(std::string pluginID)
     {     
         if (pluginID == "" || pluginID == " ")
@@ -556,6 +563,11 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getConfiguredMwbDisallowBlockingScreensaverValue()
     {
         return getConfiguredValue(POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbAllowServiceModeValue()
+    {
+        return getConfiguredValue(POLICY_MWB_ALLOW_SERVICE_MODE);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbSameSubnetOnlyValue()
