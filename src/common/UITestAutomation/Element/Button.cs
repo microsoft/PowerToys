@@ -11,7 +11,9 @@ using OpenQA.Selenium.Support.Events;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // Represents a button in the UI test framework.
+    /// <summary>
+    /// Represents a button in the UI test environment.
+    /// </summary>
     public class Button : Element
     {
         public Button()
@@ -19,9 +21,10 @@ namespace Microsoft.PowerToys.UITest
         {
         }
 
-        // Gets the type of the button.
-        // Returns:
-        //   string: The control type of the button as a string.
+        /// <summary>
+        /// Gets the type of the button.
+        /// </summary>
+        /// <returns>The control type of the button as a string.</returns>
         public string GetButtonType()
         {
             return GetAttribute("ControlType");

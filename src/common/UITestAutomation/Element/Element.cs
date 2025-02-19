@@ -18,39 +18,50 @@ using static Microsoft.PowerToys.UITest.UITestBase;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // Represents a basic UI element in the application.
+    /// <summary>
+    /// Represents a basic UI element in the application.
+    /// </summary>
     public class Element
     {
-        // WindowsElement and WindowsDriver are components of WinAppDriver that provide underlying element operations.
         private WindowsElement? WindowsElement { get; set; }
 
         private WindowsDriver<WindowsElement>? driver;
 
-        // The name of the UI element.
+        /// <summary>
+        /// Gets the name of the UI element.
+        /// </summary>
         public string Name
         {
             get { return GetAttribute("Name"); }
         }
 
-        // The text of the UI element.
-        public string Test
+        /// <summary>
+        /// Gets the text of the UI element.
+        /// </summary>
+        public string Text
         {
             get { return GetAttribute("Value"); }
         }
 
-        // The automation ID of the UI element.
+        /// <summary>
+        /// Gets the AutomationID of the UI element.
+        /// </summary>
         public string AutomationId
         {
             get { return GetAttribute("AutomationId"); }
         }
 
-        // The class name of the UI element.
+        /// <summary>
+        /// Gets the class name of the UI element.
+        /// </summary>
         public string ClassName
         {
             get { return GetAttribute("ClassName"); }
         }
 
-        // The help text of the UI element.
+        /// <summary>
+        /// Gets the help text of the UI element.
+        /// </summary>
         public string HelpText
         {
             get { return GetAttribute("HelpText"); }
@@ -65,29 +76,46 @@ namespace Microsoft.PowerToys.UITest
             WindowsElement = null;
         }
 
-        // Checks if the UI element is enabled.
-        // Returns:
-        //   bool: True if the element is enabled; otherwise, false.
+        /// <summary>
+        /// Checks if the UI element is enabled.
+        /// </summary>
+        /// <returns>True if the element is enabled; otherwise, false.</returns>
         public bool IsEnabled() => GetAttribute("IsEnabled") == "True";
 
-        // Checks if the UI element is selected.
-        // Returns:
-        //   bool: True if the element is selected; otherwise, false.
+        /// <summary>
+        /// Checks if the UI element is selected.
+        /// </summary>
+        /// <returns>True if the element is selected; otherwise, false.</returns>
         public bool IsSelected() => GetAttribute("IsSelected") == "True";
 
-        // Click the UI element
+        /// <summary>
+        /// Left click the UI element.
+        /// </summary>
         public void LeftClick() => PerformAction(actions => actions.Click());
 
-        // Right click the UI element
+        /// <summary>
+        /// Right click the UI element.
+        /// </summary>
         public void RightClick() => PerformAction(actions => actions.ContextClick());
 
-        // Underlying function to get attribute by WindowsElement
+        /// <summary>
+        /// Gets the attribute value of the UI element.
+        /// </summary>
+        /// <param name="attributeName">The name of the attribute to get.</param>
+        /// <returns>The value of the attribute.</returns>
         public string GetAttribute(string attributeName)
         {
             Assert.IsNotNull(this.WindowsElement, "WindowsElement should not be null");
             return this.WindowsElement?.GetAttribute(attributeName) ?? string.Empty;
         }
 
+        /// <summary>
+        /// Finds an element by the selector.
+        /// </summary>
+        /// <typeparam name="T">The class type of the element to find.</typeparam>
+        /// <param name="by">The selector to use for finding the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds.</param>
+        /// <returns>The found element.</returns>
         public T Find<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
@@ -95,7 +123,13 @@ namespace Microsoft.PowerToys.UITest
             return FindElementHelper.Find<T, AppiumWebElement>(() => this.WindowsElement.FindElement(by.ToSeleniumBy()), timeoutMS, this.driver);
         }
 
-        // Find elements by name
+        /// <summary>
+        /// Finds all elements by the selector.
+        /// </summary>
+        /// <typeparam name="T">The class type of the elements to find.</typeparam>
+        /// <param name="by">The selector to use for finding the elements.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds.</param>
+        /// <returns>A read-only collection of the found elements.</returns>
         public ReadOnlyCollection<T>? FindAll<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
@@ -103,7 +137,9 @@ namespace Microsoft.PowerToys.UITest
             return FindElementHelper.FindAll<T, AppiumWebElement>(() => this.WindowsElement.FindElements(by.ToSeleniumBy()), timeoutMS, this.driver);
         }
 
-        // Simulate manual operation
+        /// <summary>
+        /// Simulates a manual operation on the element.
+        /// </summary>
         private void PerformAction(Action<Actions> action)
         {
             var element = this.WindowsElement;

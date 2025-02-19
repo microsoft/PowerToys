@@ -11,7 +11,9 @@ using OpenQA.Selenium.Support.Events;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // Represents a window in the UI test framework.
+    /// <summary>
+    /// Represents a window in the UI test environment.
+    /// </summary>
     public class Window : Element
     {
         public Window()
@@ -19,35 +21,39 @@ namespace Microsoft.PowerToys.UITest
         {
         }
 
-        // Click the Maximize button of the window.
-        // Returns:
-        //   Window: The current Window instance.
+        /// <summary>
+        /// Clicks the Maximize button of the window.
+        /// </summary>
+        /// <returns>The current Window instance.</returns>
         public Window Maximize()
         {
             Find<Button>(By.Name("Maximize")).LeftClick();
             return this;
         }
 
-        // Click the Restore button of the window.
-        // Returns:
-        //   Window: The current Window instance.
+        /// <summary>
+        /// Clicks the Restore button of the window.
+        /// </summary>
+        /// <returns>The current Window instance.</returns>
         public Window Restore()
         {
             Find<Button>(By.Name("Restore")).LeftClick();
             return this;
         }
 
-        // Click the Minimize button of the window.
-        // Returns:
-        //   Window: The current Window instance.
+        /// <summary>
+        /// Clicks the Minimize button of the window.
+        /// </summary>
+        /// <returns>The current Window instance.</returns>
         public Window Minimize()
         {
             Find<Button>(By.Name("Minimize")).LeftClick();
             return this;
         }
 
-        // Returns:
-        //   Window: The current Window instance.
+        /// <summary>
+        /// Clicks the Close button of the window.
+        /// </summary>
         public void Close()
         {
             Find<Button>(By.Name("Close")).LeftClick();

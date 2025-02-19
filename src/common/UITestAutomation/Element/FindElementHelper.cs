@@ -19,7 +19,9 @@ using OpenQA.Selenium.Appium.Windows;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // Helper class for finding elements
+    /// <summary>
+    /// Helper class for finding elements.
+    /// </summary>
     internal static class FindElementHelper
     {
         public static T Find<T, TW>(Func<TW> findElementFunc, int timeoutMS, WindowsDriver<WindowsElement>? driver)
@@ -53,14 +55,13 @@ namespace Microsoft.PowerToys.UITest
             return new ReadOnlyCollection<T>((IList<T>)res);
         }
 
-        // Creates a new element of type T.
         public static T NewElement<T>(WindowsElement element, WindowsDriver<WindowsElement>? driver)
              where T : Element, new()
         {
             T newElement = new T();
             Assert.IsNotNull(driver, "[FindElementHelper.cs] driver is null");
             newElement.SetSession(driver);
-            Assert.IsNotNull(element, "[FindElementHelper] element is null");
+            Assert.IsNotNull(element, "[FindElementHelper.cs] element is null");
             newElement.SetWindowsElement(element);
             return newElement;
         }

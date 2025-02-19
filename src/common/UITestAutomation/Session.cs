@@ -16,7 +16,9 @@ using OpenQA.Selenium.Interactions;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // Wrap WinAppDriver and provide interfaces to users
+    /// <summary>
+    /// Provides interfaces for interacting with UI elements.
+    /// </summary>
     public class Session
     {
         private WindowsDriver<WindowsElement> Root { get; set; }
@@ -26,24 +28,19 @@ namespace Microsoft.PowerToys.UITest
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(nint hWnd);
 
-        // Initializes a new instance of the Session class.
-        // Parameters:
-        //   WindowsDriver<WindowsElement> root: The root WindowsDriver for the desktop.
-        //   WindowsDriver<WindowsElement> windowsDriver: The WindowsDriver for the application.
         public Session(WindowsDriver<WindowsElement> root, WindowsDriver<WindowsElement> windowsDriver)
         {
             Root = root;
             WindowsDriver = windowsDriver;
         }
 
-        // Finds an element by selector.
-        // Type parameters:
-        //   T: The class of the element, should be Element or its derived class.
-        // Parameters:
-        //   By by: The selector to find the element.
-        //   int timeoutMS: The timeout in milliseconds (default is 3000).
-        // Returns:
-        //   T: The found element.
+        /// <summary>
+        /// Finds an element by selector.
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="by">The selector to find the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>The found element.</returns>
         public T Find<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
@@ -51,7 +48,13 @@ namespace Microsoft.PowerToys.UITest
             return FindElementHelper.Find<T, WindowsElement>(() => WindowsDriver.FindElement(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
         }
 
-        // Find elements by name
+        /// <summary>
+        /// Finds all elements by selector.
+        /// </summary>
+        /// <typeparam name="T">The class of the elements, should be Element or its derived class.</typeparam>
+        /// <param name="by">The selector to find the elements.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>A read-only collection of the found elements.</returns>
         public ReadOnlyCollection<T>? FindAll<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
@@ -59,18 +62,23 @@ namespace Microsoft.PowerToys.UITest
             return FindElementHelper.FindAll<T, WindowsElement>(() => WindowsDriver.FindElements(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
         }
 
+        /// <summary>
+        /// Attaches to an existing PowerToys module window.
+        /// </summary>
+        /// <param name="module">The PowerToys module window to attach to.</param>
+        /// <returns>The attached session.</returns>
         public Session Attach(PowerToysModuleWindow module)
         {
             string windowName = ModuleConfigData.Instance.GetModuleWindowName(module);
             return Attach(windowName);
         }
 
-        // Attaches to an existing exe by window name.
-        // The session should be attached when a new app is started. e.g. launching KeyboardmanagerEditor from settings.
-        // Parameters:
-        //   PowerToysModuleWindow module: The module window to attach to.
-        // Returns:
-        //   Session: The attached session.
+        /// <summary>
+        /// Attaches to an existing exe by string window name.
+        /// The session should be attached when a new app is started.
+        /// </summary>
+        /// <param name="windowName">The window name to attach to.</param>
+        /// <returns>The attached session.</returns>
         public Session Attach(string windowName)
         {
             if (Root != null)

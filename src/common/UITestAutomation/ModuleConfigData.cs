@@ -11,13 +11,20 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.PowerToys.UITest
 {
-    // How to add a new module:
-    // 1. Define the new module in the PowerToysModule enum.
-    // 2. Define any associated windows in the PowerToysModuleWindow enum.
-    // 3. Add the window names to the ModuleWindowName dictionary in the ModuleConfigData constructor.
-    // 4. If the module has an executable path, add it to the ModulePath dictionary in the ModuleConfigData constructor.
+    /// <summary>
+    /// This file manages the configuration of modules for UI tests.
+    /// </summary>
+    /// <remarks>
+    /// How to add a new module:
+    /// 1. Define the new module in the PowerToysModule enum.
+    /// 2. Define any associated windows in the PowerToysModuleWindow enum.
+    /// 3. Add the exe window name to the ModuleWindowName dictionary in the ModuleConfigData constructor.
+    /// 4. If the module has an executable path, add it to the ModulePath dictionary in the ModuleConfigData constructor.
+    /// </remarks>
 
-    // Represents the modules in PowerToys.
+    /// <summary>
+    /// Represents the modules in PowerToys.
+    /// </summary>
     public enum PowerToysModule
     {
         None,
@@ -26,8 +33,10 @@ namespace Microsoft.PowerToys.UITest
         Hosts,
     }
 
-    // Represents the windows of PowerToys modules.
-    // One module could have multiple windows.
+    /// <summary>
+    /// Represents the windows of PowerToys modules.
+    /// One module could have multiple windows.
+    /// </summary>
     public enum PowerToysModuleWindow
     {
         None,
@@ -40,23 +49,20 @@ namespace Microsoft.PowerToys.UITest
 
     internal class ModuleConfigData
     {
-        // Mapping module to exe path
         private Dictionary<PowerToysModule, string> ModulePath { get; }
 
-        // Singleton instance of ModuleConfigData
+        // Singleton instance of ModuleConfigData.
         private static readonly Lazy<ModuleConfigData> SingletonInstance = new Lazy<ModuleConfigData>(() => new ModuleConfigData());
 
         public static ModuleConfigData Instance => SingletonInstance.Value;
 
-        // URL for Windows Application Driver
         public const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
 
-        // Mapping window to string name
         public Dictionary<PowerToysModuleWindow, string> ModuleWindowName { get; }
 
         private ModuleConfigData()
         {
-            // Set a string window name for each module.
+            // The exe window name for each module.
             ModuleWindowName = new Dictionary<PowerToysModuleWindow, string>
             {
                 [PowerToysModuleWindow.PowerToysSettings] = "PowerToys Settings",
@@ -74,20 +80,10 @@ namespace Microsoft.PowerToys.UITest
             };
         }
 
-        // Gets the executable path for the specified PowerToys module.
-        // Parameters:
-        //   scope: The PowerToys module.
-        // Returns: The exe path for the specified module.
         public string GetModulePath(PowerToysModule scope) => ModulePath[scope];
 
-        // Gets the URL for the Windows Application Driver.
-        // Returns: The URL for the Windows Application Driver.
         public string GetWindowsApplicationDriverUrl() => WindowsApplicationDriverUrl;
 
-        // Gets the window name for the specified PowerToys module window.
-        // Parameters:
-        //   scope: The PowerToys module window.
-        // Returns: The window name for the specified module window.
         public string GetModuleWindowName(PowerToysModuleWindow scope) => ModuleWindowName[scope];
     }
 }
