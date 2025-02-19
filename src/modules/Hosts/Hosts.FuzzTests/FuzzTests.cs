@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -12,9 +11,7 @@ using Hosts.Tests.Mocks;
 using HostsUILib.Helpers;
 using HostsUILib.Models;
 using HostsUILib.Settings;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace Hosts.FuzzTests
 {
@@ -84,15 +81,9 @@ namespace Hosts.FuzzTests
 
                 // Since the WriteAsync method does not involve content parsing, we won't fuzz the additionalLines in the hosts file.
                 string additionalLines = " ";
-                if (input.Length <= 2)
-                {
-                    return;
-                }
-
-                var parts = SplitStringRandomly(input);
-                string hosts = parts[0];
-                string address = parts[1];
-                string comments = parts[2];
+                string hosts = input;
+                string address = input;
+                string comments = input;
                 var entries = new List<Entry>
                 {
                     new Entry(1, hosts, address, comments, true),
@@ -105,23 +96,6 @@ namespace Hosts.FuzzTests
             {
                 throw;
             }
-        }
-
-        public static string[] SplitStringRandomly(string input)
-        {
-            Random rand = new Random();
-            int length = input.Length;
-
-            // Ensure the split points are valid
-            int firstSplit = rand.Next(1, length - 1);  // Between 1 and length-1
-            int secondSplit = rand.Next(firstSplit + 1, length);  // Between firstSplit+1 and length
-
-            // Split the string into three parts using the split points
-            string part1 = input.Substring(0, firstSplit);
-            string part2 = input.Substring(firstSplit, secondSplit - firstSplit);
-            string part3 = input.Substring(secondSplit);
-
-            return new string[] { part1, part2, part3 };
         }
     }
 }
