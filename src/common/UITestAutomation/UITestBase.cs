@@ -88,7 +88,7 @@ namespace Microsoft.PowerToys.UITest
             }
 
             /// <summary>
-            /// UnInitializes the test environment..
+            /// UnInitializes the test environment.
             /// </summary>
             public void UnInit()
             {
@@ -118,7 +118,7 @@ namespace Microsoft.PowerToys.UITest
             /// <summary>
             /// Sets scope to the Test Class.
             /// </summary>
-            /// <param name="scope">The PowerToys module scope.</param>
+            /// <param name="scope">The PowerToys module to start.</param>
             public void SetScope(PowerToysModule scope)
             {
                 sessionPath = ModuleConfigData.Instance.GetModulePath(scope);

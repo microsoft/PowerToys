@@ -8,7 +8,7 @@ using static OpenQA.Selenium.By;
 namespace Microsoft.PowerToys.UITest
 {
     /// <summary>
-    /// This class is a wrapper around OpenQA.Selenium.By.
+    /// This class represents a By selector.
     /// </summary>
 #pragma warning disable SA1649 // File name should match first type name
     public class By
@@ -66,6 +66,6 @@ namespace Microsoft.PowerToys.UITest
         /// Converts the By object to an OpenQA.Selenium.By object.
         /// </summary>
         /// <returns>An OpenQA.Selenium.By object.</returns>
-        public OpenQA.Selenium.By ToSeleniumBy() => by;
+        internal OpenQA.Selenium.By ToSeleniumBy() => by;
     }
 }
