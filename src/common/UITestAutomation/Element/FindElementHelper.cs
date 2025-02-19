@@ -24,44 +24,35 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     internal static class FindElementHelper
     {
-        public static T Find<T, TW>(Func<TW> findElementFunc, int timeoutMS, WindowsDriver<WindowsElement>? driver)
+        public static T Find<T, TW>(Func<TW> findElementFunc, WindowsDriver<WindowsElement>? driver, int timeoutMS)
             where T : Element, new()
         {
-            Assert.IsNotNull(driver, "driver is null");
-            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromMilliseconds(timeoutMS);
             var item = findElementFunc() as WindowsElement;
-            Assert.IsNotNull(item, "Can't find this element");
-
-            return NewElement<T>(item, driver);
+            return NewElement<T>(item, driver, timeoutMS);
         }
 
-        public static ReadOnlyCollection<T>? FindAll<T, TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, int timeoutMS, WindowsDriver<WindowsElement>? driver)
+        public static ReadOnlyCollection<T>? FindAll<T, TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, WindowsDriver<WindowsElement>? driver, int timeoutMS)
             where T : Element, new()
         {
-            Assert.IsNotNull(driver, "driver is null");
-            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromMilliseconds(timeoutMS);
             var items = findElementsFunc();
             var res = items.Select(item =>
             {
                 var element = item as WindowsElement;
-                if (element != null)
-                {
-                    NewElement<T>(element, driver);
-                }
+                return NewElement<T>(element, driver, timeoutMS);
+            }).ToList();
 
-                return element;
-            }).Where(element => element != null).ToList();
-
-            return new ReadOnlyCollection<T>((IList<T>)res);
+            return new ReadOnlyCollection<T>(res);
         }
 
-        public static T NewElement<T>(WindowsElement element, WindowsDriver<WindowsElement>? driver)
+        public static T NewElement<T>(WindowsElement? element, WindowsDriver<WindowsElement>? driver, int timeoutMS)
              where T : Element, new()
         {
+            Assert.IsNotNull(driver, $"New Element {typeof(T).Name} error: driver is null.");
+            Assert.IsNotNull(element, $"New Element {typeof(T).Name} error: element is null.");
+
             T newElement = new T();
-            Assert.IsNotNull(driver, "[FindElementHelper.cs] driver is null");
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromMilliseconds(timeoutMS);
             newElement.SetSession(driver);
-            Assert.IsNotNull(element, "[FindElementHelper.cs] element is null");
             newElement.SetWindowsElement(element);
             return newElement;
         }

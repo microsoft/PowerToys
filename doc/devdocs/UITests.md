@@ -40,17 +40,6 @@
 - Inherit your test class from UITestBase.
   >Set Scope: The default scope starts from the PowerToys settings UI. If you want to start from your own module, set the constructor as shown below:
   
-- >Default Scope:
-  ```
-  [TestClass]
-  public class RunFancyZonesTest : UITestBase
-  {
-      public RunFancyZonesTest()
-          : base()
-      {
-      }
-  }
-  ```
   >Specify Scope:
   ```
   [TestClass]
@@ -73,16 +62,14 @@ namespace UITests_KeyboardManager
     public void OpenKeyboardManagerEditor()
     {
         // Open KeyboardManagerEditor
-        Session.Find<Button>(By.Name("Remap a key")).LeftClick();
+        Session.Find<Button>(By.Name("Remap a key")).Click();
         Session.Attach(PowerToysModuleWindow.KeyboardManagerKeys);
 
         // Maximize window
         var window = Session.Find<Window>(By.Name("Remap keys")).Maximize();
 
         // Click button
-        Session.Find<Button>(By.Name("Add key remapping")).LeftClick();
-        Session.Find<Element>(By.Name("Row 1, Select:")).Find<Button>(By.Name("Select")).LeftClick();
-        Session.Find<Window>(By.Name("Select a key on selected keyboard")).Find<Button>(By.Name("Cancel")).LeftClick();
+        Session.Find<Button>(By.Name("Add key remapping")).Click();
         window.Close();
 
         // Back to Settings

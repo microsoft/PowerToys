@@ -16,18 +16,5 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     public class Button : Element
     {
-        public Button()
-            : base()
-        {
-        }
-
-        /// <summary>
-        /// Gets the type of the button.
-        /// </summary>
-        /// <returns>The control type of the button as a string.</returns>
-        public string GetButtonType()
-        {
-            return GetAttribute("ControlType");
-        }
     }
 }

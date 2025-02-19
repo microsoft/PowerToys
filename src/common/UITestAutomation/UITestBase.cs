@@ -27,20 +27,20 @@ namespace Microsoft.PowerToys.UITest
 
         public UITestBase()
         {
-            testInit.Init();
-            Session = new Session(testInit.GetRoot(), testInit.GetDriver());
+            this.testInit.Init();
+            this.Session = new Session(this.testInit.GetRoot(), this.testInit.GetDriver());
         }
 
         public UITestBase(PowerToysModule scope)
         {
-            testInit.SetScope(scope);
-            testInit.Init();
-            Session = new Session(testInit.GetRoot(), testInit.GetDriver());
+            this.testInit.SetScope(scope);
+            this.testInit.Init();
+            this.Session = new Session(this.testInit.GetRoot(), this.testInit.GetDriver());
         }
 
         ~UITestBase()
         {
-            testInit.UnInit();
+            this.testInit.Cleanup();
         }
 
         /// <summary>
@@ -61,9 +61,10 @@ namespace Microsoft.PowerToys.UITest
             {
                 var desktopCapabilities = new AppiumOptions();
                 desktopCapabilities.AddAdditionalCapability("app", "Root");
-                Root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
+                this.Root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
 
-                Root.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
+                // Set default timeout to 5 seconds
+                this.Root.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
             }
 
             /// <summary>
@@ -80,25 +81,27 @@ namespace Microsoft.PowerToys.UITest
 
                 string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 path += sessionPath;
-                StartExe("PowerToys", "PowerToys Settings", path);
+                this.StartExe("PowerToys", "PowerToys Settings", path);
 
-                Assert.IsNotNull(Driver, "Session not initialized");
+                Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
 
-                Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
+                // Set default timeout to 5 seconds
+                this.Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
             }
 
             /// <summary>
-            /// UnInitializes the test environment.
+            /// Cleans up the test environment.
             /// </summary>
-            public void UnInit()
+            public void Cleanup()
             {
                 try
                 {
                     appDriver?.Kill();
                 }
-                catch
+                catch (Exception ex)
                 {
                     // Handle exceptions if needed
+                    Debug.WriteLine($"Exception during Cleanup: {ex.Message}");
                 }
             }
 
@@ -112,7 +115,7 @@ namespace Microsoft.PowerToys.UITest
             {
                 var opts = new AppiumOptions();
                 opts.AddAdditionalCapability("app", appPath);
-                Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
+                this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
             }
 
             /// <summary>
@@ -124,12 +127,12 @@ namespace Microsoft.PowerToys.UITest
                 sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
             }
 
-            public WindowsDriver<WindowsElement> GetRoot() => Root;
+            public WindowsDriver<WindowsElement> GetRoot() => this.Root;
 
             public WindowsDriver<WindowsElement> GetDriver()
             {
-                Assert.IsNotNull(Driver);
-                return Driver;
+                Assert.IsNotNull(this.Driver, $"Failed to get driver. Driver is null.");
+                return this.Driver;
             }
         }
     }

@@ -30,8 +30,8 @@ namespace Microsoft.PowerToys.UITest
 
         public Session(WindowsDriver<WindowsElement> root, WindowsDriver<WindowsElement> windowsDriver)
         {
-            Root = root;
-            WindowsDriver = windowsDriver;
+            this.Root = root;
+            this.WindowsDriver = windowsDriver;
         }
 
         /// <summary>
@@ -44,8 +44,18 @@ namespace Microsoft.PowerToys.UITest
         public T Find<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
-            Assert.IsNotNull(WindowsDriver, "WindowsElement is null");
-            return FindElementHelper.Find<T, WindowsElement>(() => WindowsDriver.FindElement(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
+            Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
+            var foundElement = FindElementHelper.Find<T, WindowsElement>(
+                () =>
+                {
+                    var element = this.WindowsDriver.FindElement(by.ToSeleniumBy());
+                    Assert.IsNotNull(element, $"Element not found using selector: {by}");
+                    return element;
+                },
+                this.WindowsDriver,
+                timeoutMS);
+
+            return foundElement;
         }
 
         /// <summary>
@@ -58,8 +68,18 @@ namespace Microsoft.PowerToys.UITest
         public ReadOnlyCollection<T>? FindAll<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
-            Assert.IsNotNull(WindowsDriver, "WindowsElement is null");
-            return FindElementHelper.FindAll<T, WindowsElement>(() => WindowsDriver.FindElements(by.ToSeleniumBy()), timeoutMS, WindowsDriver);
+            Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
+            var foundElements = FindElementHelper.FindAll<T, WindowsElement>(
+                () =>
+                {
+                    var elements = this.WindowsDriver.FindElements(by.ToSeleniumBy());
+                    Assert.IsTrue(elements.Count > 0, $"Elements not found using selector: {by}");
+                    return elements;
+                },
+                this.WindowsDriver,
+                timeoutMS);
+
+            return foundElements;
         }
 
         /// <summary>
@@ -70,7 +90,7 @@ namespace Microsoft.PowerToys.UITest
         public Session Attach(PowerToysModuleWindow module)
         {
             string windowName = ModuleConfigData.Instance.GetModuleWindowName(module);
-            return Attach(windowName);
+            return this.Attach(windowName);
         }
 
         /// <summary>
@@ -81,10 +101,10 @@ namespace Microsoft.PowerToys.UITest
         /// <returns>The attached session.</returns>
         public Session Attach(string windowName)
         {
-            if (Root != null)
+            if (this.Root != null)
             {
-                var window = Root.FindElementByName(windowName);
-                Assert.IsNotNull(window, $"{windowName} not found");
+                var window = this.Root.FindElementByName(windowName);
+                Assert.IsNotNull(window, $"Failed to attach. Window '{windowName}' not found");
 
                 var windowHandle = new nint(int.Parse(window.GetAttribute("NativeWindowHandle")));
                 SetForegroundWindow(windowHandle);
@@ -92,15 +112,15 @@ namespace Microsoft.PowerToys.UITest
                 var appCapabilities = new AppiumOptions();
                 appCapabilities.AddAdditionalCapability("appTopLevelWindow", hexWindowHandle);
                 appCapabilities.AddAdditionalCapability("deviceName", "WindowsPC");
-                WindowsDriver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
-                Assert.IsNotNull(WindowsDriver, "Attach WindowsDriver is null");
+                this.WindowsDriver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
+                Assert.IsNotNull(this.WindowsDriver, "Attach WindowsDriver is null");
 
                 // Set implicit timeout to make element search retry every 500 ms
-                WindowsDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
+                this.WindowsDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
             }
             else
             {
-                Assert.IsNotNull(Root, "Root driver is null");
+                Assert.IsNotNull(this.Root, $"Failed to attach to the window '{windowName}'. Root driver is null");
             }
 
             return this;

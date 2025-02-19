@@ -23,9 +23,12 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     public class Element
     {
-        private WindowsElement? WindowsElement { get; set; }
-
+        private WindowsElement? windowsElement;
         private WindowsDriver<WindowsElement>? driver;
+
+        internal void SetWindowsElement(WindowsElement windowsElement) => this.windowsElement = windowsElement;
+
+        internal void SetSession(WindowsDriver<WindowsElement> driver) => this.driver = driver;
 
         /// <summary>
         /// Gets the name of the UI element.
@@ -67,13 +70,12 @@ namespace Microsoft.PowerToys.UITest
             get { return GetAttribute("HelpText"); }
         }
 
-        internal void SetWindowsElement(WindowsElement windowsElement) => this.WindowsElement = windowsElement;
-
-        internal void SetSession(WindowsDriver<WindowsElement> driver) => this.driver = driver;
-
-        public Element()
+        /// <summary>
+        /// Gets the control type of the UI element.
+        /// </summary>
+        public string ControlType
         {
-            WindowsElement = null;
+            get { return GetAttribute("ControlType"); }
         }
 
         /// <summary>
@@ -89,14 +91,23 @@ namespace Microsoft.PowerToys.UITest
         public bool IsSelected() => GetAttribute("IsSelected") == "True";
 
         /// <summary>
-        /// Left click the UI element.
+        /// Click the UI element.
         /// </summary>
-        public void LeftClick() => PerformAction(actions => actions.Click());
-
-        /// <summary>
-        /// Right click the UI element.
-        /// </summary>
-        public void RightClick() => PerformAction(actions => actions.ContextClick());
+        /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click.</param>
+        public void Click(bool rightClick = false)
+        {
+            PerformAction(actions =>
+            {
+                if (rightClick)
+                {
+                    actions.ContextClick();
+                }
+                else
+                {
+                    actions.Click();
+                }
+            });
+        }
 
         /// <summary>
         /// Gets the attribute value of the UI element.
@@ -105,8 +116,10 @@ namespace Microsoft.PowerToys.UITest
         /// <returns>The value of the attribute.</returns>
         public string GetAttribute(string attributeName)
         {
-            Assert.IsNotNull(this.WindowsElement, "WindowsElement should not be null");
-            return this.WindowsElement?.GetAttribute(attributeName) ?? string.Empty;
+            Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method GetAttribute with parameter: attributeName = {attributeName}");
+            var attributeValue = this.windowsElement.GetAttribute(attributeName);
+            Assert.IsNotNull(attributeValue, $"Attribute '{attributeName}' is null.");
+            return attributeValue;
         }
 
         /// <summary>
@@ -119,8 +132,18 @@ namespace Microsoft.PowerToys.UITest
         public T Find<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
-            Assert.IsNotNull(this.WindowsElement, "WindowsElement is null");
-            return FindElementHelper.Find<T, AppiumWebElement>(() => this.WindowsElement.FindElement(by.ToSeleniumBy()), timeoutMS, this.driver);
+            Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
+            var foundElement = FindElementHelper.Find<T, AppiumWebElement>(
+                () =>
+                {
+                    var element = this.windowsElement.FindElement(by.ToSeleniumBy());
+                    Assert.IsNotNull(element, $"Element not found using selector: {by}");
+                    return element;
+                },
+                this.driver,
+                timeoutMS);
+
+            return foundElement;
         }
 
         /// <summary>
@@ -133,8 +156,18 @@ namespace Microsoft.PowerToys.UITest
         public ReadOnlyCollection<T>? FindAll<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
-            Assert.IsNotNull(this.WindowsElement, "WindowsElement is null");
-            return FindElementHelper.FindAll<T, AppiumWebElement>(() => this.WindowsElement.FindElements(by.ToSeleniumBy()), timeoutMS, this.driver);
+            Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
+            var foundElements = FindElementHelper.FindAll<T, AppiumWebElement>(
+                () =>
+                {
+                    var elements = this.windowsElement.FindElements(by.ToSeleniumBy());
+                    Assert.IsTrue(elements.Count > 0, $"Elements not found using selector: {by}");
+                    return elements;
+                },
+                this.driver,
+                timeoutMS);
+
+            return foundElements;
         }
 
         /// <summary>
@@ -142,7 +175,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         private void PerformAction(Action<Actions> action)
         {
-            var element = this.WindowsElement;
+            var element = this.windowsElement;
             Actions actions = new Actions(this.driver);
             actions.MoveToElement(element);
             action(actions);

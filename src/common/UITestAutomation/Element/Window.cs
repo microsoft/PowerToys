@@ -16,47 +16,77 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     public class Window : Element
     {
-        public Window()
-            : base()
-        {
-        }
-
         /// <summary>
-        /// Clicks the Maximize button of the window.
+        /// Maximizes the window.
         /// </summary>
+        /// <param name="byClickButton">If true, clicks the Maximize button; otherwise, sets the window state.</param>
         /// <returns>The current Window instance.</returns>
-        public Window Maximize()
+        public Window Maximize(bool byClickButton = true)
         {
-            Find<Button>(By.Name("Maximize")).LeftClick();
+            if (byClickButton)
+            {
+                Find<Button>(By.Name("Maximize")).Click();
+            }
+            else
+            {
+                // TODO: Implement maximizing the window using an alternative method
+            }
+
             return this;
         }
 
         /// <summary>
-        /// Clicks the Restore button of the window.
+        /// Restores the window.
         /// </summary>
+        /// <param name="byClickButton">If true, clicks the Restore button; otherwise, sets the window state.</param>
         /// <returns>The current Window instance.</returns>
-        public Window Restore()
+        public Window Restore(bool byClickButton = true)
         {
-            Find<Button>(By.Name("Restore")).LeftClick();
+            if (byClickButton)
+            {
+                Find<Button>(By.Name("Restore")).Click();
+            }
+            else
+            {
+                // TODO: Implement restoring the window using an alternative method
+            }
+
             return this;
         }
 
         /// <summary>
-        /// Clicks the Minimize button of the window.
+        /// Minimizes the window.
         /// </summary>
+        /// <param name="byClickButton">If true, clicks the Minimize button; otherwise, sets the window state.</param>
         /// <returns>The current Window instance.</returns>
-        public Window Minimize()
+        public Window Minimize(bool byClickButton = true)
         {
-            Find<Button>(By.Name("Minimize")).LeftClick();
+            if (byClickButton)
+            {
+                Find<Button>(By.Name("Minimize")).Click();
+            }
+            else
+            {
+                // TODO: Implement minimizing the window using an alternative method
+            }
+
             return this;
         }
 
         /// <summary>
-        /// Clicks the Close button of the window.
+        /// Closes the window.
         /// </summary>
-        public void Close()
+        /// <param name="byClickButton">If true, clicks the Close button; otherwise, closes the window using an alternative method.</param>
+        public void Close(bool byClickButton = true)
         {
-            Find<Button>(By.Name("Close")).LeftClick();
+            if (byClickButton)
+            {
+                Find<Button>(By.Name("Close")).Click();
+            }
+            else
+            {
+                // TODO: Implement closing the window using an alternative method
+            }
         }
     }
 }
