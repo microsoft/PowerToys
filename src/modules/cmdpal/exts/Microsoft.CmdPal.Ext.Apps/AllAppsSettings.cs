@@ -23,13 +23,13 @@ public class AllAppsSettings : JsonSettingsManager
 
     public DateTime LastIndexTime { get; set; }
 
-    public List<ProgramSource> ProgramSources { get; set; } = new List<ProgramSource>();
+    public List<ProgramSource> ProgramSources { get; set; } = [];
 
-    public List<DisabledProgramSource> DisabledProgramSources { get; set; } = new List<DisabledProgramSource>();
+    public List<DisabledProgramSource> DisabledProgramSources { get; set; } = [];
 
-    public List<string> ProgramSuffixes { get; set; } = new List<string>() { "bat", "appref-ms", "exe", "lnk", "url" };
+    public List<string> ProgramSuffixes { get; set; } = ["bat", "appref-ms", "exe", "lnk", "url"];
 
-    public List<string> RunCommandSuffixes { get; set; } = new List<string>() { "bat", "appref-ms", "exe", "lnk", "url", "cpl", "msc" };
+    public List<string> RunCommandSuffixes { get; set; } = ["bat", "appref-ms", "exe", "lnk", "url", "cpl", "msc"];
 
     public bool EnableStartMenuSource => _enableStartMenuSource.Value;
 
@@ -61,7 +61,7 @@ public class AllAppsSettings : JsonSettingsManager
         Namespaced(nameof(EnablePathEnvironmentVariableSource)),
         Resources.enable_path_environment_variable_source,
         Resources.enable_path_environment_variable_source,
-        true);
+        false); // this one is very VERY noisy
 
     public double MinScoreThreshold { get; set; } = 0.75;
 

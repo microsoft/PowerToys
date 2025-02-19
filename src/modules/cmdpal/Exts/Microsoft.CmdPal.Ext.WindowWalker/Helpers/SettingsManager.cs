@@ -62,7 +62,7 @@ public class SettingsManager : JsonSettingsManager
         Namespaced(nameof(HideExplorerSettingInfo)),
         Resources.windowwalker_SettingExplorerSettingInfo,
         Resources.windowwalker_SettingExplorerSettingInfo_Description,
-        false);
+        true);
 
     private readonly ToggleSetting _inMruOrder = new(
         Namespaced(nameof(InMruOrder)),
