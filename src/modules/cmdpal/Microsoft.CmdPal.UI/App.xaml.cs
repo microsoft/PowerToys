@@ -9,6 +9,7 @@ using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.Shell;
+using Microsoft.CmdPal.Ext.TimeDate;
 using Microsoft.CmdPal.Ext.WebSearch;
 using Microsoft.CmdPal.Ext.WindowsServices;
 using Microsoft.CmdPal.Ext.WindowsSettings;
@@ -94,6 +95,7 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
+        services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
 
         // Models
         services.AddSingleton<TopLevelCommandManager>();
