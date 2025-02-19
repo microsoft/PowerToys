@@ -62,4 +62,43 @@ namespace WindowFilter
 
         return true;
     }
+
+    inline bool FilterMin(HWND window)
+    {
+        auto style = GetWindowLong(window, GWL_STYLE);
+        auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
+
+        if (!WindowUtils::HasStyle(style, WS_VISIBLE))
+        {
+            return false;
+        }
+
+        if (!IsWindowVisible(window))
+        {
+            return false;
+        }
+
+        if (WindowUtils::HasStyle(exStyle, WS_EX_TOOLWINDOW))
+        {
+            return false;
+        }
+
+        if (!WindowUtils::IsRoot(window))
+        {
+            // child windows such as buttons, combo boxes, etc.
+            return false;
+        }
+
+        ////if (WindowFilter::FilterPopup(window))
+        ////{
+        ////    return false;
+        ////}
+
+        if (!VirtualDesktop::instance().IsWindowOnCurrentDesktop(window))
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

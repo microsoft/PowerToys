@@ -96,7 +96,9 @@ namespace SnapshotUtils
             // fix for the packaged apps that are not caught when minimized, e.g., Settings.
             if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))
             {
-                for (auto otherWindow : windows)
+                auto minWindows = WindowEnumerator::Enumerate(WindowFilter::FilterMin);
+
+                for (auto otherWindow : minWindows)
                 {
                     DWORD otherPid{};
                     GetWindowThreadProcessId(otherWindow, &otherPid);
