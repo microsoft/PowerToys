@@ -70,27 +70,23 @@
 namespace UITests_KeyboardManager
 {
     [TestClass]
-    public class RunKeyboardManagerUITests : UITestBase
+    public void OpenKeyboardManagerEditor()
     {
-        [TestMethod]
-        public void OpenKeyboardManagerEditor()
-        {
-            // Open KeyboardManagerEditor
-            Session.FindElement<Button>(By.Name("Remap a key")).Click();
-            Session.Attach(PowerToysModuleWindow.KeyboardManagerKeys);
+        // Open KeyboardManagerEditor
+        Session.Find<Button>(By.Name("Remap a key")).LeftClick();
+        Session.Attach(PowerToysModuleWindow.KeyboardManagerKeys);
 
-            // Maximize window
-            var window = Session.FindElement<Window>(By.Name("Remap keys")).Maximize();
+        // Maximize window
+        var window = Session.Find<Window>(By.Name("Remap keys")).Maximize();
 
-            // Click button
-            Session.FindElement<Button>(By.Name("Add key remapping")).Click();
-            Session.FindElement<Element>(By.Name("Row 1, Select:")).FindElement<Button>(By.Name("Select")).Click();
-            Session.FindElement<Window>(By.Name("Select a key on selected keyboard")).FindElement<Button>(By.Name("Cancel")).Click();
-            window.Close();
+        // Click button
+        Session.Find<Button>(By.Name("Add key remapping")).LeftClick();
+        Session.Find<Element>(By.Name("Row 1, Select:")).Find<Button>(By.Name("Select")).LeftClick();
+        Session.Find<Window>(By.Name("Select a key on selected keyboard")).Find<Button>(By.Name("Cancel")).LeftClick();
+        window.Close();
 
-            // Back to Settings
-            Session.Attach(PowerToysModuleWindow.PowerToysSettings);
-        }
+        // Back to Settings
+        Session.Attach(PowerToysModuleWindow.PowerToysSettings);
     }
 }
 ```
