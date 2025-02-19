@@ -20,7 +20,7 @@
 
     <!-- Enable Microsoft.Testing.Platform -->
     <EnableMSTestRunner>true</EnableMSTestRunner>
-    <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
+    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
     <TestingPlatformDotNetTestSupport>true</TestingPlatformDotNetTestSupport>
 
     <!-- No arm64 agents to run the tests. -->
