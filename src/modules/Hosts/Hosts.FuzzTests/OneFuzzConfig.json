@@ -161,7 +161,6 @@
         "Hosts.FuzzTests.dll",
         "Hosts.FuzzTests.pdb",
         "Microsoft.Windows.SDK.NET.dll",
-        "Newtonsoft.Json.dll",
         "WinRT.Runtime.dll",
         "Moq.dll",
         "testhost.dll",
