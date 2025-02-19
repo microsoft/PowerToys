@@ -46,14 +46,16 @@
 
                     <TextBlock x:Uid="ExtensionCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
+                    <ItemsRepeater 
+                        ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" 
+                        Layout="{StaticResource VerticalStackLayout}">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="viewmodels:TopLevelViewModel">
-                                <controls:SettingsCard
+                                <controls:SettingsExpander
                                     DataContext="{x:Bind}"
                                     Description="{x:Bind Subtitle, Mode=OneWay}"
                                     Header="{x:Bind Title, Mode=OneWay}">
-                                    <controls:SettingsCard.HeaderIcon>
+                                    <controls:SettingsExpander.HeaderIcon>
                                         <cpcontrols:ContentIcon>
                                             <cpcontrols:ContentIcon.Content>
                                                 <cpcontrols:IconBox
@@ -64,12 +66,23 @@
                                                     SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
                                             </cpcontrols:ContentIcon.Content>
                                         </cpcontrols:ContentIcon>
-                                    </controls:SettingsCard.HeaderIcon>
+                                    </controls:SettingsExpander.HeaderIcon>
+
                                     <!--  Content goes here  -->
-                                </controls:SettingsCard>
+
+                                    <controls:SettingsExpander.Items>
+                                        <controls:SettingsCard
+                                            Description="Directly open Command Palette to this command"
+                                            Header="Global hotkey"
+                                            HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                                            <cpcontrols:ShortcutControl HotkeySettings="{x:Bind Hotkey, Mode=TwoWay}" />
+                                        </controls:SettingsCard>
+                                    </controls:SettingsExpander.Items>
+                                </controls:SettingsExpander>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
                     </ItemsRepeater>
+                    
                     <TextBlock
                         x:Uid="ExtensionSettingsHeader"
                         Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"

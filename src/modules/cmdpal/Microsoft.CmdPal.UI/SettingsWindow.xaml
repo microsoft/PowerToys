@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     Title="SettingsWindow"
+    Activated="Window_Activated"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />

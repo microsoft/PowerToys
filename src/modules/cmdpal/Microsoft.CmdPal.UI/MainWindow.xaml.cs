@@ -7,7 +7,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
@@ -34,7 +33,7 @@ public sealed partial class MainWindow : Window,
     private readonly HWND _hwnd;
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
-    private readonly List<HotkeySettings> _hotkeys = [];
+    private readonly List<TopLevelHotkey> _hotkeys = [];
 
     // Stylistically, window messages are WM_*
 #pragma warning disable SA1310 // Field names should not contain underscore
@@ -273,25 +272,13 @@ public sealed partial class MainWindow : Window,
         }
     }
 
-    public void Summon()
+    public void Summon(string commandId)
     {
-        WeakReferenceMessenger.Default.Send<HotkeySummonMessage>();
-
-        // Remember, IsIconic == "minimized", which is entirely different state
-        // from "show/hide"
-        // If we're currently minimized, restore us first, before we reveal
-        // our window. Otherwise we'd just be showing a minimized window -
-        // which would remain not visible to the user.
-        if (PInvoke.IsIconic(_hwnd))
-        {
-            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
-        }
-
-        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOW);
-        PInvoke.SetForegroundWindow(_hwnd);
-        PInvoke.SetActiveWindow(_hwnd);
-
-        // MainPage.ViewModel.Summon();
+        // The actual showing and hiding of the window will be done by the
+        // ShellPage. This is because we don't want to show the window if the
+        // user bound a hotkey to just an invokable command, which we can't
+        // know till the message is being handled.
+        WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(commandId, _hwnd));
     }
 
 #pragma warning disable SA1310 // Field names should not contain underscore
@@ -323,8 +310,33 @@ public sealed partial class MainWindow : Window,
                 (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
                 ;
 
-            var success = PInvoke.RegisterHotKey(_hwnd, 0, modifiers, (uint)vk);
-            _hotkeys.Add(globalHotkey);
+            var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
+            if (success)
+            {
+                _hotkeys.Add(new(globalHotkey, string.Empty));
+            }
+        }
+
+        foreach (var commandHotkey in settings.CommandHotkeys)
+        {
+            var key = commandHotkey.Hotkey;
+
+            if (key != null)
+            {
+                var vk = key.Code;
+                var modifiers =
+                    (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
+                    (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
+                    (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
+                    (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
+                    ;
+
+                var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
+                if (success)
+                {
+                    _hotkeys.Add(commandHotkey);
+                }
+            }
         }
     }
 
@@ -338,16 +350,23 @@ public sealed partial class MainWindow : Window,
         {
             case WM_HOTKEY:
                 {
-                    // Note to future us: the wParam will have the index of the hotkey we registered.
-                    // We can use that in the future to differentiate the hotkeys we've pressed
-                    // so that we can bind hotkeys to individual commands
-                    if (!this.Visible)
+                    var hotkeyIndex = (int)wParam.Value;
+                    if (hotkeyIndex < _hotkeys.Count)
                     {
-                        Summon();
-                    }
-                    else
-                    {
-                        PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+                        var hotkey = _hotkeys[hotkeyIndex];
+                        var isRootHotkey = string.IsNullOrEmpty(hotkey.CommandId);
+
+                        // Note to future us: the wParam will have the index of the hotkey we registered.
+                        // We can use that in the future to differentiate the hotkeys we've pressed
+                        // so that we can bind hotkeys to individual commands
+                        if (!this.Visible || !isRootHotkey)
+                        {
+                            Summon(hotkey.CommandId);
+                        }
+                        else if (isRootHotkey)
+                        {
+                            PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+                        }
                     }
 
                     return (LRESULT)IntPtr.Zero;
@@ -381,7 +400,7 @@ public sealed partial class MainWindow : Window,
                         case PInvoke.WM_RBUTTONUP:
                         case PInvoke.WM_LBUTTONUP:
                         case PInvoke.WM_LBUTTONDBLCLK:
-                            Summon();
+                            Summon(string.Empty);
                             break;
                     }
                 }

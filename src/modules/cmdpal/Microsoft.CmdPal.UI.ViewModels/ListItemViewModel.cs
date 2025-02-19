@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -14,10 +16,11 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
 {
     public ExtensionObject<IListItem> Model { get; } = new(model);
 
+    [ObservableProperty]
+    public partial ObservableCollection<TagViewModel> Tags { get; set; } = [];
+
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
-    public List<TagViewModel> Tags { get; private set; } = [];
-
     public bool HasTags => Tags.Count > 0;
 
     public string TextToSuggest { get; private set; } = string.Empty;
@@ -39,13 +42,13 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
             return; // throw?
         }
 
-        Tags = li.Tags?.Select(t =>
+        Tags = [.. li.Tags?.Select(t =>
         {
             var vm = new TagViewModel(t, PageContext);
             vm.InitializeProperties();
             return vm;
         })
-            .ToList() ?? [];
+            .ToList() ?? []];
         TextToSuggest = li.TextToSuggest;
         Section = li.Section ?? string.Empty;
         var extensionDetails = li.Details;
@@ -76,14 +79,28 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
         switch (propertyName)
         {
             case nameof(Tags):
-                Tags = model.Tags?.Select(t =>
+                var newTags = model.Tags?.Select(t =>
                 {
                     var vm = new TagViewModel(t, PageContext);
                     vm.InitializeProperties();
                     return vm;
                 })
                     .ToList() ?? [];
-                UpdateProperty(nameof(HasTags));
+
+                Task.Factory.StartNew(
+                    () =>
+                    {
+                        lock (Tags)
+                        {
+                            ListHelpers.InPlaceUpdateList(Tags, newTags);
+                        }
+
+                        UpdateProperty(nameof(HasTags));
+                    },
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
+                    PageContext.Scheduler);
+
                 break;
             case nameof(TextToSuggest):
                 this.TextToSuggest = model.TextToSuggest ?? string.Empty;

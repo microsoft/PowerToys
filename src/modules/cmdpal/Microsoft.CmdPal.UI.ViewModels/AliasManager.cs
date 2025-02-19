@@ -11,12 +11,17 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class AliasManager : ObservableObject
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
-    private readonly Dictionary<string, CommandAlias> _aliases = [];
+    private readonly Dictionary<string, CommandAlias> _aliases;
 
-    public AliasManager(TopLevelCommandManager tlcManager)
+    public AliasManager(TopLevelCommandManager tlcManager, SettingsModel settings)
     {
         _topLevelCommandManager = tlcManager;
-        PopulateDefaultAliases();
+        _aliases = settings.Aliases;
+
+        if (_aliases.Count == 0)
+        {
+            PopulateDefaultAliases();
+        }
     }
 
     private void AddAlias(CommandAlias a) => _aliases.Add(a.SearchPrefix, a);

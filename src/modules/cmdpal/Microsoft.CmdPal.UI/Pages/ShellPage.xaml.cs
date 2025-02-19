@@ -12,6 +12,9 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Animation;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Microsoft.CmdPal.UI.Pages;
@@ -150,7 +153,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                             _ => throw new NotSupportedException(),
                         },
                         pageViewModel,
-                        _slideRightTransition);
+                        message.WithAnimation ? _slideRightTransition : _noAnimation);
 
                     // Refocus on the Search for continual typing on the next search request
                     SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
@@ -285,17 +288,84 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _ = DispatcherQueue.TryEnqueue(() =>
         {
-            if (settings.HotkeyGoesHome)
+            var commandId = message.CommandId;
+            var isRoot = string.IsNullOrEmpty(commandId);
+            if (isRoot)
             {
-                GoHome(false);
+                // If this is the hotkey for the root level, then always show us
+                ShowHwnd(message.Hwnd);
+
+                // Depending on the settings, either
+                // * Go home, or
+                // * Select the search text (if we should remain open on this page)
+                if (settings.HotkeyGoesHome)
+                {
+                    GoHome(false);
+                }
+                else if (settings.HighlightSearchOnActivate)
+                {
+                    SearchBox.SelectSearch();
+                }
             }
-            else if (settings.HighlightSearchOnActivate)
+            else
             {
-                SearchBox.SelectSearch();
+                try
+                {
+                    // For a hotkey bound to a command, first lookup the
+                    // command from our list of toplevel commands.
+                    var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+                    var topLevelCommand = tlcManager.LookupCommand(commandId);
+                    if (topLevelCommand != null)
+                    {
+                        var command = topLevelCommand.Command;
+                        var isPage = command is TopLevelCommandWrapper wrapper && wrapper.Command is not IInvokableCommand;
+
+                        // If the bound command is an invokable command, then
+                        // we don't want to open the window at all - we want to
+                        // just do it.
+                        if (isPage)
+                        {
+                            // If we're here, then the bound command was a page
+                            // of some kind. Let's pop the stack, show the window, and navigate to it.
+                            GoHome(false);
+                            ShowHwnd(message.Hwnd);
+                        }
+
+                        var msg = new PerformCommandMessage(new(topLevelCommand.Command)) { WithAnimation = false };
+                        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(msg);
+
+                        // we can't necessarily SelectSearch() here, because when the page is loaded,
+                        // we'll fetch the SearchText from the page itself, and that'll stomp the
+                        // selection we start now.
+                        // That's probably okay though.
+                    }
+                }
+                catch
+                {
+                }
             }
 
             WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
         });
+    }
+
+    private void ShowHwnd(IntPtr hwndValue)
+    {
+        var hwnd = new HWND(hwndValue);
+
+        // Remember, IsIconic == "minimized", which is entirely different state
+        // from "show/hide"
+        // If we're currently minimized, restore us first, before we reveal
+        // our window. Otherwise we'd just be showing a minimized window -
+        // which would remain not visible to the user.
+        if (PInvoke.IsIconic(hwnd))
+        {
+            PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
+        }
+
+        PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
+        PInvoke.SetForegroundWindow(hwnd);
+        PInvoke.SetActiveWindow(hwnd);
     }
 
     private void GoBack(bool withAnimation = true)

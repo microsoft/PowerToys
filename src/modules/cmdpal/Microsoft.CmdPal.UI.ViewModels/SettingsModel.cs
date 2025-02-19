@@ -36,6 +36,10 @@ public partial class SettingsModel : ObservableObject
 
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
+    public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
+
+    public List<TopLevelHotkey> CommandHotkeys { get; set; } = [];
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 

@@ -23,11 +23,12 @@ public partial class TopLevelCommandWrapper : ICommand
 
     public ICommand Command => _command.Unsafe!;
 
-    public CommandPaletteHost? ExtensionHost { get; set; }
+    public CommandPaletteHost ExtensionHost { get; }
 
-    public TopLevelCommandWrapper(ICommand command)
+    public TopLevelCommandWrapper(ICommand command, CommandPaletteHost extensionHost)
     {
         _command = new(command);
+        ExtensionHost = extensionHost;
     }
 
     public void UnsafeInitializeProperties()

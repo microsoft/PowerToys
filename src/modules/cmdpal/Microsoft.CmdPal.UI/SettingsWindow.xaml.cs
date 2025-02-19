@@ -95,6 +95,11 @@ public sealed partial class SettingsWindow : Window,
             }
         }
     }
+
+    private void Window_Activated(object sender, WindowActivatedEventArgs args)
+    {
+        WeakReferenceMessenger.Default.Send<WindowActivatedEventArgs>(args);
+    }
 }
 
 public readonly struct Crumb

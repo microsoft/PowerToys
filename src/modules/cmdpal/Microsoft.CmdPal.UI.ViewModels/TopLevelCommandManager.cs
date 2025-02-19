@@ -62,10 +62,8 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
-            TopLevelCommandItemWrapper wrapper = new(new(i), fallback, _serviceProvider)
-            {
-                ExtensionHost = commandProvider.ExtensionHost,
-            };
+            TopLevelCommandItemWrapper wrapper = new(
+                new(i), fallback, commandProvider.ExtensionHost, commandProvider.ProviderId, _serviceProvider);
             lock (TopLevelCommands)
             {
                 TopLevelCommands.Add(wrapper);
@@ -144,12 +142,12 @@ public partial class TopLevelCommandManager : ObservableObject,
         await sender.LoadTopLevelCommands();
         foreach (var i in sender.TopLevelItems)
         {
-            newItems.Add(new(new(i), false, _serviceProvider));
+            newItems.Add(new(new(i), false, sender.ExtensionHost, sender.ProviderId, _serviceProvider));
         }
 
         foreach (var i in sender.FallbackItems)
         {
-            newItems.Add(new(new(i), true, _serviceProvider));
+            newItems.Add(new(new(i), true, sender.ExtensionHost, sender.ProviderId, _serviceProvider));
         }
 
         // Slice out the old commands

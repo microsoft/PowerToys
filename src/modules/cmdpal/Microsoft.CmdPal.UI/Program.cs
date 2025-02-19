@@ -62,7 +62,7 @@ internal sealed class Program
             if (thisApp.AppWindow is not null and
                 MainWindow mainWindow)
             {
-                mainWindow.Summon();
+                mainWindow.Summon(string.Empty);
             }
         }
     }

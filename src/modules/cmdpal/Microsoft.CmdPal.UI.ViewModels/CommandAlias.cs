@@ -2,19 +2,30 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public class CommandAlias(string shortcut, string commandId, bool direct = false)
+public class CommandAlias
 {
-    public string CommandId { get; set; } = commandId;
+    public string CommandId { get; set; }
 
-    public string Alias { get; set; } = shortcut;
+    public string Alias { get; set; }
 
-    public bool IsDirect { get; set; } = direct;
+    public bool IsDirect { get; set; }
 
+    [JsonIgnore]
     public string SearchPrefix => Alias + (IsDirect ? string.Empty : " ");
+
+    public CommandAlias(string shortcut, string commandId, bool direct = false)
+    {
+        CommandId = commandId;
+        Alias = shortcut;
+        IsDirect = direct;
+    }
+
+    public CommandAlias()
+        : this(string.Empty, string.Empty, false)
+    {
+    }
 }

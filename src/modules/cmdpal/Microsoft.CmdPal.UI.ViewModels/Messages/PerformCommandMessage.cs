@@ -16,6 +16,8 @@ public record PerformCommandMessage
 
     public object? Context { get; }
 
+    public bool WithAnimation { get; set; } = true;
+
     public PerformCommandMessage(ExtensionObject<ICommand> command)
     {
         Command = command;

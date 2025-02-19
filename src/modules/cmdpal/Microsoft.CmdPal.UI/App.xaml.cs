@@ -100,6 +100,7 @@ public partial class App : Application
         // Models
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
+        services.AddSingleton<HotkeyManager>();
         var sm = SettingsModel.LoadSettings();
         services.AddSingleton(sm);
         services.AddSingleton<IExtensionService, ExtensionService>();

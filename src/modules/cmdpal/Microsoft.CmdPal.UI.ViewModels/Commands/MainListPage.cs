@@ -150,7 +150,7 @@ public partial class MainListPage : DynamicListPage,
     // _always_ show up first.
     private static int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem)
     {
-        if (string.IsNullOrEmpty(query))
+        if (string.IsNullOrWhiteSpace(query))
         {
             return 1;
         }

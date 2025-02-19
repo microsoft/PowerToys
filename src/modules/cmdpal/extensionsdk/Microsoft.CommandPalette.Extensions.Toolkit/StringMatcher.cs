@@ -40,7 +40,14 @@ public partial class StringMatcher
 
     public MatchResult FuzzyMatch(string query, string stringToCompare)
     {
-        return FuzzyMatch(query, stringToCompare, _defaultMatchOption);
+        try
+        {
+            return FuzzyMatch(query, stringToCompare, _defaultMatchOption);
+        }
+        catch (IndexOutOfRangeException)
+        {
+            return new MatchResult(false, UserSettingSearchPrecision);
+        }
     }
 
     /// <summary>

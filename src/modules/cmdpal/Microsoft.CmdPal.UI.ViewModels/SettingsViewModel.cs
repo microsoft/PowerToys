@@ -82,8 +82,6 @@ public partial class SettingsViewModel : PageViewModel
         _settings = settings;
         _serviceProvider = serviceProvider;
 
-        var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
-
         Icon = new(new IconInfo("\uE713"));
         Icon.InitializeProperties();
         IsInitialized = true;
@@ -108,7 +106,7 @@ public partial class SettingsViewModel : PageViewModel
                 value2 :
                 new ProviderSettings(item);
 
-            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, tlcManager);
+            var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _serviceProvider);
             CommandProviders.Add(settingsModel);
         }
     }

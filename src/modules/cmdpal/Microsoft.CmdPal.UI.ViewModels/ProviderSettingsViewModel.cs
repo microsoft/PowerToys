@@ -5,11 +5,18 @@
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ProviderSettingsViewModel(CommandProviderWrapper _provider, ProviderSettings _providerSettings, TopLevelCommandManager _tlcManager) : ObservableObject
+public partial class ProviderSettingsViewModel(
+    CommandProviderWrapper _provider,
+    ProviderSettings _providerSettings,
+    IServiceProvider _serviceProvider) : ObservableObject
 {
+    private readonly TopLevelCommandManager _tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
+    private readonly SettingsModel _settings = _serviceProvider.GetService<SettingsModel>()!;
+
     public string DisplayName => _provider.DisplayName;
 
     public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? "Built-in";
@@ -60,7 +67,7 @@ public partial class ProviderSettingsViewModel(CommandProviderWrapper _provider,
             var match = topLevelCommands.Where(tlc => tlc.Model.Unsafe == command).FirstOrDefault();
             if (match != null)
             {
-                results.Add(new(match));
+                results.Add(new(match, _settings, _serviceProvider));
             }
         }
 

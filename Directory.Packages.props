@@ -98,6 +98,7 @@
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
+    <PackageVersion Include="WyHash" Version="1.0.5" />
     <!-- TODO! Mike see which of these we actually need, and  -->
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
