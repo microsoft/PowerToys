@@ -133,10 +133,10 @@
     <value>Matches any character</value>
   </data>
   <data name="RegExCheatSheet_ZeroOrMore" xml:space="preserve">
-    <value>Matches zero or more of the preceeding token</value>
+    <value>Matches zero or more of the preceding token</value>
   </data>
   <data name="RegExCheatSheet_OneOrMore" xml:space="preserve">
-    <value>Matches one or more of the preceeding token</value>
+    <value>Matches one or more of the preceding token</value>
   </data>
   <data name="RegExCheatSheet_MatchDigit" xml:space="preserve">
     <value>Any digit, short for [0-9]</value>
