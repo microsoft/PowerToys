@@ -56,22 +56,49 @@ public partial class CommandBarViewModel : ObservableObject,
         if (value != null)
         {
             PrimaryCommand = value;
-            SecondaryCommand = value.SecondaryCommand;
-
-            if (value.MoreCommands.Count > 1)
-            {
-                ShouldShowContextMenu = true;
-                ContextCommands = [.. value.AllCommands];
-            }
-            else
-            {
-                ShouldShowContextMenu = false;
-            }
+            value.PropertyChanged += SelectedItemPropertyChanged;
         }
         else
         {
+            if (SelectedItem != null)
+            {
+                SelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
+            }
+
             PrimaryCommand = null;
+        }
+
+        UpdateContextItems();
+    }
+
+    private void SelectedItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(SelectedItem.HasMoreCommands):
+                UpdateContextItems();
+                break;
+        }
+    }
+
+    private void UpdateContextItems()
+    {
+        if (SelectedItem == null)
+        {
             SecondaryCommand = null;
+            ShouldShowContextMenu = false;
+            return;
+        }
+
+        SecondaryCommand = SelectedItem.SecondaryCommand;
+
+        if (SelectedItem.MoreCommands.Count > 1)
+        {
+            ShouldShowContextMenu = true;
+            ContextCommands = [.. SelectedItem.AllCommands];
+        }
+        else
+        {
             ShouldShowContextMenu = false;
         }
     }

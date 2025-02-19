@@ -38,6 +38,8 @@ public sealed partial class CalculatorListPage : DynamicListPage
 {
     private readonly List<ListItem> _items = [];
     private readonly SaveCommand _saveCommand = new();
+    private readonly CopyTextCommand _copyContextCommand;
+    private readonly CommandContextItem _copyContextMenuItem;
 
     public CalculatorListPage()
     {
@@ -46,10 +48,10 @@ public sealed partial class CalculatorListPage : DynamicListPage
         PlaceholderText = "Type an equation...";
         Id = "com.microsoft.cmdpal.calculator";
 
-        _items.Add(new(_saveCommand)
-        {
-            MoreCommands = [new CommandContextItem(new CopyTextCommand(string.Empty))],
-        });
+        _copyContextCommand = new CopyTextCommand(string.Empty);
+        _copyContextMenuItem = new CommandContextItem(_copyContextCommand);
+
+        _items.Add(new(_saveCommand));
 
         UpdateSearchText(string.Empty, string.Empty);
 
@@ -76,16 +78,20 @@ public sealed partial class CalculatorListPage : DynamicListPage
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        var firstItem = _items[0];
         if (string.IsNullOrEmpty(newSearch))
         {
-            _items[0].Title = "Type an equation...";
-            _items[0].Subtitle = string.Empty;
+            firstItem.Title = "Type an equation...";
+            firstItem.Subtitle = string.Empty;
+            firstItem.MoreCommands = [];
         }
         else
         {
-            _items[0].TextToSuggest = ParseQuery(newSearch, out var result) ? result : string.Empty;
-            _items[0].Title = result;
-            _items[0].Subtitle = newSearch;
+            firstItem.TextToSuggest = ParseQuery(newSearch, out var result) ? result : string.Empty;
+            firstItem.Title = result;
+            firstItem.Subtitle = newSearch;
+            _copyContextCommand.Text = result;
+            firstItem.MoreCommands = [_copyContextMenuItem];
         }
     }
 

@@ -13,6 +13,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
     private CommandContextItemViewModel? _defaultCommandContextItem;
 
+    protected bool IsInitialized { get; private set; }
+
     // These are properties that are "observable" from the extension object
     // itself, in the sense that they get raised by PropChanged events from the
     // extension. However, we don't want to actually make them
@@ -62,6 +64,11 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
     //// Called from ListViewModel on background thread started in ListPage.xaml.cs
     public override void InitializeProperties()
     {
+        if (IsInitialized)
+        {
+            return;
+        }
+
         var model = _commandItemModel.Unsafe;
         if (model == null)
         {
@@ -122,7 +129,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         UpdateProperty(nameof(Subtitle));
         UpdateProperty(nameof(Icon));
 
-        // _initialized = true;
+        IsInitialized = true;
     }
 
     public bool SafeInitializeProperties()
@@ -188,6 +195,35 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
                 var iconInfo = listIcon ?? Command.Unsafe!.Icon;
                 Icon = new(iconInfo);
                 Icon.InitializeProperties();
+                break;
+            case nameof(model.MoreCommands):
+                var more = model.MoreCommands;
+                if (more != null)
+                {
+                    var newContextMenu = more
+                        .Where(contextItem => contextItem is ICommandContextItem)
+                        .Select(contextItem => (contextItem as ICommandContextItem)!)
+                        .Select(contextItem => new CommandContextItemViewModel(contextItem, PageContext))
+                        .ToList();
+                    lock (MoreCommands)
+                    {
+                        ListHelpers.InPlaceUpdateList(MoreCommands, newContextMenu);
+                    }
+
+                    MoreCommands.ForEach(contextItem =>
+                    {
+                        contextItem.InitializeProperties();
+                    });
+                }
+                else
+                {
+                    MoreCommands.Clear();
+                }
+
+                UpdateProperty(nameof(SecondaryCommand));
+                UpdateProperty(nameof(SecondaryCommandName));
+                UpdateProperty(nameof(HasMoreCommands));
+
                 break;
 
                 // TODO GH #360 - make MoreCommands observable

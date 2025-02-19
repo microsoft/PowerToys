@@ -17,6 +17,11 @@ public partial class CommandContextItemViewModel(ICommandContextItem contextItem
 
     public override void InitializeProperties()
     {
+        if (IsInitialized)
+        {
+            return;
+        }
+
         base.InitializeProperties();
 
         var contextItem = Model.Unsafe;
