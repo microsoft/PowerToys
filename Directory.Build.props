@@ -22,7 +22,7 @@
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
     <TestingPlatformDotNetTestSupport>true</TestingPlatformDotNetTestSupport>
-
+    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --report-trx</TestingPlatformCommandLineArguments>
     <!-- No arm64 agents to run the tests. -->
     <TestingPlatformDisableCustomTestTarget Condition="'$(Platform)' == 'ARM64'">true</TestingPlatformDisableCustomTestTarget>
   </PropertyGroup>
