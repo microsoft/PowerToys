@@ -69,7 +69,7 @@ namespace UITests_KeyboardManager
         {
             // Open KeyboardManagerEditor
             this.Session.Find<Button>(By.Name("Remap a key")).Click();
-            this.Session.Attach(PowerToysModuleWindow.KeyboardManagerKeys);
+            this.Session.Attach("Remap keys");
 
             // Maximize window
             var window = Session.Find<Window>(By.Name("Remap keys")).Maximize();
@@ -79,7 +79,7 @@ namespace UITests_KeyboardManager
             window.Close();
 
             // Back to Settings
-            this.Session.Attach(PowerToysModuleWindow.PowerToysSettings);
+            this.Session.Attach(PowerToysModule.PowerToysSettings);
         }
     }
 }

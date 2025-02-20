@@ -27,23 +27,8 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     public enum PowerToysModule
     {
-        None,
-        FancyZone,
-        KeyboardManager,
-        Hosts,
-    }
-
-    /// <summary>
-    /// Represents the windows of PowerToys modules.
-    /// One module could have multiple windows.
-    /// </summary>
-    public enum PowerToysModuleWindow
-    {
-        None,
         PowerToysSettings,
         FancyZone,
-        KeyboardManagerKeys,
-        KeyboardManagerShortcuts,
         Hosts,
     }
 
@@ -58,23 +43,22 @@ namespace Microsoft.PowerToys.UITest
 
         public const string WindowsApplicationDriverUrl = "http://127.0.0.1:4723";
 
-        public Dictionary<PowerToysModuleWindow, string> ModuleWindowName { get; }
+        public Dictionary<PowerToysModule, string> ModuleWindowName { get; }
 
         private ModuleConfigData()
         {
             // The exe window name for each module.
-            ModuleWindowName = new Dictionary<PowerToysModuleWindow, string>
+            ModuleWindowName = new Dictionary<PowerToysModule, string>
             {
-                [PowerToysModuleWindow.PowerToysSettings] = "PowerToys Settings",
-                [PowerToysModuleWindow.FancyZone] = "FancyZones Layout",
-                [PowerToysModuleWindow.KeyboardManagerKeys] = "Remap keys",
-                [PowerToysModuleWindow.KeyboardManagerShortcuts] = "Remap shortcuts",
-                [PowerToysModuleWindow.Hosts] = "Hosts File Editor",
+                [PowerToysModule.PowerToysSettings] = "PowerToys Settings",
+                [PowerToysModule.FancyZone] = "FancyZones Layout",
+                [PowerToysModule.Hosts] = "Hosts File Editor",
             };
 
             // Exe start path for the module if it exists.
             ModulePath = new Dictionary<PowerToysModule, string>
             {
+                [PowerToysModule.PowerToysSettings] = @"\..\..\..\WinUI3Apps\PowerToys.Settings.exe",
                 [PowerToysModule.FancyZone] = @"\..\..\..\PowerToys.FancyZonesEditor.exe",
                 [PowerToysModule.Hosts] = @"\..\..\..\WinUI3Apps\PowerToys.Hosts.exe",
             };
@@ -84,6 +68,6 @@ namespace Microsoft.PowerToys.UITest
 
         public string GetWindowsApplicationDriverUrl() => WindowsApplicationDriverUrl;
 
-        public string GetModuleWindowName(PowerToysModuleWindow scope) => ModuleWindowName[scope];
+        public string GetModuleWindowName(PowerToysModule scope) => ModuleWindowName[scope];
     }
 }

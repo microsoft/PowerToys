@@ -87,7 +87,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="module">The PowerToys module window to attach to.</param>
         /// <returns>The attached session.</returns>
-        public Session Attach(PowerToysModuleWindow module)
+        public Session Attach(PowerToysModule module)
         {
             string windowName = ModuleConfigData.Instance.GetModuleWindowName(module);
             return this.Attach(windowName);

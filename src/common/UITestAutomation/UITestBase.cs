@@ -25,13 +25,7 @@ namespace Microsoft.PowerToys.UITest
 
         private readonly TestInit testInit = new TestInit();
 
-        public UITestBase()
-        {
-            this.testInit.Init();
-            this.Session = new Session(this.testInit.GetRoot(), this.testInit.GetDriver());
-        }
-
-        public UITestBase(PowerToysModule scope)
+        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings)
         {
             this.testInit.SetScope(scope);
             this.testInit.Init();
@@ -55,7 +49,7 @@ namespace Microsoft.PowerToys.UITest
             private static Process? appDriver;
 
             // Default session path is PowerToys settings dashboard
-            private static string sessionPath = @"\..\..\..\WinUI3Apps\PowerToys.Settings.exe";
+            private static string sessionPath = ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings);
 
             public TestInit()
             {
@@ -80,8 +74,7 @@ namespace Microsoft.PowerToys.UITest
             public void Init()
             {
                 string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                path += sessionPath;
-                this.StartExe("PowerToys", "PowerToys Settings", path);
+                this.StartExe(path + sessionPath);
 
                 Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
 
@@ -108,10 +101,8 @@ namespace Microsoft.PowerToys.UITest
             /// <summary>
             /// Starts a new exe and takes control of it.
             /// </summary>
-            /// <param name="appName">The name of the application.</param>
-            /// <param name="windowName">The name of the window.</param>
             /// <param name="appPath">The path to the application executable.</param>
-            public void StartExe(string appName, string windowName, string appPath)
+            public void StartExe(string appPath)
             {
                 var opts = new AppiumOptions();
                 opts.AddAdditionalCapability("app", appPath);
