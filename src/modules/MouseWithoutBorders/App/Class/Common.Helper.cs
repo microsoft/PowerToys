@@ -448,12 +448,12 @@ namespace MouseWithoutBorders
                         static string GetUsernameBySessionId(int sessionId)
                         {
                             string username = "SYSTEM";
-                            if (NativeMethods.WTSQuerySessionInformation(IntPtr.Zero, sessionId, NativeMethods.WtsInfoClass.WTSUserName, out nint buffer, out int strLen) && strLen > 1)
+                            if (NativeMethods.WTSQuerySessionInformation(IntPtr.Zero, sessionId, NativeMethods.WTSInfoClass.WTSUserName, out nint buffer, out int strLen) && strLen > 1)
                             {
                                 username = Marshal.PtrToStringAnsi(buffer);
                                 NativeMethods.WTSFreeMemory(buffer);
 
-                                if (NativeMethods.WTSQuerySessionInformation(IntPtr.Zero, sessionId, NativeMethods.WtsInfoClass.WTSDomainName, out buffer, out strLen) && strLen > 1)
+                                if (NativeMethods.WTSQuerySessionInformation(IntPtr.Zero, sessionId, NativeMethods.WTSInfoClass.WTSDomainName, out buffer, out strLen) && strLen > 1)
                                 {
                                     username = @$"{Marshal.PtrToStringAnsi(buffer)}\{username}";
                                     NativeMethods.WTSFreeMemory(buffer);

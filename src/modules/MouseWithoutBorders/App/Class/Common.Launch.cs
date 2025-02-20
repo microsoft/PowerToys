@@ -38,7 +38,7 @@ namespace MouseWithoutBorders
             }
             else
             {
-                // SuppressFlow fixes an issue on service mode, where WTSQueryUserToken runs succcessfully once and then fails
+                // SuppressFlow fixes an issue on service mode, where WTSQueryUserToken runs successfully once and then fails
                 // on subsequent calls. The reason appears to be an unknown issue with reverting the impersonation,
                 // meaning that subsequent impersonation attempts run as the logged-on user and fail.
                 // This is a workaround.

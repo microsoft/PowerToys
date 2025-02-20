@@ -76,12 +76,12 @@ namespace MouseWithoutBorders.Class
         internal static extern uint WTSGetActiveConsoleSessionId();
 
         [DllImport("Wtsapi32.dll")]
-        internal static extern bool WTSQuerySessionInformation(IntPtr hServer, int sessionId, WtsInfoClass wtsInfoClass, out IntPtr ppBuffer, out int pBytesReturned);
+        internal static extern bool WTSQuerySessionInformation(IntPtr hServer, int sessionId, WTSInfoClass infoClass, out IntPtr ppBuffer, out int pBytesReturned);
 
         [DllImport("Wtsapi32.dll")]
         internal static extern void WTSFreeMemory(IntPtr pointer);
 
-        internal enum WtsInfoClass
+        internal enum WTSInfoClass
         {
             WTSInitialProgram,
             WTSApplicationName,
