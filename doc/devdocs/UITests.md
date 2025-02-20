@@ -56,24 +56,31 @@
 
 **Example**
 ```
+using Microsoft.PowerToys.UITest;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 namespace UITests_KeyboardManager
 {
     [TestClass]
-    public void OpenKeyboardManagerEditor()
+    public class RunKeyboardManagerUITests : UITestBase
     {
-        // Open KeyboardManagerEditor
-        Session.Find<Button>(By.Name("Remap a key")).Click();
-        Session.Attach(PowerToysModuleWindow.KeyboardManagerKeys);
+        [TestMethod]
+        public void OpenKeyboardManagerEditor()
+        {
+            // Open KeyboardManagerEditor
+            this.Session.Find<Button>(By.Name("Remap a key")).Click();
+            this.Session.Attach(PowerToysModuleWindow.KeyboardManagerKeys);
 
-        // Maximize window
-        var window = Session.Find<Window>(By.Name("Remap keys")).Maximize();
+            // Maximize window
+            var window = Session.Find<Window>(By.Name("Remap keys")).Maximize();
 
-        // Click button
-        Session.Find<Button>(By.Name("Add key remapping")).Click();
-        window.Close();
+            // Add Key Remapping
+            this.Session.Find<Button>(By.Name("Add key remapping")).Click();
+            window.Close();
 
-        // Back to Settings
-        Session.Attach(PowerToysModuleWindow.PowerToysSettings);
+            // Back to Settings
+            this.Session.Attach(PowerToysModuleWindow.PowerToysSettings);
+        }
     }
 }
 ```

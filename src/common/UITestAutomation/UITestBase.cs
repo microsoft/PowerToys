@@ -59,6 +59,12 @@ namespace Microsoft.PowerToys.UITest
 
             public TestInit()
             {
+                appDriver = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe",
+                    Verb = "runas",
+                });
+
                 var desktopCapabilities = new AppiumOptions();
                 desktopCapabilities.AddAdditionalCapability("app", "Root");
                 this.Root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
@@ -73,12 +79,6 @@ namespace Microsoft.PowerToys.UITest
             [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
             public void Init()
             {
-                appDriver = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe",
-                    Verb = "runas",
-                });
-
                 string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 path += sessionPath;
                 this.StartExe("PowerToys", "PowerToys Settings", path);
