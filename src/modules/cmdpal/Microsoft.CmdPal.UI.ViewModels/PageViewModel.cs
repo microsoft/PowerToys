@@ -30,13 +30,17 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     // This is set from the SearchBar
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowSuggestion))]
     public partial string Filter { get; set; } = string.Empty;
 
     [ObservableProperty]
     public virtual partial string PlaceholderText { get; private set; } = "Type here to search...";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowSuggestion))]
     public virtual partial string TextToSuggest { get; protected set; } = string.Empty;
+
+    public bool ShowSuggestion => !string.IsNullOrEmpty(TextToSuggest) && TextToSuggest != Filter;
 
     [ObservableProperty]
     public partial CommandPaletteHost ExtensionHost { get; private set; }

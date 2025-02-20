@@ -44,7 +44,7 @@
             BorderBrush="{ThemeResource TextFillColorSecondaryBrush}"
             BorderThickness="1"
             CornerRadius="4"
-            Visibility="{x:Bind CurrentPageViewModel.TextToSuggest, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}">
+            Visibility="{x:Bind CurrentPageViewModel.ShowSuggestion, Mode=OneWay}">
             <FontIcon
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
@@ -59,6 +59,6 @@
             VerticalAlignment="Stretch"
             Foreground="{ThemeResource TextControlPlaceholderForeground}"
             Text="{x:Bind CurrentPageViewModel.TextToSuggest, Mode=OneWay}"
-            Visibility="{x:Bind CurrentPageViewModel.TextToSuggest, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
+            Visibility="{x:Bind CurrentPageViewModel.ShowSuggestion, Mode=OneWay}" />
     </StackPanel>
 </UserControl>

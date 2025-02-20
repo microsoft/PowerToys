@@ -46,9 +46,7 @@
 
                     <TextBlock x:Uid="ExtensionCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                    <ItemsRepeater 
-                        ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" 
-                        Layout="{StaticResource VerticalStackLayout}">
+                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="viewmodels:TopLevelViewModel">
                                 <controls:SettingsExpander
@@ -82,7 +80,7 @@
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
                     </ItemsRepeater>
-                    
+
                     <TextBlock
                         x:Uid="ExtensionSettingsHeader"
                         Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"

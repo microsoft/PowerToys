@@ -62,7 +62,6 @@ internal sealed partial class PasteCommand : InvokableCommand
         HideWindow();
         ClipboardHelper.SendPasteKeyCombination();
         Clipboard.DeleteItemFromHistory(_clipboardItem.Item);
-        CommandResult.ShowToast("Pasting.");
-        return CommandResult.Dismiss();
+        return CommandResult.ShowToast("Pasting");
     }
 }

@@ -43,6 +43,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly SlideNavigationTransitionInfo _slideRightTransition = new() { Effect = SlideNavigationTransitionEffect.FromRight };
     private readonly SuppressNavigationTransitionInfo _noAnimation = new();
 
+    private readonly ToastWindow _toast = new();
+
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -228,6 +230,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     case CommandResultKind.KeepOpen:
                         {
                             // Do nothing.
+                            break;
+                        }
+
+                    case CommandResultKind.ShowToast:
+                        {
+                            if (result.Args is IToastArgs a)
+                            {
+                                _toast.ShowToast(a.Message);
+                                HandleCommandResult(a.Result);
+                            }
+
                             break;
                         }
                 }

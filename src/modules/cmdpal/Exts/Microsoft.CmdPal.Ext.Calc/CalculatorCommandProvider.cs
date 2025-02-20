@@ -13,8 +13,8 @@ namespace Microsoft.CmdPal.Ext.Calc;
 
 public partial class CalculatorCommandProvider : CommandProvider
 {
-    // private readonly CalculatorTopLevelListItem calculatorCommand = new();
     private readonly ListItem _listItem = new(new CalculatorListPage()) { Subtitle = "Press = to type an equation" };
+    private readonly FallbackCalculatorItem _fallback = new();
 
     public CalculatorCommandProvider()
     {
@@ -24,6 +24,8 @@ public partial class CalculatorCommandProvider : CommandProvider
     }
 
     public override ICommandItem[] TopLevelCommands() => [_listItem];
+
+    public override IFallbackCommandItem[] FallbackCommands() => [_fallback];
 }
 
 // todo
@@ -87,15 +89,14 @@ public sealed partial class CalculatorListPage : DynamicListPage
         }
         else
         {
-            firstItem.TextToSuggest = ParseQuery(newSearch, out var result) ? result : string.Empty;
+            _copyContextCommand.Text = ParseQuery(newSearch, out var result) ? result : string.Empty;
             firstItem.Title = result;
             firstItem.Subtitle = newSearch;
-            _copyContextCommand.Text = result;
             firstItem.MoreCommands = [_copyContextMenuItem];
         }
     }
 
-    private bool ParseQuery(string equation, out string result)
+    internal static bool ParseQuery(string equation, out string result)
     {
         try
         {
@@ -127,5 +128,43 @@ public sealed partial class SaveCommand : InvokableCommand
     {
         SaveRequested?.Invoke(this, this);
         return CommandResult.KeepOpen();
+    }
+}
+
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
+internal sealed partial class FallbackCalculatorItem : FallbackCommandItem
+{
+    private readonly CopyTextCommand _copyCommand = new(string.Empty);
+
+    public FallbackCalculatorItem()
+        : base(new NoOpCommand())
+    {
+        Command = _copyCommand;
+        _copyCommand.Name = string.Empty;
+        Title = string.Empty;
+        Subtitle = "Type an equation...";
+        Icon = new IconInfo("\ue8ef"); // Calculator
+    }
+
+    public override void UpdateQuery(string query)
+    {
+        if (CalculatorListPage.ParseQuery(query, out var result))
+        {
+            _copyCommand.Text = result;
+            _copyCommand.Name = string.IsNullOrWhiteSpace(query) ? string.Empty : "Copy";
+            Title = result;
+
+            // we have to make the subtitle the equation,
+            // so that we will still string match the original query
+            // Otherwise, something like 1+2 will have a title of "3" and not match
+            Subtitle = query;
+        }
+        else
+        {
+            _copyCommand.Text = string.Empty;
+            _copyCommand.Name = string.Empty;
+            Title = string.Empty;
+            Subtitle = string.Empty;
+        }
     }
 }

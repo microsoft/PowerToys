@@ -8,7 +8,7 @@ public partial class CopyTextCommand : InvokableCommand
 {
     public string Text { get; set; }
 
-    public CommandResult Result { get; set; } = CommandResult.Dismiss();
+    public CommandResult Result { get; set; } = CommandResult.ShowToast("Copied to clipboard");
 
     public CopyTextCommand(string text)
     {
