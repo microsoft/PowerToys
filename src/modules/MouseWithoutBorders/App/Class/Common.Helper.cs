@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Windows.Forms;
 
@@ -443,7 +444,31 @@ namespace MouseWithoutBorders
                 {
                     _ = Common.ImpersonateLoggedOnUserAndDoSomething(() =>
                     {
-                        Setting.Values.Username = WindowsIdentity.GetCurrent(true).Name;
+                        // See: https://stackoverflow.com/questions/19487541/how-to-get-windows-user-name-from-sessionid
+                        static string GetUsernameBySessionId(int sessionId)
+                        {
+                            string username = "SYSTEM";
+                            if (NativeMethods.WTSQuerySessionInformation(IntPtr.Zero, sessionId, NativeMethods.WTSInfoClass.WTSUserName, out nint buffer, out int strLen) && strLen > 1)
+                            {
+                                username = Marshal.PtrToStringAnsi(buffer);
+                                NativeMethods.WTSFreeMemory(buffer);
+
+                                if (NativeMethods.WTSQuerySessionInformation(IntPtr.Zero, sessionId, NativeMethods.WTSInfoClass.WTSDomainName, out buffer, out strLen) && strLen > 1)
+                                {
+                                    username = @$"{Marshal.PtrToStringAnsi(buffer)}\{username}";
+                                    NativeMethods.WTSFreeMemory(buffer);
+                                }
+                            }
+
+                            return username;
+                        }
+
+                        // The most direct way to fetch the username is WindowsIdentity.GetCurrent(true).Name
+                        // but GetUserName can run within an ExecutionContext.SuppressFlow block, which creates issues
+                        // with WindowsIdentity.GetCurrent.
+                        // See: https://stackoverflow.com/questions/76998988/exception-when-using-executioncontext-suppressflow-in-net-7
+                        // So we use WTSQuerySessionInformation as a workaround.
+                        Setting.Values.Username = GetUsernameBySessionId(Process.GetCurrentProcess().SessionId);
                     });
                 }
                 else
