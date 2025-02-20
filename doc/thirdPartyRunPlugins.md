@@ -39,6 +39,9 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [GitHubRepo](https://github.com/8LWXpg/PowerToysRun-GitHubRepo) | [8LWXpg](https://github.com/8LWXpg) | Search and open GitHub repositories |
 | [ProcessKiller](https://github.com/8LWXpg/PowerToysRun-ProcessKiller) | [8LWXpg](https://github.com/8LWXpg) | Search and kill processes |
 | [ChatGPT](https://github.com/ferraridavide/ChatGPTPowerToys) | [ferraridavide](https://github.com/ferraridavide) | Ask a question to ChatGPT |
+| [CanIUse](https://github.com/skttl/ptrun-caniuse) | [skttl](https://github.com/skttl) | Look up browser feature support with caniuse.com |
+| [TailwindCSS](https://github.com/skttl/ptrun-tailwindcss) | [skttl](https://github.com/skttl) | Search the documentation of TailwindCSS |
+| [HttpStatusCodes](https://github.com/grzhan/HttpStatusCodePowerToys) | [grzhan](https://github.com/grzhan) | Search for http status codes |
 
 ## Extending software plugins
 
@@ -56,3 +59,7 @@ Below are community created plugins that target a website or software.  They are
 | [Scoop](https://github.com/Quriz/PowerToysRunScoop) | [Quriz](https://github.com/Quriz) | Search and install packages from Scoop |
 | [Spotify](https://github.com/waaverecords/PowerToys-Run-Spotify) | [waaverecords](https://github.com/waaverecords) | Search Spotify and control its player |
 | [PowerSearch for 1Password](https://github.com/KairuDeibisu/PowerToysRunPlugin1Password) | [KairuDeibisu](https://github.com/KairuDeibisu) | An unofficial plugin for searching 1Password for usernames and passwords |
+| [HackMD](https://github.com/8LWXpg/PowerToysRun-HackMD) | [8LWXpg](https://github.com/8LWXpg) | Open HackMD notes |
+| [SSH](https://github.com/8LWXpg/PowerToysRun-SSH) | [8LWXpg](https://github.com/8LWXpg) | Connect to ssh clients |
+| [Bilibili](https://github.com/Whuihuan/PowerToysRun-Bilibili) | [Whuihuan](https://github.com/Whuihuan) | Use AVID or BVID to parse and jump to Bilibili |
+| [YubicoOauthOTP](https://github.com/dlnilsson/Community.PowerToys.Run.Plugin.YubicoOauthOTP) | [dlnilsson](https://github.com/dlnilsson) | Display generated codes from OATH accounts stored on the YubiKey in powerToys Run  |

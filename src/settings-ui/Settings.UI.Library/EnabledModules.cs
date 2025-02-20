@@ -6,6 +6,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using Microsoft.PowerToys.Settings.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 
@@ -83,22 +84,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     LogTelemetryEvent(value);
                     shortcutGuide = value;
                     NotifyChange();
-                }
-            }
-        }
-
-        private bool videoConference; // defaulting to off https://github.com/microsoft/PowerToys/issues/14507
-
-        [JsonPropertyName("Video Conference")]
-        public bool VideoConference
-        {
-            get => this.videoConference;
-            set
-            {
-                if (this.videoConference != value)
-                {
-                    LogTelemetryEvent(value);
-                    this.videoConference = value;
                 }
             }
         }
@@ -490,6 +475,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     workspaces = value;
+                    NotifyChange();
+                }
+            }
+        }
+
+        private bool zoomIt;
+
+        [JsonPropertyName("ZoomIt")]
+        public bool ZoomIt
+        {
+            get => zoomIt;
+            set
+            {
+                if (zoomIt != value)
+                {
+                    LogTelemetryEvent(value);
+                    zoomIt = value;
                     NotifyChange();
                 }
             }

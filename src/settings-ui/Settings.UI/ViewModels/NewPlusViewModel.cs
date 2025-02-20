@@ -10,7 +10,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using Common.UI;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -21,6 +20,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Windows.ApplicationModel.VoiceCommands;
 using Windows.System;
+
 using static Microsoft.PowerToys.Settings.UI.Helpers.ShellGetFolder;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -47,9 +47,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Settings = LoadSettings(settingsUtils);
 
             // Initialize properties
-            _hideFileExtension = Settings.HideFileExtension;
-            _hideStartingDigits = Settings.HideStartingDigits;
-            _templateLocation = Settings.TemplateLocation;
+            _hideFileExtension = Settings.Properties.HideFileExtension.Value;
+            _hideStartingDigits = Settings.Properties.HideStartingDigits.Value;
+            _templateLocation = Settings.Properties.TemplateLocation.Value;
             InitializeEnabledValue();
             InitializeGpoValues();
 
@@ -119,12 +119,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_templateLocation != value)
                 {
                     _templateLocation = value;
-                    Settings.TemplateLocation = value;
+                    Settings.Properties.TemplateLocation.Value = value;
                     OnPropertyChanged(nameof(TemplateLocation));
 
                     NotifySettingsChanged();
-
-                    SaveSettingsToJson();
                 }
             }
         }
@@ -146,12 +144,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_hideFileExtension != value && !_hideFileExtensionIsGPOConfigured)
                 {
                     _hideFileExtension = value;
-                    Settings.HideFileExtension = value;
+                    Settings.Properties.HideFileExtension.Value = value;
                     OnPropertyChanged(nameof(HideFileExtension));
 
                     NotifySettingsChanged();
-
-                    SaveSettingsToJson();
                 }
             }
         }
@@ -168,12 +164,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (_hideStartingDigits != value)
                 {
                     _hideStartingDigits = value;
-                    Settings.HideStartingDigits = value;
+                    Settings.Properties.HideStartingDigits.Value = value;
                     OnPropertyChanged(nameof(HideStartingDigits));
 
                     NotifySettingsChanged();
-
-                    SaveSettingsToJson();
                 }
             }
         }
@@ -208,10 +202,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 settings = settingsUtils.GetSettingsOrDefault<NewPlusSettings>(NewPlusSettings.ModuleName);
 
-                if (string.IsNullOrEmpty(settings.TemplateLocation))
+                if (string.IsNullOrEmpty(settings.Properties.TemplateLocation.Value))
                 {
                     // This can happen when running the DEBUG Settings application without first letting the runner create the default settings file.
-                    settings.TemplateLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "NewPlus", "Templates");
+                    settings.Properties.TemplateLocation.Value = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "NewPlus", "Templates");
                 }
             }
             catch (Exception e)
@@ -256,12 +250,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OpenNewTemplateFolder()
         {
-            var process = new ProcessStartInfo()
+            try
             {
-                FileName = _templateLocation,
-                UseShellExecute = true,
-            };
-            Process.Start(process);
+                CopyTemplateExamples(_templateLocation);
+
+                var process = new ProcessStartInfo()
+                {
+                    FileName = _templateLocation,
+                    UseShellExecute = true,
+                };
+                Process.Start(process);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to show NewPlus template folder.", ex);
+            }
         }
 
         private async void PickNewTemplateFolder()
@@ -277,11 +280,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
             return await Task.FromResult(GetFolderDialogWithFlags(hwnd, FolderDialogFlags._BIF_NEWDIALOGSTYLE));
-        }
-
-        private void SaveSettingsToJson()
-        {
-            _settingsUtils.SaveSettings(Settings.ToJsonString(), ModuleName);
         }
     }
 }

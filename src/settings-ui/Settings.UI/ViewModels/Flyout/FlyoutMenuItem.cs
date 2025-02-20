@@ -5,6 +5,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+
 using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels

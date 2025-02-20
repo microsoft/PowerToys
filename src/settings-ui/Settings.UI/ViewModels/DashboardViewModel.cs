@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Windows.Threading;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -73,6 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Tag = moduleType,
                 Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
+                IsNew = moduleType == ModuleType.ZoomIt,
                 IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
@@ -130,30 +132,38 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var settingsUtils = new SettingsUtils();
                 var settings = NewPlusViewModel.LoadSettings(settingsUtils);
-                NewPlusViewModel.CopyTemplateExamples(settings.TemplateLocation);
+                NewPlusViewModel.CopyTemplateExamples(settings.Properties.TemplateLocation.Value);
             }
         }
 
         public void ModuleEnabledChangedOnSettingsPage()
         {
-            ActiveModules.Clear();
-            DisabledModules.Clear();
-            generalSettingsConfig = _settingsRepository.SettingsConfig;
-            foreach (DashboardListItem item in _allModules)
+            try
             {
-                item.IsEnabled = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, item.Tag);
-                if (item.IsEnabled)
-                {
-                    ActiveModules.Add(item);
-                }
-                else
-                {
-                    DisabledModules.Add(item);
-                }
-            }
+                ActiveModules.Clear();
+                DisabledModules.Clear();
 
-            OnPropertyChanged(nameof(ActiveModules));
-            OnPropertyChanged(nameof(DisabledModules));
+                generalSettingsConfig = _settingsRepository.SettingsConfig;
+                foreach (DashboardListItem item in _allModules)
+                {
+                    item.IsEnabled = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, item.Tag);
+                    if (item.IsEnabled)
+                    {
+                        ActiveModules.Add(item);
+                    }
+                    else
+                    {
+                        DisabledModules.Add(item);
+                    }
+                }
+
+                OnPropertyChanged(nameof(ActiveModules));
+                OnPropertyChanged(nameof(DisabledModules));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Updating active/disabled modules list failed: {ex.Message}");
+            }
         }
 
         private ObservableCollection<DashboardModuleItem> GetModuleItems(ModuleType moduleType)
@@ -186,6 +196,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
                 ModuleType.PowerOCR => GetModuleItemsPowerOCR(),
                 ModuleType.NewPlus => GetModuleItemsNewPlus(),
+                ModuleType.ZoomIt => GetModuleItemsZoomIt(),
                 _ => new ObservableCollection<DashboardModuleItem>(), // never called, all values listed above
             };
         }
@@ -508,6 +519,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleTextItem() { Label = resourceLoader.GetString("NewPlus_Product_Description/Description") },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsZoomIt()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleTextItem() { Label = resourceLoader.GetString("ZoomIt_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }

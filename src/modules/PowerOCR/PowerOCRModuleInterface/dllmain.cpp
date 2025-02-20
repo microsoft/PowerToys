@@ -69,6 +69,8 @@ private:
 
     // Handle to event used to invoke PowerOCR
     HANDLE m_hInvokeEvent;
+    // Handle to event used to terminate PowerOCR
+    HANDLE m_hTerminateEvent;
 
     void parse_hotkey(PowerToysSettings::PowerToyValues& settings)
     {
@@ -160,6 +162,7 @@ public:
         app_key = PowerOcrConstants::ModuleKey;
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "TextExtractor");
         m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_POWEROCR_SHARED_EVENT);
+        m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_POWEROCR_SHARED_EVENT);
         init_settings();
     }
 
@@ -249,6 +252,8 @@ public:
         if (m_enabled)
         {
             ResetEvent(m_hInvokeEvent);
+            SetEvent(m_hTerminateEvent);
+            WaitForSingleObject(m_hProcess, 1500);
             TerminateProcess(m_hProcess, 1);
         }
 

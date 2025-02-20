@@ -36,8 +36,9 @@ namespace Wox.Plugin
         [JsonIgnore]
         public bool IsEnabledPolicyConfigured { get; set; }
 
+        // Needs to be other than private set in order to be visible to the Json Source Generator
         [JsonInclude]
-        public string ExecuteFilePath { get; private set; }
+        public string ExecuteFilePath { get; internal set; }
 
         public string ExecuteFileName { get; set; }
 

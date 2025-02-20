@@ -1,5 +1,6 @@
 name: "🕷️ Bug report"
 description: Report errors or unexpected behavior
+type: Bug
 labels:
 - Issue-Bug
 - Needs-Triage
@@ -76,9 +77,9 @@ body:
       - Shortcut Guide
       - System tray interaction
       - TextExtractor
-      - Video Conference Mute
       - Workspaces
       - Welcome / PowerToys Tour window
+      - ZoomIt
   validations:
     required: true
 

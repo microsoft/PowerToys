@@ -36,7 +36,7 @@ The user can switch to the found windows, close them or kill their process.
 	| `SubtitleShowPid` | `false` | Show process id in subtitle |
 	| `SubtitleShowDesktopName` | `true` | Show desktop name in subtitle (If two or more desktops exist) |
 	| `ConfirmKillProcess` | `true` | Request confirmation when killing a process |
-	| `KillProcessTree` | `false` | Kill process and it's child processes |
+	| `KillProcessTree` | `false` | Kill process and its child processes |
 	| `OpenAfterKillAndClose` | `false` | Stay open after closing windows and killing processes (Not working with kill process confirmation) |
 	| `HideKillProcessOnElevatedProcesses` | `false` | Hide "kill process" button if additional permissions required |
 	| `HideExplorerSettingInfo` | `false` | Hide Explorer process information |

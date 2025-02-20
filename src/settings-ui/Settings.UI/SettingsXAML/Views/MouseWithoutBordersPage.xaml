@@ -35,7 +35,11 @@
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
-                        Severity="Informational" />
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_KeySettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
@@ -182,12 +186,19 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_ServiceSettings" IsEnabled="{x:Bind ViewModel.CanToggleUseService, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_UseService">
-                        <ToggleSwitch
-                            x:Uid="MouseWithoutBorders_UseService_ToggleSwitch"
-                            IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
-                            IsOn="{x:Bind ViewModel.UseService, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_UseService" IsEnabled="{x:Bind ViewModel.UseServiceSettingIsEnabled, Mode=OneWay}">
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_UseService_ToggleSwitch" IsOn="{x:Bind ViewModel.UseService, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_SettingIsManaged"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowPolicyConfiguredInfoForServiceSettings, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.ShowPolicyConfiguredInfoForServiceSettings, Mode=OneWay}"
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
                     <InfoBar
                         x:Uid="MouseWithoutBorders_RunAsAdminText"
                         IsClosable="False"
@@ -214,9 +225,9 @@
                         IsOpen="{x:Bind ViewModel.ShowPolicyConfiguredInfoForBehaviorSettings, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.ShowPolicyConfiguredInfoForBehaviorSettings, Mode=OneWay}"
                         Severity="Informational">
-                        <!--InfoBar.IconSource>
-                                    <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                                </InfoBar.IconSource-->
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
                     </InfoBar>
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_WrapMouse">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_WrapMouse_ToggleSwitch" IsOn="{x:Bind ViewModel.WrapMouse, Mode=TwoWay}" />
@@ -337,9 +348,9 @@
                                     IsOpen="True"
                                     IsTabStop="{x:Bind ViewModel.ShowPolicyConfiguredInfoForName2IPSetting, Mode=OneWay}"
                                     Severity="Informational">
-                                    <!--InfoBar.IconSource>
-                                    <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                                </InfoBar.IconSource-->
+                                    <InfoBar.IconSource>
+                                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                                    </InfoBar.IconSource>
                                 </InfoBar>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
@@ -395,9 +406,9 @@
                         IsOpen="{x:Bind ViewModel.ShowPolicyConfiguredInfoForOriginalUiSetting, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.ShowPolicyConfiguredInfoForOriginalUiSetting, Mode=OneWay}"
                         Severity="Informational">
-                        <!--InfoBar.IconSource>
+                        <InfoBar.IconSource>
                             <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                        </InfoBar.IconSource-->
+                        </InfoBar.IconSource>
                     </InfoBar>
                 </controls:SettingsGroup>
             </StackPanel>

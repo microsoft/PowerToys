@@ -21,6 +21,7 @@ using System.Windows.Forms;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 
 [module: SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Scope = "member", Target = "MouseWithoutBorders.Common.#StartMouseWithoutBordersService()", Justification = "Dotnet port with style preservation")]
 
@@ -39,7 +40,7 @@ namespace MouseWithoutBorders
                 return;
             }
 
-            Log($"{nameof(StartMouseWithoutBordersService)}: {GetStackTrace(new StackTrace())}.");
+            Logger.Log($"{nameof(StartMouseWithoutBordersService)}: {Logger.GetStackTrace(new StackTrace())}.");
 
             Task task = Task.Run(() =>
             {
@@ -49,13 +50,13 @@ namespace MouseWithoutBorders
                 {
                     if (DateTime.UtcNow - lastStartServiceTime < TimeSpan.FromSeconds(5))
                     {
-                        Log($"{nameof(StartMouseWithoutBordersService)}: Aborted.");
+                        Logger.Log($"{nameof(StartMouseWithoutBordersService)}: Aborted.");
                         return;
                     }
 
                     foreach (Process pp in ps)
                     {
-                        Common.Log(string.Format(CultureInfo.InvariantCulture, "Killing process MouseWithoutBordersSvc {0}.", pp.Id));
+                        Logger.Log(string.Format(CultureInfo.InvariantCulture, "Killing process MouseWithoutBordersSvc {0}.", pp.Id));
                         pp.KillProcess();
                     }
                 }
@@ -65,7 +66,7 @@ namespace MouseWithoutBorders
 
                 try
                 {
-                    Log("Starting " + service.ServiceName);
+                    Logger.Log("Starting " + service.ServiceName);
                 }
                 catch (Exception)
                 {
@@ -104,7 +105,7 @@ namespace MouseWithoutBorders
                 }
                 catch (Exception e)
                 {
-                    Log(e);
+                    Logger.Log(e);
 
                     // ERROR_SERVICE_ALREADY_RUNNING
                     if (!(shownErrMessage || ((e?.InnerException as Win32Exception)?.NativeErrorCode == 1056)))
@@ -153,7 +154,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Common.Log($"{nameof(StartServiceAndSendLogoffSignal)}: {e.Message}");
+                Logger.Log($"{nameof(StartServiceAndSendLogoffSignal)}: {e.Message}");
             }
         }
     }

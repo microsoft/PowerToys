@@ -11,6 +11,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -29,7 +30,7 @@ namespace PowerLauncher.Plugin
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IDirectory Directory = FileSystem.Directory;
-        private static readonly object AllPluginsLock = new object();
+        private static readonly Lock AllPluginsLock = new Lock();
 
         private static readonly CompositeFormat FailedToInitializePluginsDescription = System.Text.CompositeFormat.Parse(Properties.Resources.FailedToInitializePluginsDescription);
 
@@ -237,7 +238,10 @@ namespace PowerLauncher.Plugin
             }
             catch (Exception e)
             {
-                Log.Exception($"Exception for plugin <{pair.Metadata.Name}> when query <{query}>", e, MethodBase.GetCurrentMethod().DeclaringType);
+                // After updating to .NET 9, calling MethodBase.GetCurrentMethod() started crashing when trying
+                // to log methods called from within the OneNote plugin, so we've replaced this instance with typeof(PluginManager).
+                // This should be revised in the future.
+                Log.Exception($"Exception for plugin <{pair.Metadata.Name}> when query <{query}>", e, typeof(PluginManager));
 
                 return new List<Result>();
             }

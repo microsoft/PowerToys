@@ -13,6 +13,4 @@
 #include <string>
 #include <Shlwapi.h>
 
-#include <ProjectTelemetry.h>
-
 #endif //PCH_H

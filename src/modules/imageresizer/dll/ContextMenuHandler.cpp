@@ -161,8 +161,13 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
 
         if (!InsertMenuItem(hmenu, indexMenu, TRUE, &mii))
         {
+            m_etwTrace.UpdateState(true);
+
             hr = HRESULT_FROM_WIN32(GetLastError());
             Trace::QueryContextMenuError(hr);
+
+            m_etwTrace.Flush();
+            m_etwTrace.UpdateState(false);
         }
         else
         {
@@ -193,6 +198,8 @@ HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ U
 
 HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
 {
+    m_etwTrace.UpdateState(true);
+
     BOOL fUnicode = FALSE;
     Trace::Invoked();
     HRESULT hr = E_FAIL;
@@ -216,6 +223,10 @@ HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
         hr = ResizePictures(pici, nullptr);
     }
     Trace::InvokedRet(hr);
+
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
+
     return hr;
 }
 
@@ -427,8 +438,14 @@ HRESULT __stdcall CContextMenuHandler::EnumSubCommands(IEnumExplorerCommand** pp
 // psiItemArray contains the list of files that have been selected when the context menu entry is invoked
 HRESULT __stdcall CContextMenuHandler::Invoke(IShellItemArray* psiItemArray, IBindCtx* /*pbc*/)
 {
+    m_etwTrace.UpdateState(true);
+
     Trace::Invoked();
     HRESULT hr = ResizePictures(nullptr, psiItemArray);
     Trace::InvokedRet(hr);
+
+    m_etwTrace.Flush();
+    m_etwTrace.UpdateState(false);
+
     return hr;
 }

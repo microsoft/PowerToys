@@ -23,16 +23,17 @@ registrypreview
 rooler
 scoobe
 shortcutguide
-videoconference
 
 
 # USERS
 
-LWXpg  # (number eight)LWXpg is actual user name but spell checker throws error with a numeric leading value ... which is kinda odd
+# 8LWXpg is user name but user folder causes a flag
+LWXpg
 Adoumie
 Advaith
 alekhyareddy
 Aleks
+amihaiuc
 angularsen
 Anirudha
 arjunbalgovind
@@ -43,7 +44,10 @@ Bartosz
 betadele
 betsegaw
 bricelam
+bsky
 CCcat
+chenmy
+chemwolf
 Chinh
 chrdavis
 Chrzan
@@ -52,18 +56,21 @@ Coplen
 craigloewen
 crutkas
 damienleroy
+daverayment
 davidegiacometti
 debian
-Deibisu
 Deibisu
 Delimarsky
 Deondre
 DHowett
 ductdo
 Essey
+Feng
 ethanfangg
 ferraridavide
+foxmsft
 frankychen
+Gaarden
 gaardmark
 gabime
 Galaxi
@@ -71,8 +78,11 @@ Garside
 Gershaft
 Giordani
 Gokce
+gordon
+grzhan
 Guo
 hanselman
+haoliuu
 Harmath
 Heiko
 Hemmerlein
@@ -81,26 +91,32 @@ Horvalds
 Howett
 htcfreek
 Huynh
+Ionut
+jamrobot
 Jaswal
 jefflord
 Jordi
 jyuwono
-Kairu
+kai
 Kairu
 Kamra
 Kantarci
 Karthick
+kaylacinnamon
 kevinguo
 Krigun
 Lambson
 Laute
 laviusmotileng
+Leilei
 Luecking
 Mahalingam
 Markovic
 martinchrzan
 martinmoene
 Melman
+Mengyuan
+Mihaiuc
 Mikhayelyan
 msft
 Mykhailo
@@ -110,21 +126,25 @@ nathancartlidge
 Nemeth
 nielslaute
 oldnewthing
+onegreatworld
 palenshus
 pedrolamas
+Peiyao
 peteblois
 phoboslab
 Ponten
 Pooja
 Pylyp
+Qingpeng
 quachpas
 Quriz
 randyrants
+rayment
 ricardosantos
-riri
 riri
 ritchielawrence
 robmikh
+Russinovich
 Rutkas
 ryanbodrug
 saahmedm
@@ -145,20 +165,35 @@ Taras
 TBM
 tilovell
 Triet
+urnotdfs
 waaverecords
+wang
+Whuihuan
+Xiaofeng
 Xpg
+Yaqing
+yaqingmi
 ycv
+yeelam
 Yuniardi
 yuyoyuppe
 Zeol
+Zhao
+Zhaopeng
+zhaopy
+zhaoqpcn
 Zoltan
 Zykova
 
 # OTHERS
 
+Bilibili
+BVID
+capturevideosample
 cmdow
 Controlz
 cortana
+dlnilsson
 fancymouse
 firefox
 gpt

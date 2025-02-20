@@ -21,6 +21,7 @@ void MappingConfiguration::ClearOSLevelShortcuts()
 void MappingConfiguration::ClearSingleKeyRemaps()
 {
     singleKeyReMap.clear();
+    scanMap.clear();
 }
 
 // Function to clear the Keys remapping table.
@@ -64,6 +65,15 @@ bool MappingConfiguration::AddSingleKeyRemap(const DWORD& originalKey, const Key
     }
 
     singleKeyReMap[originalKey] = newRemapKey;
+    if (Helpers::IsNumpadKeyThatIsAffectedByShift(originalKey))
+    {
+        // Numpad keys might get altered by shift being pressed. We need to save their scancode instead to try and detect that they were unpressed when they are mapped to shift.
+        auto scanCode = MapVirtualKey(originalKey, MAPVK_VK_TO_VSC);
+        if (scanCode != 0)
+        {
+            scanMap[MapVirtualKey(originalKey, MAPVK_VK_TO_VSC)] = originalKey;
+        }
+    }
     return true;
 }
 
@@ -220,7 +230,9 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
                 auto newRemapText = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewTextSettingName, {});
                 auto targetApp = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TargetAppSettingName);
                 auto operationType = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::ShortcutOperationType, 0);
-
+                auto exactMatch = it.GetObjectW().GetNamedBoolean(KeyboardManagerConstants::ShortcutExactMatch, false);
+                auto originalShortcut = Shortcut(originalKeys.c_str());
+                originalShortcut.exactMatch = exactMatch;
                 // undo dummy data for backwards compatibility
                 if (newRemapText == L"*Unsupported*")
                 {
@@ -236,7 +248,6 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
                     auto runProgramElevationLevel = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramElevationLevelSettingName, 0);
                     auto runProgramAlreadyRunningAction = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramAlreadyRunningAction, 0);
                     auto runProgramStartWindowType = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramStartWindowType, 0);
-                    auto secondKeyOfChord = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, 0);
 
                     auto tempShortcut = Shortcut(newRemapKeys.c_str());
                     tempShortcut.operationType = Shortcut::OperationType::RunProgram;
@@ -247,16 +258,15 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
                     tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction);
                     tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
 
-                    AddAppSpecificShortcut(targetApp.c_str(), Shortcut(originalKeys.c_str(), static_cast<DWORD>(secondKeyOfChord)), tempShortcut);
+                    AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, tempShortcut);
                 }
                 else if (operationType == 2)
                 {
-                    auto secondKeyOfChord = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, 0);
                     auto tempShortcut = Shortcut(newRemapKeys.c_str());
                     tempShortcut.operationType = Shortcut::OperationType::OpenURI;
                     tempShortcut.uriToOpen = it.GetObjectW().GetNamedString(KeyboardManagerConstants::ShortcutOpenURI, L"");
 
-                    AddAppSpecificShortcut(targetApp.c_str(), Shortcut(originalKeys.c_str(), static_cast<DWORD>(secondKeyOfChord)), tempShortcut);
+                    AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, tempShortcut);
                 }
 
                 if (!newRemapKeys.empty())
@@ -264,18 +274,18 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
                     // If remapped to a shortcut
                     if (std::wstring(newRemapKeys).find(L";") != std::string::npos)
                     {
-                        AddAppSpecificShortcut(targetApp.c_str(), Shortcut(originalKeys.c_str()), Shortcut(newRemapKeys.c_str()));
+                        AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, Shortcut(newRemapKeys.c_str()));
                     }
 
                     // If remapped to a key
                     else
                     {
-                        AddAppSpecificShortcut(targetApp.c_str(), Shortcut(originalKeys.c_str()), std::stoul(newRemapKeys.c_str()));
+                        AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, std::stoul(newRemapKeys.c_str()));
                     }
                 }
                 else
                 {
-                    AddAppSpecificShortcut(targetApp.c_str(), Shortcut(originalKeys.c_str()), newRemapText.c_str());
+                    AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, newRemapText.c_str());
                 }
             }
             catch (...)
@@ -316,6 +326,8 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                         auto newRemapText = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewTextSettingName, {});
                         auto operationType = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::ShortcutOperationType, 0);
 
+                        auto originalShortcut = Shortcut(originalKeys.c_str());
+                        originalShortcut.exactMatch = it.GetObjectW().GetNamedBoolean(KeyboardManagerConstants::ShortcutExactMatch, false);
                         // undo dummy data for backwards compatibility
                         if (newRemapText == L"*Unsupported*")
                         {
@@ -330,8 +342,6 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                             auto runProgramStartInDir = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RunProgramStartInDirSettingName, L"");
                             auto runProgramElevationLevel = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramElevationLevelSettingName, 0);
                             auto runProgramStartWindowType = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramStartWindowType, 0);
-                            auto secondKeyOfChord = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, 0);
-
                             auto runProgramAlreadyRunningAction = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::RunProgramAlreadyRunningAction, 0);
 
                             auto tempShortcut = Shortcut(newRemapKeys.c_str());
@@ -343,33 +353,32 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                             tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction);
                             tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
 
-                            AddOSLevelShortcut(Shortcut(originalKeys.c_str(), static_cast<DWORD>(secondKeyOfChord)), tempShortcut);
+                            AddOSLevelShortcut(originalShortcut, tempShortcut);
                         }
                         else if (operationType == 2)
                         {
-                            auto secondKeyOfChord = it.GetObjectW().GetNamedNumber(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, 0);
                             auto tempShortcut = Shortcut(newRemapKeys.c_str());
                             tempShortcut.operationType = Shortcut::OperationType::OpenURI;
                             tempShortcut.uriToOpen = it.GetObjectW().GetNamedString(KeyboardManagerConstants::ShortcutOpenURI, L"");
 
-                            AddOSLevelShortcut(Shortcut(originalKeys.c_str(), static_cast<DWORD>(secondKeyOfChord)), tempShortcut);
+                            AddOSLevelShortcut(originalShortcut, tempShortcut);
                         }
                         else if (!newRemapKeys.empty())
                         {
                             // If remapped to a shortcut
                             if (std::wstring(newRemapKeys).find(L";") != std::string::npos)
                             {
-                                AddOSLevelShortcut(Shortcut(originalKeys.c_str()), Shortcut(newRemapKeys.c_str()));
+                                AddOSLevelShortcut(originalShortcut, Shortcut(newRemapKeys.c_str()));
                             }
                             // If remapped to a key
                             else
                             {
-                                AddOSLevelShortcut(Shortcut(originalKeys.c_str()), std::stoul(newRemapKeys.c_str()));
+                                AddOSLevelShortcut(originalShortcut, std::stoul(newRemapKeys.c_str()));
                             }
                         }
                         else
                         {
-                            AddOSLevelShortcut(Shortcut(originalKeys.c_str()), newRemapText.c_str());
+                            AddOSLevelShortcut(originalShortcut, newRemapText.c_str());
                         }
                     }
                     catch (...)
@@ -491,6 +500,7 @@ bool MappingConfiguration::SaveSettingsToFile()
 
         keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(it.first.ToHstringVK()));
 
+        keys.SetNamedValue(KeyboardManagerConstants::ShortcutExactMatch, json::JsonValue::CreateBooleanValue(it.first.exactMatch));
         bool remapToText = false;
 
         // For shortcut to key remapping
@@ -506,7 +516,6 @@ bool MappingConfiguration::SaveSettingsToFile()
             if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
             {
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramElevationLevelSettingName, json::value(static_cast<unsigned int>(targetShortcut.elevationLevel)));
-                keys.SetNamedValue(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, json::value(static_cast<unsigned int>(it.first.secondKey)));
 
                 keys.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(static_cast<unsigned int>(targetShortcut.operationType)));
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramAlreadyRunningAction, json::value(static_cast<unsigned int>(targetShortcut.alreadyRunningAction)));
@@ -522,7 +531,6 @@ bool MappingConfiguration::SaveSettingsToFile()
             else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
             {
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramElevationLevelSettingName, json::value(static_cast<unsigned int>(targetShortcut.elevationLevel)));
-                keys.SetNamedValue(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, json::value(static_cast<unsigned int>(it.first.secondKey)));
                 keys.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(static_cast<unsigned int>(targetShortcut.operationType)));
 
                 keys.SetNamedValue(KeyboardManagerConstants::ShortcutOpenURI, json::value(targetShortcut.uriToOpen));
@@ -533,7 +541,6 @@ bool MappingConfiguration::SaveSettingsToFile()
             else
             {
                 keys.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(static_cast<unsigned int>(targetShortcut.operationType)));
-                keys.SetNamedValue(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, json::value(static_cast<unsigned int>(it.first.secondKey)));
                 keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(targetShortcut.ToHstringVK()));
             }
         }
@@ -542,7 +549,6 @@ bool MappingConfiguration::SaveSettingsToFile()
         {
             remapToText = true;
             keys.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(std::get<std::wstring>(it.second.targetShortcut)));
-            keys.SetNamedValue(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, json::value(static_cast<unsigned int>(it.first.secondKey)));
         }
 
         if (!remapToText)
@@ -558,7 +564,7 @@ bool MappingConfiguration::SaveSettingsToFile()
         {
             json::JsonObject keys;
             keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(itKeys.first.ToHstringVK()));
-
+            keys.SetNamedValue(KeyboardManagerConstants::ShortcutExactMatch, json::JsonValue::CreateBooleanValue(itKeys.first.exactMatch));
             bool remapToText = false;
 
             // For shortcut to key remapping
@@ -575,7 +581,6 @@ bool MappingConfiguration::SaveSettingsToFile()
                 if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
                 {
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramElevationLevelSettingName, json::value(static_cast<unsigned int>(targetShortcut.elevationLevel)));
-                    keys.SetNamedValue(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, json::value(static_cast<unsigned int>(itKeys.first.secondKey)));
 
                     keys.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(static_cast<unsigned int>(targetShortcut.operationType)));
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramAlreadyRunningAction, json::value(static_cast<unsigned int>(targetShortcut.alreadyRunningAction)));
@@ -591,7 +596,6 @@ bool MappingConfiguration::SaveSettingsToFile()
                 else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
                 {
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramElevationLevelSettingName, json::value(static_cast<unsigned int>(targetShortcut.elevationLevel)));
-                    keys.SetNamedValue(KeyboardManagerConstants::ShortcutSecondKeyOfChordSettingName, json::value(static_cast<unsigned int>(itKeys.first.secondKey)));
                     keys.SetNamedValue(KeyboardManagerConstants::ShortcutOperationType, json::value(static_cast<unsigned int>(targetShortcut.operationType)));
 
                     keys.SetNamedValue(KeyboardManagerConstants::ShortcutOpenURI, json::value(targetShortcut.uriToOpen));
