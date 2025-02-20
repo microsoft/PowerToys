@@ -83,9 +83,9 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Attaches to an existing PowerToys module window.
+        /// Attaches to an existing PowerToys module.
         /// </summary>
-        /// <param name="module">The PowerToys module window to attach to.</param>
+        /// <param name="module">The PowerToys module to attach to.</param>
         /// <returns>The attached session.</returns>
         public Session Attach(PowerToysModule module)
         {
