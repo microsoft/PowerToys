@@ -7,6 +7,7 @@
     <AssemblyTitle>PowerToys.Run</AssemblyTitle>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
+    <CETCompat>false</CETCompat>
     <UseWindowsForms>False</UseWindowsForms>
     <StartupObject>PowerLauncher.App</StartupObject>
     <ApplicationIcon>Assets\PowerLauncher\RunResource.ico</ApplicationIcon>
