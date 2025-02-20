@@ -1,10 +1,7 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="WixToolset.Sdk" Version="5.0.2" />
-  <PropertyGroup>
+<Project Sdk="WixToolset.Sdk/5.0.2">
+		<PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
-  <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
-  <Import Project="..\wixVNext.props" Condition="Exists('..\wixVNext.props')" />
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <!-- THIS IS AN INNER LOOP OPTIMIZATION
@@ -88,11 +85,11 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="Workspaces.wxs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WixToolset.Firewall.wixext" Version="5.0.2" />
-    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
-    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
-    <PackageReference Include="WixToolset.NetFx.wixext" Version="5.0.2" />
-    <PackageReference Include="WixToolset.Heat" Version="5.0.2" />
+    <PackageReference Include="WixToolset.Firewall.wixext" />
+    <PackageReference Include="WixToolset.Util.wixext" />
+    <PackageReference Include="WixToolset.UI.wixext" />
+    <PackageReference Include="WixToolset.NetFx.wixext" />
+    <PackageReference Include="WixToolset.Heat" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CustomDialogs" />
@@ -114,7 +111,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     </ItemGroup>
   </Target>
   <Target Name="Restore" />
-  <Import Project="Sdk.targets" Sdk="WixToolset.Sdk" Version="5.0.2" />
   <Target Name="BeforeBuild">
     <HeatDirectory Directory="..\..\src\Monaco\monacoSRC" PreprocessorVariable="var.MonacoSRCHarvestPath" OutputFile="MonacoSRC.wxs" ComponentGroupName="MonacoSRCHeatGenerated" DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder" AutogenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" SuppressFragments="false" SuppressRegistry="false" SuppressRootDirectory="true" />
   </Target>

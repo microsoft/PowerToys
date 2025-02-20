@@ -2,8 +2,6 @@
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
-  <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
-  <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <PropertyGroup>
     <DefineConstants>Version=$(Version)</DefineConstants>
     <Name>PowerToysVNextBootstrapper</Name>
@@ -31,10 +29,10 @@
     <Compile Include="PowerToys.wxs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
-    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
-    <PackageReference Include="WixToolset.NetFx.wixext" Version="5.0.2" />
-    <PackageReference Include="WixToolset.Bal.wixext" Version="5.0.2" />
+    <PackageReference Include="WixToolset.Util.wixext" />
+    <PackageReference Include="WixToolset.UI.wixext" />
+    <PackageReference Include="WixToolset.NetFx.wixext" />
+    <PackageReference Include="WixToolset.Bal.wixext" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CustomDialogs" />
