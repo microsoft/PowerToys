@@ -1090,6 +1090,11 @@ namespace MouseWithoutBorders.Class
         {
             get
             {
+                if (GPOWrapper.GetConfiguredMwbAllowServiceModeValue() == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     return _properties.UseService;
@@ -1098,6 +1103,11 @@ namespace MouseWithoutBorders.Class
 
             set
             {
+                if (AllowServiceModeIsGpoConfigured)
+                {
+                    return;
+                }
+
                 lock (_loadingSettingsLock)
                 {
                     _properties.UseService = value;
@@ -1108,6 +1118,10 @@ namespace MouseWithoutBorders.Class
                 }
             }
         }
+
+        [CmdConfigureIgnore]
+        [JsonIgnore]
+        internal bool AllowServiceModeIsGpoConfigured => GPOWrapper.GetConfiguredMwbAllowServiceModeValue() == GpoRuleConfigured.Disabled;
 
         // Note(@htcfreek): Settings UI CheckBox is disabled in frmMatrix.cs > FrmMatrix_Load()
         internal bool SendErrorLogV2
