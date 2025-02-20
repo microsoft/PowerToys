@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig; // used in the unit tests
+            _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
 
