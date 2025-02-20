@@ -17,9 +17,8 @@ namespace Microsoft.PowerToys.UITest
     /// <remarks>
     /// How to add a new module:
     /// 1. Define the new module in the PowerToysModule enum.
-    /// 2. Define any associated windows in the PowerToysModuleWindow enum.
-    /// 3. Add the exe window name to the ModuleWindowName dictionary in the ModuleConfigData constructor.
-    /// 4. If the module has an executable path, add it to the ModulePath dictionary in the ModuleConfigData constructor.
+    /// 2. Add the exe window name to the ModuleWindowName dictionary in the ModuleConfigData constructor.
+    /// 3. Add the exe path to the ModulePath dictionary in the ModuleConfigData constructor.
     /// </remarks>
 
     /// <summary>
