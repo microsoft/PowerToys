@@ -17,6 +17,8 @@ public class AllAppsSettings : JsonSettingsManager
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
+    private static string Experimental(string propertyName) => $"{_namespace}.experimental.{propertyName}";
+
 #pragma warning disable SA1401 // Fields should be private
     internal static AllAppsSettings Instance = new();
 #pragma warning restore SA1401 // Fields should be private
@@ -38,6 +40,8 @@ public class AllAppsSettings : JsonSettingsManager
     public bool EnableRegistrySource => _enableRegistrySource.Value;
 
     public bool EnablePathEnvironmentVariableSource => _enablePathEnvironmentVariableSource.Value;
+
+    public bool UseThumbnails => _useThumbnails.Value;
 
     private readonly ToggleSetting _enableStartMenuSource = new(
         Namespaced(nameof(EnableStartMenuSource)),
@@ -63,6 +67,12 @@ public class AllAppsSettings : JsonSettingsManager
         Resources.enable_path_environment_variable_source,
         false); // this one is very VERY noisy
 
+    private readonly ToggleSetting _useThumbnails = new(
+        Experimental(nameof(UseThumbnails)),
+        Resources.use_thumbnails_setting_label,
+        Resources.use_thumbnails_setting_description,
+        false); // This one can cause a crash on launch
+
     public double MinScoreThreshold { get; set; } = 0.75;
 
     internal const char SuffixSeparator = ';';
@@ -84,6 +94,7 @@ public class AllAppsSettings : JsonSettingsManager
         Settings.Add(_enableDesktopSource);
         Settings.Add(_enableRegistrySource);
         Settings.Add(_enablePathEnvironmentVariableSource);
+        Settings.Add(_useThumbnails);
 
         // Load settings from file upon initialization
         LoadSettings();

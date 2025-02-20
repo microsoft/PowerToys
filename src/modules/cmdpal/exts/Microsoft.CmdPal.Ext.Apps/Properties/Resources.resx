@@ -181,4 +181,12 @@
   <data name="enable_path_environment_variable_source" xml:space="preserve">
     <value>Include apps anywhere on the %PATH%</value>
   </data>
+  <data name="use_thumbnails_setting_label" xml:space="preserve">
+    <value>Use thumbnails for apps</value>
+    <comment>when enabled, we'll display thumbnails from the windows shell for programs</comment>
+  </data>
+  <data name="use_thumbnails_setting_description" xml:space="preserve">
+    <value>Experimental: When enabled, Command Palette will load thumbnails from the Windows Shell. Using thumbnails may cause the app to crash on launch</value>
+    <comment>A description for "use_thumbnails_setting_label"</comment>
+  </data>
 </root>

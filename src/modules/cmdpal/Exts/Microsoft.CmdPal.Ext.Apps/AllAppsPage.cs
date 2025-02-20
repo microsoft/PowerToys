@@ -60,13 +60,26 @@ public sealed partial class AllAppsPage : ListPage
         this.IsLoading = false;
 
         AppCache.Instance.Value.ResetReloadFlag();
+        var useThumbnails = AllAppsSettings.Instance.UseThumbnails;
+
+        // if (useThumbnails)
+        // {
         Task.Run(async () =>
-        {
-            foreach (var appListItem in this.allAppsSection)
             {
-                await appListItem.FetchIcon();
-            }
-        });
+                foreach (var appListItem in this.allAppsSection)
+                {
+                    await appListItem.FetchIcon(useThumbnails);
+                }
+            });
+
+        // }
+        // else
+        // {
+        //    foreach (var appListItem in this.allAppsSection)
+        //    {
+        //        appListItem.FetchIcon(useThumbnails).ConfigureAwait(false);
+        //    }
+        // }
     }
 
     internal List<AppItem> GetPrograms()
@@ -90,12 +103,22 @@ public sealed partial class AllAppsPage : ListPage
             .Where((application) => application.Enabled && application.Valid)
             .Select(app =>
             {
+                var icoPath = string.IsNullOrEmpty(app.IcoPath) ?
+                    (app.AppType == Win32Program.ApplicationType.InternetShortcutApplication ?
+                        app.IcoPath :
+                        app.FullPath) :
+                    app.IcoPath;
+
+                // icoPath = icoPath.EndsWith(".lnk", System.StringComparison.InvariantCultureIgnoreCase) ? (icoPath + ",0") : icoPath;
+                icoPath = icoPath.EndsWith(".lnk", System.StringComparison.InvariantCultureIgnoreCase) ?
+                    app.FullPath :
+                    icoPath;
                 return new AppItem()
                 {
                     Name = app.Name,
                     Subtitle = app.Description,
                     Type = app.Type(),
-                    IcoPath = app.IcoPath,
+                    IcoPath = icoPath,
                     ExePath = !string.IsNullOrEmpty(app.LnkFilePath) ? app.LnkFilePath : app.FullPath,
                     DirPath = app.Location,
                     Commands = app.GetCommands(),

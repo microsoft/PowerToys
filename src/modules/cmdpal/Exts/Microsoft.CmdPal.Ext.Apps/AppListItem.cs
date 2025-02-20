@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
@@ -21,38 +22,58 @@ internal sealed partial class AppListItem : ListItem
         Subtitle = app.Subtitle;
         Tags = [_appTag];
 
-        Details = new Details()
-        {
-            Title = this.Title,
-            HeroImage = ((AppCommand)Command!).Icon ?? new IconInfo(string.Empty),
-            Body = "### " + app.Type,
-        };
-
         MoreCommands = _app.Commands!.ToArray();
     }
 
-    public async Task FetchIcon()
+    private void BuildDetails()
+    {
+        var metadata = new List<DetailsElement>();
+        metadata.Add(new DetailsElement() { Key = "Type", Data = new DetailsTags() { Tags = [new Tag(_app.Type)] } });
+        if (!_app.IsPackaged)
+        {
+            metadata.Add(new DetailsElement() { Key = "Path", Data = new DetailsLink() { Text = _app.ExePath } });
+        }
+
+        Details = new Details()
+        {
+            Title = this.Title,
+            HeroImage = this.Icon ?? new IconInfo(string.Empty),
+            Metadata = metadata.ToArray(),
+        };
+    }
+
+    public async Task FetchIcon(bool useThumbnails)
     {
         if (_app.IsPackaged)
         {
             Icon = new IconInfo(_app.IcoPath);
+            BuildDetails();
             return;
         }
 
-        IconInfo? icon = null;
-        try
+        if (useThumbnails)
         {
-            var stream = await ThumbnailHelper.GetThumbnail(_app.ExePath);
-            if (stream != null)
+            IconInfo? icon = null;
+            try
             {
-                var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
-                icon = new IconInfo(data, data);
+                var stream = await ThumbnailHelper.GetThumbnail(_app.ExePath);
+                if (stream != null)
+                {
+                    var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+                    icon = new IconInfo(data, data);
+                }
             }
+            catch
+            {
+            }
+
+            Icon = icon ?? new IconInfo(_app.IcoPath);
         }
-        catch
+        else
         {
+            Icon = new IconInfo(_app.IcoPath);
         }
 
-        Icon = icon ?? new IconInfo(_app.IcoPath);
+        BuildDetails();
     }
 }

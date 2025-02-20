@@ -241,6 +241,24 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Experimental: When enabled, Command Palette will load thumbnails from the Windows Shell. Using thumbnails may cause the app to crash on launch.
+        /// </summary>
+        internal static string use_thumbnails_setting_description {
+            get {
+                return ResourceManager.GetString("use_thumbnails_setting_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use thumbnails for apps.
+        /// </summary>
+        internal static string use_thumbnails_setting_label {
+            get {
+                return ResourceManager.GetString("use_thumbnails_setting_label", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Web application.
         /// </summary>
         internal static string web_application {
