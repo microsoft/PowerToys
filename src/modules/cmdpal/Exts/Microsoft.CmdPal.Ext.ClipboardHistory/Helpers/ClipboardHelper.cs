@@ -50,9 +50,7 @@ internal static class ClipboardHelper
 
     internal static void SetClipboardTextContent(string text)
     {
-        // Logger.LogTrace();
-        // TODO GH #108 -- need to figure out how to do equivalent of LogTrace() from PT?
-        ExtensionHost.LogMessage(new LogMessage() { Message = "This is a test for logging" });
+        ExtensionHost.LogMessage(new LogMessage() { Message = "Copied text to clipboard" });
 
         if (!string.IsNullOrEmpty(text))
         {
@@ -81,10 +79,10 @@ internal static class ClipboardHelper
             {
                 if (i == maxAttempts)
                 {
-                    // TODO GH #108 -- need to figure out how to do equivalent of LogTrace() from PT?
-                    ExtensionHost.LogMessage(new LogMessage() { Message = ex.ToString() });
-
-                    // Logger.LogError($"{nameof(Clipboard)}.{nameof(Flush)}() failed", ex);
+                    ExtensionHost.LogMessage(new LogMessage()
+                    {
+                        Message = $"{nameof(Clipboard)}.{nameof(Flush)}() failed: {ex}",
+                    });
                 }
             }
         }
@@ -107,9 +105,7 @@ internal static class ClipboardHelper
 
     internal static void SetClipboardImageContent(RandomAccessStreamReference image)
     {
-        // Logger.LogTrace();
-        // TODO GH #108 -- need to figure out how to do equivalent of LogTrace() from PT?
-        ExtensionHost.LogMessage(new LogMessage() { Message = "This is a test for logging" });
+        ExtensionHost.LogMessage(new LogMessage() { Message = "Copied image to clipboard" });
 
         if (image is not null)
         {
@@ -170,9 +166,7 @@ internal static class ClipboardHelper
 
     internal static void SendPasteKeyCombination()
     {
-        // Logger.LogTrace();
-        // TODO GH #108 -- need to figure out how to do equivalent of LogTrace() from PT?
-        ExtensionHost.LogMessage(new LogMessage() { Message = "This is a test for logging" });
+        ExtensionHost.LogMessage(new LogMessage() { Message = "Sending paste keys..." });
 
         SendSingleKeyboardInput((short)VirtualKey.LeftControl, (uint)NativeMethods.KeyEventF.KeyUp);
         SendSingleKeyboardInput((short)VirtualKey.RightControl, (uint)NativeMethods.KeyEventF.KeyUp);
@@ -189,8 +183,6 @@ internal static class ClipboardHelper
         SendSingleKeyboardInput((short)VirtualKey.V, (uint)NativeMethods.KeyEventF.KeyUp);
         SendSingleKeyboardInput((short)VirtualKey.Control, (uint)NativeMethods.KeyEventF.KeyUp);
 
-        // Logger.LogInfo("Paste sent");
-        // TODO GH #108 -- need to figure out how to do equivalent of LogTrace() from PT?
         ExtensionHost.LogMessage(new LogMessage() { Message = "Paste sent" });
     }
 

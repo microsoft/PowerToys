@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Pages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -19,12 +18,11 @@ public partial class ClipboardHistoryCommandsProvider : CommandProvider
         {
             Title = "Search Clipboard History",
             Icon = new IconInfo("\xE8C8"), // Copy icon
-
-            // Icon = new IconInfo("ClipboardHistory"),
         };
 
-        DisplayName = $"Settings";
-        Icon = new("ClipboardHistory");
+        DisplayName = $"Clipboard History";
+        Icon = new IconInfo("\xE8C8"); // Copy icon
+        Id = "Windows.ClipboardHistory";
     }
 
     public override IListItem[] TopLevelCommands()

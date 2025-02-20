@@ -199,7 +199,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     case CommandResultKind.Dismiss:
                         {
                             // Reset the palette to the main page and dismiss
-                            GoHome();
+                            GoHome(withAnimation: false, focusSearch: false);
                             WeakReferenceMessenger.Default.Send<DismissMessage>();
                             break;
                         }
@@ -368,7 +368,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         PInvoke.SetActiveWindow(hwnd);
     }
 
-    private void GoBack(bool withAnimation = true)
+    private void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
         HideDetails();
 
@@ -392,14 +392,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // back to a recent page they visited (like the Pokedex) so we don't have to reload it from  scratch.
         // That'd be retrieved as we re-navigate in the PerformCommandMessage logic above
         RootFrame.ForwardStack.Clear();
-        SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+
+        if (focusSearch)
+        {
+            SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+        }
     }
 
-    private void GoHome(bool withAnimation = true)
+    private void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
         while (RootFrame.CanGoBack)
         {
-            GoBack(withAnimation);
+            GoBack(withAnimation, focusSearch);
         }
 
         WeakReferenceMessenger.Default.Send<GoHomeMessage>();

@@ -86,6 +86,13 @@ public class ClipboardItem
     {
         ListItem listItem;
 
+        List<DetailsElement> metadata = [];
+        metadata.Add(new DetailsElement()
+        {
+            Key = "Copied on",
+            Data = new DetailsLink(Item.Timestamp.DateTime.ToString(DateTimeFormatInfo.CurrentInfo)),
+        });
+
         if (IsImage())
         {
             var iconData = new IconData(ImageData);
@@ -96,9 +103,10 @@ public class ClipboardItem
                 Title = "Image Data",
                 Details = new Details()
                 {
-                    HeroImage = heroImage, // new("\uF0E3"),
+                    HeroImage = heroImage,
                     Title = GetDataType(),
                     Body = Timestamp.ToString(CultureInfo.InvariantCulture),
+                    Metadata = metadata.ToArray(),
                 },
                 MoreCommands = [
                     new CommandContextItem(new PasteCommand(this, ClipboardFormat.Image))
@@ -107,16 +115,6 @@ public class ClipboardItem
         }
         else if (IsText())
         {
-            // var textContent = Content.Trim();
-            // var splitContent = textContent.Split("\n");
-
-            // var firstLine = splitContent.Length > 1
-            //    ? splitContent.First()
-            //    : textContent;
-
-            // var preview = splitContent.Length > 2
-            //    ? string.Join("\n", splitContent.AsSpan(1, Math.Min(splitContent.Length, 3)).ToArray())
-            //    : string.
             var splitContent = Content.Split("\n");
             var head = splitContent.AsSpan(0, Math.Min(3, splitContent.Length)).ToArray().ToList();
             var preview2 = string.Join(
@@ -127,10 +125,12 @@ public class ClipboardItem
             {
                 Title = preview2,
 
-                // Title = firstLine + preview,
-
-                // Subtitle = preview,
-                Details = new Details { Title = GetDataType(), Body = $"```text\n{Content}\n```" },
+                Details = new Details
+                {
+                    Title = GetDataType(),
+                    Body = $"```text\n{Content}\n```",
+                    Metadata = metadata.ToArray(),
+                },
                 MoreCommands = [
                                 new CommandContextItem(new PasteCommand(this, ClipboardFormat.Text)),
                             ],
