@@ -55,48 +55,6 @@ public sealed partial class CommandBar : UserControl,
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
-    private void CommandListViewItem_KeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (e.Handled)
-        {
-            return;
-        }
-
-        if (sender is not ListViewItem listItem)
-        {
-            return;
-        }
-
-        if (listItem.DataContext is CommandContextItemViewModel item)
-        {
-            if (e.Key == VirtualKey.Enter)
-            {
-                ViewModel?.InvokeItemCommand.Execute(item);
-                MoreCommandsButton.Flyout.Hide();
-                e.Handled = true;
-            }
-        }
-    }
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
-    private void CommandListViewItem_Tapped(object sender, TappedRoutedEventArgs e)
-    {
-        MoreCommandsButton.Flyout.Hide();
-
-        if (sender is not ListViewItem listItem)
-        {
-            return;
-        }
-
-        if (listItem.DataContext is CommandContextItemViewModel item)
-        {
-            ViewModel?.InvokeItemCommand.Execute(item);
-            MoreCommandsButton.Flyout.Hide();
-            e.Handled = true;
-        }
-    }
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
     private void PrimaryButton_Tapped(object sender, TappedRoutedEventArgs e) =>
         WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
 
@@ -118,5 +76,14 @@ public sealed partial class CommandBar : UserControl,
     {
         WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
         e.Handled = true;
+    }
+
+    private void CommandsDropdown_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is CommandContextItemViewModel item)
+        {
+            ViewModel?.InvokeItemCommand.Execute(item);
+            MoreCommandsButton.Flyout.Hide();
+        }
     }
 }

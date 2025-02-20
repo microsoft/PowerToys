@@ -26,6 +26,7 @@
                 TrueValue="Collapsed" />
 
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
+            <cmdpalUI:KeyChordToStringConverter x:Key="KeyChordToStringConverter" />
 
             <StackLayout
                 x:Name="VerticalStackLayout"
@@ -34,24 +35,32 @@
 
             <!--  Template for actions in the mode actions dropdown button  -->
             <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
-                <ListViewItem KeyDown="CommandListViewItem_KeyDown" Tapped="CommandListViewItem_Tapped">
-                    <Grid ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="20" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <cpcontrols:IconBox
-                            Grid.Column="0"
-                            Width="16"
-                            Height="16"
-                            Margin="0,0,0,0"
-                            SourceKey="{x:Bind Icon, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-
-                        <TextBlock Grid.Column="1" Text="{x:Bind Title, Mode=OneWay}" />
-                    </Grid>
-                </ListViewItem>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <cpcontrols:IconBox
+                        Width="16"
+                        Height="16"
+                        Margin="4,0,0,0"
+                        HorizontalAlignment="Left"
+                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Title, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Margin="16,0,0,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                </Grid>
             </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -226,9 +235,19 @@
                     <Flyout Placement="TopEdgeAlignedRight">
                         <ListView
                             x:Name="CommandsDropdown"
-                            Margin="-12"
+                            MinWidth="248"
+                            Margin="-16,-12,-16,-12"
+                            IsItemClickEnabled="True"
+                            ItemClick="CommandsDropdown_ItemClick"
                             ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
-                            ItemsSource="{x:Bind ViewModel.ContextCommands, Mode=OneWay}">
+                            ItemsSource="{x:Bind ViewModel.ContextCommands, Mode=OneWay}"
+                            SelectionMode="None">
+                            <ListView.ItemContainerStyle>
+                                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                    <Setter Property="MinHeight" Value="0" />
+                                    <Setter Property="Padding" Value="12,7,12,7" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
                             <ListView.ItemContainerTransitions>
                                 <TransitionCollection />
                             </ListView.ItemContainerTransitions>
