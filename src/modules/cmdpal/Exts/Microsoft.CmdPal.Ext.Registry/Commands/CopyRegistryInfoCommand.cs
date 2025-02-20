@@ -44,6 +44,6 @@ internal sealed partial class CopyRegistryInfoCommand : InvokableCommand
     {
         ClipboardHelper.SetText(_stringToCopy);
 
-        return CommandResult.KeepOpen();
+        return CommandResult.Dismiss();
     }
 }
