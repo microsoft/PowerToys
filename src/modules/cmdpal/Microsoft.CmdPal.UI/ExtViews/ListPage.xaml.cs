@@ -9,13 +9,11 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.CmdPal.UI;
 
-/// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
-/// </summary>
 public sealed partial class ListPage : Page,
     IRecipient<NavigateNextCommand>,
     IRecipient<NavigatePreviousCommand>,
@@ -74,7 +72,7 @@ public sealed partial class ListPage : Page,
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
-    private void ListView_ItemClick(object sender, ItemClickEventArgs e)
+    private void ItemsList_ItemClick(object sender, ItemClickEventArgs e)
     {
         if (e.ClickedItem is ListItemViewModel item)
         {
@@ -87,6 +85,18 @@ public sealed partial class ListPage : Page,
             {
                 ViewModel?.UpdateSelectedItemCommand.Execute(item);
                 WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+            }
+        }
+    }
+
+    private void ItemsList_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        if (ItemsList.SelectedItem is ListItemViewModel vm)
+        {
+            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            if (!settings.SingleClickActivates)
+            {
+                ViewModel?.InvokeItemCommand.Execute(vm);
             }
         }
     }
@@ -124,19 +134,6 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedItem != null)
         {
             ItemsList.ScrollIntoView(ItemsList.SelectedItem);
-        }
-    }
-
-    private void ListViewItem_DoubleTapped(object sender, Microsoft.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
-    {
-        if (sender is ListViewItem viewItem &&
-            this.ItemsList.ItemFromContainer(viewItem) is ListItemViewModel vm)
-        {
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
-            if (!settings.SingleClickActivates)
-            {
-                ViewModel?.InvokeItemCommand.Execute(vm);
-            }
         }
     }
 

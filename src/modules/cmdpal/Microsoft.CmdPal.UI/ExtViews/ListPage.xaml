@@ -46,62 +46,62 @@
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
 
             <!--  TODO: collapse item if it's empty  -->
-            <ListViewItem DoubleTapped="ListViewItem_DoubleTapped" IsDoubleTapEnabled="True">
-                <Grid Padding="0,12,0,12" ColumnSpacing="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="28" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+            <Grid Padding="0,12,0,12" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="28" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-                    <cpcontrols:IconBox
-                        x:Name="IconBorder"
-                        Grid.Column="0"
-                        Width="20"
-                        Height="20"
-                        Margin="4,0,4,0"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        SourceKey="{x:Bind Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                <cpcontrols:IconBox
+                    x:Name="IconBorder"
+                    Grid.Column="0"
+                    Width="20"
+                    Height="20"
+                    Margin="4,0,4,0"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
 
-                    <StackPanel
-                        Grid.Column="1"
+                <StackPanel
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Orientation="Vertical"
+                    Spacing="1">
+                    <TextBlock
                         VerticalAlignment="Center"
-                        Orientation="Vertical"
-                        Spacing="1">
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            CharacterSpacing="12"
-                            FontSize="14"
-                            FontWeight="SemiBold"
-                            Text="{x:Bind Title, Mode=OneWay}"
-                            TextTrimming="CharacterEllipsis"
-                            TextWrapping="NoWrap" />
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind Subtitle, Mode=OneWay}"
-                            TextTrimming="CharacterEllipsis"
-                            TextWrapping="NoWrap"
-                            Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
-                    </StackPanel>
+                        CharacterSpacing="12"
+                        FontSize="14"
+                        FontWeight="SemiBold"
+                        Text="{x:Bind Title, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind Subtitle, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap"
+                        Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
+                </StackPanel>
 
-                    <ItemsRepeater
-                        Grid.Column="2"
-                        ItemTemplate="{StaticResource TagTemplate}"
-                        ItemsSource="{x:Bind Tags, Mode=OneWay}"
-                        Layout="{StaticResource HorizontalStackLayout}"
-                        Visibility="{x:Bind HasTags, Mode=OneWay}" />
-                </Grid>
-            </ListViewItem>
+                <ItemsRepeater
+                    Grid.Column="2"
+                    ItemTemplate="{StaticResource TagTemplate}"
+                    ItemsSource="{x:Bind Tags, Mode=OneWay}"
+                    Layout="{StaticResource HorizontalStackLayout}"
+                    Visibility="{x:Bind HasTags, Mode=OneWay}" />
+            </Grid>
         </DataTemplate>
     </Page.Resources>
 
     <ListView
         x:Name="ItemsList"
+        DoubleTapped="ItemsList_DoubleTapped"
+        IsDoubleTapEnabled="True"
         IsItemClickEnabled="True"
-        ItemClick="ListView_ItemClick"
+        ItemClick="ItemsList_ItemClick"
         ItemTemplate="{StaticResource ListItemViewModelTemplate}"
         ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
         SelectionChanged="ItemsList_SelectionChanged">
