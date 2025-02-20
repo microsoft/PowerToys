@@ -14,8 +14,4 @@
     <PackageReference Include="MSTest" />
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
 </Project>

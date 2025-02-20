@@ -18,6 +18,12 @@ namespace Microsoft.PowerToys.UITest
             this.by = by;
         }
 
+        public override string ToString()
+        {
+            // override ToString to return detailed debugging content provided by OpenQA.Selenium.By
+            return this.by.ToString();
+        }
+
         /// <summary>
         /// Creates a By object using the name attribute.
         /// </summary>
