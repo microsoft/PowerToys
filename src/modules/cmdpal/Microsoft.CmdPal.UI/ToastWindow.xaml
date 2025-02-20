@@ -9,6 +9,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     Title="Command Palette Toast"
     Activated="OnActivated"
+    Closed="OnClosed"
     mc:Ignorable="d">
     <!--<Window.SystemBackdrop>
         <MicaBackdrop />

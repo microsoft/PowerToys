@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Dispatching;
@@ -18,7 +20,8 @@ using WinRT;
 
 namespace Microsoft.CmdPal.UI;
 
-public sealed partial class ToastWindow : Window
+public sealed partial class ToastWindow : Window,
+    IRecipient<QuitMessage>
 {
     private readonly HWND _hwnd;
 
@@ -42,6 +45,8 @@ public sealed partial class ToastWindow : Window
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
         PInvoke.EnableWindow(_hwnd, false);
+
+        WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
         SetAcrylic();
         ToastText.ActualThemeChanged += (s, e) => UpdateAcrylic();
@@ -90,6 +95,13 @@ public sealed partial class ToastWindow : Window
                 immediate: false);
         });
     }
+
+    public void Receive(QuitMessage message) =>
+        Close();
+
+    ////// Literally everything below here is for acrylic //////
+
+    internal void OnClosed(object sender, WindowEventArgs args) => DisposeAcrylic();
 
     // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
     // other Shell surfaces are using, this cannot be set in XAML however.
