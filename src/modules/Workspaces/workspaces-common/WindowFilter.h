@@ -64,7 +64,7 @@ namespace WindowFilter
     }
 
     // the FilterAdditional() filter method is similar to the Filter() method (above). It does not filter out the popup styled windows
-    // as some packaged apps in minimized state have the same style poperties and are filtered out, which end up in not being snapshotted
+    // as some packaged apps in minimized state have the same style properties and are filtered out, which end up in not being snapshotted
     inline bool FilterAdditional(HWND window)
     {
         auto style = GetWindowLong(window, GWL_STYLE);
