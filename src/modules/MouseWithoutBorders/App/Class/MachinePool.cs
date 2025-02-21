@@ -12,6 +12,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
+using MouseWithoutBorders.Core;
+
 namespace MouseWithoutBorders.Class
 {
     /// <summary>
@@ -113,10 +115,10 @@ namespace MouseWithoutBorders.Class
                             {
                                 Name = list[i].Name,
                                 Id = list[i].Id,
-                                Time = list[i].Time > Common.GetTick() - Common.HEARTBEAT_TIMEOUT + 10000 ? Common.GetTick() - Common.HEARTBEAT_TIMEOUT + 10000 : list[i].Time,
+                                Time = list[i].Time > Common.GetTick() - MachineStuff.HEARTBEAT_TIMEOUT + 10000 ? Common.GetTick() - MachineStuff.HEARTBEAT_TIMEOUT + 10000 : list[i].Time,
                             };
 
-                        foundAndTimedOut = list[i].Time < Common.GetTick() - Common.HEARTBEAT_TIMEOUT + 10000 - 5000;
+                        foundAndTimedOut = list[i].Time < Common.GetTick() - MachineStuff.HEARTBEAT_TIMEOUT + 10000 - 5000;
                     }
                 }
 
@@ -157,7 +159,7 @@ namespace MouseWithoutBorders.Class
                     }
                     else if (list.Count >= 4)
                     {
-                        throw new ArgumentException($"The number of machines exceeded the maximum allowed limit of {Common.MAX_MACHINE}. Actual count: {list.Count}.");
+                        throw new ArgumentException($"The number of machines exceeded the maximum allowed limit of {MachineStuff.MAX_MACHINE}. Actual count: {list.Count}.");
                     }
 
                     _ = LearnMachine(name);
@@ -179,7 +181,7 @@ namespace MouseWithoutBorders.Class
                     }
                     else if (list.Count >= 4)
                     {
-                        throw new ArgumentException($"The number of machines exceeded the maximum allowed limit of {Common.MAX_MACHINE}. Actual count: {list.Count}.");
+                        throw new ArgumentException($"The number of machines exceeded the maximum allowed limit of {MachineStuff.MAX_MACHINE}. Actual count: {list.Count}.");
                     }
 
                     _ = LearnMachine(inf.Name);
@@ -212,13 +214,13 @@ namespace MouseWithoutBorders.Class
                     }
                 }
 
-                if (list.Count >= Common.MAX_MACHINE)
+                if (list.Count >= MachineStuff.MAX_MACHINE)
                 {
                     int slotFound = -1;
 
                     for (int i = 0; i < list.Count; i++)
                     {
-                        if (!Common.InMachineMatrix(list[i].Name))
+                        if (!MachineStuff.InMachineMatrix(list[i].Name))
                         {
                             slotFound = i;
                             break;
@@ -289,7 +291,7 @@ namespace MouseWithoutBorders.Class
                 List<MachineInf> machinePool = ListAllMachines();
                 string rv = string.Join(",", machinePool.Select(m => $"{m.Name}:{m.Id}"));
 
-                for (int j = machinePool.Count; j < Common.MAX_MACHINE; j++)
+                for (int j = machinePool.Count; j < MachineStuff.MAX_MACHINE; j++)
                 {
                     rv += ",:";
                 }
@@ -301,7 +303,7 @@ namespace MouseWithoutBorders.Class
         /// <param name="clockSkewInMS_forTesting">When doing unit tests it's nice to be able to fudge with the clock time, adding milliseconds, instead of sleeping.</param>
         internal static bool IsAlive(MachineInf inf, int clockSkewInMS_forTesting = 0)
         {
-            return inf.Id != ID.NONE && (Common.GetTick() + clockSkewInMS_forTesting - inf.Time <= Common.HEARTBEAT_TIMEOUT || Common.IsConnectedTo(inf.Id));
+            return inf.Id != ID.NONE && (Common.GetTick() + clockSkewInMS_forTesting - inf.Time <= MachineStuff.HEARTBEAT_TIMEOUT || Common.IsConnectedTo(inf.Id));
         }
 
         private static bool NamesAreEqual(string name1, string name2)
@@ -326,7 +328,7 @@ namespace MouseWithoutBorders.Class
                         continue;
                     }
 
-                    if ((firstLoaded && !Common.InMachineMatrix(list[i].Name)) || (!firstLoaded && (!Common.InMachineMatrix(list[i].Name) || !IsAlive(list[i]))))
+                    if ((firstLoaded && !MachineStuff.InMachineMatrix(list[i].Name)) || (!firstLoaded && (!MachineStuff.InMachineMatrix(list[i].Name) || !IsAlive(list[i]))))
                     {
                         list[i] =
                             new MachineInf

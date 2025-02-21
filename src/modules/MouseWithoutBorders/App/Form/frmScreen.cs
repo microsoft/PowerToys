@@ -171,7 +171,7 @@ namespace MouseWithoutBorders
         internal void MenuOnClick(object sender, EventArgs e)
         {
             string name = (sender as ToolStripMenuItem).Text;
-            Common.SwitchToMachine(name);
+            MachineStuff.SwitchToMachine(name);
         }
 
         internal void UpdateMenu()
@@ -199,11 +199,11 @@ namespace MouseWithoutBorders
                         menuGetScreenCapture.DropDown.Items.Count - 1]);
                 }
 
-                for (int i = 0; i < Common.MAX_MACHINE; i++)
+                for (int i = 0; i < MachineStuff.MAX_MACHINE; i++)
                 {
-                    string newMachine = Common.MachineMatrix[i].Trim();
+                    string newMachine = MachineStuff.MachineMatrix[i].Trim();
 
-                    if (Common.MachinePool.TryFindMachineByName(newMachine, out MachineInf inf) && MachinePool.IsAlive(inf))
+                    if (MachineStuff.MachinePool.TryFindMachineByName(newMachine, out MachineInf inf) && MachinePool.IsAlive(inf))
                     {
                         ToolStripMenuItem newItem = new(
                             newMachine,
@@ -372,14 +372,14 @@ namespace MouseWithoutBorders
                                 Common.MyKey = Setting.Values.MyKey;
                             }
 
-                            Common.UpdateMachinePoolStringSetting();
+                            MachineStuff.UpdateMachinePoolStringSetting();
 
                             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && (Setting.Values.FirstRun || Common.KeyCorrupted))
                             {
                                 if (!shownSetupFormOneTime)
                                 {
                                     shownSetupFormOneTime = true;
-                                    Common.ShowMachineMatrix();
+                                    MachineStuff.ShowMachineMatrix();
 
                                     if (Common.KeyCorrupted && !Setting.Values.FirstRun)
                                     {
@@ -439,7 +439,7 @@ namespace MouseWithoutBorders
                                     Common.GetMachineName();
                                     Logger.LogDebug("Common.pleaseReopenSocket: " + Common.PleaseReopenSocket.ToString(CultureInfo.InvariantCulture));
                                     Common.ReopenSockets(false);
-                                    Common.NewDesMachineID = Common.DesMachineID = Common.MachineID;
+                                    MachineStuff.NewDesMachineID = Common.DesMachineID = Common.MachineID;
                                 }
                             }
                             else
@@ -457,7 +457,7 @@ namespace MouseWithoutBorders
                         {
                             Common.PleaseReopenSocket = 0;
                             Thread.Sleep(1000);
-                            Common.UpdateClientSockets("REOPEN_WHEN_WSAECONNRESET");
+                            MachineStuff.UpdateClientSockets("REOPEN_WHEN_WSAECONNRESET");
                         }
 
                         if (Common.RunOnLogonDesktop)
@@ -496,7 +496,7 @@ namespace MouseWithoutBorders
 
                             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                             {
-                                Common.ShowMachineMatrix();
+                                MachineStuff.ShowMachineMatrix();
 
                                 Common.MatrixForm?.UpdateKeyTextBox();
 
@@ -511,7 +511,7 @@ namespace MouseWithoutBorders
 
                             if (myKeyDaysToExpire <= 0)
                             {
-                                Common.ShowMachineMatrix();
+                                MachineStuff.ShowMachineMatrix();
 
                                 Common.Sk?.Close(false);
 
@@ -532,7 +532,7 @@ namespace MouseWithoutBorders
                     // if (Common.RunOnLogonDesktop) ShowMouseWithoutBordersUiOnWinLogonDesktop(false);
 #endif
                     Common.CheckForDesktopSwitchEvent(true);
-                    Common.UpdateClientSockets("helperTimer_Tick"); // Sockets may be closed by the remote host when both machines switch desktop at the same time.
+                    MachineStuff.UpdateClientSockets("helperTimer_Tick"); // Sockets may be closed by the remote host when both machines switch desktop at the same time.
                 }
 
                 count++;
@@ -553,11 +553,11 @@ namespace MouseWithoutBorders
                         Logger.LogAll();
 
                         // Need to review this code on why it is needed (moved from MoveToMyNeighbourIfNeeded(...))
-                        for (int i = 0; i < Common.MachineMatrix.Length; i++)
+                        for (int i = 0; i < MachineStuff.MachineMatrix.Length; i++)
                         {
-                            if (string.IsNullOrEmpty(Common.MachineMatrix[i]) && !Common.InMachineMatrix(Common.MachineName))
+                            if (string.IsNullOrEmpty(MachineStuff.MachineMatrix[i]) && !MachineStuff.InMachineMatrix(Common.MachineName))
                             {
-                                Common.MachineMatrix[i] = Common.MachineName;
+                                MachineStuff.MachineMatrix[i] = Common.MachineName;
                             }
                         }
 
@@ -567,7 +567,7 @@ namespace MouseWithoutBorders
                             if (Setting.Values.BlockScreenSaver || count % 3000 == 0)
                             {
                                 Common.SendAwakeBeat();
-                                Common.RemoveDeadMachines();
+                                MachineStuff.RemoveDeadMachines();
 
                                 // GC.Collect();
                                 // GC.WaitForPendingFinalizers();
@@ -601,12 +601,12 @@ namespace MouseWithoutBorders
 
         private void MenuMachineMatrix_Click(object sender, EventArgs e)
         {
-            Common.ShowMachineMatrix();
+            MachineStuff.ShowMachineMatrix();
         }
 
         private void FrmScreen_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!Common.IsDropping)
+            if (!Core.DragDrop.IsDropping)
             {
                 if (Cursor != dotCur)
                 {
@@ -702,7 +702,7 @@ namespace MouseWithoutBorders
         internal void MenuAllPC_Click(object sender, EventArgs e)
         {
             Logger.LogDebug("menuAllPC_Click");
-            Common.SwitchToMultipleMode(MenuAllPC.Checked, true);
+            MachineStuff.SwitchToMultipleMode(MenuAllPC.Checked, true);
             CurIcon = MenuAllPC.Checked ? Common.ICON_ALL : Common.ICON_ONE;
             ChangeIcon(CurIcon);
         }
@@ -711,7 +711,7 @@ namespace MouseWithoutBorders
         {
             Common.DoSomethingInUIThread(() =>
             {
-                MenuAllPC.Checked = Common.NewDesMachineID == ID.ALL;
+                MenuAllPC.Checked = MachineStuff.NewDesMachineID == ID.ALL;
                 CurIcon = MenuAllPC.Checked ? Common.ICON_ALL : Common.ICON_ONE;
                 ChangeIcon(CurIcon);
             });
@@ -819,7 +819,7 @@ namespace MouseWithoutBorders
 
                 case NativeMethods.WM_CHECK_EXPLORER_DRAG_DROP:
                     Logger.LogDebug("Got WM_CHECK_EXPLORER_DRAG_DROP!");
-                    Common.DragDropStep04();
+                    Core.DragDrop.DragDropStep04();
                     break;
 
                 case NativeMethods.WM_QUIT:
@@ -841,7 +841,7 @@ namespace MouseWithoutBorders
                 case NativeMethods.WM_SHOW_SETTINGS_FORM:
                     if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                     {
-                        Common.ShowMachineMatrix();
+                        MachineStuff.ShowMachineMatrix();
                     }
 
                     break;
@@ -856,7 +856,7 @@ namespace MouseWithoutBorders
         {
             if (e.Button == MouseButtons.Left)
             {
-                Common.ShowMachineMatrix();
+                MachineStuff.ShowMachineMatrix();
             }
         }
 
@@ -872,7 +872,7 @@ namespace MouseWithoutBorders
 
         internal void UpdateNotifyIcon()
         {
-            string[] x = Common.MachineMatrix;
+            string[] x = MachineStuff.MachineMatrix;
             string iconText;
             if (x != null && (x[0].Length > 0 || x[1].Length > 0 || x[2].Length > 0 || x[3].Length > 0))
             {
@@ -943,13 +943,13 @@ namespace MouseWithoutBorders
             string menuCaption = (sender as ToolStripMenuItem).Text;
 
             // Send CaptureScreenCommand
-            ID des = menuCaption.Equals("All", StringComparison.OrdinalIgnoreCase) ? ID.ALL : Common.IdFromName(menuCaption);
+            ID des = menuCaption.Equals("All", StringComparison.OrdinalIgnoreCase) ? ID.ALL : MachineStuff.IdFromName(menuCaption);
             Common.SendPackage(des, PackageType.CaptureScreenCommand);
         }
 
         private void FrmScreen_Shown(object sender, EventArgs e)
         {
-            Common.AssertOneInstancePerDesktopSession();
+            MachineStuff.AssertOneInstancePerDesktopSession();
 
             Common.MainForm = this;
             Hide();
@@ -1057,11 +1057,11 @@ namespace MouseWithoutBorders
                 r.Right = Common.ScreenWidth - (Common.ScreenWidth / 5);
                 r.Bottom = 20;
 
-                for (int i = 0; i < Common.MAX_MACHINE; i++)
+                for (int i = 0; i < MachineStuff.MAX_MACHINE; i++)
                 {
-                    string newMachine = Common.MachineMatrix[i].Trim();
+                    string newMachine = MachineStuff.MachineMatrix[i].Trim();
 
-                    if (Common.MachinePool.TryFindMachineByName(newMachine, out MachineInf inf) && MachinePool.IsAlive(inf))
+                    if (MachineStuff.MachinePool.TryFindMachineByName(newMachine, out MachineInf inf) && MachinePool.IsAlive(inf))
                     {
                         machineMatrix += "[" + inf.Name.Trim() + "]";
                     }
