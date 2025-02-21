@@ -14,6 +14,11 @@
 #include <WindowProperties/WorkspacesWindowPropertyUtils.h>
 #include <WorkspacesLib/PwaHelper.h>
 
+namespace NonLocalizable
+{
+    const std::wstring ApplicationFrameHost = L"ApplicationFrameHost.exe";
+}
+
 namespace PlacementHelper
 {
     // When calculating the coordinates difference (== 'distance') between 2 windows, there are additional values added to the real distance
@@ -170,6 +175,24 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 
         DWORD pid{};
         GetWindowThreadProcessId(window, &pid);
+        std::wstring title = WindowUtils::GetWindowTitle(window);
+
+        // fix for the packaged apps that are not caught when minimized, e.g. Settings, Microsoft ToDo, ...
+        if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))
+        {
+            for (auto otherWindow : m_windowsBeforeAdditional)
+            {
+                DWORD otherPid{};
+                GetWindowThreadProcessId(otherWindow, &otherPid);
+
+                // searching for the window with the same title but different PID
+                if (pid != otherPid && title == WindowUtils::GetWindowTitle(otherWindow))
+                {
+                    processPath = get_process_path(otherPid);
+                    break;
+                }
+            }
+        }
 
         auto data = Utils::Apps::GetApp(processPath, pid, m_installedApps);
         if (!data.has_value())
@@ -237,6 +260,7 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     m_project(project),
     m_windowsBefore(WindowEnumerator::Enumerate(WindowFilter::Filter)),
+    m_windowsBeforeAdditional(WindowEnumerator::Enumerate(WindowFilter::FilterAdditional)),
     m_monitors(MonitorUtils::IdentifyMonitors()),
     m_installedApps(Utils::Apps::GetAppsList()),
     m_ipcHelper(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, std::bind(&WindowArranger::receiveIpcMessage, this, std::placeholders::_1)),

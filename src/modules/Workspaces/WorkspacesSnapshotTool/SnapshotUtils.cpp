@@ -49,6 +49,7 @@ namespace SnapshotUtils
 
         auto installedApps = Utils::Apps::GetAppsList();
         auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
+        auto additionalWindows = WindowEnumerator::Enumerate(WindowFilter::FilterAdditional);
 
         for (const auto window : windows)
         {
@@ -93,12 +94,10 @@ namespace SnapshotUtils
                 continue;
             }
 
-            // fix for the packaged apps that are not caught when minimized, e.g., Settings.
+            // fix for the packaged apps that are not caught when minimized, e.g. Settings, Microsoft ToDo, ...
             if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))
             {
-                auto minWindows = WindowEnumerator::Enumerate(WindowFilter::FilterMin);
-
-                for (auto otherWindow : minWindows)
+                for (auto otherWindow : additionalWindows)
                 {
                     DWORD otherPid{};
                     GetWindowThreadProcessId(otherWindow, &otherPid);
