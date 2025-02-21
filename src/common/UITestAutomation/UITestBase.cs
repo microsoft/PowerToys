@@ -38,6 +38,34 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Finds an element by selector.
+        /// Shortcut for this.Session.Find<T>(by, timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="by">The selector to find the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>The found element.</returns>
+        protected T Find<T>(By by, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.Session.Find<T>(by, timeoutMS);
+        }
+
+        /// <summary>
+        /// Finds all elements by selector.
+        /// Shortcut for this.Session.FindAll<T>(by, timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the elements, should be Element or its derived class.</typeparam>
+        /// <param name="by">The selector to find the elements.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>A read-only collection of the found elements.</returns>
+        protected ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.Session.FindAll<T>(by, timeoutMS);
+        }
+
+        /// <summary>
         /// Nested class for test initialization.
         /// </summary>
         private sealed class TestInit

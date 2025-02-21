@@ -28,14 +28,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "runner", "src\runner\runner
 		{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99} = {F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{4574FDD0-F61D-4376-98BF-E5A1262C11EC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{4574FDD0-F61D-4376-98BF-E5A1262C11EC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interface", "interface", "{3BB8493E-D18E-4485-A320-CB40F90F55AE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interface", "Interface", "{3BB8493E-D18E-4485-A320-CB40F90F55AE}"
 	ProjectSection(SolutionItems) = preProject
 		src\modules\interface\powertoy_module_interface.h = src\modules\interface\powertoy_module_interface.h
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fancyzones", "fancyzones", "{D1D6BC88-09AE-4FB4-AD24-5DED46A791DD}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FancyZones", "FancyZones", "{D1D6BC88-09AE-4FB4-AD24-5DED46A791DD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FancyZonesLib", "src\modules\fancyzones\FancyZonesLib\FancyZonesLib.vcxproj", "{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99}"
 EndProject
@@ -44,13 +44,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests-FancyZones", "src
 		{F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99} = {F9C68EDF-AC74-4B77-9AF1-005D9C9F6A99}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{1AFB6476-670D-4E80-A464-657E01DFF482}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{1AFB6476-670D-4E80-A464-657E01DFF482}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTests-CommonLib", "src\common\UnitTests-CommonLib\UnitTests-CommonLib.vcxproj", "{1A066C63-64B3-45F8-92FE-664E1CCE8077}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FancyZonesEditor", "src\modules\fancyzones\editor\FancyZonesEditor\FancyZonesEditor.csproj", "{5CCC8468-DEC8-4D36-99D4-5C891BEBD481}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "powerrename", "powerrename", "{89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PowerRename", "PowerRename", "{89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRenameExt", "src\modules\powerrename\dll\PowerRenameExt.vcxproj", "{B25AC7A5-FB9F-4789-B392-D5C85E948670}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -74,7 +74,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ModuleTemplateCompileTest",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManager", "src\modules\keyboardmanager\dll\KeyboardManager.vcxproj", "{89F34AF7-1C34-4A72-AA6E-534BCF972BD9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "imageresizer", "imageresizer", "{6C7F47CC-2151-44A3-A546-41C70025132C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ImageResizer", "ImageResizer", "{6C7F47CC-2151-44A3-A546-41C70025132C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageResizerUI", "src\modules\imageresizer\ui\ImageResizerUI.csproj", "{2BE46397-4DFA-414C-9BD4-41E4BBF8CB34}"
 EndProject
@@ -89,7 +89,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToys.ActionRunner", "s
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ApplicationUpdate", "src\common\updating\updating.vcxproj", "{17DA04DF-E393-4397-9CF0-84DABE11032E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "keyboardmanager", "keyboardmanager", "{38BDB927-829B-4C65-9CD9-93FB05D66D65}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "KeyboardManager", "KeyboardManager", "{38BDB927-829B-4C65-9CD9-93FB05D66D65}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerCommon", "src\modules\keyboardmanager\common\KeyboardManagerCommon.vcxproj", "{8AFFA899-0B73-49EC-8C50-0FADDA57B2FC}"
 EndProject
@@ -146,7 +146,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerLauncher", "src\module
 		{FDB3555B-58EF-4AE6-B5F1-904719637AB4} = {FDB3555B-58EF-4AE6-B5F1-904719637AB4}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "previewpane", "previewpane", "{2F305555-C296-497E-AC20-5FA1B237996A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PreviewPane", "PreviewPane", "{2F305555-C296-497E-AC20-5FA1B237996A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PreviewHandlerCommon", "src\modules\previewpane\Common\PreviewHandlerCommon.csproj", "{AF2349B8-E5B6-4004-9502-687C1C7730B1}"
 EndProject
@@ -165,7 +165,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "powerpreview", "src\modules
 		{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF} = {CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "settings-ui", "settings-ui", "{C3081D9A-1586-441A-B5F4-ED815B3719C1}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SettingsUI", "SettingsUI", "{C3081D9A-1586-441A-B5F4-ED815B3719C1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4981CCD1-4CD9-4A49-B240-00AA46493FF8}"
 	ProjectSection(SolutionItems) = preProject
@@ -206,7 +206,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ColorPicker", "src\modules\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ColorPickerUI", "src\modules\colorPicker\ColorPickerUI\ColorPickerUI.csproj", "{BA58206B-1493-4C75-BFEA-A85768A1E156}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "colorpicker", "colorpicker", "{1D78B84B-CA39-406C-98F4-71F7EC266CC0}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ColorPicker", "ColorPicker", "{1D78B84B-CA39-406C-98F4-71F7EC266CC0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Plugin.Uri", "src\modules\launcher\Plugins\Microsoft.Plugin.Uri\Microsoft.Plugin.Uri.csproj", "{03276A39-D4E9-417C-8FFD-200B0EE5E871}"
 EndProject
@@ -237,7 +237,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SettingsAPI", "src\common\S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Interop.Tests", "src\common\interop\interop-tests\Microsoft.Interop.Tests.csproj", "{58736667-1027-4AD7-BFDF-7A3A6474103A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "notifications", "notifications", "{D92131D6-7610-4D60-A7DB-1C169783F83B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notifications", "Notifications", "{D92131D6-7610-4D60-A7DB-1C169783F83B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Notifications", "src\common\notifications\notifications.vcxproj", "{1D5BE09D-78C0-4FD7-AF00-AE7C1AF7C525}"
 EndProject
@@ -250,9 +250,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BackgroundActivator", "src\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Version", "src\common\version\version.vcxproj", "{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interop", "interop", "{5A7818A8-109C-4E1C-850D-1A654E234B0E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interop", "Interop", "{5A7818A8-109C-4E1C-850D-1A654E234B0E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "log", "log", "{E4E03FE0-94FD-47C7-88C5-F17D0AA549D3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Log", "Log", "{E4E03FE0-94FD-47C7-88C5-F17D0AA549D3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "COMUtils", "src\common\COMUtils\COMUtils.vcxproj", "{7319089E-46D6-4400-BC65-E39BDF1416EE}"
 EndProject
@@ -260,7 +260,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Display", "src\common\Displ
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Themes", "src\common\Themes\Themes.vcxproj", "{98537082-0FDB-40DE-ABD8-0DC5A4269BAB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utils", "utils", "{B39DC643-4663-475E-B329-03F0C9918D48}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utils", "Utils", "{B39DC643-4663-475E-B329-03F0C9918D48}"
 	ProjectSection(SolutionItems) = preProject
 		src\common\utils\appMutex.h = src\common\utils\appMutex.h
 		src\common\utils\color.h = src\common\utils\color.h
@@ -325,7 +325,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorLibrar
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorTest", "src\modules\keyboardmanager\KeyboardManagerEditorTest\KeyboardManagerEditorTest.vcxproj", "{62173D9A-6724-4C00-A1C8-FB646480A9EC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "awake", "awake", "{127F38E0-40AA-4594-B955-5616BF206882}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Awake", "Awake", "{127F38E0-40AA-4594-B955-5616BF206882}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AwakeModuleInterface", "src\modules\awake\AwakeModuleInterface\AwakeModuleInterface.vcxproj", "{5E7360A8-D048-4ED3-8F09-0BFD64C5529A}"
 EndProject
@@ -335,7 +335,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Community.PowerToys.Run.Plugin.UnitConverter.UnitTest", "src\modules\launcher\Plugins\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest\Community.PowerToys.Run.Plugin.UnitConverter.UnitTest.csproj", "{3E424AD2-19E5-4AE6-B833-F53963EB5FC1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shortcutguide", "shortcutguide", "{106CBECA-0701-4FC3-838C-9DF816A19AE2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ShortcutGuide", "ShortcutGuide", "{106CBECA-0701-4FC3-838C-9DF816A19AE2}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShortcutGuideModuleInterface", "src\modules\ShortcutGuide\ShortcutGuideModuleInterface\ShortcutGuideModuleInterface.vcxproj", "{2D604C07-51FC-46BB-9EB7-75AECC7F5E81}"
 EndProject
@@ -528,7 +528,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CropAndLock", "src\modules\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CropAndLockModuleInterface", "src\modules\CropAndLock\CropAndLockModuleInterface\CropAndLockModuleInterface.vcxproj", "{3157FA75-86CF-4EE2-8F62-C43F776493C6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cmdNotFound", "cmdNotFound", "{4C0D0746-BE5B-49EE-BD5D-A7811628AE8B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CmdNotFound", "CmdNotFound", "{4C0D0746-BE5B-49EE-BD5D-A7811628AE8B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests-FancyZonesEditor", "src\modules\fancyzones\UnitTests-FancyZonesEditor\UnitTests-FancyZonesEditor.csproj", "{FC8EB78F-F061-4BD9-A3F6-507BEA965E2B}"
 EndProject
@@ -643,6 +643,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KeyboardManagerEditorLibraryWrapper", "src\modules\keyboardmanager\KeyboardManagerEditorLibraryWrapper\KeyboardManagerEditorLibraryWrapper.vcxproj", "{4382A954-179A-4078-92AF-715187DFFF50}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hosts.FuzzTests", "src\modules\Hosts\Hosts.FuzzTests\Hosts.FuzzTests.csproj", "{EBED240C-8702-452D-B764-6DB9DA9179AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hosts.UITests", "src\modules\Hosts\Hosts.UITests\Hosts.UITests.csproj", "{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2252,20 +2254,14 @@ Global
 		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Release|ARM64.Build.0 = Release|ARM64
 		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Release|x64.ActiveCfg = Release|x64
 		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Release|x64.Build.0 = Release|x64
-		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Release|x86.ActiveCfg = Release|x64
-		{CA7D8106-30B9-4AEC-9D05-B69B31B8C461}.Release|x86.Build.0 = Release|x64
 		{A558C25D-2007-498E-8B6F-43405AFAE9E2}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{A558C25D-2007-498E-8B6F-43405AFAE9E2}.Debug|ARM64.Build.0 = Debug|ARM64
 		{A558C25D-2007-498E-8B6F-43405AFAE9E2}.Debug|x64.ActiveCfg = Debug|x64
 		{A558C25D-2007-498E-8B6F-43405AFAE9E2}.Debug|x64.Build.0 = Debug|x64
-		{A558C25D-2007-498E-8B6F-43405AFAE9E2}.Debug|x86.ActiveCfg = Debug|x64
-		{A558C25D-2007-498E-8B6F-43405AFAE9E2}.Debug|x86.Build.0 = Debug|x64
 		{A558C25D-2007-498E-8B6F-43405AFAE9E2}.Release|ARM64.ActiveCfg = Release|ARM64
 		{A558C25D-2007-498E-8B6F-43405AFAE9E2}.Release|ARM64.Build.0 = Release|ARM64
 		{A558C25D-2007-498E-8B6F-43405AFAE9E2}.Release|x64.ActiveCfg = Release|x64
 		{A558C25D-2007-498E-8B6F-43405AFAE9E2}.Release|x64.Build.0 = Release|x64
-		{A558C25D-2007-498E-8B6F-43405AFAE9E2}.Release|x86.ActiveCfg = Release|x64
-		{A558C25D-2007-498E-8B6F-43405AFAE9E2}.Release|x86.Build.0 = Release|x64
 		{08F9155D-B6DC-46E5-9C83-AF60B655898B}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{08F9155D-B6DC-46E5-9C83-AF60B655898B}.Debug|ARM64.Build.0 = Debug|ARM64
 		{08F9155D-B6DC-46E5-9C83-AF60B655898B}.Debug|x64.ActiveCfg = Debug|x64
@@ -2290,6 +2286,14 @@ Global
 		{EBED240C-8702-452D-B764-6DB9DA9179AF}.Release|ARM64.Build.0 = Release|ARM64
 		{EBED240C-8702-452D-B764-6DB9DA9179AF}.Release|x64.ActiveCfg = Release|x64
 		{EBED240C-8702-452D-B764-6DB9DA9179AF}.Release|x64.Build.0 = Release|x64
+		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}.Debug|ARM64.Build.0 = Debug|ARM64
+		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}.Debug|x64.ActiveCfg = Debug|x64
+		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}.Debug|x64.Build.0 = Debug|x64
+		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}.Release|ARM64.ActiveCfg = Release|ARM64
+		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}.Release|ARM64.Build.0 = Release|ARM64
+		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}.Release|x64.ActiveCfg = Release|x64
+		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2529,6 +2533,7 @@ Global
 		{08F9155D-B6DC-46E5-9C83-AF60B655898B} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 		{4382A954-179A-4078-92AF-715187DFFF50} = {38BDB927-829B-4C65-9CD9-93FB05D66D65}
 		{EBED240C-8702-452D-B764-6DB9DA9179AF} = {F05E590D-AD46-42BE-9C25-6A63ADD2E3EA}
+		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0} = {F05E590D-AD46-42BE-9C25-6A63ADD2E3EA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

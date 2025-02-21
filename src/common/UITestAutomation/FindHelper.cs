@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -22,7 +23,7 @@ namespace Microsoft.PowerToys.UITest
     /// <summary>
     /// Helper class for finding elements.
     /// </summary>
-    internal static class FindElementHelper
+    internal static class FindHelper
     {
         public static T Find<T, TW>(Func<TW> findElementFunc, WindowsDriver<WindowsElement>? driver, int timeoutMS)
             where T : Element, new()
@@ -51,7 +52,12 @@ namespace Microsoft.PowerToys.UITest
             Assert.IsNotNull(element, $"New Element {typeof(T).Name} error: element is null.");
 
             T newElement = new T();
-            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromMilliseconds(timeoutMS);
+            if (timeoutMS > 0)
+            {
+                // Only set timeout if it is positive value
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromMilliseconds(timeoutMS);
+            }
+
             newElement.SetSession(driver);
             newElement.SetWindowsElement(element);
             return newElement;
