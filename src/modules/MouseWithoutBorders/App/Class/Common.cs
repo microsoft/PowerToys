@@ -101,8 +101,10 @@ namespace MouseWithoutBorders
         private static bool runOnLogonDesktop;
         private static bool runOnScrSaverDesktop;
 
-        private static int[] toggleIcons;
-        private static int toggleIconsIndex;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static int[] toggleIcons;
+        internal static int toggleIconsIndex;
+#pragma warning restore SA1307
         internal const int TOGGLE_ICONS_SIZE = 4;
         internal const int ICON_ONE = 0;
         internal const int ICON_ALL = 1;
@@ -667,7 +669,7 @@ namespace MouseWithoutBorders
         {
             Common.DoSomethingInUIThread(() =>
             {
-                if (!DragDrop.MouseDown && Common.SendMessageToHelper(0x401, IntPtr.Zero, IntPtr.Zero) > 0)
+                if (!DragDrop.MouseDown && Helper.SendMessageToHelper(0x401, IntPtr.Zero, IntPtr.Zero) > 0)
                 {
                     Common.MMSleep(0.2);
                     InputSimulation.SendKey(new KEYBDDATA() { wVk = (int)VK.SNAPSHOT });
@@ -676,14 +678,14 @@ namespace MouseWithoutBorders
                     Logger.LogDebug("PrepareScreenCapture: SNAPSHOT simulated.");
 
                     _ = NativeMethods.MoveWindow(
-                        (IntPtr)NativeMethods.FindWindow(null, Common.HELPER_FORM_TEXT),
+                        (IntPtr)NativeMethods.FindWindow(null, Helper.HELPER_FORM_TEXT),
                         MachineStuff.DesktopBounds.Left,
                         MachineStuff.DesktopBounds.Top,
                         MachineStuff.DesktopBounds.Right - MachineStuff.DesktopBounds.Left,
                         MachineStuff.DesktopBounds.Bottom - MachineStuff.DesktopBounds.Top,
                         false);
 
-                    _ = Common.SendMessageToHelper(0x406, IntPtr.Zero, IntPtr.Zero, false);
+                    _ = Helper.SendMessageToHelper(0x406, IntPtr.Zero, IntPtr.Zero, false);
                 }
                 else
                 {

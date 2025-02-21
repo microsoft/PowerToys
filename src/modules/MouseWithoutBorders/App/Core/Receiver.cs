@@ -104,7 +104,7 @@ internal static class Receiver
                     {
                         if ((package.Kd.dwFlags & (int)Common.LLKHF.UP) == (int)Common.LLKHF.UP)
                         {
-                            Common.ShowOneWayModeMessage();
+                            Helper.ShowOneWayModeMessage();
                         }
 
                         return;
@@ -133,7 +133,7 @@ internal static class Receiver
                         {
                             if (package.Md.dwFlags is Common.WM_LBUTTONDOWN or Common.WM_RBUTTONDOWN)
                             {
-                                Common.ShowOneWayModeMessage();
+                                Helper.ShowOneWayModeMessage();
                             }
                         }
                         else if (package.Md.dwFlags is Common.WM_LBUTTONUP or Common.WM_RBUTTONUP)
@@ -383,7 +383,7 @@ internal static class Receiver
             case PackageType.HideMouse:
                 Common.HasSwitchedMachineSinceLastCopy = true;
                 Common.HideMouseCursor(true);
-                Common.MainFormDotEx(false);
+                Helper.MainFormDotEx(false);
                 Common.ReleaseAllKeys();
                 break;
 

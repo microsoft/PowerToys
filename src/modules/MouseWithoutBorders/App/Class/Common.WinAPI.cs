@@ -279,7 +279,7 @@ namespace MouseWithoutBorders
             {
                 if (!IsMyDesktopActive() || Common.CurrentProcess.SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
                 {
-                    Common.RunDDHelper(true);
+                    Helper.RunDDHelper(true);
                     int waitCount = 20;
 
                     while (NativeMethods.WTSGetActiveConsoleSessionId() == 0xFFFFFFFF && waitCount > 0)

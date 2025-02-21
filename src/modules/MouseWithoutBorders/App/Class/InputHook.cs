@@ -227,7 +227,7 @@ namespace MouseWithoutBorders.Class
                         local = true;
                         if (Common.MainFormVisible && !DragDrop.IsDropping)
                         {
-                            Common.MainFormDot();
+                            Helper.MainFormDot();
                         }
                     }
 
