@@ -430,7 +430,7 @@ namespace MouseWithoutBorders.Class
                 Logger.Log(e);
             }
 
-            Common.StartMouseWithoutBordersService();
+            Service.StartMouseWithoutBordersService();
         }
 
         internal static string User { get; set; }

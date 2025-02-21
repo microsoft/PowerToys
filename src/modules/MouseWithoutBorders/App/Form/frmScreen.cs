@@ -101,7 +101,7 @@ namespace MouseWithoutBorders
             }
             else
             {
-                Common.StartServiceAndSendLogoffSignal();
+                Service.StartServiceAndSendLogoffSignal();
                 Quit(true, true);
             }
         }
@@ -831,7 +831,7 @@ namespace MouseWithoutBorders
 
                 case WM_QUERYENDSESSION:
                     Logger.LogDebug("WM_QUERYENDSESSION...");
-                    Common.StartServiceAndSendLogoffSignal();
+                    Service.StartServiceAndSendLogoffSignal();
                     break;
 
                 case WM_ENDSESSION:

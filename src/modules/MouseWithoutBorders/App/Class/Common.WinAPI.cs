@@ -269,7 +269,7 @@ namespace MouseWithoutBorders
             if (!Common.RunWithNoAdminRight)
             {
                 Logger.LogDebug("*** Starting on active Desktop: " + desktopToRunMouseWithoutBordersOn);
-                StartMouseWithoutBordersService(desktopToRunMouseWithoutBordersOn);
+                Service.StartMouseWithoutBordersService(desktopToRunMouseWithoutBordersOn);
             }
         }
 
