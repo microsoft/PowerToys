@@ -18,11 +18,11 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     public class Element
     {
-        protected WindowsElement? WindowsElement { get; private set; }
+        private WindowsElement? windowsElement;
 
         private WindowsDriver<WindowsElement>? driver;
 
-        internal void SetWindowsElement(WindowsElement windowsElement) => this.WindowsElement = windowsElement;
+        internal void SetWindowsElement(WindowsElement windowsElement) => this.windowsElement = windowsElement;
 
         internal void SetSession(WindowsDriver<WindowsElement> driver) => this.driver = driver;
 
@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public string Text
         {
-            get { return this.WindowsElement?.Text ?? string.Empty; }
+            get { return this.windowsElement?.Text ?? string.Empty; }
         }
 
         /// <summary>
@@ -47,12 +47,12 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public bool Enabled
         {
-            get { return this.WindowsElement?.Enabled ?? false; }
+            get { return this.windowsElement?.Enabled ?? false; }
         }
 
         public bool Selected
         {
-            get { return this.WindowsElement?.Selected ?? false; }
+            get { return this.windowsElement?.Selected ?? false; }
         }
 
         /// <summary>
@@ -95,6 +95,9 @@ namespace Microsoft.PowerToys.UITest
         {
             PerformAction((actions, windowElement) =>
             {
+                actions.MoveToElement(windowElement);
+                actions.MoveByOffset(2, 2);
+
                 if (rightClick)
                 {
                     actions.ContextClick();
@@ -103,6 +106,8 @@ namespace Microsoft.PowerToys.UITest
                 {
                     actions.Click();
                 }
+
+                actions.Build().Perform();
             });
         }
 
@@ -113,8 +118,8 @@ namespace Microsoft.PowerToys.UITest
         /// <returns>The value of the attribute.</returns>
         public string GetAttribute(string attributeName)
         {
-            Assert.IsNotNull(this.WindowsElement, $"WindowsElement is null in method GetAttribute with parameter: attributeName = {attributeName}");
-            var attributeValue = this.WindowsElement.GetAttribute(attributeName);
+            Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method GetAttribute with parameter: attributeName = {attributeName}");
+            var attributeValue = this.windowsElement.GetAttribute(attributeName);
             Assert.IsNotNull(attributeValue, $"Attribute '{attributeName}' is null.");
             return attributeValue;
         }
@@ -129,11 +134,11 @@ namespace Microsoft.PowerToys.UITest
         public T Find<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
-            Assert.IsNotNull(this.WindowsElement, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
+            Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
             var foundElement = FindHelper.Find<T, AppiumWebElement>(
                 () =>
                 {
-                    var element = this.WindowsElement.FindElement(by.ToSeleniumBy());
+                    var element = this.windowsElement.FindElement(by.ToSeleniumBy());
                     Assert.IsNotNull(element, $"Element not found using selector: {by}");
                     return element;
                 },
@@ -153,11 +158,11 @@ namespace Microsoft.PowerToys.UITest
         public ReadOnlyCollection<T>? FindAll<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
-            Assert.IsNotNull(this.WindowsElement, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
+            Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
             var foundElements = FindHelper.FindAll<T, AppiumWebElement>(
                 () =>
                 {
-                    var elements = this.WindowsElement.FindElements(by.ToSeleniumBy());
+                    var elements = this.windowsElement.FindElements(by.ToSeleniumBy());
                     Assert.IsTrue(elements.Count > 0, $"Elements not found using selector: {by}");
                     return elements;
                 },
@@ -180,11 +185,9 @@ namespace Microsoft.PowerToys.UITest
                 Task.Delay(msPreAction).Wait();
             }
 
-            var windowElement = this.WindowsElement!;
+            var windowElement = this.windowsElement!;
             Actions actions = new Actions(this.driver);
-            actions.MoveToElement(windowElement);
             action(actions, windowElement);
-            actions.Build().Perform();
 
             if (msPostAction > 0)
             {

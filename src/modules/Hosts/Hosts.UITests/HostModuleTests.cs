@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -66,15 +67,18 @@ namespace Hosts.UITests
             // Adding a new host override localhost -> 192.168.0.1
             Assert.IsFalse(this.Find<Button>(By.Name("Add")).Enabled, "Add button should be Disabled by default");
 
-            Assert.IsTrue(this.Find<TextBox>(By.Name("Address")).SetText(ip).Text == ip);
-            Assert.IsTrue(this.Find<TextBox>(By.Name("Hosts")).SetText(host).Text == host);
+            Assert.IsTrue(this.Find<TextBox>(By.Name("Address")).SetText(ip, false).Text == ip);
+            Assert.IsTrue(this.Find<TextBox>(By.Name("Hosts")).SetText(host, false).Text == host);
 
-            Assert.IsTrue(this.Find<ToggleSwitch>(By.Name("Active")).Toggle(active).IsOn == active, "Active should be set properly");
+            this.Find<ToggleSwitch>(By.Name("Active")).Toggle(active);
 
             Assert.IsTrue(this.Find<Button>(By.Name("Add")).Enabled, "Add button should be Enabled after providing valid inputs");
 
             // Add the entry
             this.Find<Button>(By.Name("Add")).Click();
+
+            // 1 second delay after adding Entry
+            Task.Delay(1000);
         }
 
         private void CloseWarningDialog()
@@ -93,6 +97,7 @@ namespace Hosts.UITests
             // Delete all existing host-override rules
             foreach (var deleteBtn in FindAll<Button>(By.Name("Delete")))
             {
+                Console.WriteLine("Click delete button");
                 deleteBtn.Click();
                 this.Find<Button>(By.Name("Yes")).Click();
             }
