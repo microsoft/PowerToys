@@ -263,9 +263,21 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="GeneralPage_RunAtStartUp">
+                    <tkcontrols:SettingsCard x:Uid="GeneralPage_RunAtStartUp" IsEnabled="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_SettingIsManaged"
+                        BorderThickness="0"
+                        CornerRadius="0"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay}"
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
