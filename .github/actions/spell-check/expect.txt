@@ -1691,7 +1691,6 @@ unhiding
 UNICODETEXT
 uninstaller
 uninstantiated
-uniquifier
 Uniquifies
 unitconverter
 unittests
