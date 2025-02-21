@@ -46,7 +46,7 @@ namespace MouseWithoutBorders
         internal static void UpdateMachineTimeAndID()
         {
             Common.MachineName = Common.MachineName.Trim();
-            _ = Common.MachinePool.TryUpdateMachineID(Common.MachineName, Common.MachineID, true);
+            _ = MachineStuff.MachinePool.TryUpdateMachineID(Common.MachineName, Common.MachineID, true);
         }
 
         private static void InitializeMachinePoolFromSettings()
@@ -59,13 +59,13 @@ namespace MouseWithoutBorders
                     info[i].Name = info[i].Name.Trim();
                 }
 
-                Common.MachinePool.Initialize(info);
-                Common.MachinePool.ResetIPAddressesForDeadMachines(true);
+                MachineStuff.MachinePool.Initialize(info);
+                MachineStuff.MachinePool.ResetIPAddressesForDeadMachines(true);
             }
             catch (Exception ex)
             {
                 Logger.Log(ex);
-                Common.MachinePool.Clear();
+                MachineStuff.MachinePool.Clear();
             }
         }
 
@@ -74,16 +74,16 @@ namespace MouseWithoutBorders
             try
             {
                 GetMachineName();
-                DesMachineID = NewDesMachineID = MachineID;
+                DesMachineID = MachineStuff.NewDesMachineID = MachineID;
 
                 // MessageBox.Show(machineID.ToString(CultureInfo.CurrentCulture)); // For test
                 InitializeMachinePoolFromSettings();
 
                 Common.MachineName = Common.MachineName.Trim();
-                _ = Common.MachinePool.LearnMachine(Common.MachineName);
-                _ = Common.MachinePool.TryUpdateMachineID(Common.MachineName, Common.MachineID, true);
+                _ = MachineStuff.MachinePool.LearnMachine(Common.MachineName);
+                _ = MachineStuff.MachinePool.TryUpdateMachineID(Common.MachineName, Common.MachineID, true);
 
-                Common.UpdateMachinePoolStringSetting();
+                MachineStuff.UpdateMachinePoolStringSetting();
             }
             catch (Exception e)
             {
@@ -154,7 +154,7 @@ namespace MouseWithoutBorders
             {
                 Logger.TelemetryLogTrace($"{nameof(SystemEvents_PowerModeChanged)}: {e.Mode}", SeverityLevel.Information);
                 LastResumeSuspendTime = DateTime.UtcNow;
-                SwitchToMultipleMode(false, true);
+                MachineStuff.SwitchToMultipleMode(false, true);
             }
         }
 

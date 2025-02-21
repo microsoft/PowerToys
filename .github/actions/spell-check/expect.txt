@@ -739,6 +739,7 @@ KEYBDINPUT
 keyboardeventhandlers
 keyboardmanagercommon
 KEYBOARDMANAGEREDITOR
+KEYBOARDMANAGEREDITORLIBRARYWRAPPER
 keyboardmanagerstate
 keyboardmanagerui
 KEYEVENTF
