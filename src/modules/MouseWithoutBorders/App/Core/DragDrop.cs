@@ -189,7 +189,7 @@ internal static class DragDrop
 
         if (!IsDropping)
         {
-            _ = Common.ImpersonateLoggedOnUserAndDoSomething(() =>
+            _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
             {
                 if (!string.IsNullOrEmpty(dragFileName) && (File.Exists(dragFileName) || Directory.Exists(dragFileName)))
                 {

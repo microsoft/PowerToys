@@ -310,7 +310,7 @@ namespace MouseWithoutBorders
 
             if (h.ToInt32() <= 0)
             {
-                _ = Common.CreateProcessInInputDesktopSession(
+                _ = Launch.CreateProcessInInputDesktopSession(
                     $"\"{Path.GetDirectoryName(Application.ExecutablePath)}\\{HelperProcessName}.exe\"",
                     string.Empty,
                     Common.GetInputDesktop(),
@@ -442,7 +442,7 @@ namespace MouseWithoutBorders
             {
                 if (Program.User.Contains("system", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    _ = Common.ImpersonateLoggedOnUserAndDoSomething(() =>
+                    _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                     {
                         // See: https://stackoverflow.com/questions/19487541/how-to-get-windows-user-name-from-sessionid
                         static string GetUsernameBySessionId(int sessionId)

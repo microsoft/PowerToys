@@ -12,6 +12,10 @@ using System.ServiceProcess;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using MouseWithoutBorders.Class;
+
+[module: SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Scope = "member", Target = "MouseWithoutBorders.Common.#StartMouseWithoutBordersService()", Justification = "Dotnet port with style preservation")]
+
 // <summary>
 //     Service control code.
 // </summary>
@@ -20,10 +24,6 @@ using System.Windows.Forms;
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
-using MouseWithoutBorders.Class;
-
-[module: SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Scope = "member", Target = "MouseWithoutBorders.Common.#StartMouseWithoutBordersService()", Justification = "Dotnet port with style preservation")]
-
 namespace MouseWithoutBorders.Core;
 
 internal static class Service

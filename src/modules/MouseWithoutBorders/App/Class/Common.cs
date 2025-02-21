@@ -700,7 +700,7 @@ namespace MouseWithoutBorders
             // {
             //    Process.Start("explorer", "\"" + file + "\"");
             // });
-            _ = CreateProcessInInputDesktopSession(
+            _ = Launch.CreateProcessInInputDesktopSession(
                 "\"" + Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\Mspaint.exe") +
                 "\"",
                 "\"" + file + "\"",
@@ -1316,7 +1316,7 @@ namespace MouseWithoutBorders
                 }
                 else
                 {
-                    _ = ImpersonateLoggedOnUserAndDoSomething(() =>
+                    _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                     {
                         st = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + Common.BinaryName;
                         if (!Directory.Exists(st))
