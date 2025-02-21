@@ -162,6 +162,11 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 
     for (HWND window : m_windowsBefore)
     {
+        if (WindowFilter::FilterPopup(window))
+        {
+            continue;
+        }
+
         if (std::find(movedWindows.begin(), movedWindows.end(), window) != movedWindows.end())
         {
             continue;
@@ -180,7 +185,7 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
         // fix for the packaged apps that are not caught when minimized, e.g. Settings, Microsoft ToDo, ...
         if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))
         {
-            for (auto otherWindow : m_windowsBeforeAdditional)
+            for (auto otherWindow : m_windowsBefore)
             {
                 DWORD otherPid{};
                 GetWindowThreadProcessId(otherWindow, &otherPid);
@@ -260,7 +265,6 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project) :
     m_project(project),
     m_windowsBefore(WindowEnumerator::Enumerate(WindowFilter::Filter)),
-    m_windowsBeforeAdditional(WindowEnumerator::Enumerate(WindowFilter::FilterAdditional)),
     m_monitors(MonitorUtils::IdentifyMonitors()),
     m_installedApps(Utils::Apps::GetAppsList()),
     m_ipcHelper(IPCHelperStrings::WindowArrangerPipeName, IPCHelperStrings::LauncherArrangerPipeName, std::bind(&WindowArranger::receiveIpcMessage, this, std::placeholders::_1)),

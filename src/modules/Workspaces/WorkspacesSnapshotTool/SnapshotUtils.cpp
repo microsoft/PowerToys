@@ -49,10 +49,14 @@ namespace SnapshotUtils
 
         auto installedApps = Utils::Apps::GetAppsList();
         auto windows = WindowEnumerator::Enumerate(WindowFilter::Filter);
-        auto additionalWindows = WindowEnumerator::Enumerate(WindowFilter::FilterAdditional);
 
         for (const auto window : windows)
         {
+            if (WindowFilter::FilterPopup(window))
+            {
+                continue;
+            }
+
             // filter by window rect size
             RECT rect = WindowUtils::GetWindowRect(window);
             if (rect.right - rect.left <= 0 || rect.bottom - rect.top <= 0)
@@ -97,7 +101,7 @@ namespace SnapshotUtils
             // fix for the packaged apps that are not caught when minimized, e.g. Settings, Microsoft ToDo, ...
             if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))
             {
-                for (auto otherWindow : additionalWindows)
+                for (auto otherWindow : windows)
                 {
                     DWORD otherPid{};
                     GetWindowThreadProcessId(otherWindow, &otherPid);
@@ -109,11 +113,6 @@ namespace SnapshotUtils
                         break;
                     }
                 }
-            }
-
-            if (WindowFilter::FilterPopup(window))
-            {
-                continue;
             }
 
             auto data = Utils::Apps::GetApp(processPath, pid, installedApps);

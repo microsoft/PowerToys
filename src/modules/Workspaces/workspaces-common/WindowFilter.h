@@ -62,40 +62,4 @@ namespace WindowFilter
 
         return true;
     }
-
-    // the FilterAdditional() filter method is similar to the Filter() method (above). It does not filter out the popup styled windows
-    // as some packaged apps in minimized state have the same style properties and are filtered out, which end up in not being snapshotted
-    inline bool FilterAdditional(HWND window)
-    {
-        auto style = GetWindowLong(window, GWL_STYLE);
-        auto exStyle = GetWindowLong(window, GWL_EXSTYLE);
-
-        if (!WindowUtils::HasStyle(style, WS_VISIBLE))
-        {
-            return false;
-        }
-
-        if (!IsWindowVisible(window))
-        {
-            return false;
-        }
-
-        if (WindowUtils::HasStyle(exStyle, WS_EX_TOOLWINDOW))
-        {
-            return false;
-        }
-
-        if (!WindowUtils::IsRoot(window))
-        {
-            // child windows such as buttons, combo boxes, etc.
-            return false;
-        }
-
-        if (!VirtualDesktop::instance().IsWindowOnCurrentDesktop(window))
-        {
-            return false;
-        }
-
-        return true;
-    }
 }
