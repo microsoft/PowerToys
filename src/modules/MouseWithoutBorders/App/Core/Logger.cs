@@ -138,7 +138,7 @@ internal static class Logger
                 Common.PackageSent.ClipboardDragDrop,
                 Common.PackageSent.ClipboardDragDropEnd,
                 Common.PackageSent.ExplorerDragDrop,
-                Common.inputEventCount,
+                Event.inputEventCount,
                 Common.PackageSent.Nil);
             Log(log);
             lastPackageSent = Common.PackageSent; // Copy data
@@ -161,7 +161,7 @@ internal static class Logger
                 Common.PackageReceived.ClipboardDragDrop,
                 Common.PackageReceived.ClipboardDragDropEnd,
                 Common.PackageReceived.ExplorerDragDrop,
-                Common.invalidPackageCount,
+                Event.invalidPackageCount,
                 Common.PackageReceived.Nil,
                 Receiver.processedPackageCount,
                 Receiver.skippedPackageCount);

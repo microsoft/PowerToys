@@ -578,7 +578,7 @@ namespace MouseWithoutBorders
                     }
                     else if ((count % 36005) == 0)
                     {// One hour
-                        Common.SaveSwitchCount();
+                        Event.SaveSwitchCount();
 
                         int rv = 0;
 

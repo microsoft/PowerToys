@@ -114,7 +114,9 @@ namespace MouseWithoutBorders
         internal const int NETWORK_STREAM_BUF_SIZE = 1024 * 1024;
         internal static readonly EventWaitHandle EvSwitch = new(false, EventResetMode.AutoReset);
         private static Point lastPos;
-        private static int switchCount;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
+        internal static int switchCount;
+#pragma warning restore SA1307
         private static long lastReconnectByHotKeyTime;
         private static int tcpPort;
         private static bool secondOpenSocketTry;
@@ -543,7 +545,7 @@ namespace MouseWithoutBorders
         internal static void SendAwakeBeat()
         {
             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive() &&
-                Setting.Values.BlockScreenSaver && lastRealInputEventCount != Common.RealInputEventCount)
+                Setting.Values.BlockScreenSaver && lastRealInputEventCount != Event.RealInputEventCount)
             {
                 SendPackage(ID.ALL, PackageType.Awake);
             }
@@ -552,13 +554,13 @@ namespace MouseWithoutBorders
                 SendHeartBeat();
             }
 
-            lastInputEventCount = Common.InputEventCount;
-            lastRealInputEventCount = Common.RealInputEventCount;
+            lastInputEventCount = Event.InputEventCount;
+            lastRealInputEventCount = Event.RealInputEventCount;
         }
 
         internal static void HumanBeingDetected()
         {
-            if (lastInputEventCount == Common.InputEventCount)
+            if (lastInputEventCount == Event.InputEventCount)
             {
                 if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive())
                 {
@@ -566,7 +568,7 @@ namespace MouseWithoutBorders
                 }
             }
 
-            lastInputEventCount = Common.InputEventCount;
+            lastInputEventCount = Event.InputEventCount;
         }
 
         private static void PokeMyself()
@@ -581,7 +583,7 @@ namespace MouseWithoutBorders
                 InputSimulation.MoveMouseRelative(-x, -y);
                 Thread.Sleep(50);
 
-                if (lastInputEventCount != Common.InputEventCount)
+                if (lastInputEventCount != Event.InputEventCount)
                 {
                     break;
                 }
@@ -590,8 +592,8 @@ namespace MouseWithoutBorders
 
         internal static void InitLastInputEventCount()
         {
-            lastInputEventCount = Common.InputEventCount;
-            lastRealInputEventCount = Common.RealInputEventCount;
+            lastInputEventCount = Event.InputEventCount;
+            lastRealInputEventCount = Event.RealInputEventCount;
         }
 
         internal static void SendHello()
@@ -956,8 +958,8 @@ namespace MouseWithoutBorders
                         {
                             // SwitchToMachine(MachineName.Trim());
                             MachineStuff.NewDesMachineID = DesMachineID = MachineID;
-                            MachineStuff.SwitchLocation.X = XY_BY_PIXEL + myLastX;
-                            MachineStuff.SwitchLocation.Y = XY_BY_PIXEL + myLastY;
+                            MachineStuff.SwitchLocation.X = Event.XY_BY_PIXEL + Event.myLastX;
+                            MachineStuff.SwitchLocation.Y = Event.XY_BY_PIXEL + Event.myLastY;
                             MachineStuff.SwitchLocation.ResetCount();
                             EvSwitch.Set();
                         }

@@ -103,9 +103,9 @@ namespace MouseWithoutBorders
                             Logger.LogDebug($"+++++ Moving mouse to {MachineStuff.SwitchLocation.X}, {MachineStuff.SwitchLocation.Y}");
 
                             // MaxXY = 65535 so 100k is safe.
-                            if (MachineStuff.SwitchLocation.X > XY_BY_PIXEL - 100000 || MachineStuff.SwitchLocation.Y > XY_BY_PIXEL - 100000)
+                            if (MachineStuff.SwitchLocation.X > Event.XY_BY_PIXEL - 100000 || MachineStuff.SwitchLocation.Y > Event.XY_BY_PIXEL - 100000)
                             {
-                                InputSimulation.MoveMouse(MachineStuff.SwitchLocation.X - XY_BY_PIXEL, MachineStuff.SwitchLocation.Y - XY_BY_PIXEL);
+                                InputSimulation.MoveMouse(MachineStuff.SwitchLocation.X - Event.XY_BY_PIXEL, MachineStuff.SwitchLocation.Y - Event.XY_BY_PIXEL);
                             }
                             else
                             {
