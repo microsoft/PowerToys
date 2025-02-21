@@ -93,17 +93,17 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
         public void Click(bool rightClick = false)
         {
-            PerformAction((actions, window) =>
+            PerformAction((actions, windowElement) =>
+            {
+                if (rightClick)
                 {
-                    if (rightClick)
-                    {
-                        actions.ContextClick();
-                    }
-                    else
-                    {
-                        actions.Click();
-                    }
-                });
+                    actions.ContextClick();
+                }
+                else
+                {
+                    actions.Click();
+                }
+            });
         }
 
         /// <summary>
@@ -180,10 +180,10 @@ namespace Microsoft.PowerToys.UITest
                 Task.Delay(msPreAction).Wait();
             }
 
-            var element = this.WindowsElement!;
+            var windowElement = this.WindowsElement!;
             Actions actions = new Actions(this.driver);
-            actions.MoveToElement(element);
-            action(actions, element);
+            actions.MoveToElement(windowElement);
+            action(actions, windowElement);
             actions.Build().Perform();
 
             if (msPostAction > 0)

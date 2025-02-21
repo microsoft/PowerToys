@@ -21,18 +21,18 @@ namespace Microsoft.PowerToys.UITest
         {
             if (clearText)
             {
-                PerformAction((actions, window) =>
-                    {
-                        // select all text and delete it
-                        window.SendKeys(Keys.Control + "a");
-                        window.SendKeys(Keys.Delete);
-                    });
+                PerformAction((actions, windowElement) =>
+                {
+                    // select all text and delete it
+                    windowElement.SendKeys(Keys.Control + "a");
+                    windowElement.SendKeys(Keys.Delete);
+                });
             }
 
-            PerformAction((actions, window) =>
-                {
-                    window.SendKeys(value);
-                });
+            PerformAction((actions, windowElement) =>
+            {
+                windowElement.SendKeys(value);
+            });
 
             return this;
         }
