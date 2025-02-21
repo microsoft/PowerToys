@@ -74,6 +74,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("5,2+6", "5.2+6")]
         [DataRow("round(2,5)", "round(2.5)")]
         [DataRow("3,3333", "3.3333")]
+        [DataRow("max(2;3)", "max(2,3)")]
         public void Translate_NoErrors_WhenCalled(string input, string expectedResult)
         {
             // Arrange
