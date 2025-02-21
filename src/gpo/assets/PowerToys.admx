@@ -148,7 +148,7 @@
     </policy>
     <policy name="ConfigureEnabledUtilityFileActionsMenu" class="Both" displayName="$(string.ConfigureEnabledUtilityFileActionsMenu)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileActionsMenu">
       <parentCategory ref="PowerToys" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_88_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_89_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
