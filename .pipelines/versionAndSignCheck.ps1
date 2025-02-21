@@ -23,6 +23,7 @@ $versionExceptions = @(
     "Microsoft.WindowsAppRuntime.Release.Net.dll",
     "Microsoft.Windows.Widgets.Projection.dll",
     "WinRT.Host.Shim.dll",
+    "WyHash.dll",
     "Microsoft.Recognizers.Text.DataTypes.TimexExpression.dll",
     "ObjectModelCsProjection.dll",
     "RendererCsProjection.dll") -join '|';
@@ -53,7 +54,7 @@ $totalFailure = 0;
 
 Write-Host $DirPath;
 
-if (-not (Test-Path $DirPath)) {  
+if (-not (Test-Path $DirPath)) {
     Write-Error "Folder does not exist!"
 }
 
@@ -75,7 +76,7 @@ $items | ForEach-Object {
         Write-Host "Version set to 1.0.0.0: " + $_.FullName
         $totalFailure++;
     }
-    elseif ($_.VersionInfo.FileVersion -eq $null -and $_.Name -notmatch $nullVersionExceptions) { 
+    elseif ($_.VersionInfo.FileVersion -eq $null -and $_.Name -notmatch $nullVersionExceptions) {
         # These items are exceptions that actually a version not set.
         Write-Host "Version not set: " + $_.FullName
         $totalFailure++;
