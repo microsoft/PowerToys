@@ -96,6 +96,7 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
 
     protected override void OnClosed(EventArgs e)
     {
+        _powerAccent.SaveUsageInfo();
         _powerAccent.Dispose();
         base.OnClosed(e);
     }
