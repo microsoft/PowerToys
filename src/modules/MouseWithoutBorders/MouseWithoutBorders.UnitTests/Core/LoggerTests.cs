@@ -38,11 +38,13 @@ public static class LoggerTests
         */
 
         [TestMethod]
+        /*
         [Ignore(
             "This test relies on internal details of the dotnet platform and is sensitive to " +
             "the specific version of dotnet being used. As a result it's likely to fail if the " +
             "\"expected\" result was generated with a different version to the version used to " +
             "run the test, so we're going to ignore it in the CI build process.")]
+        */
         public void PrivateDumpShouldGenerateExpectedOutput()
         {
             static string NormalizeLog(string log)
@@ -114,18 +116,11 @@ public static class LoggerTests
             using var streamReader = new StreamReader(stream);
             var expected = streamReader.ReadToEnd();
 
-            // copied from DumpObjects in Common.Log.cs
+            // copied from DumpObjects in Logger.cs
             var sb = new StringBuilder(1000000);
-            _ = Logger.PrivateDump(sb, Logger.AllLogs, "[Program logs]\r\n===============\r\n", 0, settingsDumpObjectsLevel, false);
-            _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, settingsDumpObjectsLevel, false);
-            sb.AppendLine("[Logger]\r\n===============");
-            Logger.DumpType(sb, typeof(Logger), 0, settingsDumpObjectsLevel);
-            sb.AppendLine("[DragDrop]\r\n===============");
-            Logger.DumpType(sb, typeof(DragDrop), 0, settingsDumpObjectsLevel);
-            sb.AppendLine("[MachineStuff]\r\n===============");
-            Logger.DumpType(sb, typeof(MachineStuff), 0, settingsDumpObjectsLevel);
-            sb.AppendLine("[Receiver]\r\n===============");
-            Logger.DumpType(sb, typeof(Receiver), 0, settingsDumpObjectsLevel);
+            Logger.DumpProgramLogs(sb, settingsDumpObjectsLevel);
+            Logger.DumpOtherLogs(sb, settingsDumpObjectsLevel);
+            Logger.DumpStaticTypes(sb, settingsDumpObjectsLevel);
             var actual = sb.ToString();
 
             expected = NormalizeLog(expected);
