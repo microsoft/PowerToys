@@ -39,9 +39,6 @@
                 <ui:ImageIcon Source="pack://application:,,,/Assets/ColorPicker/icon.ico" />
             </ui:TitleBar.Icon>
         </ui:TitleBar>
-        <ContentPresenter
-            x:Name="contentPresenter"
-            Grid.Row="1"
-            Content="{Binding Content}" />
+        <ContentPresenter x:Name="contentPresenter" Grid.Row="1" Content="{Binding Content}" />
     </Grid>
 </ui:FluentWindow>
