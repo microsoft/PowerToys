@@ -9,6 +9,8 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
+using MouseWithoutBorders.Class;
+
 // <summary>
 //     Keyboard/Mouse hook callback implementation.
 // </summary>
@@ -17,9 +19,6 @@ using System.Threading.Tasks;
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
-using MouseWithoutBorders.Class;
-using MouseWithoutBorders.Form;
-
 namespace MouseWithoutBorders.Core;
 
 internal static class Event

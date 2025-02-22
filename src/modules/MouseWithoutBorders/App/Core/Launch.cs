@@ -9,6 +9,8 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 
+using MouseWithoutBorders.Class;
+
 // <summary>
 //     Impersonation.
 // </summary>
@@ -17,8 +19,6 @@ using System.Security.Principal;
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
-using MouseWithoutBorders.Class;
-
 namespace MouseWithoutBorders.Core;
 
 internal static class Launch

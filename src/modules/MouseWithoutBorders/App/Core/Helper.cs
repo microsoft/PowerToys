@@ -13,6 +13,10 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Windows.Forms;
 
+using Microsoft.Win32;
+using MouseWithoutBorders.Class;
+using static System.Windows.Forms.Control;
+
 // <summary>
 //     Some other helper methods.
 // </summary>
@@ -21,10 +25,6 @@ using System.Windows.Forms;
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
-using Microsoft.Win32;
-using MouseWithoutBorders.Class;
-using static System.Windows.Forms.Control;
-
 namespace MouseWithoutBorders.Core;
 
 internal static class Helper
