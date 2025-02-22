@@ -10,7 +10,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class FileActionsMenuProperties : ISettingsConfig
     {
-        public HotkeySettings DefaultFileActionsMenuShortcut => new(false, true, true, false, 65);
+        public HotkeySettings DefaultFileActionsMenuShortcut => new(false, true, false, true, 65);
 
         public FileActionsMenuProperties()
         {

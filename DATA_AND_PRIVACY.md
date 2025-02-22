@@ -365,7 +365,104 @@ _If you want to find diagnostic data events in the source code, these two links 
   </tr>
 </table>
 
+### File Actions Menu
+<table style="width:100%">
+  <tr>
+      <td>Name</td>
+      <td>Description</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuInvokedEvent</td>
+      <td>Thrown when the menu is invoked.</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuProgressConflictEvent</td>
+      <td>Thrown when a progress window is open and a conflict was solved.</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuUninstallActionInvoked</td>
+      <td>Thrown when the uninstall action is called.</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuPowerRenameAction</td>
+      <td>Thrown when PowerRename is launched via File Actions menu</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuImageResizerAction</td>
+      <td>Thrown when Image Resizer is launched via File Actions menu</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuFileLocksmithAction</td>
+      <td>Thrown when File Locksmith is launched via File Actions menu</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuCopyContentAsCEscapedStringActionInvokedEvent</td>
+      <td>Thrown when the &quot;Copy file content → As C escaped string&quot; action is invoked</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuCopyContentAsDataUrlActionInvokedEvent</td>
+      <td>Thrown when the &quot;Copy file content → As data url&quot; action is invoked</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuCopyContentAsPlaintextActionInvokedEvent</td>
+      <td>Thrown when the &quot;Copy file content → As plaintext&quot; action is invoked</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuCopyContentAsUriEncodedActionInvokedEvent</td>
+      <td>Thrown when the &quot;Copy file content → As URI encoded string&quot; action is invoked</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuCopyContentAsXmlEncodedActionInvokedEvent</td>
+      <td>Thrown when the &quot;Copy file content → As XML encoded string&quot; action is invoked</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuCollapseFolderActionInvokedEvent</td>
+      <td>Thrown when the &quot;Collapse folder&quot; action is invoked</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuCopyFolderTreeActionInvokedEvent</td>
+      <td>Thrown when the &quot;Copy folder tree&quot; action is invoked</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuMergeContentActionInvokedEvent</td>
+      <td>Thrown when the &quot;Merge content&quot; action is invoked</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuUnblockFilesActionInvokedEvent</td>
+      <td>Thrown when the &quot;Unblock files&quot; action is called.</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuVerifyHashesActionInvokedEvent</td>
+      <td>Thrown when a Verify Checksum action is called.</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuVerifyHashesActionInvokedEvent</td>
+      <td>Thrown when a Generate Checksum action is called.</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuCopyImageToClipboardActionInvokedEvent</td>
+      <td>Thrown when the &quot;Copy image to clipboard&quot; action is invoked</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuCopyImageFromClipboardActionInvokedEvent</td>
+      <td>Thrown when the &quot;Copy image from clipboard to folder&quot; action is invoked</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuCopyDirectoryPathActionInvokedEvent</td>
+      <td>Thrown when the &quot;Copy path of the containing folder&quot; or &quot;Copy WSL path of the containing folder&quot; action is invoked</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuCopyFilePathActionInvokedEvent</td>
+      <td>Thrown when the &quot;Copy full path&quot; or &quot;Copy full WSL path&quot; action is invoked</td>
+  </tr>
+  <tr>
+      <td>Microsoft.PowerToys.FileActionsMenuCopyFullPathActionInvokedEvent</td>
+      <td>Thrown when the &quot;Copy full path&quot; action is invoked</td>
+  </tr>
+</table>
+
 ### FileExplorerAddOns
+
 <table style="width:100%">
   <tr>
     <th>Event Name</th>

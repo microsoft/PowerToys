@@ -110,8 +110,8 @@ private:
     {
         Logger::info("FileActionsMenu is going to use default key settings");
         m_hotkey.win = false;
-        m_hotkey.alt = true;
-        m_hotkey.shift = false;
+        m_hotkey.alt = false;
+        m_hotkey.shift = true;
         m_hotkey.ctrl = true;
         m_hotkey.key = 'A';
     }
@@ -135,8 +135,8 @@ private:
         {
             Logger::info("FileActionsMenu is going to use default shortcut");
             m_hotkey.win = false;
-            m_hotkey.alt = true;
-            m_hotkey.shift = false;
+            m_hotkey.alt = false;
+            m_hotkey.shift = true;
             m_hotkey.ctrl = true;
             m_hotkey.key = 'A';
         }

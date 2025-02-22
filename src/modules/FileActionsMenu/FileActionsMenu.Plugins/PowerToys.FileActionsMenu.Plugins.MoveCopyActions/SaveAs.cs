@@ -49,7 +49,7 @@ namespace PowerToys.FileActionsMenu.Plugins.MoveCopyActions
 
                 if (File.Exists(dialog.FileName))
                 {
-                    await fileActionProgressHelper.Conflict(dialog.FileName, () => File.Move(SelectedItems[0], dialog.FileName, true), () => { });
+                    await fileActionProgressHelper.Conflict(dialog.FileName, () => File.Copy(SelectedItems[0], dialog.FileName, true), () => { });
                 }
                 else
                 {

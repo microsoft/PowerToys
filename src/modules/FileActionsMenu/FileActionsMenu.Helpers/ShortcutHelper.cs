@@ -23,10 +23,12 @@ namespace FileActionsMenu.Ui.Helpers
             Shell shell = new();
             Folder folder = shell.NameSpace(System.IO.Path.GetDirectoryName(shortcutPath));
             FolderItem folderItem = folder.ParseName(System.IO.Path.GetFileName(shortcutPath));
-            if (folderItem != null)
+            try
             {
-                ShellLinkObject link = (ShellLinkObject)folderItem.GetLink;
-                return link.Path;
+                return folderItem != null && folderItem.GetLink is ShellLinkObject slo ? slo.Path : shortcutPath;
+            }
+            catch
+            {
             }
 
             return shortcutPath;
