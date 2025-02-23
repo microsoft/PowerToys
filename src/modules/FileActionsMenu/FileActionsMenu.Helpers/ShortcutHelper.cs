@@ -25,7 +25,7 @@ namespace FileActionsMenu.Ui.Helpers
             FolderItem folderItem = folder.ParseName(System.IO.Path.GetFileName(shortcutPath));
             try
             {
-                return folderItem != null && folderItem.GetLink is ShellLinkObject slo ? slo.Path : shortcutPath;
+                return folderItem != null && folderItem.GetLink is ShellLinkObject shellLinkObject ? shellLinkObject.Path : shortcutPath;
             }
             catch
             {
