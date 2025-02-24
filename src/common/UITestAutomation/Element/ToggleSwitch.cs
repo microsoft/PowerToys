@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.UITest
     public class ToggleSwitch : Button
     {
         /// <summary>
-        /// Gets a value indicating whether indicates whether the ToggleSwitch is on.
+        /// Gets a value indicating whether the ToggleSwitch is on.
         /// </summary>
         public bool IsOn
         {
