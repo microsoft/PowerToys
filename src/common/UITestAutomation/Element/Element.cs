@@ -3,16 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Remote;
-using OpenQA.Selenium.Support.Events;
-using static Microsoft.PowerToys.UITest.UITestBase;
 
 [assembly: InternalsVisibleTo("Session")]
 
@@ -24,6 +19,7 @@ namespace Microsoft.PowerToys.UITest
     public class Element
     {
         private WindowsElement? windowsElement;
+
         private WindowsDriver<WindowsElement>? driver;
 
         internal void SetWindowsElement(WindowsElement windowsElement) => this.windowsElement = windowsElement;
@@ -43,7 +39,20 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public string Text
         {
-            get { return GetAttribute("Value"); }
+            get { return this.windowsElement?.Text ?? string.Empty; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the UI element is Enabled or not.
+        /// </summary>
+        public bool Enabled
+        {
+            get { return this.windowsElement?.Enabled ?? false; }
+        }
+
+        public bool Selected
+        {
+            get { return this.windowsElement?.Selected ?? false; }
         }
 
         /// <summary>
@@ -79,25 +88,18 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Checks if the UI element is enabled.
-        /// </summary>
-        /// <returns>True if the element is enabled; otherwise, false.</returns>
-        public bool IsEnabled() => GetAttribute("IsEnabled") == "True";
-
-        /// <summary>
-        /// Checks if the UI element is selected.
-        /// </summary>
-        /// <returns>True if the element is selected; otherwise, false.</returns>
-        public bool IsSelected() => GetAttribute("IsSelected") == "True";
-
-        /// <summary>
         /// Click the UI element.
         /// </summary>
-        /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click.</param>
+        /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
         public void Click(bool rightClick = false)
         {
-            PerformAction(actions =>
+            PerformAction((actions, windowElement) =>
             {
+                actions.MoveToElement(windowElement);
+
+                // Move 2by2 offset to make click more stable instead of click on the border of the element
+                actions.MoveByOffset(2, 2);
+
                 if (rightClick)
                 {
                     actions.ContextClick();
@@ -106,6 +108,25 @@ namespace Microsoft.PowerToys.UITest
                 {
                     actions.Click();
                 }
+
+                actions.Build().Perform();
+            });
+        }
+
+        /// <summary>
+        /// Double Click the UI element.
+        /// </summary>
+        public void DoubleClick()
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                actions.MoveToElement(windowElement);
+
+                // Move 2by2 offset to make click more stable instead of click on the border of the element
+                actions.MoveByOffset(2, 2);
+
+                actions.DoubleClick();
+                actions.Build().Perform();
             });
         }
 
@@ -133,7 +154,7 @@ namespace Microsoft.PowerToys.UITest
             where T : Element, new()
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
-            var foundElement = FindElementHelper.Find<T, AppiumWebElement>(
+            var foundElement = FindHelper.Find<T, AppiumWebElement>(
                 () =>
                 {
                     var element = this.windowsElement.FindElement(by.ToSeleniumBy());
@@ -157,7 +178,7 @@ namespace Microsoft.PowerToys.UITest
             where T : Element, new()
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
-            var foundElements = FindElementHelper.FindAll<T, AppiumWebElement>(
+            var foundElements = FindHelper.FindAll<T, AppiumWebElement>(
                 () =>
                 {
                     var elements = this.windowsElement.FindElements(by.ToSeleniumBy());
@@ -173,13 +194,24 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Simulates a manual operation on the element.
         /// </summary>
-        private void PerformAction(Action<Actions> action)
+        /// <param name="action">The action to perform on the element.</param>
+        /// <param name="msPreAction">The number of milliseconds to wait before the action. Default value is 100 ms</param>
+        /// <param name="msPostAction">The number of milliseconds to wait after the action. Default value is 100 ms</param>
+        protected void PerformAction(Action<Actions, WindowsElement> action, int msPreAction = 100, int msPostAction = 100)
         {
-            var element = this.windowsElement;
+            if (msPreAction > 0)
+            {
+                Task.Delay(msPreAction).Wait();
+            }
+
+            var windowElement = this.windowsElement!;
             Actions actions = new Actions(this.driver);
-            actions.MoveToElement(element);
-            action(actions);
-            actions.Build().Perform();
+            action(actions, windowElement);
+
+            if (msPostAction > 0)
+            {
+                Task.Delay(msPostAction).Wait();
+            }
         }
     }
 }

@@ -129,6 +129,7 @@
                 "PowerToys.KeyboardManager.dll",
                 "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
                 "KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe",
+                "PowerToys.KeyboardManagerEditorLibraryWrapper.dll",
 
                 "PowerToys.Launcher.dll",
                 "PowerToys.PowerLauncher.dll",
