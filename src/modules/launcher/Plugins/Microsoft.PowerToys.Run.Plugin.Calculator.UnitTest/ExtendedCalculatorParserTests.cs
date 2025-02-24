@@ -341,5 +341,92 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.IsNotNull(result);
             Assert.AreEqual(expectedResult, result);
         }
+
+        [DataTestMethod]
+        [DataRow("rad(30)", "(180 / pi) * (30)")]
+        [DataRow("rad( 30 )", "(180 / pi) * ( 30 )")]
+        [DataRow("deg(30)", "(30)")]
+        [DataRow("grad(30)", "(9 / 10) * (30)")]
+        [DataRow("rad(  30)", "(180 / pi) * (  30)")]
+        [DataRow("rad(30  )", "(180 / pi) * (30  )")]
+        [DataRow("rad(  30  )", "(180 / pi) * (  30  )")]
+        [DataRow("rad(deg(30))", "(180 / pi) * ((30))")]
+        [DataRow("deg(rad(30))", "((180 / pi) * (30))")]
+        [DataRow("grad(rad(30))", "(9 / 10) * ((180 / pi) * (30))")]
+        [DataRow("rad(grad(30))", "(180 / pi) * ((9 / 10) * (30))")]
+        [DataRow("rad(30) + deg(45)", "(180 / pi) * (30) + (45)")]
+        [DataRow("sin(rad(30))", "sin((180 / pi) * (30))")]
+        [DataRow("cos( rad( 45 ) )", "cos( (180 / pi) * ( 45 ) )")]
+        [DataRow("tan(rad(grad(90)))", "tan((180 / pi) * ((9 / 10) * (90)))")]
+        [DataRow("rad(30) + rad(45)", "(180 / pi) * (30) + (180 / pi) * (45)")]
+        [DataRow("rad(30) * grad(90)", "(180 / pi) * (30) * (9 / 10) * (90)")]
+        [DataRow("rad(30)/rad(45)", "(180 / pi) * (30)/(180 / pi) * (45)")]
+        public void ExpandTrigConversions_Degrees(string input, string expectedResult)
+        {
+            // Call ExpandTrigConversions in degrees mode
+            string result = CalculateHelper.ExpandTrigConversions(input, CalculateEngine.TrigMode.Degrees);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedResult, result);
+        }
+
+        [DataTestMethod]
+        [DataRow("rad(30)", "(30)")]
+        [DataRow("rad( 30 )", "( 30 )")]
+        [DataRow("deg(30)", "(pi / 180) * (30)")]
+        [DataRow("grad(30)", "(pi / 200) * (30)")]
+        [DataRow("rad(  30)", "(  30)")]
+        [DataRow("rad(30  )", "(30  )")]
+        [DataRow("rad(  30  )", "(  30  )")]
+        [DataRow("rad(deg(30))", "((pi / 180) * (30))")]
+        [DataRow("deg(rad(30))", "(pi / 180) * ((30))")]
+        [DataRow("grad(rad(30))", "(pi / 200) * ((30))")]
+        [DataRow("rad(grad(30))", "((pi / 200) * (30))")]
+        [DataRow("rad(30) + deg(45)", "(30) + (pi / 180) * (45)")]
+        [DataRow("sin(rad(30))", "sin((30))")]
+        [DataRow("cos( rad( 45 ) )", "cos( ( 45 ) )")]
+        [DataRow("tan(rad(grad(90)))", "tan(((pi / 200) * (90)))")]
+        [DataRow("rad(30) + rad(45)", "(30) + (45)")]
+        [DataRow("rad(30) * grad(90)", "(30) * (pi / 200) * (90)")]
+        [DataRow("rad(30)/rad(45)", "(30)/(45)")]
+        public void ExpandTrigConversions_Radians(string input, string expectedResult)
+        {
+            // Call ExpandTrigConversions in radians mode
+            string result = CalculateHelper.ExpandTrigConversions(input, CalculateEngine.TrigMode.Radians);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedResult, result);
+        }
+
+        [DataTestMethod]
+        [DataRow("rad(30)", "(200 / pi) * (30)")]
+        [DataRow("rad( 30 )", "(200 / pi) * ( 30 )")]
+        [DataRow("deg(30)", "(10 / 9) * (30)")]
+        [DataRow("grad(30)", "(30)")]
+        [DataRow("rad(  30)", "(200 / pi) * (  30)")]
+        [DataRow("rad(30  )", "(200 / pi) * (30  )")]
+        [DataRow("rad(  30  )", "(200 / pi) * (  30  )")]
+        [DataRow("rad(deg(30))", "(200 / pi) * ((10 / 9) * (30))")]
+        [DataRow("deg(rad(30))", "(10 / 9) * ((200 / pi) * (30))")]
+        [DataRow("grad(rad(30))", "((200 / pi) * (30))")]
+        [DataRow("rad(grad(30))", "(200 / pi) * ((30))")]
+        [DataRow("rad(30) + deg(45)", "(200 / pi) * (30) + (10 / 9) * (45)")]
+        [DataRow("sin(rad(30))", "sin((200 / pi) * (30))")]
+        [DataRow("cos( rad( 45 ) )", "cos( (200 / pi) * ( 45 ) )")]
+        [DataRow("tan(rad(grad(90)))", "tan((200 / pi) * ((90)))")]
+        [DataRow("rad(30) + rad(45)", "(200 / pi) * (30) + (200 / pi) * (45)")]
+        [DataRow("rad(30) * grad(90)", "(200 / pi) * (30) * (90)")]
+        [DataRow("rad(30)/rad(45)", "(200 / pi) * (30)/(200 / pi) * (45)")]
+        public void ExpandTrigConversions_Gradians(string input, string expectedResult)
+        {
+            // Call ExpandTrigConversions in gradians mode
+            string result = CalculateHelper.ExpandTrigConversions(input, CalculateEngine.TrigMode.Gradians);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(expectedResult, result);
+        }
     }
 }

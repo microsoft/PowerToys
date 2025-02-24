@@ -254,6 +254,7 @@ namespace ImageResizer.Properties
             {
                 _selectedSizeIndex = value;
                 NotifyPropertyChanged();
+                NotifyPropertyChanged(nameof(SelectedSize));
             }
         }
 
