@@ -98,6 +98,8 @@
     <PackageVersion Include="WixToolset.NetFx.wixext" Version="5.0.2" />
     <PackageVersion Include="WixToolset.Bal.wixext" Version="5.0.2" />
     <PackageVersion Include="WixToolset.Firewall.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.Heat" Version="5.0.2" />
+
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->

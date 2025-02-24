@@ -1,17 +1,17 @@
-﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <?define SettingsV2AssetsFiles=?>
+  <?define SettingsV2AssetsFiles=icon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.pngicon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.pngicon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.png?>
   <?define SettingsV2AssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\?>
 
-  <?define SettingsV2AssetsModulesFiles=?>
+  <?define SettingsV2AssetsModulesFiles=AdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.pngAdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.pngAdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.png?>
   <?define SettingsV2AssetsModulesFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\Modules\?>
 
-  <?define SettingsV2OOBEAssetsModulesFiles=?>
+  <?define SettingsV2OOBEAssetsModulesFiles=AdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gifAdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gifAdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gif?>
   <?define SettingsV2OOBEAssetsModulesFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\Modules\OOBE\?>
 
-  <?define SettingsV2OOBEAssetsFluentIconsFiles=?>
+  <?define SettingsV2OOBEAssetsFluentIconsFiles=Advanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.pngAdvanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.pngAdvanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.png?>
   <?define SettingsV2OOBEAssetsFluentIconsFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\Icons\?>
 
   <Fragment>
@@ -27,22 +27,50 @@
 
     <DirectoryRef Id="SettingsV2AssetsInstallFolder" FileSource="$(var.SettingsV2AssetsFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--SettingsV2AssetsFiles_Component_Def-->
+
+            <Component Id="SettingsV2AssetsFiles_Component" Win64="yes" Guid="13677681-2733-47DA-8D30-4F687575EF92">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="SettingsV2AssetsFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="SettingsV2AssetsFiles_File_" Source="$(var.SettingsV2AssetsFilesPath)\" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.SettingsV2AssetsModulesFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--SettingsV2AssetsModulesFiles_Component_Def-->
+
+            <Component Id="SettingsV2AssetsModulesFiles_Component" Win64="yes" Guid="5AE32787-7BFA-4511-9CE3-DCE4621B931C">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="SettingsV2AssetsModulesFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="SettingsV2AssetsModulesFiles_File_" Source="$(var.SettingsV2AssetsModulesFilesPath)\" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.SettingsV2OOBEAssetsModulesFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--SettingsV2OOBEAssetsModulesFiles_Component_Def-->
+
+            <Component Id="SettingsV2OOBEAssetsModulesFiles_Component" Win64="yes" Guid="8964F987-E750-4C22-9776-0E3F0B5E4A43">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="SettingsV2OOBEAssetsModulesFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="SettingsV2OOBEAssetsModulesFiles_File_" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--SettingsV2OOBEAssetsFluentIconsFiles_Component_Def-->
+
+            <Component Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" Win64="yes" Guid="BA9D085A-3A29-4467-9BD3-48D1A27BBCA5">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="SettingsV2OOBEAssetsFluentIconsFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="SettingsAppAssetsScriptsFolder" FileSource="$(var.SettingsV2AssetsFilesPath)\Scripts\">
@@ -72,6 +100,22 @@
         <RemoveFolder Id="RemoveFolderSettingsAppAssetsScriptsFolder" Directory="SettingsAppAssetsScriptsFolder" On="uninstall" />
       </Component>
       <ComponentRef Id="CommandNotFound_Scripts" />
+            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
+            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
+            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
+            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
+            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
+            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
+            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
+            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
+            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
+            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
+            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
+            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
+            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
+            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
+            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
+            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
     </ComponentGroup>
 
   </Fragment>

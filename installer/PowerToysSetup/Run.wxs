@@ -4,107 +4,107 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <?define launcherImagesComponentFiles=?>
+  <?define launcherImagesComponentFiles=app_error.dark.png;app_error.light.png;RunAsset.ico?>
   <?define launcherImagesComponentFilesPath=$(var.BinDir)Assets\PowerLauncher\?>
 
-  <?define calcComponentFiles=?>
+  <?define calcComponentFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.PowerToys.Run.Plugin.Calculator.deps.json;Microsoft.PowerToys.Run.Plugin.Calculator.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define calcComponentFilesPath=$(var.BinDir)RunPlugins\Calculator\?>
-  <?define calcImagesComponentFiles=?>
+  <?define calcImagesComponentFiles=calculator.dark.png;calculator.light.png?>
   <?define calcImagesComponentFilesPath=$(var.BinDir)RunPlugins\Calculator\Images\?>
 
-  <?define FolderComponentFiles=?>
+  <?define FolderComponentFiles=Dia2Lib.dll;Microsoft.Plugin.Folder.deps.json;Microsoft.Plugin.Folder.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define FolderComponentFilesPath=$(var.BinDir)RunPlugins\Folder\?>
-  <?define FolderImagesComponentFiles=?>
+  <?define FolderImagesComponentFiles=copy.dark.png;copy.light.png;delete.dark.png;delete.light.png;file.dark.png;file.light.png;folder.dark.png;folder.light.png;user.dark.png;user.light.png;Warning.dark.png;Warning.light.png?>
   <?define FolderImagesComponentFilesPath=$(var.BinDir)RunPlugins\Folder\Images?>
 
-  <?define ProgramComponentFiles=?>
+  <?define ProgramComponentFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.Plugin.Program.deps.json;Microsoft.Plugin.Program.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define ProgramComponentFilesPath=$(var.BinDir)RunPlugins\Program\?>
-  <?define ProgramImagesComponentFiles=?>
+  <?define ProgramImagesComponentFiles=app.dark.png;app.light.png;disable.dark.png;disable.light.png;folder.dark.png;folder.light.png;shell.dark.png;shell.light.png;user.dark.png;user.light.png?>
   <?define ProgramImagesComponentFilesPath=$(var.BinDir)RunPlugins\Program\Images\?>
 
-  <?define ShellComponentFiles=?>
+  <?define ShellComponentFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.Plugin.Shell.deps.json;Microsoft.Plugin.Shell.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define ShellComponentFilesPath=$(var.BinDir)RunPlugins\Shell\?>
-  <?define ShellImagesComponentFiles=?>
+  <?define ShellImagesComponentFiles=shell.dark.png;shell.light.png;user.dark.png;user.light.png?>
   <?define ShellImagesComponentFilesPath=$(var.BinDir)RunPlugins\Shell\Images\?>
 
-  <?define IndexerComponentFiles=?>
+  <?define IndexerComponentFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.Plugin.Indexer.deps.json;Microsoft.Plugin.Indexer.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define IndexerComponentFilesPath=$(var.BinDir)RunPlugins\Indexer\?>
-  <?define IndexerImagesComponentFiles=?>
+  <?define IndexerImagesComponentFiles=indexer.dark.png;indexer.light.png;Warning.dark.png;Warning.light.png?>
   <?define IndexerImagesComponentFilesPath=$(var.BinDir)RunPlugins\Indexer\Images\?>
 
-  <?define UnitConvCompFiles=?>
+  <?define UnitConvCompFiles=backup_restore_settings.json;Community.PowerToys.Run.Plugin.UnitConverter.deps.json;Community.PowerToys.Run.Plugin.UnitConverter.dll;Dia2Lib.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define UnitConvCompFilesPath=$(var.BinDir)RunPlugins\UnitConverter\?>
-  <?define UnitConvImagesCompFiles=?>
+  <?define UnitConvImagesCompFiles=unitconverter.dark.png;unitconverter.light.png?>
   <?define UnitConvImagesCompFilesPath=$(var.BinDir)RunPlugins\UnitConverter\Images\?>
 
-  <?define WebSrchCompFiles=?>
+  <?define WebSrchCompFiles=backup_restore_settings.json;Community.PowerToys.Run.Plugin.WebSearch.deps.json;Community.PowerToys.Run.Plugin.WebSearch.dll;Dia2Lib.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define WebSrchCompFilesPath=$(var.BinDir)RunPlugins\WebSearch\?>
-  <?define WebSrchImagesCompFiles=?>
+  <?define WebSrchImagesCompFiles=WebSearch.dark.png;WebSearch.light.png?>
   <?define WebSrchImagesCompFilesPath=$(var.BinDir)RunPlugins\WebSearch\Images\?>
 
-  <?define HistoryPluginComponentFiles=?>
+  <?define HistoryPluginComponentFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.PowerToys.Run.Plugin.History.deps.json;Microsoft.PowerToys.Run.Plugin.History.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define HistoryPluginComponentFilesPath=$(var.BinDir)RunPlugins\History\?>
-  <?define HistoryPluginImagesComponentFiles=?>
+  <?define HistoryPluginImagesComponentFiles=history.dark.png;history.light.png?>
   <?define HistoryPluginImagesComponentFilesPath=$(var.BinDir)RunPlugins\History\Images\?>
 
-  <?define UriComponentFiles=?>
+  <?define UriComponentFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.Plugin.Uri.deps.json;Microsoft.Plugin.Uri.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define UriComponentFilesPath=$(var.BinDir)RunPlugins\Uri\?>
-  <?define UriImagesComponentFiles=?>
+  <?define UriImagesComponentFiles=uri.dark.png;uri.light.png?>
   <?define UriImagesComponentFilesPath=$(var.BinDir)RunPlugins\Uri\Images\?>
 
-  <?define VSCWrkCompFiles=?>
+  <?define VSCWrkCompFiles=backup_restore_settings.json;Community.PowerToys.Run.Plugin.VSCodeWorkspaces.deps.json;Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll;Dia2Lib.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define VSCWrkCompFilesPath=$(var.BinDir)RunPlugins\VSCodeWorkspaces\?>
-  <?define VSCWrkImagesCompFiles=?>
+  <?define VSCWrkImagesCompFiles=code.dark.png;code.light.png;folder.png;monitor.png?>
   <?define VSCWrkImagesCompFilesPath=$(var.BinDir)RunPlugins\VSCodeWorkspaces\Images\?>
 
-  <?define WindowWlkrCompFiles=?>
+  <?define WindowWlkrCompFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.Plugin.WindowWalker.deps.json;Microsoft.Plugin.WindowWalker.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define WindowWlkrCompFilesPath=$(var.BinDir)RunPlugins\WindowWalker\?>
-  <?define WindowWlkrImagesCompFiles=?>
+  <?define WindowWlkrImagesCompFiles=info.dark.png;info.light.png;windowwalker.dark.png;windowwalker.light.png?>
   <?define WindowWlkrImagesCompFilesPath=$(var.BinDir)RunPlugins\WindowWalker\Images\?>
 
-  <?define OneNoteComponentFiles=?>
+  <?define OneNoteComponentFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.PowerToys.Run.Plugin.OneNote.deps.json;Microsoft.PowerToys.Run.Plugin.OneNote.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define OneNoteComponentFilesPath=$(var.BinDir)RunPlugins\OneNote\?>
-  <?define OneNoteImagesComponentFiles=?>
+  <?define OneNoteImagesComponentFiles=oneNote.dark.png;oneNote.light.png?>
   <?define OneNoteImagesComponentFilesPath=$(var.BinDir)RunPlugins\OneNote\Images\?>
 
-  <?define RegistryComponentFiles=?>
+  <?define RegistryComponentFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.PowerToys.Run.Plugin.Registry.deps.json;Microsoft.PowerToys.Run.Plugin.Registry.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define RegistryComponentFilesPath=$(var.BinDir)RunPlugins\Registry\?>
-  <?define RegistryImagesComponentFiles=?>
+  <?define RegistryImagesComponentFiles=reg.dark.png;reg.light.png?>
   <?define RegistryImagesComponentFilesPath=$(var.BinDir)RunPlugins\Registry\Images\?>
 
-  <?define ServiceComponentFiles=?>
+  <?define ServiceComponentFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.PowerToys.Run.Plugin.Service.deps.json;Microsoft.PowerToys.Run.Plugin.Service.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define ServiceComponentFilesPath=$(var.BinDir)RunPlugins\Service\?>
-  <?define ServiceImagesComponentFiles=?>
+  <?define ServiceImagesComponentFiles=service.dark.png;service.light.png?>
   <?define ServiceImagesComponentFilesPath=$(var.BinDir)RunPlugins\Service\Images\?>
 
-  <?define SystemComponentFiles=?>
+  <?define SystemComponentFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.PowerToys.Run.Plugin.System.deps.json;Microsoft.PowerToys.Run.Plugin.System.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define SystemComponentFilesPath=$(var.BinDir)RunPlugins\System\?>
-  <?define SystemImagesComponentFiles=?>
+  <?define SystemImagesComponentFiles=firmwareSettings.dark.png;firmwareSettings.light.png;lock.dark.png;lock.light.png;logoff.dark.png;logoff.light.png;networkAdapter.dark.png;networkAdapter.light.png;recyclebin.dark.png;recyclebin.light.png;restart.dark.png;restart.light.png;shutdown.dark.png;shutdown.light.png;sleep.dark.png;sleep.light.png?>
   <?define SystemImagesComponentFilesPath=$(var.BinDir)RunPlugins\System\Images\?>
 
-  <?define TimeDateComponentFiles=?>
+  <?define TimeDateComponentFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.PowerToys.Run.Plugin.TimeDate.deps.json;Microsoft.PowerToys.Run.Plugin.TimeDate.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define TimeDateComponentFilesPath=$(var.BinDir)RunPlugins\TimeDate\?>
-  <?define TimeDateImagesComponentFiles=?>
+  <?define TimeDateImagesComponentFiles=calendar.dark.png;calendar.light.png;time.dark.png;time.light.png;timeDate.dark.png;timeDate.light.png;Warning.dark.png;Warning.light.png?>
   <?define TimeDateImagesComponentFilesPath=$(var.BinDir)RunPlugins\TimeDate\Images\?>
 
-  <?define WinSetCmpFiles=?>
+  <?define WinSetCmpFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define WinSetCmpFilesPath=$(var.BinDir)RunPlugins\WindowsSettings\?>
-  <?define WinSetImagesCmpFiles=?>
+  <?define WinSetImagesCmpFiles=WindowsSettings.dark.png;WindowsSettings.light.png?>
   <?define WinSetImagesCmpFilesPath=$(var.BinDir)RunPlugins\WindowsSettings\Images\?>
 
-  <?define WinTermCmpFiles=?>
+  <?define WinTermCmpFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json;Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define WinTermCmpFilesPath=$(var.BinDir)RunPlugins\WindowsTerminal\?>
-  <?define WinTermImagesCmpFiles=?>
+  <?define WinTermImagesCmpFiles=WindowsTerminal.dark.png;WindowsTerminal.light.png?>
   <?define WinTermImagesCmpFilesPath=$(var.BinDir)RunPlugins\WindowsTerminal\Images\?>
 
-  <?define PowerToysCmpFiles=?>
+  <?define PowerToysCmpFiles=backup_restore_settings.json;Dia2Lib.dll;Microsoft.PowerToys.Run.Plugin.PowerToys.deps.json;Microsoft.PowerToys.Run.Plugin.PowerToys.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define PowerToysCmpFilesPath=$(var.BinDir)RunPlugins\PowerToys\?>
-  <?define PowerToysImagesCmpFiles=?>
+  <?define PowerToysImagesCmpFiles=ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;Hosts.png;PowerOcr.png;PowerToys.dark.png;PowerToys.light.png;RegistryPreview.png;ScreenRuler.png;ShortcutGuide.png;Workspaces.png?>
   <?define PowerToysImagesCmpFilesPath=$(var.BinDir)RunPlugins\PowerToys\Images\?>
 
-  <?define ValueGeneratorCmpFiles=?>
+  <?define ValueGeneratorCmpFiles=backup_restore_settings.json;Community.PowerToys.Run.Plugin.ValueGenerator.deps.json;Community.PowerToys.Run.Plugin.ValueGenerator.dll;Dia2Lib.dll;plugin.json;PowerToys.Interop.dll;PowerToys.ManagedTelemetry.dll;PowerToys.MouseJump.Common.dll;PowerToys.ZoomItSettingsInterop.dll;TraceReloggerLib.dll?>
   <?define ValueGeneratorCmpFilesPath=$(var.BinDir)RunPlugins\ValueGenerator\?>
-  <?define ValueGeneratorImagesCmpFiles=?>
+  <?define ValueGeneratorImagesCmpFiles=ValueGenerator.dark.png;ValueGenerator.light.png;Warning.dark.png;Warning.light.png?>
   <?define ValueGeneratorImagesCmpFilesPath=$(var.BinDir)RunPlugins\ValueGenerator\Images\?>
 
   <Fragment>
@@ -180,219 +180,765 @@
 
     <DirectoryRef Id="LauncherImagesFolder" FileSource="$(var.launcherImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--launcherImagesComponentFiles_Component_Def-->
+
+            <Component Id="launcherImagesComponentFiles_Component" Win64="yes" Guid="6F3FC4DA-6A46-4F39-AECD-47D55DE652EF">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="launcherImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="launcherImagesComponentFiles_File_app_error.dark.png" Source="$(var.launcherImagesComponentFilesPath)\app_error.dark.png" />
+              <File Id="launcherImagesComponentFiles_File_app_error.light.png" Source="$(var.launcherImagesComponentFilesPath)\app_error.light.png" />
+              <File Id="launcherImagesComponentFiles_File_RunAsset.ico" Source="$(var.launcherImagesComponentFilesPath)\RunAsset.ico" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- Calculator Plugin -->
     <DirectoryRef Id="CalculatorPluginFolder" FileSource="$(var.calcComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--calcComponentFiles_Component_Def-->
+
+            <Component Id="calcComponentFiles_Component" Win64="yes" Guid="FDBAA9D5-7491-4585-98E5-E1865E9BA184">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="calcComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="calcComponentFiles_File_backup_restore_settings.json" Source="$(var.calcComponentFilesPath)\backup_restore_settings.json" />
+              <File Id="calcComponentFiles_File_Dia2Lib.dll" Source="$(var.calcComponentFilesPath)\Dia2Lib.dll" />
+              <File Id="calcComponentFiles_File_Microsoft.PowerToys.Run.Plugin.Calculator.deps.json" Source="$(var.calcComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.Calculator.deps.json" />
+              <File Id="calcComponentFiles_File_Microsoft.PowerToys.Run.Plugin.Calculator.dll" Source="$(var.calcComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.Calculator.dll" />
+              <File Id="calcComponentFiles_File_plugin.json" Source="$(var.calcComponentFilesPath)\plugin.json" />
+              <File Id="calcComponentFiles_File_PowerToys.Interop.dll" Source="$(var.calcComponentFilesPath)\PowerToys.Interop.dll" />
+              <File Id="calcComponentFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.calcComponentFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="calcComponentFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.calcComponentFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="calcComponentFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.calcComponentFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="calcComponentFiles_File_TraceReloggerLib.dll" Source="$(var.calcComponentFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="CalculatorImagesFolder" FileSource="$(var.calcImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--calcImagesComponentFiles_Component_Def-->
+
+            <Component Id="calcImagesComponentFiles_Component" Win64="yes" Guid="7521F0DB-1216-4F05-B1BE-CE03551C4BA2">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="calcImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="calcImagesComponentFiles_File_calculator.dark.png" Source="$(var.calcImagesComponentFilesPath)\calculator.dark.png" />
+              <File Id="calcImagesComponentFiles_File_calculator.light.png" Source="$(var.calcImagesComponentFilesPath)\calculator.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- Folder Plugin -->
     <DirectoryRef Id="FolderPluginFolder" FileSource="$(var.FolderComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--FolderComponentFiles_Component_Def-->
+
+            <Component Id="FolderComponentFiles_Component" Win64="yes" Guid="38846943-C0E5-43E8-8E94-C1424E0D4ACD">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="FolderComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="FolderComponentFiles_File_Dia2Lib.dll" Source="$(var.FolderComponentFilesPath)\Dia2Lib.dll" />
+              <File Id="FolderComponentFiles_File_Microsoft.Plugin.Folder.deps.json" Source="$(var.FolderComponentFilesPath)\Microsoft.Plugin.Folder.deps.json" />
+              <File Id="FolderComponentFiles_File_Microsoft.Plugin.Folder.dll" Source="$(var.FolderComponentFilesPath)\Microsoft.Plugin.Folder.dll" />
+              <File Id="FolderComponentFiles_File_plugin.json" Source="$(var.FolderComponentFilesPath)\plugin.json" />
+              <File Id="FolderComponentFiles_File_PowerToys.Interop.dll" Source="$(var.FolderComponentFilesPath)\PowerToys.Interop.dll" />
+              <File Id="FolderComponentFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.FolderComponentFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="FolderComponentFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.FolderComponentFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="FolderComponentFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.FolderComponentFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="FolderComponentFiles_File_TraceReloggerLib.dll" Source="$(var.FolderComponentFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
     <DirectoryRef Id="FolderPluginImagesFolder" FileSource="$(var.FolderImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--FolderImagesComponentFiles_Component_Def-->
+
+            <Component Id="FolderImagesComponentFiles_Component" Win64="yes" Guid="F247CAD9-820A-4517-B6D0-B0CF6ED6AEAC">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="FolderImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="FolderImagesComponentFiles_File_copy.dark.png" Source="$(var.FolderImagesComponentFilesPath)\copy.dark.png" />
+              <File Id="FolderImagesComponentFiles_File_copy.light.png" Source="$(var.FolderImagesComponentFilesPath)\copy.light.png" />
+              <File Id="FolderImagesComponentFiles_File_delete.dark.png" Source="$(var.FolderImagesComponentFilesPath)\delete.dark.png" />
+              <File Id="FolderImagesComponentFiles_File_delete.light.png" Source="$(var.FolderImagesComponentFilesPath)\delete.light.png" />
+              <File Id="FolderImagesComponentFiles_File_file.dark.png" Source="$(var.FolderImagesComponentFilesPath)\file.dark.png" />
+              <File Id="FolderImagesComponentFiles_File_file.light.png" Source="$(var.FolderImagesComponentFilesPath)\file.light.png" />
+              <File Id="FolderImagesComponentFiles_File_folder.dark.png" Source="$(var.FolderImagesComponentFilesPath)\folder.dark.png" />
+              <File Id="FolderImagesComponentFiles_File_folder.light.png" Source="$(var.FolderImagesComponentFilesPath)\folder.light.png" />
+              <File Id="FolderImagesComponentFiles_File_user.dark.png" Source="$(var.FolderImagesComponentFilesPath)\user.dark.png" />
+              <File Id="FolderImagesComponentFiles_File_user.light.png" Source="$(var.FolderImagesComponentFilesPath)\user.light.png" />
+              <File Id="FolderImagesComponentFiles_File_Warning.dark.png" Source="$(var.FolderImagesComponentFilesPath)\Warning.dark.png" />
+              <File Id="FolderImagesComponentFiles_File_Warning.light.png" Source="$(var.FolderImagesComponentFilesPath)\Warning.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- Program Plugin -->
     <DirectoryRef Id="ProgramPluginFolder" FileSource="$(var.ProgramComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--ProgramComponentFiles_Component_Def-->
+
+            <Component Id="ProgramComponentFiles_Component" Win64="yes" Guid="84E94CDB-5ED3-41DE-AB89-5F8BE798F5C2">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="ProgramComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="ProgramComponentFiles_File_backup_restore_settings.json" Source="$(var.ProgramComponentFilesPath)\backup_restore_settings.json" />
+              <File Id="ProgramComponentFiles_File_Dia2Lib.dll" Source="$(var.ProgramComponentFilesPath)\Dia2Lib.dll" />
+              <File Id="ProgramComponentFiles_File_Microsoft.Plugin.Program.deps.json" Source="$(var.ProgramComponentFilesPath)\Microsoft.Plugin.Program.deps.json" />
+              <File Id="ProgramComponentFiles_File_Microsoft.Plugin.Program.dll" Source="$(var.ProgramComponentFilesPath)\Microsoft.Plugin.Program.dll" />
+              <File Id="ProgramComponentFiles_File_plugin.json" Source="$(var.ProgramComponentFilesPath)\plugin.json" />
+              <File Id="ProgramComponentFiles_File_PowerToys.Interop.dll" Source="$(var.ProgramComponentFilesPath)\PowerToys.Interop.dll" />
+              <File Id="ProgramComponentFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.ProgramComponentFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="ProgramComponentFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.ProgramComponentFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="ProgramComponentFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.ProgramComponentFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="ProgramComponentFiles_File_TraceReloggerLib.dll" Source="$(var.ProgramComponentFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
     <DirectoryRef Id="ProgramImagesFolder" FileSource="$(var.ProgramImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--ProgramImagesComponentFiles_Component_Def-->
+
+            <Component Id="ProgramImagesComponentFiles_Component" Win64="yes" Guid="32459109-DCD1-4270-8C9D-177F4CEDCD84">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="ProgramImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="ProgramImagesComponentFiles_File_app.dark.png" Source="$(var.ProgramImagesComponentFilesPath)\app.dark.png" />
+              <File Id="ProgramImagesComponentFiles_File_app.light.png" Source="$(var.ProgramImagesComponentFilesPath)\app.light.png" />
+              <File Id="ProgramImagesComponentFiles_File_disable.dark.png" Source="$(var.ProgramImagesComponentFilesPath)\disable.dark.png" />
+              <File Id="ProgramImagesComponentFiles_File_disable.light.png" Source="$(var.ProgramImagesComponentFilesPath)\disable.light.png" />
+              <File Id="ProgramImagesComponentFiles_File_folder.dark.png" Source="$(var.ProgramImagesComponentFilesPath)\folder.dark.png" />
+              <File Id="ProgramImagesComponentFiles_File_folder.light.png" Source="$(var.ProgramImagesComponentFilesPath)\folder.light.png" />
+              <File Id="ProgramImagesComponentFiles_File_shell.dark.png" Source="$(var.ProgramImagesComponentFilesPath)\shell.dark.png" />
+              <File Id="ProgramImagesComponentFiles_File_shell.light.png" Source="$(var.ProgramImagesComponentFilesPath)\shell.light.png" />
+              <File Id="ProgramImagesComponentFiles_File_user.dark.png" Source="$(var.ProgramImagesComponentFilesPath)\user.dark.png" />
+              <File Id="ProgramImagesComponentFiles_File_user.light.png" Source="$(var.ProgramImagesComponentFilesPath)\user.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- Shell Plugin -->
     <DirectoryRef Id="ShellPluginFolder" FileSource="$(var.ShellComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--ShellComponentFiles_Component_Def-->
+
+            <Component Id="ShellComponentFiles_Component" Win64="yes" Guid="5A460D0B-2833-4DF6-AC24-AA09F3DA2ECE">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="ShellComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="ShellComponentFiles_File_backup_restore_settings.json" Source="$(var.ShellComponentFilesPath)\backup_restore_settings.json" />
+              <File Id="ShellComponentFiles_File_Dia2Lib.dll" Source="$(var.ShellComponentFilesPath)\Dia2Lib.dll" />
+              <File Id="ShellComponentFiles_File_Microsoft.Plugin.Shell.deps.json" Source="$(var.ShellComponentFilesPath)\Microsoft.Plugin.Shell.deps.json" />
+              <File Id="ShellComponentFiles_File_Microsoft.Plugin.Shell.dll" Source="$(var.ShellComponentFilesPath)\Microsoft.Plugin.Shell.dll" />
+              <File Id="ShellComponentFiles_File_plugin.json" Source="$(var.ShellComponentFilesPath)\plugin.json" />
+              <File Id="ShellComponentFiles_File_PowerToys.Interop.dll" Source="$(var.ShellComponentFilesPath)\PowerToys.Interop.dll" />
+              <File Id="ShellComponentFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.ShellComponentFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="ShellComponentFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.ShellComponentFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="ShellComponentFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.ShellComponentFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="ShellComponentFiles_File_TraceReloggerLib.dll" Source="$(var.ShellComponentFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
     <DirectoryRef Id="ShellImagesFolder" FileSource="$(var.ShellImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--ShellImagesComponentFiles_Component_Def-->
+
+            <Component Id="ShellImagesComponentFiles_Component" Win64="yes" Guid="0C486873-0D77-4680-9F80-8085FC449B6A">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="ShellImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="ShellImagesComponentFiles_File_shell.dark.png" Source="$(var.ShellImagesComponentFilesPath)\shell.dark.png" />
+              <File Id="ShellImagesComponentFiles_File_shell.light.png" Source="$(var.ShellImagesComponentFilesPath)\shell.light.png" />
+              <File Id="ShellImagesComponentFiles_File_user.dark.png" Source="$(var.ShellImagesComponentFilesPath)\user.dark.png" />
+              <File Id="ShellImagesComponentFiles_File_user.light.png" Source="$(var.ShellImagesComponentFilesPath)\user.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- Indexer Plugin -->
     <DirectoryRef Id="IndexerPluginFolder" FileSource="$(var.IndexerComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--IndexerComponentFiles_Component_Def-->
+
+            <Component Id="IndexerComponentFiles_Component" Win64="yes" Guid="B836CAD2-C1E7-43E2-A5A7-4DA2D68EE66F">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="IndexerComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="IndexerComponentFiles_File_backup_restore_settings.json" Source="$(var.IndexerComponentFilesPath)\backup_restore_settings.json" />
+              <File Id="IndexerComponentFiles_File_Dia2Lib.dll" Source="$(var.IndexerComponentFilesPath)\Dia2Lib.dll" />
+              <File Id="IndexerComponentFiles_File_Microsoft.Plugin.Indexer.deps.json" Source="$(var.IndexerComponentFilesPath)\Microsoft.Plugin.Indexer.deps.json" />
+              <File Id="IndexerComponentFiles_File_Microsoft.Plugin.Indexer.dll" Source="$(var.IndexerComponentFilesPath)\Microsoft.Plugin.Indexer.dll" />
+              <File Id="IndexerComponentFiles_File_plugin.json" Source="$(var.IndexerComponentFilesPath)\plugin.json" />
+              <File Id="IndexerComponentFiles_File_PowerToys.Interop.dll" Source="$(var.IndexerComponentFilesPath)\PowerToys.Interop.dll" />
+              <File Id="IndexerComponentFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.IndexerComponentFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="IndexerComponentFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.IndexerComponentFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="IndexerComponentFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.IndexerComponentFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="IndexerComponentFiles_File_TraceReloggerLib.dll" Source="$(var.IndexerComponentFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
     <DirectoryRef Id="IndexerImagesFolder" FileSource="$(var.IndexerImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--IndexerImagesComponentFiles_Component_Def-->
+
+            <Component Id="IndexerImagesComponentFiles_Component" Win64="yes" Guid="1467B6DF-4A3E-460A-AAA0-4E894009EE83">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="IndexerImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="IndexerImagesComponentFiles_File_indexer.dark.png" Source="$(var.IndexerImagesComponentFilesPath)\indexer.dark.png" />
+              <File Id="IndexerImagesComponentFiles_File_indexer.light.png" Source="$(var.IndexerImagesComponentFilesPath)\indexer.light.png" />
+              <File Id="IndexerImagesComponentFiles_File_Warning.dark.png" Source="$(var.IndexerImagesComponentFilesPath)\Warning.dark.png" />
+              <File Id="IndexerImagesComponentFiles_File_Warning.light.png" Source="$(var.IndexerImagesComponentFilesPath)\Warning.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- UnitConverter Plugin -->
     <DirectoryRef Id="UnitConverterPluginFolder" FileSource="$(var.UnitConvCompFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--UnitConvCompFiles_Component_Def-->
+
+            <Component Id="UnitConvCompFiles_Component" Win64="yes" Guid="15BFDE95-F799-43FC-B693-A9DE67CC44E8">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="UnitConvCompFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="UnitConvCompFiles_File_backup_restore_settings.json" Source="$(var.UnitConvCompFilesPath)\backup_restore_settings.json" />
+              <File Id="UnitConvCompFiles_File_Community.PowerToys.Run.Plugin.UnitConverter.deps.json" Source="$(var.UnitConvCompFilesPath)\Community.PowerToys.Run.Plugin.UnitConverter.deps.json" />
+              <File Id="UnitConvCompFiles_File_Community.PowerToys.Run.Plugin.UnitConverter.dll" Source="$(var.UnitConvCompFilesPath)\Community.PowerToys.Run.Plugin.UnitConverter.dll" />
+              <File Id="UnitConvCompFiles_File_Dia2Lib.dll" Source="$(var.UnitConvCompFilesPath)\Dia2Lib.dll" />
+              <File Id="UnitConvCompFiles_File_plugin.json" Source="$(var.UnitConvCompFilesPath)\plugin.json" />
+              <File Id="UnitConvCompFiles_File_PowerToys.Interop.dll" Source="$(var.UnitConvCompFilesPath)\PowerToys.Interop.dll" />
+              <File Id="UnitConvCompFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.UnitConvCompFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="UnitConvCompFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.UnitConvCompFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="UnitConvCompFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.UnitConvCompFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="UnitConvCompFiles_File_TraceReloggerLib.dll" Source="$(var.UnitConvCompFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="UnitConverterImagesFolder" FileSource="$(var.UnitConvImagesCompFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--UnitConvImagesCompFiles_Component_Def-->
+
+            <Component Id="UnitConvImagesCompFiles_Component" Win64="yes" Guid="CD580F99-91A6-4E98-923E-78FE8AC8FBA3">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="UnitConvImagesCompFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="UnitConvImagesCompFiles_File_unitconverter.dark.png" Source="$(var.UnitConvImagesCompFilesPath)\unitconverter.dark.png" />
+              <File Id="UnitConvImagesCompFiles_File_unitconverter.light.png" Source="$(var.UnitConvImagesCompFilesPath)\unitconverter.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- WebSearch Plugin -->
     <DirectoryRef Id="WebSearchPluginFolder" FileSource="$(var.WebSrchCompFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--WebSrchCompFiles_Component_Def-->
+
+            <Component Id="WebSrchCompFiles_Component" Win64="yes" Guid="815364AD-B1A2-45ED-94CE-6EE2CA3DE9E5">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="WebSrchCompFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="WebSrchCompFiles_File_backup_restore_settings.json" Source="$(var.WebSrchCompFilesPath)\backup_restore_settings.json" />
+              <File Id="WebSrchCompFiles_File_Community.PowerToys.Run.Plugin.WebSearch.deps.json" Source="$(var.WebSrchCompFilesPath)\Community.PowerToys.Run.Plugin.WebSearch.deps.json" />
+              <File Id="WebSrchCompFiles_File_Community.PowerToys.Run.Plugin.WebSearch.dll" Source="$(var.WebSrchCompFilesPath)\Community.PowerToys.Run.Plugin.WebSearch.dll" />
+              <File Id="WebSrchCompFiles_File_Dia2Lib.dll" Source="$(var.WebSrchCompFilesPath)\Dia2Lib.dll" />
+              <File Id="WebSrchCompFiles_File_plugin.json" Source="$(var.WebSrchCompFilesPath)\plugin.json" />
+              <File Id="WebSrchCompFiles_File_PowerToys.Interop.dll" Source="$(var.WebSrchCompFilesPath)\PowerToys.Interop.dll" />
+              <File Id="WebSrchCompFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.WebSrchCompFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="WebSrchCompFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.WebSrchCompFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="WebSrchCompFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.WebSrchCompFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="WebSrchCompFiles_File_TraceReloggerLib.dll" Source="$(var.WebSrchCompFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="WebSearchImagesFolder" FileSource="$(var.WebSrchImagesCompFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--WebSrchImagesCompFiles_Component_Def-->
+
+            <Component Id="WebSrchImagesCompFiles_Component" Win64="yes" Guid="A13CC386-4DE4-4B8D-925B-26A9947DDDEE">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="WebSrchImagesCompFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="WebSrchImagesCompFiles_File_WebSearch.dark.png" Source="$(var.WebSrchImagesCompFilesPath)\WebSearch.dark.png" />
+              <File Id="WebSrchImagesCompFiles_File_WebSearch.light.png" Source="$(var.WebSrchImagesCompFilesPath)\WebSearch.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- History Plugin -->
     <DirectoryRef Id="HistoryPluginFolder" FileSource="$(var.HistoryPluginComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--HistoryPluginComponentFiles_Component_Def-->
+
+            <Component Id="HistoryPluginComponentFiles_Component" Win64="yes" Guid="4739C37B-A1E8-4BD7-BBBE-2E2858DD9D71">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="HistoryPluginComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="HistoryPluginComponentFiles_File_backup_restore_settings.json" Source="$(var.HistoryPluginComponentFilesPath)\backup_restore_settings.json" />
+              <File Id="HistoryPluginComponentFiles_File_Dia2Lib.dll" Source="$(var.HistoryPluginComponentFilesPath)\Dia2Lib.dll" />
+              <File Id="HistoryPluginComponentFiles_File_Microsoft.PowerToys.Run.Plugin.History.deps.json" Source="$(var.HistoryPluginComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.History.deps.json" />
+              <File Id="HistoryPluginComponentFiles_File_Microsoft.PowerToys.Run.Plugin.History.dll" Source="$(var.HistoryPluginComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.History.dll" />
+              <File Id="HistoryPluginComponentFiles_File_plugin.json" Source="$(var.HistoryPluginComponentFilesPath)\plugin.json" />
+              <File Id="HistoryPluginComponentFiles_File_PowerToys.Interop.dll" Source="$(var.HistoryPluginComponentFilesPath)\PowerToys.Interop.dll" />
+              <File Id="HistoryPluginComponentFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.HistoryPluginComponentFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="HistoryPluginComponentFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.HistoryPluginComponentFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="HistoryPluginComponentFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.HistoryPluginComponentFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="HistoryPluginComponentFiles_File_TraceReloggerLib.dll" Source="$(var.HistoryPluginComponentFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="HistoryImagesFolder" FileSource="$(var.HistoryPluginImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--HistoryPluginImagesComponentFiles_Component_Def-->
+
+            <Component Id="HistoryPluginImagesComponentFiles_Component" Win64="yes" Guid="DF715FB0-4CEA-4E91-A9FB-9311EB7F6530">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="HistoryPluginImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="HistoryPluginImagesComponentFiles_File_history.dark.png" Source="$(var.HistoryPluginImagesComponentFilesPath)\history.dark.png" />
+              <File Id="HistoryPluginImagesComponentFiles_File_history.light.png" Source="$(var.HistoryPluginImagesComponentFilesPath)\history.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- Uri Plugin -->
     <DirectoryRef Id="UriPluginFolder" FileSource="$(var.UriComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--UriComponentFiles_Component_Def-->
+
+            <Component Id="UriComponentFiles_Component" Win64="yes" Guid="89811946-D0DE-40F9-88A7-5F9F9157B415">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="UriComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="UriComponentFiles_File_backup_restore_settings.json" Source="$(var.UriComponentFilesPath)\backup_restore_settings.json" />
+              <File Id="UriComponentFiles_File_Dia2Lib.dll" Source="$(var.UriComponentFilesPath)\Dia2Lib.dll" />
+              <File Id="UriComponentFiles_File_Microsoft.Plugin.Uri.deps.json" Source="$(var.UriComponentFilesPath)\Microsoft.Plugin.Uri.deps.json" />
+              <File Id="UriComponentFiles_File_Microsoft.Plugin.Uri.dll" Source="$(var.UriComponentFilesPath)\Microsoft.Plugin.Uri.dll" />
+              <File Id="UriComponentFiles_File_plugin.json" Source="$(var.UriComponentFilesPath)\plugin.json" />
+              <File Id="UriComponentFiles_File_PowerToys.Interop.dll" Source="$(var.UriComponentFilesPath)\PowerToys.Interop.dll" />
+              <File Id="UriComponentFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.UriComponentFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="UriComponentFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.UriComponentFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="UriComponentFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.UriComponentFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="UriComponentFiles_File_TraceReloggerLib.dll" Source="$(var.UriComponentFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="UriImagesFolder" FileSource="$(var.UriImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--UriImagesComponentFiles_Component_Def-->
+
+            <Component Id="UriImagesComponentFiles_Component" Win64="yes" Guid="77144FC4-F63B-4A3A-A7EB-F5426A9AFED6">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="UriImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="UriImagesComponentFiles_File_uri.dark.png" Source="$(var.UriImagesComponentFilesPath)\uri.dark.png" />
+              <File Id="UriImagesComponentFiles_File_uri.light.png" Source="$(var.UriImagesComponentFilesPath)\uri.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- VSCodeWorkspaces Plugin -->
     <DirectoryRef Id="VSCodeWorkspacesPluginFolder" FileSource="$(var.VSCWrkCompFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--VSCWrkCompFiles_Component_Def-->
+
+            <Component Id="VSCWrkCompFiles_Component" Win64="yes" Guid="1EADCFB4-4B9C-4120-BE58-D98FDC9AEDB2">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="VSCWrkCompFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="VSCWrkCompFiles_File_backup_restore_settings.json" Source="$(var.VSCWrkCompFilesPath)\backup_restore_settings.json" />
+              <File Id="VSCWrkCompFiles_File_Community.PowerToys.Run.Plugin.VSCodeWorkspaces.deps.json" Source="$(var.VSCWrkCompFilesPath)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.deps.json" />
+              <File Id="VSCWrkCompFiles_File_Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll" Source="$(var.VSCWrkCompFilesPath)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.dll" />
+              <File Id="VSCWrkCompFiles_File_Dia2Lib.dll" Source="$(var.VSCWrkCompFilesPath)\Dia2Lib.dll" />
+              <File Id="VSCWrkCompFiles_File_plugin.json" Source="$(var.VSCWrkCompFilesPath)\plugin.json" />
+              <File Id="VSCWrkCompFiles_File_PowerToys.Interop.dll" Source="$(var.VSCWrkCompFilesPath)\PowerToys.Interop.dll" />
+              <File Id="VSCWrkCompFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.VSCWrkCompFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="VSCWrkCompFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.VSCWrkCompFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="VSCWrkCompFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.VSCWrkCompFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="VSCWrkCompFiles_File_TraceReloggerLib.dll" Source="$(var.VSCWrkCompFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="VSCodeWorkspaceImagesFolder" FileSource="$(var.VSCWrkImagesCompFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--VSCWrkImagesCompFiles_Component_Def-->
+
+            <Component Id="VSCWrkImagesCompFiles_Component" Win64="yes" Guid="EC723350-B076-4375-BA54-83D1C60853AE">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="VSCWrkImagesCompFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="VSCWrkImagesCompFiles_File_code.dark.png" Source="$(var.VSCWrkImagesCompFilesPath)\code.dark.png" />
+              <File Id="VSCWrkImagesCompFiles_File_code.light.png" Source="$(var.VSCWrkImagesCompFilesPath)\code.light.png" />
+              <File Id="VSCWrkImagesCompFiles_File_folder.png" Source="$(var.VSCWrkImagesCompFilesPath)\folder.png" />
+              <File Id="VSCWrkImagesCompFiles_File_monitor.png" Source="$(var.VSCWrkImagesCompFilesPath)\monitor.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- WindowWalker Plugin -->
     <DirectoryRef Id="WindowWalkerPluginFolder" FileSource="$(var.WindowWlkrCompFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--WindowWlkrCompFiles_Component_Def-->
+
+            <Component Id="WindowWlkrCompFiles_Component" Win64="yes" Guid="ACD2274E-FFFB-43B4-B2A2-078B1CB2E8C9">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="WindowWlkrCompFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="WindowWlkrCompFiles_File_backup_restore_settings.json" Source="$(var.WindowWlkrCompFilesPath)\backup_restore_settings.json" />
+              <File Id="WindowWlkrCompFiles_File_Dia2Lib.dll" Source="$(var.WindowWlkrCompFilesPath)\Dia2Lib.dll" />
+              <File Id="WindowWlkrCompFiles_File_Microsoft.Plugin.WindowWalker.deps.json" Source="$(var.WindowWlkrCompFilesPath)\Microsoft.Plugin.WindowWalker.deps.json" />
+              <File Id="WindowWlkrCompFiles_File_Microsoft.Plugin.WindowWalker.dll" Source="$(var.WindowWlkrCompFilesPath)\Microsoft.Plugin.WindowWalker.dll" />
+              <File Id="WindowWlkrCompFiles_File_plugin.json" Source="$(var.WindowWlkrCompFilesPath)\plugin.json" />
+              <File Id="WindowWlkrCompFiles_File_PowerToys.Interop.dll" Source="$(var.WindowWlkrCompFilesPath)\PowerToys.Interop.dll" />
+              <File Id="WindowWlkrCompFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.WindowWlkrCompFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="WindowWlkrCompFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.WindowWlkrCompFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="WindowWlkrCompFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.WindowWlkrCompFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="WindowWlkrCompFiles_File_TraceReloggerLib.dll" Source="$(var.WindowWlkrCompFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
     <DirectoryRef Id="WindowWalkerImagesFolder" FileSource="$(var.WindowWlkrImagesCompFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--WindowWlkrImagesCompFiles_Component_Def-->
+
+            <Component Id="WindowWlkrImagesCompFiles_Component" Win64="yes" Guid="C0FC19C1-1D3F-4FC7-9FD8-0D539B662724">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="WindowWlkrImagesCompFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="WindowWlkrImagesCompFiles_File_info.dark.png" Source="$(var.WindowWlkrImagesCompFilesPath)\info.dark.png" />
+              <File Id="WindowWlkrImagesCompFiles_File_info.light.png" Source="$(var.WindowWlkrImagesCompFilesPath)\info.light.png" />
+              <File Id="WindowWlkrImagesCompFiles_File_windowwalker.dark.png" Source="$(var.WindowWlkrImagesCompFilesPath)\windowwalker.dark.png" />
+              <File Id="WindowWlkrImagesCompFiles_File_windowwalker.light.png" Source="$(var.WindowWlkrImagesCompFilesPath)\windowwalker.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- OneNote Plugin -->
     <DirectoryRef Id="OneNotePluginFolder" FileSource="$(var.OneNoteComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--OneNoteComponentFiles_Component_Def-->
+
+            <Component Id="OneNoteComponentFiles_Component" Win64="yes" Guid="C8FD8066-DB69-40E5-8781-59860BC88CB3">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="OneNoteComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="OneNoteComponentFiles_File_backup_restore_settings.json" Source="$(var.OneNoteComponentFilesPath)\backup_restore_settings.json" />
+              <File Id="OneNoteComponentFiles_File_Dia2Lib.dll" Source="$(var.OneNoteComponentFilesPath)\Dia2Lib.dll" />
+              <File Id="OneNoteComponentFiles_File_Microsoft.PowerToys.Run.Plugin.OneNote.deps.json" Source="$(var.OneNoteComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.OneNote.deps.json" />
+              <File Id="OneNoteComponentFiles_File_Microsoft.PowerToys.Run.Plugin.OneNote.dll" Source="$(var.OneNoteComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.OneNote.dll" />
+              <File Id="OneNoteComponentFiles_File_plugin.json" Source="$(var.OneNoteComponentFilesPath)\plugin.json" />
+              <File Id="OneNoteComponentFiles_File_PowerToys.Interop.dll" Source="$(var.OneNoteComponentFilesPath)\PowerToys.Interop.dll" />
+              <File Id="OneNoteComponentFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.OneNoteComponentFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="OneNoteComponentFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.OneNoteComponentFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="OneNoteComponentFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.OneNoteComponentFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="OneNoteComponentFiles_File_TraceReloggerLib.dll" Source="$(var.OneNoteComponentFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="OneNoteImagesFolder" FileSource="$(var.OneNoteImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--OneNoteImagesComponentFiles_Component_Def-->
+
+            <Component Id="OneNoteImagesComponentFiles_Component" Win64="yes" Guid="66DA9C06-64DB-47DA-BBF2-DB458095207B">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="OneNoteImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="OneNoteImagesComponentFiles_File_oneNote.dark.png" Source="$(var.OneNoteImagesComponentFilesPath)\oneNote.dark.png" />
+              <File Id="OneNoteImagesComponentFiles_File_oneNote.light.png" Source="$(var.OneNoteImagesComponentFilesPath)\oneNote.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- Registry Plugin -->
     <DirectoryRef Id="RegistryPluginFolder" FileSource="$(var.RegistryComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--RegistryComponentFiles_Component_Def-->
+
+            <Component Id="RegistryComponentFiles_Component" Win64="yes" Guid="322EA560-7B97-487D-B883-19A95266EB0E">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="RegistryComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="RegistryComponentFiles_File_backup_restore_settings.json" Source="$(var.RegistryComponentFilesPath)\backup_restore_settings.json" />
+              <File Id="RegistryComponentFiles_File_Dia2Lib.dll" Source="$(var.RegistryComponentFilesPath)\Dia2Lib.dll" />
+              <File Id="RegistryComponentFiles_File_Microsoft.PowerToys.Run.Plugin.Registry.deps.json" Source="$(var.RegistryComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.Registry.deps.json" />
+              <File Id="RegistryComponentFiles_File_Microsoft.PowerToys.Run.Plugin.Registry.dll" Source="$(var.RegistryComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.Registry.dll" />
+              <File Id="RegistryComponentFiles_File_plugin.json" Source="$(var.RegistryComponentFilesPath)\plugin.json" />
+              <File Id="RegistryComponentFiles_File_PowerToys.Interop.dll" Source="$(var.RegistryComponentFilesPath)\PowerToys.Interop.dll" />
+              <File Id="RegistryComponentFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.RegistryComponentFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="RegistryComponentFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.RegistryComponentFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="RegistryComponentFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.RegistryComponentFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="RegistryComponentFiles_File_TraceReloggerLib.dll" Source="$(var.RegistryComponentFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="RegistryImagesFolder" FileSource="$(var.RegistryImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--RegistryImagesComponentFiles_Component_Def-->
+
+            <Component Id="RegistryImagesComponentFiles_Component" Win64="yes" Guid="2376EF1C-D7D8-44C6-AB00-1C860360A4C3">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="RegistryImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="RegistryImagesComponentFiles_File_reg.dark.png" Source="$(var.RegistryImagesComponentFilesPath)\reg.dark.png" />
+              <File Id="RegistryImagesComponentFiles_File_reg.light.png" Source="$(var.RegistryImagesComponentFilesPath)\reg.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- Service Plugin -->
     <DirectoryRef Id="ServicePluginFolder" FileSource="$(var.ServiceComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--ServiceComponentFiles_Component_Def-->
+
+            <Component Id="ServiceComponentFiles_Component" Win64="yes" Guid="EAE5A5AB-A0EE-4DCA-8B70-94982A141E48">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="ServiceComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="ServiceComponentFiles_File_backup_restore_settings.json" Source="$(var.ServiceComponentFilesPath)\backup_restore_settings.json" />
+              <File Id="ServiceComponentFiles_File_Dia2Lib.dll" Source="$(var.ServiceComponentFilesPath)\Dia2Lib.dll" />
+              <File Id="ServiceComponentFiles_File_Microsoft.PowerToys.Run.Plugin.Service.deps.json" Source="$(var.ServiceComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.Service.deps.json" />
+              <File Id="ServiceComponentFiles_File_Microsoft.PowerToys.Run.Plugin.Service.dll" Source="$(var.ServiceComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.Service.dll" />
+              <File Id="ServiceComponentFiles_File_plugin.json" Source="$(var.ServiceComponentFilesPath)\plugin.json" />
+              <File Id="ServiceComponentFiles_File_PowerToys.Interop.dll" Source="$(var.ServiceComponentFilesPath)\PowerToys.Interop.dll" />
+              <File Id="ServiceComponentFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.ServiceComponentFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="ServiceComponentFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.ServiceComponentFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="ServiceComponentFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.ServiceComponentFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="ServiceComponentFiles_File_TraceReloggerLib.dll" Source="$(var.ServiceComponentFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="ServiceImagesFolder" FileSource="$(var.ServiceImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--ServiceImagesComponentFiles_Component_Def-->
+
+            <Component Id="ServiceImagesComponentFiles_Component" Win64="yes" Guid="8AC6863B-FA5C-4500-BA73-30BCA0E7E2A9">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="ServiceImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="ServiceImagesComponentFiles_File_service.dark.png" Source="$(var.ServiceImagesComponentFilesPath)\service.dark.png" />
+              <File Id="ServiceImagesComponentFiles_File_service.light.png" Source="$(var.ServiceImagesComponentFilesPath)\service.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- System Plugin -->
     <DirectoryRef Id="SystemPluginFolder" FileSource="$(var.SystemComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--SystemComponentFiles_Component_Def-->
+
+            <Component Id="SystemComponentFiles_Component" Win64="yes" Guid="98CD5033-337F-4A81-B5A5-EF674092DC15">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="SystemComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="SystemComponentFiles_File_backup_restore_settings.json" Source="$(var.SystemComponentFilesPath)\backup_restore_settings.json" />
+              <File Id="SystemComponentFiles_File_Dia2Lib.dll" Source="$(var.SystemComponentFilesPath)\Dia2Lib.dll" />
+              <File Id="SystemComponentFiles_File_Microsoft.PowerToys.Run.Plugin.System.deps.json" Source="$(var.SystemComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.System.deps.json" />
+              <File Id="SystemComponentFiles_File_Microsoft.PowerToys.Run.Plugin.System.dll" Source="$(var.SystemComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.System.dll" />
+              <File Id="SystemComponentFiles_File_plugin.json" Source="$(var.SystemComponentFilesPath)\plugin.json" />
+              <File Id="SystemComponentFiles_File_PowerToys.Interop.dll" Source="$(var.SystemComponentFilesPath)\PowerToys.Interop.dll" />
+              <File Id="SystemComponentFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.SystemComponentFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="SystemComponentFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.SystemComponentFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="SystemComponentFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.SystemComponentFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="SystemComponentFiles_File_TraceReloggerLib.dll" Source="$(var.SystemComponentFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
     <DirectoryRef Id="SystemImagesFolder" FileSource="$(var.SystemImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--SystemImagesComponentFiles_Component_Def-->
+
+            <Component Id="SystemImagesComponentFiles_Component" Win64="yes" Guid="41550707-29A1-4240-83DF-5C0ECAE6E83F">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="SystemImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="SystemImagesComponentFiles_File_firmwareSettings.dark.png" Source="$(var.SystemImagesComponentFilesPath)\firmwareSettings.dark.png" />
+              <File Id="SystemImagesComponentFiles_File_firmwareSettings.light.png" Source="$(var.SystemImagesComponentFilesPath)\firmwareSettings.light.png" />
+              <File Id="SystemImagesComponentFiles_File_lock.dark.png" Source="$(var.SystemImagesComponentFilesPath)\lock.dark.png" />
+              <File Id="SystemImagesComponentFiles_File_lock.light.png" Source="$(var.SystemImagesComponentFilesPath)\lock.light.png" />
+              <File Id="SystemImagesComponentFiles_File_logoff.dark.png" Source="$(var.SystemImagesComponentFilesPath)\logoff.dark.png" />
+              <File Id="SystemImagesComponentFiles_File_logoff.light.png" Source="$(var.SystemImagesComponentFilesPath)\logoff.light.png" />
+              <File Id="SystemImagesComponentFiles_File_networkAdapter.dark.png" Source="$(var.SystemImagesComponentFilesPath)\networkAdapter.dark.png" />
+              <File Id="SystemImagesComponentFiles_File_networkAdapter.light.png" Source="$(var.SystemImagesComponentFilesPath)\networkAdapter.light.png" />
+              <File Id="SystemImagesComponentFiles_File_recyclebin.dark.png" Source="$(var.SystemImagesComponentFilesPath)\recyclebin.dark.png" />
+              <File Id="SystemImagesComponentFiles_File_recyclebin.light.png" Source="$(var.SystemImagesComponentFilesPath)\recyclebin.light.png" />
+              <File Id="SystemImagesComponentFiles_File_restart.dark.png" Source="$(var.SystemImagesComponentFilesPath)\restart.dark.png" />
+              <File Id="SystemImagesComponentFiles_File_restart.light.png" Source="$(var.SystemImagesComponentFilesPath)\restart.light.png" />
+              <File Id="SystemImagesComponentFiles_File_shutdown.dark.png" Source="$(var.SystemImagesComponentFilesPath)\shutdown.dark.png" />
+              <File Id="SystemImagesComponentFiles_File_shutdown.light.png" Source="$(var.SystemImagesComponentFilesPath)\shutdown.light.png" />
+              <File Id="SystemImagesComponentFiles_File_sleep.dark.png" Source="$(var.SystemImagesComponentFilesPath)\sleep.dark.png" />
+              <File Id="SystemImagesComponentFiles_File_sleep.light.png" Source="$(var.SystemImagesComponentFilesPath)\sleep.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- TimeDate Plugin -->
     <DirectoryRef Id="TimeDatePluginFolder" FileSource="$(var.TimeDateComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--TimeDateComponentFiles_Component_Def-->
+
+            <Component Id="TimeDateComponentFiles_Component" Win64="yes" Guid="4054901A-4CD6-4BF0-8291-B44AB39507B1">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="TimeDateComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="TimeDateComponentFiles_File_backup_restore_settings.json" Source="$(var.TimeDateComponentFilesPath)\backup_restore_settings.json" />
+              <File Id="TimeDateComponentFiles_File_Dia2Lib.dll" Source="$(var.TimeDateComponentFilesPath)\Dia2Lib.dll" />
+              <File Id="TimeDateComponentFiles_File_Microsoft.PowerToys.Run.Plugin.TimeDate.deps.json" Source="$(var.TimeDateComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.TimeDate.deps.json" />
+              <File Id="TimeDateComponentFiles_File_Microsoft.PowerToys.Run.Plugin.TimeDate.dll" Source="$(var.TimeDateComponentFilesPath)\Microsoft.PowerToys.Run.Plugin.TimeDate.dll" />
+              <File Id="TimeDateComponentFiles_File_plugin.json" Source="$(var.TimeDateComponentFilesPath)\plugin.json" />
+              <File Id="TimeDateComponentFiles_File_PowerToys.Interop.dll" Source="$(var.TimeDateComponentFilesPath)\PowerToys.Interop.dll" />
+              <File Id="TimeDateComponentFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.TimeDateComponentFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="TimeDateComponentFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.TimeDateComponentFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="TimeDateComponentFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.TimeDateComponentFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="TimeDateComponentFiles_File_TraceReloggerLib.dll" Source="$(var.TimeDateComponentFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
     <DirectoryRef Id="TimeDateImagesFolder" FileSource="$(var.TimeDateImagesComponentFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--TimeDateImagesComponentFiles_Component_Def-->
+
+            <Component Id="TimeDateImagesComponentFiles_Component" Win64="yes" Guid="8C580837-A05D-4147-8325-655404C44633">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="TimeDateImagesComponentFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="TimeDateImagesComponentFiles_File_calendar.dark.png" Source="$(var.TimeDateImagesComponentFilesPath)\calendar.dark.png" />
+              <File Id="TimeDateImagesComponentFiles_File_calendar.light.png" Source="$(var.TimeDateImagesComponentFilesPath)\calendar.light.png" />
+              <File Id="TimeDateImagesComponentFiles_File_time.dark.png" Source="$(var.TimeDateImagesComponentFilesPath)\time.dark.png" />
+              <File Id="TimeDateImagesComponentFiles_File_time.light.png" Source="$(var.TimeDateImagesComponentFilesPath)\time.light.png" />
+              <File Id="TimeDateImagesComponentFiles_File_timeDate.dark.png" Source="$(var.TimeDateImagesComponentFilesPath)\timeDate.dark.png" />
+              <File Id="TimeDateImagesComponentFiles_File_timeDate.light.png" Source="$(var.TimeDateImagesComponentFilesPath)\timeDate.light.png" />
+              <File Id="TimeDateImagesComponentFiles_File_Warning.dark.png" Source="$(var.TimeDateImagesComponentFilesPath)\Warning.dark.png" />
+              <File Id="TimeDateImagesComponentFiles_File_Warning.light.png" Source="$(var.TimeDateImagesComponentFilesPath)\Warning.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- WindowsSettings Plugin -->
     <DirectoryRef Id="WindowsSettingsPluginFolder" FileSource="$(var.WinSetCmpFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--WinSetCmpFiles_Component_Def-->
+
+            <Component Id="WinSetCmpFiles_Component" Win64="yes" Guid="7F155C2D-AEA0-4C76-AB8A-4A9C8E10A9A6">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="WinSetCmpFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="WinSetCmpFiles_File_backup_restore_settings.json" Source="$(var.WinSetCmpFilesPath)\backup_restore_settings.json" />
+              <File Id="WinSetCmpFiles_File_Dia2Lib.dll" Source="$(var.WinSetCmpFilesPath)\Dia2Lib.dll" />
+              <File Id="WinSetCmpFiles_File_Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json" Source="$(var.WinSetCmpFilesPath)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.deps.json" />
+              <File Id="WinSetCmpFiles_File_Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll" Source="$(var.WinSetCmpFilesPath)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.dll" />
+              <File Id="WinSetCmpFiles_File_plugin.json" Source="$(var.WinSetCmpFilesPath)\plugin.json" />
+              <File Id="WinSetCmpFiles_File_PowerToys.Interop.dll" Source="$(var.WinSetCmpFilesPath)\PowerToys.Interop.dll" />
+              <File Id="WinSetCmpFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.WinSetCmpFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="WinSetCmpFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.WinSetCmpFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="WinSetCmpFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.WinSetCmpFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="WinSetCmpFiles_File_TraceReloggerLib.dll" Source="$(var.WinSetCmpFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="WindowsSettingsImagesFolder" FileSource="$(var.WinSetImagesCmpFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--WinSetImagesCmpFiles_Component_Def-->
+
+            <Component Id="WinSetImagesCmpFiles_Component" Win64="yes" Guid="2D3F2378-2796-47E3-87E1-AD059FAF38D1">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="WinSetImagesCmpFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="WinSetImagesCmpFiles_File_WindowsSettings.dark.png" Source="$(var.WinSetImagesCmpFilesPath)\WindowsSettings.dark.png" />
+              <File Id="WinSetImagesCmpFiles_File_WindowsSettings.light.png" Source="$(var.WinSetImagesCmpFilesPath)\WindowsSettings.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- WindowsTerminal Plugin -->
     <DirectoryRef Id="WindowsTerminalPluginFolder" FileSource="$(var.WinTermCmpFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--WinTermCmpFiles_Component_Def-->
+
+            <Component Id="WinTermCmpFiles_Component" Win64="yes" Guid="3D87F1CA-E287-4518-B8D4-253083528D22">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="WinTermCmpFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="WinTermCmpFiles_File_backup_restore_settings.json" Source="$(var.WinTermCmpFilesPath)\backup_restore_settings.json" />
+              <File Id="WinTermCmpFiles_File_Dia2Lib.dll" Source="$(var.WinTermCmpFilesPath)\Dia2Lib.dll" />
+              <File Id="WinTermCmpFiles_File_Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json" Source="$(var.WinTermCmpFilesPath)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.deps.json" />
+              <File Id="WinTermCmpFiles_File_Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll" Source="$(var.WinTermCmpFilesPath)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.dll" />
+              <File Id="WinTermCmpFiles_File_plugin.json" Source="$(var.WinTermCmpFilesPath)\plugin.json" />
+              <File Id="WinTermCmpFiles_File_PowerToys.Interop.dll" Source="$(var.WinTermCmpFilesPath)\PowerToys.Interop.dll" />
+              <File Id="WinTermCmpFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.WinTermCmpFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="WinTermCmpFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.WinTermCmpFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="WinTermCmpFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.WinTermCmpFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="WinTermCmpFiles_File_TraceReloggerLib.dll" Source="$(var.WinTermCmpFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="WindowsTerminalImagesFolder" FileSource="$(var.WinTermImagesCmpFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-    <!--WinTermImagesCmpFiles_Component_Def-->
+
+            <Component Id="WinTermImagesCmpFiles_Component" Win64="yes" Guid="A239B20B-CA57-4166-9B38-99C0FEB2144C">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="WinTermImagesCmpFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="WinTermImagesCmpFiles_File_WindowsTerminal.dark.png" Source="$(var.WinTermImagesCmpFilesPath)\WindowsTerminal.dark.png" />
+              <File Id="WinTermImagesCmpFiles_File_WindowsTerminal.light.png" Source="$(var.WinTermImagesCmpFilesPath)\WindowsTerminal.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <!-- PowerToys Plugin -->
     <DirectoryRef Id="PowerToysPluginFolder" FileSource="$(var.PowerToysCmpFilesPath)">
       <!-- Generated by generateFileComponents.ps1 -->
-      <!--PowerToysCmpFiles_Component_Def-->
+
+            <Component Id="PowerToysCmpFiles_Component" Win64="yes" Guid="E210DFC0-8771-43D9-844D-42D337B70B5C">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="PowerToysCmpFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="PowerToysCmpFiles_File_backup_restore_settings.json" Source="$(var.PowerToysCmpFilesPath)\backup_restore_settings.json" />
+              <File Id="PowerToysCmpFiles_File_Dia2Lib.dll" Source="$(var.PowerToysCmpFilesPath)\Dia2Lib.dll" />
+              <File Id="PowerToysCmpFiles_File_Microsoft.PowerToys.Run.Plugin.PowerToys.deps.json" Source="$(var.PowerToysCmpFilesPath)\Microsoft.PowerToys.Run.Plugin.PowerToys.deps.json" />
+              <File Id="PowerToysCmpFiles_File_Microsoft.PowerToys.Run.Plugin.PowerToys.dll" Source="$(var.PowerToysCmpFilesPath)\Microsoft.PowerToys.Run.Plugin.PowerToys.dll" />
+              <File Id="PowerToysCmpFiles_File_plugin.json" Source="$(var.PowerToysCmpFilesPath)\plugin.json" />
+              <File Id="PowerToysCmpFiles_File_PowerToys.Interop.dll" Source="$(var.PowerToysCmpFilesPath)\PowerToys.Interop.dll" />
+              <File Id="PowerToysCmpFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.PowerToysCmpFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="PowerToysCmpFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.PowerToysCmpFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="PowerToysCmpFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.PowerToysCmpFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="PowerToysCmpFiles_File_TraceReloggerLib.dll" Source="$(var.PowerToysCmpFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="PowerToysImagesFolder" FileSource="$(var.PowerToysImagesCmpFilesPath)">
       <!-- Generated by generateFileComponents.ps1 -->
-      <!--PowerToysImagesCmpFiles_Component_Def-->
+
+            <Component Id="PowerToysImagesCmpFiles_Component" Win64="yes" Guid="DBE02FFF-4EB7-47C6-B880-477271793EE3">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="PowerToysImagesCmpFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="PowerToysImagesCmpFiles_File_ColorPicker.png" Source="$(var.PowerToysImagesCmpFilesPath)\ColorPicker.png" />
+              <File Id="PowerToysImagesCmpFiles_File_CropAndLock.png" Source="$(var.PowerToysImagesCmpFilesPath)\CropAndLock.png" />
+              <File Id="PowerToysImagesCmpFiles_File_EnvironmentVariables.png" Source="$(var.PowerToysImagesCmpFilesPath)\EnvironmentVariables.png" />
+              <File Id="PowerToysImagesCmpFiles_File_FancyZones.png" Source="$(var.PowerToysImagesCmpFilesPath)\FancyZones.png" />
+              <File Id="PowerToysImagesCmpFiles_File_Hosts.png" Source="$(var.PowerToysImagesCmpFilesPath)\Hosts.png" />
+              <File Id="PowerToysImagesCmpFiles_File_PowerOcr.png" Source="$(var.PowerToysImagesCmpFilesPath)\PowerOcr.png" />
+              <File Id="PowerToysImagesCmpFiles_File_PowerToys.dark.png" Source="$(var.PowerToysImagesCmpFilesPath)\PowerToys.dark.png" />
+              <File Id="PowerToysImagesCmpFiles_File_PowerToys.light.png" Source="$(var.PowerToysImagesCmpFilesPath)\PowerToys.light.png" />
+              <File Id="PowerToysImagesCmpFiles_File_RegistryPreview.png" Source="$(var.PowerToysImagesCmpFilesPath)\RegistryPreview.png" />
+              <File Id="PowerToysImagesCmpFiles_File_ScreenRuler.png" Source="$(var.PowerToysImagesCmpFilesPath)\ScreenRuler.png" />
+              <File Id="PowerToysImagesCmpFiles_File_ShortcutGuide.png" Source="$(var.PowerToysImagesCmpFilesPath)\ShortcutGuide.png" />
+              <File Id="PowerToysImagesCmpFiles_File_Workspaces.png" Source="$(var.PowerToysImagesCmpFilesPath)\Workspaces.png" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="ValueGeneratorPluginFolder" FileSource="$(var.ValueGeneratorCmpFilesPath)">
       <!-- Generated by generateFileComponents.ps1 -->
-      <!--ValueGeneratorCmpFiles_Component_Def-->
+
+            <Component Id="ValueGeneratorCmpFiles_Component" Win64="yes" Guid="E584D748-37E9-475C-B2DA-CF0E047A35D0">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="ValueGeneratorCmpFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="ValueGeneratorCmpFiles_File_backup_restore_settings.json" Source="$(var.ValueGeneratorCmpFilesPath)\backup_restore_settings.json" />
+              <File Id="ValueGeneratorCmpFiles_File_Community.PowerToys.Run.Plugin.ValueGenerator.deps.json" Source="$(var.ValueGeneratorCmpFilesPath)\Community.PowerToys.Run.Plugin.ValueGenerator.deps.json" />
+              <File Id="ValueGeneratorCmpFiles_File_Community.PowerToys.Run.Plugin.ValueGenerator.dll" Source="$(var.ValueGeneratorCmpFilesPath)\Community.PowerToys.Run.Plugin.ValueGenerator.dll" />
+              <File Id="ValueGeneratorCmpFiles_File_Dia2Lib.dll" Source="$(var.ValueGeneratorCmpFilesPath)\Dia2Lib.dll" />
+              <File Id="ValueGeneratorCmpFiles_File_plugin.json" Source="$(var.ValueGeneratorCmpFilesPath)\plugin.json" />
+              <File Id="ValueGeneratorCmpFiles_File_PowerToys.Interop.dll" Source="$(var.ValueGeneratorCmpFilesPath)\PowerToys.Interop.dll" />
+              <File Id="ValueGeneratorCmpFiles_File_PowerToys.ManagedTelemetry.dll" Source="$(var.ValueGeneratorCmpFilesPath)\PowerToys.ManagedTelemetry.dll" />
+              <File Id="ValueGeneratorCmpFiles_File_PowerToys.MouseJump.Common.dll" Source="$(var.ValueGeneratorCmpFilesPath)\PowerToys.MouseJump.Common.dll" />
+              <File Id="ValueGeneratorCmpFiles_File_PowerToys.ZoomItSettingsInterop.dll" Source="$(var.ValueGeneratorCmpFilesPath)\PowerToys.ZoomItSettingsInterop.dll" />
+              <File Id="ValueGeneratorCmpFiles_File_TraceReloggerLib.dll" Source="$(var.ValueGeneratorCmpFilesPath)\TraceReloggerLib.dll" />
+            </Component>
+
     </DirectoryRef>
 
     <DirectoryRef Id="ValueGeneratorImagesFolder" FileSource="$(var.ValueGeneratorImagesCmpFilesPath)">
       <!-- Generated by generateFileComponents.ps1 -->
-      <!--ValueGeneratorImagesCmpFiles_Component_Def-->
+
+            <Component Id="ValueGeneratorImagesCmpFiles_Component" Win64="yes" Guid="98373067-E1FE-4A39-BBA2-520D06502E12">
+              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
+                <RegistryValue Type="string" Name="ValueGeneratorImagesCmpFiles_Component" Value="" KeyPath="yes"/>
+              </RegistryKey>
+              <File Id="ValueGeneratorImagesCmpFiles_File_ValueGenerator.dark.png" Source="$(var.ValueGeneratorImagesCmpFilesPath)\ValueGenerator.dark.png" />
+              <File Id="ValueGeneratorImagesCmpFiles_File_ValueGenerator.light.png" Source="$(var.ValueGeneratorImagesCmpFilesPath)\ValueGenerator.light.png" />
+              <File Id="ValueGeneratorImagesCmpFiles_File_Warning.dark.png" Source="$(var.ValueGeneratorImagesCmpFilesPath)\Warning.dark.png" />
+              <File Id="ValueGeneratorImagesCmpFiles_File_Warning.light.png" Source="$(var.ValueGeneratorImagesCmpFilesPath)\Warning.light.png" />
+            </Component>
+
     </DirectoryRef>
 
     <ComponentGroup Id="RunComponentGroup">
@@ -443,6 +989,47 @@
         <RemoveFolder Id="RemoveFolderValueGeneratorPluginFolder" Directory="ValueGeneratorPluginFolder" On="uninstall"/>
         <RemoveFolder Id="RemoveFolderValueGeneratorImagesFolder" Directory="ValueGeneratorImagesFolder" On="uninstall"/>
       </Component>
+            <ComponentRef Id="launcherImagesComponentFiles_Component" />
+            <ComponentRef Id="calcComponentFiles_Component" />
+            <ComponentRef Id="calcImagesComponentFiles_Component" />
+            <ComponentRef Id="FolderComponentFiles_Component" />
+            <ComponentRef Id="FolderImagesComponentFiles_Component" />
+            <ComponentRef Id="ProgramComponentFiles_Component" />
+            <ComponentRef Id="ProgramImagesComponentFiles_Component" />
+            <ComponentRef Id="ShellComponentFiles_Component" />
+            <ComponentRef Id="ShellImagesComponentFiles_Component" />
+            <ComponentRef Id="IndexerComponentFiles_Component" />
+            <ComponentRef Id="IndexerImagesComponentFiles_Component" />
+            <ComponentRef Id="UnitConvCompFiles_Component" />
+            <ComponentRef Id="UnitConvImagesCompFiles_Component" />
+            <ComponentRef Id="WebSrchCompFiles_Component" />
+            <ComponentRef Id="WebSrchImagesCompFiles_Component" />
+            <ComponentRef Id="HistoryPluginComponentFiles_Component" />
+            <ComponentRef Id="HistoryPluginImagesComponentFiles_Component" />
+            <ComponentRef Id="UriComponentFiles_Component" />
+            <ComponentRef Id="UriImagesComponentFiles_Component" />
+            <ComponentRef Id="VSCWrkCompFiles_Component" />
+            <ComponentRef Id="VSCWrkImagesCompFiles_Component" />
+            <ComponentRef Id="WindowWlkrCompFiles_Component" />
+            <ComponentRef Id="WindowWlkrImagesCompFiles_Component" />
+            <ComponentRef Id="OneNoteComponentFiles_Component" />
+            <ComponentRef Id="OneNoteImagesComponentFiles_Component" />
+            <ComponentRef Id="RegistryComponentFiles_Component" />
+            <ComponentRef Id="RegistryImagesComponentFiles_Component" />
+            <ComponentRef Id="ServiceComponentFiles_Component" />
+            <ComponentRef Id="ServiceImagesComponentFiles_Component" />
+            <ComponentRef Id="SystemComponentFiles_Component" />
+            <ComponentRef Id="SystemImagesComponentFiles_Component" />
+            <ComponentRef Id="TimeDateComponentFiles_Component" />
+            <ComponentRef Id="TimeDateImagesComponentFiles_Component" />
+            <ComponentRef Id="WinSetCmpFiles_Component" />
+            <ComponentRef Id="WinSetImagesCmpFiles_Component" />
+            <ComponentRef Id="WinTermCmpFiles_Component" />
+            <ComponentRef Id="WinTermImagesCmpFiles_Component" />
+            <ComponentRef Id="PowerToysCmpFiles_Component" />
+            <ComponentRef Id="PowerToysImagesCmpFiles_Component" />
+            <ComponentRef Id="ValueGeneratorCmpFiles_Component" />
+            <ComponentRef Id="ValueGeneratorImagesCmpFiles_Component" />
     </ComponentGroup>
   </Fragment>
 </Wix>
