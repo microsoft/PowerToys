@@ -2,17 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
-using OpenQA.Selenium.Interactions;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -45,7 +39,7 @@ namespace Microsoft.PowerToys.UITest
             where T : Element, new()
         {
             Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
-            var foundElement = FindElementHelper.Find<T, WindowsElement>(
+            var foundElement = FindHelper.Find<T, WindowsElement>(
                 () =>
                 {
                     var element = this.WindowsDriver.FindElement(by.ToSeleniumBy());
@@ -65,21 +59,20 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<T>? FindAll<T>(By by, int timeoutMS = 3000)
+        public ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
-            var foundElements = FindElementHelper.FindAll<T, WindowsElement>(
+            var foundElements = FindHelper.FindAll<T, WindowsElement>(
                 () =>
                 {
                     var elements = this.WindowsDriver.FindElements(by.ToSeleniumBy());
-                    Assert.IsTrue(elements.Count > 0, $"Elements not found using selector: {by}");
                     return elements;
                 },
                 this.WindowsDriver,
                 timeoutMS);
 
-            return foundElements;
+            return foundElements ?? new ReadOnlyCollection<T>(new List<T>());
         }
 
         /// <summary>
@@ -110,6 +103,7 @@ namespace Microsoft.PowerToys.UITest
                 SetForegroundWindow(windowHandle);
                 var hexWindowHandle = windowHandle.ToString("x");
                 var appCapabilities = new AppiumOptions();
+
                 appCapabilities.AddAdditionalCapability("appTopLevelWindow", hexWindowHandle);
                 appCapabilities.AddAdditionalCapability("deviceName", "WindowsPC");
                 this.WindowsDriver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
