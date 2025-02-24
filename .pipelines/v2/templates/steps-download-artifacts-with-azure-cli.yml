@@ -35,7 +35,7 @@ steps:
       Write-Host "Error: AZURE_DEVOPS_EXT_PAT is not set."
       exit 1
     }
-    az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "$(Pipeline.Workspace)/${{parameters.artifactName}}" --run-id $(Build.BuildId) --debug
+    az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "$(Pipeline.Workspace)/${{parameters.artifactName}}" --run-id 116384714 --debug
   displayName: 'Download artifacts with Azure CLI'
   env:
     AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
