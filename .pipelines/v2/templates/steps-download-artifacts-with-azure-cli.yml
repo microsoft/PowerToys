@@ -24,6 +24,9 @@ steps:
 - pwsh: |
     $azureCliPath = "$(Build.ArtifactStagingDirectory)\AzureCLI\bin"
     $env:Path = "$azureCliPath;" + $env:Path
+    Write-Host "check extension..."
+    az extension list
+    az extension update --name azure-devops
     Write-Host "Configuring Azure DevOps defaults..."
     az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
     Write-Host "Downloading artifacts..."
