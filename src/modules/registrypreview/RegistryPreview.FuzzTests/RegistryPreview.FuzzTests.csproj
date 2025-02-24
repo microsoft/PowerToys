@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+	<Platforms>x64;ARM64</Platforms>
+	<LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>

@@ -18,10 +18,12 @@ namespace RegistryPreview.FuzzTests
         private const string KEYIMAGE = "ms-appx:///Assets/RegistryPreview/folder32.png";
         private const string DELETEDKEYIMAGE = "ms-appx:///Assets/RegistryPreview/deleted-folder32.png";
 
+        // Case 1: Fuzz test for CheckKeyLineForBrackets
         public static void FuzzCheckKeyLineForBrackets(ReadOnlySpan<byte> input)
         {
             string registryLine;
 
+            // Simulate registry file content as filenameText
             var filenameText = GenerateRegistryHeader(input);
 
             string[] registryLines = filenameText.Split("\r");
@@ -32,15 +34,17 @@ namespace RegistryPreview.FuzzTests
             }
 
             // REG files have to start with one of two headers and it's case-insensitive
+            // The header in the registry file is either REGISTRYHEADER4 or REGISTRYHEADER5
             registryLine = registryLines[0];
 
+            // Check if the registry header is valid
             if (!IsValidRegistryHeader(registryLine))
             {
                 return;
             }
 
             int index = 1;
-            registryLine = registryLines[index];
+            registryLine = registryLines[index]; // Extract content after the header
 
             ParseHelper.ProcessRegistryLine(registryLine);
             if (registryLine.StartsWith("[-", StringComparison.InvariantCulture))
@@ -49,11 +53,15 @@ namespace RegistryPreview.FuzzTests
                 registryLine = registryLine.Remove(1, 1);
 
                 string imageName = DELETEDKEYIMAGE;
+
+                // Fuzz test for the CheckKeyLineForBrackets method
                 ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
             }
             else if (registryLine.StartsWith('['))
             {
                 string imageName = KEYIMAGE;
+
+                // Fuzz test for the CheckKeyLineForBrackets method
                 ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
             }
             else
@@ -62,12 +70,12 @@ namespace RegistryPreview.FuzzTests
             }
         }
 
+        // Case 1: Fuzz test for StripFirstAndLast
         public static void FuzzStripFirstAndLast(ReadOnlySpan<byte> input)
         {
             string registryLine;
 
             var filenameText = GenerateRegistryHeader(input);
-            Console.WriteLine($"\n input1 is {filenameText}");
 
             filenameText = filenameText.Replace("\r\n", "\r");
             string[] registryLines = filenameText.Split("\r");
@@ -87,7 +95,6 @@ namespace RegistryPreview.FuzzTests
 
             int index = 1;
             registryLine = registryLines[index];
-            Console.WriteLine($"\n registryLine1 is {registryLine}");
 
             ParseHelper.ProcessRegistryLine(registryLine);
 
@@ -98,16 +105,16 @@ namespace RegistryPreview.FuzzTests
 
                 string imageName = DELETEDKEYIMAGE;
                 ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
-                Console.WriteLine($"\n CheckKeyLineForBrackets is {registryLine}");
 
+                // Fuzz test for the StripFirstAndLast method
                 registryLine = ParseHelper.StripFirstAndLast(registryLine);
             }
             else if (registryLine.StartsWith('['))
             {
                 string imageName = KEYIMAGE;
                 ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
-                Console.WriteLine($"\n CheckKeyLineForBrackets2 is {registryLine}");
 
+                // Fuzz test for the StripFirstAndLast method
                 registryLine = ParseHelper.StripFirstAndLast(registryLine);
             }
             else if (registryLine.StartsWith('"') && registryLine.EndsWith("=-", StringComparison.InvariantCulture))
@@ -115,6 +122,7 @@ namespace RegistryPreview.FuzzTests
                 registryLine = registryLine.Replace("=-", string.Empty);
 
                 // remove the "'s without removing all of them
+                // Fuzz test for the StripFirstAndLast method
                 registryLine = ParseHelper.StripFirstAndLast(registryLine);
             }
             else if (registryLine.StartsWith('"'))
@@ -131,6 +139,8 @@ namespace RegistryPreview.FuzzTests
 
                 // trim the whitespace and quotes from the name
                 name = name.Trim();
+
+                // Fuzz test for the StripFirstAndLast method
                 name = ParseHelper.StripFirstAndLast(name);
             }
             else
