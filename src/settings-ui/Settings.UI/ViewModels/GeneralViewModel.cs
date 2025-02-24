@@ -123,7 +123,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _isDevBuild = Helper.GetProductVersion() == "v0.0.1";
 
-            _startup = GeneralSettingsConfig.Startup;
+            _runAtStartupGpoRuleConfiguration = GPOWrapper.GetConfiguredRunAtStartupValue();
+            if (_runAtStartupGpoRuleConfiguration == GpoRuleConfigured.Disabled || _runAtStartupGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _runAtStartupIsGPOConfigured = true;
+                _startup = _runAtStartupGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _startup = GeneralSettingsConfig.Startup;
+            }
+
             _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
@@ -206,6 +217,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static bool _isDevBuild;
         private bool _startup;
+        private GpoRuleConfigured _runAtStartupGpoRuleConfiguration;
+        private bool _runAtStartupIsGPOConfigured;
         private bool _isElevated;
         private bool _runElevated;
         private bool _isAdmin;
@@ -253,6 +266,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
+                if (_runAtStartupIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
                 if (_startup != value)
                 {
                     _startup = value;
@@ -524,6 +543,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsDataDiagnosticsGPOManaged
         {
             get => _enableDataDiagnosticsIsGpoDisallowed;
+        }
+
+        public bool IsRunAtStartupGPOManaged
+        {
+            get => _runAtStartupIsGPOConfigured;
         }
 
         public string SettingsBackupAndRestoreDir

@@ -94,10 +94,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool UseService
         {
-            get => Settings.Properties.UseService;
+            get
+            {
+                if (_allowServiceModeGpoConfiguration == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
+                return Settings.Properties.UseService;
+            }
 
             set
             {
+                if (_allowServiceModeIsGPOConfigured)
+                {
+                    return;
+                }
+
                 var valueChanged = Settings.Properties.UseService != value;
 
                 // Set the UI property itself instantly
@@ -122,6 +135,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        public bool UseServiceSettingIsEnabled => _allowServiceModeIsGPOConfigured == false;
 
         public bool ConnectFieldsVisible
         {
@@ -186,6 +201,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _useOriginalUserInterfaceIsGPOConfigured;
         private GpoRuleConfigured _disallowBlockingScreensaverGpoConfiguration;
         private bool _disallowBlockingScreensaverIsGPOConfigured;
+        private GpoRuleConfigured _allowServiceModeGpoConfiguration;
+        private bool _allowServiceModeIsGPOConfigured;
         private GpoRuleConfigured _sameSubnetOnlyGpoConfiguration;
         private bool _sameSubnetOnlyIsGPOConfigured;
         private GpoRuleConfigured _validateRemoteIpGpoConfiguration;
@@ -508,6 +525,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _disableUserDefinedIpMappingRulesIsGPOConfigured = _disableUserDefinedIpMappingRulesGpoConfiguration == GpoRuleConfigured.Enabled;
 
             // Policies supporting only disabled state
+            _allowServiceModeGpoConfiguration = GPOWrapper.GetConfiguredMwbAllowServiceModeValue();
+            _allowServiceModeIsGPOConfigured = _allowServiceModeGpoConfiguration == GpoRuleConfigured.Disabled;
             _clipboardSharingEnabledGpoConfiguration = GPOWrapper.GetConfiguredMwbClipboardSharingEnabledValue();
             _clipboardSharingEnabledIsGPOConfigured = _clipboardSharingEnabledGpoConfiguration == GpoRuleConfigured.Disabled;
             _fileTransferEnabledGpoConfiguration = GPOWrapper.GetConfiguredMwbFileTransferEnabledValue();
@@ -1232,6 +1251,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendCustomAction("uninstall_service");
         }
 
+        public bool ShowPolicyConfiguredInfoForServiceSettings
+        {
+            get
+            {
+                return IsEnabled && _allowServiceModeIsGPOConfigured;
+            }
+        }
+
         public bool ShowPolicyConfiguredInfoForBehaviorSettings
         {
             get
@@ -1249,7 +1276,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowInfobarRunAsAdminText
         {
-            get { return !CanToggleUseService && IsEnabled; }
+            get { return !CanToggleUseService && IsEnabled && !ShowPolicyConfiguredInfoForServiceSettings; }
         }
     }
 }

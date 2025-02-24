@@ -277,6 +277,15 @@ namespace FancyZonesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dimensions.
+        /// </summary>
+        public static string Dimensions {
+            get {
+                return ResourceManager.GetString("Dimensions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Highlight distance.
         /// </summary>
         public static string Distance_adjacent_zones {
@@ -539,7 +548,7 @@ namespace FancyZonesEditor.Properties {
         
         /// <summary>
         ///   Looks up a localized string similar to 
-        ///• [Shift]+S to split currently focused zone.
+        ///• Shift+S to split currently focused zone.
         ///• Ctrl+Tab to focus zones/resizers.
         ///• Tab to cycle zones and resizers.
         ///• Delete to remove the focused resizer.
@@ -554,8 +563,8 @@ namespace FancyZonesEditor.Properties {
         /// <summary>
         ///   Looks up a localized string similar to 
         ///• Ctrl+Tab to switch focus between dialog and zones.
-        ///• [Shift]+Arrows to resize the focused zone by 10px (5px per edge).
-        ///• Ctrl+[Shift]+Arrows to resize the focused zone by 2px (1px per edge).
+        ///• Shift+Arrows to resize the focused zone by 10px (5px per edge).
+        ///• Ctrl+Shift+Arrows to resize the focused zone by 2px (1px per edge).
         ///• Arrows to move the focused zone by 10px.
         ///• Ctrl+Arrows to move the focused zone by 1px..
         /// </summary>
@@ -652,6 +661,15 @@ namespace FancyZonesEditor.Properties {
         public static string Monitor {
             get {
                 return ResourceManager.GetString("Monitor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Monitor {0}.
+        /// </summary>
+        public static string Monitor_Index {
+            get {
+                return ResourceManager.GetString("Monitor_Index", resourceCulture);
             }
         }
         
@@ -787,6 +805,15 @@ namespace FancyZonesEditor.Properties {
         public static string Save_Apply {
             get {
                 return ResourceManager.GetString("Save_Apply", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scaling.
+        /// </summary>
+        public static string Scaling {
+            get {
+                return ResourceManager.GetString("Scaling", resourceCulture);
             }
         }
         
