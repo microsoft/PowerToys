@@ -69,7 +69,7 @@ jobs:
           **
           !**\*.pdb
           !**\*.lib
-    ${{ else }}:
+  - ${{ else }}:
       - template: steps-download-artifacts-with-azure-cli.yml
         parameters:
           artifactName: $(TestArtifactsName)
