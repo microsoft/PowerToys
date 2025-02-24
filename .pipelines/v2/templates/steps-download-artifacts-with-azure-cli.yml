@@ -30,6 +30,10 @@ steps:
     Write-Host "Configuring Azure DevOps defaults..."
     az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
     Write-Host "Downloading artifacts..."
+    if ($env:AZURE_DEVOPS_EXT_PAT -eq $null -or $env:AZURE_DEVOPS_EXT_PAT -eq "") {
+      Write-Host "Error: AZURE_DEVOPS_EXT_PAT is not set."
+      exit 1
+    }
     az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "$(Pipeline.Workspace)/${{parameters.artifactName}}" --run-id $(Build.BuildId) --debug
   displayName: 'Download artifacts with Azure CLI'
   env:
