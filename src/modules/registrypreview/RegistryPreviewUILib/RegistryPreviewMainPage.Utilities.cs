@@ -225,7 +225,9 @@ namespace RegistryPreviewUILib
             {
                 // special case for when the registryLine begins with a @ - make some tweaks and
                 // let the regular processing handle the rest.
-                if (registryLine.StartsWith("@=-", StringComparison.InvariantCulture))
+                registryLine = ParseHelper.ProcessRegistryLine(registryLine);
+
+                /* if (registryLine.StartsWith("@=-", StringComparison.InvariantCulture))
                 {
                     // REG file has a callout to delete the @ Value which won't work *but* the Registry Editor will
                     // clear the value of the @ Value instead, so it's still a valid line.
@@ -235,7 +237,7 @@ namespace RegistryPreviewUILib
                 {
                     // This is the Value called "(Default)" so we tweak the line for the UX
                     registryLine = registryLine.Replace("@=", "\"(Default)\"=");
-                }
+                }*/
 
                 // continue until we have nothing left to read
                 // switch logic, based off what the current line we're reading is
@@ -245,10 +247,10 @@ namespace RegistryPreviewUILib
                     registryLine = registryLine.Remove(1, 1);
 
                     string imageName = DELETEDKEYIMAGE;
-                    CheckKeyLineForBrackets(ref registryLine, ref imageName);
+                    ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
 
                     // this is a key, so remove the first [ and last ]
-                    registryLine = StripFirstAndLast(registryLine);
+                    registryLine = ParseHelper.StripFirstAndLast(registryLine);
 
                     // do not track the result of this node, since it should have no children
                     AddTextToTree(registryLine, imageName);
@@ -256,10 +258,10 @@ namespace RegistryPreviewUILib
                 else if (registryLine.StartsWith('['))
                 {
                     string imageName = KEYIMAGE;
-                    CheckKeyLineForBrackets(ref registryLine, ref imageName);
+                    ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
 
                     // this is a key, so remove the first [ and last ]
-                    registryLine = StripFirstAndLast(registryLine);
+                    registryLine = ParseHelper.StripFirstAndLast(registryLine);
 
                     treeViewNode = AddTextToTree(registryLine, imageName);
                     lastKeyPath = registryLine;
@@ -270,7 +272,7 @@ namespace RegistryPreviewUILib
                     registryLine = registryLine.Replace("=-", string.Empty);
 
                     // remove the "'s without removing all of them
-                    registryLine = StripFirstAndLast(registryLine);
+                    registryLine = ParseHelper.StripFirstAndLast(registryLine);
 
                     // Create a new listview item that will be used to display the delete value and store it
                     registryValue = new RegistryValue(registryLine, string.Empty, string.Empty, lastKeyPath);
@@ -300,7 +302,7 @@ namespace RegistryPreviewUILib
 
                     // trim the whitespace and quotes from the name
                     name = name.Trim();
-                    name = StripFirstAndLast(name);
+                    name = ParseHelper.StripFirstAndLast(name);
 
                     // Clean out any escaped characters in the value, only for the preview
                     name = StripEscapedCharacters(name);
@@ -326,7 +328,7 @@ namespace RegistryPreviewUILib
 
                     if (value.StartsWith('"') && value.EndsWith('"'))
                     {
-                        value = StripFirstAndLast(value);
+                        value = ParseHelper.StripFirstAndLast(value);
                     }
                     else
                     {
@@ -1038,7 +1040,7 @@ namespace RegistryPreviewUILib
         /// <summary>
         /// Checks a Key line for the closing bracket and treat it as an error if it cannot be found
         /// </summary>
-        private void CheckKeyLineForBrackets(ref string registryLine, ref string imageName)
+        /* private void CheckKeyLineForBrackets(ref string registryLine, ref string imageName)
         {
             // following the current behavior of the registry editor, find the last ] and treat everything else as ignorable
             int lastBracket = registryLine.LastIndexOf(']');
@@ -1061,7 +1063,7 @@ namespace RegistryPreviewUILib
                     imageName = ERRORIMAGE;
                 }
             }
-        }
+        } */
 
         /// <summary>
         /// Takes a binary registry value, sees if it has a ; and dumps the rest of the line - this does not work for REG_SZ values
@@ -1082,7 +1084,7 @@ namespace RegistryPreviewUILib
         /// <summary>
         /// Make sure the root of a full path start with one of the five "hard coded" roots.  Throw an error for the branch if it doesn't.
         /// </summary>
-        private bool CheckForKnownGoodBranches(string key)
+        /* private bool CheckForKnownGoodBranches(string key)
         {
             if ((key.StartsWith("[HKEY_CLASSES_ROOT]", StringComparison.InvariantCultureIgnoreCase) == false &&
                 key.StartsWith("[HKEY_CURRENT_USER]", StringComparison.InvariantCultureIgnoreCase) == false &&
@@ -1112,7 +1114,7 @@ namespace RegistryPreviewUILib
             }
 
             return true;
-        }
+        } */
 
         /// <summary>
         /// Turns the Open Key button in the command bar on/off, depending on if a key is selected

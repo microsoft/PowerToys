@@ -2,26 +2,165 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System;
+using System.Diagnostics;
+using System.Globalization;
+using System.Resources;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Win32;
+using RegistryPreviewUILib;
 
 namespace RegistryPreview.FuzzTests
 {
     public class FuzzTests
     {
-        public static void FuzzParseRegistryFile(ReadOnlySpan<byte> input)
+        private const string REGISTRYHEADER4 = "regedit4";
+        private const string REGISTRYHEADER5 = "windows registry editor version 5.00";
+        private const string KEYIMAGE = "ms-appx:///Assets/RegistryPreview/folder32.png";
+        private const string DELETEDKEYIMAGE = "ms-appx:///Assets/RegistryPreview/deleted-folder32.png";
+
+        public static void FuzzCheckKeyLineForBrackets(ReadOnlySpan<byte> input)
         {
-            try
+            string registryLine;
+
+            var filenameText = GenerateRegistryHeader(input);
+
+            string[] registryLines = filenameText.Split("\r");
+
+            if (registryLines.Length <= 1)
             {
-                var text = System.Text.Encoding.UTF8.GetString(input);
-                
+                return;
             }
-            catch (Exception ex) when (ex is ArgumentException)
+
+            // REG files have to start with one of two headers and it's case-insensitive
+            registryLine = registryLines[0];
+
+            if (!IsValidRegistryHeader(registryLine))
             {
-                // This is an example. It's important to filter out any *expected* exceptions from our code here.
-                // However, catching all exceptions is considered an anti-pattern because it may suppress legitimate
-                // issues, such as a NullReferenceException thrown by our code. In this case, we still re-throw
-                // the exception, as the ToJsonFromXmlOrCsvAsync method is not expected to throw any exceptions.
-                throw;
+                return;
+            }
+
+            int index = 1;
+            registryLine = registryLines[index];
+
+            ParseHelper.ProcessRegistryLine(registryLine);
+            if (registryLine.StartsWith("[-", StringComparison.InvariantCulture))
+            {
+                // remove the - as we won't need it but it will get special treatment in the UI
+                registryLine = registryLine.Remove(1, 1);
+
+                string imageName = DELETEDKEYIMAGE;
+                ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
+            }
+            else if (registryLine.StartsWith('['))
+            {
+                string imageName = KEYIMAGE;
+                ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        public static void FuzzStripFirstAndLast(ReadOnlySpan<byte> input)
+        {
+            string registryLine;
+
+            var filenameText = GenerateRegistryHeader(input);
+            Console.WriteLine($"\n input1 is {filenameText}");
+
+            filenameText = filenameText.Replace("\r\n", "\r");
+            string[] registryLines = filenameText.Split("\r");
+
+            if (registryLines.Length <= 1)
+            {
+                return;
+            }
+
+            // REG files have to start with one of two headers and it's case-insensitive
+            registryLine = registryLines[0];
+
+            if (!IsValidRegistryHeader(registryLine))
+            {
+                return;
+            }
+
+            int index = 1;
+            registryLine = registryLines[index];
+            Console.WriteLine($"\n registryLine1 is {registryLine}");
+
+            ParseHelper.ProcessRegistryLine(registryLine);
+
+            if (registryLine.StartsWith("[-", StringComparison.InvariantCulture))
+            {
+                // remove the - as we won't need it but it will get special treatment in the UI
+                registryLine = registryLine.Remove(1, 1);
+
+                string imageName = DELETEDKEYIMAGE;
+                ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
+                Console.WriteLine($"\n CheckKeyLineForBrackets is {registryLine}");
+
+                registryLine = ParseHelper.StripFirstAndLast(registryLine);
+            }
+            else if (registryLine.StartsWith('['))
+            {
+                string imageName = KEYIMAGE;
+                ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
+                Console.WriteLine($"\n CheckKeyLineForBrackets2 is {registryLine}");
+
+                registryLine = ParseHelper.StripFirstAndLast(registryLine);
+            }
+            else if (registryLine.StartsWith('"') && registryLine.EndsWith("=-", StringComparison.InvariantCulture))
+            {
+                registryLine = registryLine.Replace("=-", string.Empty);
+
+                // remove the "'s without removing all of them
+                registryLine = ParseHelper.StripFirstAndLast(registryLine);
+            }
+            else if (registryLine.StartsWith('"'))
+            {
+                int equal = registryLine.IndexOf('=');
+                if ((equal < 0) || (equal > registryLine.Length - 1))
+                {
+                    // something is very wrong
+                    return;
+                }
+
+                // set the name and the value
+                string name = registryLine.Substring(0, equal);
+
+                // trim the whitespace and quotes from the name
+                name = name.Trim();
+                name = ParseHelper.StripFirstAndLast(name);
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        public static string GenerateRegistryHeader(ReadOnlySpan<byte> input)
+        {
+            string header = new Random().Next(2) == 0 ? REGISTRYHEADER4 : REGISTRYHEADER5;
+
+            string inputText = System.Text.Encoding.UTF8.GetString(input);
+            string filenameText = header + "\r\n" + inputText;
+
+            return filenameText.Replace("\r\n", "\r");
+        }
+
+        private static bool IsValidRegistryHeader(string line)
+        {
+            // Convert the line to lowercase once for comparison
+            var lineLower = line.ToLowerInvariant();
+
+            switch (line)
+            {
+                case REGISTRYHEADER4:
+                case REGISTRYHEADER5:
+                    return true;
+                default:
+                    return false;
             }
         }
     }
