@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FileActionsMenuShortcut = DefaultFileActionsMenuShortcut;
         }
 
-        private bool enableFileActionsMenu = true;
+        private bool enableFileActionsMenu; // default to false
 
         [JsonPropertyName("file-actions-menu-toggle-setting")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]

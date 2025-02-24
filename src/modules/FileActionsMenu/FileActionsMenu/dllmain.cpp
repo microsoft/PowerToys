@@ -417,6 +417,12 @@ public:
         Logger::info("Send settings telemetry");
         Trace::SettingsTelemetry(m_hotkey);
     }
+
+    // Returns whether the utility should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
+    }
 };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()

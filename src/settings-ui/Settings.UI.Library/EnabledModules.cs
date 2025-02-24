@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool fileActionsMenu = true;
+        private bool fileActionsMenu; // Default to false
 
         [JsonPropertyName("FileActionsMenu")]
         public bool FileActionsMenu
