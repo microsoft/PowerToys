@@ -26,8 +26,30 @@ steps:
     $env:Path = "$azureCliPath;" + $env:Path
     Write-Host "Configuring Azure DevOps defaults..."
     az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
-    Write-Host "Downloading artifacts..."
-    az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "$(Pipeline.Workspace)/${{parameters.artifactName}}" --run-id $(Build.BuildId) --debug
+    Write-Host "Downloading artifacts with retry..."
+    $retryCount = 0
+    $maxRetries = 3
+    $success = $false
+
+    while ($retryCount -lt $maxRetries -and !$success) {
+        try {
+            Write-Host "Attempting to download artifacts (Attempt $($retryCount + 1))..."
+            az pipelines runs artifact download --artifact-name ${{parameters.artifactName}} --path "$(Pipeline.Workspace)/${{parameters.artifactName}}" --run-id $(Build.BuildId)
+            $success = $true
+        } catch {
+            Write-Host "Failed to download artifacts. Error: $_"
+            $retryCount++
+            if ($retryCount -lt $maxRetries) {
+                Write-Host "Retrying in 10 seconds..."
+                Start-Sleep -Seconds 10
+            }
+        }
+    }
+
+    if (-not $success) {
+        Write-Host "Artifact download failed after $maxRetries attempts."
+        exit 1
+    }
   displayName: 'Download artifacts with Azure CLI'
   env:
     AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
