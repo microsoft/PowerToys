@@ -96,6 +96,8 @@ namespace Microsoft.PowerToys.UITest
             PerformAction((actions, windowElement) =>
             {
                 actions.MoveToElement(windowElement);
+
+                // Move 2by2 offset to make click more stable instead of click on the border of the element
                 actions.MoveByOffset(2, 2);
 
                 if (rightClick)
@@ -107,6 +109,23 @@ namespace Microsoft.PowerToys.UITest
                     actions.Click();
                 }
 
+                actions.Build().Perform();
+            });
+        }
+
+        /// <summary>
+        /// Double Click the UI element.
+        /// </summary>
+        public void DoubleClick()
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                actions.MoveToElement(windowElement);
+
+                // Move 2by2 offset to make click more stable instead of click on the border of the element
+                actions.MoveByOffset(2, 2);
+
+                actions.DoubleClick();
                 actions.Build().Perform();
             });
         }
