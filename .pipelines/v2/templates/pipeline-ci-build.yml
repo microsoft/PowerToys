@@ -45,8 +45,6 @@ stages:
   - ${{ each platform in parameters.buildPlatforms }}:
     - stage: Test_${{ platform }}
       displayName: Test ${{ platform }}
-      dependsOn:
-        - Build_${{platform}}
       jobs:
         - template: job-test-project.yml
           parameters:
