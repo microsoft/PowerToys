@@ -123,8 +123,23 @@
   <data name="RegExCheatSheet_Title.Text" xml:space="preserve">
     <value>RegEx help</value>
   </data>
+  <data name="RegExCheatSheet_StartOfString" xml:space="preserve">
+    <value>Start of the string</value>
+  </data>
+  <data name="RegExCheatSheet_EndOfString" xml:space="preserve">
+    <value>End of the string</value>
+  </data>
   <data name="RegExCheatSheet_MatchAny" xml:space="preserve">
     <value>Matches any character</value>
+  </data>
+  <data name="RegExCheatSheet_ZeroOrOne" xml:space="preserve">
+    <value>Matches zero or one of the preceding token</value>
+  </data>
+  <data name="RegExCheatSheet_ZeroOrMore" xml:space="preserve">
+    <value>Matches zero or more of the preceding token</value>
+  </data>
+  <data name="RegExCheatSheet_OneOrMore" xml:space="preserve">
+    <value>Matches one or more of the preceding token</value>
   </data>
   <data name="RegExCheatSheet_MatchDigit" xml:space="preserve">
     <value>Any digit, short for [0-9]</value>
@@ -132,14 +147,14 @@
   <data name="RegExCheatSheet_MatchNonDigit" xml:space="preserve">
     <value>A non-digit, short for [^0-9]</value>
   </data>
+  <data name="RegExCheatSheet_MatchWS" xml:space="preserve">
+    <value>Any whitespace character</value>
+  </data>
   <data name="RegExCheatSheet_MatchNonWS" xml:space="preserve">
-    <value>A non-whitespace character, short for [^\\s]</value>
+    <value>A non-whitespace character, short for [^\s]</value>
   </data>
   <data name="RegExCheatSheet_MatchWordChar" xml:space="preserve">
     <value>A word character, short for [a-zA-Z_0-9]</value>
-  </data>
-  <data name="RegExCheatSheet_MatchOneOrMoreWS" xml:space="preserve">
-    <value>One or more non-whitespace characters</value>
   </data>
   <data name="RegExCheatSheet_MatchWordBoundary" xml:space="preserve">
     <value>Matches a word boundary where a word character is [a-zA-Z0-9_].</value>
