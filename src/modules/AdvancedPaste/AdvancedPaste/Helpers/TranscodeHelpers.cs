@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using AdvancedPaste.Models;
 using ManagedCommon;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Media.MediaProperties;
@@ -139,7 +140,8 @@ internal static class TranscodeHelpers
 
         if (!prepareOp.CanTranscode)
         {
-            throw new InvalidOperationException($"Error transcoding; {nameof(prepareOp.FailureReason)}={prepareOp.FailureReason}");
+            var message = ResourceLoaderInstance.ResourceLoader.GetString(prepareOp.FailureReason == TranscodeFailureReason.CodecNotFound ? "TranscodeErrorUnsupportedCodec" : "TranscodeErrorGeneral");
+            throw new PasteActionException(message, new InvalidOperationException($"Error transcoding; {nameof(prepareOp.FailureReason)}={prepareOp.FailureReason}"));
         }
 
         await prepareOp.TranscodeAsync().AsTask(cancellationToken, progress);

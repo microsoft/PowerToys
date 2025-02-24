@@ -198,6 +198,12 @@
   <data name="TranscodeToMp4" xml:space="preserve">
     <value>Transcode to .mp4 (H.264/AAC)</value>
   </data>
+  <data name="TranscodeErrorGeneral" xml:space="preserve">
+    <value>An error occurred while transcoding media file</value>
+  </data>
+  <data name="TranscodeErrorUnsupportedCodec" xml:space="preserve">
+    <value>The media file contains an unsupported codec</value>
+  </data>
   <data name="PasteButtonAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Paste</value>
   </data>
