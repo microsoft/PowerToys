@@ -24,11 +24,12 @@ steps:
 - pwsh: |
     $azureCliPath = "$(Build.ArtifactStagingDirectory)\AzureCLI\bin"
     $env:Path = "$azureCliPath;" + $env:Path
-    Write-Host "check extension..."
-    az extension list
-    az extension update --name azure-devops
+    Write-Host "Add azure-devops..."
+    az extension add -n azure-devops
     Write-Host "Configuring Azure DevOps defaults..."
     az devops configure --defaults organization='$(System.TeamFoundationCollectionUri)' project='$(System.TeamProject)' --use-git-aliases true
+    Write-Host "check permission"
+    az pipelines list --org "$(System.TeamFoundationCollectionUri)" --project "$(System.TeamProject)" --output table
     Write-Host "Downloading artifacts..."
     if ($env:AZURE_DEVOPS_EXT_PAT -eq $null -or $env:AZURE_DEVOPS_EXT_PAT -eq "") {
       Write-Host "Error: AZURE_DEVOPS_EXT_PAT is not set."
