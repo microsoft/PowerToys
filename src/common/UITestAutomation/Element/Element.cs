@@ -112,6 +112,20 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Double Click the UI element.
+        /// </summary>
+        public void DoubleClick()
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                actions.MoveToElement(windowElement);
+                actions.MoveByOffset(2, 2);
+                actions.DoubleClick();
+                actions.Build().Perform();
+            });
+        }
+
+        /// <summary>
         /// Gets the attribute value of the UI element.
         /// </summary>
         /// <param name="attributeName">The name of the attribute to get.</param>
@@ -185,9 +199,7 @@ namespace Microsoft.PowerToys.UITest
                 Task.Delay(msPreAction).Wait();
             }
 
-            var windowElement = this.windowsElement!;
-            Actions actions = new Actions(this.driver);
-            action(actions, windowElement);
+            action(new Actions(this.driver), this.windowsElement!);
 
             if (msPostAction > 0)
             {
