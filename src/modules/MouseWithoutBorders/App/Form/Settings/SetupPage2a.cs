@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders
 {
@@ -92,12 +93,12 @@ namespace MouseWithoutBorders
                 SecurityCode = Common.MyKey;
             }
 
-            Common.MachineMatrix = new string[Common.MAX_MACHINE] { ComputerNameField.Text.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
+            MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { ComputerNameField.Text.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
 
-            string[] machines = Common.MachineMatrix;
-            Common.MachinePool.Initialize(machines);
+            string[] machines = MachineStuff.MachineMatrix;
+            MachineStuff.MachinePool.Initialize(machines);
 
-            Common.UpdateMachinePoolStringSetting();
+            MachineStuff.UpdateMachinePoolStringSetting();
             SendNextPage(new SetupPage3a { ReturnToSettings = !Setting.Values.FirstRun });
         }
 
