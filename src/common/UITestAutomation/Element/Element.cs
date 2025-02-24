@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.UITest
     /// <summary>
     /// Represents a basic UI element in the application.
     /// </summary>
-    public abstract class Element
+    public class Element
     {
         private WindowsElement? windowsElement;
 
