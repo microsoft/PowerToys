@@ -77,8 +77,8 @@ namespace Hosts.UITests
             // Add the entry
             this.Find<Button>(By.Name("Add")).Click();
 
-            // 1 second delay after adding an entry
-            Task.Delay(1000);
+            // 0.5 second delay after adding an entry
+            Task.Delay(500).Wait();
         }
 
         private void CloseWarningDialog()
