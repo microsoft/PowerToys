@@ -900,8 +900,8 @@ namespace RegistryPreviewUILib
                 _appFileName = filename;
             }
 
-            SaveFile();
-            return true;
+            bool r = SaveFile();
+            return r;
         }
 
         /// <summary>
@@ -983,8 +983,10 @@ namespace RegistryPreviewUILib
         /// <summary>
         /// Wrapper method that saves the current file in place, using the current text in editor.
         /// </summary>
-        private void SaveFile()
+        private bool SaveFile()
         {
+            bool saveSuccess = true;
+
             ChangeCursor(gridPreview, true);
 
             // set up the FileStream for all writing
@@ -1013,6 +1015,8 @@ namespace RegistryPreviewUILib
             }
             catch (UnauthorizedAccessException ex)
             {
+                saveSuccess = false;
+
                 // this exception is thrown if the file is there but marked as read only
                 ShowMessageBox(
                     resourceLoader.GetString("ErrorDialogTitle"),
@@ -1021,6 +1025,8 @@ namespace RegistryPreviewUILib
             }
             catch
             {
+                saveSuccess = false;
+
                 // this catch handles all other exceptions thrown when trying to write the file out
                 ShowMessageBox(
                     resourceLoader.GetString("ErrorDialogTitle"),
@@ -1038,6 +1044,8 @@ namespace RegistryPreviewUILib
 
             // restore the cursor
             ChangeCursor(gridPreview, false);
+
+            return saveSuccess;
         }
 
         /// <summary>
