@@ -4,7 +4,6 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <ApplicationManifest>AppxManifests\developmentApp\AppxManifest.xml</ApplicationManifest>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
