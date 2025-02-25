@@ -31,6 +31,7 @@ using System.Xml.Linq;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Telemetry;
+using MouseWithoutBorders.Core;
 using Newtonsoft.Json;
 using StreamJsonRpc;
 
@@ -92,6 +93,17 @@ namespace MouseWithoutBorders.Class
 
                 bool serviceMode = firstArg == ServiceModeArg;
 
+                if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMwbAllowServiceModeValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+                {
+                    if (runningAsSystem)
+                    {
+                        Logger.Log("Can't run as a service. It's not allowed according to GPO policy. Please contact your systems administrator.");
+                        return;
+                    }
+
+                    serviceMode = false;
+                }
+
                 // If we're started from the .dll module or from the service process, we should
                 // assume the service mode.
                 if (serviceMode && !runningAsSystem)
@@ -124,7 +136,7 @@ namespace MouseWithoutBorders.Class
 
                 if (firstArg != string.Empty)
                 {
-                    if (Common.CheckSecondInstance(Common.RunWithNoAdminRight))
+                    if (MachineStuff.CheckSecondInstance(Common.RunWithNoAdminRight))
                     {
                         Logger.Log("*** Second instance, exiting...");
                         return;
@@ -154,7 +166,7 @@ namespace MouseWithoutBorders.Class
                 }
                 else
                 {
-                    if (Common.CheckSecondInstance(true))
+                    if (MachineStuff.CheckSecondInstance(true))
                     {
                         Logger.Log("*** Second instance, exiting...");
                         return;
@@ -290,20 +302,20 @@ namespace MouseWithoutBorders.Class
             {
                 Setting.Values.PauseInstantSaving = true;
 
-                Common.ClearComputerMatrix();
+                MachineStuff.ClearComputerMatrix();
                 Setting.Values.MyKey = securityKey;
                 Common.MyKey = securityKey;
                 Common.MagicNumber = Common.Get24BitHash(Common.MyKey);
-                Common.MachineMatrix = new string[Common.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
+                MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { pcName.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };
 
-                string[] machines = Common.MachineMatrix;
-                Common.MachinePool.Initialize(machines);
-                Common.UpdateMachinePoolStringSetting();
+                string[] machines = MachineStuff.MachineMatrix;
+                MachineStuff.MachinePool.Initialize(machines);
+                MachineStuff.UpdateMachinePoolStringSetting();
 
                 SocketStuff.InvalidKeyFound = false;
                 Common.ReopenSocketDueToReadError = true;
                 Common.ReopenSockets(true);
-                Common.SendMachineMatrix();
+                MachineStuff.SendMachineMatrix();
 
                 Setting.Values.PauseInstantSaving = false;
                 Setting.Values.SaveSettings();
@@ -314,7 +326,7 @@ namespace MouseWithoutBorders.Class
                 Setting.Values.PauseInstantSaving = true;
 
                 Setting.Values.EasyMouse = (int)EasyMouseOption.Enable;
-                Common.ClearComputerMatrix();
+                MachineStuff.ClearComputerMatrix();
                 Setting.Values.MyKey = Common.MyKey = Common.CreateRandomKey();
                 Common.GeneratedKey = true;
 
@@ -341,7 +353,7 @@ namespace MouseWithoutBorders.Class
                     Common.MMSleep(0.2);
                 }
 
-                Common.SendMachineMatrix();
+                MachineStuff.SendMachineMatrix();
             }
 
             public void Shutdown()
@@ -379,6 +391,10 @@ namespace MouseWithoutBorders.Class
 
         private static void InputCallbackThread()
         {
+            // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+            // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+            using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
             Common.InputCallbackThreadID = Thread.CurrentThread.ManagedThreadId;
             while (!Common.InitDone)
             {

@@ -1820,7 +1820,7 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
         break;
 
     case WM_PAINT:
-        if( (hTextPreview = GetDlgItem( hDlg, IDC_TEXT_FONT ))) {
+        if( (hTextPreview = GetDlgItem( hDlg, IDC_TEXT_FONT )) != 0 ) {
 
             // 16-pt preview
             LOGFONT _lf = g_LogFont;
@@ -6023,6 +6023,12 @@ LRESULT APIENTRY MainWndProc(
         // Apply tray icon setting
         EnableDisableTrayIcon(hWnd, g_ShowTrayIcon);
 
+        // This is also called by ZoomIt when it starts and loads the Settings. Opacity is added after loading from registry, so we use the same pattern.
+        if ((g_PenColor >> 24) == 0)
+        {
+            g_PenColor |= 0xFF << 24;
+        }
+
         // Apply hotkey settings
         UnregisterAllHotkeys(hWnd);
         g_ToggleMod = GetKeyMod(g_ToggleKey);
@@ -7416,18 +7422,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     if( !ShowEula( APPNAME, NULL, NULL )) return 1;
 
 #ifdef __ZOOMIT_POWERTOYS__
+    if (powertoys_gpo::getConfiguredZoomItEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        return 1;
+    }
+
     Shared::Trace::ETWTrace* trace = nullptr;
     std::wstring pid = std::wstring(lpCmdLine); // The PowerToys pid is the argument to the process.
     auto mainThreadId = GetCurrentThreadId();
     if (!pid.empty())
     {
         g_StartedByPowerToys = TRUE;
-
-        if (powertoys_gpo::getConfiguredZoomItEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
-        {
-            Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
-            return 1;
-        }
 
         trace = new Shared::Trace::ETWTrace();
         Trace::RegisterProvider();
