@@ -300,7 +300,4 @@
   <data name="NewButton.Label" xml:space="preserve">
     <value>New</value>
   </data>
-  <data name="NewButton.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Reset editor to the default value and initilize a new file</value>
-  </data>
 </root>
