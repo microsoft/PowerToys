@@ -112,6 +112,7 @@ namespace RegistryPreviewUILib
                     case ContentDialogResult.Secondary:
                         // Don't save and continue the file open!
                         saveButton.IsEnabled = false;
+                        UpdateUnsavedFileIndicator(false);
                         break;
                     default:
                         // Don't open the new file!
@@ -143,6 +144,7 @@ namespace RegistryPreviewUILib
 
                 // disable the Save button as it's a new file
                 saveButton.IsEnabled = false;
+                UpdateUnsavedFileIndicator(false);
 
                 // Restore the event handler as we're loaded
                 MonacoEditor.TextChanged += MonacoEditor_TextChanged;
@@ -193,6 +195,7 @@ namespace RegistryPreviewUILib
             UpdateToolBarAndUI(await OpenRegistryFile(_appFileName), true, true);
 
             saveButton.IsEnabled = false;
+            UpdateUnsavedFileIndicator(false);
 
             // restore the TextChanged handler
             MonacoEditor.TextChanged += MonacoEditor_TextChanged;
@@ -355,6 +358,7 @@ namespace RegistryPreviewUILib
             {
                 RefreshRegistryFile();
                 saveButton.IsEnabled = true;
+                UpdateUnsavedFileIndicator(true);
             });
         }
     }
