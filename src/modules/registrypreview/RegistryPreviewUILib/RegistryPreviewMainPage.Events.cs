@@ -22,6 +22,9 @@ namespace RegistryPreviewUILib
     {
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
+        // Indicator if we loaded or reloaded a file
+        private static bool newFileLoaded;
+
         /// <summary>
         /// Event that is will prevent the app from closing if the "save file" flag is active
         /// </summary>
@@ -143,6 +146,9 @@ namespace RegistryPreviewUILib
             {
                 // mute the TextChanged handler to make for clean UI
                 MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
+                newFileLoaded = true;
+
+                // update file name
                 _appFileName = storageFile.Path;
                 UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
 
@@ -214,6 +220,7 @@ namespace RegistryPreviewUILib
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             // mute the TextChanged handler to make for clean UI
+            newFileLoaded = true;
             MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
 
             // reload the current Registry file and update the toolbar accordingly.
@@ -445,8 +452,13 @@ namespace RegistryPreviewUILib
             _dispatcherQueue.TryEnqueue(() =>
             {
                 RefreshRegistryFile();
-                saveButton.IsEnabled = true;
-                UpdateUnsavedFileIndicator(true);
+                if (!newFileLoaded)
+                {
+                    saveButton.IsEnabled = true;
+                    UpdateUnsavedFileIndicator(true);
+                }
+
+                newFileLoaded = false;
             });
         }
 
