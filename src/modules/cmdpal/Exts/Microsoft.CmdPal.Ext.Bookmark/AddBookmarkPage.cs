@@ -8,9 +8,9 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-internal sealed partial class AddBookmarkPage : FormPage
+internal sealed partial class AddBookmarkPage : ContentPage
 {
-    private readonly AddBookmarkForm _addBookmark = new();
+    private readonly AddBookmarkForm _addBookmark;
 
     internal event TypedEventHandler<object, object?>? AddedCommand
     {
@@ -18,11 +18,14 @@ internal sealed partial class AddBookmarkPage : FormPage
         remove => _addBookmark.AddedCommand -= value;
     }
 
-    public override IForm[] Forms() => [_addBookmark];
+    public override IContent[] GetContent() => [_addBookmark];
 
-    public AddBookmarkPage()
+    public AddBookmarkPage(string name = "", string url = "")
     {
-        this.Icon = new IconInfo("\ued0e");
-        this.Name = "Add a Bookmark";
+        Icon = new IconInfo("\ued0e");
+        var isAdd = string.IsNullOrEmpty(name) && string.IsNullOrEmpty(url);
+        Title = isAdd ? "Add a bookmark" : "Edit bookmark";
+        Name = isAdd ? "Add bookmark" : "Edit bookmark";
+        _addBookmark = new(name, url);
     }
 }

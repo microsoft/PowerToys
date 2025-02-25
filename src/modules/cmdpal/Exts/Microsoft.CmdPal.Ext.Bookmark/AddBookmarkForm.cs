@@ -4,54 +4,56 @@
 
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-internal sealed partial class AddBookmarkForm : Form
+internal sealed partial class AddBookmarkForm : FormContent
 {
     internal event TypedEventHandler<object, object?>? AddedCommand;
 
-    public override string TemplateJson()
+    public AddBookmarkForm(string name = "", string url = "")
     {
-        var json = $$"""
+        TemplateJson = $$"""
 {
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
     "type": "AdaptiveCard",
     "version": "1.5",
     "body": [
         {
-        "type": "Input.Text",
-        "style": "text",
-        "id": "name",
-        "label": "Name",
-        "isRequired": true,
-        "errorMessage": "Name is required"
+            "type": "Input.Text",
+            "style": "text",
+            "id": "name",
+            "label": "Name",
+            "value": {{JsonSerializer.Serialize(name)}},
+            "isRequired": true,
+            "errorMessage": "Name is required"
         },
         {
-        "type": "Input.Text",
-        "style": "text",
-        "id": "bookmark",
-        "label": "URL or File Path",
-        "isRequired": true,
-        "errorMessage": "URL or File Path is required"
+            "type": "Input.Text",
+            "style": "text",
+            "id": "bookmark",
+            "value": {{JsonSerializer.Serialize(url)}},
+            "label": "URL or File Path",
+            "isRequired": true,
+            "errorMessage": "URL or File Path is required"
         }
     ],
     "actions": [
         {
-        "type": "Action.Submit",
-        "title": "Save",
-        "data": {
-            "name": "name",
-            "bookmark": "bookmark"
-        }
+            "type": "Action.Submit",
+            "title": "Save",
+            "data": {
+                "name": "name",
+                "bookmark": "bookmark"
+            }
         }
     ]
 }
 """;
-        return json;
     }
 
     public override CommandResult SubmitForm(string payload)

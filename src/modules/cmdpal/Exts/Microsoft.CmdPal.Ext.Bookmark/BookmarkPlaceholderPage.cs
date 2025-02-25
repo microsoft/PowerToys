@@ -7,11 +7,16 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-internal sealed partial class BookmarkPlaceholderPage : FormPage
+internal sealed partial class BookmarkPlaceholderPage : ContentPage
 {
-    private readonly IForm _bookmarkPlaceholder;
+    private readonly FormContent _bookmarkPlaceholder;
 
-    public override IForm[] Forms() => [_bookmarkPlaceholder];
+    public override IContent[] GetContent() => [_bookmarkPlaceholder];
+
+    public BookmarkPlaceholderPage(BookmarkData data)
+        : this(data.Name, data.Bookmark, data.Type)
+    {
+    }
 
     public BookmarkPlaceholderPage(string name, string url, string type)
     {

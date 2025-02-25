@@ -10,29 +10,29 @@ namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 public partial class UrlCommand : InvokableCommand
 {
-    private bool IsContainsPlaceholder => _url.Contains('{') && _url.Contains('}');
-
     public string Type { get; }
 
     public string Url { get; }
 
-    private readonly string _url;
+    public UrlCommand(BookmarkData data)
+        : this(data.Name, data.Bookmark, data.Type)
+    {
+    }
 
     public UrlCommand(string name, string url, string type)
     {
-        _url = url;
-        Icon = new IconInfo(IconFromUrl(_url, type));
         Name = name;
         Type = type;
         Url = url;
+        Icon = new IconInfo(IconFromUrl(Url, type));
     }
 
     public override CommandResult Invoke()
     {
-        var target = _url;
+        var target = Url;
         try
         {
-            Uri? uri = GetUri(target);
+            var uri = GetUri(target);
             if (uri != null)
             {
                 _ = Launcher.LaunchUriAsync(uri);
@@ -79,7 +79,7 @@ public partial class UrlCommand : InvokableCommand
                 var baseString = placeholderIndex > 0 ? url.Substring(0, placeholderIndex) : url;
                 try
                 {
-                    Uri? uri = GetUri(baseString);
+                    var uri = GetUri(baseString);
                     if (uri != null)
                     {
                         var hostname = uri.Host;

@@ -65,6 +65,11 @@ public partial class CommandItem : BaseObservable, ICommandItem
 
 = [];
 
+    public CommandItem()
+        : this(new NoOpCommand())
+    {
+    }
+
     public CommandItem(ICommand command)
     {
         Command = command;
@@ -78,5 +83,29 @@ public partial class CommandItem : BaseObservable, ICommandItem
         Subtitle = other.Subtitle;
         Icon = (IconInfo?)other.Icon;
         MoreCommands = other.MoreCommands;
+    }
+
+    public CommandItem(
+        string title,
+        string subtitle = "",
+        string name = "",
+        Action? action = null,
+        ICommandResult? result = null)
+    {
+        var c = new AnonymousCommand(action);
+        if (!string.IsNullOrEmpty(name))
+        {
+            c.Name = name;
+        }
+
+        if (result != null)
+        {
+            c.Result = result;
+        }
+
+        Command = c;
+
+        Title = title;
+        Subtitle = subtitle;
     }
 }

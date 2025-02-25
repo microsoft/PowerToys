@@ -53,7 +53,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
         _copyContextCommand = new CopyTextCommand(string.Empty);
         _copyContextMenuItem = new CommandContextItem(_copyContextCommand);
 
-        _items.Add(new(_saveCommand));
+        _items.Add(new(_saveCommand) { Icon = new IconInfo("\uE94E") });
 
         UpdateSearchText(string.Empty, string.Empty);
 

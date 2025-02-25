@@ -12,7 +12,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
-internal sealed partial class BookmarkPlaceholderForm : Form
+internal sealed partial class BookmarkPlaceholderForm : FormContent
 {
     private readonly List<string> _placeholderNames;
 
@@ -22,13 +22,9 @@ internal sealed partial class BookmarkPlaceholderForm : Form
     public BookmarkPlaceholderForm(string name, string url, string type)
     {
         _bookmark = url;
-        Regex r = new Regex(Regex.Escape("{") + "(.*?)" + Regex.Escape("}"));
-        MatchCollection matches = r.Matches(url);
+        var r = new Regex(Regex.Escape("{") + "(.*?)" + Regex.Escape("}"));
+        var matches = r.Matches(url);
         _placeholderNames = matches.Select(m => m.Groups[1].Value).ToList();
-    }
-
-    public override string TemplateJson()
-    {
         var inputs = _placeholderNames.Select(p =>
         {
             return $$"""
@@ -45,7 +41,7 @@ internal sealed partial class BookmarkPlaceholderForm : Form
 
         var allInputs = string.Join(",", inputs);
 
-        var json = $$"""
+        TemplateJson = $$"""
 {
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "type": "AdaptiveCard",
@@ -64,7 +60,6 @@ internal sealed partial class BookmarkPlaceholderForm : Form
   ]
 }
 """;
-        return json;
     }
 
     public override CommandResult SubmitForm(string payload)
@@ -88,7 +83,7 @@ internal sealed partial class BookmarkPlaceholderForm : Form
 
         try
         {
-            Uri? uri = UrlCommand.GetUri(target);
+            var uri = UrlCommand.GetUri(target);
             if (uri != null)
             {
                 _ = Launcher.LaunchUriAsync(uri);

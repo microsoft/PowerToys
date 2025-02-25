@@ -45,7 +45,8 @@ public sealed partial class ListPage : Page,
             ViewModel = lvm;
         }
 
-        if (e.NavigationMode == NavigationMode.Back)
+        if (e.NavigationMode == NavigationMode.Back
+            || (e.NavigationMode == NavigationMode.New && ItemsList.Items.Count > 0))
         {
             // Upon navigating _back_ to this page, immediately select the
             // first item in the list
