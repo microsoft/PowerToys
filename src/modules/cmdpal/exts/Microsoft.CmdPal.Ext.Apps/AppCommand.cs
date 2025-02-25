@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Storage.Streams;
+using WyHash;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
@@ -20,6 +20,7 @@ internal sealed partial class AppCommand : InvokableCommand
         _app = app;
 
         Name = Resources.run_command_action;
+        Id = GenerateId();
     }
 
     internal static async Task StartApp(string aumid)
@@ -65,5 +66,13 @@ internal sealed partial class AppCommand : InvokableCommand
     {
         _ = Launch();
         return CommandResult.Dismiss();
+    }
+
+    private string GenerateId()
+    {
+        // Use WyHash64 to generate stable ID hashes.
+        // manually seeding with 0, so that the hash is stable across launches
+        var result = WyHash64.ComputeHash64(_app.Name + _app.Subtitle + _app.ExePath, seed: 0);
+        return $"{_app.Name}_{result}";
     }
 }

@@ -99,6 +99,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             return;
         }
 
+        if (!RootFrame.CanGoBack)
+        {
+            // on the main page here
+            ViewModel.PerformTopLevelCommand(message);
+        }
+
         // TODO: Actually loading up the page, or invoking the command -
         // that might belong in the model, not the view?
         // Especially considering the try/catch concerns around the fact that the

@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -26,6 +27,8 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
     [ObservableProperty]
     public partial PageViewModel CurrentPage { get; set; } = new LoadingPageViewModel(null, _scheduler);
 
+    private MainListPage? _mainListPage;
+
     [RelayCommand]
     public async Task<bool> LoadAsync()
     {
@@ -34,8 +37,8 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
         IsLoaded = true;
 
         // Built-ins have loaded. We can display our page at this point.
-        var page = new MainListPage(_serviceProvider);
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new(page!)));
+        _mainListPage = new MainListPage(_serviceProvider);
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new(_mainListPage!)));
 
         _ = Task.Run(async () =>
         {
@@ -112,6 +115,19 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
         {
             CurrentPage = viewModel;
             ////LoadedState = ViewModelLoadedState.Loaded;
+        }
+    }
+
+    public void PerformTopLevelCommand(PerformCommandMessage message)
+    {
+        if (_mainListPage == null)
+        {
+            return;
+        }
+
+        if (message.Context is IListItem listItem)
+        {
+            _mainListPage.UpdateHistory(listItem);
         }
     }
 }

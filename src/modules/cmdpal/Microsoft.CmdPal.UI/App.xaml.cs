@@ -105,6 +105,8 @@ public partial class App : Application
         services.AddSingleton<HotkeyManager>();
         var sm = SettingsModel.LoadSettings();
         services.AddSingleton(sm);
+        var state = AppStateModel.LoadState();
+        services.AddSingleton(state);
         services.AddSingleton<IExtensionService, ExtensionService>();
 
         // ViewModels

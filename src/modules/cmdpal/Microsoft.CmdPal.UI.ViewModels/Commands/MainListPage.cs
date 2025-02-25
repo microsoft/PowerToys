@@ -148,7 +148,7 @@ public partial class MainListPage : DynamicListPage,
     // Almost verbatim ListHelpers.ScoreListItem, but also accounting for the
     // fact that we want fallback handlers down-weighted, so that they don't
     // _always_ show up first.
-    private static int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem)
+    private int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
@@ -163,6 +163,7 @@ public partial class MainListPage : DynamicListPage,
 
         var isFallback = false;
         var isAlias = false;
+        var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
         if (topLevelOrAppItem is TopLevelCommandItemWrapper toplevel)
         {
             isFallback = toplevel.IsFallback;
@@ -182,9 +183,36 @@ public partial class MainListPage : DynamicListPage,
              isFallback ? 1 : 0, // Always give fallbacks a chance
         };
         var max = scores.Max();
+
+        var history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands;
+        var recentWeightBoost = history.GetCommandHistoryWeight(id);
+
         var finalScore = (max / (isFallback ? 3 : 1))
+            + recentWeightBoost
             + (isAlias ? 9001 : 0);
         return finalScore; // but downweight them
+    }
+
+    public void UpdateHistory(IListItem topLevelOrAppItem)
+    {
+        var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
+        var state = _serviceProvider.GetService<AppStateModel>()!;
+        var history = state.RecentCommands;
+        history.AddHistoryItem(id);
+        AppStateModel.SaveState(state);
+    }
+
+    private string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
+    {
+        if (topLevelOrAppItem is TopLevelCommandItemWrapper toplevel)
+        {
+            return toplevel.Id;
+        }
+        else
+        {
+            // we've got an app here
+            return topLevelOrAppItem.Command?.Id ?? string.Empty;
+        }
     }
 
     public void Receive(ClearSearchMessage message) => SearchText = string.Empty;
