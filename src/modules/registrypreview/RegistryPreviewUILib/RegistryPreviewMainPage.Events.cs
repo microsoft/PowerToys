@@ -109,8 +109,8 @@ namespace RegistryPreviewUILib
                 {
                     case ContentDialogResult.Primary:
                         // Save, then continue the file open
-                        bool success = SaveFile();
-                        if (!success)
+                        if (!AskFileName(false) ||
+                            !SaveFile())
                         {
                             return;
                         }
@@ -166,23 +166,9 @@ namespace RegistryPreviewUILib
         /// </summary>
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_appFileName))
+            if (!AskFileName(false))
             {
-                // Save out a new REG file and then open it - we have to use the direct Win32 method because FileOpenPicker crashes when it's
-                // called while running as admin
-                IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
-                string filename = SaveFilePicker.ShowDialog(
-                    windowHandle,
-                    resourceLoader.GetString("SuggestFileName"),
-                    resourceLoader.GetString("FilterRegistryName") + '\0' + "*.reg" + '\0' + resourceLoader.GetString("FilterAllFiles") + '\0' + "*.*" + '\0' + '\0',
-                    resourceLoader.GetString("SaveDialogTitle"));
-
-                if (filename == string.Empty)
-                {
-                    return;
-                }
-
-                _appFileName = filename;
+                return;
             }
 
             // save and update window title
@@ -195,21 +181,11 @@ namespace RegistryPreviewUILib
         /// </summary>
         private async void SaveAsButton_Click(object sender, RoutedEventArgs e)
         {
-            // Save out a new REG file and then open it - we have to use the direct Win32 method because FileOpenPicker crashes when it's
-            // called while running as admin
-            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
-            string filename = SaveFilePicker.ShowDialog(
-                windowHandle,
-                resourceLoader.GetString("SuggestFileName"),
-                resourceLoader.GetString("FilterRegistryName") + '\0' + "*.reg" + '\0' + resourceLoader.GetString("FilterAllFiles") + '\0' + "*.*" + '\0' + '\0',
-                resourceLoader.GetString("SaveDialogTitle"));
-
-            if (filename == string.Empty)
+            if (!AskFileName(true))
             {
                 return;
             }
 
-            _appFileName = filename;
             _ = SaveFile();
             UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
         }
@@ -350,8 +326,8 @@ namespace RegistryPreviewUILib
                 {
                     case ContentDialogResult.Primary:
                         // Save, then continue the file open
-                        bool success = SaveFile();
-                        if (!success)
+                        if (!AskFileName(false) ||
+                            !SaveFile())
                         {
                             return;
                         }
