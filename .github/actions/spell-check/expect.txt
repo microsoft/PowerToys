@@ -1283,7 +1283,6 @@ rectp
 RECTSOURCE
 recyclebin
 Redist
-reencode
 Reencode
 reencoded
 REFCLSID
