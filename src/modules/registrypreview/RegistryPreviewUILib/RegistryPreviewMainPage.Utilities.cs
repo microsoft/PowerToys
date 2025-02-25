@@ -77,6 +77,9 @@ namespace RegistryPreviewUILib
             }
             catch
             {
+                // Set default value for empty opening
+                await MonacoEditor.SetTextAsync("Windows Registry Editor Version 5.00\r\n\r\n");
+
                 // restore TextChanged handler to make for clean UI
                 MonacoEditor.TextChanged += MonacoEditor_TextChanged;
 
