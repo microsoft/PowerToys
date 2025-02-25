@@ -23,7 +23,7 @@ namespace RegistryPreviewUILib
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
         // Indicator if we loaded/reloaded/saved a file and need to skip TextChanged event one time.
-        private static bool newFileLoaded;
+        private static bool editorContentChangedScripted;
 
         /// <summary>
         /// Event that is will prevent the app from closing if the "save file" flag is active
@@ -146,7 +146,7 @@ namespace RegistryPreviewUILib
             {
                 // mute the TextChanged handler to make for clean UI
                 MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
-                newFileLoaded = true;
+                editorContentChangedScripted = true;
 
                 // update file name
                 _appFileName = storageFile.Path;
@@ -180,13 +180,19 @@ namespace RegistryPreviewUILib
         /// </summary>
         private async void SaveAsButton_Click(object sender, RoutedEventArgs e)
         {
-            newFileLoaded = true;
+            // mute the TextChanged handler to make for clean UI
+            editorContentChangedScripted = true;
+            MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
+
             if (!AskFileName(_appFileName) || !SaveFile())
             {
                 return;
             }
 
             UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
+
+            // restore the TextChanged handler
+            MonacoEditor.TextChanged += MonacoEditor_TextChanged;
         }
 
         /// <summary>
@@ -195,7 +201,7 @@ namespace RegistryPreviewUILib
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             // mute the TextChanged handler to make for clean UI
-            newFileLoaded = true;
+            editorContentChangedScripted = true;
             MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
 
             // reload the current Registry file and update the toolbar accordingly.
@@ -427,13 +433,13 @@ namespace RegistryPreviewUILib
             _dispatcherQueue.TryEnqueue(() =>
             {
                 RefreshRegistryFile();
-                if (!newFileLoaded)
+                if (!editorContentChangedScripted)
                 {
                     saveButton.IsEnabled = true;
                     UpdateUnsavedFileIndicator(true);
                 }
 
-                newFileLoaded = false;
+                editorContentChangedScripted = false;
             });
         }
 
