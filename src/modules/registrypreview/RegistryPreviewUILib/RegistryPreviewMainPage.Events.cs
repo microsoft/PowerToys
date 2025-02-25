@@ -107,7 +107,12 @@ namespace RegistryPreviewUILib
                 {
                     case ContentDialogResult.Primary:
                         // Save, then continue the file open
-                        SaveFile();
+                        bool success = SaveFile();
+                        if (!success)
+                        {
+                            return;
+                        }
+
                         break;
                     case ContentDialogResult.Secondary:
                         // Don't save and continue the file open!
@@ -176,7 +181,7 @@ namespace RegistryPreviewUILib
             }
 
             // save and update window title
-            SaveFile();
+            _ = SaveFile();
             _updateWindowTitleFunction(_appFileName);
         }
 
@@ -200,7 +205,7 @@ namespace RegistryPreviewUILib
             }
 
             _appFileName = filename;
-            SaveFile();
+            _ = SaveFile();
             UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
         }
 
@@ -281,7 +286,12 @@ namespace RegistryPreviewUILib
                 {
                     case ContentDialogResult.Primary:
                         // Save, then continue the file open
-                        SaveFile();
+                        bool success = SaveFile();
+                        if (!success)
+                        {
+                            return;
+                        }
+
                         break;
                     case ContentDialogResult.Secondary:
                         // Don't save and continue the file open!
