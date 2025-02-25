@@ -19,7 +19,7 @@ using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class CmdNotFoundViewModel : Observable
+    public partial class CmdNotFoundViewModel : Observable
     {
         public ButtonClickCommand CheckRequirementsEventHandler => new ButtonClickCommand(CheckCommandNotFoundRequirements);
 
@@ -39,10 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get
             {
-                string codeBase = Assembly.GetExecutingAssembly().Location;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
+                return Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory);
             }
         }
 

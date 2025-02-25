@@ -16,10 +16,11 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class ColorPickerViewModel : Observable, IDisposable
+    public partial class ColorPickerViewModel : Observable, IDisposable
     {
         private bool disposedValue;
 
@@ -56,15 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            if (colorPickerSettingsRepository == null)
-            {
-                // used in release. This method converts the settings stored in the previous form, so we have forwards compatibility
-                _colorPickerSettings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerSettings.ModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
-            }
-            else
-            {
-                _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig; // used in the unit tests
-            }
+            _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
 
@@ -362,7 +355,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        CultureInfo.InvariantCulture,
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        ColorPickerSettings.ModuleName,
-                       JsonSerializer.Serialize(_colorPickerSettings)));
+                       JsonSerializer.Serialize(_colorPickerSettings, SourceGenerationContextContext.Default.ColorPickerSettings)));
         }
 
         public void RefreshEnabledState()

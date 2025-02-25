@@ -282,6 +282,15 @@
   <data name="Monitor" xml:space="preserve">
     <value>Monitor</value>
   </data>
+  <data name="Monitor_Index" xml:space="preserve">
+    <value>Monitor {0}</value>
+  </data>
+  <data name="Dimensions" xml:space="preserve">
+    <value>Dimensions</value>
+  </data>
+  <data name="Scaling" xml:space="preserve">
+    <value>Scaling</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Template settings</value>
   </data>

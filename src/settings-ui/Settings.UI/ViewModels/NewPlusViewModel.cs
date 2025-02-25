@@ -16,11 +16,13 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
+
 using static Microsoft.PowerToys.Settings.UI.Helpers.ShellGetFolder;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class NewPlusViewModel : Observable
+    public partial class NewPlusViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -221,7 +223,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        CultureInfo.InvariantCulture,
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        ModuleName,
-                       JsonSerializer.Serialize(Settings)));
+                       JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.NewPlusSettings)));
         }
 
         private Func<string, int> SendConfigMSG { get; }

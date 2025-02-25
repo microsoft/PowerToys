@@ -1193,6 +1193,10 @@
     <value>TIFF compression</value>
     <comment>{Locked="TIFF"}</comment>
   </data>
+  <data name="ImageResizer_AutoText" xml:space="preserve">
+    <value>(auto)</value>
+    <comment>Displayed on the preset card when the Width or Height property is zero. The same as "Input_Auto" in the ImageResizerUI project's resources.</comment>
+  </data>
   <data name="File.Header" xml:space="preserve">
     <value>File</value>
     <comment>as in a computer file</comment>
