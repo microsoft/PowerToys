@@ -136,14 +136,32 @@ internal static class TranscodeHelpers
             throw new InvalidOperationException("Target profile does not contain media");
         }
 
-        var prepareOp = await new MediaTranscoder().PrepareFileTranscodeAsync(inputFile, outputFile, outputProfile);
-
-        if (!prepareOp.CanTranscode)
+        async Task<PrepareTranscodeResult> GetPrepareResult(bool hardwareAccelerationEnabled)
         {
-            var message = ResourceLoaderInstance.ResourceLoader.GetString(prepareOp.FailureReason == TranscodeFailureReason.CodecNotFound ? "TranscodeErrorUnsupportedCodec" : "TranscodeErrorGeneral");
-            throw new PasteActionException(message, new InvalidOperationException($"Error transcoding; {nameof(prepareOp.FailureReason)}={prepareOp.FailureReason}"));
+            MediaTranscoder transcoder = new()
+            {
+                AlwaysReencode = false,
+                HardwareAccelerationEnabled = hardwareAccelerationEnabled,
+            };
+
+            return await transcoder.PrepareFileTranscodeAsync(inputFile, outputFile, outputProfile);
         }
 
-        await prepareOp.TranscodeAsync().AsTask(cancellationToken, progress);
+        var prepareResult = await GetPrepareResult(hardwareAccelerationEnabled: true);
+
+        if (!prepareResult.CanTranscode)
+        {
+            Logger.LogWarning($"Unable to transcode with hardware acceleration enabled, falling back to software; {nameof(prepareResult.FailureReason)}={prepareResult.FailureReason}");
+
+            prepareResult = await GetPrepareResult(hardwareAccelerationEnabled: false);
+        }
+
+        if (!prepareResult.CanTranscode)
+        {
+            var message = ResourceLoaderInstance.ResourceLoader.GetString(prepareResult.FailureReason == TranscodeFailureReason.CodecNotFound ? "TranscodeErrorUnsupportedCodec" : "TranscodeErrorGeneral");
+            throw new PasteActionException(message, new InvalidOperationException($"Error transcoding; {nameof(prepareResult.FailureReason)}={prepareResult.FailureReason}"));
+        }
+
+        await prepareResult.TranscodeAsync().AsTask(cancellationToken, progress);
     }
 }
