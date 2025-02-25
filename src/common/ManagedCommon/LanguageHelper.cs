@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ManagedCommon.Serialization;
 
 namespace ManagedCommon
 {
@@ -35,7 +36,7 @@ namespace ManagedCommon
                     inputStream.Close();
                     reader.Dispose();
 
-                    return JsonSerializer.Deserialize<OutGoingLanguageSettings>(data).LanguageTag;
+                    return JsonSerializer.Deserialize<OutGoingLanguageSettings>(data, SourceGenerationContext.Default.OutGoingLanguageSettings).LanguageTag;
                 }
                 catch (Exception)
                 {
