@@ -7,6 +7,8 @@
     <AssemblyTitle>PowerToys.Run</AssemblyTitle>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
+    <!-- For some users, it crashes in ExtractAssociatedIcon https://github.com/microsoft/PowerToys/issues/37254. Workaround suggested here https://github.com/dotnet/wpf/issues/10483 was to disable CETCompat -->
+    <CETCompat>false</CETCompat>
     <UseWindowsForms>False</UseWindowsForms>
     <StartupObject>PowerLauncher.App</StartupObject>
     <ApplicationIcon>Assets\PowerLauncher\RunResource.ico</ApplicationIcon>
