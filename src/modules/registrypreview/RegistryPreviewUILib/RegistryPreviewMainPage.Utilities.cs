@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Input;
@@ -24,9 +25,11 @@ namespace RegistryPreviewUILib
     {
         private const string NEWFILEHEADER = "Windows Registry Editor Version 5.00\r\n\r\n";
 
+        private static readonly string _usavedFileIndicator = "* ";
+        private static readonly char[] _usavedFileIndicatorChars = [' ', '*'];
         private static SemaphoreSlim _dialogSemaphore = new(1);
-        private string lastKeyPath;
 
+        private string lastKeyPath;
         public delegate void UpdateWindowTitleFunction(string title);
 
         /// <summary>
@@ -859,6 +862,7 @@ namespace RegistryPreviewUILib
                     break;
                 case ContentDialogResult.Secondary:
                     // Don't save, and then close!
+                    UpdateUnsavedFileIndicator(false);
                     saveButton.IsEnabled = false;
                     break;
                 default:
@@ -927,6 +931,25 @@ namespace RegistryPreviewUILib
             type.InvokeMember("ProtectedCursor", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.SetProperty | BindingFlags.Instance, null, uiElement, new object[] { cursor }, CultureInfo.InvariantCulture);
         }
 
+        public void UpdateUnsavedFileIndicator(bool show)
+        {
+            // get and cut current title
+            string currentTitel = Regex.Replace(_mainWindow.Title, APPNAME + @"$|\s-\s" + APPNAME + @"$", string.Empty);
+
+            // verify
+            bool titleContiansIndicator = currentTitel.StartsWith(_usavedFileIndicator, StringComparison.CurrentCultureIgnoreCase);
+
+            // update
+            if (!titleContiansIndicator && show)
+            {
+                _updateWindowTitleFunction(_usavedFileIndicator + currentTitel);
+            }
+            else if (titleContiansIndicator && !show)
+            {
+                _updateWindowTitleFunction(currentTitel.TrimStart(_usavedFileIndicatorChars));
+            }
+        }
+
         /// <summary>
         /// Wrapper method that saves the current file in place, using the current text in editor.
         /// </summary>
@@ -955,6 +978,7 @@ namespace RegistryPreviewUILib
                 streamWriter.Close();
 
                 // only change when the save is successful
+                UpdateUnsavedFileIndicator(false);
                 saveButton.IsEnabled = false;
             }
             catch (UnauthorizedAccessException ex)
