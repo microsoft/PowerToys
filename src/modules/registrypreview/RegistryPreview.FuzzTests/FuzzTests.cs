@@ -70,7 +70,7 @@ namespace RegistryPreview.FuzzTests
             }
         }
 
-        // Case 1: Fuzz test for StripFirstAndLast
+        // Case 2: Fuzz test for StripFirstAndLast
         public static void FuzzStripFirstAndLast(ReadOnlySpan<byte> input)
         {
             string registryLine;
