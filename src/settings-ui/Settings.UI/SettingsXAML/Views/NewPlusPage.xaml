@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.NewPlusPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -106,35 +106,77 @@
                                     <Flyout x:Name="VariableExamplesFlyout" ShouldConstrainToRootBounds="False">
                                         <Grid>
                                             <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="62"/>
-                                                <ColumnDefinition Width="300"/>
+                                                <ColumnDefinition Width="62" />
+                                                <ColumnDefinition Width="300" />
                                             </Grid.ColumnDefinitions>
-                                            
-                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="$YYYY" />
-                                            <TextBlock Grid.Row="0" Grid.Column="1" TextWrapping="Wrap" Margin="0,0,0,5"><Run x:Uid="NewPlus_Year_YYYY_Variable_Description"/></TextBlock>
 
-                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="$MM" />
-                                            <TextBlock Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" Margin="0,0,0,5"><Run x:Uid="NewPlus_Month_MM_Variable_Description"/></TextBlock>
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Text="$YYYY" />
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="0,0,0,5"
+                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Year_YYYY_Variable_Description" /></TextBlock>
 
-                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="$DD" />
-                                            <TextBlock Grid.Row="2" Grid.Column="1" TextWrapping="Wrap" Margin="0,0,0,5"><Run x:Uid="NewPlus_Day_DD_Variable_Description"/></TextBlock>
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Text="$MM" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="0,0,0,5"
+                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Month_MM_Variable_Description" /></TextBlock>
 
-                                            <TextBlock Grid.Row="3" Grid.Column="0" Text="$hh" />
-                                            <TextBlock Grid.Row="3" Grid.Column="1" TextWrapping="Wrap" Margin="0,0,0,5"><Run x:Uid="NewPlus_Hour_hh_Variable_Description"/></TextBlock>
-                                        
-                                            <TextBlock Grid.Row="4" Grid.Column="0" Text="$mm" />
-                                            <TextBlock Grid.Row="4" Grid.Column="1" TextWrapping="Wrap" Margin="0,0,0,5"><Run x:Uid="NewPlus_Minute_mm_Variable_Description"/></TextBlock>
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="0"
+                                                Text="$DD" />
+                                            <TextBlock
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Margin="0,0,0,5"
+                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Day_DD_Variable_Description" /></TextBlock>
 
-                                            <TextBlock Grid.Row="5" Grid.Column="0" Text="$ss" />
-                                            <TextBlock Grid.Row="5" Grid.Column="1" TextWrapping="Wrap" Margin="0,0,0,0"><Run x:Uid="NewPlus_Second_ss_Variable_Description"/></TextBlock>
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Grid.Column="0"
+                                                Text="$hh" />
+                                            <TextBlock
+                                                Grid.Row="3"
+                                                Grid.Column="1"
+                                                Margin="0,0,0,5"
+                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Hour_hh_Variable_Description" /></TextBlock>
+
+                                            <TextBlock
+                                                Grid.Row="4"
+                                                Grid.Column="0"
+                                                Text="$mm" />
+                                            <TextBlock
+                                                Grid.Row="4"
+                                                Grid.Column="1"
+                                                Margin="0,0,0,5"
+                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Minute_mm_Variable_Description" /></TextBlock>
+
+                                            <TextBlock
+                                                Grid.Row="5"
+                                                Grid.Column="0"
+                                                Text="$ss" />
+                                            <TextBlock
+                                                Grid.Row="5"
+                                                Grid.Column="1"
+                                                Margin="0,0,0,0"
+                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Second_ss_Variable_Description" /></TextBlock>
                                         </Grid>
                                     </Flyout>
                                 </Button.Flyout>
@@ -151,8 +193,7 @@
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsReplaceVariablesSettingGPOConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsReplaceVariablesSettingGPOConfigured, Mode=OneWay}"
-                        Severity="Informational">
-                    </InfoBar>
+                        Severity="Informational" />
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
