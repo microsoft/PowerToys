@@ -125,6 +125,27 @@ namespace ManagedCommon
             Trace.Unindent();
         }
 
-        private static string GetCallerInfo(string memberName, string sourceFilePath, int sourceLineNumber) => $"{sourceFilePath}::{memberName}::{sourceLineNumber}";
+        private static string GetCallerInfo(string memberName, string sourceFilePath, int sourceLineNumber)
+        {
+            string callerFileName = "Unknown";
+
+            try
+            {
+                string fileName = Path.GetFileName(sourceFilePath);
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    callerFileName = fileName;
+                }
+            }
+            catch (Exception)
+            {
+                callerFileName = "Unknown";
+#if DEBUG
+                throw;
+#endif
+            }
+
+            return $"{callerFileName}::{memberName}::{sourceLineNumber}";
+        }
     }
 }
