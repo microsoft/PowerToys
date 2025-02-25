@@ -10,11 +10,12 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PeekViewModel : Observable
+    public partial class PeekViewModel : Observable
     {
         private bool _isEnabled;
 
@@ -224,7 +225,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     CultureInfo.InvariantCulture,
                     "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                     PeekSettings.ModuleName,
-                    JsonSerializer.Serialize(_peekSettings)));
+                    JsonSerializer.Serialize(_peekSettings, SourceGenerationContextContext.Default.PeekSettings)));
         }
 
         private void SavePreviewSettings()
