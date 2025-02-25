@@ -22,7 +22,7 @@ namespace RegistryPreviewUILib
     {
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-        // Indicator if we loaded/reloaded/saved a file and need to skip TextChangedEevent one time.
+        // Indicator if we loaded/reloaded/saved a file and need to skip TextChanged event one time.
         private static bool newFileLoaded;
 
         /// <summary>
