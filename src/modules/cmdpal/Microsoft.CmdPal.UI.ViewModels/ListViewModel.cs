@@ -271,6 +271,14 @@ public partial class ListViewModel : PageViewModel
         listPage.ItemsChanged += Model_ItemsChanged;
     }
 
+    public void LoadMoreIfNeeded()
+    {
+        if (_model.Unsafe?.HasMoreItems ?? false)
+        {
+            _model.Unsafe.LoadMore();
+        }
+    }
+
     protected override void FetchProperty(string propertyName)
     {
         base.FetchProperty(propertyName);

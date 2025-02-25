@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.CmdPal.UI;
@@ -33,6 +34,8 @@ public sealed partial class ListPage : Page,
     public ListPage()
     {
         this.InitializeComponent();
+
+        this.ItemsList.Loaded += ItemsList_Loaded;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -137,6 +140,35 @@ public sealed partial class ListPage : Page,
         }
     }
 
+    private void ItemsList_Loaded(object sender, RoutedEventArgs e)
+    {
+        // Find the ScrollViewer in the ListView
+        var listViewScrollViewer = FindScrollViewer(this.ItemsList);
+
+        if (listViewScrollViewer != null)
+        {
+            listViewScrollViewer.ViewChanged += ListViewScrollViewer_ViewChanged;
+        }
+    }
+
+    private void ListViewScrollViewer_ViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
+    {
+        var scrollView = sender as ScrollViewer;
+        if (scrollView == null)
+        {
+            return;
+        }
+
+        // When we get to the bottom, request more from the extension, if they
+        // have more to give us.
+        // We're checking when we get to 80% of the scroll height, to give the
+        // extension a bit of a heads-up before the user actually gets there.
+        if (scrollView.VerticalOffset >= (scrollView.ScrollableHeight * .8))
+        {
+            ViewModel?.LoadMoreIfNeeded();
+        }
+    }
+
     public void Receive(NavigateNextCommand message)
     {
         // Note: We may want to just have the notion of a 'SelectedCommand' in our VM
@@ -215,5 +247,25 @@ public sealed partial class ListPage : Page,
         {
             Debug.WriteLine($"ViewModel.FilteredItems {ItemsList.SelectedItem}");
         }
+    }
+
+    private ScrollViewer? FindScrollViewer(DependencyObject parent)
+    {
+        if (parent is ScrollViewer)
+        {
+            return (ScrollViewer)parent;
+        }
+
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            var result = FindScrollViewer(child);
+            if (result != null)
+            {
+                return result;
+            }
+        }
+
+        return null;
     }
 }

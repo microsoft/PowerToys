@@ -194,6 +194,12 @@ internal sealed partial class SearchQuery : IDisposable
             return false;
         }
 
+        if (currentRowset is not IGetRow)
+        {
+            Logger.LogInfo("Reset the current rowset");
+            ExecuteSyncInternal();
+        }
+
         if (currentRowset is not IGetRow getRow)
         {
             Logger.LogError("Rowset does not support IGetRow interface");
