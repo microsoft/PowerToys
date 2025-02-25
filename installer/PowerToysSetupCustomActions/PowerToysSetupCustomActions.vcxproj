@@ -113,7 +113,7 @@
       if "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(NormalizedPerUserValue)
       </Command>
       <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX4/5 based installer</Message>
-    </PreBuildEvent>
+    </PreBuildEvent> -->
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(RunBuildEvents)'=='false'">
     <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
