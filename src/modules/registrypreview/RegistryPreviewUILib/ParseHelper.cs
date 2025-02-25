@@ -92,6 +92,8 @@ namespace RegistryPreviewUILib
             return line;
         }
 
+        // special case for when the registryLine begins with a @ - make some tweaks and
+        // let the regular processing handle the rest.
         public static string ProcessRegistryLine(string registryLine)
         {
             if (registryLine.StartsWith("@=-", StringComparison.InvariantCulture))
