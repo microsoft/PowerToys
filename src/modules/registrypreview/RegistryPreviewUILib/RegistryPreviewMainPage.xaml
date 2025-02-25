@@ -73,6 +73,15 @@
                         <KeyboardAccelerator Key="F5" />
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
+                <AppBarButton
+                    x:Name="newButton"
+                    x:Uid="NewButton"
+                    Click="NewButton_Click"
+                    Icon="{ui:FontIcon Glyph=&#xe8a5;}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="N" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
                 <AppBarSeparator />
                 <AppBarButton
                     x:Name="saveButton"
