@@ -110,7 +110,7 @@ namespace RegistryPreviewUILib
                 {
                     case ContentDialogResult.Primary:
                         // Save, then continue the file open
-                        if (!AskFileName(false) ||
+                        if (!AskFileName(_appFileName) ||
                             !SaveFile())
                         {
                             return;
@@ -167,7 +167,7 @@ namespace RegistryPreviewUILib
         /// </summary>
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!AskFileName(false))
+            if (!AskFileName(_appFileName))
             {
                 return;
             }
@@ -181,7 +181,7 @@ namespace RegistryPreviewUILib
         /// </summary>
         private async void SaveAsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!AskFileName(true) || !SaveFile())
+            if (!AskFileName(_appFileName) || !SaveFile())
             {
                 return;
             }
@@ -267,7 +267,7 @@ namespace RegistryPreviewUILib
                 {
                     case ContentDialogResult.Primary:
                         // Save, then continue the file open
-                        if (!AskFileName(false) ||
+                        if (!AskFileName(_appFileName) ||
                             !SaveFile())
                         {
                             return;
