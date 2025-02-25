@@ -834,7 +834,7 @@ namespace RegistryPreviewUILib
             {
                 case ContentDialogResult.Primary:
                     // Save, then close
-                    if (!AskFileName(_appFileName) ||
+                    if (!AskFileName(string.Empty) ||
                         !SaveFile())
                     {
                         return;
