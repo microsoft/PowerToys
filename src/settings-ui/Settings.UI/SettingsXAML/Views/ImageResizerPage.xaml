@@ -19,6 +19,9 @@
         <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
         <converters:ImageResizerUnitToIntConverter x:Key="ImageResizerUnitToIntConverter" />
         <converters:ImageResizerSizeToAccessibleTextConverter x:Key="ImageResizerSizeToAccessibleTextConverter" />
+        <converters:ImageResizerDoubleToAutoConverter x:Key="ImageResizerDoubleToAutoConverter" />
+        <converters:ImageResizerNumberBoxValueConverter x:Key="ImageResizerNumberBoxValueConverter" />
+        <converters:ImageResizerZeroToEmptyStringNumberFormatter x:Key="ImageResizerZeroToEmptyStringNumberFormatter" />
         <toolkitconverters:BoolToObjectConverter
             x:Key="BoolToComboBoxIndexConverter"
             FalseValue="1"
@@ -78,7 +81,7 @@
                                                 Margin="0,0,4,0"
                                                 FontWeight="SemiBold"
                                                 Style="{ThemeResource SecondaryTextStyle}"
-                                                Text="{x:Bind Width, Mode=OneWay}" />
+                                                Text="{x:Bind Width, Mode=OneWay, Converter={StaticResource ImageResizerDoubleToAutoConverter}, ConverterParameter=Auto}" />
                                             <TextBlock
                                                 Margin="0,5,4,0"
                                                 AutomationProperties.AccessibilityView="Raw"
@@ -91,7 +94,7 @@
                                                 Margin="0,0,4,0"
                                                 FontWeight="SemiBold"
                                                 Style="{ThemeResource SecondaryTextStyle}"
-                                                Text="{x:Bind Height, Mode=OneWay}"
+                                                Text="{x:Bind Height, Mode=OneWay, Converter={StaticResource ImageResizerDoubleToAutoConverter}, ConverterParameter=Auto}"
                                                 Visibility="{x:Bind IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
@@ -136,20 +139,20 @@
                                                         </ComboBox>
 
                                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                                            <NumberBox
+                                                            <controls:ImageResizerDimensionsNumberBox
                                                                 x:Uid="ImageResizer_Width"
                                                                 Width="116"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
-                                                                Value="{x:Bind Width, Mode=TwoWay}" />
+                                                                Value="{x:Bind Width, Mode=TwoWay, Converter={StaticResource ImageResizerNumberBoxValueConverter}}" />
 
-                                                            <NumberBox
+                                                            <controls:ImageResizerDimensionsNumberBox
                                                                 x:Uid="ImageResizer_Height"
                                                                 Width="116"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
                                                                 Visibility="{x:Bind IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                                Value="{x:Bind Height, Mode=TwoWay}" />
+                                                                Value="{x:Bind Height, Mode=TwoWay, Converter={StaticResource ImageResizerNumberBoxValueConverter}}" />
                                                         </StackPanel>
 
                                                         <ComboBox

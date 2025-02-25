@@ -19,7 +19,7 @@ jobs:
     BuildPlatform: ${{ parameters.platform }}
     BuildConfiguration: ${{ parameters.configuration }}
     SrcPath: $(Build.Repository.LocalPath)
-    TestArtifactsName: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}-TestArtifacts
+    TestArtifactsName: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
   pool:
     ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
       ${{ if ne(parameters.platform, 'ARM64') }}:
@@ -61,13 +61,9 @@ jobs:
         reg add "HKLM\Software\Policies\Microsoft\Edge\WebView2\ReleaseChannels" /v PowerToys.exe /t REG_SZ /d "3"
       displayName: "Enable WebView2 Canary Channel"
 
-  - download: current
-    displayName: Download artifacts
-    artifact: $(TestArtifactsName)
-    patterns: |-
-      **
-      !**\*.pdb
-      !**\*.lib
+  - template: steps-download-artifacts-with-azure-cli.yml
+    parameters:
+      artifactName: $(TestArtifactsName)
 
   - template: steps-ensure-dotnet-version.yml
     parameters:

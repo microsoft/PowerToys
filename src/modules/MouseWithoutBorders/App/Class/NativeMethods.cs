@@ -75,6 +75,41 @@ namespace MouseWithoutBorders.Class
         [DllImport("kernel32.dll")]
         internal static extern uint WTSGetActiveConsoleSessionId();
 
+        [DllImport("Wtsapi32.dll")]
+        internal static extern bool WTSQuerySessionInformation(IntPtr hServer, int sessionId, WTSInfoClass infoClass, out IntPtr ppBuffer, out int pBytesReturned);
+
+        [DllImport("Wtsapi32.dll")]
+        internal static extern void WTSFreeMemory(IntPtr pointer);
+
+        internal enum WTSInfoClass
+        {
+            WTSInitialProgram,
+            WTSApplicationName,
+            WTSWorkingDirectory,
+            WTSOEMId,
+            WTSSessionId,
+            WTSUserName,
+            WTSWinStationName,
+            WTSDomainName,
+            WTSConnectState,
+            WTSClientBuildNumber,
+            WTSClientName,
+            WTSClientDirectory,
+            WTSClientProductId,
+            WTSClientHardwareId,
+            WTSClientAddress,
+            WTSClientDisplay,
+            WTSClientProtocolType,
+            WTSIdleTime,
+            WTSLogonTime,
+            WTSIncomingBytes,
+            WTSOutgoingBytes,
+            WTSIncomingFrames,
+            WTSOutgoingFrames,
+            WTSClientInfo,
+            WTSSessionInfo,
+        }
+
 #endif
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -812,7 +847,7 @@ namespace MouseWithoutBorders.Class
 
         // [DllImport("kernel32.dll", SetLastError = true)]
         // internal static extern IntPtr CreateToolhelp32Snapshot(UInt32 dwFlags, UInt32 th32ProcessID);
-        [DllImport("Wtsapi32.dll")]
+        [DllImport("Wtsapi32.dll", SetLastError = true)]
         internal static extern uint WTSQueryUserToken(uint SessionId, ref IntPtr phToken);
 
         [SuppressMessage("Microsoft.Globalization", "CA2101:SpecifyMarshalingForPInvokeStringArguments", MessageId = "1", Justification = "Dotnet port with style preservation")]
