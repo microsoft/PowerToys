@@ -23,7 +23,7 @@ namespace RegistryPreviewUILib
     {
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-        // Indicator if we loaded or reloaded a file
+        // Indicator if we loaded/reloaded/saved a file and need to skip TextChangedEevent one time.
         private static bool newFileLoaded;
 
         /// <summary>
@@ -174,7 +174,6 @@ namespace RegistryPreviewUILib
 
             // save and update window title
             _ = SaveFile();
-            _updateWindowTitleFunction(_appFileName);
         }
 
         /// <summary>
@@ -182,12 +181,11 @@ namespace RegistryPreviewUILib
         /// </summary>
         private async void SaveAsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!AskFileName(true))
+            if (!AskFileName(true) || !SaveFile())
             {
                 return;
             }
 
-            _ = SaveFile();
             UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
         }
 

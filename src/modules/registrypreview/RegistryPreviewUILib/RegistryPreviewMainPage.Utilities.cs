@@ -62,6 +62,7 @@ namespace RegistryPreviewUILib
 
             // update the current window's title with the current filename
             _updateWindowTitleFunction(filename);
+            UpdateUnsavedFileIndicator(false);
 
             // Load in the whole file in one call and plop it all into editor
             FileStream fileStream = null;
@@ -990,6 +991,7 @@ namespace RegistryPreviewUILib
                 streamWriter.Close();
 
                 // only change when the save is successful
+                _updateWindowTitleFunction(_appFileName);
                 UpdateUnsavedFileIndicator(false);
                 saveButton.IsEnabled = false;
             }
