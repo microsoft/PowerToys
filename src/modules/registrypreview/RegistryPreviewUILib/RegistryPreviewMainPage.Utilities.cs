@@ -858,7 +858,7 @@ namespace RegistryPreviewUILib
             {
                 case ContentDialogResult.Primary:
                     // Save, then close
-                    if (!AskFileName(false) ||
+                    if (!AskFileName(_appFileName) ||
                         !SaveFile())
                     {
                         return;
@@ -958,18 +958,20 @@ namespace RegistryPreviewUILib
         /// <summary>
         /// Ask the user for the file path if it is unknown because of an unsaved file
         /// </summary>
-        /// <param name="askAlways">Ask regardless of the known file name in case of save as action.</param>
+        /// <param name="fileName">If not empty always aks for a file path and use the value as name.</param>
         /// <returns>Returns true if user selected a path, otherwise false</returns>
-        public bool AskFileName(bool askAlways)
+        public bool AskFileName(string fileName)
         {
-            if (string.IsNullOrEmpty(_appFileName) || askAlways )
+            if (string.IsNullOrEmpty(_appFileName) || !string.IsNullOrEmpty(fileName) )
             {
+                string fName = string.IsNullOrEmpty(fileName) ? resourceLoader.GetString("SuggestFileName") : fileName;
+
                 // Save out a new REG file and then open it - we have to use the direct Win32 method because FileOpenPicker crashes when it's
                 // called while running as admin
                 IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
                 string filename = SaveFilePicker.ShowDialog(
                     windowHandle,
-                    resourceLoader.GetString("SuggestFileName"),
+                    fName,
                     resourceLoader.GetString("FilterRegistryName") + '\0' + "*.reg" + '\0' + resourceLoader.GetString("FilterAllFiles") + '\0' + "*.*" + '\0' + '\0',
                     resourceLoader.GetString("SaveDialogTitle"));
 
