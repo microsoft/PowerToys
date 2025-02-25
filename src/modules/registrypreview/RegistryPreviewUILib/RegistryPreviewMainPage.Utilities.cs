@@ -25,8 +25,8 @@ namespace RegistryPreviewUILib
     {
         private const string NEWFILEHEADER = "Windows Registry Editor Version 5.00\r\n\r\n";
 
-        private static readonly string _usavedFileIndicator = "* ";
-        private static readonly char[] _usavedFileIndicatorChars = [' ', '*'];
+        private static readonly string _unsavedFileIndicator = "* ";
+        private static readonly char[] _unsavedFileIndicatorChars = [' ', '*'];
         private static SemaphoreSlim _dialogSemaphore = new(1);
 
         private string lastKeyPath;
@@ -964,19 +964,19 @@ namespace RegistryPreviewUILib
         public void UpdateUnsavedFileIndicator(bool show)
         {
             // get and cut current title
-            string currentTitel = Regex.Replace(_mainWindow.Title, APPNAME + @"$|\s-\s" + APPNAME + @"$", string.Empty);
+            string currentTitle = Regex.Replace(_mainWindow.Title, APPNAME + @"$|\s-\s" + APPNAME + @"$", string.Empty);
 
             // verify
-            bool titleContiansIndicator = currentTitel.StartsWith(_usavedFileIndicator, StringComparison.CurrentCultureIgnoreCase);
+            bool titleContainsIndicator = currentTitle.StartsWith(_unsavedFileIndicator, StringComparison.CurrentCultureIgnoreCase);
 
             // update
-            if (!titleContiansIndicator && show)
+            if (!titleContainsIndicator && show)
             {
-                _updateWindowTitleFunction(_usavedFileIndicator + currentTitel);
+                _updateWindowTitleFunction(_unsavedFileIndicator + currentTitle);
             }
-            else if (titleContiansIndicator && !show)
+            else if (titleContainsIndicator && !show)
             {
-                _updateWindowTitleFunction(currentTitel.TrimStart(_usavedFileIndicatorChars));
+                _updateWindowTitleFunction(currentTitle.TrimStart(_unsavedFileIndicatorChars));
             }
         }
 
