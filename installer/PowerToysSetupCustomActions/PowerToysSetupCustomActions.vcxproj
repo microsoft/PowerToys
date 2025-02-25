@@ -1,4 +1,4 @@
-﻿﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\WixToolset.WcaUtil.5.0.2\build\WixToolset.WcaUtil.props" Condition="Exists('..\packages\WixToolset.WcaUtil.5.0.2\build\WixToolset.WcaUtil.props')" />
   <Import Project="..\packages\WixToolset.DUtil.5.0.2\build\WixToolset.DUtil.props" Condition="Exists('..\packages\WixToolset.DUtil.5.0.2\build\WixToolset.DUtil.props')" />
@@ -82,7 +82,7 @@
       if not "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform)
       if "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(NormalizedPerUserValue)
       </Command>
-      <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX3 based installer</Message>
+      <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX vnext based installer</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(RunBuildEvents)'=='false'">
