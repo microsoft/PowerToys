@@ -858,7 +858,12 @@ namespace RegistryPreviewUILib
             {
                 case ContentDialogResult.Primary:
                     // Save, then close
-                    SaveFile();
+                    if (!DirtyCloseSaveFile())
+                    {
+                        // save cancelled
+                        return;
+                    }
+
                     break;
                 case ContentDialogResult.Secondary:
                     // Don't save, and then close!
@@ -872,6 +877,31 @@ namespace RegistryPreviewUILib
 
             // if we got here, we should try to close again
             Application.Current.Exit();
+        }
+
+        private bool DirtyCloseSaveFile()
+        {
+            if (string.IsNullOrEmpty(_appFileName))
+            {
+                // Save out a new REG file and then open it - we have to use the direct Win32 method because FileOpenPicker crashes when it's
+                // called while running as admin
+                IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
+                string filename = SaveFilePicker.ShowDialog(
+                    windowHandle,
+                    resourceLoader.GetString("SuggestFileName"),
+                    resourceLoader.GetString("FilterRegistryName") + '\0' + "*.reg" + '\0' + resourceLoader.GetString("FilterAllFiles") + '\0' + "*.*" + '\0' + '\0',
+                    resourceLoader.GetString("SaveDialogTitle"));
+
+                if (filename == string.Empty)
+                {
+                    return false;
+                }
+
+                _appFileName = filename;
+            }
+
+            SaveFile();
+            return true;
         }
 
         /// <summary>
