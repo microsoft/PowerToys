@@ -16,7 +16,6 @@ All:
 - Shortcut Guide
 - OOBE
 - Mouse Utils
-- VCM
 - AlwaysOnTop
 - Screen Ruler
 - Quick Accent
@@ -34,6 +33,7 @@ All:
 - Advanced Paste
 - Workspaces
 - New+
+- ZoomIt
 ```
 
 ```
@@ -60,7 +60,6 @@ Group 2:
 - Shortcut Guide
 - OOBE
 - Mouse Utils
-- VCM
 - Hosts File Editor
 - File Locksmith
 - Registry Preview
@@ -68,6 +67,7 @@ Group 2:
 - Environment Variables
 - DSC
 - Workspaces
+- ZoomIt
 ```
 
 ```
@@ -94,7 +94,6 @@ Group 4:
 - Image Resizer
 - Keyboard Manager
 - Shortcut Guide
-- VCM
 - AlwaysOnTop
 - Screen Ruler
 - Quick Accent
@@ -102,6 +101,7 @@ Group 4:
 - MWB
 - Command Not Found
 - Workspaces
+- ZoomIt
 ```
 
 ```
