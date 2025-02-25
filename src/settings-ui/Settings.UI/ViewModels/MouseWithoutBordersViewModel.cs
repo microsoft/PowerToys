@@ -21,6 +21,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
@@ -29,7 +30,7 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class MouseWithoutBordersViewModel : Observable, IDisposable
+    public partial class MouseWithoutBordersViewModel : Observable, IDisposable
     {
         // These should be in the same order as the ComboBoxItems in MouseWithoutBordersPage.xaml switch machine shortcut options
         private readonly int[] _switchBetweenMachineShortcutOptions =
@@ -93,10 +94,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool UseService
         {
-            get => Settings.Properties.UseService;
+            get
+            {
+                if (_allowServiceModeGpoConfiguration == GpoRuleConfigured.Disabled)
+                {
+                    return false;
+                }
+
+                return Settings.Properties.UseService;
+            }
 
             set
             {
+                if (_allowServiceModeIsGPOConfigured)
+                {
+                    return;
+                }
+
                 var valueChanged = Settings.Properties.UseService != value;
 
                 // Set the UI property itself instantly
@@ -121,6 +135,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        public bool UseServiceSettingIsEnabled => _allowServiceModeIsGPOConfigured == false;
 
         public bool ConnectFieldsVisible
         {
@@ -185,6 +201,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _useOriginalUserInterfaceIsGPOConfigured;
         private GpoRuleConfigured _disallowBlockingScreensaverGpoConfiguration;
         private bool _disallowBlockingScreensaverIsGPOConfigured;
+        private GpoRuleConfigured _allowServiceModeGpoConfiguration;
+        private bool _allowServiceModeIsGPOConfigured;
         private GpoRuleConfigured _sameSubnetOnlyGpoConfiguration;
         private bool _sameSubnetOnlyIsGPOConfigured;
         private GpoRuleConfigured _validateRemoteIpGpoConfiguration;
@@ -260,7 +278,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static VisualStudio.Threading.AsyncSemaphore _ipcSemaphore = new VisualStudio.Threading.AsyncSemaphore(1);
 
-        private sealed class SyncHelper : IDisposable
+        private sealed partial class SyncHelper : IDisposable
         {
             public SyncHelper(NamedPipeClientStream stream)
             {
@@ -507,6 +525,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _disableUserDefinedIpMappingRulesIsGPOConfigured = _disableUserDefinedIpMappingRulesGpoConfiguration == GpoRuleConfigured.Enabled;
 
             // Policies supporting only disabled state
+            _allowServiceModeGpoConfiguration = GPOWrapper.GetConfiguredMwbAllowServiceModeValue();
+            _allowServiceModeIsGPOConfigured = _allowServiceModeGpoConfiguration == GpoRuleConfigured.Disabled;
             _clipboardSharingEnabledGpoConfiguration = GPOWrapper.GetConfiguredMwbClipboardSharingEnabledValue();
             _clipboardSharingEnabledIsGPOConfigured = _clipboardSharingEnabledGpoConfiguration == GpoRuleConfigured.Disabled;
             _fileTransferEnabledGpoConfiguration = GPOWrapper.GetConfiguredMwbFileTransferEnabledValue();
@@ -1083,7 +1103,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private IndexedObservableCollection<DeviceViewModel> machineMatrixString;
 
-        public class DeviceViewModel : Observable
+        public partial class DeviceViewModel : Observable
         {
             public string Name { get; set; }
 
@@ -1185,7 +1205,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         CultureInfo.InvariantCulture,
         "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
         MouseWithoutBordersSettings.ModuleName,
-        JsonSerializer.Serialize(Settings)));
+        JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.MouseWithoutBordersSettings)));
         }
 
         public void NotifyUpdatedSettings()
@@ -1231,6 +1251,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendCustomAction("uninstall_service");
         }
 
+        public bool ShowPolicyConfiguredInfoForServiceSettings
+        {
+            get
+            {
+                return IsEnabled && _allowServiceModeIsGPOConfigured;
+            }
+        }
+
         public bool ShowPolicyConfiguredInfoForBehaviorSettings
         {
             get
@@ -1248,7 +1276,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowInfobarRunAsAdminText
         {
-            get { return !CanToggleUseService && IsEnabled; }
+            get { return !CanToggleUseService && IsEnabled && !ShowPolicyConfiguredInfoForServiceSettings; }
         }
     }
 }

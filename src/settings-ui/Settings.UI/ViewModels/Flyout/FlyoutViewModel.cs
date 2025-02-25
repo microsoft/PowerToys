@@ -7,7 +7,7 @@ using System.Timers;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels.Flyout
 {
-    public class FlyoutViewModel : IDisposable
+    public partial class FlyoutViewModel : IDisposable
     {
         private Timer _hideTimer;
         private bool _disposed;

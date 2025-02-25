@@ -13,6 +13,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.System;
 using Windows.UI;
 
 namespace RegistryPreviewUILib
@@ -66,6 +68,7 @@ namespace RegistryPreviewUILib
             Browser.DefaultBackgroundColor = Color.FromArgb(0, 0, 0, 0);
             Browser.CoreWebView2.NavigationCompleted += CoreWebView2_NavigationCompleted;
             Browser.CoreWebView2.PermissionRequested += CoreWebView2_PermissionRequested;
+            Browser.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
             Browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             Browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
             Browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
@@ -87,6 +90,16 @@ namespace RegistryPreviewUILib
             var assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
             var index = Path.GetFullPath(Path.Combine(assemblyDir, "Assets", "RegistryPreview", "index.html"));
             Browser.CoreWebView2.Navigate(index);
+        }
+
+        private async void CoreWebView2_NewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
+        {
+            // Monaco opens URI in a new window. We open the URI in the default web browser.
+            if (args.Uri != null && args.IsUserInitiated)
+            {
+                args.Handled = true;
+                await ShowOpenUriDialogAsync(new Uri(args.Uri));
+            }
         }
 
         private void CoreWebView2_PermissionRequested(CoreWebView2 sender, CoreWebView2PermissionRequestedEventArgs args)
@@ -164,6 +177,24 @@ namespace RegistryPreviewUILib
         public void Dispose()
         {
             _textChangedThrottle?.Dispose();
+        }
+
+        private async Task ShowOpenUriDialogAsync(Uri uri)
+        {
+            OpenUriDialog.Content = uri.ToString();
+            var result = await OpenUriDialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                await Launcher.LaunchUriAsync(uri);
+            }
+        }
+
+        private void OpenUriDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            var dataPackage = new DataPackage();
+            dataPackage.SetText(sender.Content.ToString());
+            Clipboard.SetContent(dataPackage);
         }
     }
 }
