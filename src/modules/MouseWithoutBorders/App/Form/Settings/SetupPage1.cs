@@ -4,6 +4,8 @@
 
 using System;
 
+using MouseWithoutBorders.Core;
+
 namespace MouseWithoutBorders
 {
     public partial class SetupPage1 : SettingsFormPage
@@ -12,7 +14,7 @@ namespace MouseWithoutBorders
         {
             InitializeComponent();
 
-            Common.ClearComputerMatrix();
+            MachineStuff.ClearComputerMatrix();
         }
 
         private void NoButtonClick(object sender, EventArgs e)

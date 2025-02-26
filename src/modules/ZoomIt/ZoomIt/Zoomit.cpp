@@ -1820,7 +1820,7 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
         break;
 
     case WM_PAINT:
-        if( (hTextPreview = GetDlgItem( hDlg, IDC_TEXT_FONT ))) {
+        if( (hTextPreview = GetDlgItem( hDlg, IDC_TEXT_FONT )) != 0 ) {
 
             // 16-pt preview
             LOGFONT _lf = g_LogFont;

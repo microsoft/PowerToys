@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new ColorPickerViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
-                null,
+                SettingsRepository<ColorPickerSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
