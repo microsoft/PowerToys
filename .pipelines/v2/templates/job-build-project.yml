@@ -176,10 +176,6 @@ jobs:
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
     displayName: Verify ARM64 configurations
 
-  - pwsh: |
-      Write-Host "System.PullRequest.IsFork: $env:SYSTEM_PULLREQUEST_ISFORK"
-    displayName: 'Print System.PullRequest.IsFork'
-
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
     - task: Cache@2
       displayName: 'Cache nuget packages (PackageReference)'
