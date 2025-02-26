@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using Microsoft.CmdPal.Ext.WindowsTerminal;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 
@@ -47,12 +46,13 @@ public static class TerminalHelper
         var options = new JsonDocumentOptions
         {
             CommentHandling = JsonCommentHandling.Skip,
+            AllowTrailingCommas = true,
         };
 
         var json = JsonDocument.Parse(settingsJson, options);
         JsonElement profilesList;
 
-        json.RootElement.TryGetProperty("profiles", out JsonElement profilesElement);
+        json.RootElement.TryGetProperty("profiles", out var profilesElement);
         if (profilesElement.ValueKind == JsonValueKind.Object)
         {
             profilesElement.TryGetProperty("list", out profilesList);
@@ -85,16 +85,16 @@ public static class TerminalHelper
     /// <param name="profileElement">Profile from the settings JSON file</param>
     public static TerminalProfile ParseProfile(TerminalPackage terminal, JsonElement profileElement)
     {
-        profileElement.TryGetProperty("name", out JsonElement nameElement);
+        profileElement.TryGetProperty("name", out var nameElement);
         var name = nameElement.ValueKind == JsonValueKind.String ? nameElement.GetString() : null;
 
-        profileElement.TryGetProperty("hidden", out JsonElement hiddenElement);
+        profileElement.TryGetProperty("hidden", out var hiddenElement);
         var hidden = (hiddenElement.ValueKind == JsonValueKind.False || hiddenElement.ValueKind == JsonValueKind.True) && hiddenElement.GetBoolean();
 
-        profileElement.TryGetProperty("guid", out JsonElement guidElement);
+        profileElement.TryGetProperty("guid", out var guidElement);
         var guid = guidElement.ValueKind == JsonValueKind.String ? Guid.Parse(guidElement.GetString()) : null as Guid?;
 
-        profileElement.TryGetProperty("icon", out JsonElement iconElement);
+        profileElement.TryGetProperty("icon", out var iconElement);
         var icon = iconElement.ValueKind == JsonValueKind.String ? iconElement.GetString() : null;
 
         return new TerminalProfile(terminal, name, guid, hidden, icon);
