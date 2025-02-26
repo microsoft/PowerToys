@@ -21,15 +21,19 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
     // [ObservableProperty]s, because PropChanged comes in off the UI thread,
     // and ObservableProperty is not smart enough to raise the PropertyChanged
     // on the UI thread.
-    public string Name { get; private set; } = string.Empty;
+    public string Name => Command.Name;
 
-    public string Title { get; private set; } = string.Empty;
+    private string _itemTitle = string.Empty;
+
+    public string Title => string.IsNullOrEmpty(_itemTitle) ? Name : _itemTitle;
 
     public string Subtitle { get; private set; } = string.Empty;
 
-    public IconInfoViewModel Icon { get; private set; }// = new(string.Empty);
+    private IconInfoViewModel _listItemIcon = new(null);
 
-    public ExtensionObject<ICommand> Command { get; private set; } = new(null);
+    public IconInfoViewModel Icon => _listItemIcon.IsSet ? _listItemIcon : Command.Icon;
+
+    public CommandViewModel Command { get; private set; }
 
     public List<CommandContextItemViewModel> MoreCommands { get; private set; } = [];
 
@@ -58,7 +62,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         : base(errorContext)
     {
         _commandItemModel = item;
-        Icon = new(null);
+        Command = new(null, errorContext);
     }
 
     //// Called from ListViewModel on background thread started in ListPage.xaml.cs
@@ -75,25 +79,18 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
             return;
         }
 
-        Command = new(model.Command);
+        Command = new(model.Command, PageContext);
+        Command.InitializeProperties();
 
-        // The way we're using this, this call to initialize Name is
-        // particularly unsafe. For top-level commands, we wrap the
-        // _CommandItem_ in a TopLevelCommandWrapper. But the secret problem
-        // is: if the extension crashes, then the next time the MainPage
-        // fetches items, we'll grab the TopLevelCommandWrapper, and try to get
-        // the .Name out of its Command. But its .Command has died, so we
-        // explode here.
-        // (Icon probably has the same issue)
-        // When we have proper stubs for TLC's, this probably won't be an issue anymore.
-        Name = model.Command?.Name ?? string.Empty;
-        Title = model.Title;
+        _itemTitle = model.Title;
         Subtitle = model.Subtitle;
 
         var listIcon = model.Icon;
-        var iconInfo = listIcon ?? Command.Unsafe!.Icon;
-        Icon = new(iconInfo);
-        Icon.InitializeProperties();
+        if (listIcon != null)
+        {
+            _listItemIcon = new(listIcon);
+            _listItemIcon.InitializeProperties();
+        }
 
         var more = model.MoreCommands;
         if (more != null)
@@ -114,16 +111,16 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
 
         _defaultCommandContextItem = new(new CommandContextItem(model.Command!), PageContext)
         {
-            Name = Name,
-            Title = Name,
+            _itemTitle = Name,
             Subtitle = Subtitle,
-            Icon = Icon,
-            Command = new(model.Command),
+            _listItemIcon = _listItemIcon,
+            Command = new(model.Command, PageContext),
 
             // TODO this probably should just be a CommandContextItemViewModel(CommandItemViewModel) ctor, or a copy ctor or whatever
         };
 
         model.PropChanged += Model_PropChanged;
+        Command.PropertyChanged += Command_PropertyChanged;
         UpdateProperty(nameof(Name));
         UpdateProperty(nameof(Title));
         UpdateProperty(nameof(Subtitle));
@@ -141,13 +138,12 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         }
         catch (Exception)
         {
-            Command = new(null);
-            Name = "Error";
-            Title = "Error";
+            Command = new(null, PageContext);
+            _itemTitle = "Error";
             Subtitle = "Item failed to load";
             MoreCommands = [];
-            Icon = new(new IconInfo("❌")); // new("❌");
-            Icon.InitializeProperties();
+            _listItemIcon = new(new IconInfo("❌"));
+            _listItemIcon.InitializeProperties();
         }
 
         return false;
@@ -176,26 +172,31 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
         switch (propertyName)
         {
             case nameof(Command):
-                this.Command = new(model.Command);
-                Name = model.Command?.Name ?? string.Empty;
-                UpdateProperty(nameof(Name));
+                if (Command != null)
+                {
+                    Command.PropertyChanged -= Command_PropertyChanged;
+                }
 
+                Command = new(model.Command, PageContext);
+                Command.InitializeProperties();
+                UpdateProperty(nameof(Name));
+                UpdateProperty(nameof(Title));
+                UpdateProperty(nameof(Icon));
                 break;
-            case nameof(Name):
-                this.Name = model.Command?.Name ?? string.Empty;
-                break;
+
             case nameof(Title):
-                this.Title = model.Title;
+                _itemTitle = model.Title;
                 break;
+
             case nameof(Subtitle):
                 this.Subtitle = model.Subtitle;
                 break;
+
             case nameof(Icon):
-                var listIcon = model.Icon;
-                var iconInfo = listIcon ?? Command.Unsafe!.Icon;
-                Icon = new(iconInfo);
-                Icon.InitializeProperties();
+                _listItemIcon = new(model.Icon);
+                _listItemIcon.InitializeProperties();
                 break;
+
             case nameof(model.MoreCommands):
                 var more = model.MoreCommands;
                 if (more != null)
@@ -225,11 +226,23 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
                 UpdateProperty(nameof(HasMoreCommands));
 
                 break;
-
-                // TODO GH #360 - make MoreCommands observable
-                // which needs to also raise HasMoreCommands
         }
 
         UpdateProperty(propertyName);
+    }
+
+    private void Command_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        var propertyName = e.PropertyName;
+        switch (propertyName)
+        {
+            case nameof(Command.Name):
+                UpdateProperty(nameof(Title));
+                UpdateProperty(nameof(Name));
+                break;
+            case nameof(Command.Icon):
+                UpdateProperty(nameof(Icon));
+                break;
+        }
     }
 }

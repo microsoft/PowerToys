@@ -26,6 +26,8 @@ public partial class IconInfoViewModel : ObservableObject
 
     public bool HasIcon(bool light) => IconForTheme(light).HasIcon;
 
+    public bool IsSet => _model.Unsafe != null;
+
     public IconInfoViewModel(IIconInfo? icon)
     {
         _model = new(icon);
