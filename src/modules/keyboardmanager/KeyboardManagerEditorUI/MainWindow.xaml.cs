@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -28,15 +29,62 @@ namespace KeyboardManagerEditorUI
         [DllImport("KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool CheckIfRemappingsAreValid();
 
+        public ObservableCollection<KeyMapping> KeyMappings { get; } = new();
+
         public MainWindow()
         {
             this.InitializeComponent();
         }
 
-        private void MyButton_Click(object sender, RoutedEventArgs e)
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
-            // Call the C++ function to check if the current remappings are valid
-            myButton.Content = CheckIfRemappingsAreValid() ? "Valid" : "Invalid";
+            var button = sender as Button;
+            if (button == null)
+            {
+                // button.Background = (SolidColorBrush)Application.Current.Resources["SystemControlBackgroundAccentBrush"];
+                return;
+            }
+        }
+
+        private async void OnSelectSourceClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new KeyCaptureDialog();
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                if (sender is Button btn && btn.Tag is KeyMapping mapping)
+                {
+                    mapping.SourceKey = dialog.SelectedKeys;
+                }
+            }
+        }
+
+        private async void OnSelectTargetClick(object sender, RoutedEventArgs e)
+        {
+            var dialog = new KeyCaptureDialog();
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                if (sender is Button btn && btn.Tag is KeyMapping mapping)
+                {
+                    mapping.TargetKeys = dialog.SelectedKeys;
+                }
+            }
+        }
+
+        private void AddKeyMapping(object sender, RoutedEventArgs e)
+        {
+            KeyMappings.Add(new KeyMapping
+            {
+                SourceKey = "Select",
+                TargetKeys = "To send",
+            });
+        }
+
+        private void OnDeleteMapping(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is KeyMapping mapping)
+            {
+                KeyMappings.Remove(mapping);
+            }
         }
     }
 }

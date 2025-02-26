@@ -1,0 +1,17 @@
+<ContentDialog
+    x:Class="KeyboardManagerEditorUI.KeyCaptureDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Select keys"
+    CloseButtonText="Cancel"
+    DefaultButton="Primary"
+    PrimaryButtonText="OK">
+
+    <StackPanel>
+        <TextBlock Margin="0,10" Text="Press any key or combination..." />
+        <TextBlock
+            x:Name="KeyDisplay"
+            FontSize="20"
+            TextWrapping="Wrap" />
+    </StackPanel>
+</ContentDialog>

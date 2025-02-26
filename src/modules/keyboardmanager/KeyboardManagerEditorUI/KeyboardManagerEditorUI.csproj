@@ -19,6 +19,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="KeyCaptureDialog.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -41,6 +45,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assets\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="KeyCaptureDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!--
