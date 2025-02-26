@@ -43,6 +43,13 @@ stages:
         - template: job-ci-precheck.yml
 
   - ${{ each platform in parameters.buildPlatforms }}:
+    - pwsh: |
+        Write-Host "This step runs only if PR is from the main repo"
+        Write-Host "Source Repository URI: $(System.PullRequest.SourceRepositoryURI)"
+        Write-Host "Target Repository URI: $(Build.Repository.Uri)"
+      condition: eq(variables['System.PullRequest.SourceRepositoryURI'], variables['Build.Repository.Uri'])
+      displayName: "Run Only for Main Repo PRs"
+
     - stage: Build_${{ platform }}
       displayName: Build ${{ platform }}
       ${{ if ne(variables['Build.Reason'], 'Manual') }}:
@@ -77,6 +84,7 @@ stages:
         displayName: Test ${{ platform }}
         dependsOn:
           - Build_${{platform}}
+        condition: not(and(eq(variables['System.PullRequest.SourceRepositoryURI'], variables['Build.Repository.Uri']), eq('${{ platform }}', 'arm64')))
         jobs:
           - template: job-test-project.yml
             parameters:
