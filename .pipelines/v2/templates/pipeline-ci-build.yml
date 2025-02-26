@@ -77,7 +77,6 @@ stages:
         displayName: Test ${{ platform }}
         dependsOn:
           - Build_${{platform}}
-        condition: not(and(eq(variables['System.PullRequest.SourceRepositoryURI'], variables['Build.Repository.Uri']), eq('${{ platform }}', 'arm64')))
         jobs:
           - template: job-test-project.yml
             parameters:
