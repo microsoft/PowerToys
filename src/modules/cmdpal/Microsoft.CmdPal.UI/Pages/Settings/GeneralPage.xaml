@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Pages.GeneralPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -50,6 +50,15 @@
                             <controls:SettingsCard Description="When enabled, the previous search text will be selected when the app is opened" Header="Highlight search on activate">
                                 <ToggleSwitch IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
                             </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind viewModel.MonitorPositionIndex, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
+                                    <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
+                                    <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
+                                    <ComboBoxItem x:Uid="Run_Radio_Position_In_Place" />
+                                </ComboBox>
+                            </controls:SettingsCard>
+
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
 

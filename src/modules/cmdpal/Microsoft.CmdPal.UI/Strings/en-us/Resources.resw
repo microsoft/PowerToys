@@ -171,4 +171,24 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Commands</value>
     <comment>A section header for information about the app</comment>
   </data>
+  <data name="Run_PositionHeader.Header" xml:space="preserve">
+    <value>Preferred monitor position</value>
+    <comment>as in Show Command Palette on primary monitor</comment>
+  </data>
+  <data name="Run_PositionHeader.Description" xml:space="preserve">
+    <value>If multiple monitors are in use, Command Palette can be launched on the desired monitor</value>
+    <comment>as in Show Command Palette on primary monitor</comment>
+  </data>
+  <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
+    <value>Monitor with mouse cursor</value>
+  </data>
+  <data name="Run_Radio_Position_Focus.Content" xml:space="preserve">
+    <value>Monitor with focused window</value>
+  </data>
+  <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
+    <value>Primary monitor</value>
+  </data>
+  <data name="Run_Radio_Position_In_Place.Content" xml:space="preserve">
+    <value>Don't move</value>
+  </data>
 </root>

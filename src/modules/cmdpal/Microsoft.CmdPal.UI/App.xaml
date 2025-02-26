@@ -16,6 +16,9 @@
                 <ResourceDictionary Source="Controls/KeyVisual/KeyVisual.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!--  Other app resources here  -->
+
+            <x:Double x:Key="SettingActionControlMinWidth">240</x:Double>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

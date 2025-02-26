@@ -40,6 +40,8 @@ public partial class SettingsModel : ObservableObject
 
     public List<TopLevelHotkey> CommandHotkeys { get; set; } = [];
 
+    public MonitorBehavior SummonOn { get; set; } = MonitorBehavior.ToMouse;
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 
@@ -149,5 +151,15 @@ public partial class SettingsModel : ObservableObject
     {
         PropertyNameCaseInsensitive = true,
         IncludeFields = true,
+        Converters = { new JsonStringEnumConverter() },
+        AllowTrailingCommas = true,
     };
+}
+
+public enum MonitorBehavior
+{
+    ToMouse = 0,
+    ToPrimary = 1,
+    ToFocusedWindow = 2,
+    InPlace = 3,
 }

@@ -74,6 +74,16 @@ public partial class SettingsViewModel : PageViewModel
         }
     }
 
+    public int MonitorPositionIndex
+    {
+        get => (int)_settings.SummonOn;
+        set
+        {
+            _settings.SummonOn = (MonitorBehavior)value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)

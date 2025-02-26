@@ -2,7 +2,11 @@ GetPhysicallyInstalledSystemMemory
 GlobalMemoryStatusEx
 GetSystemInfo
 CoCreateInstance
+GetForegroundWindow
 SetForegroundWindow
+GetWindowRect
+GetCursorPos
+SetWindowPos
 IsIconic
 RegisterHotKey
 UnregisterHotKey

@@ -28,6 +28,7 @@ namespace Microsoft.CmdPal.UI;
 
 public sealed partial class MainWindow : Window,
     IRecipient<DismissMessage>,
+    IRecipient<ShowWindowMessage>,
     IRecipient<QuitMessage>
 {
     private readonly HWND _hwnd;
@@ -64,11 +65,13 @@ public sealed partial class MainWindow : Window,
         // notification area icon back
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
+        AppWindow.Resize(new SizeInt32 { Width = 1000, Height = 620 });
         PositionCentered();
         SetAcrylic();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
+        WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -107,13 +110,20 @@ public sealed partial class MainWindow : Window,
 
     private void PositionCentered()
     {
-        AppWindow.Resize(new SizeInt32 { Width = 1000, Height = 620 });
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
+        PositionCentered(displayArea);
+    }
+
+    private void PositionCentered(DisplayArea displayArea)
+    {
         if (displayArea is not null)
         {
             var centeredPosition = AppWindow.Position;
             centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
             centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
+
+            centeredPosition.X += displayArea.WorkArea.X;
+            centeredPosition.Y += displayArea.WorkArea.Y;
             AppWindow.Move(centeredPosition);
         }
     }
@@ -176,6 +186,81 @@ public sealed partial class MainWindow : Window,
                 TintOpacity = 0.5f,
                 FallbackColor = Color.FromArgb(255, 28, 28, 28),
             };
+    }
+
+    private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
+    {
+        var hwnd = new HWND(hwndValue);
+
+        // Remember, IsIconic == "minimized", which is entirely different state
+        // from "show/hide"
+        // If we're currently minimized, restore us first, before we reveal
+        // our window. Otherwise we'd just be showing a minimized window -
+        // which would remain not visible to the user.
+        if (PInvoke.IsIconic(hwnd))
+        {
+            PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
+        }
+
+        var display = GetScreen(hwnd, target);
+        PositionCentered(display);
+
+        PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
+        PInvoke.SetForegroundWindow(hwnd);
+        PInvoke.SetActiveWindow(hwnd);
+    }
+
+    private DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
+    {
+        // Leaving a note here, in case we ever need it:
+        // https://github.com/microsoft/microsoft-ui-xaml/issues/6454
+        // If we need to ever FindAll, we'll need to iterate manually
+        var displayAreas = Microsoft.UI.Windowing.DisplayArea.FindAll();
+        switch (target)
+        {
+            case MonitorBehavior.InPlace:
+                if (PInvoke.GetWindowRect(currentHwnd, out var bounds))
+                {
+                    RectInt32 converted = new(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+                    return DisplayArea.GetFromRect(converted, DisplayAreaFallback.Nearest);
+                }
+
+                break;
+
+            case MonitorBehavior.ToFocusedWindow:
+                var foregroundWindowHandle = PInvoke.GetForegroundWindow();
+                if (foregroundWindowHandle != IntPtr.Zero)
+                {
+                    if (PInvoke.GetWindowRect(foregroundWindowHandle, out var fgBounds))
+                    {
+                        RectInt32 converted = new(fgBounds.X, fgBounds.Y, fgBounds.Width, fgBounds.Height);
+                        return DisplayArea.GetFromRect(converted, DisplayAreaFallback.Nearest);
+                    }
+                }
+
+                break;
+
+            case MonitorBehavior.ToPrimary:
+                return DisplayArea.Primary;
+
+            case MonitorBehavior.ToMouse:
+            default:
+                if (PInvoke.GetCursorPos(out var cursorPos))
+                {
+                    return DisplayArea.GetFromPoint(new PointInt32(cursorPos.X, cursorPos.Y), DisplayAreaFallback.Nearest);
+                }
+
+                break;
+        }
+
+        return DisplayArea.Primary;
+    }
+
+    public void Receive(ShowWindowMessage message)
+    {
+        var settings = App.Current.Services.GetService<SettingsModel>()!;
+
+        ShowHwnd(message.Hwnd, settings.SummonOn);
     }
 
     public void Receive(QuitMessage message) =>
