@@ -56,6 +56,24 @@ namespace Hosts.UITests
             Assert.IsTrue(this.FindAll<Button>(By.Name("Delete")).Count == 1, "Should have one row now");
         }
 
+        /// <summary>
+        /// Test if saving error shown when not running as administrator
+        /// </summary>
+        [TestMethod]
+        public void TestErrorMessageWithNonAdminPermission()
+        {
+            this.CloseWarningDialog();
+            this.RemoveAllEntries();
+
+            // Add new URL override and a warning tip should be shown
+            this.AddEntry("192.168.0.1", "localhost", true);
+
+            Assert.IsTrue(
+                this.FindAll<Element>(By.TagName("StatusBar")).Count == 1 &&
+                this.Find<Element>(By.TagName("StatusBar")).FindAll<Element>(By.Name("The hosts file cannot be saved because the program isn't running as administrator.")).Count == 1,
+                "Should display host-file saving error if not run as administrator");
+        }
+
         private void AddEntry(string ip, string host, bool active = true, bool clickAddEntryButton = true)
         {
             if (clickAddEntryButton)

@@ -174,7 +174,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to use for finding the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<T>? FindAll<T>(By by, int timeoutMS = 3000)
+        public ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
@@ -182,13 +182,12 @@ namespace Microsoft.PowerToys.UITest
                 () =>
                 {
                     var elements = this.windowsElement.FindElements(by.ToSeleniumBy());
-                    Assert.IsTrue(elements.Count > 0, $"Elements not found using selector: {by}");
                     return elements;
                 },
                 this.driver,
                 timeoutMS);
 
-            return foundElements;
+            return foundElements ?? new ReadOnlyCollection<T>(new List<T>());
         }
 
         /// <summary>
