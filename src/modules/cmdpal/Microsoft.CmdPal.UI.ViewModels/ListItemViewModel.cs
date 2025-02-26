@@ -42,13 +42,8 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
             return; // throw?
         }
 
-        Tags = [.. li.Tags?.Select(t =>
-        {
-            var vm = new TagViewModel(t, PageContext);
-            vm.InitializeProperties();
-            return vm;
-        })
-            .ToList() ?? []];
+        UpdateTags(li.Tags);
+
         TextToSuggest = li.TextToSuggest;
         Section = li.Section ?? string.Empty;
         var extensionDetails = li.Details;
@@ -60,7 +55,6 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
             UpdateProperty(nameof(HasDetails));
         }
 
-        UpdateProperty(nameof(HasTags));
         UpdateProperty(nameof(Tags));
         UpdateProperty(nameof(TextToSuggest));
         UpdateProperty(nameof(Section));
@@ -79,28 +73,7 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
         switch (propertyName)
         {
             case nameof(Tags):
-                var newTags = model.Tags?.Select(t =>
-                {
-                    var vm = new TagViewModel(t, PageContext);
-                    vm.InitializeProperties();
-                    return vm;
-                })
-                    .ToList() ?? [];
-
-                Task.Factory.StartNew(
-                    () =>
-                    {
-                        lock (Tags)
-                        {
-                            ListHelpers.InPlaceUpdateList(Tags, newTags);
-                        }
-
-                        UpdateProperty(nameof(HasTags));
-                    },
-                    CancellationToken.None,
-                    TaskCreationOptions.None,
-                    PageContext.Scheduler);
-
+                UpdateTags(model.Tags);
                 break;
             case nameof(TextToSuggest):
                 this.TextToSuggest = model.TextToSuggest ?? string.Empty;
@@ -128,4 +101,29 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
     public override bool Equals(object? obj) => obj is ListItemViewModel vm && vm.Model.Equals(this.Model);
 
     public override int GetHashCode() => Model.GetHashCode();
+
+    private void UpdateTags(ITag[]? newTagsFromModel)
+    {
+        var newTags = newTagsFromModel?.Select(t =>
+        {
+            var vm = new TagViewModel(t, PageContext);
+            vm.InitializeProperties();
+            return vm;
+        })
+            .ToList() ?? [];
+
+        Task.Factory.StartNew(
+            () =>
+            {
+                lock (Tags)
+                {
+                    ListHelpers.InPlaceUpdateList(Tags, newTags);
+                }
+
+                UpdateProperty(nameof(HasTags));
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            PageContext.Scheduler);
+    }
 }

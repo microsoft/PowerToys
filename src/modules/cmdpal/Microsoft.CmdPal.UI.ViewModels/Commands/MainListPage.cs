@@ -162,14 +162,16 @@ public partial class MainListPage : DynamicListPage,
         }
 
         var isFallback = false;
-        var isAlias = false;
+        var isAliasSubstringMatch = false;
+        var isAliasMatch = false;
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
         if (topLevelOrAppItem is TopLevelCommandItemWrapper toplevel)
         {
             isFallback = toplevel.IsFallback;
-            if (toplevel.Alias is string alias)
+            if (toplevel.Alias?.Alias is string alias)
             {
-                isAlias = alias == query;
+                isAliasMatch = alias == query;
+                isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query, StringComparison.CurrentCultureIgnoreCase);
             }
         }
 
@@ -180,17 +182,27 @@ public partial class MainListPage : DynamicListPage,
         {
              nameMatch.Score,
              (descriptionMatch.Score - 4) / 2,
-             isFallback ? 1 : 0, // Always give fallbacks a chance
+             isFallback ? 1 : 0, // Always give fallbacks a chance...
         };
         var max = scores.Max();
 
-        var history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands;
-        var recentWeightBoost = history.GetCommandHistoryWeight(id);
+        // ... but downweight them
+        var matchSomething = (max / (isFallback ? 3 : 1))
+            + (isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0));
 
-        var finalScore = (max / (isFallback ? 3 : 1))
-            + recentWeightBoost
-            + (isAlias ? 9001 : 0);
-        return finalScore; // but downweight them
+        // If we matched title, subtitle, or alias (something real), then
+        // here we add the recent command weight boost
+        //
+        // Otherwise something like `x` will still match everything you've run before
+        var finalScore = matchSomething;
+        if (matchSomething > 0)
+        {
+            var history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands;
+            var recentWeightBoost = history.GetCommandHistoryWeight(id);
+            finalScore += recentWeightBoost;
+        }
+
+        return finalScore;
     }
 
     public void UpdateHistory(IListItem topLevelOrAppItem)

@@ -2,12 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed class TopLevelViewModel
+public sealed partial class TopLevelViewModel : ObservableObject
 {
     private readonly SettingsModel _settings;
     private readonly IServiceProvider _serviceProvider;
@@ -34,6 +35,34 @@ public sealed class TopLevelViewModel
         }
     }
 
+    private string _aliasText;
+
+    public string AliasText
+    {
+        get => _aliasText;
+        set
+        {
+            if (SetProperty(ref _aliasText, value))
+            {
+                UpdateAlias();
+            }
+        }
+    }
+
+    private bool _isDirectAlias;
+
+    public bool IsDirectAlias
+    {
+        get => _isDirectAlias;
+        set
+        {
+            if (SetProperty(ref _isDirectAlias, value))
+            {
+                UpdateAlias();
+            }
+        }
+    }
+
     public TopLevelViewModel(TopLevelCommandItemWrapper item, SettingsModel settings, IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
@@ -42,7 +71,26 @@ public sealed class TopLevelViewModel
         _item = item;
         Icon = new(item.Icon ?? item.Command?.Icon);
         Icon.InitializeProperties();
+
+        var aliases = _serviceProvider.GetService<AliasManager>()!;
+        _isDirectAlias = _item.Alias?.IsDirect ?? false;
+        _aliasText = _item.Alias?.Alias ?? string.Empty;
     }
 
     private void Save() => SettingsModel.SaveSettings(_settings);
+
+    private void UpdateAlias()
+    {
+        if (string.IsNullOrWhiteSpace(_aliasText))
+        {
+            _item.UpdateAlias(null);
+        }
+        else
+        {
+            var newAlias = new CommandAlias(_aliasText, _item.Id, _isDirectAlias);
+            _item.UpdateAlias(newAlias);
+        }
+
+        Save();
+    }
 }

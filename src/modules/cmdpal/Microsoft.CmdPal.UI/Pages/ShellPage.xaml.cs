@@ -99,7 +99,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             return;
         }
 
-        if (!RootFrame.CanGoBack)
+        if (!ViewModel.CurrentPage.IsNested)
         {
             // on the main page here
             ViewModel.PerformTopLevelCommand(message);

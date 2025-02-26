@@ -28,4 +28,11 @@ public class CommandAlias
         : this(string.Empty, string.Empty, false)
     {
     }
+
+    public static CommandAlias FromSearchText(string text, string commandId)
+    {
+        var trailingSpace = text.EndsWith(' ');
+        var realAlias = trailingSpace ? text.Substring(0, text.Length - 1) : text;
+        return new CommandAlias(realAlias, commandId, !trailingSpace);
+    }
 }
