@@ -259,6 +259,86 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             }
         }
 
+        /// <summary>
+        /// Convert between 'sq' notation and '^2' notation for square units.
+        /// </summary>
+        public static void SquareHandler(ref string[] split, CultureInfo culture)
+        {
+            switch (split[1].ToLower(culture))
+            {
+                case "sqcm":
+                    split[1] = "cm^2";
+                    break;
+                case "sqdm":
+                    split[1] = "dm^2";
+                    break;
+                case "sqft":
+                    split[1] = "ft^2";
+                    break;
+                case "sqin":
+                    split[1] = "in^2";
+                    break;
+                case "sqkm":
+                    split[1] = "km^2";
+                    break;
+                case "sqm":
+                    split[1] = "m^2";
+                    break;
+                case "sqmi":
+                    split[1] = "mi^2";
+                    break;
+                case "sqmm":
+                    split[1] = "mm^2";
+                    break;
+                case "sqnmi":
+                    split[1] = "nmi^2";
+                    break;
+                case "sqyd":
+                    split[1] = "yd^2";
+                    break;
+                case "squm":
+                    split[1] = "µm^2";
+                    break;
+            }
+
+            switch (split[3].ToLower(culture))
+            {
+                case "sqcm":
+                    split[3] = "cm^2";
+                    break;
+                case "sqdm":
+                    split[3] = "dm^2";
+                    break;
+                case "sqft":
+                    split[3] = "ft^2";
+                    break;
+                case "sqin":
+                    split[3] = "in^2";
+                    break;
+                case "sqkm":
+                    split[3] = "km^2";
+                    break;
+                case "sqm":
+                    split[3] = "m^2";
+                    break;
+                case "sqmi":
+                    split[3] = "mi^2";
+                    break;
+                case "sqmm":
+                    split[3] = "mm^2";
+                    break;
+                case "sqnmi":
+                    split[3] = "nmi^2";
+                    break;
+                case "sqyd":
+                    split[3] = "yd^2";
+                    break;
+                case "sqµm":
+                    split[3] = "µm^2";
+                    break;
+            }
+        }
+
         public static ConvertModel Parse(Query query)
         {
             string[] split = query.Search.Split(' ');
@@ -279,6 +359,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             InputInterpreter.KPHHandler(ref split);
             InputInterpreter.GallonHandler(ref split, CultureInfo.CurrentCulture);
             InputInterpreter.OunceHandler(ref split, CultureInfo.CurrentCulture);
+            InputInterpreter.SquareHandler(ref split, CultureInfo.CurrentCulture);
             if (!double.TryParse(split[0], out double value))
             {
                 return null;
