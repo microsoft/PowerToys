@@ -1162,6 +1162,8 @@ on nested pages will all work exactly as expected. -->
 
 #### Markdown Pages
 
+Deprecated. Don't use me. Use ContentPage instead. 
+
 ```csharp
 interface IMarkdownPage requires IPage {
     String[] Bodies(); // TODO! should this be an IBody, so we can make it observable?
@@ -1172,6 +1174,7 @@ interface IMarkdownPage requires IPage {
 
 #### Form Pages
 
+Deprecated. Don't use me. Use ContentPage instead. 
 
 ```csharp
 

@@ -152,18 +152,15 @@ public partial class MastodonExtensionCommandsProvider : CommandProvider
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-public partial class MastodonPostForm : Form
+public partial class MastodonPostForm : FormContent
 {
     private readonly MastodonStatus post;
 
     public MastodonPostForm(MastodonStatus post)
     {
         this.post = post;
-    }
 
-    public override string DataJson()
-    {
-        return $$"""
+        DataJson = $$"""
 {
     "author_display_name": {{JsonSerializer.Serialize(post.Account.DisplayName)}},
     "author_username": {{JsonSerializer.Serialize(post.Account.Username)}},
@@ -173,12 +170,7 @@ public partial class MastodonPostForm : Form
     "post_url": "{{post.Url}}"
 }
 """;
-    }
 
-    public override ICommandResult SubmitForm(string payload) => CommandResult.Dismiss();
-
-    public override string TemplateJson()
-    {
         var img_block = string.Empty;
         if (post.MediaAttachments.Count > 0)
         {
@@ -186,7 +178,7 @@ public partial class MastodonPostForm : Form
                 .Select(media => $$""",{"type": "Image","url":"{{media.Url}}","size": "stretch"}""").ToArray());
         }
 
-        return $$"""
+        TemplateJson = $$"""
 {
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
     "type": "AdaptiveCard",
@@ -252,10 +244,12 @@ public partial class MastodonPostForm : Form
 }
 """;
     }
+
+    public override ICommandResult SubmitForm(string inputs) => CommandResult.Dismiss();
 }
 
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
-public partial class MastodonPostPage : FormPage
+public partial class MastodonPostPage : ContentPage
 {
     private readonly MastodonStatus post;
 
@@ -265,7 +259,7 @@ public partial class MastodonPostPage : FormPage
         this.post = post;
     }
 
-    public override IForm[] Forms()
+    public override IContent[] GetContent()
     {
         var postsAsync = GetRepliesAsync();
         postsAsync.ConfigureAwait(false);

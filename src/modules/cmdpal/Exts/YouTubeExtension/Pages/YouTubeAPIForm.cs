@@ -2,24 +2,18 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using YouTubeExtension.Helper;
 
 namespace YouTubeExtension.Pages;
 
-internal sealed partial class YouTubeAPIForm : Form
+internal sealed partial class YouTubeAPIForm : FormContent
 {
-    public override string TemplateJson()
+    public YouTubeAPIForm()
     {
-        var json = $$"""
+        TemplateJson = $$"""
                     {
                       "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
                       "type": "AdaptiveCard",
@@ -45,7 +39,6 @@ internal sealed partial class YouTubeAPIForm : Form
                       ]
                     }
                     """;
-        return json;
     }
 
     public override CommandResult SubmitForm(string payload)

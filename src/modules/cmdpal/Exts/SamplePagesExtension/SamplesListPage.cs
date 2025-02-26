@@ -50,8 +50,6 @@ public partial class SamplesListPage : ListPage
             Subtitle = "Demo of using nested trees of content to create a comment thread-like experience",
             Icon = new IconInfo("\uE90A"), // Comment
         },
-
-        // DEPRECATED: Markdown pages
         new ListItem(new SampleMarkdownPage())
         {
             Title = "Markdown Page Sample Command",
@@ -66,13 +64,6 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Markdown with details",
             Subtitle = "A page with markdown and details",
-        },
-
-        // DEPRECATED: Form pages
-        new ListItem(new SampleFormPage())
-        {
-            Title = "Form Page Sample Command",
-            Subtitle = "Define inputs to retrieve input from the user",
         },
 
         // Settings helpers

@@ -2,19 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.IO;
 using System.Text.Json.Nodes;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SpongebotExtension;
 
-internal sealed partial class SpongeSettingsForm : Form
+internal sealed partial class SpongeSettingsForm : FormContent
 {
-    public override string TemplateJson()
+    public SpongeSettingsForm()
     {
-        var json = $$"""
+        TemplateJson = $$"""
 {
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
   "type": "AdaptiveCard",
@@ -49,7 +47,6 @@ internal sealed partial class SpongeSettingsForm : Form
   ]
 }
 """;
-        return json;
     }
 
     public override CommandResult SubmitForm(string payload)

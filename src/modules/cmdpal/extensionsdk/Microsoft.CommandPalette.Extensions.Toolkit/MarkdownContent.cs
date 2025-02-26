@@ -17,4 +17,13 @@ public partial class MarkdownContent : BaseObservable, IMarkdownContent
     }
 
 = string.Empty;
+
+    public MarkdownContent()
+    {
+    }
+
+    public MarkdownContent(string body)
+    {
+        Body = body;
+    }
 }

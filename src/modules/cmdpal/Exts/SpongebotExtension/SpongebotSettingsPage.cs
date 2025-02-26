@@ -7,11 +7,11 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SpongebotExtension;
 
-internal sealed partial class SpongebotSettingsPage : FormPage
+internal sealed partial class SpongebotSettingsPage : ContentPage
 {
     private readonly SpongeSettingsForm settingsForm = new();
 
-    public override IForm[] Forms() => [settingsForm];
+    public override IContent[] GetContent() => [settingsForm];
 
     public SpongebotSettingsPage()
     {

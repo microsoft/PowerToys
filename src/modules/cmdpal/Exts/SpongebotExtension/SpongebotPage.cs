@@ -12,7 +12,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SpongebotExtension;
 
-public partial class SpongebotPage : MarkdownPage, IFallbackHandler
+public partial class SpongebotPage : ContentPage, IFallbackHandler
 {
     public CopyTextCommand CopyCommand { get; set; } = new(string.Empty);
 
@@ -46,11 +46,11 @@ public partial class SpongebotPage : MarkdownPage, IFallbackHandler
         return sb.ToString();
     }
 
-    public override string[] Bodies()
+    public override IContent[] GetContent()
     {
         var t = GenerateMeme(this.Name);
         t.ConfigureAwait(false);
-        return [t.Result];
+        return [new MarkdownContent(t.Result)];
     }
 
     private static async Task<string> GenerateMeme(string text)

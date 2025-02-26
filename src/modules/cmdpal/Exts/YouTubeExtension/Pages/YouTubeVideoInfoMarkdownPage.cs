@@ -13,7 +13,7 @@ using YouTubeExtension.Helper;
 
 namespace YouTubeExtension.Pages;
 
-internal sealed partial class YouTubeVideoInfoMarkdownPage : MarkdownPage
+internal sealed partial class YouTubeVideoInfoMarkdownPage : ContentPage
 {
     private readonly YouTubeVideo _video;
     private string _markdown = string.Empty;
@@ -25,7 +25,7 @@ internal sealed partial class YouTubeVideoInfoMarkdownPage : MarkdownPage
         _video = video;
     }
 
-    public override string[] Bodies()
+    public override IContent[] GetContent()
     {
         var state = File.ReadAllText(YouTubeHelper.StateJsonPath());
         var jsonState = JsonNode.Parse(state);
@@ -74,7 +74,7 @@ _Last updated: {DateTime.Now:MMMM dd, yyyy}_
 _Data sourced via YouTube API_
 ";
 
-        return new string[] { _markdown };
+        return [new MarkdownContent(_markdown)];
     }
 
     private async Task<YouTubeVideo> FillInVideoDetailsAsync(YouTubeVideo video, string apiKey)

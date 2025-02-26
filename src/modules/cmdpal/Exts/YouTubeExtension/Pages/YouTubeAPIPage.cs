@@ -2,21 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace YouTubeExtension.Pages;
 
-internal sealed partial class YouTubeAPIPage : FormPage
+internal sealed partial class YouTubeAPIPage : ContentPage
 {
     private readonly YouTubeAPIForm apiForm = new();
 
-    public override IForm[] Forms() => [apiForm];
+    public override IContent[] GetContent() => [apiForm];
 
     public YouTubeAPIPage()
     {

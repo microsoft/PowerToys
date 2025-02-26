@@ -7,12 +7,13 @@ using System.IO;
 using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using YouTubeExtension.Helper;
 
 namespace YouTubeExtension.Pages;
 
-internal sealed partial class YouTubeChannelInfoMarkdownPage : MarkdownPage
+internal sealed partial class YouTubeChannelInfoMarkdownPage : ContentPage
 {
     private readonly YouTubeChannel _channel;
     private string _markdown = string.Empty;
@@ -24,7 +25,7 @@ internal sealed partial class YouTubeChannelInfoMarkdownPage : MarkdownPage
         _channel = channel;
     }
 
-    public override string[] Bodies()
+    public override IContent[] GetContent()
     {
         var state = File.ReadAllText(YouTubeHelper.StateJsonPath());
         var jsonState = JsonNode.Parse(state);
@@ -60,7 +61,7 @@ _Last updated: {DateTime.Now:MMMM dd, yyyy}_
 _Data sourced via YouTube API_
 ";
 
-        return new string[] { _markdown };
+        return [new MarkdownContent(_markdown)];
     }
 
     private async Task<YouTubeChannel> FillInChannelDetailsAsync(YouTubeChannel channel, string apiKey)

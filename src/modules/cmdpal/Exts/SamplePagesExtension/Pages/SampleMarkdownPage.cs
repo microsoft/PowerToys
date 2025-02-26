@@ -2,11 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace SamplePagesExtension;
 
-internal sealed partial class SampleMarkdownPage : MarkdownPage
+internal sealed partial class SampleMarkdownPage : ContentPage
 {
     public static readonly string SampleMarkdownText = @"
 # Markdown Guide
@@ -167,5 +168,5 @@ Result:
         Name = "Sample Markdown Page";
     }
 
-    public override string[] Bodies() => [SampleMarkdownText];
+    public override IContent[] GetContent() => [new MarkdownContent(SampleMarkdownText)];
 }
