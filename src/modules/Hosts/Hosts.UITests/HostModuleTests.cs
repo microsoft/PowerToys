@@ -28,16 +28,16 @@ namespace Hosts.UITests
             this.RemoveAllEntries();
 
             // 'Add an entry' button (only show-up when list is empty) should be visible
-            Assert.IsTrue(this.FindAll<Button>(By.Name("Add an entry")).Count == 1, "'Add an entry' button should be visible in the empty view");
+            Assert.IsTrue(this.FindAll<HyperlinkButton>("Add an entry").Count == 1, "'Add an entry' button should be visible in the empty view");
 
             // Click 'Add an entry' from empty-view for adding Host override rule
-            this.Find<Button>(By.Name("Add an entry")).Click();
+            this.Find<HyperlinkButton>("Add an entry").Click();
 
             this.AddEntry("192.168.0.1", "localhost", false, false);
 
             // Should have one row now and not more empty view
-            Assert.IsTrue(this.FindAll<Button>(By.Name("Delete")).Count == 1, "Should have one row now");
-            Assert.IsTrue(this.FindAll<Button>(By.Name("Add an entry")).Count == 0, "'Add an entry' button should be invisible if not empty view");
+            Assert.IsTrue(this.FindAll<Button>("Delete").Count == 1, "Should have one row now");
+            Assert.IsTrue(this.FindAll<HyperlinkButton>("Add an entry").Count == 0, "'Add an entry' button should be invisible if not empty view");
         }
 
         /// <summary>
@@ -49,11 +49,42 @@ namespace Hosts.UITests
             this.CloseWarningDialog();
             this.RemoveAllEntries();
 
-            Assert.IsTrue(this.FindAll<Button>(By.Name("Delete")).Count == 0, "Should have no row after removing all");
+            Assert.IsTrue(this.FindAll<Button>("Delete").Count == 0, "Should have no row after removing all");
 
             this.AddEntry("192.168.0.1", "localhost", true);
 
-            Assert.IsTrue(this.FindAll<Button>(By.Name("Delete")).Count == 1, "Should have one row now");
+            Assert.IsTrue(this.FindAll<Button>("Delete").Count == 1, "Should have one row now");
+        }
+
+        /// <summary>
+        /// Test when adding more than 9 entries
+        /// </summary>
+        [TestMethod]
+        public void TestTooManyHosts()
+        {
+            this.CloseWarningDialog();
+
+            // only at most 9 hosts allowed in one entry
+            string validHosts = string.Join(" ", "host_1", "host_2", "host_3", "host_4", "host_5", "host_6", "host_7", "host_8", "host_9");
+
+            // should not allow to add more than 9 hosts in one entry, hosts are separated by space
+            string inValidHosts = validHosts + " more_host";
+
+            this.Find<Button>("New entry").Click();
+
+            Assert.IsFalse(this.Find<Button>("Add").Enabled, "Add button should be Disabled by default");
+
+            this.Find<TextBox>("Address").SetText("127.0.0.1");
+
+            this.Find<TextBox>("Hosts").SetText(validHosts);
+
+            Assert.IsTrue(this.Find<Button>("Add").Enabled, "Add button should be Enabled with validHosts");
+
+            this.Find<TextBox>("Hosts").SetText(inValidHosts);
+
+            Assert.IsFalse(this.Find<Button>("Add").Enabled, "Add button should be Enabled with validHosts");
+
+            this.Find<Button>("Cancel").Click();
         }
 
         /// <summary>
@@ -69,8 +100,7 @@ namespace Hosts.UITests
             this.AddEntry("192.168.0.1", "localhost", true);
 
             Assert.IsTrue(
-                this.FindAll<Element>(By.TagName("StatusBar")).Count == 1 &&
-                this.Find<Element>(By.TagName("StatusBar")).FindAll<Element>(By.Name("The hosts file cannot be saved because the program isn't running as administrator.")).Count == 1,
+                this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count == 1,
                 "Should display host-file saving error if not run as administrator");
         }
 
@@ -79,21 +109,21 @@ namespace Hosts.UITests
             if (clickAddEntryButton)
             {
                 // Click 'Add an entry' for adding Host override rule
-                this.Find<Button>(By.Name("New entry")).Click();
+                this.Find<Button>("New entry").Click();
             }
 
             // Adding a new host override localhost -> 192.168.0.1
-            Assert.IsFalse(this.Find<Button>(By.Name("Add")).Enabled, "Add button should be Disabled by default");
+            Assert.IsFalse(this.Find<Button>("Add").Enabled, "Add button should be Disabled by default");
 
-            Assert.IsTrue(this.Find<TextBox>(By.Name("Address")).SetText(ip, false).Text == ip);
-            Assert.IsTrue(this.Find<TextBox>(By.Name("Hosts")).SetText(host, false).Text == host);
+            Assert.IsTrue(this.Find<TextBox>("Address").SetText(ip).Text == ip);
+            Assert.IsTrue(this.Find<TextBox>("Hosts").SetText(host).Text == host);
 
-            this.Find<ToggleSwitch>(By.Name("Active")).Toggle(active);
+            this.Find<ToggleSwitch>("Active").Toggle(active);
 
-            Assert.IsTrue(this.Find<Button>(By.Name("Add")).Enabled, "Add button should be Enabled after providing valid inputs");
+            Assert.IsTrue(this.Find<Button>("Add").Enabled, "Add button should be Enabled after providing valid inputs");
 
             // Add the entry
-            this.Find<Button>(By.Name("Add")).Click();
+            this.Find<Button>("Add").Click();
 
             // 0.5 second delay after adding an entry
             Task.Delay(500).Wait();
@@ -102,25 +132,25 @@ namespace Hosts.UITests
         private void CloseWarningDialog()
         {
             // Find 'Accept' button which come in 'Warning' dialog
-            if (this.FindAll<Window>(By.Name("Warning")).Count > 0 &&
-                this.FindAll<Button>(By.Name("Accept")).Count > 0)
+            if (this.FindAll("Warning").Count > 0 &&
+                this.FindAll<Button>("Accept").Count > 0)
             {
                 // Hide Warning dialog if any
-                this.Find<Button>(By.Name("Accept")).Click();
+                this.Find<Button>("Accept").Click();
             }
         }
 
         private void RemoveAllEntries()
         {
             // Delete all existing host-override rules
-            foreach (var deleteBtn in this.FindAll<Button>(By.Name("Delete")))
+            foreach (var deleteBtn in this.FindAll<Button>("Delete"))
             {
                 deleteBtn.Click();
-                this.Find<Button>(By.Name("Yes")).Click();
+                this.Find<Button>("Yes").Click();
             }
 
             // Should have no row left, and no more delete button
-            Assert.IsTrue(this.FindAll<Button>(By.Name("Delete")).Count == 0);
+            Assert.IsTrue(this.FindAll<Button>("Delete").Count == 0);
         }
     }
 }

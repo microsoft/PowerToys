@@ -25,20 +25,15 @@ namespace Microsoft.PowerToys.UITest
 
         private Process? appDriver;
 
-        public SessionHelper(PowerToysModule scope, bool runAsAdmin)
+        public SessionHelper(PowerToysModule scope)
         {
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
 
             var winAppDriverProcessInfo = new ProcessStartInfo
             {
                 FileName = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe",
+                Verb = "runas",
             };
-
-            if (runAsAdmin)
-            {
-                winAppDriverProcessInfo.UseShellExecute = true;
-                winAppDriverProcessInfo.Verb = "runas";
-            }
 
             this.appDriver = Process.Start(winAppDriverProcessInfo);
 
