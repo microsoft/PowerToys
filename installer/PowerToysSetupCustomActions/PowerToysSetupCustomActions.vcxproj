@@ -78,12 +78,6 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Workspaces.wxs"" ""$(ProjectDir)..\PowerToysSetup\Workspaces.wxs.bk""""
       if not "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform)
       if "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(NormalizedPerUserValue)
-      </Command>
-      <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX3 based installer</Message>
-    </PreBuildEvent>
-    <PreBuildEvent>
-      <Command>
-      call cmd /C "copy ""$(ProjectDir)DepsFilesLists.h"" ""$(ProjectDir)DepsFilesLists.h.bk"""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\AdvancedPaste.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\AdvancedPaste.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Awake.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Awake.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\BaseApplications.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\BaseApplications.wxs.bk""""
@@ -112,7 +106,7 @@
       if not "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform)
       if "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(NormalizedPerUserValue)
       </Command>
-      <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX4/5 based installer</Message>
+      <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX3 based installer</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(RunBuildEvents)'=='false'">
