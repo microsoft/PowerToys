@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             HideFileExtension = new BoolProperty(true);
             HideStartingDigits = new BoolProperty(true);
             TemplateLocation = new StringProperty(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "NewPlus", "Templates"));
-            ReplaceVariables = new BoolProperty(true);
+            ReplaceVariables = new BoolProperty(false);
         }
 
         [JsonPropertyName("HideFileExtension")]
