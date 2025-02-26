@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaqt hisoblagich</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: black;
+            color: white;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #timer {
+            font-size: 20em;
+            margin-top: 20px;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 5px 10px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="font-size: 3em;">Vaqtni hisoblagich</h1>
+    <div id="current-time" style="font-size: 2em;"></div>
+    <div id="timer">15:00</div>
+    <div class="button-container">
+        <button onclick="startCountdown()">Boshlash</button>
+        <button onclick="stopCountdown()">To‘xtatish</button>
+        <button onclick="resetCountdown()">Qaytadan</button>
+    </div>
+    
+    <script>
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById("current-time").innerText = now.toLocaleTimeString();
+        }
+        setInterval(updateCurrentTime, 1000);
+        updateCurrentTime();
+
+        let countdown;
+        let timeLeft = 15 * 60;
+        let isRunning = false;
+
+        function updateTimerDisplay() {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            document.getElementById("timer").innerText = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function startCountdown() {
+            if (isRunning) return;
+            isRunning = true;
+            countdown = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    alert("Vaqt tugadi!");
+                    isRunning = false;
+                } else {
+                    timeLeft--;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        function stopCountdown() {
+            clearInterval(countdown);
+            isRunning = false;
+        }
+
+        function resetCountdown() {
+            clearInterval(countdown);
+            timeLeft = 15 * 60;
+            updateTimerDisplay();
+            isRunning = false;
+        }
+    </script>
+</body>
+</html>
