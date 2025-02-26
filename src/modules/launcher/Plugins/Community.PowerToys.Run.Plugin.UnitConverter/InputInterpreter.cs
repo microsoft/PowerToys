@@ -267,74 +267,74 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
             switch (split[1].ToLower(culture))
             {
                 case "sqcm":
-                    split[1] = "cm^2";
+                    split[1] = "cm²";
                     break;
                 case "sqdm":
-                    split[1] = "dm^2";
+                    split[1] = "dm²";
                     break;
                 case "sqft":
-                    split[1] = "ft^2";
+                    split[1] = "ft²";
                     break;
                 case "sqin":
-                    split[1] = "in^2";
+                    split[1] = "in²";
                     break;
                 case "sqkm":
-                    split[1] = "km^2";
+                    split[1] = "km²";
                     break;
                 case "sqm":
-                    split[1] = "m^2";
+                    split[1] = "m²";
                     break;
                 case "sqmi":
-                    split[1] = "mi^2";
+                    split[1] = "mi²";
                     break;
                 case "sqmm":
-                    split[1] = "mm^2";
+                    split[1] = "mm²";
                     break;
                 case "sqnmi":
-                    split[1] = "nmi^2";
+                    split[1] = "nmi²";
                     break;
                 case "sqyd":
-                    split[1] = "yd^2";
+                    split[1] = "yd²";
                     break;
-                case "squm":
-                    split[1] = "µm^2";
+                case "sqµm":
+                    split[1] = "µm²";
                     break;
             }
 
             switch (split[3].ToLower(culture))
             {
                 case "sqcm":
-                    split[3] = "cm^2";
+                    split[3] = "cm²";
                     break;
                 case "sqdm":
-                    split[3] = "dm^2";
+                    split[3] = "dm²";
                     break;
                 case "sqft":
-                    split[3] = "ft^2";
+                    split[3] = "ft²";
                     break;
                 case "sqin":
-                    split[3] = "in^2";
+                    split[3] = "in²";
                     break;
                 case "sqkm":
-                    split[3] = "km^2";
+                    split[3] = "km²";
                     break;
                 case "sqm":
-                    split[3] = "m^2";
+                    split[3] = "m²";
                     break;
                 case "sqmi":
-                    split[3] = "mi^2";
+                    split[3] = "mi²";
                     break;
                 case "sqmm":
-                    split[3] = "mm^2";
+                    split[3] = "mm²";
                     break;
                 case "sqnmi":
-                    split[3] = "nmi^2";
+                    split[3] = "nmi²";
                     break;
                 case "sqyd":
-                    split[3] = "yd^2";
+                    split[3] = "yd²";
                     break;
                 case "sqµm":
-                    split[3] = "µm^2";
+                    split[3] = "µm²";
                     break;
             }
         }
