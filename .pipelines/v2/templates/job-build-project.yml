@@ -175,11 +175,10 @@ jobs:
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
     displayName: Verify ARM64 configurations
+
   - pwsh: |
-      Write-Host "This step runs only if PR is from the main repo"
-      Write-Host "Source Repository URI: $(System.PullRequest.SourceRepositoryURI)"
-       Write-Host "Target Repository URI: $(Build.Repository.Uri)"
-    displayName: "Check Repo"
+      Write-Host "System.PullRequest.IsFork: $env:SYSTEM_PULLREQUEST_ISFORK"
+    displayName: 'Print System.PullRequest.IsFork'
 
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
     - task: Cache@2

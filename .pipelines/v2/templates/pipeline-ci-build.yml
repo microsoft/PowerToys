@@ -72,7 +72,7 @@ stages:
               winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
               useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
 
-    - ${{ if eq(parameters.runTests, true) }}:
+    - ${{ if and(eq(parameters.runTests, true), not(and(eq(platform, 'arm64'), eq(variables['System.PullRequest.IsFork'], true)))) }}:
       - stage: Test_${{ platform }}
         displayName: Test ${{ platform }}
         dependsOn:
