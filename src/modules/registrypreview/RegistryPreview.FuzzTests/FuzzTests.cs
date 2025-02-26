@@ -142,6 +142,30 @@ namespace RegistryPreview.FuzzTests
 
                 // Fuzz test for the StripFirstAndLast method
                 name = ParseHelper.StripFirstAndLast(name);
+
+                // Clean out any escaped characters in the value, only for the preview
+                name = ParseHelper.StripEscapedCharacters(name);
+
+                // set the value
+                string value = registryLine.Substring(equal + 1);
+
+                // trim the whitespace from the value
+                value = value.Trim();
+
+                // if the first character is a " then this is a string value, so find the last most " which will avoid comments
+                if (value.StartsWith('"'))
+                {
+                    int last = value.LastIndexOf('"');
+                    if (last >= 0)
+                    {
+                        value = value.Substring(0, last + 1);
+                    }
+                }
+
+                if (value.StartsWith('"') && value.EndsWith('"'))
+                {
+                    value = ParseHelper.StripFirstAndLast(value);
+                }
             }
             else
             {

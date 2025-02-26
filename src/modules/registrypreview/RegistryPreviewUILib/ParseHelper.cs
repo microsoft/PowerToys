@@ -10,14 +10,14 @@ using System.Threading.Tasks;
 
 namespace RegistryPreviewUILib
 {
-    public class ParseHelper
+    internal static class ParseHelper
     {
         private const string ERRORIMAGE = "ms-appx:///Assets/RegistryPreview/error32.png";
 
         /// <summary>
         /// Checks a Key line for the closing bracket and treat it as an error if it cannot be found
         /// </summary>
-        public static void CheckKeyLineForBrackets(ref string registryLine, ref string imageName)
+        internal static void CheckKeyLineForBrackets(ref string registryLine, ref string imageName)
         {
             // following the current behavior of the registry editor, find the last ] and treat everything else as ignorable
             int lastBracket = registryLine.LastIndexOf(']');
@@ -81,7 +81,7 @@ namespace RegistryPreviewUILib
         /// Rip the first and last character off a string,
         /// checking that the string is at least 2 characters long to avoid errors
         /// </summary>
-        public static string StripFirstAndLast(string line)
+        internal static string StripFirstAndLast(string line)
         {
             if (line.Length > 1)
             {
@@ -92,9 +92,19 @@ namespace RegistryPreviewUILib
             return line;
         }
 
+        /// <summary>
+        /// Replace any escaped characters in the REG file with their counterparts, for the UX
+        /// </summary>
+        internal static string StripEscapedCharacters(string value)
+        {
+            value = value.Replace("\\\\", "\\");    // Replace \\ with \ in the UI
+            value = value.Replace("\\\"", "\"");    // Replace \" with " in the UI
+            return value;
+        }
+
         // special case for when the registryLine begins with a @ - make some tweaks and
         // let the regular processing handle the rest.
-        public static string ProcessRegistryLine(string registryLine)
+        internal static string ProcessRegistryLine(string registryLine)
         {
             if (registryLine.StartsWith("@=-", StringComparison.InvariantCulture))
             {
