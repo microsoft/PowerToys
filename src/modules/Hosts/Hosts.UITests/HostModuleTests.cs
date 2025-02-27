@@ -18,8 +18,18 @@ namespace Hosts.UITests
         }
 
         /// <summary>
-        /// Test if Empty-view is shown when no entries are present.
-        /// And 'Add an entry' button from Empty-view is functional.
+        /// Test Empty-view in the Hosts-File-Editor
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Validating Empty-view is shown if no entries in the list.</description>
+        /// </item>
+        /// <item>
+        /// <description>Validating Empty-view is NOT shown if 1 or more entries in the list.</description>
+        /// </item>
+        /// <item>
+        /// <description>Validating Add-an-entry HyperlinkButton in Empty-view works correctly.</description>
+        /// </item>
+        /// </list>
         /// </summary>
         [TestMethod]
         public void TestEmptyView()
@@ -41,7 +51,12 @@ namespace Hosts.UITests
         }
 
         /// <summary>
-        /// Test if 'New entry' button is functional
+        /// Test Adding-entry Button in the Hosts-File-Editor
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Validating Adding-entry Button works correctly.</description>
+        /// </item>
+        /// </list>
         /// </summary>
         [TestMethod]
         public void TestAddingEntry()
@@ -57,7 +72,15 @@ namespace Hosts.UITests
         }
 
         /// <summary>
-        /// Test when adding more than 9 entries
+        /// Test Multiple-hosts validation logic
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Validating the Add button should be Disabled if more than 9 hosts in one entry.</description>
+        /// </item>
+        /// <item>
+        /// <description>Validating the Add button should be Enabled if less or equal 9 hosts in one entry.</description>
+        /// </item>
+        /// </list>
         /// </summary>
         [TestMethod]
         public void TestTooManyHosts()
@@ -88,7 +111,12 @@ namespace Hosts.UITests
         }
 
         /// <summary>
-        /// Test if saving error shown when not running as administrator
+        /// Test Error-message in the Hosts-File-Editor
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Validating error message should be shown if not run as admin.</description>
+        /// </item>
+        /// </list>
         /// </summary>
         [TestMethod]
         public void TestErrorMessageWithNonAdminPermission()

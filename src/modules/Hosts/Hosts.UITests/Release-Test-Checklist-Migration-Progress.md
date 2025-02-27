@@ -15,7 +15,7 @@ For existing manual test-cases, we will convert them to UI-Tests and run them in
    - [ ] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
  * Test the different settings and verify they are applied:
    - [ ] Launch as Administrator.
-   - [x] Show a warning at startup. (**HostsSettingTests.TestShowWarningDialog**)
+   - [x] Show a warning at startup. (**HostsSettingTests.TestWarningDialog**)
    - [ ] Additional lines position.
 
 ### Additional UI-Tests cases
