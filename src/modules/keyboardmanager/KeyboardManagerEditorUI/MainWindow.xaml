@@ -11,7 +11,6 @@
 
     <Grid Padding="16">
         <StackPanel>
-
             <TextBlock
                 Margin="10"
                 FontSize="24"
@@ -52,13 +51,9 @@
                     <StackPanel>
                         <ToggleButton Click="Button_Click" Content="Select" />
                         <ComboBox
-                            Width="150"
-                            Margin="0,12,0,0"
-                            PlaceholderText="Select a key">
-                            <ComboBoxItem Content="A" />
-                            <ComboBoxItem Content="B" />
-                            <ComboBoxItem Content="C" />
-                        </ComboBox>
+                            x:Name="keyComboBox"
+                            Width="250"
+                            PlaceholderText="select keys please" />
                     </StackPanel>
                 </Grid>
 
@@ -84,13 +79,9 @@
                     <StackPanel>
                         <ToggleButton Click="Button_Click" Content="Click to select" />
                         <ComboBox
-                            Width="150"
-                            Margin="0,12,0,0"
-                            PlaceholderText="Select key(s)">
-                            <ComboBoxItem Content="Win + A" />
-                            <ComboBoxItem Content="Shift + B" />
-                            <ComboBoxItem Content="Alt + D" />
-                        </ComboBox>
+                            x:Name="newKeyComboBox"
+                            Width="250"
+                            PlaceholderText="select keys please" />
                     </StackPanel>
                 </Grid>
             </Grid>

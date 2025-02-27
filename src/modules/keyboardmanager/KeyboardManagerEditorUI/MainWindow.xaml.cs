@@ -22,18 +22,73 @@ using Windows.Foundation.Collections;
 namespace KeyboardManagerEditorUI
 {
     /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
+    /// Window that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        public class KeyboardKey
+        {
+            public int KeyCode { get; set; }
+
+            public string KeyName { get; set; } = string.Empty;
+
+            public override string ToString() => KeyName;
+        }
+
+        // Struct to hold key code and name pairs
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct KeyNamePair
+        {
+            public int KeyCode;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+            public string KeyName;
+        }
+
+        [DllImport("KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int GetKeyboardKeysList(bool isShortcut, [Out] KeyNamePair[] keyList, int maxCount);
+
         [DllImport("KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool CheckIfRemappingsAreValid();
 
-        public ObservableCollection<KeyMapping> KeyMappings { get; } = new();
+        public List<KeyboardKey> KeysList { get; private set; } = new List<KeyboardKey>();
 
         public MainWindow()
         {
             this.InitializeComponent();
+
+            LoadKeyboardKeys();
+
+            keyComboBox.ItemsSource = KeysList;
+            keyComboBox.DisplayMemberPath = "KeyName";
+
+            newKeyComboBox.ItemsSource = KeysList;
+            newKeyComboBox.DisplayMemberPath = "KeyCode";
+        }
+
+        private void LoadKeyboardKeys()
+        {
+            const int MaxKeys = 300;
+            KeyNamePair[] keyNamePairs = new KeyNamePair[MaxKeys];
+
+            int count = GetKeyboardKeysList(false, keyNamePairs, MaxKeys);
+
+            KeysList = new List<KeyboardKey>(count);
+            for (int i = 0; i < count; i++)
+            {
+                KeysList.Add(new KeyboardKey
+                {
+                    KeyCode = keyNamePairs[i].KeyCode,
+                    KeyName = keyNamePairs[i].KeyName,
+                });
+            }
+        }
+
+        private void KeyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] is KeyboardKey key)
+            {
+                Console.WriteLine($"selected key: {key.KeyName} (code: {key.KeyCode})");
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -43,47 +98,6 @@ namespace KeyboardManagerEditorUI
             {
                 // button.Background = (SolidColorBrush)Application.Current.Resources["SystemControlBackgroundAccentBrush"];
                 return;
-            }
-        }
-
-        private async void OnSelectSourceClick(object sender, RoutedEventArgs e)
-        {
-            var dialog = new KeyCaptureDialog();
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-            {
-                if (sender is Button btn && btn.Tag is KeyMapping mapping)
-                {
-                    mapping.SourceKey = dialog.SelectedKeys;
-                }
-            }
-        }
-
-        private async void OnSelectTargetClick(object sender, RoutedEventArgs e)
-        {
-            var dialog = new KeyCaptureDialog();
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-            {
-                if (sender is Button btn && btn.Tag is KeyMapping mapping)
-                {
-                    mapping.TargetKeys = dialog.SelectedKeys;
-                }
-            }
-        }
-
-        private void AddKeyMapping(object sender, RoutedEventArgs e)
-        {
-            KeyMappings.Add(new KeyMapping
-            {
-                SourceKey = "Select",
-                TargetKeys = "To send",
-            });
-        }
-
-        private void OnDeleteMapping(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.DataContext is KeyMapping mapping)
-            {
-                KeyMappings.Remove(mapping);
             }
         }
     }
