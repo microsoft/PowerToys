@@ -21,6 +21,8 @@
             <v:VisibilityBoolConverter x:Key="VisibilityBoolConverter" />
             <v:EnumToIntConverter x:Key="EnumToIntConverter" />
             <v:AccessTextToTextConverter x:Key="AccessTextToTextConverter" />
+            <v:NumberBoxValueConverter x:Key="NumberBoxValueConverter" />
+            <v:ZeroToEmptyStringNumberFormatter x:Key="ZeroToEmptyStringNumberFormatter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

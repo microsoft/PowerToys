@@ -88,35 +88,35 @@ namespace MouseWithoutBorders
                         break;
                     }
 
-                    if (Common.NewDesMachineID != Common.MachineID && Common.NewDesMachineID != ID.ALL)
+                    if (MachineStuff.NewDesMachineID != Common.MachineID && MachineStuff.NewDesMachineID != ID.ALL)
                     {
                         HideMouseCursor(false);
                         Common.MainFormDotEx(true);
                     }
                     else
                     {
-                        if (Common.SwitchLocation.Count > 0)
+                        if (MachineStuff.SwitchLocation.Count > 0)
                         {
-                            Common.SwitchLocation.Count--;
+                            MachineStuff.SwitchLocation.Count--;
 
                             // When we want to move mouse by pixels, we add 300k to x and y (search for XY_BY_PIXEL for other related code).
-                            Logger.LogDebug($"+++++ Moving mouse to {Common.SwitchLocation.X}, {Common.SwitchLocation.Y}");
+                            Logger.LogDebug($"+++++ Moving mouse to {MachineStuff.SwitchLocation.X}, {MachineStuff.SwitchLocation.Y}");
 
                             // MaxXY = 65535 so 100k is safe.
-                            if (Common.SwitchLocation.X > XY_BY_PIXEL - 100000 || Common.SwitchLocation.Y > XY_BY_PIXEL - 100000)
+                            if (MachineStuff.SwitchLocation.X > XY_BY_PIXEL - 100000 || MachineStuff.SwitchLocation.Y > XY_BY_PIXEL - 100000)
                             {
-                                InputSimulation.MoveMouse(Common.SwitchLocation.X - XY_BY_PIXEL, Common.SwitchLocation.Y - XY_BY_PIXEL);
+                                InputSimulation.MoveMouse(MachineStuff.SwitchLocation.X - XY_BY_PIXEL, MachineStuff.SwitchLocation.Y - XY_BY_PIXEL);
                             }
                             else
                             {
-                                InputSimulation.MoveMouseEx(Common.SwitchLocation.X, Common.SwitchLocation.Y);
+                                InputSimulation.MoveMouseEx(MachineStuff.SwitchLocation.X, MachineStuff.SwitchLocation.Y);
                             }
 
                             Common.MainFormDot();
                         }
                     }
 
-                    if (Common.NewDesMachineID == Common.MachineID)
+                    if (MachineStuff.NewDesMachineID == Common.MachineID)
                     {
                         ReleaseAllKeys();
                     }
@@ -137,8 +137,8 @@ namespace MouseWithoutBorders
 
             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
             {
-                int left = Common.PrimaryScreenBounds.Left + ((Common.PrimaryScreenBounds.Right - Common.PrimaryScreenBounds.Left) / 2) - 1;
-                int top = Setting.Values.HideMouse ? 3 : Common.PrimaryScreenBounds.Top + ((Common.PrimaryScreenBounds.Bottom - Common.PrimaryScreenBounds.Top) / 2);
+                int left = MachineStuff.PrimaryScreenBounds.Left + ((MachineStuff.PrimaryScreenBounds.Right - MachineStuff.PrimaryScreenBounds.Left) / 2) - 1;
+                int top = Setting.Values.HideMouse ? 3 : MachineStuff.PrimaryScreenBounds.Top + ((MachineStuff.PrimaryScreenBounds.Bottom - MachineStuff.PrimaryScreenBounds.Top) / 2);
 
                 Common.MainFormVisible = true;
 
@@ -198,8 +198,8 @@ namespace MouseWithoutBorders
             DoSomethingInUIThread(
                 () =>
             {
-                MainForm.Left = Common.PrimaryScreenBounds.Left + ((Common.PrimaryScreenBounds.Right - Common.PrimaryScreenBounds.Left) / 2) - 2;
-                MainForm.Top = Setting.Values.HideMouse ? 3 : Common.PrimaryScreenBounds.Top + ((Common.PrimaryScreenBounds.Bottom - Common.PrimaryScreenBounds.Top) / 2) - 1;
+                MainForm.Left = MachineStuff.PrimaryScreenBounds.Left + ((MachineStuff.PrimaryScreenBounds.Right - MachineStuff.PrimaryScreenBounds.Left) / 2) - 2;
+                MainForm.Top = Setting.Values.HideMouse ? 3 : MachineStuff.PrimaryScreenBounds.Top + ((MachineStuff.PrimaryScreenBounds.Bottom - MachineStuff.PrimaryScreenBounds.Top) / 2) - 1;
                 MainForm.Width = 3;
                 MainForm.Height = 3;
                 MainForm.Opacity = 0.11D;
@@ -230,8 +230,8 @@ namespace MouseWithoutBorders
                 {
                     _ = Common.SendMessageToHelper(0x408, IntPtr.Zero, IntPtr.Zero, false);
 
-                    MainForm.Left = Common.PrimaryScreenBounds.Left + ((Common.PrimaryScreenBounds.Right - Common.PrimaryScreenBounds.Left) / 2) - 1;
-                    MainForm.Top = Setting.Values.HideMouse ? 3 : Common.PrimaryScreenBounds.Top + ((Common.PrimaryScreenBounds.Bottom - Common.PrimaryScreenBounds.Top) / 2);
+                    MainForm.Left = MachineStuff.PrimaryScreenBounds.Left + ((MachineStuff.PrimaryScreenBounds.Right - MachineStuff.PrimaryScreenBounds.Left) / 2) - 1;
+                    MainForm.Top = Setting.Values.HideMouse ? 3 : MachineStuff.PrimaryScreenBounds.Top + ((MachineStuff.PrimaryScreenBounds.Bottom - MachineStuff.PrimaryScreenBounds.Top) / 2);
                     MainForm.Width = 1;
                     MainForm.Height = 1;
                     MainForm.Opacity = 0.15;
@@ -381,7 +381,7 @@ namespace MouseWithoutBorders
             log += $"{Setting.Values.Username}/{GetDebugInfo(MyKey)}\r\n";
             log += $"{MachineName}/{MachineID}/{DesMachineID}\r\n";
             log += $"Id: {Setting.Values.DeviceId}\r\n";
-            log += $"Matrix: {string.Join(",", MachineMatrix)}\r\n";
+            log += $"Matrix: {string.Join(",", MachineStuff.MachineMatrix)}\r\n";
             log += $"McPool: {Setting.Values.MachinePoolString}\r\n";
 
             log += "\r\nOPTIONS:\r\n";

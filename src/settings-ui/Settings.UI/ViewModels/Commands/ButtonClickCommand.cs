@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels.Commands
 {
-    public class ButtonClickCommand : ICommand
+    public partial class ButtonClickCommand : ICommand
     {
         private readonly Action _execute;
 

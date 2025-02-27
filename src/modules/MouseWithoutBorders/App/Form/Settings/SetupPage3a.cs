@@ -70,7 +70,7 @@ namespace MouseWithoutBorders
 
             ShowStatus($"Connecting...");
 
-            Common.SwitchToMultipleMode(false, false);
+            MachineStuff.SwitchToMultipleMode(false, false);
             Common.ReopenSockets(true);
 
             int timeOut = 0;

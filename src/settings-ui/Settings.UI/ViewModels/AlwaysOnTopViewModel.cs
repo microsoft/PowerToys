@@ -12,10 +12,11 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class AlwaysOnTopViewModel : Observable
+    public partial class AlwaysOnTopViewModel : Observable
     {
         private ISettingsUtils SettingsUtils { get; set; }
 
@@ -131,7 +132,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             CultureInfo.InvariantCulture,
                             "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                             AlwaysOnTopSettings.ModuleName,
-                            JsonSerializer.Serialize(Settings)));
+                            JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.AlwaysOnTopSettings)));
                 }
             }
         }
