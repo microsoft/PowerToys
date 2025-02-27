@@ -8,7 +8,7 @@ namespace Microsoft.PowerToys.UITest
 {
     /// <summary>
     /// Represents a TextBox in the UI test environment.
-    /// TextBox rpresents a control that can be used to display and edit plain text (single or multi-line).
+    /// TextBox represents a control that can be used to display and edit plain text (single or multi-line).
     /// </summary>
     public class TextBox : Element
     {

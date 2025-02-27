@@ -6,7 +6,7 @@ namespace Microsoft.PowerToys.UITest
 {
     /// <summary>
     /// Represents a NavigationViewItem in the UI test environment.
-    /// NavigationViewItem pepresents the container for an item in a NavigationView control.
+    /// NavigationViewItem represents the container for an item in a NavigationView control.
     /// </summary>
     public class NavigationViewItem : Element
     {

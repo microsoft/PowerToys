@@ -6,7 +6,7 @@ namespace Microsoft.PowerToys.UITest
 {
     /// <summary>
     /// Represents a HyperLinkButton in the UI test environment.
-    /// HyperLinkButton reepresents a button control that functions as a hyperlink.
+    /// HyperLinkButton represents a button control that functions as a hyperlink.
     /// </summary>
     public class HyperlinkButton : Button
     {

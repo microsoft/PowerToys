@@ -65,7 +65,7 @@ namespace Hosts.UITests
             Task.Delay(500).Wait();
 
             // Validating click 'Accept' button in Warning-Dialog, the Hosts File Editor window would NOT be closed
-            Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed after click Aceept button in Warning Dialog");
+            Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed after click Accept button in Warning Dialog");
 
             // Close Hosts File Editor window
             this.Session.Find<Window>("Hosts File Editor").Close();
