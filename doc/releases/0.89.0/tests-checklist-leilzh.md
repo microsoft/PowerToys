@@ -7,134 +7,134 @@
 ## Functional tests
 
  Regressions:
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [ ] https://github.com/microsoft/PowerToys/issues/1524
+ - [x] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
+ - [x] https://github.com/microsoft/PowerToys/issues/1524
 
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] Image Resizer
- - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
+ - [x] Image Resizer
+ - [x] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
 
 ## File Explorer Add-ons
  * Running as user:
    * go to PowerToys repo root
    - [x] verify the README.md Preview Pane shows the correct content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane works for the SVG files
-   - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the SVG files
+   - [x] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the PDF file
-   - [ ] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the PDF file
+   - [x] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the gcode file
-   - [ ] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the gcode file
+   - [x] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
+   - [x] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane works for source files (shows syntax highlighting)
+   - [x] verify Preview Pane works for source files (shows syntax highlighting)
  * Running as admin (or user since recently):
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane doesn't show any content
+   - [x] verify the README.md Preview Pane doesn't show any content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane doesn't show the preview for the SVG files
+   - [x] verify Preview Pane doesn't show the preview for the SVG files
    * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
-   - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
+   - [x] copy and paste one of the SVG file and verify the new file show the generic SVG icon
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the PDF file
+   - [x] verify Preview Pane doesn't show the preview for the PDF file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the gcode file
+   - [x] verify Preview Pane doesn't show the preview for the gcode file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
+   - [x] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
    * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
+   - [x] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
 
 ## Image Resizer
-- [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
-- [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
-- [ ] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
-- [ ] Resize one image
-- [ ] Resize multiple images
-- [ ] Open the image resizer to resize a `.gif` file and verify the "Gif files with animations may not be correctly resized." warning appears.
+- [x] Disable the Image Resizer and check that `Resize images` is absent in the context menu
+- [x] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
+- [x] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
+- [x] Resize one image
+- [x] Resize multiple images
+- [x] Open the image resizer to resize a `.gif` file and verify the "Gif files with animations may not be correctly resized." warning appears.
 
-- [ ] Resize images with `Fill` option
-- [ ] Resize images with `Fit` option
-- [ ] Resize images with `Stretch` option
+- [x] Resize images with `Fill` option
+- [x] Resize images with `Fit` option
+- [x] Resize images with `Stretch` option
 
-- [ ] Resize images using dimension: Centimeters
-- [ ] Resize images using dimension: Inches
-- [ ] Resize images using dimension: Percents
-- [ ] Resize images using dimension: Pixels
+- [x] Resize images using dimension: Centimeters
+- [x] Resize images using dimension: Inches
+- [x] Resize images using dimension: Percents
+- [x] Resize images using dimension: Pixels
 
-- [ ] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
-- [ ] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
-- [ ] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
-- [ ] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
-- [ ] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
+- [x] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
+- [x] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
+- [x] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
+- [x] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
+- [x] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
 
 ## Text Extractor
  * Enable Text Extractor. Then:
-   - [X] Press the activation shortcut and verify the overlay appears.
-   - [ ] Press Escape and verify the overlay disappears.
-   - [ ] Press the activation shortcut and verify the overlay appears.
-   - [ ] Right-click and select Cancel. Verify the overlay disappears.
-   - [ ] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
+   - [x] Press the activation shortcut and verify the overlay appears.
+   - [x] Press Escape and verify the overlay disappears.
+   - [x] Press the activation shortcut and verify the overlay appears.
+   - [x] Right-click and select Cancel. Verify the overlay disappears.
+   - [x] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
  * With Text Extractor enabled and activated:
-   - [ ] Try to select text and verify it is copied to the clipboard.
-   - [ ] Try to select a different OCR language by right-clicking and verify the change is applied.
+   - [x] Try to select text and verify it is copied to the clipboard.
+   - [x] Try to select a different OCR language by right-clicking and verify the change is applied.
  * In a multi-monitor setup with different dpis on each monitor:
-   - [ ] Verify text is correctly captured on all monitors.
+   - [x] Verify text is correctly captured on all monitors.
  * Test the different settings and verify they are applied:
-   - [ ] Activation shortcut
-   - [ ] OCR Language
+   - [x] Activation shortcut
+   - [x] OCR Language
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [x] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled.
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is not enabled.
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is enabled.
-   - [ ] Open settings and verify the module is enabled and you can't disable it.
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is enabled.
+   - [x] Open settings and verify the module is enabled and you can't disable it.
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [x] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (No context menu entry)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module is not enabled. (No context menu entry)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
 ## Peek
  * Open different files to check that they're shown properly
-   - [ ] Image
-   - [ ] Text or dev file
-   - [ ] Markdown file
-   - [ ] PDF
-   - [ ] HTML
-   - [ ] Archive files (.zip, .tar, .rar)
-   - [ ] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
+   - [x] Image
+   - [x] Text or dev file
+   - [x] Markdown file
+   - [x] PDF
+   - [x] HTML
+   - [x] Archive files (.zip, .tar, .rar)
+   - [x] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
    
  * Pinning/unpinning
-   - [ ] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
-   - [ ] Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
-   - [ ] Unpin the window, switch to a different file, verify the window is moved to the default place.
-   - [ ] Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
+   - [x] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
+   - [x] Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
+   - [x] Unpin the window, switch to a different file, verify the window is moved to the default place.
+   - [x] Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
 
 * Open with a default program
-   - [ ] By clicking a button.
-   - [ ] By pressing enter. 
+   - [x] By clicking a button.
+   - [x] By pressing enter. 
   
- - [ ] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
- - [ ] Open multiple files, verify you can switch only between selected files.
- - [ ] Change the shortcut, verify the new one works.
+ - [x] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
+ - [x] Open multiple files, verify you can switch only between selected files.
+ - [x] Change the shortcut, verify the new one works.
 
 ## DSC
  * You need to have some prerequisites installed:
@@ -142,9 +142,9 @@
    - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
    - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
  * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [ ] Run `winget configure .\disableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are disabled.
-   - [ ] Run `winget configure .\enableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are enabled.
-   - [ ] Run `winget configure .\configureLauncherPlugins.dsc.yaml`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
-   - [ ] Run `winget configure .\configuration.dsc.yaml`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+   - [x] Run `winget configure .\disableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are disabled.
+   - [x] Run `winget configure .\enableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are enabled.
+   - [x] Run `winget configure .\configureLauncherPlugins.dsc.yaml`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
+   - [x] Run `winget configure .\configuration.dsc.yaml`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
+   - [x] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [x] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
