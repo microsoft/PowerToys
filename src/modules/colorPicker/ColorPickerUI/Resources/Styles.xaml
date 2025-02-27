@@ -74,6 +74,36 @@
         </Setter>
     </Style>
 
+    <Style x:Key="TitleBarCloseButtonStyleIonut" TargetType="{x:Type Button}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border x:Name="ContentBorder" 
+                 Background="{TemplateBinding Background}" 
+                 BorderBrush="{TemplateBinding BorderBrush}" 
+                 BorderThickness="{TemplateBinding BorderThickness}" 
+                 CornerRadius="{TemplateBinding Border.CornerRadius}">
+                        <ContentPresenter x:Name="ContentPresenter" 
+                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
+                     Content="{TemplateBinding Content}" 
+                     ContentTemplate="{TemplateBinding ContentTemplate}" 
+                     TextElement.Foreground="{TemplateBinding Foreground}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ContentBorder" Property="Background" Value="Red" />
+                            <Setter TargetName="ContentPresenter" Property="TextElement.Foreground" Value="White" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="SubtleButtonStyle" TargetType="{x:Type Button}">
         <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
         <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />

@@ -9,23 +9,41 @@
     xmlns:p="clr-namespace:ColorPicker.Properties"
     Width="440"
     Height="380"
-    Title="{x:Static p:Resources.CP_Title}"
     AutomationProperties.Name="{x:Static p:Resources.cp_editor}"
     ResizeMode="NoResize"
     Topmost="True"
     WindowStartupLocation="CenterScreen"
+    WindowStyle="None"
     mc:Ignorable="d">
     <e:Interaction.Behaviors>
         <behaviors:CloseZoomWindowBehavior />
     </e:Interaction.Behaviors>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <ContentPresenter
+    <Border x:Name="MainBorder" BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="0" Background="Transparent" MouseLeftButtonDown="TitleBar_MouseDown">
+                <Image Source="pack://application:,,,/Assets/ColorPicker/icon.ico" 
+                   Width="20" Height="20"
+                   Margin="10,5,5,8"/>
+                <TextBlock Text="{x:Static p:Resources.CP_Title}" VerticalAlignment="Center" Margin="10"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button 
+                    Content="&#xE711;" 
+                    FontFamily="{StaticResource IconFontFamily}"
+                    Width="50" 
+                    Height="30"
+                    Margin="10,-10,-2,1"
+                    Style="{StaticResource TitleBarCloseButtonStyleIonut}"
+                    Click="Close_Click"/>
+                </StackPanel>
+            </DockPanel>
+            <ContentPresenter
             x:Name="contentPresenter"
             Grid.Row="1"
             Content="{Binding Content}" />
-    </Grid>
+        </Grid>
+    </Border>
 </Window>
