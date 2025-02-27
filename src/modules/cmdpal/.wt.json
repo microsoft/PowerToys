@@ -21,6 +21,11 @@
             "input": "start https://github.com/zadjii-msft/PowerToys/compare/main...zadjii-msft:PowerToys:{branch}?expand=1\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D",
             "name": "New PR",
             "description": "Create a new PR targeting the right fork.\nReplace {branch} with the actual branch you want to merge."
+        },
+        {
+            "": "pushd .\\ExtensionTemplate\\ ; git archive -o ..\\Microsoft.CmdPal.UI.ViewModels\\Assets\\template.zip HEAD -- .\\TemplateCmdPalExtension\\ ; popd",
+            "name": "Update template project",
+            "description": "zips up the ExtensionTemplate into our assets. Run this in the cmdpal/ directory."
         }
     ]
 }
