@@ -466,6 +466,16 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+	<policy name="ConfigureEnabledUtilityCharacterMap" class="Both" displayName="$(string.ConfigureEnabledUtilityCharacterMap)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityCharacterMap">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_88_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
     <policy name="DisablePerUserInstallation" class="Machine" displayName="$(string.DisablePerUserInstallation)" explainText="$(string.DisablePerUserInstallationDescription)" key="Software\Policies\PowerToys" valueName="PerUserInstallationDisabled">
       <parentCategory ref="InstallerUpdates" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_69_0" />

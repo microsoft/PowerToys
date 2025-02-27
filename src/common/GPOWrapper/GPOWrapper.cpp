@@ -184,6 +184,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredWorkspacesEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredCharacterMapEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredCharacterMapEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredMwbClipboardSharingEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMwbClipboardSharingEnabledValue());

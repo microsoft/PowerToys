@@ -267,6 +267,7 @@ If you don't configure this policy, the user takes control over the setting and 
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityVideoConferenceMute">Video Conference Mute: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityZoomIt">Zoom It: Configure enabled state</string>
+	  <string id="ConfigureEnabledUtilityCharacterMap">Character Map: Configure enabled state</string>
       <string id="DisablePerUserInstallation">Disable per-user installation</string>
       <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
       <string id="DoNotShowWhatsNewAfterUpdates">Do not show the release notes after updates</string>
