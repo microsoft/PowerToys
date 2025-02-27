@@ -12,14 +12,42 @@ namespace Hosts.UITests
     [TestClass]
     public class HostsSettingTests : UITestBase
     {
+        /// <summary>
+        /// Test Warning Dialog at startup
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Validating Warning-Dialog will be shown if 'Show a warning at startup' toggle is On.</description>
+        /// </item>
+        /// <item>
+        /// <description>Validating Warning-Dialog will NOT be shown if 'Show a warning at startup' toggle is Off.</description>
+        /// </item>
+        /// <item>
+        /// <description>Validating click 'Quit' button in Warning-Dialog, the Hosts File Editor window would be closed.</description>
+        /// </item>
+        /// <item>
+        /// <description>Validating click 'Accept' button in Warning-Dialog, the Hosts File Editor window would NOT be closed.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
         [TestMethod]
-        public void TestShowWarningDialog()
+        public void TestWarningDialog()
         {
-            this.GotoHostsFileEditor();
+            this.LaunchFromSetting(showWarning: true);
 
-            this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
-            this.Find<ToggleSwitch>("Launch as administrator").Toggle(false);
-            this.Find<ToggleSwitch>("Show a warning at startup").Toggle(true);
+            // Validating Warning-Dialog will be shown if 'Show a warning at startup' toggle is on
+            Assert.IsTrue(this.FindAll("Warning").Count > 0, "Should show warning dialog");
+
+            // Quit Hosts File Editor
+            this.Find<Button>("Quit").Click();
+
+            // Wait for 500 ms to make sure Hosts File Editor is closed
+            Task.Delay(500).Wait();
+
+            // Validating click 'Quit' button in Warning-Dialog, the Hosts File Editor window would be closed
+            Assert.IsTrue(this.IsHostsFileEditorClosed(), "Hosts File Editor should be closed after click Quit button in Warning Dialog");
+
+            // Re-attaching to Setting Windows
+            this.Session.Attach(PowerToysModule.PowerToysSettings);
 
             this.Find<Button>("Launch Hosts File Editor").Click();
 
@@ -32,45 +60,50 @@ namespace Hosts.UITests
             Assert.IsTrue(this.FindAll("Warning").Count > 0, "Should show warning dialog");
 
             // Quit Hosts File Editor
-            this.Find<Button>("Quit").Click();
-
-            try
-            {
-                // Wait for 500 ms to make sure Hosts File Editor is closed
-                Task.Delay(500).Wait();
-
-                this.Session.FindAll<Window>("Hosts File Editor");
-                Assert.IsTrue(false, "Hosts File Editor should be closed");
-            }
-            catch (Exception ex)
-            {
-                // Hosts File Editor should be closed
-                Assert.IsTrue(ex.Message.Contains("Currently selected window has been closed"), "Hosts File Editor should be closed");
-            }
-        }
-
-        [TestMethod]
-        public void TestNotShowWarningDialog()
-        {
-            this.GotoHostsFileEditor();
-
-            this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
-            this.Find<ToggleSwitch>("Launch as administrator").Toggle(false);
-            this.Find<ToggleSwitch>("Show a warning at startup").Toggle(false);
-
-            this.Find<Button>("Launch Hosts File Editor").Click();
+            this.Find<Button>("Accept").Click();
 
             Task.Delay(500).Wait();
 
-            this.Session.Attach(PowerToysModule.Hosts);
+            // Validating click 'Accept' button in Warning-Dialog, the Hosts File Editor window would NOT be closed
+            Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed after click Aceept button in Warning Dialog");
+
+            // Close Hosts File Editor window
+            this.Session.Find<Window>("Hosts File Editor").Close();
+
+            // Restore back to PowerToysSettings Session
+            this.Session.Attach(PowerToysModule.PowerToysSettings);
+
+            this.LaunchFromSetting(showWarning: false);
 
             // Should NOT show warning dialog
             Assert.IsTrue(this.FindAll("Warning").Count == 0, "Should not show warning dialog");
 
+            // Host Editor Window should not be closed
+            Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should be closed");
+
+            // Close Hosts File Editor window
             this.Session.Find<Window>("Hosts File Editor").Close();
+
+            // Restore back to PowerToysSettings Session
+            this.Session.Attach(PowerToysModule.PowerToysSettings);
         }
 
-        private void GotoHostsFileEditor()
+        private bool IsHostsFileEditorClosed()
+        {
+            try
+            {
+                this.Session.FindAll<Window>("Hosts File Editor");
+            }
+            catch (Exception ex)
+            {
+                // Validate if editor window closed by checking exception.Message
+                return ex.Message.Contains("Currently selected window has been closed");
+            }
+
+            return false;
+        }
+
+        private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
         {
             // Goto Hosts File Editor setting page
             if (this.FindAll<NavigationViewItem>("Hosts File Editor").Count == 0)
@@ -80,6 +113,17 @@ namespace Hosts.UITests
             }
 
             this.Find<NavigationViewItem>("Hosts File Editor").Click();
+
+            this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
+            this.Find<ToggleSwitch>("Launch as administrator").Toggle(launchAsAdmin);
+            this.Find<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
+
+            // launch Hosts File Editor
+            this.Find<Button>("Launch Hosts File Editor").Click();
+
+            Task.Delay(500).Wait();
+
+            this.Session.Attach(PowerToysModule.Hosts);
         }
     }
 }

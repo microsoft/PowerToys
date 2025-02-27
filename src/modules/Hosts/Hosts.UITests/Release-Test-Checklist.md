@@ -5,7 +5,7 @@ Refer to [release check list] (https://github.com/microsoft/PowerToys/blob/relea
 For existing manual test-cases, we will convert them to UI-Tests and run them in CI and Release pipeline
 
  * Launch Host File Editor:
-   - [x] Verify the application exits if "Quit" is clicked on the initial warning. (**HostsSettingTests.TestShowWarningDialog**)
+   - [x] Verify the application exits if "Quit" is clicked on the initial warning. (**HostsSettingTests.TestWarningDialog**)
    - [x] Launch Host File Editor again and click "Accept". The module should not close. (**HostModuleTests.TestEmptyView**)
    - [ ] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
    - [ ] Enable and disable lines and verify they are applied to the file.
