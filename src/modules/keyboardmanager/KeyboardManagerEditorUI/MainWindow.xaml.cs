@@ -44,10 +44,10 @@ namespace KeyboardManagerEditorUI
             public string KeyName;
         }
 
-        [DllImport("KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("PowerToys.KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int GetKeyboardKeysList(bool isShortcut, [Out] KeyNamePair[] keyList, int maxCount);
 
-        [DllImport("KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("PowerToys.KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool CheckIfRemappingsAreValid();
 
         public List<KeyboardKey> KeysList { get; private set; } = new List<KeyboardKey>();
