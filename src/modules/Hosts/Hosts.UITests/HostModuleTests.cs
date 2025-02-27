@@ -100,12 +100,10 @@ namespace Hosts.UITests
             this.Find<TextBox>("Address").SetText("127.0.0.1");
 
             this.Find<TextBox>("Hosts").SetText(validHosts);
-
             Assert.IsTrue(this.Find<Button>("Add").Enabled, "Add button should be Enabled with validHosts");
 
             this.Find<TextBox>("Hosts").SetText(inValidHosts);
-
-            Assert.IsFalse(this.Find<Button>("Add").Enabled, "Add button should be Enabled with validHosts");
+            Assert.IsFalse(this.Find<Button>("Add").Enabled, "Add button should be Disabled with inValidHosts");
 
             this.Find<Button>("Cancel").Click();
         }
