@@ -149,11 +149,7 @@
                         <NavigationViewItem
                             x:Uid="Shell_ZoomIt"
                             helpers:NavHelper.NavigateTo="views:ZoomItPage"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}">
-                            <NavigationViewItem.InfoBadge>
-                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
-                            </NavigationViewItem.InfoBadge>
-                        </NavigationViewItem>
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 

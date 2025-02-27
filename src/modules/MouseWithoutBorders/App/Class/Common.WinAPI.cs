@@ -41,7 +41,7 @@ namespace MouseWithoutBorders
             GetScreenConfig();
         }
 
-        private static readonly List<Point> SensitivePoints = new();
+        internal static readonly List<Point> SensitivePoints = new();
 
         private static bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdcMonitor, ref NativeMethods.RECT lprcMonitor, IntPtr dwData)
         {
@@ -162,21 +162,21 @@ namespace MouseWithoutBorders
 
                 // 1000 calls to EnumDisplayMonitors cost a dozen of milliseconds
 #endif
-                Interlocked.Exchange(ref desktopBounds, newDesktopBounds);
-                Interlocked.Exchange(ref primaryScreenBounds, newPrimaryScreenBounds);
+                Interlocked.Exchange(ref MachineStuff.desktopBounds, newDesktopBounds);
+                Interlocked.Exchange(ref MachineStuff.primaryScreenBounds, newPrimaryScreenBounds);
 
                 Logger.Log(string.Format(
                     CultureInfo.CurrentCulture,
                     "logon = {0} PrimaryScreenBounds = {1},{2},{3},{4} desktopBounds = {5},{6},{7},{8}",
                     Common.RunOnLogonDesktop,
-                    Common.PrimaryScreenBounds.Left,
-                    Common.PrimaryScreenBounds.Top,
-                    Common.PrimaryScreenBounds.Right,
-                    Common.PrimaryScreenBounds.Bottom,
-                    Common.DesktopBounds.Left,
-                    Common.DesktopBounds.Top,
-                    Common.DesktopBounds.Right,
-                    Common.DesktopBounds.Bottom));
+                    MachineStuff.PrimaryScreenBounds.Left,
+                    MachineStuff.PrimaryScreenBounds.Top,
+                    MachineStuff.PrimaryScreenBounds.Right,
+                    MachineStuff.PrimaryScreenBounds.Bottom,
+                    MachineStuff.DesktopBounds.Left,
+                    MachineStuff.DesktopBounds.Top,
+                    MachineStuff.DesktopBounds.Right,
+                    MachineStuff.DesktopBounds.Bottom));
 
                 Logger.Log("==================== GetScreenConfig ended");
             }

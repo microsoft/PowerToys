@@ -18,12 +18,13 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.Win32;
 using Windows.Security.Credentials;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class AdvancedPasteViewModel : Observable, IDisposable
+    public partial class AdvancedPasteViewModel : Observable, IDisposable
     {
         private static readonly HashSet<string> WarnHotkeys = ["Ctrl + V", "Ctrl + Shift + V"];
 
@@ -83,7 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.Elapsed += DelayedTimer_Tick;
             _delayedTimer.AutoReset = false;
 
-            foreach (var action in _additionalActions.AllActions)
+            foreach (var action in _additionalActions.GetAllActions())
             {
                 action.PropertyChanged += OnAdditionalActionPropertyChanged;
             }
@@ -365,7 +366,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                           .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
 
         public bool IsAdditionalActionConflictingCopyShortcut =>
-            _additionalActions.AllActions
+            _additionalActions.GetAllActions()
                               .OfType<AdvancedPasteAdditionalAction>()
                               .Select(additionalAction => additionalAction.Shortcut)
                               .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
@@ -387,7 +388,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     CultureInfo.InvariantCulture,
                     "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                     AdvancedPasteSettings.ModuleName,
-                    JsonSerializer.Serialize(_advancedPasteSettings)));
+                    JsonSerializer.Serialize(_advancedPasteSettings, SourceGenerationContextContext.Default.AdvancedPasteSettings)));
         }
 
         public void RefreshEnabledState()

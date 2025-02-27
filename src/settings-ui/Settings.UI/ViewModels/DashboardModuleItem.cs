@@ -14,11 +14,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
 #pragma warning disable SA1402 // File may only contain a single type
 #pragma warning disable SA1649 // File name should match first type name
-    public class DashboardModuleTextItem : DashboardModuleItem
+    public partial class DashboardModuleTextItem : DashboardModuleItem
     {
     }
 
-    public class DashboardModuleButtonItem : DashboardModuleItem
+    public partial class DashboardModuleButtonItem : DashboardModuleItem
     {
         public string ButtonTitle { get; set; }
 
@@ -31,12 +31,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public RoutedEventHandler ButtonClickHandler { get; set; }
     }
 
-    public class DashboardModuleShortcutItem : DashboardModuleItem
+    public partial class DashboardModuleShortcutItem : DashboardModuleItem
     {
         public List<object> Shortcut { get; set; }
     }
 
-    public class DashboardModuleKBMItem : DashboardModuleItem
+    public partial class DashboardModuleKBMItem : DashboardModuleItem
     {
         private List<KeysDataModel> _remapKeys = new List<KeysDataModel>();
 
@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
     }
 
-    public class DashboardModuleItem : INotifyPropertyChanged
+    public partial class DashboardModuleItem : INotifyPropertyChanged
     {
         public string Label { get; set; }
 

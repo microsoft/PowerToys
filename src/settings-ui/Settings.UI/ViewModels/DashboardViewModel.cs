@@ -22,7 +22,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class DashboardViewModel : Observable
+    public partial class DashboardViewModel : Observable
     {
         private const string JsonFileType = ".json";
         private IFileSystemWatcher _watcher;
@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _allModules = new List<DashboardListItem>();
 
-            foreach (ModuleType moduleType in Enum.GetValues(typeof(ModuleType)))
+            foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
                 AddDashboardListItem(moduleType);
             }

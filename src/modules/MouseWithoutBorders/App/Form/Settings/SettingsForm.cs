@@ -39,7 +39,7 @@ namespace MouseWithoutBorders
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            Common.Settings = null;
+            MachineStuff.Settings = null;
 
             if (_currentPage != null)
             {

@@ -15,8 +15,8 @@ Param(
 $referencedFileVersionsPerDll = @{}
 $totalFailures = 0
 
-Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude UITests-FancyZones*,MouseJump.Common.UnitTests*,AdvancedPaste.FuzzTests* | ForEach-Object {
-    # Temporarily exclude FancyZones UI tests because of Appium.WebDriver dependencies
+Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude *UITest*,MouseJump.Common.UnitTests*,*.FuzzTests* | ForEach-Object {
+    # Temporarily exclude All UI-Test, Fuzzer-Test projects because of Appium.WebDriver dependencies
     $depsJsonFullFileName = $_.FullName
 
     if ($depsJsonFullFileName -like "*CmdPal*") {

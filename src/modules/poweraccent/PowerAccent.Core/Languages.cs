@@ -225,6 +225,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_DIVIDE_ => new[] { "÷", "√" },
                 LetterKey.VK_MULTIPLY_ => new[] { "×", "⋅" },
                 LetterKey.VK_PLUS => new[] { "≤", "≥", "≠", "≈", "≙", "⊕", "⊗", "∓", "≅", "≡" },
+                LetterKey.VK_BACKSLASH => new[] { "`", "~" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -676,7 +677,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new string[] { "ο", "ό", "ω", "ώ" },
                 LetterKey.VK_P => new string[] { "π", "φ", "ψ" },
                 LetterKey.VK_R => new string[] { "ρ" },
-                LetterKey.VK_S => new string[] { "σ" },
+                LetterKey.VK_S => new string[] { "σ", "ς" },
                 LetterKey.VK_T => new string[] { "τ", "θ", "ϑ" },
                 LetterKey.VK_U => new string[] { "υ", "ύ" },
                 LetterKey.VK_X => new string[] { "ξ" },
@@ -894,7 +895,7 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_A => new[] { "ɐ", "ɑ", "ɒ" },
+                LetterKey.VK_A => new[] { "ɐ", "ɑ", "ɒ", "ǎ" },
                 LetterKey.VK_B => new[] { "ʙ" },
                 LetterKey.VK_E => new[] { "ɘ", "ɵ", "ə", "ɛ", "ɜ", "ɞ" },
                 LetterKey.VK_F => new[] { "ɟ", "ɸ" },
@@ -904,10 +905,10 @@ namespace PowerAccent.Core
                 LetterKey.VK_J => new[] { "ʝ" },
                 LetterKey.VK_L => new[] { "ɬ", "ɮ", "ꞎ", "ɭ", "ʎ", "ʟ", "ɺ" },
                 LetterKey.VK_N => new[] { "ɳ", "ɲ", "ŋ", "ɴ" },
-                LetterKey.VK_O => new[] { "ɤ", "ɔ", "ɶ" },
+                LetterKey.VK_O => new[] { "ɤ", "ɔ", "ɶ", "ǒ" },
                 LetterKey.VK_R => new[] { "ʁ", "ɹ", "ɻ", "ɾ", "ɽ", "ʀ" },
                 LetterKey.VK_S => new[] { "ʃ", "ʂ", "ɕ" },
-                LetterKey.VK_U => new[] { "ʉ", "ʊ" },
+                LetterKey.VK_U => new[] { "ʉ", "ʊ", "ǔ" },
                 LetterKey.VK_V => new[] { "ʋ", "ⱱ", "ʌ" },
                 LetterKey.VK_W => new[] { "ɰ", "ɯ" },
                 LetterKey.VK_Y => new[] { "ʏ" },
