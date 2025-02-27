@@ -36,7 +36,7 @@
                     Width="50" 
                     Height="30"
                     Margin="10,-10,-2,1"
-                    Style="{StaticResource TitleBarCloseButtonStyleIonut}"
+                    Style="{StaticResource TitleBarCloseButtonStyle}"
                     Click="Close_Click"/>
                 </StackPanel>
             </DockPanel>

@@ -74,7 +74,7 @@
         </Setter>
     </Style>
 
-    <Style x:Key="TitleBarCloseButtonStyleIonut" TargetType="{x:Type Button}">
+    <Style x:Key="TitleBarCloseButtonStyle" TargetType="{x:Type Button}">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}" />
