@@ -25,7 +25,7 @@ namespace KeyboardManagerEditorUI
     /// </summary>
     public sealed partial class MainWindow : Window
     {
-        [DllImport("KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("PowerToys.KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool CheckIfRemappingsAreValid();
 
         public MainWindow()
