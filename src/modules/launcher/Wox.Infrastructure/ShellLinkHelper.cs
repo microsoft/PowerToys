@@ -151,11 +151,19 @@ namespace Wox.Infrastructure
                 Marshal.ReleaseComObject(link);
                 return string.Empty;
             }
-            catch (System.Exception ex)
+            catch (System.ArgumentException)
             {
-                Log.Exception("Exception loading path " + path, ex, GetType(), path);
-                Marshal.ReleaseComObject(link);
-                return string.Empty;
+                // Can't load with all those arguments? Let's fallback to old calls.
+                try
+                {
+                    ((IPersistFile)link).Load(path, STGM_READ | STGM_SHARE_DENY_NONE);
+                }
+                catch (System.Exception ex2)
+                {
+                    Log.Exception("Exception loading path " + path, ex2, GetType(), path);
+                    Marshal.ReleaseComObject(link);
+                    return string.Empty;
+                }
             }
 
             var hwnd = default(_RemotableHandle);
