@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
@@ -131,17 +132,18 @@ public sealed class AIServiceBatchIntegrationTests
     {
         VaultCredentialsProvider credentialsProvider = new();
         PromptModerationService promptModerationService = new(credentialsProvider);
+        NoOpProgress progress = new();
         CustomTextTransformService customTextTransformService = new(credentialsProvider, promptModerationService);
 
         switch (format)
         {
             case PasteFormats.CustomTextTransformation:
-                return DataPackageHelpers.CreateFromText(await customTextTransformService.TransformTextAsync(batchTestInput.Prompt, batchTestInput.Clipboard));
+                return DataPackageHelpers.CreateFromText(await customTextTransformService.TransformTextAsync(batchTestInput.Prompt, batchTestInput.Clipboard, CancellationToken.None, progress));
 
             case PasteFormats.KernelQuery:
                 var clipboardData = DataPackageHelpers.CreateFromText(batchTestInput.Clipboard).GetView();
                 KernelService kernelService = new(new NoOpKernelQueryCacheService(), credentialsProvider, promptModerationService, customTextTransformService);
-                return await kernelService.TransformClipboardAsync(batchTestInput.Prompt, clipboardData, isSavedQuery: false);
+                return await kernelService.TransformClipboardAsync(batchTestInput.Prompt, clipboardData, isSavedQuery: false, CancellationToken.None, progress);
 
             default:
                 throw new InvalidOperationException($"Unexpected format {format}");
