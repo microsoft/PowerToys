@@ -145,11 +145,6 @@ jobs:
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
-      version: '6.0'
-
-  - template: steps-ensure-dotnet-version.yml
-    parameters:
-      sdk: true
       version: '8.0'
 
   - template: steps-ensure-dotnet-version.yml

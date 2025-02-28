@@ -3,13 +3,13 @@
     "isRoot": true,
     "tools": {
         "dotnet-consolidate": {
-            "version": "2.0.0",
+            "version": "4.2.0",
             "commands": [
                 "dotnet-consolidate"
             ]
         },
         "xamlstyler.console": {
-            "version": "3.2404.2",
+            "version": "3.2501.8",
             "commands": [
               "xstyler"
             ]
