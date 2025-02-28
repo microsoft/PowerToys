@@ -280,7 +280,7 @@
                                         Click="ButtonEnhancePreview_Click"
                                         Content="&#xe71e;"
                                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                        Visibility="{Binding ShowPreviewPutton, Mode=OneWay}">
+                                        Visibility="{Binding ShowPreviewButton, Mode=OneWay}">
                                         <ToolTipService.ToolTip>Show enhanced preview</ToolTipService.ToolTip>
                                     </Button>
                                     <TextBlock

@@ -13,7 +13,7 @@ namespace RegistryPreviewUILib
     {
         internal void ShowEnhancedDataPreview(string name, string type, string value)
         {
-            // Create dialoge
+            // Create dialog
             var panel = new StackPanel()
             {
                 Spacing = 16,
@@ -38,21 +38,21 @@ namespace RegistryPreviewUILib
                         IsReadOnly = true,
                         Text = value.Split(" ")[0],
                     };
-                    var dezBox = new TextBox()
+                    var decimalBox = new TextBox()
                     {
                         Header = "Decimal",
                         IsReadOnly = true,
                         Text = value.Split(" ")[1].TrimStart('(').TrimEnd(')'),
                     };
                     panel.Children.Add(hexBox);
-                    panel.Children.Add(dezBox);
+                    panel.Children.Add(decimalBox);
                     break;
                 case "REG_BINARY":
                 case "REG_MULTI_SZ":
                     var multiLineBox = new TextBox()
                     {
                         IsReadOnly = false,
-                        Text = "line 1\rline 2\rline 3",
+                        Text = "line 1 \r line 2 \r line 3",
                         AcceptsReturn = true,
                         MaxHeight = 200,
                         TextWrapping = TextWrapping.NoWrap,

@@ -358,7 +358,7 @@ namespace RegistryPreviewUILib
             });
         }
 
-        // Comand to show data preview
+        // Command to show data preview
         public void ButtonEnhancePreview_Click(object sender, RoutedEventArgs e)
         {
             RegistryValue data = ((Button)sender).DataContext as RegistryValue;
