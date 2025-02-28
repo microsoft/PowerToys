@@ -94,5 +94,5 @@ Note that we've supplied `Debug` option, so a `%TEMP\PowerToys.DSC.TestConfigure
 Finally, you can test it with winget by invoking it as such:
 
 ```ps
-winget configure .\configuration.dsc.yaml --accept-configuration-agreements --disable-interactivity
+winget configure .\configuration.winget --accept-configuration-agreements --disable-interactivity
 ```
