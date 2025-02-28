@@ -165,3 +165,160 @@
    - [x] Open Advanced Paste window with hotkey, click Clipboard history, and click any entry (but first). Observe that entry is put on top of clipboard history. Check OS clipboard history (Win+V), and confirm that the same entry is on top of the clipboard.
    - [x] Open Settings and Disable clipboard history. Open Advanced Paste window with hotkey and observe that Clipboard history button is disabled.
  * Disable Advanced Paste, try different Advanced Paste hotkeys and confirm that it's disabled and nothing happens.
+
+## PowerToys Run
+
+ * Enable PT Run in settings and ensure that the hotkey brings up PT Run
+   - [X] when PowerToys is running unelevated on start-up
+   - [X] when PowerToys is running as admin on start-up
+   - [X] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+ * Check that each of the plugins is working:
+   - [X] Program - launch a Win32 application
+   - [X] Program - launch a Win32 application as admin
+   - [X] Program - launch a packaged application
+   - [X] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [X] Windows Search - open a file on the disk.
+   - [X] Windows Search - find a file and copy file path.
+   - [X] Windows Search - find a file and open containing folder.
+   - [X] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space (e.g. `> ping localhost`).
+   - [X] Folder - Search and open a sub-folder on entering the path.
+   - [X] Uri - launch a web page on entering the uri.
+   - [X] Window walker - Switch focus to a running window.
+   - [X] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
+   - [X] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [X] Registry - navigate through the registry tree and copy key path.
+   - [X] System - test `lock`.
+   - [X] System - test `empty recycle bin`.
+   - [X] System - test `shutdown`.
+
+ - [X] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
+
+ - [X] Test tab navigation.
+
+ * Test Plugin Manager
+   - [X] Enable/disable plugins and verify changes are picked up by PT Run
+   - [X] Change `Direct activation phrase` and verify changes are picked up by PT Run
+   - [X] Change `Include in global result` and verify changes picked up by PT Run
+   - [X] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message is shown.
+   - [X] Disable all plugins and verify the warning message is shown.
+
+## Mouse Without Borders
+ * Install PowerToys on two PCs in the same local network:
+   - [X] Verify that PowerToys is properly installed on both PCs.
+   
+ * Setup Connection:
+   - [X] Open MWB's settings on the first PC and click the "New Key" button. Verify that a new security key is generated.
+   - [X] Copy the generated security key and paste it in the corresponding input field in the settings of MWB on the second PC. Also enter the name of the first PC in the required field.
+   - [X] Press "Connect" and verify that the machine layout now includes two PC tiles, each displaying their respective PC names.
+   
+ * Verify Connection Status:
+   - [X] Ensure that the border of the remote PC turns green, indicating a successful connection.
+   - [-] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
+   	Actually border is yellow, never turns into green after click connect if key is not correct.
+
+ * Test Remote Mouse/Keyboard Control:
+   - [X] With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
+   - [X] Test remote mouse/keyboard control across all four PCs, if available. Verify that inputs are correctly registered on each connected PC when the mouse is active there.
+   
+ * Test Remote Control with Elevated Apps:
+   - [X] Open an elevated app on one of the PCs. Verify that without "Use Service" enabled, PowerToys does not control the elevated app.
+   - [X] Enable "Use Service" in MWB's settings. Verify that PowerToys can now control the elevated app remotely. Verify that MWB processes are running as LocalSystem, while the MWB helper process is running non-elevated.
+   - [X] Toggle "Use Service" again, verify that each time you do that, the MWB processes are restarted.
+	--Yes, but lose control for a while
+   - [X] Run PowerToys elevated on one of the machines, verify that you can control elevated apps remotely now on that machine.
+
+* Test Module Enable Status:
+   - [X] For all combinations of "Use Service"/"Run PowerToys as admin", try enabling/disabling MWB module and verify that it's indeed being toggled using task manager.
+   
+ * Test Disconnection/Reconnection:
+   - [X] Disconnect one of the PCs from network. Verify that the machine layout updates to reflect the disconnection. 
+	COMMENT: Actually, no layout change, only border change
+   - [X] Do the same, but now by exiting PowerToys.
+   - [X] Start PowerToys again, verify that the PCs are reconnected.
+  
+ * Test Various Local Network Conditions:
+   - [X] Test MWB performance under various network conditions (e.g., low bandwidth, high latency). Verify that the tool maintains a stable connection and functions correctly.
+
+ * Clipboard Sharing:
+   - [X] Copy some text on one PC and verify that the same text can be pasted on another PC.
+   - [X] Use the screenshot key and Win+Shift+S to take a screenshot on one PC and verify that the screenshot can be pasted on another PC.
+   - [X] Copy a file in Windows Explorer and verify that the file can be pasted on another PC. Make sure the file size is below 100MB.
+   - [X] Try to copy multiple files and directories and verify that it's not possible (only the first selected file is being copied).
+ 
+ * Drag and Drop:
+   - [X] Drag a file from Windows Explorer on one PC, cross the screen border onto another PC, and release it there. Verify that the file is copied to the other PC. Make sure the file size is below 100MB.
+   - [-] While dragging the file, verify that a corresponding icon is displayed under the mouse cursor.
+	NO, really unstable
+   - [X] Without moving the mouse from one PC to the target PC, press CTRL+ALT+F1/2/3/4 hotkey to switch to the target PC directly and verify that file sharing/dropping is not working.
+
+ * Lock and Unlock with "Use Service" Enabled:
+   - [X] Enable "Use Service" in MWB's settings.
+   - [X] Lock a remote PC using Win+L, move the mouse to it remotely, and try to unlock it. Verify that you can unlock the remote PC.
+   - [X] Disable "Use Service" in MWB's settings, lock the remote PC, move the mouse to it remotely, and try to unlock it. Verify that you can't unlock the remote PC.
+
+ * Test Settings:
+   - [-] Change the rest of available settings on MWB page and verify that each setting works as described.
+	When I toggle on the wrap mouse, I can't go to the controller machine any more. - One time, but I can't reproduce
+
+## Workspaces
+* Settings
+   - [X] Launch the Editor by clicking the button on the settings page.
+   - [X] Launch the Editor from quick access.
+   - [X] Launch the Editor by the Activation shortcut.
+   - [X] Disable the module and and verify it won't launch by the shortcut.
+
+* Snapshot tool: try with elevated and non-elevated PT
+   * Open non-packaged apps, e.g., VisualStudio, VisualStudioCode.
+   * Open packaged apps, e.g., Notepad, Settings.
+   * Run any app as an administrator.
+   * Minimize any app.
+   * Click `Create Workspace`.
+   * Open any other window.
+   * Click `Capture`
+   - [X] Verify Editor shows all opened windows (the elevated window will be captured if PT is also elevated)
+   - [X] Verify windows are in the correct positions.
+   - [X] Verify elevated app has the `Admin` box checked (if captured).
+
+* Editor
+   - [X] Verify that the new Workspace appears in the list after capturing.
+   - [X] Verify that the new Workspace doesn't appear after canceling the Capture.
+   - [X] Verify `Search` filters Workspaces (by workspace name or app name).
+   - [X] Verify `SortBy` works.
+   - [X] Verify `SortBy` keeps its value when you close and open the editor again.
+   - [X] Verify `Remove` removes the Workspace from the list.
+   - [X] Verify `Edit` opens the Workspace editing page.
+   - [X] Verify clicking at the Workspace opens the Workspace editing page.
+   
+   * Editing page
+   - [X] `Remove` an app and verify it disappeared on the preview.
+   - [X] `Remove` and `Add back` an app, verify it's returned back to the preview.
+   - [X] Set an app minimized, check the preview.
+   - [X] Set an app maximized, check the preview.
+   - [X] Check `Launch as admin` for the app where it's available.
+   - [X] Add CLI args, e.g. path to the PowerToys.sln file for VisualStudio.
+   - [X] Manually change the position for the app, check the preview.
+   - [X] Change the Workspace name.
+   - [X] Verify `Save` and `Cancel` work as expected. 
+   - [X] Change anything in the project, click at the `Workspaces` on the top of the page, and verify you returned to the main page without saving any changes.
+   - [X] Check `Create desktop shortcut`, save the project, verify the shortcut appears on the desktop. 
+   - [X] Verify that `Create desktop shortcut` is checked when the shortcut is on the desktop and unchecked when there is no shortcut on the desktop. 
+   - [X] Click `Launch and Edit`, wait for the apps to launch, click `Capture`, verify opened apps are added to the project.
+
+* Launcher
+   - [X] Click `Launch` in the editor, verify the Workspace apps launching.
+   - [X] Launch Workspace by a shortcut, verify the Workspace apps launching.
+   - [X] Verify a window with launching progress is shown while apps are launching and presents the correct launching state (launching, launched, not launched) for every app.
+   - [X] Click `Cancel launch`, verify launching is stopped at the current state (opened apps will stay opened), and the window is closed.
+   - [X] Click `Dismiss` and verify apps keep launching, but the LauncherUI window is closed.
+   
+* To verify that the launcher works correctly with different apps, try to capture and launch:   
+   - [X] Non-packaged app, e.g., VisualStudio code
+      - [X] As admin
+      - [X] With CLI args 
+    - [X] Packaged app, e.g. Terminal
+      - [X] As admin
+      - [X] With CLI args
+
+* Try to launch the Workspace with a different setup
+   - [X] Create a Workspace with one monitor connected, connect the second monitor, launch the Workspace, verify apps are opened on the first one, as captured.
+   - [X] Create a Workspace with two monitors connected, disconnect a monitor, verify apps are opened on the remaining one.
