@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -128,6 +128,91 @@ namespace Hosts.UITests
             Assert.IsTrue(
                 this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count == 1,
                 "Should display host-file saving error if not run as administrator");
+        }
+
+        /// <summary>
+        /// Test Filter-panel function in the Hosts-File-Editor
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Validating Address filter matching pattern: contains, endsWith, startsWith, exactly-match.</description>
+        /// </item>
+        /// <item>
+        /// <description>Validating Hosts filter matching pattern: contains, endsWith, startsWith, exactly-match.</description>
+        /// </item>
+        /// <item>
+        /// <description>Validating click Filters Button to open filter-panel, and click Filter Button again to close filter-panel.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
+        [TestMethod]
+        public void TestFilterControl()
+        {
+            this.CloseWarningDialog();
+            this.RemoveAllEntries();
+
+            for (int i = 0; i < 10; i++)
+            {
+                this.AddEntry("192.168.0." + i, "localhost_" + i, true);
+            }
+
+            // Open-filter-panel
+            this.Find<Button>("Filters").Click();
+            Assert.IsTrue(this.FindAll<Button>("Clear filters").Count == 1, "Filter panel should be opened afer click Filter Button");
+
+            var addressFilterCases = new KeyValuePair<string, int>[]
+            {
+                // contains text, expected matched more rows
+                new("168.0", 10),
+
+                // ends with text, expected matched 1 row
+                new("168.0.1", 1),
+
+                // starts with text, expected matched more rows
+                new("192.168.", 10),
+
+                // full text, expected matched 1 row
+                new("192.168.0.1", 1),
+
+                // no-matching text, expected matched no row
+                new("127.0.0", 0),
+
+                // empty filte, should backto all rows
+                new(string.Empty, 10),
+            };
+
+            foreach (var (addressFilter, expectedCount) in addressFilterCases)
+            {
+                this.Find<TextBox>("Address").SetText(addressFilter);
+                Assert.IsTrue(this.Find("Entries").FindAll<Button>("Delete").Count == expectedCount);
+            }
+
+            var hostFilterCases = new KeyValuePair<string, int>[]
+            {
+                // contains text, expected matched more rows
+                new("host_", 10),
+
+                // ends with text, expected matched 1 row
+                new("host_4", 1),
+
+                // starts with text, expected matched more rows
+                new("localhost", 10),
+
+                // full text, expected matched 1 row
+                new("localhost_5", 1),
+
+                // empty filte, should backto all rows
+                new(string.Empty, 10),
+            };
+
+            foreach (var (hostFilterCase, expectedCount) in hostFilterCases)
+            {
+                this.Find<TextBox>("Hosts").SetText(hostFilterCase);
+                Assert.IsTrue(this.Find("Entries").FindAll<Button>("Delete").Count == expectedCount);
+            }
+
+            // Close-filter-panel
+            this.Find<Button>("Filters").Click();
+            Assert.IsFalse(this.FindAll<Button>("Clear filters").Count == 1, "Filter panel should be closed afer click Filter Button");
         }
 
         private void AddEntry(string ip, string host, bool active = true, bool clickAddEntryButton = true)
