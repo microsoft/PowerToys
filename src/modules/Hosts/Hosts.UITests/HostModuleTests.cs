@@ -176,7 +176,7 @@ namespace Hosts.UITests
                 // no-matching text, expected matched no row
                 new("127.0.0", 0),
 
-                // empty filte, should backto all rows
+                // empty filter, should backto all rows
                 new(string.Empty, 10),
             };
 
@@ -200,7 +200,7 @@ namespace Hosts.UITests
                 // full text, expected matched 1 row
                 new("localhost_5", 1),
 
-                // empty filte, should backto all rows
+                // empty filter, should backto all rows
                 new(string.Empty, 10),
             };
 
