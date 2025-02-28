@@ -292,43 +292,6 @@
  * Close OOBE
  - [x] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
 
-## GPO
- * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [x] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
- * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [x] Verify the module is not enabled.
-   - [x] Open settings and verify the module is not enabled and you can't enable it.
-   - [x] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [x] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
- * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [x] Verify the module is enabled.
-   - [x] Open settings and verify the module is enabled and you can't disable it.
-   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
- * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [x] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
- * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [x] Verify the module is not enabled. (No context menu entry)
-   - [x] Open settings and verify the module is not enabled and you can't enable it.
-   - [x] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
- * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [x] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [x] Open settings and verify the module is not enabled and you can't enable it.
- * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
-
-## DSC
- * You need to have some prerequisites installed:
-   - PowerShell >= 7.2 .
-   - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
-   - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
- * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [x] Run `winget configure .\disableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are disabled.
-   - [x] Run `winget configure .\enableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are enabled.
-   - [x] Run `winget configure .\configureLauncherPlugins.dsc.yaml`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
-   - [x] Run `winget configure .\configuration.dsc.yaml`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [x] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [x] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
-
 ## Advanced Paste
   NOTES:
     When using Advanced Paste, make sure that window focused while starting/using Advanced paste is text editor or has text input field focused (e.g. Word).
