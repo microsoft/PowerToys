@@ -835,48 +835,65 @@ namespace RegistryPreviewUILib
         /// </summary>
         private async void HandleDirtyClosing(string title, string content, string primaryButtonText, string secondaryButtonText, string closeButtonText)
         {
-            ContentDialog contentDialog = new ContentDialog()
+            if (_dialogSemaphore.CurrentCount == 0)
             {
-                Title = title,
-                Content = content,
-                PrimaryButtonText = primaryButtonText,
-                SecondaryButtonText = secondaryButtonText,
-                CloseButtonText = closeButtonText,
-                DefaultButton = ContentDialogButton.Primary,
-            };
-
-            // Use this code to associate the dialog to the appropriate AppWindow by setting
-            // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
-            if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
-            {
-                contentDialog.XamlRoot = this.Content.XamlRoot;
+                return;
             }
 
-            ContentDialogResult contentDialogResult = await contentDialog.ShowAsync();
-
-            switch (contentDialogResult)
+            try
             {
-                case ContentDialogResult.Primary:
-                    // Save, then close
-                    if (!AskFileName(string.Empty) ||
-                        !SaveFile())
-                    {
+                await _dialogSemaphore.WaitAsync();
+
+                ContentDialog contentDialog = new ContentDialog()
+                {
+                    Title = title,
+                    Content = content,
+                    PrimaryButtonText = primaryButtonText,
+                    SecondaryButtonText = secondaryButtonText,
+                    CloseButtonText = closeButtonText,
+                    DefaultButton = ContentDialogButton.Primary,
+                };
+
+                // Use this code to associate the dialog to the appropriate AppWindow by setting
+                // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
+                if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
+                {
+                    contentDialog.XamlRoot = this.Content.XamlRoot;
+                }
+
+                ContentDialogResult contentDialogResult = await contentDialog.ShowAsync();
+
+                switch (contentDialogResult)
+                {
+                    case ContentDialogResult.Primary:
+                        // Save, then close
+                        if (!AskFileName(string.Empty) ||
+                            !SaveFile())
+                        {
+                            return;
+                        }
+
+                        break;
+                    case ContentDialogResult.Secondary:
+                        // Don't save, and then close!
+                        UpdateUnsavedFileIndicator(false);
+                        saveButton.IsEnabled = false;
+                        break;
+                    default:
+                        // Cancel closing!
                         return;
-                    }
+                }
 
-                    break;
-                case ContentDialogResult.Secondary:
-                    // Don't save, and then close!
-                    UpdateUnsavedFileIndicator(false);
-                    saveButton.IsEnabled = false;
-                    break;
-                default:
-                    // Cancel closing!
-                    return;
+                // if we got here, we should try to close again
+                Application.Current.Exit();
             }
-
-            // if we got here, we should try to close again
-            Application.Current.Exit();
+            catch
+            {
+            }
+            finally
+            {
+                _dialogSemaphore.Release();
+            }
         }
 
         /// <summary>
