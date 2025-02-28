@@ -82,6 +82,71 @@
    - [x] Activation shortcut
    - [x] OCR Language
 
+## PowerRename
+- [x] Check if disable and enable of the module works. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
+- [x] Check that with the `Show icon on context menu` icon is shown and vice versa.
+- [x] Check if `Appear only in extended context menu` works.
+- [x] Enable/disable autocomplete.
+- [x] Enable/disable `Show values from last use`.
+* Select several files and folders and check PowerRename options:
+    - [x] Make Uppercase/Lowercase/Titlecase (could be selected only one at the time)
+    - [x] Exclude Folders/Files/Subfolder Items (could be selected several)
+    - [x] Item Name/Extension Only (one at the time)
+    - [x] Enumerate Items. Test advanced enumeration using different values for every field ${start=10,increment=2,padding=4}.
+    - [x] Case Sensitive
+    - [x] Match All Occurrences. If checked, all matches of text in the `Search` field will be replaced with the Replace text. Otherwise, only the first instance of the `Search` for text in the file name will be replaced (left to right).
+    * Use regular expressions
+        - [x] Search with an expression (e.g. `(.*).png`)
+        - [x] Replace with an expression (e.g. `foo_$1.png`)
+        - [x] Replace using file creation date and time (e.g. `$hh-$mm-$ss-$fff` `$DD_$MMMM_$YYYY`)
+        - [x] Turn on `Use Boost library` and test with Perl Regular Expression Syntax (e.g. `(?<=t)est`)
+    * File list filters.
+        - [x] In the `preview` window uncheck some items to exclude them from renaming.
+
+## PowerToys Run
+
+ * Enable PT Run in settings and ensure that the hotkey brings up PT Run
+   - [x] when PowerToys is running unelevated on start-up
+   - [x] when PowerToys is running as admin on start-up
+   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+ * Check that each of the plugins is working:
+   - [x] Program - launch a Win32 application
+   - [x] Program - launch a Win32 application as admin
+   - [x] Program - launch a packaged application
+   - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [x] Windows Search - open a file on the disk.
+   - [x] Windows Search - find a file and copy file path.
+   - [x] Windows Search - find a file and open containing folder.
+   - [x] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space (e.g. `> ping localhost`).
+   - [x] Folder - Search and open a sub-folder on entering the path.
+   - [x] Uri - launch a web page on entering the uri.
+   - [x] Window walker - Switch focus to a running window.
+   - [x] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
+   - [x] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [x] Registry - navigate through the registry tree and copy key path.
+   - [x] System - test `lock`.
+   - [x] System - test `empty recycle bin`.
+   - [x] System - test `shutdown`.
+
+ - [x] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
+
+ - [x] Test tab navigation.
+
+ * Test Plugin Manager
+   - [x] Enable/disable plugins and verify changes are picked up by PT Run
+   - [x] Change `Direct activation phrase` and verify changes are picked up by PT Run
+   - [x] Change `Include in global result` and verify changes picked up by PT Run
+   - [x] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message is shown.
+   - [x] Disable all plugins and verify the warning message is shown.
+
+## Command Not Found
+ * Go to Command Not Found module settings
+ - [x] If you have PowerShell 7.4 installed, confirm that Install PowerShell 7.4 button is not visible and PowerShell 7.4 is shown as detected. If you don't have PowerShell 7.4, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
+ - [x] If you have Microsoft.WinGet.Client installed, confirm that Install Microsoft.WinGet.Client button is not visible and Microsoft.WinGet.Client is shown as detected. If you don't have Microsoft.WinGet.Client, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
+ - [x] Install the Command Not Found module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is added there. Start new PowerShell 7.4 session and execute "powertoys" (or "atom"). Confirm that suggestion is given to install powertoys (or atom) winget package. (If suggestion is not given, try running the same command few more times, it might take some time for the first time to load the module). Check Installation logs text box bellow and confirm there are no errors.
+ - [x] Uninstall the module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed. Start new PowerShell 7.4 session and confirm no errors are shown on start.
+ - [x] Install module again. Uninstall PowerToys. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed after installer is done.
+ 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
    - [x] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
