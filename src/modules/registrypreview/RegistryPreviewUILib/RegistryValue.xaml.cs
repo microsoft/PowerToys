@@ -52,7 +52,7 @@ namespace RegistryPreviewUILib
             }
         }
 
-        public string ShowPreviewPutton => (Type == "ERROR" || Type == string.Empty) ? "Collapsed" : "Visbile";
+        public string ShowPreviewPutton => (Type == "REG_NONE" || Type == "ERROR" || Type == string.Empty) ? "Collapsed" : "Visbile";
 
         public RegistryValue(string name, string type, string value, string key)
         {
