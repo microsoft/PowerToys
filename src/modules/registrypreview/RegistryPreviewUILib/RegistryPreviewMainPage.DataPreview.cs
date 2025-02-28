@@ -51,12 +51,13 @@ namespace RegistryPreviewUILib
                     break;
                 case "REG_NONE":
                 case "REG_BINARY":
-                    value = string.Join("\r", Regex.Matches(value, ".{0,24}").Select(x => x.Value.ToUpper(System.Globalization.CultureInfo.CurrentCulture).Trim().Replace(" ", "\t")));
+                    value = string.Join("\n", Regex.Matches(value, ".{0,24}").Select(x => x.Value.ToUpper(System.Globalization.CultureInfo.CurrentCulture).Trim().Replace(" ", "\t")));
                     var binaryTextBox = new TextBox()
                     {
-                        IsReadOnly = false,
+                        IsReadOnly = true,
                         Text = value,
                         AcceptsReturn = true,
+                        MinHeight = 200,
                         MaxHeight = 200,
                         TextWrapping = TextWrapping.NoWrap,
                     };
@@ -67,9 +68,10 @@ namespace RegistryPreviewUILib
                 case "REG_MULTI_SZ":
                     var multiLineBox = new TextBox()
                     {
-                        IsReadOnly = false,
-                        Text = "line 1 \r line 2 \r line 3",
+                        IsReadOnly = true,
+                        Text = "line 1 \r\n line 2 \n line 3",
                         AcceptsReturn = true,
+                        MinHeight = 200,
                         MaxHeight = 200,
                         TextWrapping = TextWrapping.NoWrap,
                     };
