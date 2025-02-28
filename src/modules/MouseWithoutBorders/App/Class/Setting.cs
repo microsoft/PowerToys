@@ -33,6 +33,7 @@ using MouseWithoutBorders.Core;
 using Settings.UI.Library.Attributes;
 
 using Lock = System.Threading.Lock;
+using SettingsHelper = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Properties.Setting.Values.#LoadIntSetting(System.String,System.Int32)", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Properties.Setting.Values.#SaveSetting(System.String,System.Object)", Justification = "Dotnet port with style preservation")]
@@ -193,7 +194,7 @@ namespace MouseWithoutBorders.Class
         {
             _settingsUtils = new SettingsUtils();
 
-            _watcher = Helper.GetFileWatcher("MouseWithoutBorders", "settings.json", () =>
+            _watcher = SettingsHelper.GetFileWatcher("MouseWithoutBorders", "settings.json", () =>
             {
                 try
                 {
