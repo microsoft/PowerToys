@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation.Metadata;
@@ -48,6 +50,19 @@ namespace RegistryPreviewUILib
                     panel.Children.Add(decimalBox);
                     break;
                 case "REG_BINARY":
+                    value = string.Join("\r", Regex.Matches(value, ".{0,24}").Select(x => x.Value.ToUpper(System.Globalization.CultureInfo.CurrentCulture).Trim().Replace(" ", "\t")));
+                    var binaryTextBox = new TextBox()
+                    {
+                        IsReadOnly = false,
+                        Text = value,
+                        AcceptsReturn = true,
+                        MaxHeight = 200,
+                        TextWrapping = TextWrapping.NoWrap,
+                    };
+                    ScrollViewer.SetVerticalScrollBarVisibility(binaryTextBox, ScrollBarVisibility.Auto);
+                    ScrollViewer.SetHorizontalScrollBarVisibility(binaryTextBox, ScrollBarVisibility.Auto);
+                    panel.Children.Add(binaryTextBox);
+                    break;
                 case "REG_MULTI_SZ":
                     var multiLineBox = new TextBox()
                     {
