@@ -23,6 +23,7 @@ namespace RegistryPreviewUILib
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
         // Indicator if we loaded/reloaded/saved a file and need to skip TextChanged event one time.
+        // (Solves the problem that enabling the event handler fires it one time.)
         private static bool editorContentChangedScripted;
 
         /// <summary>
