@@ -15,13 +15,14 @@ namespace UITests_FancyZonesEditor
     public class RunFancyZonesEditorTest
     {
         private static FancyZonesEditorSession? _session;
-        private static TestContext? _context;
+        private readonly TestContext _context;
+
+        public RunFancyZonesEditorTest(TestContext context)
+            => _context = context;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
-            _context = testContext;
-
             // prepare files to launch Editor without errors
             EditorParameters editorParameters = new EditorParameters();
             EditorParameters.ParamsWrapper parameters = new EditorParameters.ParamsWrapper
@@ -133,19 +134,18 @@ namespace UITests_FancyZonesEditor
         public static void ClassCleanup()
         {
             FancyZonesEditorSession.Files.Restore();
-            _context = null;
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
-            _session = new FancyZonesEditorSession(_context!);
+            _session = new FancyZonesEditorSession(_context);
         }
 
         [TestCleanup]
         public void TestCleanup()
         {
-            _session?.Close(_context!);
+            _session?.Close(_context);
         }
 
         [TestMethod]
