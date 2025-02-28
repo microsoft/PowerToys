@@ -81,6 +81,7 @@
     <PackageVersion Include="System.Drawing.Common" Version="9.0.2" />
     <PackageVersion Include="System.IO.Abstractions" Version="21.0.29" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="21.0.29" />
+    <PackageVersion Include="System.IO.Hashing" Version="9.0.2" />
     <PackageVersion Include="System.Management" Version="9.0.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Caching" Version="9.0.2" />
@@ -90,7 +91,8 @@
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
-    <PackageVersion Include="WinUIEx" Version="2.2.0" />
+    <PackageVersion Include="WinUIEx" Version="2.3.4" />
+    <PackageVersion Include="WindowsAPICodePack" Version="8.0.6" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">

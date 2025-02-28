@@ -356,10 +356,10 @@ namespace ImageResizer.Models
             }
 
             var path = _fileSystem.Path.Combine(directory, fileName + extension);
-            var uniquifier = 1;
+            var uniqueIdentifier = 1;
             while (_fileSystem.File.Exists(path))
             {
-                path = _fileSystem.Path.Combine(directory, fileName + " (" + uniquifier++ + ")" + extension);
+                path = _fileSystem.Path.Combine(directory, fileName + " (" + uniqueIdentifier++ + ")" + extension);
             }
 
             return path;
@@ -372,10 +372,10 @@ namespace ImageResizer.Models
             var extension = _fileSystem.Path.GetExtension(_file);
 
             var path = _fileSystem.Path.Combine(directory, fileName + ".bak" + extension);
-            var uniquifier = 1;
+            var uniqueIdentifier = 1;
             while (_fileSystem.File.Exists(path))
             {
-                path = _fileSystem.Path.Combine(directory, fileName + " (" + uniquifier++ + ")" + ".bak" + extension);
+                path = _fileSystem.Path.Combine(directory, fileName + " (" + uniqueIdentifier++ + ")" + ".bak" + extension);
             }
 
             return path;

@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <FileActionsMenuPluginName>MoveCopyActions</FileActionsMenuPluginName>
+  </PropertyGroup>
+
+  <Import Project="..\FileActionsMenuPlugin.Props"/>
+</Project>
