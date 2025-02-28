@@ -990,6 +990,7 @@ NIF
 NLog
 NLSTEXT
 NMAKE
+nmi
 NNN
 NOACTIVATE
 NOAGGREGATION
@@ -1493,6 +1494,16 @@ spsi
 spsia
 spsrm
 spsv
+sqcm
+sqdm
+sqft
+sqin
+sqkm
+sqm
+sqmi
+sqmm
+sqnmi
+sqyd
 SRCAND
 SRCCOPY
 SRCERASE
