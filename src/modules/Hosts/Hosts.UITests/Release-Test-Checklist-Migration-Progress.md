@@ -11,7 +11,7 @@ For existing manual test-cases, we will convert them to UI-Tests and run them in
    - [ ] Enable and disable lines and verify they are applied to the file.
    - [ ] Add a new entry and verify it's applied.
    - [ ] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
-   - [ ] Try to filter for lines and verify you can find them.
+   - [x] Try to filter for lines and verify you can find them. (**HostModuleTests.TestFilterControl**)
    - [ ] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
  * Test the different settings and verify they are applied:
    - [ ] Launch as Administrator.
