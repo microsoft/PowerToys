@@ -28,6 +28,8 @@ namespace RegistryPreviewUILib
 
         public string Value { get; set; }
 
+        public bool IsEmptyBinary { private get; set; }
+
         public string ValueOneLine => Value.Replace('\r', ' ');
 
         public string ToolTipText { get; set; }
@@ -53,7 +55,10 @@ namespace RegistryPreviewUILib
             }
         }
 
-        public Visibility ShowPreviewButton => (Type == "REG_NONE" || Type == "ERROR" || Type == string.Empty) ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility ShowPreviewButton => (
+            Type == "ERROR" || Type == string.Empty ||
+            Value == string.Empty || IsEmptyBinary)
+            ? Visibility.Collapsed : Visibility.Visible;
 
         public RegistryValue(string name, string type, string value, string key)
         {

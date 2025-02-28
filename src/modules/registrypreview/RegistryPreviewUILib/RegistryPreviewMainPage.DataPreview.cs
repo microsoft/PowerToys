@@ -49,6 +49,7 @@ namespace RegistryPreviewUILib
                     panel.Children.Add(hexBox);
                     panel.Children.Add(decimalBox);
                     break;
+                case "REG_NONE":
                 case "REG_BINARY":
                     value = string.Join("\r", Regex.Matches(value, ".{0,24}").Select(x => x.Value.ToUpper(System.Globalization.CultureInfo.CurrentCulture).Trim().Replace(" ", "\t")));
                     var binaryTextBox = new TextBox()
