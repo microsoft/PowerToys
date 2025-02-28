@@ -79,7 +79,7 @@ jobs:
       inputs:
         displaySettings: 'optimal'
 
-  - script: 
+  - script: |
       dotnet test $(Build.SourcesDirectory)\src\modules\fancyzones\UITests-FancyZones\UITests-FancyZones.csproj --no-build -c $(BuildConfiguration) -p:Platform=$(BuildPlatform)
       dotnet test $(Build.SourcesDirectory)\src\modules\fancyzones\UITests-FancyZonesEditor\UITests-FancyZonesEditor.csproj --no-build -c $(BuildConfiguration) -p:Platform=$(BuildPlatform)
     displayName: "Run UI Tests"
