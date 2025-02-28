@@ -33,7 +33,6 @@ namespace RegistryPreviewUILib
             contentDialog.Content = panel;
 
             // Add content based on value type
-            switch type 
             var stringBox = new TextBox()
             {
                 Header = "Value",
