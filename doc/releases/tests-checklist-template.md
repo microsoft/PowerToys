@@ -361,7 +361,7 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
     - Ctrl+A->Win
     - Win+A->B
   * Test app-specific remaps
-    - [ ] Similar remaps to above with Edge (entered as `msedge`), VSCode (entered as `code`) and cmd. For cmd try admin and non-admin (requires PT to run as admin)
+    - [ ] Similar remaps to above with Edge (entered as `msedge`), VSCode (entered as `code`) and cmd (entered as `windowsterminal`). For cmd try admin and non-admin (requires PT to run as admin)
     - [ ] Try some cases where focus is lost due to the shortcut. Example remapping to Alt+Tab or Alt+F4
   - [ ] Test switching between remapping while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
 
