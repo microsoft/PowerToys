@@ -77,7 +77,7 @@
                     x:Name="newButton"
                     x:Uid="NewButton"
                     Click="NewButton_Click"
-                    Icon="{ui:FontIcon Glyph=&#xe8a5;}">
+                    Icon="{ui:FontIcon Glyph=&#xe7c3;}">
                     <AppBarButton.KeyboardAccelerators>
                         <KeyboardAccelerator Key="N" Modifiers="Control" />
                     </AppBarButton.KeyboardAccelerators>
