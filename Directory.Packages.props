@@ -34,7 +34,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.2" />
     <!-- Including Microsoft.Bcl.AsyncInterfaces to force version, since it's used by Microsoft.SemanticKernel. -->
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces"  Version="9.0.2" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.2" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.16" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.2" />

@@ -162,7 +162,7 @@ In this release, we focused on new features, stability, and improvements.
  - Added the ć character to the Slovenian character set. Thanks [@dsoklic](https://github.com/dsoklic)!
  - Added the Proto-Indo-European character set. 
 
-### Screen Ruler
+### Registry Preview
 
  - Fixed an issue causing line breaks to not be parsed correctly for REG_MULTI_SZ values. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Added a tooltip to values to show multiple lines of data. Thanks [@htcfreek](https://github.com/htcfreek)!
