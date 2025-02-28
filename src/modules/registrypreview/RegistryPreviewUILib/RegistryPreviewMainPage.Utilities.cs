@@ -77,6 +77,9 @@ namespace RegistryPreviewUILib
             }
             catch
             {
+                // Set default value for empty opening
+                await MonacoEditor.SetTextAsync("Windows Registry Editor Version 5.00\r\n\r\n");
+
                 // restore TextChanged handler to make for clean UI
                 MonacoEditor.TextChanged += MonacoEditor_TextChanged;
 
@@ -164,6 +167,25 @@ namespace RegistryPreviewUILib
             registryJumpToKeyButton.IsEnabled = CheckTreeForValidKey();
 
             // enable the UI
+            ChangeCursor(gridPreview, false);
+        }
+
+        private async void ResetEditorAndFile()
+        {
+            // Disable parts of the UI that can cause trouble when loading
+            ChangeCursor(gridPreview, true);
+
+            // clear the treeView and dataGrid no matter what
+            treeView.RootNodes.Clear();
+            ClearTable();
+
+            // update the current window's title with the current filename
+            _updateWindowTitleFunction(string.Empty);
+
+            // Set default value for empty opening
+            await MonacoEditor.SetTextAsync("Windows Registry Editor Version 5.00\r\n\r\n");
+
+            // Reset the cursor but leave editor disabled as no content got loaded
             ChangeCursor(gridPreview, false);
         }
 
