@@ -265,7 +265,8 @@
                                 <StackPanel
                                     Margin="4"
                                     VerticalAlignment="Center"
-                                    Orientation="Horizontal">
+                                    Orientation="Horizontal"
+                                    Spacing="6">
                                     <StackPanel.ContextFlyout>
                                         <MenuFlyout>
                                             <MenuFlyoutItem x:Uid="ContextMenu_CopyData" Command="{Binding CopyToClipboardData_Click}" />
@@ -274,11 +275,18 @@
                                             <MenuFlyoutItem x:Uid="ContextMenu_CopyValueWithPath" Command="{Binding CopyToClipboardWithPath_Click}" />
                                         </MenuFlyout>
                                     </StackPanel.ContextFlyout>
+                                    <Button
+                                        Padding="2"
+                                        Click="ButtonEnhancePreview_Click"
+                                        Content="&#xe71e;"
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}">
+                                        <ToolTipService.ToolTip>Show enhanced preview</ToolTipService.ToolTip>
+                                    </Button>
                                     <TextBlock
+                                        VerticalAlignment="Center"
                                         IsTabStop="False"
                                         Style="{StaticResource CaptionTextBlockStyle}"
-                                        Text="{Binding ValueOneLine}"
-                                        ToolTipService.ToolTip="{Binding Value}" />
+                                        Text="{Binding ValueOneLine}" />
                                 </StackPanel>
                             </DataTemplate>
                         </tk7controls:DataGridTemplateColumn.CellTemplate>

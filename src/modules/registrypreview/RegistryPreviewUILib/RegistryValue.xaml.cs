@@ -5,8 +5,6 @@
 using System;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.UI.Xaml;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace RegistryPreviewUILib
 {
