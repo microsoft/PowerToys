@@ -361,7 +361,8 @@ namespace RegistryPreviewUILib
         // Comand to show data preview
         public void ButtonEnhancePreview_Click(object sender, RoutedEventArgs e)
         {
-            ShowEnhancedDataPreview("test", "REG_SZ", "eee");
+            RegistryValue data = ((Button)sender).DataContext as RegistryValue;
+            ShowEnhancedDataPreview(data.Name, data.Type, data.Value);
         }
     }
 }

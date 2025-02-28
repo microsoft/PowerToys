@@ -14,10 +14,33 @@ namespace RegistryPreviewUILib
             ContentDialog contentDialog = new ContentDialog()
             {
                 Title = "Value preview",
-                Content = $"{name} - {type} - {value}",
                 CloseButtonText = "Close",
                 DefaultButton = ContentDialogButton.None,
             };
+
+            // Add default content
+            var panel = new StackPanel()
+            {
+                Spacing = 16,
+            };
+            var nameBox = new TextBox()
+            {
+                Header = "Name",
+                IsReadOnly = true,
+                Text = name,
+            };
+            panel.Children.Add(nameBox);
+            contentDialog.Content = panel;
+
+            // Add content based on value type
+            switch type 
+            var stringBox = new TextBox()
+            {
+                Header = "Value",
+                IsReadOnly = true,
+                Text = value,
+            };
+            panel.Children.Add(stringBox);
 
             // Use this code to associate the dialog to the appropriate AppWindow by setting
             // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
