@@ -5,6 +5,7 @@
 using System;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml;
 
 namespace RegistryPreviewUILib
 {
@@ -52,7 +53,7 @@ namespace RegistryPreviewUILib
             }
         }
 
-        public string ShowPreviewPutton => (Type == "REG_NONE" || Type == "ERROR" || Type == string.Empty) ? "Collapsed" : "Visbile";
+        public Visibility ShowPreviewPutton => (Type == "REG_NONE" || Type == "ERROR" || Type == string.Empty) ? Visibility.Collapsed : Visibility.Visible;
 
         public RegistryValue(string name, string type, string value, string key)
         {

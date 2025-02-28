@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation.Metadata;
 
@@ -12,28 +13,19 @@ namespace RegistryPreviewUILib
     {
         internal void ShowEnhancedDataPreview(string name, string type, string value)
         {
-            ContentDialog contentDialog = new ContentDialog()
-            {
-                // Title = "Value preview",
-                Title = name,
-                CloseButtonText = "Close",
-                DefaultButton = ContentDialogButton.None,
-            };
-
-            // Add default content
+            // Create dialoge
             var panel = new StackPanel()
             {
                 Spacing = 16,
             };
-            var nameBox = new TextBox()
+            ContentDialog contentDialog = new ContentDialog()
             {
-                Header = "Name",
-                IsReadOnly = true,
-                Text = name,
+                // Title = "Value preview",
+                Title = "View data - " + name,
+                Content = panel,
+                CloseButtonText = "Close",
+                DefaultButton = ContentDialogButton.None,
             };
-
-            // panel.Children.Add(nameBox);
-            contentDialog.Content = panel;
 
             // Add content based on value type
             switch (type)
@@ -42,13 +34,13 @@ namespace RegistryPreviewUILib
                 case "REG_QWORD":
                     var hexBox = new TextBox()
                     {
-                        Header = "Value (hex)",
+                        Header = "Hexadecimal",
                         IsReadOnly = true,
                         Text = value.Split(" ")[0],
                     };
                     var dezBox = new TextBox()
                     {
-                        Header = "Value (dec)",
+                        Header = "Decimal",
                         IsReadOnly = true,
                         Text = value.Split(" ")[1].TrimStart('(').TrimEnd(')'),
                     };
@@ -59,23 +51,26 @@ namespace RegistryPreviewUILib
                 case "REG_MULTI_SZ":
                     var multiLineBox = new TextBox()
                     {
-                        Header = "Value",
-                        IsReadOnly = true,
-                        Text = value,
+                        IsReadOnly = false,
+                        Text = "line 1\rline 2\rline 3",
                         AcceptsReturn = true,
+                        MaxHeight = 200,
+                        TextWrapping = TextWrapping.NoWrap,
                     };
+                    ScrollViewer.SetVerticalScrollBarVisibility(multiLineBox, ScrollBarVisibility.Auto);
+                    ScrollViewer.SetHorizontalScrollBarVisibility(multiLineBox, ScrollBarVisibility.Auto);
                     panel.Children.Add(multiLineBox);
                     break;
                 case "REG_EXPAND_SZ":
                     var stringBoxRaw = new TextBox()
                     {
-                        Header = "Value",
+                        Header = "Raw value",
                         IsReadOnly = true,
                         Text = value,
                     };
                     var stringBoxExp = new TextBox()
                     {
-                        Header = "Value (expanded)",
+                        Header = "Expanded value",
                         IsReadOnly = true,
                         Text = Environment.ExpandEnvironmentVariables(value),
                     };
@@ -85,7 +80,6 @@ namespace RegistryPreviewUILib
                 default: // REG_SZ
                     var stringBox = new TextBox()
                     {
-                        Header = "Value",
                         IsReadOnly = true,
                         Text = value,
                     };
