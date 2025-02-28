@@ -196,8 +196,7 @@
    - [X] Launch the Editor by clicking the button on the settings page.
    - [X] Launch the Editor from quick access.
    - [X] Launch the Editor by the Activation shortcut.
-   - [-] Disable the module and and verify it won't launch by the shortcut.
-         I disabled the module while I can launch by shortcut
+   - [X] Disable the module and and verify it won't launch by the shortcut.
 
 * Snapshot tool: try with elevated and non-elevated PT
    * Open non-packaged apps, e.g., VisualStudio, VisualStudioCode.
