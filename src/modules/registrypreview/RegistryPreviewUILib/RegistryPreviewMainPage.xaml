@@ -276,13 +276,12 @@
                                         </MenuFlyout>
                                     </StackPanel.ContextFlyout>
                                     <Button
+                                        x:Uid="ShowDataPreviewButton"
                                         Padding="2"
                                         Click="ButtonEnhancePreview_Click"
                                         Content="&#xe71e;"
                                         FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                        Visibility="{Binding ShowPreviewButton, Mode=OneWay}">
-                                        <ToolTipService.ToolTip>Show enhanced preview</ToolTipService.ToolTip>
-                                    </Button>
+                                        Visibility="{Binding ShowPreviewButton, Mode=OneWay}" />
                                     <TextBlock
                                         VerticalAlignment="Center"
                                         IsTabStop="False"

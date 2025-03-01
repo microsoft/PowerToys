@@ -4,15 +4,8 @@
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Reflection.PortableExecutable;
-using System.Text;
-using System.Text.RegularExpressions;
-using HexBox;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Windows.Foundation.Metadata;
 
 namespace RegistryPreviewUILib
@@ -29,10 +22,9 @@ namespace RegistryPreviewUILib
             };
             ContentDialog contentDialog = new ContentDialog()
             {
-                // Title = "Value preview",
-                Title = "View data - " + name,
+                Title = resourceLoader.GetString("DataPreviewTitle") + " - " + name,
                 Content = panel,
-                CloseButtonText = "Close",
+                CloseButtonText = resourceLoader.GetString("DataPreviewClose"),
                 DefaultButton = ContentDialogButton.Primary,
                 Padding = new Thickness(0),
             };
@@ -44,14 +36,14 @@ namespace RegistryPreviewUILib
                 case "REG_QWORD":
                     var hexBox = new TextBox()
                     {
-                        Header = "Hexadecimal",
+                        Header = resourceLoader.GetString("DataPreviewHex"),
                         IsReadOnly = true,
                         FontSize = 14,
                         Text = value.Split(" ")[0],
                     };
                     var decimalBox = new TextBox()
                     {
-                        Header = "Decimal",
+                        Header = resourceLoader.GetString("DataPreviewDec"),
                         IsReadOnly = true,
                         FontSize = 14,
                         Text = value.Split(" ")[1].TrimStart('(').TrimEnd(')'),
@@ -107,14 +99,14 @@ namespace RegistryPreviewUILib
                 case "REG_EXPAND_SZ":
                     var stringBoxRaw = new TextBox()
                     {
-                        Header = "Raw value",
+                        Header = resourceLoader.GetString("DataPreviewRawValue"),
                         IsReadOnly = true,
                         FontSize = 14,
                         Text = value,
                     };
                     var stringBoxExp = new TextBox()
                     {
-                        Header = "Expanded value",
+                        Header = resourceLoader.GetString("DataPreviewExpandedValue"),
                         IsReadOnly = true,
                         FontSize = 14,
                         Text = Environment.ExpandEnvironmentVariables(value),

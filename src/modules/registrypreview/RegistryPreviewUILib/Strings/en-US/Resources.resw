@@ -297,4 +297,26 @@
     <value>Copy value with key path</value>
     <comment>Like "Copy item"</comment>
   </data>
+  <data name="ShowDataPreviewButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Show enhanced preview</value>
+  </data>
+  <data name="DataPreviewTitle" xml:space="preserve">
+    <value>View data</value>
+  </data>
+  <data name="DataPreviewClose" xml:space="preserve">
+    <value>Close</value>
+    <comment>like "Close window"</comment>
+  </data>
+  <data name="DataPreviewHex" xml:space="preserve">
+    <value>Hexadecimal</value>
+  </data>
+  <data name="DataPreviewDec" xml:space="preserve">
+    <value>Decimal</value>
+  </data>
+  <data name="DataPreviewRawValue" xml:space="preserve">
+    <value>Raw value</value>
+  </data>
+  <data name="DataPreviewExpandedValue" xml:space="preserve">
+    <value>Expanded value</value>
+  </data>
 </root>
