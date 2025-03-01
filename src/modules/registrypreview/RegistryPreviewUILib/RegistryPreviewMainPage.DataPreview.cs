@@ -3,8 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using HexBox;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation.Metadata;
@@ -59,6 +62,29 @@ namespace RegistryPreviewUILib
                     break;
                 case "REG_NONE":
                 case "REG_BINARY":
+                    /* // Convert data
+                    byte[] byteArray = Encoding.UTF8.GetBytes(value);
+                    MemoryStream memoryStream = new MemoryStream(byteArray);
+                    BinaryReader binaryData = new BinaryReader(memoryStream);
+                    binaryData.ReadBytes(byteArray.Length);
+
+                    // Create box
+                    var binaryBox = new HexBox.WinUI.HexBox()
+                    {
+                        Height = 200,
+                        Width = 500,
+                        ShowAddress = true,
+                        ShowData = true,
+                        ShowText = true,
+                        Columns = 8,
+                        DataFormat = HexBox.WinUI.DataFormat.Hexadecimal,
+                        DataSignedness = HexBox.WinUI.DataSignedness.Unsigned,
+                        DataType = HexBox.WinUI.DataType.Int_2,
+                        DataSource = binaryData,
+                        Visibility = Visibility.Visible,
+                    };
+                    panel.Children.Add(binaryBox);
+                    break; */
                 case "REG_MULTI_SZ":
                     var multiLineBox = new TextBox()
                     {

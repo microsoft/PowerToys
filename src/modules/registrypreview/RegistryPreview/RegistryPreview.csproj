@@ -32,6 +32,12 @@
     <Folder Include="RegistryPreviewXAML\" />
   </ItemGroup>
 
+	<PropertyGroup>
+		<!-- Properties for nuget package. -->
+		<!-- The warning NU1605 (package downgrade) is thorwn by HexBox.WinUI in Version 0.1.9 for Microsoft.Windows.SDK.BuildTools -->
+		<NoWarn>NU1605</NoWarn>
+	</PropertyGroup>
+	
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" />
