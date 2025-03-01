@@ -15,6 +15,12 @@ namespace RegistryPreviewUILib
     {
         internal void ShowEnhancedDataPreview(string name, string type, string value)
         {
+            // Format value based on type
+            if (type == "REG_NONE" || type == "REG_BINARY")
+            {
+                value = string.Join("\r", Regex.Matches(value, ".{0,24}").Select(x => x.Value.ToUpper(System.Globalization.CultureInfo.CurrentCulture).Trim().Replace(" ", "\t")));
+            }
+
             // Create dialog
             var panel = new StackPanel()
             {
@@ -38,12 +44,14 @@ namespace RegistryPreviewUILib
                     {
                         Header = "Hexadecimal",
                         IsReadOnly = true,
+                        FontSize = 14,
                         Text = value.Split(" ")[0],
                     };
                     var decimalBox = new TextBox()
                     {
                         Header = "Decimal",
                         IsReadOnly = true,
+                        FontSize = 14,
                         Text = value.Split(" ")[1].TrimStart('(').TrimEnd(')'),
                     };
                     panel.Children.Add(hexBox);
@@ -51,29 +59,15 @@ namespace RegistryPreviewUILib
                     break;
                 case "REG_NONE":
                 case "REG_BINARY":
-                    value = string.Join("\n", Regex.Matches(value, ".{0,24}").Select(x => x.Value.ToUpper(System.Globalization.CultureInfo.CurrentCulture).Trim().Replace(" ", "\t")));
-                    var binaryTextBox = new TextBox()
-                    {
-                        IsReadOnly = true,
-                        Text = value,
-                        AcceptsReturn = true,
-                        MinHeight = 200,
-                        MaxHeight = 200,
-                        TextWrapping = TextWrapping.NoWrap,
-                    };
-                    ScrollViewer.SetVerticalScrollBarVisibility(binaryTextBox, ScrollBarVisibility.Auto);
-                    ScrollViewer.SetHorizontalScrollBarVisibility(binaryTextBox, ScrollBarVisibility.Auto);
-                    panel.Children.Add(binaryTextBox);
-                    break;
                 case "REG_MULTI_SZ":
                     var multiLineBox = new TextBox()
                     {
                         IsReadOnly = true,
-                        Text = "line 1 \r\n line 2 \n line 3",
                         AcceptsReturn = true,
-                        MinHeight = 200,
-                        MaxHeight = 200,
                         TextWrapping = TextWrapping.NoWrap,
+                        MaxHeight = 200,
+                        FontSize = 14,
+                        Text = value,
                     };
                     ScrollViewer.SetVerticalScrollBarVisibility(multiLineBox, ScrollBarVisibility.Auto);
                     ScrollViewer.SetHorizontalScrollBarVisibility(multiLineBox, ScrollBarVisibility.Auto);
@@ -84,12 +78,14 @@ namespace RegistryPreviewUILib
                     {
                         Header = "Raw value",
                         IsReadOnly = true,
+                        FontSize = 14,
                         Text = value,
                     };
                     var stringBoxExp = new TextBox()
                     {
                         Header = "Expanded value",
                         IsReadOnly = true,
+                        FontSize = 14,
                         Text = Environment.ExpandEnvironmentVariables(value),
                     };
                     panel.Children.Add(stringBoxRaw);
@@ -99,6 +95,7 @@ namespace RegistryPreviewUILib
                     var stringBox = new TextBox()
                     {
                         IsReadOnly = true,
+                        FontSize = 14,
                         Text = value,
                     };
                     panel.Children.Add(stringBox);
