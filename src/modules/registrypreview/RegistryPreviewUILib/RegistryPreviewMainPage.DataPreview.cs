@@ -5,11 +5,14 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.RegularExpressions;
 using HexBox;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation.Metadata;
 
 namespace RegistryPreviewUILib
@@ -18,16 +21,11 @@ namespace RegistryPreviewUILib
     {
         internal void ShowEnhancedDataPreview(string name, string type, string value)
         {
-            // Format value based on type
-            if (type == "REG_NONE" || type == "REG_BINARY")
-            {
-                value = string.Join("\r", Regex.Matches(value, ".{0,24}").Select(x => x.Value.ToUpper(System.Globalization.CultureInfo.CurrentCulture).Trim().Replace(" ", "\t")));
-            }
-
             // Create dialog
             var panel = new StackPanel()
             {
                 Spacing = 16,
+                Padding = new Thickness(0),
             };
             ContentDialog contentDialog = new ContentDialog()
             {
@@ -35,7 +33,8 @@ namespace RegistryPreviewUILib
                 Title = "View data - " + name,
                 Content = panel,
                 CloseButtonText = "Close",
-                DefaultButton = ContentDialogButton.None,
+                DefaultButton = ContentDialogButton.Primary,
+                Padding = new Thickness(0),
             };
 
             // Add content based on value type
@@ -62,29 +61,35 @@ namespace RegistryPreviewUILib
                     break;
                 case "REG_NONE":
                 case "REG_BINARY":
-                    /* // Convert data
-                    byte[] byteArray = Encoding.UTF8.GetBytes(value);
+                    // Convert data
+                    byte[] byteArray = Convert.FromHexString(value.Replace(" ", string.Empty));
                     MemoryStream memoryStream = new MemoryStream(byteArray);
                     BinaryReader binaryData = new BinaryReader(memoryStream);
                     binaryData.ReadBytes(byteArray.Length);
 
-                    // Create box
-                    var binaryBox = new HexBox.WinUI.HexBox()
+                    // Add loading animation
+                    var ring = new ProgressRing();
+                    panel.Children.Add(ring);
+
+                    // Create hex box to dialog
+                    var binaryPreviewBox = new HexBox.WinUI.HexBox()
                     {
-                        Height = 200,
+                        Height = 300,
                         Width = 500,
                         ShowAddress = true,
                         ShowData = true,
                         ShowText = true,
                         Columns = 8,
+                        FontSize = 13,
                         DataFormat = HexBox.WinUI.DataFormat.Hexadecimal,
                         DataSignedness = HexBox.WinUI.DataSignedness.Unsigned,
-                        DataType = HexBox.WinUI.DataType.Int_2,
+                        DataType = HexBox.WinUI.DataType.Int_1,
                         DataSource = binaryData,
-                        Visibility = Visibility.Visible,
+                        Visibility = Visibility.Collapsed,
                     };
-                    panel.Children.Add(binaryBox);
-                    break; */
+                    binaryPreviewBox.Loaded += BinaryPreviewLoaded;
+                    panel.Children.Add(binaryPreviewBox);
+                    break;
                 case "REG_MULTI_SZ":
                     var multiLineBox = new TextBox()
                     {
@@ -136,6 +141,16 @@ namespace RegistryPreviewUILib
             }
 
             _ = contentDialog.ShowAsync();
+        }
+
+        private static void BinaryPreviewLoaded(object sender, RoutedEventArgs e)
+        {
+            // progress ring
+            var p = ((HexBox.WinUI.HexBox)sender).Parent as StackPanel;
+            p.Children[0].Visibility = Visibility.Collapsed;
+
+            // hex box
+            ((HexBox.WinUI.HexBox)sender).Visibility = Visibility.Visible;
         }
     }
 }
