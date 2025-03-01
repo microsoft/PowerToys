@@ -1459,7 +1459,7 @@ SICHINT
 SIDs
 siex
 sigdn
-signedness
+Signedness
 SIGNINGSCENARIO
 Signtool
 SINGLEKEY
