@@ -91,7 +91,8 @@
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
-    <PackageVersion Include="WPF-UI" Version="3.0.5" />
+    <PackageVersion Include="WPF-UI" Version="3.0.5" /> 
+	<!-- The warning NU1605 (package downgrade) is thrown in Version 0.1.9 for Microsoft.Windows.SDK.BuildTools -->
 	<PackageVersion Include="HexBox.WinUI" Version="0.1.9" NoWarn="NU1605"/>
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
