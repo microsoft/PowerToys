@@ -10,8 +10,10 @@ using System.Text;
 using System.Text.Unicode;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Foundation.Metadata;
+using Windows.UI;
 using HB = HexBox.WinUI;
 
 namespace RegistryPreviewUILib
@@ -134,7 +136,7 @@ namespace RegistryPreviewUILib
 
         private static void AddBinaryView(ref StackPanel panel, ref ResourceLoader resourceLoader, ref BinaryReader data, string dataText)
         {
-            // Add SelectorBar
+            // Create SelectorBar
             var navBar = new SelectorBar();
             navBar.SelectionChanged += BinaryPreviewSelectorChanged;
             navBar.Items.Add(new SelectorBarItem()
@@ -151,13 +153,8 @@ namespace RegistryPreviewUILib
                 FontSize = 14,
                 IsSelected = false,
             });
-            panel.Children.Add(navBar);
 
-            // Add loading animation
-            var ring = new ProgressRing();
-            panel.Children.Add(ring);
-
-            // Add hex box to dialog
+            // Create HexBox
             var binaryPreviewBox = new HB.HexBox()
             {
                 Height = 300,
@@ -174,10 +171,9 @@ namespace RegistryPreviewUILib
                 Visibility = Visibility.Collapsed,
             };
             binaryPreviewBox.Loaded += BinaryPreviewLoaded;
-            panel.Children.Add(binaryPreviewBox);
 
-            // Add text box to dialog
-            var txt = new TextBox()
+            // Create TextBox
+            var visibleText = new TextBox()
             {
                 AcceptsReturn = true,
                 TextWrapping = TextWrapping.Wrap,
@@ -187,7 +183,12 @@ namespace RegistryPreviewUILib
                 Text = dataText,
                 Visibility = Visibility.Collapsed,
             };
-            panel.Children.Add(txt);
+
+            // Add controls: 0 = SelectorBar, 1 = ProgressRing, 2 = HexBox, 3 = TextBox
+            panel.Children.Add(navBar);
+            panel.Children.Add(new ProgressRing());
+            panel.Children.Add(binaryPreviewBox);
+            panel.Children.Add(visibleText);
         }
 
         private static void AddExpandStringView(ref StackPanel panel, ref ResourceLoader resourceLoader, string value)
@@ -213,7 +214,6 @@ namespace RegistryPreviewUILib
         private static void BinaryPreviewLoaded(object sender, RoutedEventArgs e)
         {
             _isDataPreviewHexBoxLoaded = true;
-
             var stackPanel = ((HB.HexBox)sender).Parent as StackPanel;
             var selectorBar = stackPanel.Children[0] as SelectorBar;
 
@@ -232,26 +232,29 @@ namespace RegistryPreviewUILib
         {
             // Child controls: 0 = SelectorBar, 1 = ProgressRing, 2 = HexBox, 3 = TextBox
             var stackPanel = ((SelectorBar)sender).Parent as StackPanel;
+            var progressRing = (ProgressRing)stackPanel.Children[1];
+            var hexBox = (HB.HexBox)stackPanel.Children[2];
+            var textBox = (TextBox)stackPanel.Children[3];
 
             if (sender.SelectedItem.Tag.ToString() == "DataView")
             {
-                stackPanel.Children[3].Visibility = Visibility.Collapsed;
+                textBox.Visibility = Visibility.Collapsed;
                 if (_isDataPreviewHexBoxLoaded)
                 {
-                    stackPanel.Children[1].Visibility = Visibility.Collapsed;
-                    stackPanel.Children[2].Visibility = Visibility.Visible;
+                    progressRing.Visibility = Visibility.Collapsed;
+                    hexBox.Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    stackPanel.Children[1].Visibility = Visibility.Visible;
-                    stackPanel.Children[2].Visibility = Visibility.Collapsed;
+                    progressRing.Visibility = Visibility.Visible;
+                    hexBox.Visibility = Visibility.Collapsed;
                 }
             }
             else
             {
-                stackPanel.Children[1].Visibility = Visibility.Collapsed;
-                stackPanel.Children[2].Visibility = Visibility.Collapsed;
-                stackPanel.Children[3].Visibility = Visibility.Visible;
+                progressRing.Visibility = Visibility.Collapsed;
+                hexBox.Visibility = Visibility.Collapsed;
+                textBox.Visibility = Visibility.Visible;
             }
         }
     }
