@@ -319,4 +319,12 @@
   <data name="DataPreviewExpandedValue" xml:space="preserve">
     <value>Expanded value</value>
   </data>
+  <data name="DataPreviewVisibleText" xml:space="preserve">
+    <value>Visible text</value>
+    <comment>Means text that is visible and no crontrol character</comment>
+  </data>
+  <data name="DataPreviewDataView" xml:space="preserve">
+    <value>Data</value>
+    <comment>Like "binary data"</comment>
+  </data>
 </root>

@@ -3,19 +3,27 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Text;
+using System.Text.Unicode;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Foundation.Metadata;
+using HB = HexBox.WinUI;
 
 namespace RegistryPreviewUILib
 {
     public sealed partial class RegistryPreviewMainPage : Page
     {
+        private static bool _isDataPreviewHexBoxLoaded;
+
         internal void ShowEnhancedDataPreview(string name, string type, string value)
         {
             // Create dialog
+            _isDataPreviewHexBoxLoaded = false;
             var panel = new StackPanel()
             {
                 Spacing = 16,
@@ -46,10 +54,21 @@ namespace RegistryPreviewUILib
                     binaryData.ReadBytes(byteArray.Length);
 
                     // Convert value to text
+                    // For more printable asci characters the following code lines are reuqired:
+                    //  var cpW1252 = CodePagesEncodingProvider.Instance.GetEncoding(1252);
+                    //  || b == 128 || (b >= 130 && b <= 140) || b == 142 || (b >= 145 & b <= 156) || b >= 158
+                    //  cpW1252.GetString([b]);
                     string binaryDataText = string.Empty;
                     foreach (byte b in byteArray)
                     {
-                        binaryDataText += (b > 31 && b < 127) ? Convert.ToChar(b) : ' ';
+                        // ASCII codes:
+                        //  9, 10, 13: Space, Line Feed, Carriage Return
+                        //  32-126: Printable characters
+                        //  128, 130-140, 142, 145-156, 158-255: Extendet printable characters
+                        if (b == 9 || b == 10 || b == 13 || (b >= 32 && b <= 126))
+                        {
+                            binaryDataText += Convert.ToChar(b);
+                        }
                     }
 
                     // Add controls
@@ -117,15 +136,18 @@ namespace RegistryPreviewUILib
         {
             // Add SelectorBar
             var navBar = new SelectorBar();
+            navBar.SelectionChanged += BinaryPreviewSelectorChanged;
             navBar.Items.Add(new SelectorBarItem()
             {
-                Text = "Data",
+                Text = resourceLoader.GetString("DataPreviewDataView"),
+                Tag = "DataView",
                 FontSize = 14,
                 IsSelected = true,
             });
             navBar.Items.Add(new SelectorBarItem()
             {
-                Text = "Text (for copy)",
+                Text = resourceLoader.GetString("DataPreviewVisibleText"),
+                Tag = "TextView",
                 FontSize = 14,
                 IsSelected = false,
             });
@@ -136,7 +158,7 @@ namespace RegistryPreviewUILib
             panel.Children.Add(ring);
 
             // Add hex box to dialog
-            var binaryPreviewBox = new HexBox.WinUI.HexBox()
+            var binaryPreviewBox = new HB.HexBox()
             {
                 Height = 300,
                 Width = 500,
@@ -157,7 +179,6 @@ namespace RegistryPreviewUILib
             // Add text box to dialog
             var txt = new TextBox()
             {
-                IsReadOnly = true,
                 AcceptsReturn = true,
                 TextWrapping = TextWrapping.Wrap,
                 Height = 300,
@@ -191,17 +212,46 @@ namespace RegistryPreviewUILib
 
         private static void BinaryPreviewLoaded(object sender, RoutedEventArgs e)
         {
-            var sP = ((HexBox.WinUI.HexBox)sender).Parent as StackPanel;
-            var sB = sP.Children[0] as SelectorBar;
+            _isDataPreviewHexBoxLoaded = true;
+
+            var stackPanel = ((HB.HexBox)sender).Parent as StackPanel;
+            var selectorBar = stackPanel.Children[0] as SelectorBar;
 
             // Item 0 is the "Data" item
-            if (sB.Items.IndexOf(sB.SelectedItem) == 0)
+            if (selectorBar.Items.IndexOf(selectorBar.SelectedItem) == 0)
             {
                 // progress ring
-                sP.Children[1].Visibility = Visibility.Collapsed;
+                stackPanel.Children[1].Visibility = Visibility.Collapsed;
 
                 // hex box
-                ((HexBox.WinUI.HexBox)sender).Visibility = Visibility.Visible;
+                ((HB.HexBox)sender).Visibility = Visibility.Visible;
+            }
+        }
+
+        private static void BinaryPreviewSelectorChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+        {
+            // Child controls: 0 = SelectorBar, 1 = ProgressRing, 2 = HexBox, 3 = TextBox
+            var stackPanel = ((SelectorBar)sender).Parent as StackPanel;
+
+            if (sender.SelectedItem.Tag.ToString() == "DataView")
+            {
+                stackPanel.Children[3].Visibility = Visibility.Collapsed;
+                if (_isDataPreviewHexBoxLoaded)
+                {
+                    stackPanel.Children[1].Visibility = Visibility.Collapsed;
+                    stackPanel.Children[2].Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    stackPanel.Children[1].Visibility = Visibility.Visible;
+                    stackPanel.Children[2].Visibility = Visibility.Collapsed;
+                }
+            }
+            else
+            {
+                stackPanel.Children[1].Visibility = Visibility.Collapsed;
+                stackPanel.Children[2].Visibility = Visibility.Collapsed;
+                stackPanel.Children[3].Visibility = Visibility.Visible;
             }
         }
     }
