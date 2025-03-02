@@ -54,7 +54,7 @@ namespace RegistryPreviewUILib
                     binaryData.ReadBytes(byteArray.Length);
 
                     // Convert value to text
-                    // For more printable asci characters the following code lines are reuqired:
+                    // For more printable asci characters the following code lines are required:
                     //  var cpW1252 = CodePagesEncodingProvider.Instance.GetEncoding(1252);
                     //  || b == 128 || (b >= 130 && b <= 140) || b == 142 || (b >= 145 & b <= 156) || b >= 158
                     //  cpW1252.GetString([b]);
@@ -64,7 +64,7 @@ namespace RegistryPreviewUILib
                         // ASCII codes:
                         //  9, 10, 13: Space, Line Feed, Carriage Return
                         //  32-126: Printable characters
-                        //  128, 130-140, 142, 145-156, 158-255: Extendet printable characters
+                        //  128, 130-140, 142, 145-156, 158-255: Extended printable characters
                         if (b == 9 || b == 10 || b == 13 || (b >= 32 && b <= 126))
                         {
                             binaryDataText += Convert.ToChar(b);
