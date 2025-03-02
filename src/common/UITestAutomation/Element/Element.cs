@@ -22,6 +22,14 @@ namespace Microsoft.PowerToys.UITest
 
         private WindowsDriver<WindowsElement>? driver;
 
+        protected string? TargetControlType { get; set; }
+
+        internal bool IsMatchingTarget()
+        {
+            var ct = this.ControlType;
+            return string.IsNullOrEmpty(this.TargetControlType) || this.TargetControlType == this.ControlType;
+        }
+
         internal void SetWindowsElement(WindowsElement windowsElement) => this.windowsElement = windowsElement;
 
         internal void SetSession(WindowsDriver<WindowsElement> driver) => this.driver = driver;
@@ -91,7 +99,7 @@ namespace Microsoft.PowerToys.UITest
         /// Click the UI element.
         /// </summary>
         /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
-        public void Click(bool rightClick = false)
+        public virtual void Click(bool rightClick = false)
         {
             PerformAction((actions, windowElement) =>
             {
@@ -116,7 +124,7 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Double Click the UI element.
         /// </summary>
-        public void DoubleClick()
+        public virtual void DoubleClick()
         {
             PerformAction((actions, windowElement) =>
             {
@@ -139,7 +147,6 @@ namespace Microsoft.PowerToys.UITest
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method GetAttribute with parameter: attributeName = {attributeName}");
             var attributeValue = this.windowsElement.GetAttribute(attributeName);
-            Assert.IsNotNull(attributeValue, $"Attribute '{attributeName}' is null.");
             return attributeValue;
         }
 
@@ -154,17 +161,51 @@ namespace Microsoft.PowerToys.UITest
             where T : Element, new()
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
-            var foundElement = FindHelper.Find<T, AppiumWebElement>(
-                () =>
-                {
-                    var element = this.windowsElement.FindElement(by.ToSeleniumBy());
-                    Assert.IsNotNull(element, $"Element not found using selector: {by}");
-                    return element;
-                },
-                this.driver,
-                timeoutMS);
 
-            return foundElement;
+            // leverage findAll to filter out mismatched elements
+            var collection = this.FindAll<T>(by, timeoutMS);
+
+            Assert.IsTrue(collection.Count > 0, $"Element not found using selector: {by}");
+
+            return collection[0];
+        }
+
+        /// <summary>
+        /// Finds an element by the selector.
+        /// Shortcut for this.Find<T>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class type of the element to find.</typeparam>
+        /// <param name="name">The name for finding the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds.</param>
+        /// <returns>The found element.</returns>
+        public T Find<T>(string name, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.Find<T>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Finds an element by the selector.
+        /// Shortcut for this.Find<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The selector to use for finding the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds.</param>
+        /// <returns>The found element.</returns>
+        public Element Find(By by, int timeoutMS = 3000)
+        {
+            return this.Find<Element>(by, timeoutMS);
+        }
+
+        /// <summary>
+        /// Finds an element by the selector.
+        /// Shortcut for this.Find<Element>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <param name="name">The name for finding the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds.</param>
+        /// <returns>The found element.</returns>
+        public Element Find(string name, int timeoutMS = 3000)
+        {
+            return this.Find<Element>(By.Name(name), timeoutMS);
         }
 
         /// <summary>
@@ -174,7 +215,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to use for finding the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<T>? FindAll<T>(By by, int timeoutMS = 3000)
+        public ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
@@ -182,22 +223,59 @@ namespace Microsoft.PowerToys.UITest
                 () =>
                 {
                     var elements = this.windowsElement.FindElements(by.ToSeleniumBy());
-                    Assert.IsTrue(elements.Count > 0, $"Elements not found using selector: {by}");
                     return elements;
                 },
                 this.driver,
                 timeoutMS);
 
-            return foundElements;
+            return foundElements ?? new ReadOnlyCollection<T>([]);
+        }
+
+        /// <summary>
+        /// Finds all elements by the selector.
+        /// Shortcut for this.FindAll<T>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class type of the elements to find.</typeparam>
+        /// <param name="name">The name for finding the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds.</param>
+        /// <returns>A read-only collection of the found elements.</returns>
+        public ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.FindAll<T>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Finds all elements by the selector.
+        /// Shortcut for this.FindAll<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The selector to use for finding the elements.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds.</param>
+        /// <returns>A read-only collection of the found elements.</returns>
+        public ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 3000)
+        {
+            return this.FindAll<Element>(by, timeoutMS);
+        }
+
+        /// <summary>
+        /// Finds all elements by the selector.
+        /// Shortcut for this.FindAll<Element>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <param name="name">The name for finding the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds.</param>
+        /// <returns>A read-only collection of the found elements.</returns>
+        public ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 3000)
+        {
+            return this.FindAll<Element>(By.Name(name), timeoutMS);
         }
 
         /// <summary>
         /// Simulates a manual operation on the element.
         /// </summary>
         /// <param name="action">The action to perform on the element.</param>
-        /// <param name="msPreAction">The number of milliseconds to wait before the action. Default value is 100 ms</param>
-        /// <param name="msPostAction">The number of milliseconds to wait after the action. Default value is 100 ms</param>
-        protected void PerformAction(Action<Actions, WindowsElement> action, int msPreAction = 100, int msPostAction = 100)
+        /// <param name="msPreAction">The number of milliseconds to wait before the action. Default value is 500 ms</param>
+        /// <param name="msPostAction">The number of milliseconds to wait after the action. Default value is 500 ms</param>
+        protected void PerformAction(Action<Actions, WindowsElement> action, int msPreAction = 500, int msPostAction = 500)
         {
             if (msPreAction > 0)
             {
