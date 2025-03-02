@@ -1,0 +1,208 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.IO;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.ApplicationModel.Resources;
+using Windows.Foundation.Metadata;
+
+namespace RegistryPreviewUILib
+{
+    public sealed partial class RegistryPreviewMainPage : Page
+    {
+        internal void ShowEnhancedDataPreview(string name, string type, string value)
+        {
+            // Create dialog
+            var panel = new StackPanel()
+            {
+                Spacing = 16,
+                Padding = new Thickness(0),
+            };
+            ContentDialog contentDialog = new ContentDialog()
+            {
+                Title = resourceLoader.GetString("DataPreviewTitle") + " - " + name,
+                Content = panel,
+                CloseButtonText = resourceLoader.GetString("DataPreviewClose"),
+                DefaultButton = ContentDialogButton.Primary,
+                Padding = new Thickness(0),
+            };
+
+            // Add content based on value type
+            switch (type)
+            {
+                case "REG_DWORD":
+                case "REG_QWORD":
+                    AddHexView(ref panel, ref resourceLoader, value);
+                    break;
+                case "REG_NONE":
+                case "REG_BINARY":
+                    // Convert value to BinaryReader
+                    byte[] byteArray = Convert.FromHexString(value.Replace(" ", string.Empty));
+                    MemoryStream memoryStream = new MemoryStream(byteArray);
+                    BinaryReader binaryData = new BinaryReader(memoryStream);
+                    binaryData.ReadBytes(byteArray.Length);
+
+                    // Convert value to text
+                    string binaryDataText = string.Empty;
+                    foreach (byte b in byteArray)
+                    {
+                        binaryDataText += (b > 31 && b < 127) ? Convert.ToChar(b) : ' ';
+                    }
+
+                    // Add controls
+                    AddBinaryView(ref panel, ref resourceLoader, ref binaryData, binaryDataText);
+                    break;
+                case "REG_MULTI_SZ":
+                    var multiLineBox = new TextBox()
+                    {
+                        IsReadOnly = true,
+                        AcceptsReturn = true,
+                        TextWrapping = TextWrapping.NoWrap,
+                        MaxHeight = 200,
+                        FontSize = 14,
+                        Text = value,
+                    };
+                    ScrollViewer.SetVerticalScrollBarVisibility(multiLineBox, ScrollBarVisibility.Auto);
+                    ScrollViewer.SetHorizontalScrollBarVisibility(multiLineBox, ScrollBarVisibility.Auto);
+                    panel.Children.Add(multiLineBox);
+                    break;
+                case "REG_EXPAND_SZ":
+                    AddExpandStringView(ref panel, ref resourceLoader, value);
+                    break;
+                default: // REG_SZ
+                    var stringBox = new TextBox()
+                    {
+                        IsReadOnly = true,
+                        FontSize = 14,
+                        Text = value,
+                    };
+                    panel.Children.Add(stringBox);
+                    break;
+            }
+
+            // Use this code to associate the dialog to the appropriate AppWindow by setting
+            // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
+            if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
+            {
+                contentDialog.XamlRoot = this.Content.XamlRoot;
+            }
+
+            _ = contentDialog.ShowAsync();
+        }
+
+        private static void AddHexView(ref StackPanel panel, ref ResourceLoader resourceLoader, string value)
+        {
+            var hexBox = new TextBox()
+            {
+                Header = resourceLoader.GetString("DataPreviewHex"),
+                IsReadOnly = true,
+                FontSize = 14,
+                Text = value.Split(" ")[0],
+            };
+            var decimalBox = new TextBox()
+            {
+                Header = resourceLoader.GetString("DataPreviewDec"),
+                IsReadOnly = true,
+                FontSize = 14,
+                Text = value.Split(" ")[1].TrimStart('(').TrimEnd(')'),
+            };
+            panel.Children.Add(hexBox);
+            panel.Children.Add(decimalBox);
+        }
+
+        private static void AddBinaryView(ref StackPanel panel, ref ResourceLoader resourceLoader, ref BinaryReader data, string dataText)
+        {
+            // Add SelectorBar
+            var navBar = new SelectorBar();
+            navBar.Items.Add(new SelectorBarItem()
+            {
+                Text = "Data",
+                FontSize = 14,
+                IsSelected = true,
+            });
+            navBar.Items.Add(new SelectorBarItem()
+            {
+                Text = "Text (for copy)",
+                FontSize = 14,
+                IsSelected = false,
+            });
+            panel.Children.Add(navBar);
+
+            // Add loading animation
+            var ring = new ProgressRing();
+            panel.Children.Add(ring);
+
+            // Add hex box to dialog
+            var binaryPreviewBox = new HexBox.WinUI.HexBox()
+            {
+                Height = 300,
+                Width = 500,
+                ShowAddress = true,
+                ShowData = true,
+                ShowText = true,
+                Columns = 8,
+                FontSize = 13,
+                DataFormat = HexBox.WinUI.DataFormat.Hexadecimal,
+                DataSignedness = HexBox.WinUI.DataSignedness.Unsigned,
+                DataType = HexBox.WinUI.DataType.Int_1,
+                DataSource = data,
+                Visibility = Visibility.Collapsed,
+            };
+            binaryPreviewBox.Loaded += BinaryPreviewLoaded;
+            panel.Children.Add(binaryPreviewBox);
+
+            // Add text box to dialog
+            var txt = new TextBox()
+            {
+                IsReadOnly = true,
+                AcceptsReturn = true,
+                TextWrapping = TextWrapping.Wrap,
+                Height = 300,
+                Width = 500,
+                FontSize = 13,
+                Text = dataText,
+                Visibility = Visibility.Collapsed,
+            };
+            panel.Children.Add(txt);
+        }
+
+        private static void AddExpandStringView(ref StackPanel panel, ref ResourceLoader resourceLoader, string value)
+        {
+            var stringBoxRaw = new TextBox()
+            {
+                Header = resourceLoader.GetString("DataPreviewRawValue"),
+                IsReadOnly = true,
+                FontSize = 14,
+                Text = value,
+            };
+            var stringBoxExp = new TextBox()
+            {
+                Header = resourceLoader.GetString("DataPreviewExpandedValue"),
+                IsReadOnly = true,
+                FontSize = 14,
+                Text = Environment.ExpandEnvironmentVariables(value),
+            };
+            panel.Children.Add(stringBoxRaw);
+            panel.Children.Add(stringBoxExp);
+        }
+
+        private static void BinaryPreviewLoaded(object sender, RoutedEventArgs e)
+        {
+            var sP = ((HexBox.WinUI.HexBox)sender).Parent as StackPanel;
+            var sB = sP.Children[0] as SelectorBar;
+
+            // Item 0 is the "Data" item
+            if (sB.Items.IndexOf(sB.SelectedItem) == 0)
+            {
+                // progress ring
+                sP.Children[1].Visibility = Visibility.Collapsed;
+
+                // hex box
+                ((HexBox.WinUI.HexBox)sender).Visibility = Visibility.Visible;
+            }
+        }
+    }
+}
