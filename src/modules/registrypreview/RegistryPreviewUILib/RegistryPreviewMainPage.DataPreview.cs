@@ -6,6 +6,8 @@ using System;
 using System.IO;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.ApplicationModel.Resources;
+using Windows.ApplicationModel.Appointments.AppointmentsProvider;
 using Windows.Foundation.Metadata;
 
 namespace RegistryPreviewUILib
@@ -34,22 +36,7 @@ namespace RegistryPreviewUILib
             {
                 case "REG_DWORD":
                 case "REG_QWORD":
-                    var hexBox = new TextBox()
-                    {
-                        Header = resourceLoader.GetString("DataPreviewHex"),
-                        IsReadOnly = true,
-                        FontSize = 14,
-                        Text = value.Split(" ")[0],
-                    };
-                    var decimalBox = new TextBox()
-                    {
-                        Header = resourceLoader.GetString("DataPreviewDec"),
-                        IsReadOnly = true,
-                        FontSize = 14,
-                        Text = value.Split(" ")[1].TrimStart('(').TrimEnd(')'),
-                    };
-                    panel.Children.Add(hexBox);
-                    panel.Children.Add(decimalBox);
+                    AddHexView(ref panel, ref resourceLoader, value);
                     break;
                 case "REG_NONE":
                 case "REG_BINARY":
@@ -59,28 +46,10 @@ namespace RegistryPreviewUILib
                     BinaryReader binaryData = new BinaryReader(memoryStream);
                     binaryData.ReadBytes(byteArray.Length);
 
-                    // Add loading animation
-                    var ring = new ProgressRing();
-                    panel.Children.Add(ring);
+                    string binaryDataText = "test`rtest";
 
-                    // Create hex box to dialog
-                    var binaryPreviewBox = new HexBox.WinUI.HexBox()
-                    {
-                        Height = 300,
-                        Width = 500,
-                        ShowAddress = true,
-                        ShowData = true,
-                        ShowText = true,
-                        Columns = 8,
-                        FontSize = 13,
-                        DataFormat = HexBox.WinUI.DataFormat.Hexadecimal,
-                        DataSignedness = HexBox.WinUI.DataSignedness.Unsigned,
-                        DataType = HexBox.WinUI.DataType.Int_1,
-                        DataSource = binaryData,
-                        Visibility = Visibility.Collapsed,
-                    };
-                    binaryPreviewBox.Loaded += BinaryPreviewLoaded;
-                    panel.Children.Add(binaryPreviewBox);
+                    // Add controls
+                    AddBinaryView(ref panel, ref resourceLoader, ref binaryData, binaryDataText);
                     break;
                 case "REG_MULTI_SZ":
                     var multiLineBox = new TextBox()
@@ -97,22 +66,7 @@ namespace RegistryPreviewUILib
                     panel.Children.Add(multiLineBox);
                     break;
                 case "REG_EXPAND_SZ":
-                    var stringBoxRaw = new TextBox()
-                    {
-                        Header = resourceLoader.GetString("DataPreviewRawValue"),
-                        IsReadOnly = true,
-                        FontSize = 14,
-                        Text = value,
-                    };
-                    var stringBoxExp = new TextBox()
-                    {
-                        Header = resourceLoader.GetString("DataPreviewExpandedValue"),
-                        IsReadOnly = true,
-                        FontSize = 14,
-                        Text = Environment.ExpandEnvironmentVariables(value),
-                    };
-                    panel.Children.Add(stringBoxRaw);
-                    panel.Children.Add(stringBoxExp);
+                    AddExpandStringView(ref panel, ref resourceLoader, value);
                     break;
                 default: // REG_SZ
                     var stringBox = new TextBox()
@@ -133,6 +87,72 @@ namespace RegistryPreviewUILib
             }
 
             _ = contentDialog.ShowAsync();
+        }
+
+        private static void AddHexView(ref StackPanel panel, ref ResourceLoader resourceLoader, string value)
+        {
+            var hexBox = new TextBox()
+            {
+                Header = resourceLoader.GetString("DataPreviewHex"),
+                IsReadOnly = true,
+                FontSize = 14,
+                Text = value.Split(" ")[0],
+            };
+            var decimalBox = new TextBox()
+            {
+                Header = resourceLoader.GetString("DataPreviewDec"),
+                IsReadOnly = true,
+                FontSize = 14,
+                Text = value.Split(" ")[1].TrimStart('(').TrimEnd(')'),
+            };
+            panel.Children.Add(hexBox);
+            panel.Children.Add(decimalBox);
+        }
+
+        private static void AddBinaryView(ref StackPanel panel, ref ResourceLoader resourceLoader, ref BinaryReader data, string dataText)
+        {
+            // Add loading animation
+            var ring = new ProgressRing();
+            panel.Children.Add(ring);
+
+            // Create hex box to dialog
+            var binaryPreviewBox = new HexBox.WinUI.HexBox()
+            {
+                Height = 300,
+                Width = 500,
+                ShowAddress = true,
+                ShowData = true,
+                ShowText = true,
+                Columns = 8,
+                FontSize = 13,
+                DataFormat = HexBox.WinUI.DataFormat.Hexadecimal,
+                DataSignedness = HexBox.WinUI.DataSignedness.Unsigned,
+                DataType = HexBox.WinUI.DataType.Int_1,
+                DataSource = data,
+                Visibility = Visibility.Collapsed,
+            };
+            binaryPreviewBox.Loaded += BinaryPreviewLoaded;
+            panel.Children.Add(binaryPreviewBox);
+        }
+
+        private static void AddExpandStringView(ref StackPanel panel, ref ResourceLoader resourceLoader, string value)
+        {
+            var stringBoxRaw = new TextBox()
+            {
+                Header = resourceLoader.GetString("DataPreviewRawValue"),
+                IsReadOnly = true,
+                FontSize = 14,
+                Text = value,
+            };
+            var stringBoxExp = new TextBox()
+            {
+                Header = resourceLoader.GetString("DataPreviewExpandedValue"),
+                IsReadOnly = true,
+                FontSize = 14,
+                Text = Environment.ExpandEnvironmentVariables(value),
+            };
+            panel.Children.Add(stringBoxRaw);
+            panel.Children.Add(stringBoxExp);
         }
 
         private static void BinaryPreviewLoaded(object sender, RoutedEventArgs e)
