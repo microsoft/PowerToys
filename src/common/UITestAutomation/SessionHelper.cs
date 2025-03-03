@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -19,15 +20,19 @@ namespace Microsoft.PowerToys.UITest
         // Default session path is PowerToys settings dashboard
         private readonly string sessionPath = ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings);
 
+        private string? locationPath;
+
         private WindowsDriver<WindowsElement> Root { get; set; }
 
         private WindowsDriver<WindowsElement>? Driver { get; set; }
 
         private Process? appDriver;
 
+        [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
         public SessionHelper(PowerToysModule scope)
         {
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
+            this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             var winAppDriverProcessInfo = new ProcessStartInfo
             {
@@ -49,11 +54,9 @@ namespace Microsoft.PowerToys.UITest
         /// Initializes the test environment.
         /// </summary>
         /// <param name="scope">The PowerToys module to start.</param>
-        [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
         public SessionHelper Init()
         {
-            string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            this.StartExe(path + this.sessionPath);
+            this.StartExe(locationPath + this.sessionPath);
 
             Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
 
@@ -87,7 +90,34 @@ namespace Microsoft.PowerToys.UITest
         {
             var opts = new AppiumOptions();
             opts.AddAdditionalCapability("app", appPath);
+            Console.WriteLine($"appPath: {appPath}");
             this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
+        }
+
+        /// <summary>
+        /// Restarts now exe and takes control of it.
+        /// </summary>
+        public void RestartScopeExe()
+        {
+            // Exit Exe
+            string exeName = Path.GetFileNameWithoutExtension(sessionPath);
+
+            // PowerToys.FancyZonesEditor
+            Process[] processes = Process.GetProcessesByName(exeName);
+            foreach (Process process in processes)
+            {
+                try
+                {
+                    process.Kill();
+                    process.WaitForExit(); // Optional: Wait for the process to exit
+                }
+                catch (Exception ex)
+                {
+                    Assert.Fail($"Failed to terminate process {process.ProcessName} (ID: {process.Id}): {ex.Message}");
+                }
+            }
+
+            StartExe(locationPath + sessionPath);
         }
 
         public WindowsDriver<WindowsElement> GetRoot() => this.Root;

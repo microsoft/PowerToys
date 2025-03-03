@@ -29,5 +29,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj" />
+    <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
   </ItemGroup>
 </Project>

@@ -153,5 +153,15 @@ namespace Microsoft.PowerToys.UITest
         {
             return this.Session.FindAll<Element>(By.Name(name), timeoutMS);
         }
+
+        /// <summary>
+        /// Restart scope exe.
+        /// </summary>
+        public void RestartScopeExe()
+        {
+            sessionHelper.RestartScopeExe();
+            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver());
+            return;
+        }
     }
 }
