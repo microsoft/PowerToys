@@ -44,8 +44,8 @@ Go to the [Microsoft PowerToys GitHub releases page][github-release-link] and cl
 |  Description   | Filename | sha256 hash |
 |----------------|----------|-------------|
 | Per user - x64       | [PowerToysUserSetup-0.89.0-x64.exe][ptUserX64] | B4F130CC96F321024A257499247F6FF6DA56612215ED3882E868AAE26C689E33 |
-| Per user - ARM64     | [PowerToysUserSetup-0.89.0-arm64.exe][ptUserArm64] | E79723F9F94068C699E01334C8CC0C85F37818EB4664FC772D2B545A1C37C3FA |
-| Machine wide - x64   | [PowerToysSetup-0.89.0-x64.exe][ptMachineX64] | 69B00F4E520EB09FA0D1D1669E21910C5225FE7A2EEDC0FA7C283B201A5F9C6 |
+| Per user - ARM64     | [PowerToysUserSetup-0.89.0-arm64.exe][ptUserArm64] | F69B00F4E520EB09FA0D1D1669E21910C5225FE7A2EEDC0FA7C283B201A5F9C6 |
+| Machine wide - x64   | [PowerToysSetup-0.89.0-x64.exe][ptMachineX64] | E18AC8F9023E341CF7DAD35367FB9DDDB6565D83D8155DBCDDB40AE8A24AE731 |
 | Machine wide - ARM64 | [PowerToysSetup-0.89.0-arm64.exe][ptMachineArm64] | 17DEADEC601D6061D7AF4F487595CC36D9191813003CC2ECE381017F0EC71FBB |
 
 This is our preferred method.
@@ -94,28 +94,28 @@ Our [prioritized roadmap][roadmap] of features and utilities that the core team 
 
 ### 0.89 - February 2025 Update
 
-In this release, we focused on stability, accessibility, automation and improvements.
+In this release, we focused on new features, stability, accessibility and automation.
 
-**Highlights**
+**✨Highlights**
 
- - Fixed crashes when loading thumbnails after the .NET 9 update and resolved PowerLauncher.exe blocking other MSI installers from creating shortcuts!
  - Enhanced Advanced Paste by adding media transcoding support!
+ - Fixed crashes when loading thumbnails after the .NET 9 update and resolved PowerLauncher.exe blocking other MSI installers from creating shortcuts!
  - Fixed accessibility issues across FancyZones, Image Resizer, and Settings to improve screen reader support and clarity!
- - Enchangednhanced UI automation framework across modules and added new tests to cover manual checks, with more improvements coming!
+ - Enhanced UI automation framework across modules and added new tests to cover manual checks, with more improvements coming!
 
 ### General
 
  - Fixed an issue where updating PowerToys on Windows 11 did not properly update context menu entries, impacting New+, PowerRename, Image Resizer, and File Locksmith.
- - Update .NET Packages from 9.0.1 to 9.0.2. Thanks [@snickler](https://github.com/snickler) for this.
- - Compatibility with VS17.3 and later, for C++23. Thanks [@LNKLEO](https://github.com/LNKLEO) for this.
+ - Updated .NET Packages from 9.0.1 to 9.0.2. Thanks [@snickler](https://github.com/snickler) for this.
+ - Enabled compatibility with VS17.3 and later, for C++23. Thanks [@LNKLEO](https://github.com/LNKLEO) for this.
 
 ### Advanced Paste
 
-- Enhanced Advanced Paste by adding media transcoding support, improving UI layouts, refining clipboard handling, and integrating Semantic Kernel for smarter pasting. Thanks for our team and [@snickler](https://github.com/snickler)!
+ - Enhanced Advanced Paste by adding media transcoding support, improving UI layouts, refining clipboard handling, and integrating Semantic Kernel for smarter pasting. Thanks for our team and [@snickler](https://github.com/snickler)!
 
 ### FancyZones
 
-- Fixed accessibility by improving the text for monitors, ensuring clearer naming and help text for screen readers.
+ - Fixed accessibility by improving the text for monitors, ensuring clearer naming and help text for screen readers.
 
 ### Image Resizer
  - Fixed issues with Width and Height fields in Image Resizer's Custom preset, ensuring empty values no longer cause errors, settings save correctly, and auto-scaling behaves as expected. Thanks [@daverayment](https://github.com/daverayment)!
@@ -123,15 +123,15 @@ In this release, we focused on stability, accessibility, automation and improvem
 
 ### Monaco Preview
 
-- Fixed open link in default browser rather than edge. Thanks [@OldUser101](https://github.com/OldUser101)!
+ - Fixed open link in default browser rather than edge. Thanks [@OldUser101](https://github.com/OldUser101)!
 
-### Mouse Utilities
+### Mouse Highlighter
 
-- Fixed a highlight released on an Administrator window will start fading, instead of staying on the screen indefinitely until the mouse button is pressed again on an unelevated window.
+ - Fixed a highlight released on an Administrator window will start fading, instead of staying on the screen indefinitely until the mouse button is pressed again on an unelevated window.
 
 ### Mouse Without Borders
  - Fixed an issue in service mode where copy-paste and drag-drop file transfers didn’t work, ensuring seamless file operations.
- - Enable GPO for enable/disable for Mouse Without Borders in Service Mode. Thanks [@htcfreek](https://github.com/htcfreek) for review and comments!
+ - Enabled GPO for enable/disable for Mouse Without Borders in Service Mode. Thanks [@htcfreek](https://github.com/htcfreek) for review and comments!
  - Fixed code maintainability by refactoring the oversized 'Common' class in Mouse Without Borders into smaller, focused classes for better structure and clarity. Thanks [@mikeclayton](https://github.com/mikeclayton)! and Thanks [@htcfreek](https://github.com/htcfreek) for review!
 
 ### PowerRename
@@ -139,12 +139,11 @@ In this release, we focused on stability, accessibility, automation and improvem
  - Fixed PowerRename RegEx cheatsheet by adding $, ^, quantifiers, and common patterns for better usability. Thanks [@PesBandi](https://github.com/PesBandi)! and Thanks [@htcfreek](https://github.com/htcfreek) for review.
 
 ### PowerToys Run
-- Fixed crashes when loading thumbnails after the .NET 9 update by disabling CETCompat.
-- Fixed PowerLauncher.exe blocking other MSI installers creating shortcuts. Thanks [@OneBlue](https://github.com/OneBlue)!
-- Fixed Run’s dark mode detection to work reliably, preventing issues with incorrect theme detection and ensuring a smoother user experience. Thanks [@daverayment](https://github.com/daverayment)!
-- Fixed list separator handling in Calculator, allowing functions with multiple arguments to work correctly across different locales. For example pow(2;3) would be replaced with pow(2,3). Thanks [@PesBandi](https://github.com/PesBandi)! and Thanks [@htcfreek](https://github.com/htcfreek) for review!
-- Fixed angle unit conversions in the PowerToys Run calculator, allowing quick conversions between radians, degrees, and gradians.Thanks [@OldUser101](https://github.com/OldUser101
-)!
+ - Fixed crashes when loading thumbnails after the .NET 9 update by disabling CETCompat.
+ - Fixed PowerLauncher.exe blocking other MSI installers creating shortcuts. Thanks [@OneBlue](https://github.com/OneBlue)!
+ - Fixed Run’s dark mode detection to work reliably, preventing issues with incorrect theme detection and ensuring a smoother user experience. Thanks [@daverayment](https://github.com/daverayment)!
+ - Fixed list separator handling in Calculator, allowing functions with multiple arguments to work correctly across different locales. For example pow(2;3) would be replaced with pow(2,3). Thanks [@PesBandi](https://github.com/PesBandi)! and Thanks [@htcfreek](https://github.com/htcfreek) for review!
+ - Fixed angle unit conversions in the PowerToys Run calculator, allowing quick conversions between radians, degrees, and gradians.Thanks [@OldUser101](https://github.com/OldUser101)!
 
 ### Quick Accent
 
@@ -154,29 +153,29 @@ In this release, we focused on stability, accessibility, automation and improvem
 
 ### Settings
 
-- Enable GPO to control user able to change "run at startup" setting or not. Thanks [@htcfreek](https://github.com/htcfreek) for review and comments!
-- Fixed accessibility issue by allowing screen readers to announce the group name for secondary links in Settings pages, instead of reading link descriptions without context.
-- Fixed Color Picker settings page to correctly display the assigned shortcut.
+ - Enabled GPO to control user able to change "run at startup" setting or not. Thanks [@htcfreek](https://github.com/htcfreek) for review and comments!
+ - Fixed accessibility issue by allowing screen readers to announce the group name for secondary links in Settings pages, instead of reading link descriptions without context.
+ - Fixed an issue where the Color Picker shortcut was not displaying correctly in the Dashboard.
 
 ### Workspaces
  - Fixed if a window was last placed on a disconnected monitor, it launches minimized and repositions within the main monitor's visible area when restored, instead of remaining off-screen and invisible.
-- Fixed Workspaces on ARM64 to correctly display icons for packaged apps by resolving path mismatches.
+ - Fixed Workspaces on ARM64 to correctly display icons for packaged apps by resolving path mismatches.
 
 ### ZoomIt
 
- - Fix warning C4706 and related error C2220 during build. Thanks [@xanatos](https://github.com/xanatos)!
+ - Fixed warning C4706 and related error C2220 during build. Thanks [@xanatos](https://github.com/xanatos)!
 
 ### Documentation
 
 - Fixed runner-ipc.md doc on the broken link. Thanks [@daverayment](https://github.com/daverayment)!
  - Fixed the new plugin checklist by updating the target framework, removing duplicates, and improving statement organization. Thanks [@hlaueriksson](https://github.com/hlaueriksson)!
-- Updated runner documentation to reflect uptodate code structure.
+ - Updated runner documentation to align with the latest code structure.
 
 ### Development
 
- - Pipeline stabilization on ARM64 and Forked build.
-- Added fuzz testing for HostUILib, added as part of pipeline for OneFuzz.
- - Fixed and improved UI-Test automation framework, and added new test cases for the FanzyZone and Hosts module.
+ - Stabilized pipeline on ARM64 and forked build.
+ - Added fuzz testing for HostUILib, added as part of pipeline for OneFuzz.
+ - Fixed and improved UI-Test automation framework, and added new test cases for the FancyZones and Hosts module.
  - Optimized Logger function as AOT compatible, improving performance by 18%.
  - Made Common.UI and Setting.UI to be AOT compatible.
  
@@ -184,10 +183,10 @@ In this release, we focused on stability, accessibility, automation and improvem
 
 For [v0.90][github-next-release-work], we'll work on the items below:
 
- - Stability / bug fixes
- - New module: File Actions Menu
  - PowerToys Run v2
-
+ - New module: File Actions Menu
+ - Stability / bug fixes
+ 
 ## PowerToys Community
 
 The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.  Month by month, you directly help make PowerToys a better piece of software.
