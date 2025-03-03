@@ -1177,7 +1177,6 @@ powerrenameinput
 POWERRENAMETEST
 POWERTOYNAME
 powertoyssetup
-powertoyssetupvnext
 powertoysusersetup
 Powrprof
 ppenum
