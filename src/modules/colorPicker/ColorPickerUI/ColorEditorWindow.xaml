@@ -13,7 +13,6 @@
     ResizeMode="NoResize"
     Topmost="True"
     WindowStartupLocation="CenterScreen"
-    WindowStyle="None"
     mc:Ignorable="d">
     <e:Interaction.Behaviors>
         <behaviors:CloseZoomWindowBehavior />
@@ -24,7 +23,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <DockPanel Grid.Row="0" Background="Transparent" MouseLeftButtonDown="TitleBar_MouseDown">
+            <DockPanel Grid.Row="0" Background="Transparent" MouseLeftButtonDown="TitleBar_MouseDown" MouseRightButtonUp="TitleBar_MouseRightClick">
                 <Image Source="pack://application:,,,/Assets/ColorPicker/icon.ico" 
                    Width="20" Height="20"
                    Margin="10,5,5,8"/>
