@@ -254,6 +254,10 @@
                             x:Uid="Shell_RegistryPreview"
                             helpers:NavHelper.NavigateTo="views:RegistryPreviewPage"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}" />
+                        <NavigationViewItem
+                            x:Uid="Shell_CharacterMap"
+                            helpers:NavHelper.NavigateTo="views:CharacterMapPage"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CharacterMap.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
             </NavigationView.MenuItems>

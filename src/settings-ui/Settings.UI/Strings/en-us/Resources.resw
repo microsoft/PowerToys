@@ -4009,6 +4009,28 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Launch Registry Preview</value>
     <comment>"Registry Preview" is the name of the utility</comment>
   </data>
+   <data name="CharacterMap.ModuleDescription" xml:space="preserve">
+    <value>A utility to find, preview, and insert special characters, Unicode symbols and glyphs.</value>
+  </data>
+  <data name="CharacterMap.ModuleTitle" xml:space="preserve">
+    <value>Character Map</value>
+  </data>
+  <data name="Shell_CharacterMap.Content" xml:space="preserve">
+    <value>Character Map</value>
+    <comment>Product name: Character Map</comment>
+  </data>
+  <data name="CharacterMap_Enable_RegistryPreview.Header" xml:space="preserve">
+    <value>Enable Character Map</value>
+    <comment>Character Map is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_CharacterMap.Text" xml:space="preserve">
+    <value>Learn more about Character Map</value>
+    <comment>Character Map is a product name, do not loc</comment>
+  </data>
+  <data name="Launch_CharacterMap.Content" xml:space="preserve">
+    <value>Launch Character Map</value>
+    <comment>"Character Map" is the name of the utility</comment>
+  </data>
   <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
     <value>Mouse Jump</value>
     <comment>Refers to the utility name</comment>

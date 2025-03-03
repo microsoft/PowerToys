@@ -168,12 +168,18 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     {
         for (const auto& enabled_element : general_configs.GetNamedObject(L"enabled"))
         {
+            
             const auto value = enabled_element.Value();
             if (value.ValueType() != json::JsonValueType::Boolean)
             {
                 continue;
             }
             const std::wstring name{ enabled_element.Key().c_str() };
+            const std::wstring constantTest = L"CharacterMap"; 
+            if (name == constantTest)
+            {
+                Logger::info(L"apply_general_settings: Disabling powertoy {}", name);
+            }
             const bool found = modules().find(name) != modules().end();
             if (!found)
             {

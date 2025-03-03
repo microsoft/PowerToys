@@ -147,7 +147,7 @@ private:
     {
         if (m_enabled)
         {
-            Logger::trace(L"Starting Registry Preview process");
+            Logger::trace(L"Starting Character Map process");
             //Get current process id
             unsigned long powertoys_pid = GetCurrentProcessId();
             std::wstring executable_args = std::to_wstring(powertoys_pid);
@@ -163,8 +163,7 @@ private:
             if (ShellExecuteExW(&sei) == FALSE)
             {
               
-                Logger::error(L"Registry Preview failed to start. {}", get_last_error_or_default(GetLastError()));
-                 
+                Logger::error(L"Character Map failed to start. {}", get_last_error_or_default(GetLastError())); 
                 
             }
             else

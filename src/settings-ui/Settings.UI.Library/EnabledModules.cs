@@ -497,6 +497,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool characterMap;
+
+        [JsonPropertyName("CharacterMap")]
+        public bool CharacterMap
+        {
+            get => characterMap;
+            set
+            {
+                if (characterMap != value)
+                {
+                    LogTelemetryEvent(value);
+                    characterMap = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();
