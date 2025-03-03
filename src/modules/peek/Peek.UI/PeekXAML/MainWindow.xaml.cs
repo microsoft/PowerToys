@@ -67,6 +67,7 @@ namespace Peek.UI
         {
             if (e.Key == Windows.System.VirtualKey.Delete)
             {
+                e.Handled = true;
                 await DeleteItem();
             }
         }
