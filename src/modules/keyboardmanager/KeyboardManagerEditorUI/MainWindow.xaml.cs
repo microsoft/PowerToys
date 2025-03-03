@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -21,22 +22,83 @@ using Windows.Foundation.Collections;
 namespace KeyboardManagerEditorUI
 {
     /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
+    /// Window that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class MainWindow : Window
     {
+        public class KeyboardKey
+        {
+            public int KeyCode { get; set; }
+
+            public string KeyName { get; set; } = string.Empty;
+
+            public override string ToString() => KeyName;
+        }
+
+        // Struct to hold key code and name pairs
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        private struct KeyNamePair
+        {
+            public int KeyCode;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+            public string KeyName;
+        }
+
+        [DllImport("PowerToys.KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int GetKeyboardKeysList(bool isShortcut, [Out] KeyNamePair[] keyList, int maxCount);
+
         [DllImport("PowerToys.KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool CheckIfRemappingsAreValid();
+
+        public List<KeyboardKey> KeysList { get; private set; } = new List<KeyboardKey>();
 
         public MainWindow()
         {
             this.InitializeComponent();
+
+            LoadKeyboardKeys();
+
+            keyComboBox.ItemsSource = KeysList;
+            keyComboBox.DisplayMemberPath = "KeyName";
+
+            newKeyComboBox.ItemsSource = KeysList;
+            newKeyComboBox.DisplayMemberPath = "KeyCode";
         }
 
-        private void MyButton_Click(object sender, RoutedEventArgs e)
+        private void LoadKeyboardKeys()
         {
-            // Call the C++ function to check if the current remappings are valid
-            myButton.Content = CheckIfRemappingsAreValid() ? "Valid" : "Invalid";
+            const int MaxKeys = 300;
+            KeyNamePair[] keyNamePairs = new KeyNamePair[MaxKeys];
+
+            int count = GetKeyboardKeysList(false, keyNamePairs, MaxKeys);
+
+            KeysList = new List<KeyboardKey>(count);
+            for (int i = 0; i < count; i++)
+            {
+                KeysList.Add(new KeyboardKey
+                {
+                    KeyCode = keyNamePairs[i].KeyCode,
+                    KeyName = keyNamePairs[i].KeyName,
+                });
+            }
+        }
+
+        private void KeyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0 && e.AddedItems[0] is KeyboardKey key)
+            {
+                Console.WriteLine($"selected key: {key.KeyName} (code: {key.KeyCode})");
+            }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button == null)
+            {
+                // button.Background = (SolidColorBrush)Application.Current.Resources["SystemControlBackgroundAccentBrush"];
+                return;
+            }
         }
     }
 }
