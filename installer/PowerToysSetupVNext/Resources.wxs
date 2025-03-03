@@ -1,0 +1,554 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <!-- Languages for localization on build farm -->
+  <!-- qps-ploc;qps-ploca;qps-plocm; -->
+  <?define LocLanguageList = ar-SA;cs-CZ;de-DE;es-ES;fa-IR;fr-FR;he-IL;hu-HU;it-IT;ja-JP;ko-KR;nl-NL;pl-PL;pt-BR;pt-PT;ru-RU;sv-SE;tr-TR;uk-UA;zh-CN;zh-TW?>
+
+  <Fragment>
+    <!-- Resource directories should be added only if the installer is built on the build farm -->
+    <?ifdef env.IsPipeline?>
+      <?foreach ParentDirectory in INSTALLFOLDER;HistoryPluginFolder;CalculatorPluginFolder;FolderPluginFolder;ProgramPluginFolder;ShellPluginFolder;IndexerPluginFolder;UnitConverterPluginFolder;ValueGeneratorPluginFolder;UriPluginFolder;WindowWalkerPluginFolder;OneNotePluginFolder;RegistryPluginFolder;VSCodeWorkspacesPluginFolder;ServicePluginFolder;SystemPluginFolder;TimeDatePluginFolder;WindowsSettingsPluginFolder;WindowsTerminalPluginFolder;WebSearchPluginFolder;PowerToysPluginFolder?>
+        <DirectoryRef Id="$(var.ParentDirectory)">
+          <!-- Resource file directories -->
+          <?foreach Language in $(var.LocLanguageList)?>
+          <!--NB: Ids can't contain hyphens-->
+          <?if $(var.Language) = ar-SA?>
+          <?define IdSafeLanguage = ar_SA?>
+          <?elseif $(var.Language) = cs-CZ?>
+          <?define IdSafeLanguage = cs_CZ?>
+          <?elseif $(var.Language) = de-DE?>
+          <?define IdSafeLanguage = de_DE?>
+          <?elseif $(var.Language) = es-ES?>
+          <?define IdSafeLanguage = es_ES?>
+          <?elseif $(var.Language) = fa-IR?>
+          <?define IdSafeLanguage = fa_IR?>
+          <?elseif $(var.Language) = fr-FR?>
+          <?define IdSafeLanguage = fr_FR?>
+          <?elseif $(var.Language) = he-IL?>
+          <?define IdSafeLanguage = he_IL?>
+          <?elseif $(var.Language) = hu-HU?>
+          <?define IdSafeLanguage = hu_HU?>
+          <?elseif $(var.Language) = it-IT?>
+          <?define IdSafeLanguage = it_IT?>
+          <?elseif $(var.Language) = ja-JP?>
+          <?define IdSafeLanguage = ja_JP?>
+          <?elseif $(var.Language) = ko-KR?>
+          <?define IdSafeLanguage = ko_KR?>
+          <?elseif $(var.Language) = nl-NL?>
+          <?define IdSafeLanguage = nl_NL?>
+          <?elseif $(var.Language) = pl-PL?>
+          <?define IdSafeLanguage = pl_PL?>
+          <?elseif $(var.Language) = pt-BR?>
+          <?define IdSafeLanguage = pt_BR?>
+          <?elseif $(var.Language) = pt-PT?>
+          <?define IdSafeLanguage = pt_PT?>
+          <!--
+          <?elseif $(var.Language) = qps-ploc?>
+          <?define IdSafeLanguage = qps_ploc?>
+          <?elseif $(var.Language) = qps-ploca?>
+          <?define IdSafeLanguage = qps_ploca?>
+          <?elseif $(var.Language) = qps-plocm?>
+          <?define IdSafeLanguage = qps_plocm?>
+          -->
+          <?elseif $(var.Language) = ru-RU?>
+          <?define IdSafeLanguage = ru_RU?>
+          <?elseif $(var.Language) = sv-SE?>
+          <?define IdSafeLanguage = sv_SE?>
+          <?elseif $(var.Language) = tr-TR?>
+          <?define IdSafeLanguage = tr_TR?>
+          <?elseif $(var.Language) = uk-UA?>
+          <?define IdSafeLanguage = uk_UA?>
+          <?elseif $(var.Language) = zh-CN?>
+          <?define IdSafeLanguage = zh_CN?>
+          <?elseif $(var.Language) = zh-TW?>
+          <?define IdSafeLanguage = zh_TW?>
+          <?else?>
+          <?define IdSafeLanguage = $(var.Language)?>
+          <?endif?>
+          <Directory Id="Resource$(var.IdSafeLanguage)$(var.ParentDirectory)" Name="$(var.Language)" />
+          <?undef IdSafeLanguage?>
+          <?endforeach?>
+        </DirectoryRef>
+      <?endforeach?>
+    <?endif?>
+
+    <ComponentGroup Id="ResourcesComponentGroup">
+      <!-- Resource components should be added only if the installer is built on the build farm -->
+      <?ifdef env.IsPipeline?>
+      <!-- Components for adding resource files -->
+      <?foreach Language in $(var.LocLanguageList)?>
+      <!--NB: Ids can't contain hyphens-->
+      <?if $(var.Language) = ar-SA?>
+      <!-- CompGUIDPrefix is language-dependent guid prefix missing the last 2 digits. -->
+      <?define CompGUIDPrefix = 4CF0A1CD-CA13-408B-AAC1-6E024B86A9?>
+      <?define IdSafeLanguage = ar_SA?>
+      <?elseif $(var.Language) = cs-CZ?>
+      <?define CompGUIDPrefix = 3E93405A-B91B-4E04-BAEC-26BEEE60F9?>
+      <?define IdSafeLanguage = cs_CZ?>
+      <?elseif $(var.Language) = de-DE?>
+      <?define CompGUIDPrefix = AF28C057-7ED9-474C-8E7E-D583BE8ECF?>
+      <?define IdSafeLanguage = de_DE?>
+      <?elseif $(var.Language) = es-ES?>
+      <?define CompGUIDPrefix = DD1FEEBD-55F0-44BA-A0FF-62C5C1C952?>
+      <?define IdSafeLanguage = es_ES?>
+      <?elseif $(var.Language) = fa-IR?>
+      <?define CompGUIDPrefix = 157411C9-CAB8-4CC5-AEA4-5ABEB91E59?>
+      <?define IdSafeLanguage = fa_IR?>
+      <?elseif $(var.Language) = fr-FR?>
+      <?define CompGUIDPrefix = F9F86D61-C747-43FC-8509-F3D1F198E1?>
+      <?define IdSafeLanguage = fr_FR?>
+      <?elseif $(var.Language) = he-IL?>
+      <?define CompGUIDPrefix = AFEA6E19-5B93-4CBB-B0CB-AFB2565C7D?>
+      <?define IdSafeLanguage = he_IL?>
+      <?elseif $(var.Language) = hu-HU?>
+      <?define CompGUIDPrefix = 9A919A40-E457-47F5-97C8-E886F06DDE?>
+      <?define IdSafeLanguage = hu_HU?>
+      <?elseif $(var.Language) = it-IT?>
+      <?define CompGUIDPrefix = 48FBF6D9-32DB-46FF-A64C-225269E738?>
+      <?define IdSafeLanguage = it_IT?>
+      <?elseif $(var.Language) = ja-JP?>
+      <?define CompGUIDPrefix = FB8E04AB-C8E8-43C0-8883-19F73E4EBA?>
+      <?define IdSafeLanguage = ja_JP?>
+      <?elseif $(var.Language) = ko-KR?>
+      <?define CompGUIDPrefix = 86C8F07C-80CA-420A-B6E7-86933D640C?>
+      <?define IdSafeLanguage = ko_KR?>
+      <?elseif $(var.Language) = nl-NL?>
+      <?define CompGUIDPrefix = C68F115F-28DD-4B45-9512-405C432458?>
+      <?define IdSafeLanguage = nl_NL?>
+      <?elseif $(var.Language) = pl-PL?>
+      <?define CompGUIDPrefix = 97494A31-5F57-4EC1-A6A9-994DF0813B?>
+      <?define IdSafeLanguage = pl_PL?>
+      <?elseif $(var.Language) = pt-BR?>
+      <?define CompGUIDPrefix = F4985235-2AB9-446B-BF8E-B14929A160?>
+      <?define IdSafeLanguage = pt_BR?>
+      <?elseif $(var.Language) = pt-PT?>
+      <?define CompGUIDPrefix = 58155841-D53A-4330-89D3-5C0338B928?>
+      <?define IdSafeLanguage = pt_PT?>
+      <!-- 
+      <?elseif $(var.Language) = qps-ploc?>
+      <?define CompGUIDPrefix = 75710CB2-DBDA-420B-9676-34D5F9D4A2?>
+      <?define IdSafeLanguage = qps_ploc?>
+      <?elseif $(var.Language) = qps-ploca?>
+      <?define CompGUIDPrefix = 55AF2A35-F959-49AB-B9EF-DFC9964A4F?>
+      <?define IdSafeLanguage = qps_ploca?>
+      <?elseif $(var.Language) = qps-plocm?>
+      <?define CompGUIDPrefix = D8CE2F7B-B0A1-4687-BFB7-1792B2FCCD?>
+      <?define IdSafeLanguage = qps_plocm?> 
+      -->
+      <?elseif $(var.Language) = ru-RU?>
+      <?define CompGUIDPrefix = 157BAF33-8D3F-46B7-9CF9-2C18E601CC?>
+      <?define IdSafeLanguage = ru_RU?>
+      <?elseif $(var.Language) = sv-SE?>
+      <?define CompGUIDPrefix = 85B4199F-5F89-42C3-B7C2-DBCD3E5267?>
+      <?define IdSafeLanguage = sv_SE?>
+      <?elseif $(var.Language) = tr-TR?>
+      <?define CompGUIDPrefix = EA375345-F52A-499B-A45E-108CE67EAF?>
+      <?define IdSafeLanguage = tr_TR?>
+      <?elseif $(var.Language) = uk-UA?>
+      <?define CompGUIDPrefix = 17BA6BA7-8CB6-47CA-BEB1-2FE87A0724?>
+      <?define IdSafeLanguage = uk_UA?>
+      <?elseif $(var.Language) = zh-CN?>
+      <?define CompGUIDPrefix = F8EE7CE9-58EA-4850-B76F-C22362DC0E?>
+      <?define IdSafeLanguage = zh_CN?>
+      <?elseif $(var.Language) = zh-TW?>
+      <?define CompGUIDPrefix = F07F3210-79E2-4C38-AEF7-D8EBE06621?>
+      <?define IdSafeLanguage = zh_TW?>
+      <?else?>
+      <?define IdSafeLanguage = $(var.Language)?>
+      <?define CompGUIDPrefix = 94D9A417-56FC-435D-8167-A45F5D7A75?>
+      <?endif?>
+      <Component
+          Id="Launcher_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)00">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.PowerLauncher.resources.dll" />
+      </Component>
+      <Component
+          Id="FancyZonesEditor_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)01">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="FancyZonesEditor_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.FancyZonesEditor.resources.dll" />
+      </Component>
+      <Component
+          Id="ImageResizer_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)02">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="ImageResizer_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="ImageResizer_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.ImageResizer.resources.dll" />
+      </Component>
+      <Component
+          Id="ColorPicker_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)03">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="ColorPicker_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="ColorPicker_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.ColorPickerUI.resources.dll" />
+      </Component>
+      <Component
+          Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)04">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="MarkdownPreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="MarkdownPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)$(var.Language)\PowerToys.MarkdownPreviewHandler.resources.dll" />
+      </Component>
+      <Component
+          Id="SVGPreviewHandler_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)05">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="SVGPreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="SVGPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.SvgPreviewHandler.resources.dll" />
+      </Component>
+      <Component
+          Id="PDFPreviewHandler_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)06">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="PDFPreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="PDFPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.PdfPreviewHandler.resources.dll" />
+      </Component>
+      <Component
+          Id="GcodePreviewHandler_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)07">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="GcodePreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="GcodePreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.GcodePreviewHandler.resources.dll" />
+      </Component>
+      <!-- PowerToys Run aka Launcher plugin resources -->
+      <Component
+          Id="Launcher_Calculator_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder"
+          Guid="$(var.CompGUIDPrefix)08">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_Calculator_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_Calculator_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Calculator\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Calculator.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_Folder_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder"
+          Guid="$(var.CompGUIDPrefix)09">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_Folder_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_Folder_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Folder\$(var.Language)\Microsoft.Plugin.Folder.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_Program_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)0A"
+          Directory="Resource$(var.IdSafeLanguage)ProgramPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_Program_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_Program_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Program\$(var.Language)\Microsoft.Plugin.Program.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_Shell_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)0B"
+          Directory="Resource$(var.IdSafeLanguage)ShellPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_Shell_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_Shell_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Shell\$(var.Language)\Microsoft.Plugin.Shell.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_Indexer_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)0C"
+          Directory="Resource$(var.IdSafeLanguage)IndexerPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_Indexer_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_Indexer_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Indexer\$(var.Language)\Microsoft.Plugin.Indexer.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_Uri_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)0D"
+          Directory="Resource$(var.IdSafeLanguage)UriPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_Uri_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_Uri_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Uri\$(var.Language)\Microsoft.Plugin.Uri.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)0E"
+          Directory="Resource$(var.IdSafeLanguage)VSCodeWorkspacesPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_VSCodeWorkspaces_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\VSCodeWorkspaces\$(var.Language)\Community.PowerToys.Run.Plugin.VSCodeWorkspaces.resources.dll" />
+      </Component>
+      <Component Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component"
+                 Guid="$(var.CompGUIDPrefix)0F"
+                 Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_WindowWalker_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_WindowWalker_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\WindowWalker\$(var.Language)\Microsoft.Plugin.WindowWalker.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_Registry_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)10"
+          Directory="Resource$(var.IdSafeLanguage)RegistryPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_Registry_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_Registry_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Registry\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Registry.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_Service_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)11"
+          Directory="Resource$(var.IdSafeLanguage)ServicePluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_Service_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_Service_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\Service\$(var.Language)\Microsoft.PowerToys.Run.Plugin.Service.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_System_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)12"
+          Directory="Resource$(var.IdSafeLanguage)SystemPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_System_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_System_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\System\$(var.Language)\Microsoft.PowerToys.Run.Plugin.System.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)13"
+          Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_WindowsSettings_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_WindowsSettings_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\WindowsSettings\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsSettings.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)15"
+          Directory="Resource$(var.IdSafeLanguage)WindowsTerminalPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_WindowsTerminal_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\WindowsTerminal\$(var.Language)\Microsoft.PowerToys.Run.Plugin.WindowsTerminal.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_WebSearch_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)16"
+          Directory="Resource$(var.IdSafeLanguage)WebSearchPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_WebSearch_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_WebSearch_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\WebSearch\$(var.Language)\Community.PowerToys.Run.Plugin.WebSearch.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)17"
+          Directory="Resource$(var.IdSafeLanguage)UnitConverterPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_UnitConverter_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_UnitConverter_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\UnitConverter\$(var.Language)\Community.PowerToys.Run.Plugin.UnitConverter.resources.dll" />
+      </Component>
+      <Component
+                Id="Launcher_TimeDate_$(var.IdSafeLanguage)_Component"
+                Guid="$(var.CompGUIDPrefix)18"
+                Directory="Resource$(var.IdSafeLanguage)TimeDatePluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_TimeDate_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_TimeDate_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\TimeDate\$(var.Language)\Microsoft.PowerToys.Run.Plugin.TimeDate.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_OneNote_$(var.IdSafeLanguage)_Component"
+          Guid="$(var.CompGUIDPrefix)19"
+          Directory="Resource$(var.IdSafeLanguage)OneNotePluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Resource$(var.IdSafeLanguage)OneNotePluginFolder" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_OneNote_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\OneNote\$(var.Language)\Microsoft.PowerToys.Run.Plugin.OneNote.resources.dll" />
+      </Component>
+      <Component
+          Id="MonacoPreviewHandler_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)1A">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="MonacoPreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="MonacoPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.MonacoPreviewHandler.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_History_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)HistoryPluginFolder"
+          Guid="$(var.CompGUIDPrefix)1B">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_History_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_History_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\History\$(var.Language)\Microsoft.PowerToys.Run.Plugin.History.resources.dll" />
+      </Component>
+      <Component
+          Id="Launcher_PowerToys_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)PowerToysPluginFolder"
+          Guid="$(var.CompGUIDPrefix)1C">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_PowerToys_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_PowerToys_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\PowerToys\$(var.Language)\Microsoft.PowerToys.Run.Plugin.PowerToys.resources.dll" />
+      </Component>
+      <Component
+         Id="Launcher_ValueGenerator_$(var.IdSafeLanguage)_Component"
+         Guid="$(var.CompGUIDPrefix)1D"
+         Directory="Resource$(var.IdSafeLanguage)ValueGeneratorPluginFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Launcher_ValueGenerator_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Launcher_ValueGenerator_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)RunPlugins\ValueGenerator\$(var.Language)\Community.PowerToys.Run.Plugin.ValueGenerator.resources.dll" />
+      </Component>
+      <Component
+          Id="QoiPreviewHandler_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)1E">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="QoiPreviewHandler_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="QoiPreviewHandler_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.QoiPreviewHandler.resources.dll" />
+      </Component>
+      <Component
+          Id="Awake_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)1F">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Awake_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="Awake_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.Awake.resources.dll" />
+      </Component>
+      <Component
+          Id="PowerOCR_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)20">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="PowerOCR_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="PowerOCR_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.PowerOCR.resources.dll" />
+      </Component>
+      <Component
+          Id="WorkspacesEditor_$(var.IdSafeLanguage)_Component"
+          Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER"
+          Guid="$(var.CompGUIDPrefix)21">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="WorkspacesEditor_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="WorkspacesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.WorkspacesEditor.resources.dll" />
+      </Component>
+      <?undef IdSafeLanguage?>
+      <?undef CompGUIDPrefix?>
+      <?endforeach?>
+      <?endif?>
+
+    <?ifdef env.IsPipeline?>
+      <Component Id="RemoveResourcesFolder" Guid="9BC0A5A1-CBC5-47C8-8544-3F8A8C0D45F5" Directory="INSTALLFOLDER" >
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveResourcesFolder" Value="" KeyPath="yes"/>
+        </RegistryKey>
+      <?foreach Language in $(var.LocLanguageList)?>
+      <!--NB: Ids can't contain hyphens-->
+      <?if $(var.Language) = ar-SA?>
+      <?define IdSafeLanguage = ar_SA?>
+      <?elseif $(var.Language) = cs-CZ?>
+      <?define IdSafeLanguage = cs_CZ?>
+      <?elseif $(var.Language) = de-DE?>
+      <?define IdSafeLanguage = de_DE?>
+      <?elseif $(var.Language) = es-ES?>
+      <?define IdSafeLanguage = es_ES?>
+      <?elseif $(var.Language) = fa-IR?>
+      <?define IdSafeLanguage = fa_IR?>
+      <?elseif $(var.Language) = fr-FR?>
+      <?define IdSafeLanguage = fr_FR?>
+      <?elseif $(var.Language) = he-IL?>
+      <?define IdSafeLanguage = he_IL?>
+      <?elseif $(var.Language) = hu-HU?>
+      <?define IdSafeLanguage = hu_HU?>
+      <?elseif $(var.Language) = it-IT?>
+      <?define IdSafeLanguage = it_IT?>
+      <?elseif $(var.Language) = ja-JP?>
+      <?define IdSafeLanguage = ja_JP?>
+      <?elseif $(var.Language) = ko-KR?>
+      <?define IdSafeLanguage = ko_KR?>
+      <?elseif $(var.Language) = nl-NL?>
+      <?define IdSafeLanguage = nl_NL?>
+      <?elseif $(var.Language) = pl-PL?>
+      <?define IdSafeLanguage = pl_PL?>
+      <?elseif $(var.Language) = pt-BR?>
+      <?define IdSafeLanguage = pt_BR?>
+      <?elseif $(var.Language) = pt-PT?>
+      <?define IdSafeLanguage = pt_PT?>
+      <!-- 
+      <?elseif $(var.Language) = qps-ploc?>
+      <?define IdSafeLanguage = qps_ploc?>
+      <?elseif $(var.Language) = qps-ploca?>
+      <?define IdSafeLanguage = qps_ploca?>
+      <?elseif $(var.Language) = qps-plocm?>
+      <?define IdSafeLanguage = qps_plocm?> 
+      -->
+      <?elseif $(var.Language) = ru-RU?>
+      <?define IdSafeLanguage = ru_RU?>
+      <?elseif $(var.Language) = sv-SE?>
+      <?define IdSafeLanguage = sv_SE?>
+      <?elseif $(var.Language) = tr-TR?>
+      <?define IdSafeLanguage = tr_TR?>
+      <?elseif $(var.Language) = uk-UA?>
+      <?define IdSafeLanguage = uk_UA?>
+      <?elseif $(var.Language) = zh-CN?>
+      <?define IdSafeLanguage = zh_CN?>
+      <?elseif $(var.Language) = zh-TW?>
+      <?define IdSafeLanguage = zh_TW?>
+      <?else?>
+      <?define IdSafeLanguage = $(var.Language)?>
+      <?endif?>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)INSTALLFOLDER" Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)CalculatorPluginFolder" Directory="Resource$(var.IdSafeLanguage)CalculatorPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)FolderPluginFolder" Directory="Resource$(var.IdSafeLanguage)FolderPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)ProgramPluginFolder" Directory="Resource$(var.IdSafeLanguage)ProgramPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)ShellPluginFolder" Directory="Resource$(var.IdSafeLanguage)ShellPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)IndexerPluginFolder" Directory="Resource$(var.IdSafeLanguage)IndexerPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)UriPluginFolder" Directory="Resource$(var.IdSafeLanguage)UriPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)VSCodeWorkspacesPluginFolder" Directory="Resource$(var.IdSafeLanguage)VSCodeWorkspacesPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)WindowWalkerPluginFolder" Directory="Resource$(var.IdSafeLanguage)WindowWalkerPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)RegistryPluginFolder" Directory="Resource$(var.IdSafeLanguage)RegistryPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)ServicePluginFolder" Directory="Resource$(var.IdSafeLanguage)ServicePluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)SystemPluginFolder" Directory="Resource$(var.IdSafeLanguage)SystemPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)WindowsSettingsPluginFolder" Directory="Resource$(var.IdSafeLanguage)WindowsSettingsPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)WindowsTerminalPluginFolder" Directory="Resource$(var.IdSafeLanguage)WindowsTerminalPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)WebSearchPluginFolder" Directory="Resource$(var.IdSafeLanguage)WebSearchPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)UnitConverterPluginFolder" Directory="Resource$(var.IdSafeLanguage)UnitConverterPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)TimeDatePluginFolder" Directory="Resource$(var.IdSafeLanguage)TimeDatePluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)OneNotePluginFolder" Directory="Resource$(var.IdSafeLanguage)OneNotePluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)HistoryPluginFolder" Directory="Resource$(var.IdSafeLanguage)HistoryPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)PowerToysPluginFolder" Directory="Resource$(var.IdSafeLanguage)PowerToysPluginFolder" On="uninstall"/>
+          <RemoveFolder Id="RemoveFolderResourcesResource$(var.IdSafeLanguage)ValueGeneratorPluginFolder" Directory="Resource$(var.IdSafeLanguage)ValueGeneratorPluginFolder" On="uninstall"/>
+      <?undef IdSafeLanguage?>
+        <?endforeach?>
+      </Component>
+    <?endif?>
+
+    </ComponentGroup>
+  </Fragment>
+</Wix>
