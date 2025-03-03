@@ -128,6 +128,9 @@ namespace CommonSharedConstants
     const wchar_t ZOOMIT_REFRESH_SETTINGS_EVENT[] = L"Local\\PowerToysZoomIt-RefreshSettingsEvent-f053a563-d519-4b0d-8152-a54489c13324";
     const wchar_t ZOOMIT_EXIT_EVENT[] = L"Local\\PowerToysZoomIt-ExitEvent-36641ce6-df02-4eac-abea-a3fbf9138220";
 
+    // Path to the events used by CharacterMap
+    const wchar_t CHARACTER_MAP_TRIGGER_EVENT[] = L"Local\\PowerToysCharacterMap-TriggerEvent-4c45960f-1b0f-40b9-85a6-789cf45efde1";
+
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
 }

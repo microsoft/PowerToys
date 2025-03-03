@@ -28,3 +28,13 @@ void Trace::EnableCharacterMap(const bool enabled) noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
+
+// Log that the user tried to activate the app
+void Trace::ActivateEditor() noexcept
+{
+    TraceLoggingWrite(
+        g_hProvider,
+        "EnableCharacterMap_Activate",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}
