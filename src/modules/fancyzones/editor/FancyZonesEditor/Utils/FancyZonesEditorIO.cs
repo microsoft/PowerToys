@@ -39,7 +39,7 @@ namespace FancyZonesEditor.Utils
             try
             {
                 EditorParameters parser = new EditorParameters();
-                var editorParams = parser.Read(parser.File);
+                var editorParams = parser.ReadEditorParams(parser.File);
 
                 // Process ID
                 App.PowerToysPID = editorParams.ProcessId;
@@ -131,7 +131,7 @@ namespace FancyZonesEditor.Utils
             try
             {
                 AppliedLayouts parser = new AppliedLayouts();
-                var appliedLayouts = parser.Read(parser.File);
+                var appliedLayouts = parser.ReadAppliedLayout(parser.File);
 
                 bool parsingResult = SetAppliedLayouts(appliedLayouts.AppliedLayouts);
                 if (!parsingResult)
@@ -160,7 +160,7 @@ namespace FancyZonesEditor.Utils
                     return new ParsingResult(true);
                 }
 
-                var layoutHotkeys = parser.Read(parser.File);
+                var layoutHotkeys = parser.ReadLayoutHotkeys(parser.File);
                 bool layoutHotkeysParsingResult = SetLayoutHotkeys(layoutHotkeys);
                 if (!layoutHotkeysParsingResult)
                 {
@@ -188,7 +188,7 @@ namespace FancyZonesEditor.Utils
                     return new ParsingResult(true);
                 }
 
-                var templates = parser.Read(parser.File);
+                var templates = parser.ReadTemplateLayouts(parser.File);
                 bool parsingResult = SetTemplateLayouts(templates.LayoutTemplates);
                 if (parsingResult)
                 {
@@ -216,7 +216,7 @@ namespace FancyZonesEditor.Utils
                     return new ParsingResult(true);
                 }
 
-                var wrapper = parser.Read(parser.File);
+                var wrapper = parser.ReadCustomLayout(parser.File);
                 bool parsingResult = SetCustomLayouts(wrapper.CustomLayouts);
                 if (parsingResult)
                 {
@@ -244,7 +244,7 @@ namespace FancyZonesEditor.Utils
                     return new ParsingResult(true);
                 }
 
-                var wrapper = parser.Read(parser.File);
+                var wrapper = parser.ReadDefaultLayouts(parser.File);
                 bool parsingResult = SetDefaultLayouts(wrapper.DefaultLayouts);
                 if (parsingResult)
                 {
@@ -838,7 +838,7 @@ namespace FancyZonesEditor.Utils
         private CanvasLayoutModel ParseCanvasInfo(CustomLayouts.CustomLayoutWrapper wrapper)
         {
             CustomLayouts deserializer = new CustomLayouts();
-            var info = deserializer.CanvasFromJsonElement(wrapper.Info.GetRawText());
+            var info = deserializer.CanvasFromJsonElement(wrapper.Info);
 
             var zones = new List<Int32Rect>();
             foreach (var zone in info.Zones)
@@ -861,7 +861,7 @@ namespace FancyZonesEditor.Utils
         private GridLayoutModel ParseGridInfo(CustomLayouts.CustomLayoutWrapper wrapper)
         {
             CustomLayouts deserializer = new CustomLayouts();
-            var info = deserializer.GridFromJsonElement(wrapper.Info.GetRawText());
+            var info = deserializer.GridFromJsonElement(wrapper.Info);
 
             // Check if rows and columns are valid
             if (info.Rows <= 0 || info.Columns <= 0)

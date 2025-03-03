@@ -5,6 +5,7 @@
   <PropertyGroup>
     <Description>PowerToys FancyZonesEditorCommon</Description>
     <AssemblyName>PowerToys.FancyZonesEditorCommon</AssemblyName>
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>

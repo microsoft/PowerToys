@@ -88,12 +88,18 @@ namespace FancyZonesEditorCommon.Data
             return JsonSerializer.Deserialize<JsonElement>(json);
         }
 
-        public CanvasInfoWrapper CanvasFromJsonElement(string json)
+        public CanvasInfoWrapper CanvasFromJsonElement(JsonElement element)
         {
-            return JsonSerializer.Deserialize<CanvasInfoWrapper>(json, this.JsonOptions);
+            return new CanvasInfoWrapper
+            {
+                RefWidth = element.GetProperty("RefWidth").GetInt32(),
+                RefHeight = element.GetProperty("RefHeight").GetInt32(),
+                SensitivityRadius = element.TryGetProperty("SensitivityRadius", out JsonElement radius) ? radius.GetInt32() : LayoutDefaultSettings.DefaultSensitivityRadius,
+                Zones = new List<CanvasInfoWrapper.CanvasZoneWrapper>(),
+            };
         }
 
-        public GridInfoWrapper GridFromJsonElement(string json)
+        public GridInfoWrapper GridFromJsonElement(JsonElement element)
         {
             return JsonSerializer.Deserialize<GridInfoWrapper>(json, this.JsonOptions);
         }
