@@ -23,6 +23,8 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PowerToysBootstrapperVNext"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM64 = Debug|ARM64
+		Debug|x64 = Debug|x64
 		Release|ARM64 = Release|ARM64
 		Release|x64 = Release|x64
 	EndGlobalSection
