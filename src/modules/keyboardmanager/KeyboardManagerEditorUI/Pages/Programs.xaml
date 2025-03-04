@@ -129,7 +129,7 @@
                                             <ToolTipService.ToolTip>
                                                 <TextBlock>
                                                     <Run FontWeight="SemiBold" Text="Arguments:" />
-                                                    <Run Text="-config json loremipsum" />
+                                                    <Run Text="-config json" />
                                                     <LineBreak />
                                                     <Run FontWeight="SemiBold" Text="Starting directory:" />
                                                     <Run Text="C:\Users\Dev\PowerToys\bin" />
@@ -203,7 +203,7 @@
                     <TextBox
                         Grid.Row="1"
                         Header="Arguments"
-                        Text="-config json loremipsum" />
+                        Text="-config json" />
                     <TextBox
                         Grid.Row="2"
                         Header="Start in directory"

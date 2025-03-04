@@ -34,11 +34,11 @@ namespace KeyboardManagerEditorUI.Pages
 
             Shortcuts = new ObservableCollection<URLShortcut>();
             Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Shift", "Win", "M" }, URL = "https://www.microsoft.com" });
-            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Win", "P", }, URL = "https://www.contoso.com" });
+            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Win", "P", }, URL = "https://www.bing.com" });
             Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Shift", "Win", "M" }, URL = "https://www.windows.com" });
-            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Win", "U", }, URL = "https://www.xbox.com" });
+            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Win", "U", }, URL = "https://www.bing.com" });
             Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Ctrl", "P" }, URL = "https://www.surface.com" });
-            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Alt", "Ctrl", "Shift" }, URL = "https://www.xbox.com" });
+            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Alt", "Ctrl", "Shift" }, URL = "https://www.bing.com" });
         }
 
         private async void NewShortcutBtn_Click(object sender, RoutedEventArgs e)

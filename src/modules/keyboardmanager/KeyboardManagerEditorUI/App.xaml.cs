@@ -69,7 +69,7 @@ namespace KeyboardManagerEditorUI
             {
                 App.Current.Resources.MergedDictionaries.Add(new ResourceDictionary()
                 {
-                    Source = new Uri("ms-appx:///Styles/CommnStyle.xaml"),
+                    Source = new Uri("ms-appx:///Styles/CommonStyle.xaml"),
                 });
             }).ContinueWith(_ =>
             {
