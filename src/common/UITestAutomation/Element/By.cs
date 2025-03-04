@@ -32,6 +32,13 @@ namespace Microsoft.PowerToys.UITest
         public static By Name(string name) => new By(OpenQA.Selenium.By.Name(name));
 
         /// <summary>
+        /// Creates a By object using the className attribute.
+        /// </summary>
+        /// <param name="className">The className attribute to search for.</param>
+        /// <returns>A By object.</returns>
+        public static By ClassName(string className) => new By(OpenQA.Selenium.By.ClassName(className));
+
+        /// <summary>
         /// Creates a By object using the ID attribute.
         /// </summary>
         /// <param name="id">The ID attribute to search for.</param>
