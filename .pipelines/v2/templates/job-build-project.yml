@@ -314,6 +314,11 @@ jobs:
       flattenFolders: True
       OverWrite: True
 
+  # Check if all projects import common props.
+  - pwsh: |-
+      & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)'
+    displayName: Audit projects for shared common props
+
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
       & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
