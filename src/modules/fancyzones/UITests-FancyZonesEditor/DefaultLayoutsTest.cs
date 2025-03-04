@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
@@ -11,7 +10,6 @@ using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.UI;
 using static FancyZonesEditorCommon.Data.EditorParameters;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace UITests_FancyZonesEditor
 {

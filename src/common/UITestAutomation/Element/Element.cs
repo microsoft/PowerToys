@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
@@ -136,6 +137,15 @@ namespace Microsoft.PowerToys.UITest
                 actions.DoubleClick();
                 actions.Build().Perform();
             });
+        }
+
+        /// <summary>
+        /// Send Key of the element.
+        /// </summary>
+        /// <param name="key">The Key to Send.</param>
+        public void SendKeys(string key)
+        {
+            windowsElement?.SendKeys(key);
         }
 
         /// <summary>

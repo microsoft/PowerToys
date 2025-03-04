@@ -33,6 +33,82 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             }
         }
 
+        public static class AccessibilityId
+        {
+            // main window
+            public const string MainWindow = "MainWindow1";
+            public const string Monitors = "Monitors";
+            public const string NewLayoutButton = "NewLayoutButton";
+
+            // layout card
+            public const string EditLayoutButton = "EditLayoutButton";
+
+            // edit layout window: common for template and custom layouts
+            public const string DialogTitle = "EditLayoutDialogTitle";
+            public const string SensitivitySlider = "SensitivityInput";
+            public const string SpacingSlider = "Spacing";
+            public const string SpacingToggle = "spaceAroundSetting";
+            public const string HorizontalDefaultButtonUnchecked = "SetLayoutAsHorizontalDefaultButton";
+            public const string VerticalDefaultButtonUnchecked = "SetLayoutAsVerticalDefaultButton";
+            public const string HorizontalDefaultButtonChecked = "HorizontalDefaultLayoutButton";
+            public const string VerticalDefaultButtonChecked = "VerticalDefaultLayoutButton";
+
+            // edit template layout window
+            public const string CopyTemplate = "createFromTemplateLayoutButton";
+            public const string TemplateZoneSlider = "TemplateZoneCount";
+
+            // edit custom layout window
+            public const string DuplicateLayoutButton = "duplicateLayoutButton";
+            public const string DeleteLayoutButton = "deleteLayoutButton";
+            public const string KeySelectionComboBox = "quickKeySelectionComboBox";
+            public const string EditZonesButton = "editZoneLayoutButton";
+            public const string DeleteTextButton = "DeleteButton";
+            public const string HotkeyComboBox = "quickKeySelectionComboBox";
+            public const string NewZoneButton = "newZoneButton";
+            public const string TopRightCorner = "NEResize";
+
+            // layout creation dialog
+            public const string GridRadioButton = "GridLayoutRadioButton";
+            public const string CanvasRadioButton = "CanvasLayoutRadioButton";
+
+            // confirmation dialog
+            public const string PrimaryButton = "PrimaryButton";
+            public const string SecondaryButton = "SecondaryButton";
+        }
+
+        public static class ElementName
+        {
+            public const string Save = "Save";
+            public const string Cancel = "Cancel";
+
+            // context menu
+            public const string Edit = "Edit";
+            public const string EditZones = "Edit zones";
+            public const string Delete = "Delete";
+            public const string Duplicate = "Duplicate";
+            public const string CreateCustomLayout = "Create custom layout";
+
+            // canvas layout editor
+            public const string CanvasEditorWindow = "Canvas layout editor";
+
+            // grid layout editor
+            public const string GridLayoutEditor = "Grid layout editor";
+            public const string MergeZonesButton = "Merge zones";
+        }
+
+        public static class ClassName
+        {
+            public const string ContextMenu = "ContextMenu";
+            public const string TextBox = "TextBox";
+            public const string Popup = "Popup";
+
+            // layout editor
+            public const string CanvasZone = "CanvasZone";
+            public const string GridZone = "GridZone";
+            public const string Button = "Button";
+            public const string Thumb = "Thumb";
+        }
+
         public static void InitFancyZonesLayout()
         {
             // prepare files to launch Editor without errors
