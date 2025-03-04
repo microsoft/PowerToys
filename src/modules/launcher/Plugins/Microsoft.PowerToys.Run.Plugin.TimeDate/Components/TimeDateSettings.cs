@@ -166,7 +166,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     PluginOptionType = PluginAdditionalOption.AdditionalOptionType.MultilineTextbox,
                     DisplayLabel = Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
                     DisplayDescription = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "WOM", "WFT", "UXT", "UXMS"),
-                    PlaceholderText = "MyFormat=DD-MMM-YYYY\rMySecondFormat=DOW (DDDD)",
+                    PlaceholderText = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)",
                     TextValue = string.Empty,
                 },
                 new PluginAdditionalOption()
@@ -175,7 +175,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     PluginOptionType = PluginAdditionalOption.AdditionalOptionType.MultilineTextbox,
                     DisplayLabel = Resources.Microsoft_plugin_timedate_Setting_CustomFormatsUtc,
                     DisplayDescription = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "WOM", "WFT", "UXT", "UXMS"),
-                    PlaceholderText = "MyFormat=DD-MMM-YYY\rMySecondFormat=DOW (DDDD)",
+                    PlaceholderText = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)",
                     TextValue = string.Empty,
                 },
             };

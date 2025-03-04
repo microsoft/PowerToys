@@ -457,7 +457,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use date and time string format syntax and {0} (Day of Week), {1} (Week of Month), {2} (Windows File Time), {3} (Unix Time), {4} (Unix Time in milliseconds)..
+        ///   Looks up a localized string similar to Use date and time string format syntax and {0} (Day of Week), {1} (Week of Month), {2} (Windows File Time), {3} (Unix Time), {4} (Unix Time in milliseconds). (Use a backslash to escape format sequences and the backslash character as text.).
         /// </summary>
         internal static string Microsoft_plugin_timedate_Setting_CustomFormatsDescription {
             get {

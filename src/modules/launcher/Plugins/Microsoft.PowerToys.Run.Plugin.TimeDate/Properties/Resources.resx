@@ -367,7 +367,7 @@
     <value>Custom formats using Universal Time Convention (UTC)</value>
   </data>
   <data name="Microsoft_plugin_timedate_Setting_CustomFormatsDescription" xml:space="preserve">
-    <value>Use date and time string format syntax and {0} (Day of Week), {1} (Week of Month), {2} (Windows File Time), {3} (Unix Time), {4} (Unix Time in milliseconds).</value>
+    <value>Use date and time string format syntax and {0} (Day of Week), {1} (Week of Month), {2} (Windows File Time), {3} (Unix Time), {4} (Unix Time in milliseconds). (Use a backslash to escape format sequences and the backslash character as text.)</value>
     <comment>The {n} parts are place holders and get replaced in the code.</comment>
   </data>
 </root>
