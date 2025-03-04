@@ -98,7 +98,7 @@ In this release, we focused on new features, stability, accessibility and automa
 
 **✨Highlights**
 
- - Enhanced Advanced Paste by adding media transcoding support!
+ - Enhanced Advanced Paste by adding media transcoding support to convert different video and audio file formats!
  - Fixed crashes when loading thumbnails after the .NET 9 update and resolved PowerLauncher.exe blocking other MSI installers from creating shortcuts!
  - Fixed accessibility issues across FancyZones, Image Resizer, and Settings to improve screen reader support and clarity!
  - Enhanced UI automation framework across modules and added new tests to cover manual checks, with more improvements coming!
@@ -111,7 +111,7 @@ In this release, we focused on new features, stability, accessibility and automa
 
 ### Advanced Paste
 
- - Enhanced Advanced Paste by adding media transcoding support, improving UI layouts, refining clipboard handling, and integrating Semantic Kernel for smarter pasting. Thanks for our team and [@snickler](https://github.com/snickler)!
+ - Enhanced Advanced Paste by adding media transcoding support, improving UI layouts, refining clipboard handling, and integrating Semantic Kernel for smarter pasting. Thanks [@snickler](https://github.com/snickler) for your help!
 
 ### FancyZones
 
@@ -123,7 +123,7 @@ In this release, we focused on new features, stability, accessibility and automa
 
 ### Monaco Preview
 
- - Fixed open link in default browser rather than edge. Thanks [@OldUser101](https://github.com/OldUser101)!
+ - Fixed open link in default browser rather than Microsoft Edge. Thanks [@OldUser101](https://github.com/OldUser101)!
 
 ### Mouse Highlighter
 
@@ -132,34 +132,35 @@ In this release, we focused on new features, stability, accessibility and automa
 ### Mouse Without Borders
  - Fixed an issue in service mode where copy-paste and drag-drop file transfers didn’t work, ensuring seamless file operations.
  - Enabled GPO for enable/disable for Mouse Without Borders in Service Mode. Thanks [@htcfreek](https://github.com/htcfreek) for review and comments!
- - Fixed code maintainability by refactoring the oversized 'Common' class in Mouse Without Borders into smaller, focused classes for better structure and clarity. Thanks [@mikeclayton](https://github.com/mikeclayton)! and Thanks [@htcfreek](https://github.com/htcfreek) for review!
+ - Fixed code maintainability by refactoring the oversized 'Common' class in Mouse Without Borders into smaller, focused classes for better structure and clarity. Thanks [@mikeclayton](https://github.com/mikeclayton) and thanks [@htcfreek](https://github.com/htcfreek) for review!
 
 ### PowerRename
  - Supported negative value as Start value in regular expression, e.g. ${start=-1314}
- - Fixed PowerRename RegEx cheatsheet by adding $, ^, quantifiers, and common patterns for better usability. Thanks [@PesBandi](https://github.com/PesBandi)! and Thanks [@htcfreek](https://github.com/htcfreek) for review.
+ - Enhanced PowerRename RegEx help by adding $, ^, quantifiers, and common patterns for better usability. Thanks [@PesBandi](https://github.com/PesBandi) and thanks [@htcfreek](https://github.com/htcfreek) for review.
 
 ### PowerToys Run
  - Fixed crashes when loading thumbnails after the .NET 9 update by disabling CETCompat.
  - Fixed PowerLauncher.exe blocking other MSI installers creating shortcuts. Thanks [@OneBlue](https://github.com/OneBlue)!
  - Fixed Run’s dark mode detection to work reliably, preventing issues with incorrect theme detection and ensuring a smoother user experience. Thanks [@daverayment](https://github.com/daverayment)!
- - Fixed list separator handling in Calculator, allowing functions with multiple arguments to work correctly across different locales. For example pow(2;3) would be replaced with pow(2,3). Thanks [@PesBandi](https://github.com/PesBandi)! and Thanks [@htcfreek](https://github.com/htcfreek) for review!
- - Fixed angle unit conversions in the PowerToys Run calculator, allowing quick conversions between radians, degrees, and gradians.Thanks [@OldUser101](https://github.com/OldUser101)!
+ - Fixed list separator handling in Calculator, allowing functions with multiple arguments to work correctly across different locales. For example pow(2;3) would be replaced with pow(2,3). Thanks [@PesBandi](https://github.com/PesBandi) and thanks [@htcfreek](https://github.com/htcfreek) for review!
+ - Fixed angle unit conversions in the PowerToys Run calculator, allowing quick conversions between radians, degrees, and gradians. Thanks [@OldUser101](https://github.com/OldUser101)!
 
 ### Quick Accent
 
- - Added the ǎ, ǒ and ǔ character to the IPA character set. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Added ǎ, ǒ and ǔ to the IPA character set. Thanks [@PesBandi](https://github.com/PesBandi)!
  - Added ` (backtick) and ~ (tilde) to the VK_OEM_5 character set. Thanks [@xanatos](https://github.com/xanatos)!
- - Added final sigma ( ς ) to the Greek character set. Thanks [@IamSmeagol](https://github.com/IamSmeagol)
+ - Added ς (final sigma) to the Greek character set. Thanks [@IamSmeagol](https://github.com/IamSmeagol)!
 
 ### Settings
 
- - Enabled GPO to control user able to change "run at startup" setting or not. Thanks [@htcfreek](https://github.com/htcfreek) for review and comments!
+ - Enabled GPO for the "run at startup" setting. Thanks [@htcfreek](https://github.com/htcfreek) for review and comments!
  - Fixed accessibility issue by allowing screen readers to announce the group name for secondary links in Settings pages, instead of reading link descriptions without context.
  - Fixed an issue where the Color Picker shortcut was not displaying correctly in the Dashboard.
 
 ### Workspaces
+
  - Fixed if a window was last placed on a disconnected monitor, it launches minimized and repositions within the main monitor's visible area when restored, instead of remaining off-screen and invisible.
- - Fixed Workspaces on ARM64 to correctly display icons for packaged apps by resolving path mismatches.
+ - Fixed on ARM64 to correctly display icons for packaged apps by resolving path mismatches.
 
 ### ZoomIt
 
@@ -167,7 +168,7 @@ In this release, we focused on new features, stability, accessibility and automa
 
 ### Documentation
 
-- Fixed runner-ipc.md doc on the broken link. Thanks [@daverayment](https://github.com/daverayment)!
+ - Fixed runner-ipc.md doc on the broken link. Thanks [@daverayment](https://github.com/daverayment)!
  - Fixed the new plugin checklist by updating the target framework, removing duplicates, and improving statement organization. Thanks [@hlaueriksson](https://github.com/hlaueriksson)!
  - Updated runner documentation to align with the latest code structure.
 
@@ -183,8 +184,10 @@ In this release, we focused on new features, stability, accessibility and automa
 
 For [v0.90][github-next-release-work], we'll work on the items below:
 
- - PowerToys Run v2
+ - New module: PowerToys Run v2
  - New module: File Actions Menu
+ - Working on installer upgrades
+ - Upgrading keyboard manager's editor UI
  - Stability / bug fixes
  
 ## PowerToys Community
