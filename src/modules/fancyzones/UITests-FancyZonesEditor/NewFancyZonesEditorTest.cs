@@ -11,7 +11,7 @@ using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.UI;
 
-namespace UITests_FancyZonesEditor
+namespace Microsoft.FancyZonesEditor.UITests
 {
     [TestClass]
     public class NewFancyZonesEditorTest

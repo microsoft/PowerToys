@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium.Windows;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
-namespace UITests_FancyZonesEditor
+namespace Microsoft.FancyZonesEditor.UITests
 {
     [TestClass]
     public class RunFancyZonesEditorTest : UITestBase

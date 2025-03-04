@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.UI;
 using static FancyZonesEditorCommon.Data.EditorParameters;
 
-namespace UITests_FancyZonesEditor
+namespace Microsoft.FancyZonesEditor.UITests
 {
     [TestClass]
     public class DefaultLayoutsTest : UITestBase

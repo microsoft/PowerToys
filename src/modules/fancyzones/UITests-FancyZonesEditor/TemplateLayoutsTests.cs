@@ -19,7 +19,7 @@ using static FancyZonesEditorCommon.Data.LayoutTemplates;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
-namespace UITests_FancyZonesEditor
+namespace Microsoft.FancyZonesEditor.UITests
 {
     [TestClass]
     public class TemplateLayoutsTests : UITestBase

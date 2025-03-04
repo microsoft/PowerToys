@@ -16,7 +16,7 @@ using static FancyZonesEditorCommon.Data.EditorParameters;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
-namespace UITests_FancyZonesEditor
+namespace Microsoft.FancyZonesEditor.UITests
 {
     [TestClass]
     public class UIInitializeTest : UITestBase
