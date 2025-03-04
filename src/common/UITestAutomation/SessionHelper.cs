@@ -95,12 +95,13 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Restarts now exe and takes control of it.
+        /// Exit a exe.
         /// </summary>
-        public void RestartScopeExe()
+        /// <param name="path">The path to the application executable.</param>
+        public void ExitExe(string path)
         {
             // Exit Exe
-            string exeName = Path.GetFileNameWithoutExtension(sessionPath);
+            string exeName = Path.GetFileNameWithoutExtension(path);
 
             // PowerToys.FancyZonesEditor
             Process[] processes = Process.GetProcessesByName(exeName);
@@ -116,7 +117,22 @@ namespace Microsoft.PowerToys.UITest
                     Assert.Fail($"Failed to terminate process {process.ProcessName} (ID: {process.Id}): {ex.Message}");
                 }
             }
+        }
 
+        /// <summary>
+        /// Exit now exe.
+        /// </summary>
+        public void ExitScopeExe()
+        {
+            ExitExe(sessionPath);
+        }
+
+        /// <summary>
+        /// Restarts now exe and takes control of it.
+        /// </summary>
+        public void RestartScopeExe()
+        {
+            ExitExe(sessionPath);
             StartExe(locationPath + sessionPath);
         }
 

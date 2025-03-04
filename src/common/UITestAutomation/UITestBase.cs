@@ -33,6 +33,7 @@ namespace Microsoft.PowerToys.UITest
 
         ~UITestBase()
         {
+            this.ExitScopeExe();
             this.sessionHelper.Cleanup();
         }
 
@@ -161,6 +162,15 @@ namespace Microsoft.PowerToys.UITest
         {
             sessionHelper.RestartScopeExe();
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver());
+            return;
+        }
+
+        /// <summary>
+        /// Restart scope exe.
+        /// </summary>
+        public void ExitScopeExe()
+        {
+            sessionHelper.ExitScopeExe();
             return;
         }
     }
