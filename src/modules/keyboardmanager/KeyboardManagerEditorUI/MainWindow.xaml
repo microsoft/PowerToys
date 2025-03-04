@@ -6,91 +6,70 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:KeyboardManagerEditorUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="using:KeyboardManagerEditorUI.Pages"
     Title="KeyboardManagerEditorUI"
     mc:Ignorable="d">
 
-    <Grid Padding="16">
-        <StackPanel>
+    <Grid
+        x:Name="LayoutRoot"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        CornerRadius="4"
+        RowSpacing="6">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel
+            Grid.ColumnSpan="2"
+            Margin="16,8,8,8"
+            VerticalAlignment="Top"
+            Orientation="Horizontal">
+            <Image Width="16" Source="ms-appx:///Assets/FluentIconsKeyboardManager.png" />
             <TextBlock
-                Margin="10"
-                FontSize="24"
-                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                Text="Remap keys" />
-
-            <TextBlock
-                Margin="10"
-                FontSize="16"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Select the key you want to change and then configure the key, shortcut or text you want it to send."
-                TextWrapping="Wrap" />
-
-            <TextBlock
-                Margin="10"
-                FontSize="16"
-                FontStyle="Italic"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="Example of a remapping: Select A and send &quot;Ctrl+C&quot;, &quot;A&quot; would be your &quot;Select&quot; and &quot;Ctrl+C&quot; would be your &quot;To send&quot; command."
-                TextWrapping="Wrap" />
-
-            <Grid Margin="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="240" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="240" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <TextBlock
-                    Margin="0,12,0,0"
-                    FontSize="16"
-                    FontWeight="Bold"
-                    Text="Selected:" />
-                <Grid Grid.Row="1" Margin="0,8,0,0">
-                    <StackPanel>
-                        <ToggleButton Click="Button_Click" Content="Select" />
-                        <ComboBox
-                            x:Name="keyComboBox"
-                            Width="250"
-                            PlaceholderText="select keys please" />
-                    </StackPanel>
-                </Grid>
-
-                <TextBlock
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Margin="24,0,24,0"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                    Text="&#xE0AB;" />
-
-                <TextBlock
-                    Grid.Column="2"
-                    Margin="0,12,0,0"
-                    FontSize="16"
-                    FontWeight="Bold"
-                    Text="To Send:" />
-                <Grid
-                    Grid.Row="1"
-                    Grid.Column="2"
-                    Margin="0,8,0,0">
-                    <StackPanel>
-                        <ToggleButton Click="Button_Click" Content="Click to select" />
-                        <ComboBox
-                            x:Name="newKeyComboBox"
-                            Width="250"
-                            PlaceholderText="select keys please" />
-                    </StackPanel>
-                </Grid>
-            </Grid>
-            <Button
-                Margin="10"
-                Content="+ Add Key Remapping"
-                Style="{StaticResource AccentButtonStyle}" />
-
+                Margin="12,0,0,0"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="Keyboard Manager" />
         </StackPanel>
 
+        <NavigationView
+            x:Name="RootView"
+            Grid.RowSpan="2"
+            Margin="0,32,0,0"
+            IsBackButtonVisible="Collapsed"
+            IsBackEnabled="False"
+            IsPaneToggleButtonVisible="False"
+            IsTitleBarAutoPaddingEnabled="True"
+            OpenPaneLength="240"
+            PaneDisplayMode="Top"
+            SelectionChanged="RootView_SelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Remappings" Tag="Remappings">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEDA7;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Programs" Tag="Programs">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xECAA;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Text" Tag="Text">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8D2;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="URLs" Tag="URLs">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8A7;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+            <NavigationView.Content>
+                <Frame x:Name="NavigationFrame" Margin="0,0,0,0" />
+            </NavigationView.Content>
+        </NavigationView>
     </Grid>
+
 </Window>
