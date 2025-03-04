@@ -63,6 +63,26 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Shortcut for this.FindAllByAccessibilityId<T>(accessibilityId, timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="accessibilityId">The accessibilityId of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>The found element.</returns>
+        public T FindByAccessibilityId<T>(string accessibilityId, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: accessibilityId = {accessibilityId}, timeoutMS = {timeoutMS}");
+
+            // leverage findAll to filter out mismatched elements
+            var collection = this.FindAllByAccessibilityId<T>(accessibilityId, timeoutMS);
+
+            Assert.IsTrue(collection.Count > 0, $"Element not found using selector: {accessibilityId}");
+
+            return collection[0];
+        }
+
+        /// <summary>
         /// Shortcut for this.Find<Element>(by, timeoutMS)
         /// </summary>
         /// <param name="by">The selector to find the element.</param>
@@ -99,6 +119,29 @@ namespace Microsoft.PowerToys.UITest
                 () =>
                 {
                     var elements = this.WindowsDriver.FindElements(by.ToSeleniumBy());
+                    return elements;
+                },
+                this.WindowsDriver,
+                timeoutMS);
+
+            return foundElements ?? new ReadOnlyCollection<T>([]);
+        }
+
+        /// <summary>
+        /// Finds all elements by accessibilityId.
+        /// </summary>
+        /// <typeparam name="T">The class of the elements, should be Element or its derived class.</typeparam>
+        /// <param name="accessibilityId">The accessibilityId to find the elements.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>A read-only collection of the found elements.</returns>
+        public ReadOnlyCollection<T> FindAllByAccessibilityId<T>(string accessibilityId, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: accessibilityId = {accessibilityId}, timeoutMS = {timeoutMS}");
+            var foundElements = FindHelper.FindAll<T, WindowsElement>(
+                () =>
+                {
+                    var elements = this.WindowsDriver.FindElementsByAccessibilityId(accessibilityId);
                     return elements;
                 },
                 this.WindowsDriver,

@@ -18,7 +18,7 @@ namespace UITests_FancyZonesEditor
     {
         public NewFancyZonesEditorTest()
         {
-            FancyZonesEditorHelper.InitFancyZonesLayout();
+            // FancyZonesEditorHelper.InitFancyZonesLayout();
         }
 
         [TestClass]
