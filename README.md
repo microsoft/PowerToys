@@ -98,7 +98,7 @@ In this release, we focused on new features, stability, accessibility and automa
 
 **✨Highlights**
 
- - Enhanced Advanced Paste by adding media transcoding support to convert different video and audio file formats!
+ - Enhanced Advanced Paste by adding media transcoding support to convert different video and audio file formats! Thanks [@snickler](https://github.com/snickler) for your help!
  - Fixed crashes when loading thumbnails after the .NET 9 update and resolved PowerLauncher.exe blocking other MSI installers from creating shortcuts!
  - Fixed accessibility issues across FancyZones, Image Resizer, and Settings to improve screen reader support and clarity!
  - Enhanced UI automation framework across modules and added new tests to cover manual checks, with more improvements coming!
@@ -111,7 +111,7 @@ In this release, we focused on new features, stability, accessibility and automa
 
 ### Advanced Paste
 
- - Enhanced Advanced Paste by adding media transcoding support, improving UI layouts, refining clipboard handling, and integrating Semantic Kernel for smarter pasting. Thanks [@snickler](https://github.com/snickler) for your help!
+ - Added media transcoding support to convert different video and audio file formats, improved UI layouts, refined clipboard handling, and integrated Semantic Kernel for smarter pasting. Thanks [@snickler](https://github.com/snickler) for your help!
 
 ### FancyZones
 
@@ -136,7 +136,7 @@ In this release, we focused on new features, stability, accessibility and automa
 
 ### PowerRename
  - Supported negative value as Start value in regular expression, e.g. ${start=-1314}
- - Enhanced PowerRename RegEx help by adding $, ^, quantifiers, and common patterns for better usability. Thanks [@PesBandi](https://github.com/PesBandi) and thanks [@htcfreek](https://github.com/htcfreek) for review.
+ - Enhanced RegEx help by adding $, ^, quantifiers, and common patterns for better usability. Thanks [@PesBandi](https://github.com/PesBandi) and thanks [@htcfreek](https://github.com/htcfreek) for review.
 
 ### PowerToys Run
  - Fixed crashes when loading thumbnails after the .NET 9 update by disabling CETCompat.
@@ -180,7 +180,7 @@ In this release, we focused on new features, stability, accessibility and automa
  - Optimized Logger function as AOT compatible, improving performance by 18%.
  - Made Common.UI and Setting.UI to be AOT compatible.
  
- ### What is being planned for version 0.90
+### What is being planned for version 0.90
 
 For [v0.90][github-next-release-work], we'll work on the items below:
 
@@ -189,7 +189,7 @@ For [v0.90][github-next-release-work], we'll work on the items below:
  - Working on installer upgrades
  - Upgrading keyboard manager's editor UI
  - Stability / bug fixes
- 
+
 ## PowerToys Community
 
 The PowerToys team is extremely grateful to have the [support of an amazing active community][community-link]. The work you do is incredibly important. PowerToys wouldn’t be nearly what it is today without your help filing bugs, updating documentation, guiding the design, or writing features. We want to say thank you and take time to recognize your work.  Month by month, you directly help make PowerToys a better piece of software.
