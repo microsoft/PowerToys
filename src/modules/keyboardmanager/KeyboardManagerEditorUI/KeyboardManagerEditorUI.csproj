@@ -18,12 +18,18 @@
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\$(MSBuildProjectName)</OutputPath>
   </PropertyGroup>
 
+  <PropertyGroup>
+	<EnableDefaultXamlItems>true</EnableDefaultXamlItems>
+	<EnableXamlJitOptimization>true</EnableXamlJitOptimization>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Pages\ExistingUI.xaml" />
     <None Remove="Pages\Programs.xaml" />
     <None Remove="Pages\Shortcuts.xaml" />
     <None Remove="Pages\Text.xaml" />
     <None Remove="Pages\URLs.xaml" />
+    <None Remove="Styles\CommonStyle.xaml" />
     <None Remove="Styles\InputControl.xaml" />
     <None Remove="Styles\KeyVisual.xaml" />
   </ItemGroup>
@@ -51,6 +57,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Assets\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Styles\CommonStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\URLs.xaml">
