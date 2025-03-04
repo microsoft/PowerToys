@@ -448,6 +448,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Custom formats using local time.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Setting_CustomFormats {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Setting_CustomFormats", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use date and time string format syntax and {0} (Day of Week), {1} (Week of Month), {2} (Windows File Time), {3} (Unix Time), {4} (Unix Time in milliseconds)..
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Setting_CustomFormatsDescription {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Setting_CustomFormatsDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom formats using Universal Time Convention (UTC).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Setting_CustomFormatsUtc {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Setting_CustomFormatsUtc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use system setting.
         /// </summary>
         internal static string Microsoft_plugin_timedate_Setting_UseSystemSetting {
