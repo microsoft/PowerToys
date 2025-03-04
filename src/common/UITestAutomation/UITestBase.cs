@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
@@ -31,12 +32,6 @@ namespace Microsoft.PowerToys.UITest
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver());
         }
 
-        ~UITestBase()
-        {
-            this.ExitScopeExe();
-            this.sessionHelper.Cleanup();
-        }
-
         /// <summary>
         /// Initializes the test.
         /// </summary>
@@ -52,6 +47,14 @@ namespace Microsoft.PowerToys.UITest
                     this.Find("DEBUG").Find<Button>("Close").Click();
                 }
             }
+        }
+
+        /// <summary>
+        /// UnInitializes the test.
+        /// </summary>
+        public void TestClean()
+        {
+            this.sessionHelper.Cleanup();
         }
 
         /// <summary>
@@ -160,7 +163,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void RestartScopeExe()
         {
-            sessionHelper.RestartScopeExe();
+            this.sessionHelper.RestartScopeExe();
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver());
             return;
         }
@@ -170,7 +173,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void ExitScopeExe()
         {
-            sessionHelper.ExitScopeExe();
+            this.sessionHelper.ExitScopeExe();
             return;
         }
     }

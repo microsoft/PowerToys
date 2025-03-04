@@ -43,6 +43,7 @@ namespace UITests_FancyZonesEditor
             [TestCleanup]
             public void TestCleanup()
             {
+                this.TestClean();
             }
 
             [TestMethod]

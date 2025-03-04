@@ -71,6 +71,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void Cleanup()
         {
+            ExitScopeExe();
             try
             {
                 appDriver?.Kill();
