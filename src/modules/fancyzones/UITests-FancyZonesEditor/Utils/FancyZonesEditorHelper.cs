@@ -4,13 +4,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests.Utils;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Appium;
+using ModernWpf.Controls;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 
@@ -107,6 +109,75 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             public const string GridZone = "GridZone";
             public const string Button = "Button";
             public const string Thumb = "Thumb";
+        }
+
+        public static void ClickContextMenuItem(Session session, string layoutName, string menuItem)
+        {
+            session.Find<Element>(layoutName).Click(true);
+            session.Find<Element>(By.ClassName(ClassName.ContextMenu)).Find<Element>(menuItem).Click();
+        }
+
+        public static Element? GetZone(Session session, int zoneNumber, string zoneClassName)
+        {
+            var zones = session.FindAll<Element>(By.ClassName(zoneClassName));
+            foreach (var zone in zones)
+            {
+                try
+                {
+                    zone.Find<Element>(zoneNumber.ToString(CultureInfo.InvariantCulture));
+                    Assert.IsNotNull(zone, "zone not found");
+                    return zone;
+                }
+                catch
+                {
+                    // required number not found in the zone
+                }
+            }
+
+            Assert.IsNotNull(zones, $"zoneClassName : {zoneClassName} not found");
+            return null;
+        }
+
+        public static void MergeGridZones(Session session, int zoneNumber1, int zoneNumber2)
+        {
+            var zone1 = GetZone(session, zoneNumber1, ClassName.GridZone);
+            var zone2 = GetZone(session, zoneNumber2, ClassName.GridZone);
+            Assert.IsNotNull(zone1, "first zone not found");
+            Assert.IsNotNull(zone2, "second zone not found");
+            if (zone1 == null || zone2 == null)
+            {
+                Assert.Fail("zone is null");
+                return;
+            }
+
+            zone1.Drag(zone2);
+
+            session.Find<Element>(ElementName.MergeZonesButton).Click();
+        }
+
+        public static void MoveSplitter(Session session, int index, int xOffset, int yOffset)
+        {
+            var thumbs = session.FindAll<Element>(By.ClassName(ClassName.Thumb));
+            if (thumbs.Count == 0 || index >= thumbs.Count)
+            {
+                return;
+            }
+
+            int dx = xOffset / 10;
+            int dy = yOffset / 10;
+            for (int i = 0; i < 10; i++)
+            {
+                thumbs[index].Drag(dx, dy);
+            }
+        }
+
+        public static void ClickDeleteZone(Session session, int zoneNumber)
+        {
+            var zone = FancyZonesEditorHelper.GetZone(session, zoneNumber, ClassName.CanvasZone);
+            Assert.IsNotNull(zone);
+            var button = zone.Find<Button>(By.ClassName(ClassName.Button));
+            Assert.IsNotNull(button);
+            button.Click();
         }
 
         public static void InitFancyZonesLayout()

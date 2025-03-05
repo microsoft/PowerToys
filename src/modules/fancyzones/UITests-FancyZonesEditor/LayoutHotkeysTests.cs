@@ -300,9 +300,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestCleanup]
         public void TestCleanup()
         {
-            // FancyZonesEditorHelper.Files.Restore();
-
-            // this.TestClean();
+            FancyZonesEditorHelper.Files.Restore();
+            this.TestClean();
         }
 
         [TestMethod]
