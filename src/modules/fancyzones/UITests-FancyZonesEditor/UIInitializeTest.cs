@@ -235,7 +235,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+            FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             CustomLayouts customLayouts = new CustomLayouts();
             CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = new CustomLayouts.CustomLayoutListWrapper
@@ -257,7 +257,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
 
             AppliedLayouts appliedLayouts = new AppliedLayouts();
             AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
@@ -302,7 +302,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
+            FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
             this.RestartScopeExe();
 
             // check layout on monitor 1
@@ -345,7 +345,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+            FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             CustomLayouts customLayouts = new CustomLayouts();
             CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = new CustomLayouts.CustomLayoutListWrapper
@@ -367,7 +367,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
 
             AppliedLayouts appliedLayouts = new AppliedLayouts();
             AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
@@ -392,7 +392,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
+            FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
 
             this.RestartScopeExe();
 
@@ -429,7 +429,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+            FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             CustomLayouts customLayouts = new CustomLayouts();
             CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = new CustomLayouts.CustomLayoutListWrapper
@@ -451,9 +451,9 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
 
-            FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.RestoreData();
+            FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.RestoreData();
             DefaultLayouts defaultLayouts = new DefaultLayouts();
             DefaultLayouts.DefaultLayoutsListWrapper defaultLayoutsListWrapper = new DefaultLayouts.DefaultLayoutsListWrapper
             {
@@ -470,7 +470,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
+            FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
 
             this.RestartScopeExe();
 
@@ -507,9 +507,9 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+            FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
-            FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.RestoreData();
+            FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.RestoreData();
             DefaultLayouts defaultLayouts = new DefaultLayouts();
             DefaultLayouts.DefaultLayoutsListWrapper defaultLayoutsListWrapper = new DefaultLayouts.DefaultLayoutsListWrapper
             {
@@ -529,7 +529,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
+            FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
 
             this.RestartScopeExe();
 
@@ -575,7 +575,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+            FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             AppliedLayouts appliedLayouts = new AppliedLayouts();
             AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
@@ -624,7 +624,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
+            FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
 
             this.RestartScopeExe();
             Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.Rows]).Click();
@@ -675,7 +675,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+            FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             AppliedLayouts appliedLayouts = new AppliedLayouts();
             AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
@@ -704,7 +704,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
+            FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
 
             this.RestartScopeExe();
             Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.Rows]).Click();
@@ -746,13 +746,13 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+            FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             // files not yet exist
-            FancyZonesEditorSession.Files.LayoutTemplatesIOHelper.DeleteFile();
-            FancyZonesEditorSession.Files.CustomLayoutsIOHelper.DeleteFile();
-            FancyZonesEditorSession.Files.LayoutHotkeysIOHelper.DeleteFile();
-            FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.DeleteFile();
+            FancyZonesEditorHelper.Files.LayoutTemplatesIOHelper.DeleteFile();
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
+            FancyZonesEditorHelper.Files.LayoutHotkeysIOHelper.DeleteFile();
+            FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.DeleteFile();
 
             // verify editor opens without errors
             this.RestartScopeExe();

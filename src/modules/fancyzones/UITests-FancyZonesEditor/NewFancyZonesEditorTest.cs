@@ -33,10 +33,10 @@ namespace Microsoft.FancyZonesEditor.UITests
             public void TestInitialize()
             {
                 // files not yet exist
-                FancyZonesEditorSession.Files.LayoutTemplatesIOHelper.DeleteFile();
-                FancyZonesEditorSession.Files.CustomLayoutsIOHelper.DeleteFile();
-                FancyZonesEditorSession.Files.LayoutHotkeysIOHelper.DeleteFile();
-                FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.DeleteFile();
+                FancyZonesEditorHelper.Files.LayoutTemplatesIOHelper.DeleteFile();
+                FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
+                FancyZonesEditorHelper.Files.LayoutHotkeysIOHelper.DeleteFile();
+                FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.DeleteFile();
                 this.RestartScopeExe();
             }
 

@@ -9,7 +9,6 @@ using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
-using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorSession;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
@@ -50,7 +49,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+            FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
             LayoutTemplates layoutTemplates = new LayoutTemplates();
             LayoutTemplates.TemplateLayoutsListWrapper templateLayoutsListWrapper = new LayoutTemplates.TemplateLayoutsListWrapper
@@ -100,35 +99,35 @@ namespace Microsoft.FancyZonesEditor.UITests
                     },
                 },
             };
-            FancyZonesEditorSession.Files.LayoutTemplatesIOHelper.WriteData(layoutTemplates.Serialize(templateLayoutsListWrapper));
+            FancyZonesEditorHelper.Files.LayoutTemplatesIOHelper.WriteData(layoutTemplates.Serialize(templateLayoutsListWrapper));
 
             CustomLayouts customLayouts = new CustomLayouts();
             CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = new CustomLayouts.CustomLayoutListWrapper
             {
                 CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper> { },
             };
-            FancyZonesEditorSession.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
 
             DefaultLayouts defaultLayouts = new DefaultLayouts();
             DefaultLayouts.DefaultLayoutsListWrapper defaultLayoutsListWrapper = new DefaultLayouts.DefaultLayoutsListWrapper
             {
                 DefaultLayouts = new List<DefaultLayouts.DefaultLayoutWrapper> { },
             };
-            FancyZonesEditorSession.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
+            FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
 
             LayoutHotkeys layoutHotkeys = new LayoutHotkeys();
             LayoutHotkeys.LayoutHotkeysWrapper layoutHotkeysWrapper = new LayoutHotkeys.LayoutHotkeysWrapper
             {
                 LayoutHotkeys = new List<LayoutHotkeys.LayoutHotkeyWrapper> { },
             };
-            FancyZonesEditorSession.Files.LayoutHotkeysIOHelper.WriteData(layoutHotkeys.Serialize(layoutHotkeysWrapper));
+            FancyZonesEditorHelper.Files.LayoutHotkeysIOHelper.WriteData(layoutHotkeys.Serialize(layoutHotkeysWrapper));
 
             AppliedLayouts appliedLayouts = new AppliedLayouts();
             AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
             {
                 AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
             };
-            FancyZonesEditorSession.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
+            FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
 
             this.RestartScopeExe();
         }
@@ -136,7 +135,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestCleanup]
         public void TestCleanup()
         {
-            FancyZonesEditorSession.Files.Restore();
+            FancyZonesEditorHelper.Files.Restore();
         }
 
         [TestMethod]
@@ -228,7 +227,6 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void CancelCanvasCreation()
         {
             Session.Find<Element>(By.AccessibilityId(AccessibilityId.NewLayoutButton)).Click();
-            System.Threading.Thread.Sleep(1000);
             Session.Find<Element>(By.AccessibilityId(AccessibilityId.CanvasRadioButton)).Click();
             Session.Find<Element>(By.AccessibilityId(AccessibilityId.PrimaryButton)).Click();
             Session.Find<Button>(ElementName.Cancel).Click();
