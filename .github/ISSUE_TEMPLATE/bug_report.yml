@@ -5,8 +5,7 @@ labels:
 - Issue-Bug
 - Needs-Triage
 body:
-  - type: input
-    id: myVersion
+  - type: textarea
     attributes:
       label: Microsoft PowerToys version
       placeholder: 0.70.0
