@@ -84,6 +84,7 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
             case nameof(Details):
                 var extensionDetails = model.Details;
                 Details = extensionDetails != null ? new(extensionDetails, PageContext) : null;
+                Details?.InitializeProperties();
                 UpdateProperty(nameof(Details));
                 UpdateProperty(nameof(HasDetails));
                 break;
