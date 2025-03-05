@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
-
-using Settings.UI.Library.Attributes;
 using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -24,6 +22,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public HostsEncoding Encoding { get; set; }
 
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool BackupHosts { get; set; }
+
+        public string BackupPath { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool DeleteBackups { get; set; }
+
+        public int DaysToKeep { get; set; }
+
+        public int CopiesToKeep { get; set; }
+
         public HostsProperties()
         {
             ShowStartupWarning = true;
@@ -31,6 +41,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             LoopbackDuplicates = false;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;
+            BackupHosts = true;
+            BackupPath = @"C:\Windows\System32\drivers\etc";
+            DeleteBackups = true;
+            DaysToKeep = 30;
+            CopiesToKeep = 5;
         }
     }
 }

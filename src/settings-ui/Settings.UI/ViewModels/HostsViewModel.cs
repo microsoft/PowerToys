@@ -5,8 +5,8 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
-
 using global::PowerToys.GPOWrapper;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -32,6 +32,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         public ButtonClickCommand LaunchEventHandler => new ButtonClickCommand(Launch);
+
+        public ButtonClickCommand SelectBackupPathEventHandler => new ButtonClickCommand(SelectBackupPath);
 
         public bool IsEnabled
         {
@@ -131,6 +133,76 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool BackupHosts
+        {
+            get => Settings.Properties.BackupHosts;
+            set
+            {
+                if (value != Settings.Properties.BackupHosts)
+                {
+                    Settings.Properties.BackupHosts = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public string BackupPath
+        {
+            get => Settings.Properties.BackupPath;
+            set
+            {
+                if (value != Settings.Properties.BackupPath)
+                {
+                    Settings.Properties.BackupPath = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool DeleteBackups
+        {
+            get => Settings.Properties.DeleteBackups;
+            set
+            {
+                if (value != Settings.Properties.DeleteBackups)
+                {
+                    Settings.Properties.DeleteBackups = value;
+                    NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(ShowDeleteBackupWarning));
+                }
+            }
+        }
+
+        public int DaysToKeep
+        {
+            get => Settings.Properties.DaysToKeep;
+            set
+            {
+                if (value != Settings.Properties.DaysToKeep)
+                {
+                    Settings.Properties.DaysToKeep = value;
+                    NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(ShowDeleteBackupWarning));
+                }
+            }
+        }
+
+        public int CopiesToKeep
+        {
+            get => Settings.Properties.CopiesToKeep;
+            set
+            {
+                if (value != Settings.Properties.CopiesToKeep)
+                {
+                    Settings.Properties.CopiesToKeep = value;
+                    NotifyPropertyChanged();
+                    OnPropertyChanged(nameof(ShowDeleteBackupWarning));
+                }
+            }
+        }
+
+        public bool ShowDeleteBackupWarning => DeleteBackups && DaysToKeep <= 0 && CopiesToKeep <= 0;
+
         public HostsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<HostsSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, bool isElevated)
         {
             SettingsUtils = settingsUtils;
@@ -178,6 +250,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
+        }
+
+        public void SelectBackupPath()
+        {
+            // This function was changed to use the shell32 API to open folder dialog
+            // as the old one (PickSingleFolderAsync) can't work when the process is elevated
+            // TODO: go back PickSingleFolderAsync when it's fixed
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
+            var result = ShellGetFolder.GetFolderDialog(hwnd);
+            if (!string.IsNullOrEmpty(result))
+            {
+                BackupPath = result;
+            }
         }
     }
 }
