@@ -54,7 +54,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("exc0.99998843", false, "", "")] // Day 0 means in Excel 0/1/1900 and this is a fake date.
         [DataRow("exc60.99998843", false, "", "")] // Day 60 means in Excel 2/29/1900 and this is a fake date in Excel which we can not support.
         [DataRow("exc60", false, "", "")] // Day 60 means in Excel 2/29/1900 and this is a fake date in Excel which we can not support.
-        [DataRow("exc-1", false, "", "")] // Value to large
+        [DataRow("exc-1", false, "", "")] // Value to low
         [DataRow("exc2958466", false, "", "")] // Value to large
         [DataRow("exf0.99998843", true, "G", "1/1/1904 11:59:59 PM")]
         [DataRow("exf2957003.99998843", true, "G", "12/31/9999 11:59:59 PM")]
