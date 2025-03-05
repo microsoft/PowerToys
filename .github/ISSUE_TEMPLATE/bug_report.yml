@@ -1,7 +1,3 @@
-parameters:
-- name: myVersion
-  type: string
-  default: 0.33
 name: "🕷️ Bug report"
 description: Report errors or unexpected behavior
 type: Bug
@@ -12,7 +8,8 @@ body:
 - type: markdown
   attributes:
     value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
-- type: input
+- id: version
+  type: input
   attributes:
     label: Microsoft PowerToys version
     placeholder: 0.65.0
