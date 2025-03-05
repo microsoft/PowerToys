@@ -2,13 +2,240 @@
 #include "KeyboardManagerEditorLibraryWrapper.h"
 #include <algorithm>
 #include <cstring>
+#include <vector>
+#include <string>
+#include <memory>
 
 #include <common/utils/logger_helper.h>
 #include <keyboardmanager/KeyboardManagerEditor/KeyboardManagerEditor.h>
 #include <common/interop/keyboard_layout.h>
 
-// Test function to call the remapping helper function
+extern "C"
+{
+    void* CreateMappingConfiguration()
+    {
+        return new MappingConfiguration();
+    }
 
+    void DestroyMappingConfiguration(void* config)
+    {
+        delete static_cast<MappingConfiguration*>(config);
+    }
+
+    bool LoadMappingSettings(void* config)
+    {
+        return static_cast<MappingConfiguration*>(config)->LoadSettings();
+    }
+
+    bool SaveMappingSettings(void* config)
+    {
+        return static_cast<MappingConfiguration*>(config)->SaveSettingsToFile();
+    }
+
+    int GetSingleKeyRemapCount(void* config)
+    {
+        auto mapping = static_cast<MappingConfiguration*>(config);
+        return static_cast<int>(mapping->singleKeyReMap.size() + mapping->singleKeyToTextReMap.size());
+    }
+
+    bool GetSingleKeyRemap(void* config, int index, KeyboardMapping* mapping)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        std::vector<std::pair<DWORD, KeyShortcutTextUnion>> allMappings;
+
+        for (const auto& kv : mappingConfig->singleKeyReMap)
+        {
+            allMappings.push_back(kv);
+        }
+
+        for (const auto& kv : mappingConfig->singleKeyToTextReMap)
+        {
+            allMappings.push_back(kv);
+        }
+
+        if (index < 0 || index >= allMappings.size())
+        {
+            return false;
+        }
+
+        const auto& kv = allMappings[index];
+        mapping->originalKey = static_cast<int>(kv.first);
+
+        if (kv.second.index() == 0)
+        {
+            mapping->targetKey = static_cast<int>(std::get<DWORD>(kv.second));
+            mapping->isShortcut = false;
+        }
+        else if (kv.second.index() == 1)
+        {
+            mapping->targetKey = static_cast<int>(std::get<Shortcut>(kv.second).GetActionKey());
+            mapping->isShortcut = true;
+        }
+        else
+        {
+            mapping->targetKey = 0;
+            mapping->isShortcut = false;
+        }
+
+        return true;
+    }
+
+    int GetShortcutRemapCount(void* config)
+    {
+        auto mapping = static_cast<MappingConfiguration*>(config);
+        int count = static_cast<int>(mapping->osLevelShortcutReMap.size());
+
+        for (const auto& appMap : mapping->appSpecificShortcutReMap)
+        {
+            count += static_cast<int>(appMap.second.size());
+        }
+
+        return count;
+    }
+
+    wchar_t* AllocateAndCopyString(const std::wstring& str)
+    {
+        size_t len = str.length();
+        wchar_t* buffer = new wchar_t[len + 1];
+        wcscpy_s(buffer, len + 1, str.c_str());
+        return buffer;
+    }
+
+    bool GetShortcutRemap(void* config, int index, ShortcutMapping* mapping)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        std::vector<std::tuple<Shortcut, KeyShortcutTextUnion, std::wstring>> allMappings;
+
+        for (const auto& kv : mappingConfig->osLevelShortcutReMap)
+        {
+            allMappings.push_back(std::make_tuple(kv.first, kv.second.targetShortcut, L""));
+        }
+
+        for (const auto& appKv : mappingConfig->appSpecificShortcutReMap)
+        {
+            for (const auto& shortcutKv : appKv.second)
+            {
+                allMappings.push_back(std::make_tuple(
+                    shortcutKv.first, shortcutKv.second.targetShortcut, appKv.first));
+            }
+        }
+
+        if (index < 0 || index >= allMappings.size())
+        {
+            return false;
+        }
+
+        const auto& [origShortcut, targetShortcutUnion, app] = allMappings[index];
+
+        std::wstring origKeysStr = origShortcut.ToHstringVK().c_str();
+        mapping->originalKeys = AllocateAndCopyString(origKeysStr);
+
+        mapping->targetApp = AllocateAndCopyString(app);
+
+        if (targetShortcutUnion.index() == 0)
+        {
+            DWORD targetKey = std::get<DWORD>(targetShortcutUnion);
+            mapping->targetKeys = AllocateAndCopyString(std::to_wstring(targetKey));
+            mapping->operationType = 0;
+            mapping->targetText = AllocateAndCopyString(L"");
+            mapping->programPath = AllocateAndCopyString(L"");
+            mapping->programArgs = AllocateAndCopyString(L"");
+            mapping->uriToOpen = AllocateAndCopyString(L"");
+        }
+        else if (targetShortcutUnion.index() == 1)
+        {
+            Shortcut targetShortcut = std::get<Shortcut>(targetShortcutUnion);
+            std::wstring targetKeysStr = targetShortcut.ToHstringVK().c_str();
+
+            mapping->operationType = static_cast<int>(targetShortcut.operationType);
+
+            if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
+            {
+                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetText = AllocateAndCopyString(L"");
+                mapping->programPath = AllocateAndCopyString(targetShortcut.runProgramFilePath);
+                mapping->programArgs = AllocateAndCopyString(targetShortcut.runProgramArgs);
+                mapping->uriToOpen = AllocateAndCopyString(L"");
+            }
+            else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
+            {
+                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetText = AllocateAndCopyString(L"");
+                mapping->programPath = AllocateAndCopyString(L"");
+                mapping->programArgs = AllocateAndCopyString(L"");
+                mapping->uriToOpen = AllocateAndCopyString(targetShortcut.uriToOpen);
+            }
+            else
+            {
+                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetText = AllocateAndCopyString(L"");
+                mapping->programPath = AllocateAndCopyString(L"");
+                mapping->programArgs = AllocateAndCopyString(L"");
+                mapping->uriToOpen = AllocateAndCopyString(L"");
+            }
+        }
+        else if (targetShortcutUnion.index() == 2)
+        {
+            std::wstring text = std::get<std::wstring>(targetShortcutUnion);
+            mapping->targetKeys = AllocateAndCopyString(L"");
+            mapping->operationType = 0;
+            mapping->targetText = AllocateAndCopyString(text);
+            mapping->programPath = AllocateAndCopyString(L"");
+            mapping->programArgs = AllocateAndCopyString(L"");
+            mapping->uriToOpen = AllocateAndCopyString(L"");
+        }
+
+        return true;
+    }
+
+    void FreeString(wchar_t* str)
+    {
+        delete[] str;
+    }
+
+    bool AddSingleKeyRemap(void* config, int originalKey, int targetKey)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+        return mappingConfig->AddSingleKeyRemap(static_cast<DWORD>(originalKey), static_cast<DWORD>(targetKey));
+    }
+
+    bool AddShortcutRemap(void* config,
+                          const wchar_t* originalKeys,
+                          const wchar_t* targetKeys,
+                          const wchar_t* targetApp)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        Shortcut origShortcut(originalKeys);
+        Shortcut targetShortcut(targetKeys);
+
+        std::wstring app(targetApp ? targetApp : L"");
+
+        if (app.empty())
+        {
+            return mappingConfig->AddOSLevelShortcut(origShortcut, targetShortcut);
+        }
+        else
+        {
+            return mappingConfig->AddAppSpecificShortcut(app, origShortcut, targetShortcut);
+        }
+    }
+
+    void GetKeyDisplayName(int keyCode, wchar_t* keyName, int maxCount)
+    {
+        if (keyName == nullptr || maxCount <= 0)
+        {
+            return;
+        }
+        LayoutMap layoutMap;
+        std::wstring name = layoutMap.GetKeyName(static_cast<DWORD>(keyCode));
+        wcsncpy_s(keyName, maxCount, name.c_str(), _TRUNCATE);
+    }
+}
+
+// Test function to call the remapping helper function
 bool CheckIfRemappingsAreValid()
 {
     RemapBuffer remapBuffer;
