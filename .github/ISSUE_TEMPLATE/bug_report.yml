@@ -8,15 +8,14 @@ body:
 - type: markdown
   attributes:
     value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
-
 - type: input
+  id: myVersion
   attributes:
     label: Microsoft PowerToys version
     placeholder: 0.70.0
     description: Hover over system tray icon or look at Settings
   validations:
     required: true
-
 - type: dropdown
   attributes:
     label: Installation method
