@@ -63,6 +63,83 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="Hosts_Backup_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander
+                        x:Uid="Hosts_Backup"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEA35;}"
+                        IsExpanded="True">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.BackupHosts, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="Hosts_Backup_Location" IsEnabled="{x:Bind ViewModel.BackupHosts, Mode=OneWay}">
+                                <Grid ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        x:Name="pathTextBlock"
+                                        Grid.Column="0"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        IsTextSelectionEnabled="True"
+                                        Text="{x:Bind ViewModel.BackupPath, Mode=TwoWay}"
+                                        TextWrapping="Wrap">
+                                        <ToolTipService.ToolTip>
+                                            <ToolTip IsEnabled="{Binding IsTextTrimmed, ElementName=pathTextBlock, Mode=OneWay}">
+                                                <TextBlock Text="{x:Bind ViewModel.BackupPath, Mode=TwoWay}" />
+                                            </ToolTip>
+                                        </ToolTipService.ToolTip>
+                                    </TextBlock>
+                                    <Button
+                                        Grid.Column="1"
+                                        Command="{x:Bind ViewModel.SelectBackupPathEventHandler}"
+                                        Content="&#xe8da;"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                        <ToolTipService.ToolTip>
+                                            <ToolTip>
+                                                <TextBlock x:Uid="Hosts_ButtonSelectLocation" />
+                                            </ToolTip>
+                                        </ToolTipService.ToolTip>
+                                    </Button>
+                                </Grid>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.BackupHosts, Mode=OneWay}">
+                                <CheckBox x:Uid="Hosts_Delete_Backup" IsChecked="{x:Bind ViewModel.DeleteBackups, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Padding="0,0,0,0"
+                                HorizontalContentAlignment="Left"
+                                Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.ShowDeleteBackupWarning, Mode=OneWay}">
+                                <InfoBar
+                                    x:Uid="Hosts_DeleteBackupWarning"
+                                    Margin="0"
+                                    Background="Transparent"
+                                    BorderBrush="Transparent"
+                                    IsClosable="False"
+                                    IsOpen="True"
+                                    IsTabStop="{x:Bind ViewModel.ShowDeleteBackupWarning, Mode=OneWay}"
+                                    Severity="Warning" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="Hosts_Backup_DaysToKeep" IsEnabled="{x:Bind ViewModel.BackupHosts, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Minimum="0"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.DaysToKeep, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="Hosts_Backup_CopiesToKeep" IsEnabled="{x:Bind ViewModel.BackupHosts, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Minimum="0"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.CopiesToKeep, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
