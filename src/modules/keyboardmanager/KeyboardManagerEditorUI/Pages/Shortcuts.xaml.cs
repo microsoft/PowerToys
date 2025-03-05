@@ -92,7 +92,7 @@ namespace KeyboardManagerEditorUI.Pages
                 });
             }
 
-            foreach (var mapping in _mappingService.GetShortcutMappings())
+            foreach (var mapping in _mappingService.GetShortcutMappingsByType(ShortcutOperationType.RemapShortcut))
             {
                 ShortcutMappings.Add(mapping);
 

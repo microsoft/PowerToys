@@ -37,11 +37,32 @@ namespace KeyboardManagerEditorUI.Interop
         internal static extern bool GetSingleKeyRemap(IntPtr config, int index, ref KeyboardMapping mapping);
 
         [DllImport(DllName)]
+        internal static extern int GetSingleKeyToTextRemapCount(IntPtr config);
+
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetSingleKeyToTextRemap(
+            IntPtr config,
+            int index,
+            ref KeyboardTextMapping mapping);
+
+        [DllImport(DllName)]
         internal static extern int GetShortcutRemapCount(IntPtr config);
 
         [DllImport(DllName)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetShortcutRemap(IntPtr config, int index, ref ShortcutMapping mapping);
+
+        [DllImport(DllName)]
+        internal static extern int GetShortcutRemapCountByType(IntPtr config, int operationType);
+
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetShortcutRemapByType(
+            IntPtr config,
+            int operationType,
+            int index,
+            ref ShortcutMapping mapping);
 
         [DllImport(DllName)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -78,6 +99,13 @@ namespace KeyboardManagerEditorUI.Interop
         public IntPtr TargetKey;
         [MarshalAs(UnmanagedType.Bool)]
         public bool IsShortcut;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct KeyboardTextMapping
+    {
+        public int OriginalKey;
+        public IntPtr TargetText;
     }
 
     [StructLayout(LayoutKind.Sequential)]

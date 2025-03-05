@@ -76,6 +76,54 @@ namespace KeyboardManagerEditorUI.Interop
             return result;
         }
 
+        public List<ShortcutKeyMapping> GetShortcutMappingsByType(ShortcutOperationType operationType)
+        {
+            var result = new List<ShortcutKeyMapping>();
+            int count = KeyboardManagerInterop.GetShortcutRemapCountByType(_configHandle, (int)operationType);
+
+            for (int i = 0; i < count; i++)
+            {
+                var mapping = default(ShortcutMapping);
+                if (KeyboardManagerInterop.GetShortcutRemapByType(_configHandle, (int)operationType, i, ref mapping))
+                {
+                    result.Add(new ShortcutKeyMapping
+                    {
+                        OriginalKeys = KeyboardManagerInterop.GetStringAndFree(mapping.OriginalKeys),
+                        TargetKeys = KeyboardManagerInterop.GetStringAndFree(mapping.TargetKeys),
+                        TargetApp = KeyboardManagerInterop.GetStringAndFree(mapping.TargetApp),
+                        OperationType = (ShortcutOperationType)mapping.OperationType,
+                        TargetText = KeyboardManagerInterop.GetStringAndFree(mapping.TargetText),
+                        ProgramPath = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramPath),
+                        ProgramArgs = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramArgs),
+                        UriToOpen = KeyboardManagerInterop.GetStringAndFree(mapping.UriToOpen),
+                    });
+                }
+            }
+
+            return result;
+        }
+
+        public List<KeyToTextMapping> GetKeyToTextMappings()
+        {
+            var result = new List<KeyToTextMapping>();
+            int count = KeyboardManagerInterop.GetSingleKeyToTextRemapCount(_configHandle);
+
+            for (int i = 0; i < count; i++)
+            {
+                var mapping = default(KeyboardTextMapping);
+                if (KeyboardManagerInterop.GetSingleKeyToTextRemap(_configHandle, i, ref mapping))
+                {
+                    result.Add(new KeyToTextMapping
+                    {
+                        OriginalKey = mapping.OriginalKey,
+                        TargetText = KeyboardManagerInterop.GetStringAndFree(mapping.TargetText),
+                    });
+                }
+            }
+
+            return result;
+        }
+
         public bool AddSingleKeyMapping(int originalKey, int targetKey)
         {
             return KeyboardManagerInterop.AddSingleKeyRemap(_configHandle, originalKey, targetKey);

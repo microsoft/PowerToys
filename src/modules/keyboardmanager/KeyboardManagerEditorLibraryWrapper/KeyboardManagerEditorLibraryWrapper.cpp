@@ -43,7 +43,7 @@ extern "C"
     int GetSingleKeyRemapCount(void* config)
     {
         auto mapping = static_cast<MappingConfiguration*>(config);
-        return static_cast<int>(mapping->singleKeyReMap.size() + mapping->singleKeyToTextReMap.size());
+        return static_cast<int>(mapping->singleKeyReMap.size());
     }
 
     bool GetSingleKeyRemap(void* config, int index, KeyboardMapping* mapping)
@@ -53,11 +53,6 @@ extern "C"
         std::vector<std::pair<DWORD, KeyShortcutTextUnion>> allMappings;
 
         for (const auto& kv : mappingConfig->singleKeyReMap)
-        {
-            allMappings.push_back(kv);
-        }
-
-        for (const auto& kv : mappingConfig->singleKeyToTextReMap)
         {
             allMappings.push_back(kv);
         }
@@ -89,6 +84,293 @@ extern "C"
         return true;
     }
 
+    int GetSingleKeyToTextRemapCount(void* config)
+    {
+        auto mapping = static_cast<MappingConfiguration*>(config);
+        return static_cast<int>(mapping->singleKeyToTextReMap.size());
+    }
+
+    bool GetSingleKeyToTextRemap(void* config, int index, KeyboardTextMapping* mapping)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        if (index < 0 || index >= mappingConfig->singleKeyToTextReMap.size())
+        {
+            return false;
+        }
+
+        auto it = mappingConfig->singleKeyToTextReMap.begin();
+        std::advance(it, index);
+
+        mapping->originalKey = static_cast<int>(it->first);
+        std::wstring text = std::get<std::wstring>(it->second);
+        mapping->targetText = AllocateAndCopyString(text);
+
+        return true;
+    }
+
+    int GetShortcutRemapCountByType(void* config, int operationType)
+    {
+        auto mapping = static_cast<MappingConfiguration*>(config);
+        int count = 0;
+
+        for (const auto& kv : mapping->osLevelShortcutReMap)
+        {
+            bool shouldCount = false;
+
+
+            if (operationType == 0)
+            {
+                if ((kv.second.targetShortcut.index() == 0) ||
+                    (kv.second.targetShortcut.index() == 1 &&
+                     std::get<Shortcut>(kv.second.targetShortcut).operationType == Shortcut::OperationType::RemapShortcut))
+                {
+                    shouldCount = true;
+                }
+            }
+            else if (operationType == 1)
+            {
+
+                if (kv.second.targetShortcut.index() == 1 &&
+                    std::get<Shortcut>(kv.second.targetShortcut).operationType == Shortcut::OperationType::RunProgram)
+                {
+                    shouldCount = true;
+                }
+            }
+            else if (operationType == 2)
+            {
+                if (kv.second.targetShortcut.index() == 1 &&
+                    std::get<Shortcut>(kv.second.targetShortcut).operationType == Shortcut::OperationType::OpenURI)
+                {
+                    shouldCount = true;
+                }
+            }
+            else if (operationType == 3)
+            {
+                if (kv.second.targetShortcut.index() == 2)
+                {
+                    shouldCount = true;
+                }
+            }
+
+            if (shouldCount)
+            {
+                count++;
+            }
+        }
+
+        for (const auto& appMap : mapping->appSpecificShortcutReMap)
+        {
+            for (const auto& shortcutKv : appMap.second)
+            {
+                bool shouldCount = false;
+
+                if (operationType == 0)
+                {
+                    if ((shortcutKv.second.targetShortcut.index() == 0) ||
+                        (shortcutKv.second.targetShortcut.index() == 1 &&
+                         std::get<Shortcut>(shortcutKv.second.targetShortcut).operationType == Shortcut::OperationType::RemapShortcut))
+                    {
+                        shouldCount = true;
+                    }
+                }
+                else if (operationType == 1)
+                {
+                    if (shortcutKv.second.targetShortcut.index() == 1 &&
+                        std::get<Shortcut>(shortcutKv.second.targetShortcut).operationType == Shortcut::OperationType::RunProgram)
+                    {
+                        shouldCount = true;
+                    }
+                }
+                else if (operationType == 2)
+                {
+                    if (shortcutKv.second.targetShortcut.index() == 1 &&
+                        std::get<Shortcut>(shortcutKv.second.targetShortcut).operationType == Shortcut::OperationType::OpenURI)
+                    {
+                        shouldCount = true;
+                    }
+                }
+                else if (operationType == 3)
+                {
+                    if (shortcutKv.second.targetShortcut.index() == 2)
+                    {
+                        shouldCount = true;
+                    }
+                }
+
+                if (shouldCount)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
+    }
+
+bool GetShortcutRemapByType(void* config, int operationType, int index, ShortcutMapping* mapping)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        std::vector<std::tuple<Shortcut, KeyShortcutTextUnion, std::wstring>> filteredMappings;
+
+        for (const auto& kv : mappingConfig->osLevelShortcutReMap)
+        {
+            bool shouldAdd = false;
+
+            if (operationType == 0) // RemapShortcut
+            {
+                if ((kv.second.targetShortcut.index() == 0) ||
+                    (kv.second.targetShortcut.index() == 1 &&
+                     std::get<Shortcut>(kv.second.targetShortcut).operationType == Shortcut::OperationType::RemapShortcut))
+                {
+                    shouldAdd = true;
+                }
+            }
+            else if (operationType == 1) // RunProgram
+            {
+                if (kv.second.targetShortcut.index() == 1 &&
+                    std::get<Shortcut>(kv.second.targetShortcut).operationType == Shortcut::OperationType::RunProgram)
+                {
+                    shouldAdd = true;
+                }
+            }
+            else if (operationType == 2) // OpenURI
+            {
+                if (kv.second.targetShortcut.index() == 1 &&
+                    std::get<Shortcut>(kv.second.targetShortcut).operationType == Shortcut::OperationType::OpenURI)
+                {
+                    shouldAdd = true;
+                }
+            }
+            else if (operationType == 3)
+            {
+                if (kv.second.targetShortcut.index() == 2)
+                {
+                    shouldAdd = true;
+                }
+            }
+
+            if (shouldAdd)
+            {
+                filteredMappings.push_back(std::make_tuple(kv.first, kv.second.targetShortcut, L""));
+            }
+        }
+
+        for (const auto& appKv : mappingConfig->appSpecificShortcutReMap)
+        {
+            for (const auto& shortcutKv : appKv.second)
+            {
+                bool shouldAdd = false;
+
+                if (operationType == 0) // RemapShortcut
+                {
+                    if ((shortcutKv.second.targetShortcut.index() == 0) ||
+                        (shortcutKv.second.targetShortcut.index() == 1 &&
+                         std::get<Shortcut>(shortcutKv.second.targetShortcut).operationType == Shortcut::OperationType::RemapShortcut))
+                    {
+                        shouldAdd = true;
+                    }
+                }
+                else if (operationType == 1) // RunProgram
+                {
+                    if (shortcutKv.second.targetShortcut.index() == 1 &&
+                        std::get<Shortcut>(shortcutKv.second.targetShortcut).operationType == Shortcut::OperationType::RunProgram)
+                    {
+                        shouldAdd = true;
+                    }
+                }
+                else if (operationType == 2) // OpenURI
+                {
+                    if (shortcutKv.second.targetShortcut.index() == 1 &&
+                        std::get<Shortcut>(shortcutKv.second.targetShortcut).operationType == Shortcut::OperationType::OpenURI)
+                    {
+                        shouldAdd = true;
+                    }
+                }
+                else if (operationType == 3)
+                {
+                    if (shortcutKv.second.targetShortcut.index() == 2)
+                    {
+                        shouldAdd = true;
+                    }
+                }
+
+                if (shouldAdd)
+                {
+                    filteredMappings.push_back(std::make_tuple(
+                        shortcutKv.first, shortcutKv.second.targetShortcut, appKv.first));
+                }
+            }
+        }
+
+        if (index < 0 || index >= filteredMappings.size())
+        {
+            return false;
+        }
+
+        const auto& [origShortcut, targetShortcutUnion, app] = filteredMappings[index];
+
+        std::wstring origKeysStr = origShortcut.ToHstringVK().c_str();
+        mapping->originalKeys = AllocateAndCopyString(origKeysStr);
+        mapping->targetApp = AllocateAndCopyString(app);
+
+        if (targetShortcutUnion.index() == 0)
+        {
+            DWORD targetKey = std::get<DWORD>(targetShortcutUnion);
+            mapping->targetKeys = AllocateAndCopyString(std::to_wstring(targetKey));
+            mapping->operationType = 0;
+            mapping->targetText = AllocateAndCopyString(L"");
+            mapping->programPath = AllocateAndCopyString(L"");
+            mapping->programArgs = AllocateAndCopyString(L"");
+            mapping->uriToOpen = AllocateAndCopyString(L"");
+        }
+        else if (targetShortcutUnion.index() == 1)
+        {
+            Shortcut targetShortcut = std::get<Shortcut>(targetShortcutUnion);
+            std::wstring targetKeysStr = targetShortcut.ToHstringVK().c_str();
+
+            mapping->operationType = static_cast<int>(targetShortcut.operationType);
+
+            if (targetShortcut.operationType == Shortcut::OperationType::RunProgram)
+            {
+                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetText = AllocateAndCopyString(L"");
+                mapping->programPath = AllocateAndCopyString(targetShortcut.runProgramFilePath);
+                mapping->programArgs = AllocateAndCopyString(targetShortcut.runProgramArgs);
+                mapping->uriToOpen = AllocateAndCopyString(L"");
+            }
+            else if (targetShortcut.operationType == Shortcut::OperationType::OpenURI)
+            {
+                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetText = AllocateAndCopyString(L"");
+                mapping->programPath = AllocateAndCopyString(L"");
+                mapping->programArgs = AllocateAndCopyString(L"");
+                mapping->uriToOpen = AllocateAndCopyString(targetShortcut.uriToOpen);
+            }
+            else
+            {
+                mapping->targetKeys = AllocateAndCopyString(targetKeysStr);
+                mapping->targetText = AllocateAndCopyString(L"");
+                mapping->programPath = AllocateAndCopyString(L"");
+                mapping->programArgs = AllocateAndCopyString(L"");
+                mapping->uriToOpen = AllocateAndCopyString(L"");
+            }
+        }
+        else if (targetShortcutUnion.index() == 2)
+        {
+            std::wstring text = std::get<std::wstring>(targetShortcutUnion);
+            mapping->targetKeys = AllocateAndCopyString(L"");
+            mapping->operationType = 0;
+            mapping->targetText = AllocateAndCopyString(text);
+            mapping->programPath = AllocateAndCopyString(L"");
+            mapping->programArgs = AllocateAndCopyString(L"");
+            mapping->uriToOpen = AllocateAndCopyString(L"");
+        }
+
+        return true;
+    }
+
     int GetShortcutRemapCount(void* config)
     {
         auto mapping = static_cast<MappingConfiguration*>(config);
@@ -101,7 +383,7 @@ extern "C"
 
         return count;
     }
-        
+
     bool GetShortcutRemap(void* config, int index, ShortcutMapping* mapping)
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
@@ -199,6 +481,18 @@ extern "C"
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
         return mappingConfig->AddSingleKeyRemap(static_cast<DWORD>(originalKey), static_cast<DWORD>(targetKey));
+    }
+
+    bool AddSingleKeyToTextRemap(void* config, int originalKey, const wchar_t* text)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        if (text == nullptr)
+        {
+            return false;
+        }
+
+        return mappingConfig->AddSingleKeyToTextRemap(static_cast<DWORD>(originalKey), text);
     }
 
     bool AddShortcutRemap(void* config,

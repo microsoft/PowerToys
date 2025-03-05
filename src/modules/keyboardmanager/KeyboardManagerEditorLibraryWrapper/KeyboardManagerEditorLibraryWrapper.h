@@ -17,6 +17,12 @@ struct KeyboardMapping
     bool isShortcut;
 };
 
+struct KeyboardTextMapping
+{
+    int originalKey;
+    wchar_t* targetText;
+};
+
 struct ShortcutMapping
 {
     wchar_t* originalKeys;
@@ -39,10 +45,17 @@ extern "C"
     __declspec(dllexport) int GetSingleKeyRemapCount(void* config);
     __declspec(dllexport) bool GetSingleKeyRemap(void* config, int index, KeyboardMapping* mapping);
 
+    __declspec(dllexport) int GetSingleKeyToTextRemapCount(void* config);
+    __declspec(dllexport) bool GetSingleKeyToTextRemap(void* config, int index, KeyboardTextMapping* mapping);
+
+    __declspec(dllexport) int GetShortcutRemapCountByType(void* config, int operationType);
+    __declspec(dllexport) bool GetShortcutRemapByType(void* config, int operationType, int index, ShortcutMapping* mapping);
+   
     __declspec(dllexport) int GetShortcutRemapCount(void* config);
     __declspec(dllexport) bool GetShortcutRemap(void* config, int index, ShortcutMapping* mapping);
 
     __declspec(dllexport) bool AddSingleKeyRemap(void* config, int originalKey, int targetKey);
+    __declspec(dllexport) bool AddSingleKeyToTextRemap(void* config, int originalKey, const wchar_t* text);
     __declspec(dllexport) bool AddShortcutRemap(void* config,
                                                 const wchar_t* originalKeys,
                                                 const wchar_t* targetKeys,
