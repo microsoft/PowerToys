@@ -165,6 +165,8 @@ public partial class MainListPage : DynamicListPage,
         var isAliasSubstringMatch = false;
         var isAliasMatch = false;
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
+
+        var extensionDisplayName = string.Empty;
         if (topLevelOrAppItem is TopLevelCommandItemWrapper toplevel)
         {
             isFallback = toplevel.IsFallback;
@@ -173,18 +175,21 @@ public partial class MainListPage : DynamicListPage,
                 isAliasMatch = alias == query;
                 isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query, StringComparison.CurrentCultureIgnoreCase);
             }
+
+            extensionDisplayName = toplevel.ExtensionHost?.Extension?.PackageDisplayName ?? string.Empty;
         }
 
         var nameMatch = StringMatcher.FuzzySearch(query, title);
         var descriptionMatch = StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle);
-
+        var extensionTitleMatch = StringMatcher.FuzzySearch(query, extensionDisplayName);
         var scores = new[]
         {
              nameMatch.Score,
-             (descriptionMatch.Score - 4) / 2,
+             (descriptionMatch.Score - 4) / 2.0,
              isFallback ? 1 : 0, // Always give fallbacks a chance...
         };
         var max = scores.Max();
+        max = max + (extensionTitleMatch.Score / 1.5);
 
         // ... but downweight them
         var matchSomething = (max / (isFallback ? 3 : 1))
@@ -202,7 +207,7 @@ public partial class MainListPage : DynamicListPage,
             finalScore += recentWeightBoost;
         }
 
-        return finalScore;
+        return (int)finalScore;
     }
 
     public void UpdateHistory(IListItem topLevelOrAppItem)
