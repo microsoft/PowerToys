@@ -444,6 +444,7 @@ EXAND
 EXCLUDEFROMCAPTURE
 executionpolicy
 exename
+exf
 EXITSIZEMOVE
 exlist
 EXPCMDFLAGS

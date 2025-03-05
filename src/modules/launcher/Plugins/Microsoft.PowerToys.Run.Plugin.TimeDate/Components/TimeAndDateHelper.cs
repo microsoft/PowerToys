@@ -135,20 +135,20 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
             else if (Regex.IsMatch(input, @"^exc\d+[,.0-9]*$") && double.TryParse(input.TrimStart("exc".ToCharArray()), out double excDate))
             {
-                // Excles' 1900 date value
+                // Excel's 1900 date value
                 // Input has to be in the range from 1 to 2958465.99998843 and not 60 whole number
                 // Because of a bug in Excel and the way it behaves before 3/1/1900 we have to adjust all inputs lower than 61 for +1
                 // DateTime.FromOADate returns as local time.
-                if (excDate < 1 || excDate > 2958465.99998843)
+                if (excDate < 0 || excDate > 2958465.99998843)
                 {
-                    Log.Error($"Input for Excel's 1900 date value does not fall within the range from 1 to 2958465.99998843: {excDate}", typeof(TimeAndDateHelper));
+                    Log.Error($"Input for Excel's 1900 date value does not fall within the range from 0 to 2958465.99998843: {excDate}", typeof(TimeAndDateHelper));
                     timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                     return false;
                 }
 
-                if (Math.Truncate(excDate) == 60)
+                if (Math.Truncate(excDate) == 0 || Math.Truncate(excDate) == 60)
                 {
-                    Log.Error($"Can not parse 60 as input for Excel's 1900 date value. 60 in Excel means 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123 ans is not a valid date.", typeof(TimeAndDateHelper));
+                    Log.Error($"Cannot parse {excDate} as Excel's 1900 date value because it is a fake date. (In Excel 0 stands for 0/1/1900 and this date doesn't exist. And 60 stands for 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123.)", typeof(TimeAndDateHelper));
                     timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                     return false;
                 }
@@ -159,7 +159,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
             else if (Regex.IsMatch(input, @"^exf\d+[,.0-9]*$") && double.TryParse(input.TrimStart("exf".ToCharArray()), out double exfDate))
             {
-                // Excles' 1904 date value
+                // Excel's 1904 date value
                 // Input has to be in the range from 0 to 2957003.99998843
                 // Because Excel uses 01/01/1904 as base we need to adjust for +1462
                 // DateTime.FromOADate returns as local time.

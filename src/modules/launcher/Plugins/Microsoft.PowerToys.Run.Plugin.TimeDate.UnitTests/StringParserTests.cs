@@ -47,12 +47,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("oa2958466", false, "", "")] // Value to large
         [DataRow("exc1.99998843", true, "G", "1/1/1900 11:59:59 PM")]
         [DataRow("exc59.99998843", true, "G", "2/28/1900 11:59:59 PM")]
-        [DataRow("exc60.99998843", false, "", "")] // Value 60 means in Excel 2/29/1900 and this is a fake date in Excel which we can not support.
-        [DataRow("exc60", false, "", "")] // Value 60 means in Excel 2/29/1900 and this is a fake date in Excel which we can not support.
         [DataRow("exc61", true, "G", "3/1/1900 12:00:00 AM")]
         [DataRow("exc62.99998843", true, "G", "3/2/1900 11:59:59 PM")]
         [DataRow("exc2958465.99998843", true, "G", "12/31/9999 11:59:59 PM")]
-        [DataRow("exc0", false, "", "")] // Value to large
+        [DataRow("exc0", false, "", "")] // Day 0 means in Excel 0/1/1900 and this is a fake date.
+        [DataRow("exc0.99998843", false, "", "")] // Day 0 means in Excel 0/1/1900 and this is a fake date.
+        [DataRow("exc60.99998843", false, "", "")] // Day 60 means in Excel 2/29/1900 and this is a fake date in Excel which we can not support.
+        [DataRow("exc60", false, "", "")] // Day 60 means in Excel 2/29/1900 and this is a fake date in Excel which we can not support.
+        [DataRow("exc-1", false, "", "")] // Value to large
         [DataRow("exc2958466", false, "", "")] // Value to large
         [DataRow("exf0.99998843", true, "G", "1/1/1904 11:59:59 PM")]
         [DataRow("exf2957003.99998843", true, "G", "12/31/9999 11:59:59 PM")]
