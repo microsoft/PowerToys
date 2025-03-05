@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Foundation.Metadata;
 using HB = HexBox.WinUI;
@@ -78,6 +79,7 @@ namespace RegistryPreviewUILib
                         TextWrapping = TextWrapping.NoWrap,
                         MaxHeight = 200,
                         FontSize = 14,
+                        RequestedTheme = panel.ActualTheme,
                         Text = value,
                     };
                     ScrollViewer.SetVerticalScrollBarVisibility(multiLineBox, ScrollBarVisibility.Auto);
@@ -92,6 +94,7 @@ namespace RegistryPreviewUILib
                     {
                         IsReadOnly = true,
                         FontSize = 14,
+                        RequestedTheme = panel.ActualTheme,
                         Text = value,
                     };
                     panel.Children.Add(stringBox);
@@ -115,6 +118,7 @@ namespace RegistryPreviewUILib
                 Header = resourceLoader.GetString("DataPreviewHex"),
                 IsReadOnly = true,
                 FontSize = 14,
+                RequestedTheme = panel.ActualTheme,
                 Text = value.Split(" ")[0],
             };
             var decimalBox = new TextBox()
@@ -122,6 +126,7 @@ namespace RegistryPreviewUILib
                 Header = resourceLoader.GetString("DataPreviewDec"),
                 IsReadOnly = true,
                 FontSize = 14,
+                RequestedTheme = panel.ActualTheme,
                 Text = value.Split(" ")[1].TrimStart('(').TrimEnd(')'),
             };
             panel.Children.Add(hexBox);
@@ -131,13 +136,17 @@ namespace RegistryPreviewUILib
         private static void AddBinaryView(ref StackPanel panel, ref ResourceLoader resourceLoader, ref BinaryReader data, string dataText)
         {
             // Create SelectorBar
-            var navBar = new SelectorBar();
+            var navBar = new SelectorBar()
+            {
+                RequestedTheme = panel.ActualTheme,
+            };
             navBar.SelectionChanged += BinaryPreviewSelectorChanged;
             navBar.Items.Add(new SelectorBarItem()
             {
                 Text = resourceLoader.GetString("DataPreviewDataView"),
                 Tag = "DataView",
                 FontSize = 14,
+                RequestedTheme = panel.ActualTheme,
                 IsSelected = true,
             });
             navBar.Items.Add(new SelectorBarItem()
@@ -145,6 +154,7 @@ namespace RegistryPreviewUILib
                 Text = resourceLoader.GetString("DataPreviewVisibleText"),
                 Tag = "TextView",
                 FontSize = 14,
+                RequestedTheme = panel.ActualTheme,
                 IsSelected = false,
             });
 
@@ -163,6 +173,11 @@ namespace RegistryPreviewUILib
                 DataType = HexBox.WinUI.DataType.Int_1,
                 DataSource = data,
                 Visibility = Visibility.Collapsed,
+                AddressBrush = (SolidColorBrush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"],
+                AlternatingDataColumnTextBrush = (SolidColorBrush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                SelectionTextBrush = (SolidColorBrush)Application.Current.Resources["TextOnAccentFillColorSelectedTextBrush"],
+                SelectionBrush = (SolidColorBrush)Application.Current.Resources["AccentFillColorSelectedTextBackgroundBrush"],
+                RequestedTheme = panel.ActualTheme,
             };
             binaryPreviewBox.Loaded += BinaryPreviewLoaded;
 
@@ -175,6 +190,7 @@ namespace RegistryPreviewUILib
                 Width = 500,
                 FontSize = 13,
                 Text = dataText,
+                RequestedTheme = panel.ActualTheme,
                 Visibility = Visibility.Collapsed,
             };
 
@@ -192,6 +208,7 @@ namespace RegistryPreviewUILib
                 Header = resourceLoader.GetString("DataPreviewRawValue"),
                 IsReadOnly = true,
                 FontSize = 14,
+                RequestedTheme = panel.ActualTheme,
                 Text = value,
             };
             var stringBoxExp = new TextBox()
@@ -199,6 +216,7 @@ namespace RegistryPreviewUILib
                 Header = resourceLoader.GetString("DataPreviewExpandedValue"),
                 IsReadOnly = true,
                 FontSize = 14,
+                RequestedTheme = panel.ActualTheme,
                 Text = Environment.ExpandEnvironmentVariables(value),
             };
             panel.Children.Add(stringBoxRaw);
