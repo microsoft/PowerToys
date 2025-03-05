@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
@@ -52,6 +53,8 @@ public sealed partial class MainWindow : Window,
 #pragma warning restore SA1306 // Field names should begin with lower-case letter
 #pragma warning restore SA1310 // Field names should not contain underscore
 
+    private readonly KeyboardListener _keyboardListener;
+
     // Notification Area ("Tray") icon data
     private NOTIFYICONDATAW? _trayIconData;
     private bool _createdIcon;
@@ -66,6 +69,26 @@ public sealed partial class MainWindow : Window,
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
         CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
+
+        _keyboardListener = new KeyboardListener();
+        _keyboardListener.Start();
+
+        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand((string id) =>
+        {
+            var isRootHotkey = string.IsNullOrEmpty(id);
+
+            // Note to future us: the wParam will have the index of the hotkey we registered.
+            // We can use that in the future to differentiate the hotkeys we've pressed
+            // so that we can bind hotkeys to individual commands
+            if (!this.Visible || !isRootHotkey)
+            {
+                Summon(id);
+            }
+            else if (isRootHotkey)
+            {
+                PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+            }
+        }));
 
         // TaskbarCreated is the message that's broadcast when explorer.exe
         // restarts. We need to know when that happens to be able to bring our
@@ -305,6 +328,8 @@ public sealed partial class MainWindow : Window,
         // Workaround by turning it off before shutdown.
         App.Current.DebugSettings.FailFastOnErrors = false;
         DisposeAcrylic();
+
+        _keyboardListener.Stop();
     }
 
     private void DisposeAcrylic()
@@ -399,6 +424,8 @@ public sealed partial class MainWindow : Window,
 
     private void UnregisterHotkeys()
     {
+        _keyboardListener.ClearHotkeys();
+
         while (_hotkeys.Count > 0)
         {
             PInvoke.UnregisterHotKey(_hwnd, _hotkeys.Count - 1);
@@ -413,19 +440,9 @@ public sealed partial class MainWindow : Window,
         var globalHotkey = settings.Hotkey;
         if (globalHotkey != null)
         {
-            var vk = globalHotkey.Code;
-            var modifiers =
-                (globalHotkey.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                (globalHotkey.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                (globalHotkey.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                ;
+            _keyboardListener.SetHotkeyAction(globalHotkey.Win, globalHotkey.Ctrl, globalHotkey.Shift, globalHotkey.Alt, (byte)globalHotkey.Code, string.Empty);
 
-            var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-            if (success)
-            {
-                _hotkeys.Add(new(globalHotkey, string.Empty));
-            }
+            _hotkeys.Add(new(globalHotkey, string.Empty));
         }
 
         foreach (var commandHotkey in settings.CommandHotkeys)
