@@ -215,5 +215,22 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Button>(TestConstants.TemplateLayoutNames[LayoutType.Columns]).Click(true);
             Assert.IsNotNull(Session.Find<Element>(By.ClassName(ClassName.ContextMenu)));
         }
+
+        [TestMethod]
+        public void ClickMonitor()
+        {
+            Assert.IsNotNull(Session.Find<Element>("Monitor 1"));
+            Assert.IsNotNull(Session.Find<Element>("Monitor 2"));
+
+            // verify that the monitor 1 is selected initially
+            Assert.IsTrue(Session.Find<Element>("Monitor 1").Selected);
+            Assert.IsFalse(Session.Find<Element>("Monitor 2").Selected);
+
+            Session.Find<Element>("Monitor 2").Click();
+
+            // verify that the monitor 2 is selected after click
+            Assert.IsFalse(Session.Find<Element>("Monitor 1").Selected);
+            Assert.IsTrue(Session.Find<Element>("Monitor 2").Selected);
+        }
     }
 }
