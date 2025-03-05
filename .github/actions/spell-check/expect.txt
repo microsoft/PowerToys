@@ -13,6 +13,7 @@ AColumn
 acrt
 ACTIVATEAPP
 activationaction
+ADate
 ADDSTRING
 ADDUNDORECORD
 ADifferent
