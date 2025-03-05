@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
@@ -72,6 +71,33 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 string era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(dateTimeNow));
                 string eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
 
+                // Custom formats based on local time
+                foreach (string f in TimeDateSettings.Instance.CustomFormats)
+                {
+                    string[] formatParts = f.Split("=", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    results.Add(new AvailableResult()
+                    {
+                        Value = "Not implemented",
+                        Label = formatParts[0],
+                        AlternativeSearchTag = "Custom",
+                        IconType = ResultIconType.Error,
+                    });
+                }
+
+                // Custom formats based on UTC
+                foreach (string f in TimeDateSettings.Instance.CustomFormatsUtc)
+                {
+                    string[] formatParts = f.Split("=", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    results.Add(new AvailableResult()
+                    {
+                        Value = "Not implemented",
+                        Label = formatParts[0],
+                        AlternativeSearchTag = "Custom",
+                        IconType = ResultIconType.Error,
+                    });
+                }
+
+                // Predefined formats
                 results.AddRange(new[]
                 {
                     new AvailableResult()
