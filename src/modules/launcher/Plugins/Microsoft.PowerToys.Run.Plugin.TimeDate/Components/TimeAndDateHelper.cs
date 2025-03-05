@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Wox.Plugin.Logger;
 
 [assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
 
@@ -117,6 +118,61 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 timestamp = DateTime.FromFileTime(secondsFt);
                 return true;
             }
+            else if (Regex.IsMatch(input, @"^oa-?\d+[,.0-9]*$") && double.TryParse(input.TrimStart("oa".ToCharArray()), out double oADate))
+            {
+                // OLE Automation date
+                // Input has to be in the range from -657434.99999999 to 2958465.99999999
+                // DateTime.FromOADate returns as local time.
+                if (oADate < -657434.99999999 || oADate > 2958465.99999999)
+                {
+                    Log.Error($"Input for OLE Automation date does not fall within the range from -657434.99999999 to 2958465.99999999: {oADate}", typeof(TimeAndDateHelper));
+                    timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                    return false;
+                }
+
+                timestamp = DateTime.FromOADate(oADate);
+                return true;
+            }
+            else if (Regex.IsMatch(input, @"^exc\d+[,.0-9]*$") && double.TryParse(input.TrimStart("exc".ToCharArray()), out double excDate))
+            {
+                // Excles' 1900 date value
+                // Input has to be in the range from 1 to 2958465.99998843 and not 60 whole number
+                // Because of a bug in Excel and the way it behaves before 3/1/1900 we have to adjust all inputs lower than 61 for +1
+                // DateTime.FromOADate returns as local time.
+                if (excDate < 1 || excDate > 2958465.99998843)
+                {
+                    Log.Error($"Input for Excel's 1900 date value does not fall within the range from 1 to 2958465.99998843: {excDate}", typeof(TimeAndDateHelper));
+                    timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                    return false;
+                }
+
+                if (Math.Truncate(excDate) == 60)
+                {
+                    Log.Error($"Can not parse 60 as input for Excel's 1900 date value. 60 in Excel means 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123 ans is not a valid date.", typeof(TimeAndDateHelper));
+                    timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                    return false;
+                }
+
+                excDate = excDate <= 60 ? excDate + 1 : excDate;
+                timestamp = DateTime.FromOADate(excDate);
+                return true;
+            }
+            else if (Regex.IsMatch(input, @"^exf\d+[,.0-9]*$") && double.TryParse(input.TrimStart("exf".ToCharArray()), out double exfDate))
+            {
+                // Excles' 1904 date value
+                // Input has to be in the range from 0 to 2957003.99998843
+                // Because Excel uses 01/01/1904 as base we need to adjust for +1462
+                // DateTime.FromOADate returns as local time.
+                if (exfDate < 0 || exfDate > 2957003.99998843)
+                {
+                    Log.Error($"Input for Excel's 1904 date value does not fall within the range from 0 to 2957003.99998843: {exfDate}", typeof(TimeAndDateHelper));
+                    timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                    return false;
+                }
+
+                timestamp = DateTime.FromOADate(exfDate + 1462);
+                return true;
+            }
             else
             {
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
@@ -125,13 +181,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         }
 
         /// <summary>
-        /// Test if input is special parsing for Unix time, Unix time in milliseconds or File time.
+        /// Test if input is special parsing for Unix time, Unix time in milliseconds, file time, ...
         /// </summary>
         /// <param name="input">String with date/time</param>
         /// <returns>True if yes, otherwise false</returns>
         internal static bool IsSpecialInputParsing(string input)
         {
-            return Regex.IsMatch(input, @"^.*(u|ums|ft)\d");
+            return Regex.IsMatch(input, @"^.*(u|ums|ft|oa|exc|exf)\d");
         }
 
         /// <summary>

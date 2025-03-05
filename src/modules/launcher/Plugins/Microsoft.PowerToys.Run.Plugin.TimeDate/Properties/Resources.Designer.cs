@@ -169,7 +169,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Valid prefixes: &apos;u&apos; for Unix Timestamp, &apos;ums&apos; for Unix Timestamp in milliseconds, &apos;ft&apos; for Windows file time.
+        ///   Looks up a localized string similar to Valid prefixes: &apos;u&apos; for Unix Timestamp, &apos;ums&apos; for Unix Timestamp in milliseconds, &apos;ft&apos; for Windows file time, &apos;oa&apos; for OLE Automation date, &apos;exc&apos; for Excel&apos;s 1900 date value, &apos;exf&apos; for Excel&apos;s 1904 date value.
         /// </summary>
         internal static string Microsoft_plugin_timedate_ErrorResultSubTitle {
             get {

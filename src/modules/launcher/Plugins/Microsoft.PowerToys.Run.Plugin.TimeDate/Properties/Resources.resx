@@ -156,7 +156,7 @@
     <value>Era abbreviation</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultSubTitle" xml:space="preserve">
-    <value>Valid prefixes: 'u' for Unix Timestamp, 'ums' for Unix Timestamp in milliseconds, 'ft' for Windows file time</value>
+    <value>Valid prefixes: 'u' for Unix Timestamp, 'ums' for Unix Timestamp in milliseconds, 'ft' for Windows file time, 'oa' for OLE Automation date, 'exc' for Excel's 1900 date value, 'exf' for Excel's 1904 date value</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultTitle" xml:space="preserve">
     <value>Error: Invalid number input</value>
