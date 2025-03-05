@@ -194,7 +194,6 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestCleanup]
         public void TestCleanup()
         {
-            this.TestClean();
             FancyZonesEditorHelper.Files.Restore();
         }
 
@@ -206,7 +205,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.ZoneCount;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
-            var slider = Session.FindByAccessibilityId<Element>(AccessibilityId.TemplateZoneSlider);
+            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
             Assert.IsNotNull(slider);
             slider.SendKeys(Keys.Left);
 
@@ -231,7 +230,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
                 Session.Find<Button>(name).Click();
 
-                var slider = Session.FindByAccessibilityId<Element>(AccessibilityId.SensitivitySlider);
+                var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
                 Assert.IsNotNull(slider);
                 var expected = Layouts.LayoutTemplates.Find(x => x.Type == type.TypeToString()).SensitivityRadius;
                 Assert.AreEqual($"{expected}", slider.Text);
@@ -248,7 +247,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var value = layout.SensitivityRadius;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
-            var slider = Session.FindByAccessibilityId<Element>(AccessibilityId.SensitivitySlider);
+            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
             Assert.IsNotNull(slider);
             slider.SendKeys(Keys.Right);
 
@@ -272,7 +271,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.SensitivityRadius;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
-            var slider = Session.FindByAccessibilityId<Element>(AccessibilityId.SensitivitySlider);
+            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
             Assert.IsNotNull(slider);
             slider.SendKeys(Keys.Right);
             Session.Find<Button>(ElementName.Cancel).Click();
@@ -297,7 +296,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
                 Session.Find<Button>(name).Click();
 
-                var slider = Session.FindByAccessibilityId<Element>(AccessibilityId.SpacingSlider);
+                var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
                 Assert.IsNotNull(slider);
 
                 var spacingEnabled = Layouts.LayoutTemplates.Find(x => x.Type == type.TypeToString()).ShowSpacing;
@@ -318,7 +317,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.Spacing + 1;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
-            var slider = Session.FindByAccessibilityId<Element>(AccessibilityId.SpacingSlider);
+            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
             Assert.IsNotNull(slider);
             slider.SendKeys(Keys.Right);
             Assert.AreEqual($"{expected}", slider.Text);
@@ -340,7 +339,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.Spacing;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
-            var slider = Session.FindByAccessibilityId<Element>(AccessibilityId.SpacingSlider);
+            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
             Assert.IsNotNull(slider);
             slider.SendKeys(Keys.Right);
             Assert.AreEqual($"{expected + 1}", slider.Text);
@@ -362,11 +361,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = !layout.ShowSpacing;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
-            var toggle = Session.FindByAccessibilityId<Element>(AccessibilityId.SpacingToggle);
+            var toggle = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingToggle));
             Assert.IsNotNull(toggle);
             toggle.Click();
             Assert.AreEqual(expected, toggle.Selected);
-            Assert.AreEqual(expected, Session.FindByAccessibilityId<Element>(AccessibilityId.SpacingSlider)?.Enabled);
+            Assert.AreEqual(expected, Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider))?.Enabled);
 
             Session.Find<Button>(ElementName.Save).Click();
 
@@ -385,11 +384,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.ShowSpacing;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
-            var toggle = Session.FindByAccessibilityId<Element>(AccessibilityId.SpacingToggle);
+            var toggle = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingToggle));
             Assert.IsNotNull(toggle);
             toggle.Click();
             Assert.AreNotEqual(expected, toggle.Selected);
-            Assert.AreNotEqual(expected, Session.FindByAccessibilityId<Element>(AccessibilityId.SpacingSlider)?.Enabled);
+            Assert.AreNotEqual(expected, Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider))?.Enabled);
 
             Session.Find<Button>(ElementName.Cancel).Click();
 

@@ -52,9 +52,10 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// UnInitializes the test.
         /// </summary>
+        [TestCleanup]
         public void TestClean()
         {
-            this.sessionHelper.Cleanup();
+            // this.sessionHelper.Cleanup();
         }
 
         /// <summary>

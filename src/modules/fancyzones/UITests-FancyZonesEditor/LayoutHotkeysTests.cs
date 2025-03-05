@@ -301,7 +301,6 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void TestCleanup()
         {
             FancyZonesEditorHelper.Files.Restore();
-            this.TestClean();
         }
 
         [TestMethod]
@@ -309,9 +308,9 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             foreach (var layout in CustomLayouts.CustomLayouts)
             {
-                Session.Find<Element>(layout.Name).FindByAccessibilityId<Button>(AccessibilityId.EditLayoutButton).Click();
+                Session.Find<Element>(layout.Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
 
-                var hotkeyComboBox = Session.FindByAccessibilityId<Element>(AccessibilityId.HotkeyComboBox);
+                var hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
                 Assert.IsNotNull(hotkeyComboBox);
 
                 // verify the selected key
@@ -352,11 +351,11 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Assign_Save()
         {
             var layout = CustomLayouts.CustomLayouts[4]; // a layout without assigned hotkey
-            Session.Find<Element>(layout.Name).FindByAccessibilityId<Button>(AccessibilityId.EditLayoutButton).Click();
+            Session.Find<Element>(layout.Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
 
             // assign hotkey
             const string key = "3";
-            var hotkeyComboBox = Session.FindByAccessibilityId<Element>(AccessibilityId.HotkeyComboBox);
+            var hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
 
@@ -373,8 +372,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = int.Parse(key, CultureInfo.InvariantCulture), LayoutId = layout.Uuid }));
 
             // verify the availability
-            Session.Find<Element>(CustomLayouts.CustomLayouts[5].Name).FindByAccessibilityId<Button>(AccessibilityId.EditLayoutButton).Click();
-            hotkeyComboBox = Session.FindByAccessibilityId<Element>(AccessibilityId.HotkeyComboBox);
+            Session.Find<Element>(CustomLayouts.CustomLayouts[5].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
 
@@ -395,11 +394,11 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void Assign_Cancel()
         {
             var layout = CustomLayouts.CustomLayouts[4]; // a layout without assigned hotkey
-            Session.Find<Element>(layout.Name).FindByAccessibilityId<Button>(AccessibilityId.EditLayoutButton).Click();
+            Session.Find<Element>(layout.Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
 
             // assign a hotkey
             const string key = "3";
-            var hotkeyComboBox = Session.FindByAccessibilityId<Element>(AccessibilityId.HotkeyComboBox);
+            var hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
             var popup = Session.Find<Element>(By.ClassName(ClassName.Popup));
@@ -414,8 +413,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(Hotkeys.ToString(), actualData.ToString());
 
             // verify the availability
-            Session.Find<Element>(CustomLayouts.CustomLayouts[5].Name).FindByAccessibilityId<Button>(AccessibilityId.EditLayoutButton).Click();
-            hotkeyComboBox = Session.FindByAccessibilityId<Element>(AccessibilityId.HotkeyComboBox);
+            Session.Find<Element>(CustomLayouts.CustomLayouts[5].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
             popup = Session.Find<Element>(By.ClassName(ClassName.Popup));
@@ -436,9 +435,9 @@ namespace Microsoft.FancyZonesEditor.UITests
             for (int i = 0; i < 10; i++)
             {
                 string layoutName = $"Layout {i}";
-                Session.Find<Element>(layoutName).FindByAccessibilityId<Button>(AccessibilityId.EditLayoutButton).Click();
+                Session.Find<Element>(layoutName).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
 
-                var hotkeyComboBox = Session.FindByAccessibilityId<Element>(AccessibilityId.HotkeyComboBox);
+                var hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
                 Assert.IsNotNull(hotkeyComboBox);
                 hotkeyComboBox.Click();
                 var popup = Session.Find<Element>(By.ClassName(ClassName.Popup));
@@ -452,8 +451,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             {
                 int layout = 10;
                 string layoutName = $"Layout {layout}";
-                Session.Find<Element>(layoutName).FindByAccessibilityId<Button>(AccessibilityId.EditLayoutButton).Click();
-                var hotkeyComboBox = Session.FindByAccessibilityId<Element>(AccessibilityId.HotkeyComboBox);
+                Session.Find<Element>(layoutName).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+                var hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
                 Assert.IsNotNull(hotkeyComboBox);
                 hotkeyComboBox.Click();
                 var popup = Session.Find<Element>(By.ClassName(ClassName.Popup));
@@ -481,11 +480,11 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var layout = CustomLayouts.CustomLayouts[0]; // a layout with assigned hotkey
             int assignedKey = Hotkeys.LayoutHotkeys.Find(x => x.LayoutId == layout.Uuid).Key;
-            Session.Find<Element>(layout.Name).FindByAccessibilityId<Button>(AccessibilityId.EditLayoutButton).Click();
+            Session.Find<Element>(layout.Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             const string None = "None";
 
             // reset the hotkey
-            var hotkeyComboBox = Session.FindByAccessibilityId<Element>(AccessibilityId.HotkeyComboBox);
+            var hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
             var popup = Session.Find<Element>(By.ClassName(ClassName.Popup));
@@ -500,8 +499,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsFalse(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = assignedKey, LayoutId = layout.Uuid }));
 
             // verify the previously assigned key is available
-            Session.Find<Element>(CustomLayouts.CustomLayouts[6].Name).FindByAccessibilityId<Button>(AccessibilityId.EditLayoutButton).Click();
-            hotkeyComboBox = Session.FindByAccessibilityId<Element>(AccessibilityId.HotkeyComboBox);
+            Session.Find<Element>(CustomLayouts.CustomLayouts[6].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
             popup = Session.Find<Element>(By.ClassName(ClassName.Popup));
@@ -521,11 +520,11 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var layout = CustomLayouts.CustomLayouts[0]; // a layout with assigned hotkey
             int assignedKey = Hotkeys.LayoutHotkeys.Find(x => x.LayoutId == layout.Uuid).Key;
-            Session.Find<Element>(layout.Name).FindByAccessibilityId<Button>(AccessibilityId.EditLayoutButton).Click();
+            Session.Find<Element>(layout.Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             const string None = "None";
 
             // assign hotkey
-            var hotkeyComboBox = Session.FindByAccessibilityId<Element>(AccessibilityId.HotkeyComboBox);
+            var hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
             var popup = Session.Find<Element>(By.ClassName(ClassName.Popup));
@@ -540,8 +539,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = assignedKey, LayoutId = layout.Uuid }));
 
             // verify the previously assigned key is not available
-            Session.Find<Element>(CustomLayouts.CustomLayouts[6].Name).FindByAccessibilityId<Button>(AccessibilityId.EditLayoutButton).Click();
-            hotkeyComboBox = Session.FindByAccessibilityId<Element>(AccessibilityId.HotkeyComboBox);
+            Session.Find<Element>(CustomLayouts.CustomLayouts[6].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
             popup = Session.Find<Element>(By.ClassName(ClassName.Popup));

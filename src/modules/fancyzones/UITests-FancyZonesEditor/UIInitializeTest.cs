@@ -32,12 +32,6 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.Restore();
         }
 
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            this.TestClean();
-        }
-
         [TestMethod]
         public void EditorParams_VerifySelectedMonitor()
         {
@@ -121,7 +115,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             this.RestartScopeExe();
 
             var monitor = Session.Find<Element>("Monitor 1");
-            var scaling = monitor.FindByAccessibilityId<Element>("ScalingText");
+            var scaling = monitor.Find<Element>(By.AccessibilityId("ScalingText"));
             Assert.AreEqual("200%", scaling.Text);
         }
 
@@ -157,7 +151,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             this.RestartScopeExe();
 
             var monitor = Session.Find<Element>("Monitor 1");
-            var resolution = monitor.FindByAccessibilityId<Element>("ResolutionText");
+            var resolution = monitor.Find<Element>(By.AccessibilityId("ResolutionText"));
             Assert.AreEqual("1920 × 1080", resolution.Text);
         }
 
@@ -317,7 +311,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(layoutOnMonitor1.Selected);
 
             // check layout on monitor 2
-            Session.FindByAccessibilityId<Element>("Monitors").Find<Element>("Monitor 2").Click();
+            Session.Find<Element>(By.AccessibilityId("Monitors")).Find<Element>("Monitor 2").Click();
             var layoutOnMonitor2 = Session.Find<Element>(customLayoutListWrapper.CustomLayouts[0].Name);
             Assert.IsNotNull(layoutOnMonitor2);
             Assert.IsTrue(layoutOnMonitor2.Selected);
@@ -545,12 +539,12 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // check the number of zones and spacing
             Session.Find<Button>(TestConstants.TemplateLayoutNames[LayoutType.Grid]).Click();
-            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ZoneCount, int.Parse(Session.FindByAccessibilityId<Element>(AccessibilityId.TemplateZoneSlider)?.Text!, CultureInfo.InvariantCulture));
-            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.Spacing, int.Parse(Session.FindByAccessibilityId<Element>(AccessibilityId.SpacingSlider)?.Text!, CultureInfo.InvariantCulture));
-            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ShowSpacing, Session.FindByAccessibilityId<Element>(AccessibilityId.SpacingSlider)?.Enabled);
-            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ShowSpacing, Session.FindByAccessibilityId<Element>(AccessibilityId.SpacingToggle)?.Selected);
-            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.SensitivityRadius, int.Parse(Session.FindByAccessibilityId<Element>(AccessibilityId.SensitivitySlider)?.Text!, CultureInfo.InvariantCulture));
-            Assert.IsNotNull(Session.FindByAccessibilityId<Element>(AccessibilityId.HorizontalDefaultButtonChecked));
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ZoneCount, int.Parse(Session.Find<Element>(By.AccessibilityId(AccessibilityId.TemplateZoneSlider))?.Text!, CultureInfo.InvariantCulture));
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.Spacing, int.Parse(Session.Find<Element>(By.AccessibilityId(AccessibilityId.SpacingSlider))?.Text!, CultureInfo.InvariantCulture));
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ShowSpacing, Session.Find<Element>(By.AccessibilityId(AccessibilityId.SpacingSlider))?.Enabled);
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ShowSpacing, Session.Find<Element>(By.AccessibilityId(AccessibilityId.SpacingToggle))?.Selected);
+            Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.SensitivityRadius, int.Parse(Session.Find<Element>(By.AccessibilityId(AccessibilityId.SensitivitySlider))?.Text!, CultureInfo.InvariantCulture));
+            Assert.IsNotNull(Session.Find<Element>(By.AccessibilityId(AccessibilityId.HorizontalDefaultButtonChecked)));
         }
 
         [TestMethod]
@@ -762,7 +756,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // verify editor opens without errors
             this.RestartScopeExe();
-            Assert.IsNotNull(Session.FindByAccessibilityId<Element>(FancyZonesEditorHelper.AccessibilityId.MainWindow));
+            Assert.IsNotNull(Session.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.MainWindow)));
         }
     }
 }

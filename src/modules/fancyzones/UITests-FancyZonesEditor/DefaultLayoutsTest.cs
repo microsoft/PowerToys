@@ -64,27 +64,21 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
         }
 
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            this.TestClean();
-        }
-
         [TestMethod]
         public void ClickMonitor()
         {
-            Assert.IsNotNull(Session.FindByAccessibilityId<Element>("Monitors").Find<Element>("Monitor 1"));
-            Assert.IsNotNull(Session.FindByAccessibilityId<Element>("Monitors").Find<Element>("Monitor 2"));
+            Assert.IsNotNull(Session.Find<Element>("Monitor 1"));
+            Assert.IsNotNull(Session.Find<Element>("Monitor 2"));
 
             // verify that the monitor 1 is selected initially
-            Assert.IsTrue(Session.FindByAccessibilityId<Element>("Monitors").Find<Element>("Monitor 1").Selected);
-            Assert.IsFalse(Session.FindByAccessibilityId<Element>("Monitors").Find<Element>("Monitor 2").Selected);
+            Assert.IsTrue(Session.Find<Element>("Monitor 1").Selected);
+            Assert.IsFalse(Session.Find<Element>("Monitor 2").Selected);
 
-            Session.FindByAccessibilityId<Element>("Monitors").Find<Element>("Monitor 2").Click();
+            Session.Find<Element>("Monitor 2").Click();
 
             // verify that the monitor 2 is selected after click
-            Assert.IsFalse(Session.FindByAccessibilityId<Element>("Monitors").Find<Element>("Monitor 1").Selected);
-            Assert.IsTrue(Session.FindByAccessibilityId<Element>("Monitors").Find<Element>("Monitor 2").Selected);
+            Assert.IsFalse(Session.Find<Element>("Monitor 1").Selected);
+            Assert.IsTrue(Session.Find<Element>("Monitor 2").Selected);
         }
     }
 }

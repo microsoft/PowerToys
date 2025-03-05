@@ -40,12 +40,6 @@ namespace Microsoft.FancyZonesEditor.UITests
                 this.RestartScopeExe();
             }
 
-            [TestCleanup]
-            public void TestCleanup()
-            {
-                this.TestClean();
-            }
-
             [TestMethod]
             public void FirstLaunch() // verify the session is initialized
             {

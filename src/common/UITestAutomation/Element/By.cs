@@ -11,17 +11,40 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     public class By
     {
-        private readonly OpenQA.Selenium.By by;
+        private readonly OpenQA.Selenium.By? by;
+        private readonly bool isAccessibilityId;
+        private readonly string? accessibilityId;
 
         private By(OpenQA.Selenium.By by)
         {
+            isAccessibilityId = false;
             this.by = by;
+        }
+
+        private By(string accessibilityId)
+        {
+            isAccessibilityId = true;
+            this.accessibilityId = accessibilityId;
         }
 
         public override string ToString()
         {
             // override ToString to return detailed debugging content provided by OpenQA.Selenium.By
-            return this.by.ToString();
+            return this.GetAccessibilityId();
+        }
+
+        public bool GetIsAccessibilityId() => this.isAccessibilityId;
+
+        public string GetAccessibilityId()
+        {
+            if (this.isAccessibilityId)
+            {
+                return this.accessibilityId!;
+            }
+            else
+            {
+                return this.by!.ToString();
+            }
         }
 
         /// <summary>
@@ -44,6 +67,13 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="id">The ID attribute to search for.</param>
         /// <returns>A By object.</returns>
         public static By Id(string id) => new By(OpenQA.Selenium.By.Id(id));
+
+        /// <summary>
+        /// Creates a By object using the ID attribute.
+        /// </summary>
+        /// <param name="accessibilityId">The ID attribute to search for.</param>
+        /// <returns>A By object.</returns>
+        public static By AccessibilityId(string accessibilityId) => new By(accessibilityId);
 
         /// <summary>
         /// Creates a By object using the XPath expression.
@@ -77,6 +107,6 @@ namespace Microsoft.PowerToys.UITest
         /// Converts the By object to an OpenQA.Selenium.By object.
         /// </summary>
         /// <returns>An OpenQA.Selenium.By object.</returns>
-        internal OpenQA.Selenium.By ToSeleniumBy() => by;
+        internal OpenQA.Selenium.By ToSeleniumBy() => by!;
     }
 }

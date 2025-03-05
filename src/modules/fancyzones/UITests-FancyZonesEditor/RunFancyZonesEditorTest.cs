@@ -171,21 +171,10 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.Restore();
         }
 
-        [TestInitialize]
-        public void TestInitialize()
-        {
-        }
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            this.TestClean();
-        }
-
         [TestMethod]
         public void OpenNewLayoutDialog() // verify the new layout dialog is opened
         {
-            Session.FindByAccessibilityId<Button>(AccessibilityId.NewLayoutButton).Click();
+            Session.Find<Button>(By.AccessibilityId(AccessibilityId.NewLayoutButton)).Click();
             Assert.IsNotNull(Session.Find<Element>("Choose layout type")); // check the pane header
         }
 
@@ -193,7 +182,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void OpenEditLayoutDialog() // verify the edit layout dialog is opened
         {
             Session.Find<Button>(TestConstants.TemplateLayoutNames[LayoutType.Grid]).Click();
-            Assert.IsNotNull(Session.FindByAccessibilityId<Element>(FancyZonesEditorHelper.AccessibilityId.DialogTitle)); // check the pane header
+            Assert.IsNotNull(Session.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.DialogTitle))); // check the pane header
             Assert.IsNotNull(Session.Find<Element>($"Edit '{TestConstants.TemplateLayoutNames[LayoutType.Grid]}'")); // verify it's opened for the correct layout
         }
 
@@ -204,7 +193,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var menu = Session.Find<Element>(By.ClassName(ClassName.ContextMenu));
             menu.Find<Element>(FancyZonesEditorHelper.ElementName.Edit).Click();
 
-            Assert.IsNotNull(Session.FindByAccessibilityId<Element>(FancyZonesEditorHelper.AccessibilityId.DialogTitle)); // check the pane header
+            Assert.IsNotNull(Session.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.DialogTitle))); // check the pane header
             Assert.IsNotNull(Session.Find<Element>($"Edit '{TestConstants.TemplateLayoutNames[LayoutType.Grid]}'")); // verify it's opened for the correct layout
         }
 
@@ -216,7 +205,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var menu = Session.Find<Element>(By.ClassName(ClassName.ContextMenu));
             menu.Find<Element>(FancyZonesEditorHelper.ElementName.Edit).Click();
 
-            Assert.IsNotNull(Session.FindByAccessibilityId<Element>(FancyZonesEditorHelper.AccessibilityId.DialogTitle)); // check the pane header
+            Assert.IsNotNull(Session.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.DialogTitle))); // check the pane header
             Assert.IsNotNull(Session.Find<Element>($"Edit '{layoutName}'")); // verify it's opened for the correct layout
         }
 
