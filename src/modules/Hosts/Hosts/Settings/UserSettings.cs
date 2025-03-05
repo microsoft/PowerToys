@@ -43,7 +43,17 @@ namespace Hosts.Settings
         public HostsAdditionalLinesPosition AdditionalLinesPosition { get; private set; }
 
         // Moved from Settings.UI.Library
-        public HostsEncoding Encoding { get; set; }
+        public HostsEncoding Encoding { get; private set; }
+
+        public bool BackupHosts { get; private set; }
+
+        public string BackupPath { get; private set; }
+
+        public bool DeleteBackups { get; private set; }
+
+        public int DaysToKeep { get; private set; }
+
+        public int CopiesToKeep { get; private set; }
 
         public event EventHandler LoopbackDuplicatesChanged;
 
@@ -54,6 +64,11 @@ namespace Hosts.Settings
             LoopbackDuplicates = false;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;
+            BackupHosts = true;
+            BackupPath = @"C:\Windows\system32\drivers\etc";
+            DeleteBackups = true;
+            DaysToKeep = 15;
+            CopiesToKeep = 5;
 
             LoadSettingsFromJson();
 
@@ -88,6 +103,11 @@ namespace Hosts.Settings
                             AdditionalLinesPosition = (HostsAdditionalLinesPosition)settings.Properties.AdditionalLinesPosition;
                             Encoding = (HostsEncoding)settings.Properties.Encoding;
                             LoopbackDuplicates = settings.Properties.LoopbackDuplicates;
+                            BackupHosts = settings.Properties.BackupHosts;
+                            BackupPath = settings.Properties.BackupPath;
+                            DeleteBackups = settings.Properties.DeleteBackups;
+                            DaysToKeep = settings.Properties.DaysToKeep;
+                            CopiesToKeep = settings.Properties.CopiesToKeep;
                         }
 
                         retry = false;

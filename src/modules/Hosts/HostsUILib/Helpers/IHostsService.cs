@@ -12,7 +12,7 @@ namespace HostsUILib.Helpers
 {
     public interface IHostsService
     {
-        string HostsFilePath { get; }
+        static string HostsFilePath { get; }
 
         event EventHandler FileChanged;
 
@@ -21,8 +21,6 @@ namespace HostsUILib.Helpers
         Task WriteAsync(string additionalLines, IEnumerable<Entry> entries);
 
         Task<bool> PingAsync(string address);
-
-        void CleanupBackup();
 
         void OpenHostsFile();
 

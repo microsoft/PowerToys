@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -4998,5 +4998,40 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="CmdPal_ActivationShortcut.Description" xml:space="preserve">
     <value>Go to Command Palette settings to customize the activation shortcut.</value>
+  </data>
+  <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="Hosts_Backup.Header" xml:space="preserve">
+    <value>Backup hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Backup.Description" xml:space="preserve">
+    <value>Automatically create a backup of the hosts file when you save for the first time in a session</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Backup_Location.Header" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Hosts_ButtonSelectLocation.Text" xml:space="preserve">
+    <value>Select location</value>
+  </data>
+  <data name="Hosts_Delete_Backup.Content" xml:space="preserve">
+    <value>Automatically delete old backups</value>
+  </data>
+  <data name="Hosts_Backup_DaysToKeep.Header" xml:space="preserve">
+    <value>Days to keep</value>
+  </data>
+  <data name="Hosts_Backup_CopiesToKeep.Header" xml:space="preserve">
+    <value>Backups to keep</value>
+  </data>
+  <data name="Hosts_Backup_CopiesToKeep.Description" xml:space="preserve">
+    <value>Specify a fixed number of backup copies to retain</value>
+  </data>
+  <data name="Hosts_Backup_DaysToKeep.Description" xml:space="preserve">
+    <value>Specify the number of days to retain backups</value>
+  </data>
+  <data name="Hosts_DeleteBackupWarning.Title" xml:space="preserve">
+    <value>Backups will never will be kept indefinitely with the current configuration</value>
   </data>
 </root>
