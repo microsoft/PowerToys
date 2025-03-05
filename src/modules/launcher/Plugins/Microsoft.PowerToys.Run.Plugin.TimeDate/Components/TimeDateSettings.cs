@@ -67,11 +67,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         internal List<string> CustomFormats { get; private set; }
 
         /// <summary>
-        /// Gets a value containing the custom format definitions using UTC
-        /// </summary>
-        internal List<string> CustomFormatsUtc { get; private set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="TimeDateSettings"/> class.
         /// Private constructor to make sure there is never more than one instance of this class
         /// </summary>
@@ -165,17 +160,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     Key = nameof(CustomFormats),
                     PluginOptionType = PluginAdditionalOption.AdditionalOptionType.MultilineTextbox,
                     DisplayLabel = Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
-                    DisplayDescription = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "WOM", "WOY", "ELF", "WFT", "UXT", "UXMS", "OAD", "EXC", "EXF"),
-                    PlaceholderText = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)",
-                    TextValue = string.Empty,
-                },
-                new PluginAdditionalOption()
-                {
-                    Key = nameof(CustomFormatsUtc),
-                    PluginOptionType = PluginAdditionalOption.AdditionalOptionType.MultilineTextbox,
-                    DisplayLabel = Resources.Microsoft_plugin_timedate_Setting_CustomFormatsUtc,
-                    DisplayDescription = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "WOM", "WOY", "ELF", "WFT", "UXT", "UXMS", "OAD", "EXC", "EXF"),
-                    PlaceholderText = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)",
+                    DisplayDescription = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "WOM", "WOY", "ELF", "WFT", "UXT", "UXMS", "OAD", "EXC", "EXF", "UTC:"),
+                    PlaceholderText = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)\rMyUtcFormat=UTC:hh:mm:ss",
                     TextValue = string.Empty,
                 },
             };
@@ -201,7 +187,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             DateWithWeekday = GetSettingOrDefault(settings, nameof(DateWithWeekday));
             HideNumberMessageOnGlobalQuery = GetSettingOrDefault(settings, nameof(HideNumberMessageOnGlobalQuery));
             CustomFormats = GetMultilineTextSettingOrDefault(settings, nameof(CustomFormats));
-            CustomFormatsUtc = GetMultilineTextSettingOrDefault(settings, nameof(CustomFormatsUtc));
         }
 
         /// <summary>

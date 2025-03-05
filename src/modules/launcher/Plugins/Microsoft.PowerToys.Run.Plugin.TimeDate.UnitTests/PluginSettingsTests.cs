@@ -24,7 +24,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             var result = settings?.Length;
 
             // Assert
-            Assert.AreEqual(8, result);
+            Assert.AreEqual(7, result);
         }
 
         [DataTestMethod]
@@ -35,7 +35,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("DateWithWeekday")]
         [DataRow("HideNumberMessageOnGlobalQuery")]
         [DataRow("CustomFormats")]
-        [DataRow("CustomFormatsUtc")]
         public void DoesSettingExist(string name)
         {
             // Setup
@@ -84,7 +83,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
         [DataTestMethod]
         [DataRow("CustomFormats")]
-        [DataRow("CustomFormatsUtc")]
         public void DefaultEmptyMultilineTextValues(string name)
         {
             // Setup

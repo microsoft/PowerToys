@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection.Metadata;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Microsoft.VisualBasic.Logging;
 
@@ -73,31 +74,52 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 string eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
 
                 // Custom formats
-                int counter = 0;
-                foreach (string f in TimeDateSettings.Instance.CustomFormats.Concat(TimeDateSettings.Instance.CustomFormatsUtc))
+                foreach (string f in TimeDateSettings.Instance.CustomFormats)
                 {
-                    counter++;
+                    // bool isUtcFormat = true;
                     string[] formatParts = f.Split("=", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                    bool containsCustomSyntax = TimeAndDateHelper.StringContainsCustomFormatSyntax(formatParts[1]);
-                    bool isUtcFormat = TimeDateSettings.Instance.CustomFormats.Count == 0 || counter > TimeDateSettings.Instance.CustomFormats.Count;
+                    string formatSyntax = formatParts.Length == 2 ? formatParts[1] : string.Empty;
+                    string searchTags = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagCustom");
 
                     // If Length = 0 then empty string.
                     if (formatParts.Length >= 1)
                     {
                         try
                         {
-                            throw new NotImplementedException();
+                            // Verify and check input and update search tags
+                            if (formatParts.Length == 1)
+                            {
+                                throw new FormatException("Format syntax part after equal sign is missing.");
+                            }
+
+                            bool containsCustomSyntax = TimeAndDateHelper.StringContainsCustomFormatSyntax(formatSyntax);
+                            if (formatSyntax.StartsWith("UTC:", StringComparison.InvariantCulture))
+                            {
+                                // isUtcFormat = true;
+                                // formatSyntax = formatSyntax.Remove(0, 4); => Not do this here.
+                                searchTags = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagCustomUtc");
+                            }
+
+                            // Get formated date
+                            var value = "xxx";
+
+                            // Add result
+                            results.Add(new AvailableResult()
+                            {
+                                Value = value,
+                                Label = formatParts[0],
+                                AlternativeSearchTag = searchTags,
+                                IconType = ResultIconType.DateTime,
+                            });
                         }
                         catch (Exception e)
                         {
-                            string syntax = formatParts.Length == 2 ? formatParts[1] : string.Empty;
-
-                            Wox.Plugin.Logger.Log.Exception($"Failed to convert into custom format {formatParts[0]}: {syntax}", e, typeof(AvailableResultsList));
+                            Wox.Plugin.Logger.Log.Exception($"Failed to convert into custom format {formatParts[0]}: {formatSyntax}", e, typeof(AvailableResultsList));
                             results.Add(new AvailableResult()
                             {
-                                Value = Resources.Microsoft_plugin_timedate_InvalidCustomFormat + " " + syntax,
+                                Value = Resources.Microsoft_plugin_timedate_InvalidCustomFormat + " " + formatSyntax,
                                 Label = formatParts[0],
-                                AlternativeSearchTag = isUtcFormat ? "Custom UTC" : "Custom",
+                                AlternativeSearchTag = searchTags,
                                 IconType = ResultIconType.Error,
                             });
                         }

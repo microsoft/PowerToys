@@ -243,8 +243,24 @@
     <value>Date and time; Time and Date</value>
     <comment>Don't change order</comment>
   </data>
+  <data name="Microsoft_plugin_timedate_SearchTagCustom" xml:space="preserve">
+    <value>Date and time; Time and Date; Custom format</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagCustomUtc" xml:space="preserve">
+    <value>Date and time UTC; Time UTC and Date; Custom UTC format</value>
+    <comment>Don't change order</comment>
+  </data>
   <data name="Microsoft_plugin_timedate_SearchTagFormatNow" xml:space="preserve">
     <value>Current date and time; Current time and date; Now</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagCustomNow" xml:space="preserve">
+    <value>Current date and time; Current time and date; Now; Custom format</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagCustomUtcNow" xml:space="preserve">
+    <value>Current date and time UTC; Current time UTC and date; Now UTC; Custom UTC format</value>
     <comment>Don't change order</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagTime" xml:space="preserve">
@@ -366,11 +382,8 @@
   <data name="Microsoft_plugin_timedate_Setting_CustomFormats" xml:space="preserve">
     <value>Custom formats using local time</value>
   </data>
-  <data name="Microsoft_plugin_timedate_Setting_CustomFormatsUtc" xml:space="preserve">
-    <value>Custom formats using Universal Time Convention (UTC)</value>
-  </data>
   <data name="Microsoft_plugin_timedate_Setting_CustomFormatsDescription" xml:space="preserve">
-    <value>Use date and time string format syntax and {0} (Day of Week), {1} (Week of Month), {2} (Week of the year), {3} (Era long format), {4} (Windows File Time), {5} (Unix Time), {6} (Unix Time in milliseconds), {7} (OLE Automation date), {8} (Excel's 1900 based date value), {9} (Excel's 1904 based date value). (Use a backslash to escape format sequences and the backslash character as text.)</value>
+    <value>Use date and time string format syntax and {0} (Day of Week), {1} (Week of Month), {2} (Week of the year), {3} (Era long format), {4} (Windows File Time), {5} (Unix Time), {6} (Unix Time in milliseconds), {7} (OLE Automation date), {8} (Excel's 1900 based date value), {9} (Excel's 1904 based date value). If the format starts with {10}, then Universal Time (UTC) is used. (Use a backslash to escape format sequences and the backslash character as text.)</value>
     <comment>The {n} parts are place holders and get replaced in the code.</comment>
   </data>
 </root>

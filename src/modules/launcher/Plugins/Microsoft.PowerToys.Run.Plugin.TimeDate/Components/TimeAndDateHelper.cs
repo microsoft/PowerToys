@@ -280,12 +280,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
     }
 
     /// <summary>
-    /// Differnet versions of Date formats based on OLE Automation date
+    /// Different versions of Date formats based on OLE Automation date
     /// </summary>
     internal enum OADateFormats
     {
         OLEAutomation,
-        Excle1900,
+        Excel1900,
         Excel1904,
     }
 }
