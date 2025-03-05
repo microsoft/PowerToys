@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -13,7 +14,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContentPageViewModel : PageViewModel
+public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 {
     private readonly ExtensionObject<IContentPage> _model;
 
@@ -28,6 +29,20 @@ public partial class ContentPageViewModel : PageViewModel
 
     [MemberNotNullWhen(true, nameof(Details))]
     public bool HasDetails => Details != null;
+
+    /////// ICommandBarContext ///////
+    public IEnumerable<CommandContextItemViewModel> MoreCommands => Commands.Skip(1);
+
+    public bool HasMoreCommands => Commands.Count > 1;
+
+    public string SecondaryCommandName => SecondaryCommand?.Name ?? string.Empty;
+
+    public CommandItemViewModel? PrimaryCommand => HasCommands ? Commands[0] : null;
+
+    public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? Commands[1] : null;
+
+    public List<CommandContextItemViewModel> AllCommands => Commands;
+    /////// /ICommandBarContext ///////
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -102,6 +117,10 @@ public partial class ContentPageViewModel : PageViewModel
             .Select(contextItem => (contextItem as ICommandContextItem)!)
             .Select(contextItem => new CommandContextItemViewModel(contextItem, PageContext))
             .ToList();
+        Commands.ForEach(contextItem =>
+        {
+            contextItem.InitializeProperties();
+        });
 
         var extensionDetails = model.Details;
         if (extensionDetails != null)
@@ -114,6 +133,15 @@ public partial class ContentPageViewModel : PageViewModel
 
         FetchContent();
         model.ItemsChanged += Model_ItemsChanged;
+
+        Task.Factory.StartNew(
+        () =>
+        {
+            WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(this));
+        },
+        CancellationToken.None,
+        TaskCreationOptions.None,
+        PageContext.Scheduler);
     }
 
     protected override void FetchProperty(string propertyName)
@@ -128,10 +156,47 @@ public partial class ContentPageViewModel : PageViewModel
 
         switch (propertyName)
         {
-            // case nameof(Commands):
-            //     TODO GH #360 - make MoreCommands observable
-            //     this.ShowDetails = model.ShowDetails;
-            //     break;
+            case nameof(Commands):
+
+                var more = model.Commands;
+                if (more != null)
+                {
+                    var newContextMenu = more
+                        .Where(contextItem => contextItem is ICommandContextItem)
+                        .Select(contextItem => (contextItem as ICommandContextItem)!)
+                        .Select(contextItem => new CommandContextItemViewModel(contextItem, PageContext))
+                        .ToList();
+                    lock (Commands)
+                    {
+                        ListHelpers.InPlaceUpdateList(Commands, newContextMenu);
+                    }
+
+                    Commands.ForEach(contextItem =>
+                    {
+                        contextItem.InitializeProperties();
+                    });
+                }
+                else
+                {
+                    Commands.Clear();
+                }
+
+                UpdateProperty(nameof(PrimaryCommand));
+                UpdateProperty(nameof(SecondaryCommand));
+                UpdateProperty(nameof(SecondaryCommandName));
+                UpdateProperty(nameof(HasCommands));
+                UpdateProperty(nameof(HasMoreCommands));
+                UpdateProperty(nameof(AllCommands));
+                Task.Factory.StartNew(
+                () =>
+                {
+                    WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(this));
+                },
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                PageContext.Scheduler);
+
+                break;
             case nameof(Details):
                 var extensionDetails = model.Details;
                 Details = extensionDetails != null ? new(extensionDetails, PageContext) : null;
@@ -162,5 +227,26 @@ public partial class ContentPageViewModel : PageViewModel
             CancellationToken.None,
             TaskCreationOptions.None,
             PageContext.Scheduler);
+    }
+
+    // InvokeItemCommand is what this will be in Xaml due to source generator
+    // this comes in on Enter keypresses in the SearchBox
+    [RelayCommand]
+    private void InvokePrimaryCommand(ContentPageViewModel page)
+    {
+        if (PrimaryCommand != null)
+        {
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(PrimaryCommand.Command.Model, PrimaryCommand.Model));
+        }
+    }
+
+    // this comes in on Ctrl+Enter keypresses in the SearchBox
+    [RelayCommand]
+    private void InvokeSecondaryCommand(ContentPageViewModel page)
+    {
+        if (SecondaryCommand != null)
+        {
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(SecondaryCommand.Command.Model, SecondaryCommand.Model));
+        }
     }
 }

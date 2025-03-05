@@ -2,14 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class CommandItemViewModel : ExtensionObjectViewModel
+public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBarContext
 {
+    public ExtensionObject<ICommandItem> Model => _commandItemModel;
+
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
     private CommandContextItemViewModel? _defaultCommandContextItem;
 
@@ -37,9 +40,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel
 
     public List<CommandContextItemViewModel> MoreCommands { get; private set; } = [];
 
+    IEnumerable<CommandContextItemViewModel> ICommandBarContext.MoreCommands => MoreCommands;
+
     public bool HasMoreCommands => MoreCommands.Count > 0;
 
     public string SecondaryCommandName => SecondaryCommand?.Name ?? string.Empty;
+
+    public CommandItemViewModel? PrimaryCommand => this;
 
     public CommandItemViewModel? SecondaryCommand => HasMoreCommands ? MoreCommands[0] : null;
 

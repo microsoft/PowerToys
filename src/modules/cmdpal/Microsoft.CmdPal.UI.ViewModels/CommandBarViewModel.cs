@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class CommandBarViewModel : ObservableObject,
     IRecipient<UpdateCommandBarMessage>
 {
-    public ListItemViewModel? SelectedItem
+    public ICommandBarContext? SelectedItem
     {
         get => field;
         set
@@ -51,11 +51,11 @@ public partial class CommandBarViewModel : ObservableObject,
 
     public void Receive(UpdateCommandBarMessage message) => SelectedItem = message.ViewModel;
 
-    private void SetSelectedItem(ListItemViewModel? value)
+    private void SetSelectedItem(ICommandBarContext? value)
     {
         if (value != null)
         {
-            PrimaryCommand = value;
+            PrimaryCommand = value.PrimaryCommand;
             value.PropertyChanged += SelectedItemPropertyChanged;
         }
         else
@@ -92,7 +92,7 @@ public partial class CommandBarViewModel : ObservableObject,
 
         SecondaryCommand = SelectedItem.SecondaryCommand;
 
-        if (SelectedItem.MoreCommands.Count > 1)
+        if (SelectedItem.MoreCommands.Count() > 1)
         {
             ShouldShowContextMenu = true;
             ContextCommands = [.. SelectedItem.AllCommands];
@@ -104,7 +104,26 @@ public partial class CommandBarViewModel : ObservableObject,
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
+    // this comes in when an item in the list is tapped
     [RelayCommand]
     private void InvokeItem(CommandContextItemViewModel item) =>
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
+       WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
+
+    // this comes in when the primary button is tapped
+    public void InvokePrimaryCommand()
+    {
+        if (PrimaryCommand != null)
+        {
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(PrimaryCommand.Command.Model, PrimaryCommand.Model));
+        }
+    }
+
+    // this comes in when the secondary button is tapped
+    public void InvokeSecondaryCommand()
+    {
+        if (SecondaryCommand != null)
+        {
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(SecondaryCommand.Command.Model, SecondaryCommand.Model));
+        }
+    }
 }

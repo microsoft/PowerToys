@@ -9,7 +9,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class CommandContextItemViewModel(ICommandContextItem contextItem, IPageContext context) : CommandItemViewModel(new(contextItem), context)
 {
-    public ExtensionObject<ICommandContextItem> Model { get; } = new(contextItem);
+    public new ExtensionObject<ICommandContextItem> Model { get; } = new(contextItem);
 
     public bool IsCritical { get; private set; }
 

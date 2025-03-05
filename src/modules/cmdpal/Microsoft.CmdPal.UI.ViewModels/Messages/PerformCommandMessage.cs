@@ -30,6 +30,12 @@ public record PerformCommandMessage
         Context = context.Unsafe;
     }
 
+    public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<ICommandItem> context)
+    {
+        Command = command;
+        Context = context.Unsafe;
+    }
+
     public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<ICommandContextItem> context)
     {
         Command = command;

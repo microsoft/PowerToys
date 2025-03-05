@@ -10,7 +10,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
-using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
@@ -55,12 +54,16 @@ public sealed partial class CommandBar : UserControl,
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
-    private void PrimaryButton_Tapped(object sender, TappedRoutedEventArgs e) =>
-        WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
+    private void PrimaryButton_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        ViewModel.InvokePrimaryCommand();
+    }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
-    private void SecondaryButton_Tapped(object sender, TappedRoutedEventArgs e) =>
-        WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
+    private void SecondaryButton_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        ViewModel.InvokeSecondaryCommand();
+    }
 
     private void PageIcon_Tapped(object sender, TappedRoutedEventArgs e)
     {

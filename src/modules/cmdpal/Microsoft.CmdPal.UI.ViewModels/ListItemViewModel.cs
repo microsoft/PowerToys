@@ -14,7 +14,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ListItemViewModel(IListItem model, IPageContext context)
     : CommandItemViewModel(new(model), context)
 {
-    public ExtensionObject<IListItem> Model { get; } = new(model);
+    public new ExtensionObject<IListItem> Model { get; } = new(model);
 
     [ObservableProperty]
     public partial ObservableCollection<TagViewModel> Tags { get; set; } = [];

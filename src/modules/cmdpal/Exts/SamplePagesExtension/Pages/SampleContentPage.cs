@@ -18,8 +18,24 @@ internal sealed partial class SampleContentPage : ContentPage
 
     public SampleContentPage()
     {
-        Name = "Sample Content";
+        Name = "Open";
+        Title = "Sample Content";
         Icon = new IconInfo("\uECA5"); // Tiles
+
+        Commands = [
+            new CommandContextItem(
+                title: "Do thing",
+                name: "Do thing",
+                subtitle: "Pops a toast",
+                result: CommandResult.ShowToast(new ToastArgs() { Message = "what's up doc", Result = CommandResult.KeepOpen() }),
+                action: () => { Title = Title + "+1"; }),
+            new CommandContextItem(
+                title: "Something else",
+                name: "Something else",
+                subtitle: "Something else",
+                result: CommandResult.ShowToast(new ToastArgs() { Message = "turn down for what?", Result = CommandResult.KeepOpen() }),
+                action: () => { Title = Title + "-1"; }),
+        ];
     }
 }
 
