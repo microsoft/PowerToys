@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
+using Microsoft.VisualBasic.Logging;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
@@ -71,30 +72,36 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 string era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(dateTimeNow));
                 string eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
 
-                // Custom formats based on local time
-                foreach (string f in TimeDateSettings.Instance.CustomFormats)
+                // Custom formats
+                int counter = 0;
+                foreach (string f in TimeDateSettings.Instance.CustomFormats.Concat(TimeDateSettings.Instance.CustomFormatsUtc))
                 {
+                    counter++;
                     string[] formatParts = f.Split("=", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                    results.Add(new AvailableResult()
-                    {
-                        Value = "Not implemented",
-                        Label = formatParts[0],
-                        AlternativeSearchTag = "Custom",
-                        IconType = ResultIconType.Error,
-                    });
-                }
+                    bool containsCustomSyntax = TimeAndDateHelper.StringContainsCustomFormatSyntax(formatParts[1]);
+                    bool isUtcFormat = TimeDateSettings.Instance.CustomFormats.Count == 0 || counter > TimeDateSettings.Instance.CustomFormats.Count;
 
-                // Custom formats based on UTC
-                foreach (string f in TimeDateSettings.Instance.CustomFormatsUtc)
-                {
-                    string[] formatParts = f.Split("=", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                    results.Add(new AvailableResult()
+                    // If Length = 0 then empty string.
+                    if (formatParts.Length >= 1)
                     {
-                        Value = "Not implemented",
-                        Label = formatParts[0],
-                        AlternativeSearchTag = "Custom",
-                        IconType = ResultIconType.Error,
-                    });
+                        try
+                        {
+                            throw new NotImplementedException();
+                        }
+                        catch (Exception e)
+                        {
+                            string syntax = formatParts.Length == 2 ? formatParts[1] : string.Empty;
+
+                            Wox.Plugin.Logger.Log.Exception($"Failed to convert into custom format {formatParts[0]}: {syntax}", e, typeof(AvailableResultsList));
+                            results.Add(new AvailableResult()
+                            {
+                                Value = Resources.Microsoft_plugin_timedate_InvalidCustomFormat + " " + syntax,
+                                Label = formatParts[0],
+                                AlternativeSearchTag = isUtcFormat ? "Custom UTC" : "Custom",
+                                IconType = ResultIconType.Error,
+                            });
+                        }
+                    }
                 }
 
                 // Predefined formats

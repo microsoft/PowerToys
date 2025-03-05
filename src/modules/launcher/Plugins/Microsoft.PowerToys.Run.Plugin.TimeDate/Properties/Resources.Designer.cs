@@ -205,6 +205,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid custom format:.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_InvalidCustomFormat {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidCustomFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ISO 8601.
         /// </summary>
         internal static string Microsoft_plugin_timedate_Iso8601 {
@@ -457,7 +466,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use date and time string format syntax and {0} (Day of Week), {1} (Week of Month), {2} (Windows File Time), {3} (Unix Time), {4} (Unix Time in milliseconds). (Use a backslash to escape format sequences and the backslash character as text.).
+        ///   Looks up a localized string similar to Use date and time string format syntax and {0} (Day of Week), {1} (Week of Month), {2} (Week of the year), {3} (Era long format), {4} (Windows File Time), {5} (Unix Time), {6} (Unix Time in milliseconds), {7} (OLE Automation date), {8} (Excel&apos;s 1900 based date value), {9} (Excel&apos;s 1904 based date value). (Use a backslash to escape format sequences and the backslash character as text.).
         /// </summary>
         internal static string Microsoft_plugin_timedate_Setting_CustomFormatsDescription {
             get {

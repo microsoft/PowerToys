@@ -14,6 +14,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
     internal static class TimeAndDateHelper
     {
+        private static readonly Regex _regexSpecialInputFormats = new Regex(@"^.*(u|ums|ft|oa|exc|exf)\d");
+        private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|WOM|WOY|ELF|WFT|UXT|UXMS|OAD|EXC|EXF)");
+
         /// <summary>
         /// Get the format for the time string
         /// </summary>
@@ -82,6 +85,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             int adjustment = 1; // We count from 1 to 7 and not from 0 to 6
 
             return ((date.DayOfWeek + daysInWeek - formatSettingFirstDayOfWeek) % daysInWeek) + adjustment;
+        }
+
+        internal static double ConvertToOleAutomationFormat(OADateFormats type, DateTime date)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -187,7 +195,31 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <returns>True if yes, otherwise false</returns>
         internal static bool IsSpecialInputParsing(string input)
         {
-            return Regex.IsMatch(input, @"^.*(u|ums|ft|oa|exc|exf)\d");
+            return _regexSpecialInputFormats.IsMatch(input);
+        }
+
+        /// <summary>
+        /// Converts a DateTime object based on the format string
+        /// </summary>
+        /// <param name="date">Date/time object.</param>
+        /// <param name="unix">Value for replacing "Unix Time Stamp".</param>
+        /// <param name="unixMilliseconds">Value for replacing "Unix Time Stamp in milliseconds".</param>
+        /// <param name="calWeek">Value for relacing calendar week.</param>
+        /// <param name="format">Format definition.</param>
+        /// <returns>Formated date/time string.</returns>
+        internal static string ConvertToCustomFormat(DateTime date, long unix, long unixMilliseconds, int calWeek, string eraLongFormat, string format)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Test a string for our custom date and time format syntax
+        /// </summary>
+        /// <param name="str">String to test.</param>
+        /// <returns>True if yes and otherwise false</returns>
+        internal static bool StringContainsCustomFormatSyntax(string str)
+        {
+            return _regexCustomDateTimeFormats.IsMatch(str);
         }
 
         /// <summary>
@@ -245,5 +277,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         Time,
         Date,
         DateTime,
+    }
+
+    /// <summary>
+    /// Differnet versions of Date formats based on OLE Automation date
+    /// </summary>
+    internal enum OADateFormats
+    {
+        OLEAutomation,
+        Excle1900,
+        Excel1904,
     }
 }
