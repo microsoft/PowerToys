@@ -168,16 +168,16 @@ namespace RegistryPreviewUILib
                 ShowText = true,
                 Columns = 8,
                 FontSize = 13,
-                DataFormat = HexBox.WinUI.DataFormat.Hexadecimal,
-                DataSignedness = HexBox.WinUI.DataSignedness.Unsigned,
-                DataType = HexBox.WinUI.DataType.Int_1,
-                DataSource = data,
-                Visibility = Visibility.Collapsed,
                 AddressBrush = (SolidColorBrush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"],
                 AlternatingDataColumnTextBrush = (SolidColorBrush)Application.Current.Resources["TextFillColorSecondaryBrush"],
                 SelectionTextBrush = (SolidColorBrush)Application.Current.Resources["TextOnAccentFillColorSelectedTextBrush"],
                 SelectionBrush = (SolidColorBrush)Application.Current.Resources["AccentFillColorSelectedTextBackgroundBrush"],
                 RequestedTheme = panel.ActualTheme,
+                DataFormat = HexBox.WinUI.DataFormat.Hexadecimal,
+                DataSignedness = HexBox.WinUI.DataSignedness.Unsigned,
+                DataType = HexBox.WinUI.DataType.Int_1,
+                Visibility = Visibility.Collapsed,
+                DataSource = data,
             };
             binaryPreviewBox.Loaded += BinaryPreviewLoaded;
 
