@@ -8,8 +8,8 @@ body:
 - type: markdown
   attributes:
     value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
-- id: version
-  type: input
+- type: input
+  id: version
   attributes:
     label: Microsoft PowerToys version
     placeholder: 0.65.0
