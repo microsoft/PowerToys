@@ -73,10 +73,21 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 SingleKeyMappings.Add(mapping);
 
+                string[] targetKeyCode = mapping.TargetKey.Split(';');
+                var targetKeyNames = new List<string>();
+
+                foreach (var keyCode in targetKeyCode)
+                {
+                    if (int.TryParse(keyCode, out int code))
+                    {
+                        targetKeyNames.Add(GetKeyDisplayName(code));
+                    }
+                }
+
                 RemappedShortcuts.Add(new Remapping
                 {
                     OriginalKeys = new List<string> { GetKeyDisplayName(mapping.OriginalKey) },
-                    RemappedKeys = new List<string> { GetKeyDisplayName(mapping.TargetKey) },
+                    RemappedKeys = targetKeyNames,
                     IsAllApps = true,
                 });
             }

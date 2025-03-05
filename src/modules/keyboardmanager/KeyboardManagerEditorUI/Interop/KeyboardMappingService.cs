@@ -40,7 +40,7 @@ namespace KeyboardManagerEditorUI.Interop
                     result.Add(new KeyMapping
                     {
                         OriginalKey = mapping.OriginalKey,
-                        TargetKey = mapping.TargetKey,
+                        TargetKey = KeyboardManagerInterop.GetStringAndFree(mapping.TargetKey),
                         IsShortcut = mapping.IsShortcut,
                     });
                 }

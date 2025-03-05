@@ -32,6 +32,14 @@ extern "C"
         return static_cast<MappingConfiguration*>(config)->SaveSettingsToFile();
     }
 
+    wchar_t* AllocateAndCopyString(const std::wstring& str)
+    {
+        size_t len = str.length();
+        wchar_t* buffer = new wchar_t[len + 1];
+        wcscpy_s(buffer, len + 1, str.c_str());
+        return buffer;
+    }
+
     int GetSingleKeyRemapCount(void* config)
     {
         auto mapping = static_cast<MappingConfiguration*>(config);
@@ -64,17 +72,17 @@ extern "C"
 
         if (kv.second.index() == 0)
         {
-            mapping->targetKey = static_cast<int>(std::get<DWORD>(kv.second));
+            mapping->targetKey = AllocateAndCopyString(std::to_wstring(std::get<DWORD>(kv.second)));
             mapping->isShortcut = false;
         }
         else if (kv.second.index() == 1)
         {
-            mapping->targetKey = static_cast<int>(std::get<Shortcut>(kv.second).GetActionKey());
+            mapping->targetKey = AllocateAndCopyString(std::get<Shortcut>(kv.second).ToHstringVK().c_str());
             mapping->isShortcut = true;
         }
         else
         {
-            mapping->targetKey = 0;
+            mapping->targetKey = AllocateAndCopyString(L"");
             mapping->isShortcut = false;
         }
 
@@ -93,15 +101,7 @@ extern "C"
 
         return count;
     }
-
-    wchar_t* AllocateAndCopyString(const std::wstring& str)
-    {
-        size_t len = str.length();
-        wchar_t* buffer = new wchar_t[len + 1];
-        wcscpy_s(buffer, len + 1, str.c_str());
-        return buffer;
-    }
-
+        
     bool GetShortcutRemap(void* config, int index, ShortcutMapping* mapping)
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);

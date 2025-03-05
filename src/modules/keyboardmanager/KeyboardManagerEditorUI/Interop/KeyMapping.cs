@@ -14,7 +14,7 @@ namespace KeyboardManagerEditorUI.Interop
     {
         public int OriginalKey { get; set; }
 
-        public int TargetKey { get; set; }
+        public string TargetKey { get; set; } = string.Empty;
 
         public bool IsShortcut { get; set; }
     }

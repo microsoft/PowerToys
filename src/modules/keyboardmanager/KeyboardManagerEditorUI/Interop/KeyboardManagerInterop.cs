@@ -75,7 +75,7 @@ namespace KeyboardManagerEditorUI.Interop
     public struct KeyboardMapping
     {
         public int OriginalKey;
-        public int TargetKey;
+        public IntPtr TargetKey;
         [MarshalAs(UnmanagedType.Bool)]
         public bool IsShortcut;
     }

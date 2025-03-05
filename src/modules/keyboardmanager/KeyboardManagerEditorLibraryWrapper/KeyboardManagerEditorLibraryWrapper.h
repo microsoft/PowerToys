@@ -13,7 +13,7 @@ struct KeyNamePair
 struct KeyboardMapping
 {
     int originalKey;
-    int targetKey;
+    wchar_t* targetKey;
     bool isShortcut;
 };
 
