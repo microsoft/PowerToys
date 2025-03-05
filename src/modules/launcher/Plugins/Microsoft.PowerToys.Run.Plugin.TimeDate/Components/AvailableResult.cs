@@ -41,6 +41,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 ResultIconType.Time => $"Images\\time.{theme}.png",
                 ResultIconType.Date => $"Images\\calendar.{theme}.png",
                 ResultIconType.DateTime => $"Images\\timeDate.{theme}.png",
+                ResultIconType.Error => $"Images\\Warning.{theme}.png",
                 _ => string.Empty,
             };
         }
@@ -51,5 +52,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         Time,
         Date,
         DateTime,
+        Error,
     }
 }
