@@ -55,10 +55,9 @@ namespace RegistryPreviewUILib
             }
         }
 
-        public Visibility ShowPreviewButton => (
+        public bool ShowPreviewButton =>
             Type != "ERROR" && Type != string.Empty &&
-            Value != string.Empty && IsEmptyBinary != true)
-            ? Visibility.Visible : Visibility.Collapsed;
+            Value != string.Empty && IsEmptyBinary != true;
 
         public RegistryValue(string name, string type, string value, string key)
         {
