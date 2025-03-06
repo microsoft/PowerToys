@@ -140,7 +140,7 @@ namespace RegistryPreviewUILib
             {
                 RequestedTheme = panel.ActualTheme,
             };
-            navBar.SelectionChanged += BinaryPreviewSelectorChanged;
+            navBar.SelectionChanged += BinaryPreview_SelectorChanged;
             navBar.Items.Add(new SelectorBarItem()
             {
                 Text = resourceLoader.GetString("DataPreviewDataView"),
@@ -179,11 +179,12 @@ namespace RegistryPreviewUILib
                 Visibility = Visibility.Collapsed,
                 DataSource = data,
             };
-            binaryPreviewBox.Loaded += BinaryPreviewLoaded;
+            binaryPreviewBox.Loaded += BinaryPreview_HexBoxLoaded;
 
             // Create TextBox
             var visibleText = new TextBox()
             {
+                IsReadOnly = true,
                 AcceptsReturn = true,
                 TextWrapping = TextWrapping.Wrap,
                 Height = 300,
@@ -223,7 +224,7 @@ namespace RegistryPreviewUILib
             panel.Children.Add(stringBoxExp);
         }
 
-        private static void BinaryPreviewLoaded(object sender, RoutedEventArgs e)
+        private static void BinaryPreview_HexBoxLoaded(object sender, RoutedEventArgs e)
         {
             _isDataPreviewHexBoxLoaded = true;
             var stackPanel = ((HB.HexBox)sender).Parent as StackPanel;
@@ -240,7 +241,7 @@ namespace RegistryPreviewUILib
             }
         }
 
-        private static void BinaryPreviewSelectorChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+        private static void BinaryPreview_SelectorChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
         {
             // Child controls: 0 = SelectorBar, 1 = ProgressRing, 2 = HexBox, 3 = TextBox
             var stackPanel = ((SelectorBar)sender).Parent as StackPanel;
