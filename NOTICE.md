@@ -1335,7 +1335,7 @@ EXHIBIT A -Mozilla Public License.
 - Microsoft.Win32.SystemEvents 9.0.2
 - Microsoft.Windows.Compatibility 9.0.2
 - Microsoft.Windows.CsWin32 0.2.46-beta
-- Microsoft.Windows.CsWinRT 2.1.5
+- Microsoft.Windows.CsWinRT 2.2.0
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
 - Microsoft.WindowsAppSDK 1.6.241114003
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
