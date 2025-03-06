@@ -156,16 +156,15 @@
                     Style="{StaticResource CustomShortcutToggleButtonStyle}">
                     <ToggleButton.Content>
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <styles:KeyVisual Content="Shift" VisualType="SmallOutline" />
-                            <styles:KeyVisual Content="Win" VisualType="SmallOutline" />
-                            <styles:KeyVisual Content="M" VisualType="SmallOutline" />
+                            <styles:KeyVisual Content="Win (Left)" VisualType="SmallOutline" />
+                            <styles:KeyVisual Content="B" VisualType="SmallOutline" />
                         </StackPanel>
                     </ToggleButton.Content>
                 </ToggleButton>
                 <TextBox
                     Margin="0,24,0,0"
                     Header="URL to open"
-                    Text="https://www.microsoft.com" />
+                    Text="https://www.bing.com" />
             </StackPanel>
         </ContentDialog>
     </Grid>

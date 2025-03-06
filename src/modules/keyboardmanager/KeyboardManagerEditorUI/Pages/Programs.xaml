@@ -119,8 +119,7 @@
                                         Grid.Column="1"
                                         Orientation="Horizontal"
                                         Spacing="8">
-                                        <Image Width="16" Source="ms-appx:///Assets/Images/FluentIconsKeyboardManager.png" />
-                                        <TextBlock VerticalAlignment="Center" Text="Keyboardmanager.exe" />
+                                        <TextBlock VerticalAlignment="Center" Text="WindowsTerminal.exe" />
                                         <FontIcon
                                             VerticalAlignment="Center"
                                             FontSize="14"
@@ -173,8 +172,8 @@
                     Style="{StaticResource CustomShortcutToggleButtonStyle}">
                     <ToggleButton.Content>
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <styles:KeyVisual Content="Win" VisualType="SmallOutline" />
-                            <styles:KeyVisual Content="U" VisualType="SmallOutline" />
+                            <styles:KeyVisual Content="Win (Left)" VisualType="SmallOutline" />
+                            <styles:KeyVisual Content="T" VisualType="SmallOutline" />
                         </StackPanel>
                     </ToggleButton.Content>
                 </ToggleButton>
@@ -193,7 +192,7 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <TextBox Header="Application" Text="Keyboardmanager.exe" />
+                    <TextBox Header="Application" Text="WindowsTerminal.exe" />
                     <Button
                         Grid.Column="1"
                         Height="32"
@@ -203,11 +202,11 @@
                     <TextBox
                         Grid.Row="1"
                         Header="Arguments"
-                        Text="-config json" />
+                        Text="-config" />
                     <TextBox
                         Grid.Row="2"
                         Header="Start in directory"
-                        Text="C:\Users\Dev\PowerToys\bin" />
+                        Text="C:\Program Files\WindowsApps\Microsoft.WindowsTerminal_1.21.10351.0_x64__8wekyb3d8bbwe" />
                     <Button
                         Grid.Row="2"
                         Grid.Column="1"

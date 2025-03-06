@@ -103,8 +103,8 @@
                             <DataTemplate x:DataType="helper:Remapping">
                                 <Grid Height="48">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="232" />
-                                        <ColumnDefinition Width="238" />
+                                        <ColumnDefinition Width="Auto" MinWidth="232" />
+                                        <ColumnDefinition Width="Auto" MinWidth="238" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="84" />
                                     </Grid.ColumnDefinitions>

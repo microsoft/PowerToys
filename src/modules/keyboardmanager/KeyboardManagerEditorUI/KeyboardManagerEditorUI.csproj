@@ -57,14 +57,6 @@
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Assets\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Controls\KeyVisual.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Page Update="Styles\CommonStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

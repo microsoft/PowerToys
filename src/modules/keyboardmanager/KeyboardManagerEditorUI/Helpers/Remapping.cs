@@ -18,7 +18,7 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public bool IsAllApps { get; set; } = true;
 
-        public string AppName { get; set; } = "All apps";
+        public string AppName { get; set; } = "All Apps";
 
         public bool IsEnabled { get; set; } = true;
     }
