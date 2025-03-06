@@ -105,7 +105,7 @@ namespace KeyboardManagerEditorUI.Styles
                     Padding = new Thickness(10),
                     Margin = new Thickness(1),
                     CornerRadius = new CornerRadius(3),
-                    BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.DarkBlue),
+                    BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Black),
                     BorderThickness = new Thickness(1),
                 };
 
@@ -124,8 +124,9 @@ namespace KeyboardManagerEditorUI.Styles
                 // Add Border to StackPanel
                 if (newMode)
                 {
-                    keyBlockContainer.Background = Application.Current.Resources["CardBackgroundFillColorDefaultBrush"] as SolidColorBrush;
-                    keyBlock.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Black);
+                    keyBlockContainer.Background = Application.Current.Resources["AccentButtonBackgroundPressed"] as SolidColorBrush;
+                    keyBlockContainer.BorderBrush = Application.Current.Resources["AccentButtonBackgroundPressed"] as SolidColorBrush;
+                    keyBlock.Foreground = new SolidColorBrush(Microsoft.UI.Colors.White);
                     NewKeyStackPanel.Children.Add(keyBlockContainer); // For remapping keys
                 }
                 else
