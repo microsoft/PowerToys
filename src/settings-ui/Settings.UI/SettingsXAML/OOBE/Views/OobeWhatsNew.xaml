@@ -84,8 +84,7 @@
             Grid.Row="2"
             VerticalAlignment="Top"
             IsClosable="False"
-            IsOpen="False"
-            IsTabStop="True"
+            IsTabStop="False"
             Severity="Error" />
         <InfoBar
             x:Name="ProxyWarningInfoBar"
@@ -93,8 +92,7 @@
             Grid.Row="2"
             VerticalAlignment="Top"
             IsClosable="False"
-            IsOpen="False"
-            IsTabStop="True"
+            IsTabStop="False"
             Severity="Warning" />
 
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">

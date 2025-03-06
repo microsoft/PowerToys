@@ -10,7 +10,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -130,9 +129,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             try
             {
                 string releaseNotesMarkdown = await GetReleaseNotesMarkdown();
-
-                ProxyWarningInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-                ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                SetInfoBar(ProxyWarningInfoBar, false);
+                SetInfoBar(ErrorInfoBar, false);
 
                 ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
                 ReleaseNotesMarkdown.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
@@ -143,17 +141,17 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Logger.LogError("Exception when loading the release notes", httpEx);
                 if (httpEx.Message.Contains("407", StringComparison.CurrentCulture))
                 {
-                    ProxyWarningInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                    SetInfoBar(ProxyWarningInfoBar, true);
                 }
                 else
                 {
-                    ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                    SetInfoBar(ErrorInfoBar, true);
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError("Exception when loading the release notes", ex);
-                ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                SetInfoBar(ErrorInfoBar, true);
             }
             finally
             {
@@ -247,6 +245,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private void DataDiagnostics_OpenSettings_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
             Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Overview, true);
+        }
+
+        private void SetInfoBar(InfoBar infoBar, bool open)
+        {
+            infoBar.IsOpen = open;
+            infoBar.IsTabStop = open;
         }
     }
 }
