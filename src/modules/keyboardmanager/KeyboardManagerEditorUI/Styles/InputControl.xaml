@@ -10,7 +10,6 @@
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
-
     <StackPanel>
 
         <Grid>
@@ -23,54 +22,14 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+
             <TextBlock Margin="0,12,0,0" Text="Original key(s)" />
             <Grid Grid.Row="1" Margin="0,8,0,0">
-                <ToggleButton
-                    x:Name="OriginalToggleBtn"
-                    Padding="0,24,0,24"
-                    HorizontalAlignment="Stretch"
-                    Checked="OriginalToggleBtn_Checked"
-                    Style="{StaticResource CustomShortcutToggleButtonStyle}">   
-                    <ToggleButton.Content>
-                        <StackPanel>
-                            <Grid ColumnSpacing="8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <ItemsControl
-                                    x:Name="OriginalKeys"
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.AccessibilityView="Raw"
-                                    IsTabStop="False"
-                                    ItemsSource="{x:Bind Keys}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal" Spacing="4" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <controls:KeyVisual
-                                                VerticalAlignment="Center"
-                                                AutomationProperties.AccessibilityView="Raw"
-                                                Content="{Binding}"
-                                                IsTabStop="False"
-                                                VisualType="SmallOutline" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                                <tk7controls:MarkdownTextBlock
-                                    Grid.Column="1"
-                                    VerticalAlignment="Center"
-                                    Background="Transparent"
-                                    Text="{x:Bind Text}" />
-                            </Grid>
-                        </StackPanel>
-                    </ToggleButton.Content>
-                </ToggleButton>
+                <StackPanel 
+                Name="KeyStackPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                </StackPanel>
             </Grid>
-
+            
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="1"
@@ -80,10 +39,21 @@
                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                 Text="&#xE0AB;" />
 
-            <TextBlock
+            <Button 
                 Grid.Column="2"
-                Margin="0,12,0,0"
-                Text="New key(s)" />
+                Grid.Row="1"
+                Margin="0,8,0,0"
+                Content="Add New"
+                Click="ButtonA_Click"
+                HorizontalAlignment="Stretch"
+                />
+
+            <Grid Grid.Row="1" Grid.Column="2" Margin="0,8,0,0">
+                <StackPanel 
+                    Name="NewKeyStackPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                </StackPanel>
+            </Grid>
+
             <Grid
                 Grid.Row="1"
                 Grid.Column="2"
@@ -109,7 +79,6 @@
                         </ItemsControl>
                     </ToggleButton.Content>
                 </ToggleButton>
-
             </Grid>
         </Grid>
 
