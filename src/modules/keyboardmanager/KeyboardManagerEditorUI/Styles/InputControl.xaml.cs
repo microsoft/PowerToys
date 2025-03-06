@@ -14,7 +14,7 @@ namespace KeyboardManagerEditorUI.Styles
     public sealed partial class InputControl : UserControl
     {
         private List<string> pressedKeys = new List<string>();
-        private List<string> newpressedKeys = new List<string>();
+        private List<string> newPressedKeys = new List<string>();
 
         // Define newMode as a DependencyProperty for binding
         public static readonly DependencyProperty NewModeProperty =
@@ -53,7 +53,7 @@ namespace KeyboardManagerEditorUI.Styles
             string keyName = e.Key.ToString();
             keyName = NormalizeKeyName(keyName);
 
-            var currentKeyList = newMode ? newpressedKeys : pressedKeys;
+            var currentKeyList = newMode ? newPressedKeys : pressedKeys;
 
             if (!currentKeyList.Contains(keyName))
             {
@@ -70,7 +70,7 @@ namespace KeyboardManagerEditorUI.Styles
         {
             // Console.WriteLine(newMode);
             string keyName = e.Key.ToString();
-            var currentKeyList = newMode ? newpressedKeys : pressedKeys;
+            var currentKeyList = newMode ? newPressedKeys : pressedKeys;
 
             if (!currentKeyList.Contains(keyName))
             {
@@ -94,7 +94,7 @@ namespace KeyboardManagerEditorUI.Styles
                 KeyStackPanel.Children.Clear();
             }
 
-            var currentKeyList = newMode ? newpressedKeys : pressedKeys;
+            var currentKeyList = newMode ? newPressedKeys : pressedKeys;
 
             // Add each pressed key as a TextBlock in the StackPanel
             foreach (var key in currentKeyList)
@@ -124,8 +124,8 @@ namespace KeyboardManagerEditorUI.Styles
                 // Add Border to StackPanel
                 if (newMode)
                 {
-                    keyBlockContainer.Background = new SolidColorBrush(Microsoft.UI.Colors.DarkBlue);
-                    keyBlock.Foreground = new SolidColorBrush(Microsoft.UI.Colors.White);
+                    keyBlockContainer.Background = Application.Current.Resources["CardBackgroundFillColorDefaultBrush"] as SolidColorBrush;
+                    keyBlock.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Black);
                     NewKeyStackPanel.Children.Add(keyBlockContainer); // For remapping keys
                 }
                 else
@@ -138,6 +138,11 @@ namespace KeyboardManagerEditorUI.Styles
         public void SetRemappedKeys(List<string> keys)
         {
             RemappedKeys.ItemsSource = keys;
+        }
+
+        public void SetOriginalKeys(List<string> keys)
+        {
+            OriginalKeys.ItemsSource = keys;
         }
 
         private void RemappedToggleBtn_Checked(object sender, RoutedEventArgs e)

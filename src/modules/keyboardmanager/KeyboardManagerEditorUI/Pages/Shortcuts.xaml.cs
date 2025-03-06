@@ -47,7 +47,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             if (e.ClickedItem is Remapping selectedShortcut)
             {
-                // ShortcutControl.SetOriginalKeys(selectedShortcut.OriginalKeys);
+                ShortcutControl.SetOriginalKeys(selectedShortcut.OriginalKeys);
                 ShortcutControl.SetRemappedKeys(selectedShortcut.RemappedKeys);
                 ShortcutControl.SetApp(!selectedShortcut.IsAllApps, selectedShortcut.AppName);
                 await KeyDialog.ShowAsync();
