@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Foundation.Metadata;
+using Windows.UI.ViewManagement;
 using HB = HexBox.WinUI;
 
 namespace RegistryPreviewUILib
@@ -17,6 +18,8 @@ namespace RegistryPreviewUILib
     public sealed partial class RegistryPreviewMainPage : Page
     {
         private static bool _isDataPreviewHexBoxLoaded;
+
+        private static AccessibilitySettings accessibilitySettings = new AccessibilitySettings();
 
         internal void ShowEnhancedDataPreview(string name, string type, string value)
         {
@@ -169,11 +172,11 @@ namespace RegistryPreviewUILib
                 ShowText = true,
                 Columns = 8,
                 FontSize = 13,
+                RequestedTheme = panel.ActualTheme,
                 AddressBrush = (SolidColorBrush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"],
                 AlternatingDataColumnTextBrush = (SolidColorBrush)Application.Current.Resources["TextFillColorSecondaryBrush"],
-                SelectionTextBrush = (SolidColorBrush)Application.Current.Resources["TextOnAccentFillColorSelectedTextBrush"],
-                SelectionBrush = (SolidColorBrush)Application.Current.Resources["AccentFillColorSelectedTextBackgroundBrush"],
-                RequestedTheme = panel.ActualTheme,
+                SelectionTextBrush = accessibilitySettings.HighContrast ? new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemColorHighlightTextColor"]) : (SolidColorBrush)Application.Current.Resources["TextOnAccentFillColorSelectedTextBrush"],
+                SelectionBrush = accessibilitySettings.HighContrast ? new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemColorHighlightColor"]) : (SolidColorBrush)Application.Current.Resources["AccentFillColorSelectedTextBackgroundBrush"],
                 DataFormat = HB.DataFormat.Hexadecimal,
                 DataSignedness = HB.DataSignedness.Unsigned,
                 DataType = HB.DataType.Int_1,
@@ -189,7 +192,7 @@ namespace RegistryPreviewUILib
                 AcceptsReturn = true,
                 TextWrapping = TextWrapping.Wrap,
                 Height = 300,
-                Width = 500,
+                Width = 495,
                 FontSize = 13,
                 Text = dataText,
                 RequestedTheme = panel.ActualTheme,
