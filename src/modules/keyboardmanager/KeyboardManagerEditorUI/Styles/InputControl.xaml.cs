@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Windows.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -16,6 +17,8 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
+using Windows.UI.Core;
 
 namespace KeyboardManagerEditorUI.Styles
 {
@@ -76,5 +79,21 @@ namespace KeyboardManagerEditorUI.Styles
             AllAppsCheckBox.Checked += AllAppsCheckBox_Checked;
             AllAppsCheckBox.Unchecked += AllAppsCheckBox_Unchecked;
         }
+
+        public string Text
+        {
+            get { return (string)GetValue(TextProperty); }
+            set { SetValue(TextProperty, value); }
+        }
+
+        public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(InputControl), new PropertyMetadata(default(string)));
+
+        public List<object> Keys
+        {
+            get { return (List<object>)GetValue(KeysProperty); }
+            set { SetValue(KeysProperty, value); }
+        }
+
+        public static readonly DependencyProperty KeysProperty = DependencyProperty.Register("Keys", typeof(List<object>), typeof(InputControl), new PropertyMetadata(default(string)));
     }
 }
