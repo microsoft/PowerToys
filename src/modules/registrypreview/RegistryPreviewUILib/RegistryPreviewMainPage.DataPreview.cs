@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Foundation.Metadata;
@@ -173,9 +174,9 @@ namespace RegistryPreviewUILib
                 SelectionTextBrush = (SolidColorBrush)Application.Current.Resources["TextOnAccentFillColorSelectedTextBrush"],
                 SelectionBrush = (SolidColorBrush)Application.Current.Resources["AccentFillColorSelectedTextBackgroundBrush"],
                 RequestedTheme = panel.ActualTheme,
-                DataFormat = HexBox.WinUI.DataFormat.Hexadecimal,
-                DataSignedness = HexBox.WinUI.DataSignedness.Unsigned,
-                DataType = HexBox.WinUI.DataType.Int_1,
+                DataFormat = HB.DataFormat.Hexadecimal,
+                DataSignedness = HB.DataSignedness.Unsigned,
+                DataType = HB.DataType.Int_1,
                 Visibility = Visibility.Collapsed,
                 DataSource = data,
             };
@@ -224,27 +225,10 @@ namespace RegistryPreviewUILib
             panel.Children.Add(stringBoxExp);
         }
 
-        private static void BinaryPreview_HexBoxLoaded(object sender, RoutedEventArgs e)
-        {
-            _isDataPreviewHexBoxLoaded = true;
-            var stackPanel = ((HB.HexBox)sender).Parent as StackPanel;
-            var selectorBar = stackPanel.Children[0] as SelectorBar;
-
-            // Item 0 is the "Data" item
-            if (selectorBar.Items.IndexOf(selectorBar.SelectedItem) == 0)
-            {
-                // progress ring
-                stackPanel.Children[1].Visibility = Visibility.Collapsed;
-
-                // hex box
-                ((HB.HexBox)sender).Visibility = Visibility.Visible;
-            }
-        }
-
         private static void BinaryPreview_SelectorChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
         {
             // Child controls: 0 = SelectorBar, 1 = ProgressRing, 2 = HexBox, 3 = TextBox
-            var stackPanel = ((SelectorBar)sender).Parent as StackPanel;
+            var stackPanel = sender.Parent as StackPanel;
             var progressRing = (ProgressRing)stackPanel.Children[1];
             var hexBox = (HB.HexBox)stackPanel.Children[2];
             var textBox = (TextBox)stackPanel.Children[3];
@@ -259,8 +243,8 @@ namespace RegistryPreviewUILib
                 }
                 else
                 {
-                    progressRing.Visibility = Visibility.Visible;
                     hexBox.Visibility = Visibility.Collapsed;
+                    progressRing.Visibility = Visibility.Visible;
                 }
             }
             else
@@ -268,6 +252,27 @@ namespace RegistryPreviewUILib
                 progressRing.Visibility = Visibility.Collapsed;
                 hexBox.Visibility = Visibility.Collapsed;
                 textBox.Visibility = Visibility.Visible;
+
+                // Workaround for wrong text selection (color) after switching back to "Visible text"
+                textBox.Focus(FocusState.Programmatic);
+                textBox.Select(0, 0);
+            }
+        }
+
+        private static void BinaryPreview_HexBoxLoaded(object sender, RoutedEventArgs e)
+        {
+            _isDataPreviewHexBoxLoaded = true;
+            var stackPanel = ((HB.HexBox)sender).Parent as StackPanel;
+            var selectorBar = stackPanel.Children[0] as SelectorBar;
+
+            // Item 0 is the "Data" item
+            if (selectorBar.Items.IndexOf(selectorBar.SelectedItem) == 0)
+            {
+                // progress ring
+                stackPanel.Children[1].Visibility = Visibility.Collapsed;
+
+                // hex box
+                ((HB.HexBox)sender).Visibility = Visibility.Visible;
             }
         }
     }
