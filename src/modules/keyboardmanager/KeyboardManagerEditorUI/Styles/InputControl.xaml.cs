@@ -145,6 +145,26 @@ namespace KeyboardManagerEditorUI.Styles
             OriginalKeys.ItemsSource = keys;
         }
 
+        public List<string> GetOriginalKeys()
+        {
+            return OriginalKeys.ItemsSource as List<string> ?? new List<string>();
+        }
+
+        public List<string> GetRemappedKeys()
+        {
+            return RemappedKeys.ItemsSource as List<string> ?? new List<string>();
+        }
+
+        public bool GetIsAppSpecific()
+        {
+            return AllAppsCheckBox.IsChecked ?? false;
+        }
+
+        public string GetAppName()
+        {
+            return AppNameTextBox.Text ?? string.Empty;
+        }
+
         private void RemappedToggleBtn_Checked(object sender, RoutedEventArgs e)
         {
             NewMode = true;
