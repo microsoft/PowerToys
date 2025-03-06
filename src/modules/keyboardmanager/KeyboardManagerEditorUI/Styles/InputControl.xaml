@@ -25,6 +25,30 @@
 
             <TextBlock Margin="0,12,0,0" Text="Original key(s)" />
             <Grid Grid.Row="1" Margin="0,8,0,0">
+                <ToggleButton
+                    x:Name="OriginalToggleBtn"
+                    Padding="0,24,0,24"
+                    HorizontalAlignment="Stretch"
+                    Checked="OriginalToggleBtn_Checked"
+                    Style="{StaticResource CustomShortcutToggleButtonStyle}">
+                    <ToggleButton.Content>
+                        <ItemsControl x:Name="OriginalKeys">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="4" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <local:KeyVisual Content="{Binding}" VisualType="SmallOutline" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ToggleButton.Content>
+                </ToggleButton>
+            </Grid>
+
+            <Grid Grid.Row="1" Margin="0,8,0,0">
                 <StackPanel 
                 Name="KeyStackPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                 </StackPanel>
@@ -38,12 +62,6 @@
                 VerticalAlignment="Center"
                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                 Text="&#xE0AB;" />
-
-            <Grid Grid.Row="1" Grid.Column="2" Margin="0,8,0,0">
-                <StackPanel 
-                    Name="NewKeyStackPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                </StackPanel>
-            </Grid>
 
             <Grid
                 Grid.Row="1"
@@ -70,6 +88,12 @@
                         </ItemsControl>
                     </ToggleButton.Content>
                 </ToggleButton>
+            </Grid>
+
+            <Grid Grid.Row="1" Grid.Column="2" Margin="0,8,0,0">
+                <StackPanel 
+              Name="NewKeyStackPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                </StackPanel>
             </Grid>
         </Grid>
 

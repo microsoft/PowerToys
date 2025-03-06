@@ -85,8 +85,14 @@ namespace KeyboardManagerEditorUI.Styles
         private void UpdateKeyDisplay(bool newMode)
         {
             // Clear current UI elements
-            KeyStackPanel.Children.Clear();
-            NewKeyStackPanel.Children.Clear(); // Assuming keyPanel2 is your second stack panel
+            if (newMode)
+            {
+                NewKeyStackPanel.Children.Clear();
+            } // Assuming keyPanel2 is your second stack panel
+            else
+            {
+                KeyStackPanel.Children.Clear();
+            }
 
             var currentKeyList = newMode ? newpressedKeys : pressedKeys;
 
@@ -138,6 +144,12 @@ namespace KeyboardManagerEditorUI.Styles
         {
             NewMode = true;
             RemappedToggleBtn.IsChecked = false;
+        }
+
+        private void OriginalToggleBtn_Checked(object sender, RoutedEventArgs e)
+        {
+            NewMode = false;
+            OriginalToggleBtn.IsChecked = false;
         }
 
         public void SetApp(bool isSpecificApp, string appName)
