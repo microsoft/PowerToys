@@ -126,7 +126,7 @@ namespace KeyboardManagerEditorUI.Pages
                     OriginalKeys = originalKeyNames,
                     RemappedKeys = targetKeyNames,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
-                    AppName = mapping.TargetApp ?? string.Empty,
+                    AppName = string.IsNullOrEmpty(mapping.TargetApp) ? "All Apps" : mapping.TargetApp,
                 });
             }
         }
@@ -207,7 +207,7 @@ namespace KeyboardManagerEditorUI.Pages
                 string appName = ShortcutControl.GetAppName();
 
                 // mock data
-                // originalKeys = ["A"];
+                // originalKeys = ["A", "Ctrl"];
                 // remappedKeys = ["B"];
                 if (originalKeys == null || originalKeys.Count == 0 || remappedKeys == null || remappedKeys.Count == 0)
                 {
