@@ -317,7 +317,7 @@ jobs:
   # Check if all projects (located in src sub-folder) import common props
   - pwsh: |-
       & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)\src'
-    displayName: Audit projects for shared common props
+    displayName: Audit shared common props for CSharp projects in src sub-folder
 
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
