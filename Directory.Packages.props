@@ -29,7 +29,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.2" />
     <!-- Including Microsoft.Bcl.AsyncInterfaces to force version, since it's used by Microsoft.SemanticKernel. -->
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces"  Version="9.0.2" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.2" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.16" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.2" />
@@ -48,7 +48,7 @@
       TODO: in Common.Dotnet.CsWinRT.props, on upgrade, verify RemoveCsWinRTPackageAnalyzer is no longer needed.  
       This is present due to a bug in CsWinRT where WPF projects cause the analyzer to fail.
 	-->
-    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.1.5" />
+    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.6.241114003" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
@@ -91,9 +91,9 @@
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
-    <PackageVersion Include="WPF-UI" Version="3.0.5" /> 
-	<!-- The warning NU1605 (package downgrade) is thrown in Version 0.1.9 for Microsoft.Windows.SDK.BuildTools -->
-	<PackageVersion Include="HexBox.WinUI" Version="0.1.9" NoWarn="NU1605"/>
+    <PackageVersion Include="WPF-UI" Version="3.0.5" />
+    <!-- The warning NU1605 (package downgrade) is thrown in Version 0.1.9 for Microsoft.Windows.SDK.BuildTools -->
+    <PackageVersion Include="HexBox.WinUI" Version="0.2.0" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->
