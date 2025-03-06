@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -12,6 +14,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
+using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -123,7 +126,7 @@ namespace KeyboardManagerEditorUI.Pages
                     OriginalKeys = originalKeyNames,
                     RemappedKeys = targetKeyNames,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
-                    AppName = mapping.TargetApp ?? string.Empty,
+                    AppName = string.IsNullOrEmpty(mapping.TargetApp) ? "All Apps" : mapping.TargetApp,
                 });
             }
         }
@@ -158,7 +161,19 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async void NewShortcutBtn_Click(object sender, RoutedEventArgs e)
         {
+            ShortcutControl.SetOriginalKeys(new List<string>());
+            ShortcutControl.SetRemappedKeys(new List<string>());
+            ShortcutControl.SetApp(false, string.Empty);
+
+            KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
             await KeyDialog.ShowAsync();
+            KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
+        }
+
+        private void KeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            SaveCurrentMapping();
+            LoadMappings();
         }
 
         private async void ListView_ItemClick(object sender, ItemClickEventArgs e)
@@ -169,6 +184,76 @@ namespace KeyboardManagerEditorUI.Pages
                 ShortcutControl.SetRemappedKeys(selectedShortcut.RemappedKeys);
                 ShortcutControl.SetApp(!selectedShortcut.IsAllApps, selectedShortcut.AppName);
                 await KeyDialog.ShowAsync();
+            }
+        }
+
+        public static int GetKeyCode(string keyName)
+        {
+            return KeyboardManagerInterop.GetKeyCodeFromName(keyName);
+        }
+
+        private void SaveCurrentMapping()
+        {
+            if (_mappingService == null)
+            {
+                return;
+            }
+
+            try
+            {
+                List<string> originalKeys = ShortcutControl.GetOriginalKeys();
+                List<string> remappedKeys = ShortcutControl.GetRemappedKeys();
+                bool isAppSpecific = ShortcutControl.GetIsAppSpecific();
+                string appName = ShortcutControl.GetAppName();
+
+                // mock data
+                // originalKeys = ["A", "Ctrl"];
+                // remappedKeys = ["B"];
+                if (originalKeys == null || originalKeys.Count == 0 || remappedKeys == null || remappedKeys.Count == 0)
+                {
+                    return;
+                }
+
+                if (originalKeys.Count == 1)
+                {
+                    int originalKey = GetKeyCode(originalKeys[0]);
+                    if (originalKey != 0)
+                    {
+                        if (remappedKeys.Count == 1)
+                        {
+                            int targetKey = GetKeyCode(remappedKeys[0]);
+                            if (targetKey != 0)
+                            {
+                                _mappingService.AddSingleKeyMapping(originalKey, targetKey);
+                            }
+                        }
+                        else
+                        {
+                            string targetKeys = string.Join(";", remappedKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
+                            _mappingService.AddSingleKeyMapping(originalKey, targetKeys);
+                        }
+                    }
+                }
+                else
+                {
+                    string originalKeysString = string.Join(";", originalKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
+                    string targetKeysString = string.Join(";", remappedKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
+
+                    if (isAppSpecific && !string.IsNullOrEmpty(appName))
+                    {
+                        _mappingService.AddShortcutMapping(originalKeysString, targetKeysString, appName);
+                    }
+                    else
+                    {
+                        _mappingService.AddShortcutMapping(originalKeysString, targetKeysString);
+                    }
+                }
+
+                _mappingService.SaveSettings();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error saving shortcut mapping: " + ex.Message);
             }
         }
     }
