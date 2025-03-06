@@ -206,10 +206,9 @@ namespace KeyboardManagerEditorUI.Pages
                 bool isAppSpecific = ShortcutControl.GetIsAppSpecific();
                 string appName = ShortcutControl.GetAppName();
 
-                // change originalKeys to "A"
-                originalKeys = ["A"];
-                remappedKeys = ["B"];
-
+                // mock data
+                // originalKeys = ["A"];
+                // remappedKeys = ["B"];
                 if (originalKeys == null || originalKeys.Count == 0 || remappedKeys == null || remappedKeys.Count == 0)
                 {
                     return;
