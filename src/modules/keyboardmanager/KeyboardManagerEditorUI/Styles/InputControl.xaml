@@ -3,14 +3,14 @@
     x:Class="KeyboardManagerEditorUI.Styles.InputControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:KeyboardManagerEditorUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:KeyboardManagerEditorUI.Styles"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Loaded="UserControl_Loaded"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     mc:Ignorable="d">
 
     <StackPanel>
-
 
         <Grid>
             <Grid.ColumnDefinitions>
@@ -22,6 +22,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+
             <TextBlock Margin="0,12,0,0" Text="Original key(s)" />
             <Grid Grid.Row="1" Margin="0,8,0,0">
                 <ToggleButton
@@ -45,9 +46,14 @@
                         </ItemsControl>
                     </ToggleButton.Content>
                 </ToggleButton>
-
             </Grid>
 
+            <Grid Grid.Row="1" Margin="0,8,0,0">
+                <StackPanel 
+                Name="KeyStackPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                </StackPanel>
+            </Grid>
+            
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="1"
@@ -57,10 +63,6 @@
                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                 Text="&#xE0AB;" />
 
-            <TextBlock
-                Grid.Column="2"
-                Margin="0,12,0,0"
-                Text="New key(s)" />
             <Grid
                 Grid.Row="1"
                 Grid.Column="2"
@@ -86,7 +88,12 @@
                         </ItemsControl>
                     </ToggleButton.Content>
                 </ToggleButton>
+            </Grid>
 
+            <Grid Grid.Row="1" Grid.Column="2" Margin="0,8,0,0">
+                <StackPanel 
+              Name="NewKeyStackPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                </StackPanel>
             </Grid>
         </Grid>
 

@@ -49,6 +49,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
+	<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
