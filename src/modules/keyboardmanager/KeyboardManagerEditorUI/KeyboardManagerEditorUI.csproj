@@ -24,6 +24,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Assets\TerminalIcon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Pages\ExistingUI.xaml" />
     <None Remove="Pages\Programs.xaml" />
     <None Remove="Pages\Shortcuts.xaml" />
@@ -54,9 +58,6 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Assets\" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\CommonStyle.xaml">

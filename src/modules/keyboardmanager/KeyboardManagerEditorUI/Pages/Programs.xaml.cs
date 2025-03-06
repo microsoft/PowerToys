@@ -30,7 +30,7 @@ namespace KeyboardManagerEditorUI.Pages
             this.InitializeComponent();
 
             Shortcuts = new ObservableCollection<URLShortcut>();
-            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Win", "U", }, URL = "https://www.bing.com" });
+            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Win", "T", }, URL = "https://www.bing.com" });
         }
 
         private async void NewShortcutBtn_Click(object sender, RoutedEventArgs e)
