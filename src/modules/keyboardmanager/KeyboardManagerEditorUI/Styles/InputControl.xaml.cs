@@ -147,12 +147,12 @@ namespace KeyboardManagerEditorUI.Styles
 
         public List<string> GetOriginalKeys()
         {
-            return OriginalKeys.ItemsSource as List<string> ?? new List<string>();
+            return pressedKeys as List<string> ?? new List<string>();
         }
 
         public List<string> GetRemappedKeys()
         {
-            return RemappedKeys.ItemsSource as List<string> ?? new List<string>();
+            return newPressedKeys as List<string> ?? new List<string>();
         }
 
         public bool GetIsAppSpecific()
