@@ -62,6 +62,10 @@ namespace Peek.UI
                 if (_confirmFileDelete != value)
                 {
                     _confirmFileDelete = value;
+
+                    // We write directly to the settings file. The Settings UI will pick detect
+                    // this change via its file watcher and update accordingly. This is the only
+                    // setting that is modified by Peek itself.
                     lock (_settingsLock)
                     {
                         _settings.Properties.ConfirmFileDelete.Value = _confirmFileDelete;
