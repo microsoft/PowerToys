@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
@@ -242,8 +243,7 @@ namespace Peek.UI
                     if (Path.GetPathRoot(item.Path) is string root)
                     {
                         var driveInfo = new DriveInfo(root);
-                        Logger.LogInfo($"User cancelled deletion of \"{item.Name}\" on " +
-                            $"{driveInfo.DriveType} drive.");
+                        Logger.LogInfo($"User cancelled item deletion on {driveInfo.DriveType} drive.");
                     }
                 }
                 else
