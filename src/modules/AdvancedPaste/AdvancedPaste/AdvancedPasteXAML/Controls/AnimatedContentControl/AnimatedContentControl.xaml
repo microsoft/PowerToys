@@ -28,6 +28,7 @@
                                 Background="Transparent"
                                 BorderThickness="4"
                                 CornerRadius="{TemplateBinding CornerRadius}"
+                                IsHitTestVisible="False"
                                 Visibility="Collapsed">
                                 <!--  CornerRadius needs to be > 0  -->
                                 <Grid.BorderBrush>

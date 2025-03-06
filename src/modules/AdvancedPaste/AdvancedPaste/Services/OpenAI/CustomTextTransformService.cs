@@ -4,6 +4,7 @@
 
 using System;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
@@ -23,11 +24,11 @@ public sealed class CustomTextTransformService(IAICredentialsProvider aiCredenti
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
     private readonly IPromptModerationService _promptModerationService = promptModerationService;
 
-    private async Task<Completions> GetAICompletionAsync(string systemInstructions, string userMessage)
+    private async Task<Completions> GetAICompletionAsync(string systemInstructions, string userMessage, CancellationToken cancellationToken)
     {
         var fullPrompt = systemInstructions + "\n\n" + userMessage;
 
-        await _promptModerationService.ValidateAsync(fullPrompt);
+        await _promptModerationService.ValidateAsync(fullPrompt, cancellationToken);
 
         OpenAIClient azureAIClient = new(_aiCredentialsProvider.Key);
 
@@ -41,7 +42,8 @@ public sealed class CustomTextTransformService(IAICredentialsProvider aiCredenti
                 },
                 Temperature = 0.01F,
                 MaxTokens = 2000,
-            });
+            },
+            cancellationToken);
 
         if (response.Value.Choices[0].FinishReason == "length")
         {
@@ -51,7 +53,7 @@ public sealed class CustomTextTransformService(IAICredentialsProvider aiCredenti
         return response;
     }
 
-    public async Task<string> TransformTextAsync(string prompt, string inputText)
+    public async Task<string> TransformTextAsync(string prompt, string inputText, CancellationToken cancellationToken, IProgress<double> progress)
     {
         if (string.IsNullOrWhiteSpace(prompt))
         {
@@ -80,14 +82,14 @@ Output:
 
         try
         {
-            var response = await GetAICompletionAsync(systemInstructions, userMessage);
+            var response = await GetAICompletionAsync(systemInstructions, userMessage, cancellationToken);
 
             var usage = response.Usage;
             AdvancedPasteGenerateCustomFormatEvent telemetryEvent = new(usage.PromptTokens, usage.CompletionTokens, ModelName);
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);
+            var logEvent = new AIServiceFormatEvent(telemetryEvent);
 
-            var logEvent = new { telemetryEvent.PromptTokens, telemetryEvent.CompletionTokens, telemetryEvent.ModelName };
-            Logger.LogDebug($"{nameof(TransformTextAsync)} complete; {JsonSerializer.Serialize(logEvent)}");
+            Logger.LogDebug($"{nameof(TransformTextAsync)} complete; {logEvent.ToJsonString()}");
 
             return response.Choices[0].Text;
         }
@@ -98,7 +100,7 @@ Output:
             AdvancedPasteGenerateCustomErrorEvent errorEvent = new(ex is PasteActionModeratedException ? PasteActionModeratedException.ErrorDescription : ex.Message);
             PowerToysTelemetry.Log.WriteEvent(errorEvent);
 
-            if (ex is PasteActionException)
+            if (ex is PasteActionException or OperationCanceledException)
             {
                 throw;
             }

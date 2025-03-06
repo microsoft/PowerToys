@@ -27,21 +27,21 @@
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
     <PackageVersion Include="MessagePack" Version="2.5.187" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.1" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.2" />
     <!-- Including Microsoft.Bcl.AsyncInterfaces to force version, since it's used by Microsoft.SemanticKernel. -->
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces"  Version="9.0.1" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces"  Version="9.0.2" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.16" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.2" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.15.0" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2739.15" />
     <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->
-    <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="9.0.1" />
-    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="9.0.1" />
+    <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="9.0.2" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
     <!-- 
@@ -67,26 +67,26 @@
     <PackageVersion Include="StreamJsonRpc" Version="2.19.27" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <!-- Package System.CodeDom added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Management but the 8.0.1 version wasn't published to nuget. -->
-    <PackageVersion Include="System.CodeDom" Version="9.0.1" />
+    <PackageVersion Include="System.CodeDom" Version="9.0.2" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageVersion Include="System.ComponentModel.Composition" Version="9.0.1" />
-    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="9.0.1" />
-    <PackageVersion Include="System.Data.OleDb" Version="9.0.1" />
+    <PackageVersion Include="System.ComponentModel.Composition" Version="9.0.2" />
+    <PackageVersion Include="System.Configuration.ConfigurationManager" Version="9.0.2" />
+    <PackageVersion Include="System.Data.OleDb" Version="9.0.2" />
     <!-- Package System.Data.SqlClient added to force it as a dependency of Microsoft.Windows.Compatibility to the latest version available at this time. -->
     <PackageVersion Include="System.Data.SqlClient" Version="4.8.6" />
     <!-- Package System.Diagnostics.EventLog added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Data.OleDb but the 8.0.1 version wasn't published to nuget. -->
-    <PackageVersion Include="System.Diagnostics.EventLog" Version="9.0.1" />
+    <PackageVersion Include="System.Diagnostics.EventLog" Version="9.0.2" />
     <!-- Package System.Diagnostics.PerformanceCounter added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.11. -->
-    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="9.0.1" />
-    <PackageVersion Include="System.Drawing.Common" Version="9.0.1" />
+    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="9.0.2" />
+    <PackageVersion Include="System.Drawing.Common" Version="9.0.2" />
     <PackageVersion Include="System.IO.Abstractions" Version="21.0.29" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="21.0.29" />
-    <PackageVersion Include="System.Management" Version="9.0.1" />
+    <PackageVersion Include="System.Management" Version="9.0.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
-    <PackageVersion Include="System.Runtime.Caching" Version="9.0.1" />
-    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="9.0.1" />
-    <PackageVersion Include="System.Text.Encoding.CodePages" Version="9.0.1" />
-    <PackageVersion Include="System.Text.Json" Version="9.0.1" />
+    <PackageVersion Include="System.Runtime.Caching" Version="9.0.2" />
+    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="9.0.2" />
+    <PackageVersion Include="System.Text.Encoding.CodePages" Version="9.0.2" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.2" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />

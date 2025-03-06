@@ -18,6 +18,10 @@
         <converters:ImageResizerFitToIntConverter x:Key="ImageResizerFitToIntConverter" />
         <converters:ImageResizerUnitToStringConverter x:Key="ImageResizerUnitToStringConverter" />
         <converters:ImageResizerUnitToIntConverter x:Key="ImageResizerUnitToIntConverter" />
+        <converters:ImageResizerSizeToAccessibleTextConverter x:Key="ImageResizerSizeToAccessibleTextConverter" />
+        <converters:ImageResizerDoubleToAutoConverter x:Key="ImageResizerDoubleToAutoConverter" />
+        <converters:ImageResizerNumberBoxValueConverter x:Key="ImageResizerNumberBoxValueConverter" />
+        <converters:ImageResizerZeroToEmptyStringNumberFormatter x:Key="ImageResizerZeroToEmptyStringNumberFormatter" />
         <toolkitconverters:BoolToObjectConverter
             x:Key="BoolToComboBoxIndexConverter"
             FalseValue="1"
@@ -77,7 +81,7 @@
                                                 Margin="0,0,4,0"
                                                 FontWeight="SemiBold"
                                                 Style="{ThemeResource SecondaryTextStyle}"
-                                                Text="{x:Bind Width, Mode=OneWay}" />
+                                                Text="{x:Bind Width, Mode=OneWay, Converter={StaticResource ImageResizerDoubleToAutoConverter}, ConverterParameter=Auto}" />
                                             <TextBlock
                                                 Margin="0,5,4,0"
                                                 AutomationProperties.AccessibilityView="Raw"
@@ -85,13 +89,13 @@
                                                 FontSize="10"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="&#xE947;"
-                                                Visibility="{x:Bind EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                Visibility="{x:Bind IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
                                                 FontWeight="SemiBold"
                                                 Style="{ThemeResource SecondaryTextStyle}"
-                                                Text="{x:Bind Height, Mode=OneWay}"
-                                                Visibility="{x:Bind EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                Text="{x:Bind Height, Mode=OneWay, Converter={StaticResource ImageResizerDoubleToAutoConverter}, ConverterParameter=Auto}"
+                                                Visibility="{x:Bind IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
                                                 Style="{ThemeResource SecondaryTextStyle}"
@@ -104,9 +108,11 @@
                                         Orientation="Horizontal"
                                         Spacing="8">
                                         <Button
-                                            x:Uid="EditButton"
+                                            x:Uid="ImageResizer_EditButton"
                                             Width="40"
                                             Height="36"
+                                            AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Edit'}"
+                                            AutomationProperties.Name="{x:Bind Name, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Edit'}"
                                             Content="&#xE70F;"
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                             Style="{StaticResource SubtleButtonStyle}">
@@ -133,22 +139,22 @@
                                                         </ComboBox>
 
                                                         <StackPanel Orientation="Horizontal" Spacing="8">
-                                                            <NumberBox
+                                                            <controls:ImageResizerDimensionsNumberBox
                                                                 x:Uid="ImageResizer_Width"
                                                                 Width="116"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
-                                                                Value="{x:Bind Width, Mode=TwoWay}" />
+                                                                Value="{x:Bind Width, Mode=TwoWay, Converter={StaticResource ImageResizerNumberBoxValueConverter}}" />
 
-                                                            <NumberBox
+                                                            <controls:ImageResizerDimensionsNumberBox
                                                                 x:Uid="ImageResizer_Height"
                                                                 Width="116"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
-                                                                Visibility="{x:Bind EnableEtraBoxes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                                Value="{x:Bind Height, Mode=TwoWay}" />
-
+                                                                Visibility="{x:Bind IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                                Value="{x:Bind Height, Mode=TwoWay, Converter={StaticResource ImageResizerNumberBoxValueConverter}}" />
                                                         </StackPanel>
+
                                                         <ComboBox
                                                             x:Uid="ImageResizer_Size"
                                                             Width="240"
@@ -164,10 +170,11 @@
                                         </Button>
 
                                         <Button
-                                            x:Name="RemoveButton"
-                                            x:Uid="RemoveButton"
+                                            x:Uid="ImageResizer_RemoveButton"
                                             Width="40"
                                             Height="36"
+                                            AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Remove'}"
+                                            AutomationProperties.Name="{x:Bind Name, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Remove'}"
                                             Click="DeleteCustomSize"
                                             CommandParameter="{Binding Id}"
                                             Content="&#xE74D;"
