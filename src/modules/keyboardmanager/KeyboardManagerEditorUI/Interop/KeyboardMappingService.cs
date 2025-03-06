@@ -129,8 +129,30 @@ namespace KeyboardManagerEditorUI.Interop
             return KeyboardManagerInterop.AddSingleKeyRemap(_configHandle, originalKey, targetKey);
         }
 
+        public bool AddSingleKeyMapping(int originalKey, string targetKeys)
+        {
+            if (string.IsNullOrEmpty(targetKeys))
+            {
+                return false;
+            }
+
+            if (!targetKeys.Contains(';') && int.TryParse(targetKeys, out int targetKey))
+            {
+                return KeyboardManagerInterop.AddSingleKeyRemap(_configHandle, originalKey, targetKey);
+            }
+            else
+            {
+                return KeyboardManagerInterop.AddSingleKeyToShortcutRemap(_configHandle, originalKey, targetKeys);
+            }
+        }
+
         public bool AddShortcutMapping(string originalKeys, string targetKeys, string targetApp = "")
         {
+            if (string.IsNullOrEmpty(originalKeys) || string.IsNullOrEmpty(targetKeys))
+            {
+                return false;
+            }
+
             return KeyboardManagerInterop.AddShortcutRemap(_configHandle, originalKeys, targetKeys, targetApp);
         }
 

@@ -56,12 +56,16 @@ extern "C"
 
     __declspec(dllexport) bool AddSingleKeyRemap(void* config, int originalKey, int targetKey);
     __declspec(dllexport) bool AddSingleKeyToTextRemap(void* config, int originalKey, const wchar_t* text);
+    __declspec(dllexport) bool AddSingleKeyToShortcutRemap(void* config,
+                                                           int originalKey,
+                                                           const wchar_t* targetKeys);
     __declspec(dllexport) bool AddShortcutRemap(void* config,
                                                 const wchar_t* originalKeys,
                                                 const wchar_t* targetKeys,
                                                 const wchar_t* targetApp);
 
     __declspec(dllexport) void GetKeyDisplayName(int keyCode, wchar_t* keyName, int maxCount);
+    __declspec(dllexport) int GetKeyCodeFromName(const wchar_t* keyName);
     __declspec(dllexport) void FreeString(wchar_t* str);
 }
 extern "C" __declspec(dllexport) bool CheckIfRemappingsAreValid();

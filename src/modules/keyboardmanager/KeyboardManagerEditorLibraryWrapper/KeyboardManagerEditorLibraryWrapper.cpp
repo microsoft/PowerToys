@@ -495,6 +495,20 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         return mappingConfig->AddSingleKeyToTextRemap(static_cast<DWORD>(originalKey), text);
     }
 
+    bool AddSingleKeyToShortcutRemap(void* config, int originalKey, const wchar_t* targetKeys)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        if (!targetKeys)
+        {
+            return false;
+        }
+
+        Shortcut targetShortcut(targetKeys);
+
+        return mappingConfig->AddSingleKeyRemap(static_cast<DWORD>(originalKey), targetShortcut);
+    }
+
     bool AddShortcutRemap(void* config,
                           const wchar_t* originalKeys,
                           const wchar_t* targetKeys,
@@ -526,6 +540,18 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         LayoutMap layoutMap;
         std::wstring name = layoutMap.GetKeyName(static_cast<DWORD>(keyCode));
         wcsncpy_s(keyName, maxCount, name.c_str(), _TRUNCATE);
+    }
+
+    int GetKeyCodeFromName(const wchar_t* keyName)
+    {
+        if (keyName == nullptr)
+        {
+            return 0;
+        }
+
+        LayoutMap layoutMap;
+        std::wstring name(keyName);
+        return static_cast<int>(layoutMap.GetKeyFromName(name));
     }
 }
 

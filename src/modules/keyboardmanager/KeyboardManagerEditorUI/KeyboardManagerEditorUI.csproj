@@ -24,10 +24,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Assets\TerminalIcon.png" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="Pages\ExistingUI.xaml" />
     <None Remove="Pages\Programs.xaml" />
     <None Remove="Pages\Shortcuts.xaml" />
