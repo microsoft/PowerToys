@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using static Microsoft.PowerToys.Run.Plugin.Calculator.CalculateEngine;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
@@ -18,6 +19,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             @"factorial\s*\(|sign\s*\(|round\s*\(|rand\s*\(\)|randi\s*\([^\)]|" +
             @"sin\s*\(|cos\s*\(|tan\s*\(|arcsin\s*\(|arccos\s*\(|arctan\s*\(|" +
             @"sinh\s*\(|cosh\s*\(|tanh\s*\(|arsinh\s*\(|arcosh\s*\(|artanh\s*\(|" +
+            @"rad\s*\(|deg\s*\(|grad\s*\(|" + /* trigonometry unit conversion macros */
             @"pi|" +
             @"==|~=|&&|\|\||" +
             @"((-?(\d+(\.\d*)?)|-?(\.\d+))[Ee](-?\d+))|" + /* expression from CheckScientificNotation between parenthesis */
@@ -26,7 +28,9 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             RegexOptions.Compiled);
 
         private const string DegToRad = "(pi / 180) * ";
+        private const string DegToGrad = "(10 / 9) * ";
         private const string GradToRad = "(pi / 200) * ";
+        private const string GradToDeg = "(9 / 10) * ";
         private const string RadToDeg = "(180 / pi) * ";
         private const string RadToGrad = "(200 / pi) * ";
 
@@ -266,10 +270,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             return input;
         }
 
-        public static string UpdateTrigFunctions(string input, CalculateEngine.TrigMode mode)
+        public static string UpdateTrigFunctions(string input, TrigMode mode)
         {
             string modifiedInput = input;
-            if (mode == CalculateEngine.TrigMode.Degrees)
+            if (mode == TrigMode.Degrees)
             {
                 modifiedInput = ModifyTrigFunction(modifiedInput, "sin", DegToRad);
                 modifiedInput = ModifyTrigFunction(modifiedInput, "cos", DegToRad);
@@ -278,7 +282,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 modifiedInput = ModifyTrigFunction(modifiedInput, "arccos", RadToDeg);
                 modifiedInput = ModifyTrigFunction(modifiedInput, "arctan", RadToDeg);
             }
-            else if (mode == CalculateEngine.TrigMode.Gradians)
+            else if (mode == TrigMode.Gradians)
             {
                 modifiedInput = ModifyTrigFunction(modifiedInput, "sin", GradToRad);
                 modifiedInput = ModifyTrigFunction(modifiedInput, "cos", GradToRad);
@@ -286,6 +290,40 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 modifiedInput = ModifyTrigFunction(modifiedInput, "arcsin", RadToGrad);
                 modifiedInput = ModifyTrigFunction(modifiedInput, "arccos", RadToGrad);
                 modifiedInput = ModifyTrigFunction(modifiedInput, "arctan", RadToGrad);
+            }
+
+            return modifiedInput;
+        }
+
+        private static string ModifyMathFunction(string input, string function, string modification)
+        {
+            // Create the pattern to match the function, opening bracket, and any spaces in between
+            string pattern = $@"{function}\s*\(";
+            return Regex.Replace(input, pattern, modification + "(");
+        }
+
+        public static string ExpandTrigConversions(string input, TrigMode mode)
+        {
+            string modifiedInput = input;
+
+            // Expand "rad", "deg" and "grad" to their respective conversions for the current trig unit
+            if (mode == TrigMode.Radians)
+            {
+                modifiedInput = ModifyMathFunction(modifiedInput, "deg", DegToRad);
+                modifiedInput = ModifyMathFunction(modifiedInput, "grad", GradToRad);
+                modifiedInput = ModifyMathFunction(modifiedInput, "rad", string.Empty);
+            }
+            else if (mode == TrigMode.Degrees)
+            {
+                modifiedInput = ModifyMathFunction(modifiedInput, "deg", string.Empty);
+                modifiedInput = ModifyMathFunction(modifiedInput, "grad", GradToDeg);
+                modifiedInput = ModifyMathFunction(modifiedInput, "rad", RadToDeg);
+            }
+            else if (mode == TrigMode.Gradians)
+            {
+                modifiedInput = ModifyMathFunction(modifiedInput, "deg", DegToGrad);
+                modifiedInput = ModifyMathFunction(modifiedInput, "grad", string.Empty);
+                modifiedInput = ModifyMathFunction(modifiedInput, "rad", RadToGrad);
             }
 
             return modifiedInput;

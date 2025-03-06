@@ -5,7 +5,6 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
@@ -39,23 +38,31 @@ namespace MouseWithoutBorders
             }
             else
             {
+                // SuppressFlow fixes an issue on service mode, where WTSQueryUserToken runs successfully once and then fails
+                // on subsequent calls. The reason appears to be an unknown issue with reverting the impersonation,
+                // meaning that subsequent impersonation attempts run as the logged-on user and fail.
+                // This is a workaround.
+                using var asyncFlowControl = System.Threading.ExecutionContext.SuppressFlow();
+
                 uint dwSessionId;
                 IntPtr hUserToken = IntPtr.Zero, hUserTokenDup = IntPtr.Zero;
                 try
                 {
                     dwSessionId = (uint)Process.GetCurrentProcess().SessionId;
                     uint rv = NativeMethods.WTSQueryUserToken(dwSessionId, ref hUserToken);
-                    Logger.LogDebug("WTSQueryUserToken returned " + rv.ToString(CultureInfo.CurrentCulture));
+                    var lastError = rv == 0 ? Marshal.GetLastWin32Error() : 0;
+
+                    Logger.LogDebug($"{nameof(NativeMethods.WTSQueryUserToken)} returned {rv.ToString(CultureInfo.CurrentCulture)}");
 
                     if (rv == 0)
                     {
-                        Logger.LogDebug($"WTSQueryUserToken failed with: {Marshal.GetLastWin32Error()}.");
+                        Logger.Log($"{nameof(NativeMethods.WTSQueryUserToken)} failed with: {lastError}.");
                         return false;
                     }
 
                     if (!NativeMethods.DuplicateToken(hUserToken, (int)NativeMethods.SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation, ref hUserTokenDup))
                     {
-                        Logger.TelemetryLogTrace($"DuplicateToken Failed! {Logger.GetStackTrace(new StackTrace())}", SeverityLevel.Warning);
+                        Logger.TelemetryLogTrace($"{nameof(NativeMethods.DuplicateToken)} Failed! {Logger.GetStackTrace(new StackTrace())}", SeverityLevel.Warning);
                         _ = NativeMethods.CloseHandle(hUserToken);
                         _ = NativeMethods.CloseHandle(hUserTokenDup);
                         return false;

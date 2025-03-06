@@ -16,7 +16,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace AdvancedPaste.Settings
 {
-    internal sealed class UserSettings : IUserSettings, IDisposable
+    internal sealed partial class UserSettings : IUserSettings, IDisposable
     {
         private readonly SettingsUtils _settingsUtils;
         private readonly TaskScheduler _taskScheduler;
@@ -108,7 +108,9 @@ namespace AdvancedPaste.Settings
                                     (PasteFormats.ImageToText, [sourceAdditionalActions.ImageToText]),
                                     (PasteFormats.PasteAsTxtFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsTxtFile]),
                                     (PasteFormats.PasteAsPngFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsPngFile]),
-                                    (PasteFormats.PasteAsHtmlFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsHtmlFile])
+                                    (PasteFormats.PasteAsHtmlFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsHtmlFile]),
+                                    (PasteFormats.TranscodeToMp3, [sourceAdditionalActions.Transcode, sourceAdditionalActions.Transcode.TranscodeToMp3]),
+                                    (PasteFormats.TranscodeToMp4, [sourceAdditionalActions.Transcode, sourceAdditionalActions.Transcode.TranscodeToMp4]),
                                 ];
 
                                 _additionalActions.Clear();

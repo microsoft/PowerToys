@@ -262,6 +262,10 @@ namespace MouseWithoutBorders
 
             new Task(() =>
             {
+                // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+                // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+                using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                 System.Threading.Thread thread = Thread.CurrentThread;
                 thread.Name = $"{nameof(SendClipboardDataUsingTCP)}.{thread.ManagedThreadId}";
                 Thread.UpdateThreads(thread);
@@ -386,6 +390,10 @@ namespace MouseWithoutBorders
 
                 new Task(() =>
                 {
+                    // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+                    // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+                    using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                     System.Threading.Thread thread = Thread.CurrentThread;
                     thread.Name = $"{nameof(ConnectAndGetData)}.{thread.ManagedThreadId}";
                     Thread.UpdateThreads(thread);
@@ -423,7 +431,7 @@ namespace MouseWithoutBorders
                 if (!IsConnectedByAClientSocketTo(remoteMachine))
                 {
                     Logger.Log($"No potential inbound connection from {MachineName} to {remoteMachine}, ask for a push back instead.");
-                    ID machineId = MachinePool.ResolveID(remoteMachine);
+                    ID machineId = MachineStuff.MachinePool.ResolveID(remoteMachine);
 
                     if (machineId != ID.NONE)
                     {
@@ -832,7 +840,7 @@ namespace MouseWithoutBorders
 
                         Logger.LogDebug($"{nameof(ShakeHand)}: Connection from {name}:{package.Src}");
 
-                        if (Common.MachinePool.ResolveID(name) == package.Src && Common.IsConnectedTo(package.Src))
+                        if (MachineStuff.MachinePool.ResolveID(name) == package.Src && Common.IsConnectedTo(package.Src))
                         {
                             clientPushData = package.Type == PackageType.ClipboardPush;
                             postAction = package.PostAction;

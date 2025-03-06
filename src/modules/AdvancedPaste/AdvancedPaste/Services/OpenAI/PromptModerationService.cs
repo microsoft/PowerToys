@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ClientModel;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
@@ -18,12 +19,12 @@ public sealed class PromptModerationService(IAICredentialsProvider aiCredentials
 
     private readonly IAICredentialsProvider _aiCredentialsProvider = aiCredentialsProvider;
 
-    public async Task ValidateAsync(string fullPrompt)
+    public async Task ValidateAsync(string fullPrompt, CancellationToken cancellationToken)
     {
         try
         {
             ModerationClient moderationClient = new(ModelName, _aiCredentialsProvider.Key);
-            var moderationClientResult = await moderationClient.ClassifyTextAsync(fullPrompt);
+            var moderationClientResult = await moderationClient.ClassifyTextAsync(fullPrompt, cancellationToken);
             var moderationResult = moderationClientResult.Value;
 
             Logger.LogDebug($"{nameof(PromptModerationService)}.{nameof(ValidateAsync)} complete; {nameof(moderationResult.Flagged)}={moderationResult.Flagged}");
