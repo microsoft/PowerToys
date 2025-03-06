@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace KeyboardManagerEditorUI.Styles
 {
@@ -18,11 +17,12 @@ namespace KeyboardManagerEditorUI.Styles
         private List<string> newpressedKeys = new List<string>();
 
         // Define newMode as a DependencyProperty for binding
-        public static readonly DependencyProperty NewModeProperty = DependencyProperty.Register(
-            "NewMode",
-            typeof(bool),
-            typeof(InputControl),
-            new PropertyMetadata(false, OnNewModeChanged));
+        public static readonly DependencyProperty NewModeProperty =
+            DependencyProperty.Register(
+                "NewMode",
+                typeof(bool),
+                typeof(InputControl),
+                new PropertyMetadata(false, OnNewModeChanged));
 
         public bool NewMode
         {
@@ -40,7 +40,11 @@ namespace KeyboardManagerEditorUI.Styles
         private static void OnNewModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var control = d as InputControl;
-            control?.UpdateKeyDisplay((bool)e.NewValue); // Update UI whenever NewMode changes
+            if (control != null)
+            {
+                bool newMode = (bool)e.NewValue;
+                control.UpdateKeyDisplay(newMode);
+            }
         }
 
         private void InputControl_KeyDown(object sender, KeyRoutedEventArgs e, bool newMode)
@@ -62,22 +66,9 @@ namespace KeyboardManagerEditorUI.Styles
             }
         }
 
-        private void ButtonA_Click(object sender, RoutedEventArgs e)
-        {
-            // Toggle the newMode value and update the UI
-            NewMode = !NewMode; // Toggle newMode to true/false
-            if (NewMode)
-            {
-                // Clear the remapping keys if we switch to remapping mode
-                newpressedKeys.Clear();
-            }
-
-            // Optionally, update the UI to indicate remapping mode is active
-            UpdateKeyDisplay(NewMode);
-        }
-
         private void InputControl_KeyUp(object sender, KeyRoutedEventArgs e, bool newMode)
         {
+            // Console.WriteLine(newMode);
             string keyName = e.Key.ToString();
             var currentKeyList = newMode ? newpressedKeys : pressedKeys;
 
@@ -127,7 +118,7 @@ namespace KeyboardManagerEditorUI.Styles
                 // Add Border to StackPanel
                 if (newMode)
                 {
-                    keyBlockContainer.Background = new SolidColorBrush(Microsoft.UI.Colors.LightBlue);
+                    keyBlockContainer.Background = new SolidColorBrush(Microsoft.UI.Colors.DarkBlue);
                     keyBlock.Foreground = new SolidColorBrush(Microsoft.UI.Colors.White);
                     NewKeyStackPanel.Children.Add(keyBlockContainer); // For remapping keys
                 }
@@ -145,6 +136,7 @@ namespace KeyboardManagerEditorUI.Styles
 
         private void RemappedToggleBtn_Checked(object sender, RoutedEventArgs e)
         {
+            NewMode = true;
             RemappedToggleBtn.IsChecked = false;
         }
 

@@ -39,15 +39,6 @@
                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                 Text="&#xE0AB;" />
 
-            <Button 
-                Grid.Column="2"
-                Grid.Row="1"
-                Margin="0,8,0,0"
-                Content="Add New"
-                Click="ButtonA_Click"
-                HorizontalAlignment="Stretch"
-                />
-
             <Grid Grid.Row="1" Grid.Column="2" Margin="0,8,0,0">
                 <StackPanel 
                     Name="NewKeyStackPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
