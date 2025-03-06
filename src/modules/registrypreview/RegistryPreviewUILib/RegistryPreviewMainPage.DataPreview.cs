@@ -265,17 +265,15 @@ namespace RegistryPreviewUILib
         private static void BinaryPreview_HexBoxLoaded(object sender, RoutedEventArgs e)
         {
             _isDataPreviewHexBoxLoaded = true;
-            var stackPanel = ((HB.HexBox)sender).Parent as StackPanel;
+            var hexBox = (HB.HexBox)sender;
+            var stackPanel = hexBox.Parent as StackPanel;
             var selectorBar = stackPanel.Children[0] as SelectorBar;
+            var progressRing = stackPanel.Children[1] as ProgressRing;
 
-            // Item 0 is the "Data" item
-            if (selectorBar.Items.IndexOf(selectorBar.SelectedItem) == 0)
+            if (selectorBar.SelectedItem.Tag.ToString() == "DataView")
             {
-                // progress ring
-                stackPanel.Children[1].Visibility = Visibility.Collapsed;
-
-                // hex box
-                ((HB.HexBox)sender).Visibility = Visibility.Visible;
+                progressRing.Visibility = Visibility.Collapsed;
+                hexBox.Visibility = Visibility.Visible;
             }
         }
     }
