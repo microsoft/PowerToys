@@ -222,7 +222,7 @@ namespace KeyboardManagerEditorUI.Styles
                 case "RightWindows":
                     return "RWin";
                 default:
-                    return keyName; // 默认返回原值
+                    return keyName;
             }
         }
     }
