@@ -33,11 +33,8 @@ namespace KeyboardManagerEditorUI.Pages
             this.InitializeComponent();
 
             Shortcuts = new ObservableCollection<URLShortcut>();
-            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Shift", "Win", "M" }, URL = "Hello" });
-            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Win", "P", }, URL = "Nice!" });
-            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Shift", "Win", "M" }, URL = "I like it" });
-            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Win", "U", }, URL = "Yes" });
-            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Ctrl", "P" }, URL = "OK" });
+            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Alt (Left)", "H" }, URL = "Hello" });
+            Shortcuts.Add(new URLShortcut() { Shortcut = new List<string>() { "Win (Left)", "P", }, URL = "PowerToys" });
         }
 
         private async void NewShortcutBtn_Click(object sender, RoutedEventArgs e)

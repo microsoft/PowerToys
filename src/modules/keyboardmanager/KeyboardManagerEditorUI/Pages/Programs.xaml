@@ -172,7 +172,7 @@
                     Style="{StaticResource CustomShortcutToggleButtonStyle}">
                     <ToggleButton.Content>
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <styles:KeyVisual Content="Win" VisualType="SmallOutline" />
+                            <styles:KeyVisual Content="Win (Left)" VisualType="SmallOutline" />
                             <styles:KeyVisual Content="T" VisualType="SmallOutline" />
                         </StackPanel>
                     </ToggleButton.Content>
