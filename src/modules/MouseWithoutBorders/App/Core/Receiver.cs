@@ -41,12 +41,12 @@ internal static class Receiver
     {
         if (package.Type == PackageType.Invalid)
         {
-            if ((Common.InvalidPackageCount % 100) == 0)
+            if ((Event.InvalidPackageCount % 100) == 0)
             {
                 Common.ShowToolTip("Invalid packages received!", 1000, ToolTipIcon.Warning, false);
             }
 
-            Common.InvalidPackageCount++;
+            Event.InvalidPackageCount++;
             Logger.Log("Invalid packages received!");
             return false;
         }
@@ -104,7 +104,7 @@ internal static class Receiver
                     {
                         if ((package.Kd.dwFlags & (int)Common.LLKHF.UP) == (int)Common.LLKHF.UP)
                         {
-                            Common.ShowOneWayModeMessage();
+                            Helper.ShowOneWayModeMessage();
                         }
 
                         return;
@@ -133,7 +133,7 @@ internal static class Receiver
                         {
                             if (package.Md.dwFlags is Common.WM_LBUTTONDOWN or Common.WM_RBUTTONDOWN)
                             {
-                                Common.ShowOneWayModeMessage();
+                                Helper.ShowOneWayModeMessage();
                             }
                         }
                         else if (package.Md.dwFlags is Common.WM_LBUTTONUP or Common.WM_RBUTTONUP)
@@ -144,13 +144,13 @@ internal static class Receiver
                         return;
                     }
 
-                    if (Math.Abs(package.Md.X) >= Common.MOVE_MOUSE_RELATIVE && Math.Abs(package.Md.Y) >= Common.MOVE_MOUSE_RELATIVE)
+                    if (Math.Abs(package.Md.X) >= Event.MOVE_MOUSE_RELATIVE && Math.Abs(package.Md.Y) >= Event.MOVE_MOUSE_RELATIVE)
                     {
                         if (package.Md.dwFlags == Common.WM_MOUSEMOVE)
                         {
                             InputSimulation.MoveMouseRelative(
-                                package.Md.X < 0 ? package.Md.X + Common.MOVE_MOUSE_RELATIVE : package.Md.X - Common.MOVE_MOUSE_RELATIVE,
-                                package.Md.Y < 0 ? package.Md.Y + Common.MOVE_MOUSE_RELATIVE : package.Md.Y - Common.MOVE_MOUSE_RELATIVE);
+                                package.Md.X < 0 ? package.Md.X + Event.MOVE_MOUSE_RELATIVE : package.Md.X - Event.MOVE_MOUSE_RELATIVE,
+                                package.Md.Y < 0 ? package.Md.Y + Event.MOVE_MOUSE_RELATIVE : package.Md.Y - Event.MOVE_MOUSE_RELATIVE);
                             _ = NativeMethods.GetCursorPos(ref lastXY);
 
                             Point p = MachineStuff.MoveToMyNeighbourIfNeeded(lastXY.X, lastXY.Y, Common.MachineID);
@@ -195,9 +195,9 @@ internal static class Receiver
             case PackageType.NextMachine:
                 Logger.LogDebug("PackageType.NextMachine received!");
 
-                if (Common.IsSwitchingByMouseEnabled())
+                if (Event.IsSwitchingByMouseEnabled())
                 {
-                    Common.PrepareToSwitchToMachine((ID)package.Md.WheelDelta, new Point(package.Md.X, package.Md.Y));
+                    Event.PrepareToSwitchToMachine((ID)package.Md.WheelDelta, new Point(package.Md.X, package.Md.Y));
                 }
 
                 break;
@@ -383,7 +383,7 @@ internal static class Receiver
             case PackageType.HideMouse:
                 Common.HasSwitchedMachineSinceLastCopy = true;
                 Common.HideMouseCursor(true);
-                Common.MainFormDotEx(false);
+                Helper.MainFormDotEx(false);
                 Common.ReleaseAllKeys();
                 break;
 

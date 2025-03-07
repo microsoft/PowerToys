@@ -206,7 +206,7 @@ namespace MouseWithoutBorders.Class
         {
             int rv = 1, dx = 0, dy = 0;
             bool local = false;
-            Common.InputEventCount++;
+            Event.InputEventCount++;
 
             try
             {
@@ -220,14 +220,14 @@ namespace MouseWithoutBorders.Class
                 }
                 else
                 {
-                    Common.RealInputEventCount++;
+                    Event.RealInputEventCount++;
 
                     if (MachineStuff.NewDesMachineID == Common.MachineID || MachineStuff.NewDesMachineID == ID.ALL)
                     {
                         local = true;
                         if (Common.MainFormVisible && !DragDrop.IsDropping)
                         {
-                            Common.MainFormDot();
+                            Helper.MainFormDot();
                         }
                     }
 
@@ -269,10 +269,10 @@ namespace MouseWithoutBorders.Class
                             {
                                 MachineStuff.SwitchLocation.Count--;
 
-                                if (MachineStuff.SwitchLocation.X > Common.XY_BY_PIXEL - 100000 || MachineStuff.SwitchLocation.Y > Common.XY_BY_PIXEL - 100000)
+                                if (MachineStuff.SwitchLocation.X > Event.XY_BY_PIXEL - 100000 || MachineStuff.SwitchLocation.Y > Event.XY_BY_PIXEL - 100000)
                                 {
-                                    hookCallbackMouseData.X = MachineStuff.SwitchLocation.X - Common.XY_BY_PIXEL;
-                                    hookCallbackMouseData.Y = MachineStuff.SwitchLocation.Y - Common.XY_BY_PIXEL;
+                                    hookCallbackMouseData.X = MachineStuff.SwitchLocation.X - Event.XY_BY_PIXEL;
+                                    hookCallbackMouseData.Y = MachineStuff.SwitchLocation.Y - Event.XY_BY_PIXEL;
                                 }
                                 else
                                 {
@@ -308,8 +308,8 @@ namespace MouseWithoutBorders.Class
                                     hookCallbackMouseData.Y = MachineStuff.PrimaryScreenBounds.Bottom + 1;
                                 }
 
-                                dx += dx < 0 ? -Common.MOVE_MOUSE_RELATIVE : Common.MOVE_MOUSE_RELATIVE;
-                                dy += dy < 0 ? -Common.MOVE_MOUSE_RELATIVE : Common.MOVE_MOUSE_RELATIVE;
+                                dx += dx < 0 ? -Event.MOVE_MOUSE_RELATIVE : Event.MOVE_MOUSE_RELATIVE;
+                                dy += dy < 0 ? -Event.MOVE_MOUSE_RELATIVE : Event.MOVE_MOUSE_RELATIVE;
                             }
                         }
 
@@ -336,13 +336,13 @@ namespace MouseWithoutBorders.Class
 
         private int KeyboardHookProc(int nCode, int wParam, IntPtr lParam)
         {
-            Common.InputEventCount++;
+            Event.InputEventCount++;
             if (!RealData)
             {
                 return NativeMethods.CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
             }
 
-            Common.RealInputEventCount++;
+            Event.RealInputEventCount++;
 
             keyboardHookStruct = LParamToKeyboardHookStruct(lParam);
             hookCallbackKeybdData.dwFlags = keyboardHookStruct.Flags;

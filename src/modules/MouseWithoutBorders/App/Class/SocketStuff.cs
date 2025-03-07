@@ -1684,7 +1684,7 @@ namespace MouseWithoutBorders.Class
             {
                 string fileName = null;
 
-                if (!Common.ImpersonateLoggedOnUserAndDoSomething(() =>
+                if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                 {
                     if (!File.Exists(Common.LastDragDropFile))
                     {
@@ -1873,7 +1873,7 @@ namespace MouseWithoutBorders.Class
             }
             else
             {
-                _ = Common.ImpersonateLoggedOnUserAndDoSomething(() => { r = SendFileEx(s, ecStream, fileName); });
+                _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() => { r = SendFileEx(s, ecStream, fileName); });
             }
 
             return r;
@@ -2111,7 +2111,7 @@ namespace MouseWithoutBorders.Class
                         }
                     }
 
-                    _ = Common.CreateLowIntegrityProcess(
+                    _ = Launch.CreateLowIntegrityProcess(
                         "\"" + Path.GetDirectoryName(Application.ExecutablePath) + "\\MouseWithoutBordersHelper.exe\"",
                         "InternalError" + " \"" + msg + "\"",
                         0,
