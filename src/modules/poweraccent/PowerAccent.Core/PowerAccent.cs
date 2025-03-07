@@ -41,6 +41,8 @@ public partial class PowerAccent : IDisposable
 
     private readonly CharactersUsageInfo _usageInfo;
 
+    private CancellationTokenSource _cancellationTokenSource;
+
     public PowerAccent()
     {
         Logger.InitializeLogger("\\QuickAccent\\Logs");
@@ -100,9 +102,18 @@ public partial class PowerAccent : IDisposable
         _characterDescriptions = GetCharacterDescriptions(_characters);
         _showUnicodeDescription = _settingService.ShowUnicodeDescription;
 
-        Task.Delay(_settingService.InputTime).ContinueWith(
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource = new CancellationTokenSource();
+
+        Task.Delay(_settingService.InputTime, _cancellationTokenSource.Token).ContinueWith(
         t =>
         {
+            // Skip if the task was cancelled.
+            if (t.IsCanceled)
+            {
+                return;
+            }
+
             if (_visible)
             {
                 OnChangeDisplay?.Invoke(true, _characters);
