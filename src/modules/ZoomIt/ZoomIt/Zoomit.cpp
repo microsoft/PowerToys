@@ -735,7 +735,7 @@ Gdiplus::Rect GetLineBounds( POINT p1, POINT p2, int penWidth )
 //
 // InvalidateGdiplusRect
 //
-// Invalidate portion of window specified by Gdiplus::Rect
+// Invalidate portion of window specified by Gdiplus::Rect.
 // 
 //----------------------------------------------------------------------------
 void InvalidateGdiplusRect(HWND hWnd, Gdiplus::Rect BoundsRect)
