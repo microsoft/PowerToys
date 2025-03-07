@@ -1710,8 +1710,8 @@ USRDLL
 UType
 uuidv
 uwp
-UXMS
-UXT
+uxms
+uxt
 uxtheme
 vabdq
 validmodulename
@@ -1794,7 +1794,7 @@ webcam
 webpage
 websites
 wekyb
-WFT
+wft
 wgpocpl
 WIC
 wifi
@@ -1851,7 +1851,7 @@ WNDCLASSEXW
 WNDCLASSW
 WNDPROC
 wnode
-WOM
+wom
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
