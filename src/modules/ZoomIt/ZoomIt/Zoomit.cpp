@@ -493,7 +493,7 @@ bool IsAutostartConfigured()
 // RunningOnWin64
 //
 // Returns true if this is the 32-bit version of the executable
-// and we're on 64-bit Windows
+// and we're on 64-bit Windows.
 // 
 //--------------------------------------------------------------------
 typedef BOOL (__stdcall *P_IS_WOW64PROCESS)(
