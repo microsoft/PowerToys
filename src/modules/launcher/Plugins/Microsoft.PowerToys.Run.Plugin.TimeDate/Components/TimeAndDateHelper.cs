@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -16,14 +15,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
     internal static class TimeAndDateHelper
     {
         private static readonly Regex _regexSpecialInputFormats = new Regex(@"^.*(u|ums|ft|oa|exc|exf)\d");
-        private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|WOM|WOY|EAB|WFT|UXT|UXMS|OAD|EXC|EXF)");
+        private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|WOM|WOY|EAB|WFT|UXT|UMS|OAD|EXC|EXF)");
         private static readonly Regex _regexCustomDateTimeDow = new Regex(@"(?<!\\)DOW");
         private static readonly Regex _regexCustomDateTimeWom = new Regex(@"(?<!\\)WOM");
         private static readonly Regex _regexCustomDateTimeWoy = new Regex(@"(?<!\\)WOY");
         private static readonly Regex _regexCustomDateTimeEab = new Regex(@"(?<!\\)EAB");
         private static readonly Regex _regexCustomDateTimeWft = new Regex(@"(?<!\\)WFT");
         private static readonly Regex _regexCustomDateTimeUxt = new Regex(@"(?<!\\)UXT");
-        private static readonly Regex _regexCustomDateTimeUxms = new Regex(@"(?<!\\)UXMS");
+        private static readonly Regex _regexCustomDateTimeUms = new Regex(@"(?<!\\)UMS");
         private static readonly Regex _regexCustomDateTimeOad = new Regex(@"(?<!\\)OAD");
         private static readonly Regex _regexCustomDateTimeExc = new Regex(@"(?<!\\)EXC");
         private static readonly Regex _regexCustomDateTimeExf = new Regex(@"(?<!\\)EXF");
@@ -98,18 +97,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             return ((date.DayOfWeek + daysInWeek - formatSettingFirstDayOfWeek) % daysInWeek) + adjustment;
         }
 
-        internal static double ConvertToOleAutomationFormat(DateTime date, OADateFormats type)
+        internal static double? ConvertToOleAutomationFormat(DateTime date, OADateFormats type)
         {
             double v = date.ToOADate();
 
             switch (type)
             {
                 case OADateFormats.Excel1904:
-                    // Excel with base 1904: Adjust by -1462;
-                    return v - 1462;
+                    // Excel with base 1904: Adjust by -1462
+                    v -= 1462;
+
+                    // Date starts at 1/1/1904 = 0
+                    return Math.Truncate(v) >= 0 ? v : null;
                 case OADateFormats.Excel1900:
-                    // Excel with base 1900: Adjust by -1 if v < 61.
-                    return v < 61 ? v - 1 : v;
+                    // Excel with base 1900: Adjust by -1 if v < 61
+                    v = v < 61 ? v - 1 : v;
+
+                    // Date starts at 1/1/1900 = 1
+                    return Math.Truncate(v) >= 1 ? v : null;
                 default:
                     // OLE Automation date: Return as is.
                     return v;
@@ -255,16 +260,20 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             result = _regexCustomDateTimeUxt.Replace(result, unix.ToString(CultureInfo.CurrentCulture));
 
             // UXMS: Unix time stamp milli seconds
-            result = _regexCustomDateTimeUxms.Replace(result, unixMilliseconds.ToString(CultureInfo.CurrentCulture));
+            result = _regexCustomDateTimeUms.Replace(result, unixMilliseconds.ToString(CultureInfo.CurrentCulture));
 
             // OAD: OLE Automation date
-            result = _regexCustomDateTimeOad.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.OLEAutomation).ToString(CultureInfo.CurrentCulture));
+            result = _regexCustomDateTimeOad.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.OLEAutomation)?.ToString(CultureInfo.CurrentCulture));
 
             // EXC: Excel date value with base 1900
-            result = _regexCustomDateTimeExc.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.Excel1900).ToString(CultureInfo.CurrentCulture));
+            double? v = ConvertToOleAutomationFormat(date, OADateFormats.Excel1900);
+            string exc = v != null ? v?.ToString(CultureInfo.CurrentCulture) : "####";
+            result = _regexCustomDateTimeExc.Replace(result, exc);
 
             // EXF: Excel date value with base 1904
-            result = _regexCustomDateTimeExf.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.Excel1904).ToString(CultureInfo.CurrentCulture));
+            double? n = ConvertToOleAutomationFormat(date, OADateFormats.Excel1904);
+            string exf = n != null ? n?.ToString(CultureInfo.CurrentCulture) : "####";
+            result = _regexCustomDateTimeExf.Replace(result, exf);
 
             return result;
         }

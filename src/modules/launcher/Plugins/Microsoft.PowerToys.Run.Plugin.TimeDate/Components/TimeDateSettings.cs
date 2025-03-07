@@ -160,7 +160,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     Key = nameof(CustomFormats),
                     PluginOptionType = PluginAdditionalOption.AdditionalOptionType.MultilineTextbox,
                     DisplayLabel = Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
-                    DisplayDescription = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "WOM", "WOY", "EAB", "WFT", "UXT", "UXMS", "OAD", "EXC", "EXF", "UTC:"),
+                    DisplayDescription = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "WOM", "WOY", "EAB", "WFT", "UXT", "UMS", "OAD", "EXC", "EXF", "UTC:"),
                     PlaceholderText = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)\rMyUtcFormat=UTC:hh:mm:ss",
                     TextValue = string.Empty,
                 },

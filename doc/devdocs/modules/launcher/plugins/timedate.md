@@ -76,7 +76,7 @@ As syntax pattern the pattern from `DateTime.ToString()` and the following custo
 - EAB: Era abbreviation.
 - WFT: Windows file time.
 - UXT: Unix time stamp.
-- UXMS: Unix time stamp in milliseconds.
+- UMS: Unix time stamp in milliseconds.
 - OAD: OLE Automation date.
 - EXC: Excle's 1900 based date value.
 - EXF: Excle's 1904 based date value.
@@ -100,7 +100,7 @@ As syntax pattern the pattern from `DateTime.ToString()` and the following custo
 	| `HideNumberMessageOnGlobalQuery` | Checkbox | `false` | Hide 'Invalid number input' error message on global queries | |
 	| `CalendarFirstWeekRule` | Combo box | `-1` (Use system settings) | First week of the year | Configure the calendar rule for the first week of the year. |
 	| `FirstDayOfWeek` | Combo box | `-1` (Use system settings) | First day of the week | |
-	| `CustomFormats` | Multiline text box | `string.Empty` | Custom formats | Use date and time string format syntax and DOW (Day of Week), WOM (Week of Month), WOY (Week of the year), EAB (Era abbreviation), WFT (Windows File Time), UXT (Unix Time), UXMS (Unix Time in milliseconds), OAD (OLE Automation date), EXC (Excel's 1900 based date value), EXF (Excel's 1904 based date value). If the format starts with UTC:, then Universal Time (UTC) is used. (Use a backslash to escape format sequences and the backslash character as text.) |
+	| `CustomFormats` | Multiline text box | `string.Empty` | Custom formats | Use date and time string format syntax and DOW (Day of Week), WOM (Week of Month), WOY (Week of the year), EAB (Era abbreviation), WFT (Windows File Time), UXT (Unix Time), UMS (Unix Time in milliseconds), OAD (OLE Automation date), EXC (Excel's 1900 based date value), EXF (Excel's 1904 based date value). If the format starts with UTC:, then Universal Time (UTC) is used. (Use a backslash to escape format sequences and the backslash character as text.) |
 
 ## Classes
 

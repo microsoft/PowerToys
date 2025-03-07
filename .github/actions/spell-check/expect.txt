@@ -1710,7 +1710,7 @@ USRDLL
 UType
 uuidv
 uwp
-uxms
+ums
 uxt
 uxtheme
 vabdq
