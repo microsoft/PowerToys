@@ -107,29 +107,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             {
                 new PluginAdditionalOption()
                 {
-                    Key = nameof(CalendarFirstWeekRule),
-                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingFirstWeekRule,
-                    DisplayDescription = Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_Description,
-                    PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
-                    ComboBoxItems = new List<KeyValuePair<string, string>>
-                    {
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_Setting_UseSystemSetting, "-1"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay, "0"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek, "1"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFourDayWeek, "2"),
-                    },
-                    ComboBoxValue = -1,
-                },
-                new PluginAdditionalOption()
-                {
-                    Key = nameof(FirstDayOfWeek),
-                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
-                    PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
-                    ComboBoxItems = GetSortedListForWeekDaySetting(),
-                    ComboBoxValue = -1,
-                },
-                new PluginAdditionalOption()
-                {
                     Key = nameof(OnlyDateTimeNowGlobal),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal,
                     DisplayDescription = Resources.Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description,
@@ -154,6 +131,29 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     Key = nameof(HideNumberMessageOnGlobalQuery),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery,
                     Value = false,
+                },
+                new PluginAdditionalOption()
+                {
+                    Key = nameof(CalendarFirstWeekRule),
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingFirstWeekRule,
+                    DisplayDescription = Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_Description,
+                    PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
+                    ComboBoxItems = new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_Setting_UseSystemSetting, "-1"),
+                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay, "0"),
+                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek, "1"),
+                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFourDayWeek, "2"),
+                    },
+                    ComboBoxValue = -1,
+                },
+                new PluginAdditionalOption()
+                {
+                    Key = nameof(FirstDayOfWeek),
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
+                    PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
+                    ComboBoxItems = GetSortedListForWeekDaySetting(),
+                    ComboBoxValue = -1,
                 },
                 new PluginAdditionalOption()
                 {
