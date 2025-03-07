@@ -7,5 +7,7 @@ namespace Peek.UI
     public interface IUserSettings
     {
         public bool CloseAfterLosingFocus { get; }
+
+        public bool ConfirmFileDelete { get; set; }
     }
 }
