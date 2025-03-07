@@ -16,10 +16,13 @@ The 'Time and Date' plugin shows the date and time in different formats. For the
 ### Available formats
 
 **Remarks**
-- The following formats requires a prefix in the query:
+- The following formats requires a prefix in the query when using them as date input:
    - Unix Timestamp: `u`
    - Unix Timestamp in milliseconds: `ums`
    - Windows file time: `ft`
+   - OLE Automation date: `oa`
+   - Excel 1900 date value: `exc`
+   - Excel 1904 date value: `exf`
 - On invalid number inputs we show a warning that tells the user which prefixes are allowed/required.
 
 **List of available formats**
@@ -60,6 +63,21 @@ The following formats are currently available:
 | ISO 8601 UTC with time zone | 2022-03-05T16:23:04Z | x | x |
 | RFC1123 | Sat, 05 Mar 2022 16:23:04 GMT | x | x |
 
+**Custom format definition**
+The user can create its own formats. One per line in the settings text box. The format of each line is `<name>=<syntax pattern>`.
+If the syntax pattern starting with `UTC:` then we use the UTC time instaed of the local time.
+As syntax pattern the pattern from `DateTime.ToString()` and the following custom pattern are available:
+- DOW: Number of the day in the week.
+- WOM: Number of week in the month.
+- WOY: Number of the week in the year.
+- ELF: Era in long version.
+- WFT: Windows file time.
+- UXT: Unix time stamp.
+- UXMS: Unix time stamp in milliseconds.
+- OAD: OLE Automation date.
+- EXC: Excle's 1900 based date value.
+- EXF: Excle's 1904 based date value.
+
 ### Add new formats
 - To add a new formats you have to add them to the method `GetList()` of the [`AvailableResultsList`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/AvailableResultsList.cs) class.
 	- Please add the new formats in the second range. The first one is reserved for the three main formats (Time, Date, Now).
@@ -73,13 +91,13 @@ The following formats are currently available:
 
 	| Key | Type | Default value | Name | Description |
 	|--------------|--------------|-----------|------------|------------|
-	| `CalendarFirstWeekRule` | Combo box | `-1` (Use system settings) | First week of the year | Configure the calendar rule for the first week of the year. |
-	| `FirstDayOfWeek` | Combo box | `-1` (Use system settings) | First day of the week | |
 	| `OnlyDateTimeNowGlobal` | Checkbox | `true` | Show only 'Time', 'Date', and 'Now' result for system time on global queries | Regardless of this setting, for global queries the first word of the query has to be a complete match. |
 	| `TimeWithSeconds` | Checkbox | `false` | Show time with seconds | This setting applies to the 'Time' and 'Now' result. |
 	| `DateWithWeekday` | Checkbox | `false` | Show date with weekday and name of month | This setting applies to the 'Date' and 'Now' result. |
 	| `HideNumberMessageOnGlobalQuery` | Checkbox | `false` | Hide 'Invalid number input' error message on global queries | |
-	
+	| `CalendarFirstWeekRule` | Combo box | `-1` (Use system settings) | First week of the year | Configure the calendar rule for the first week of the year. |
+	| `FirstDayOfWeek` | Combo box | `-1` (Use system settings) | First day of the week | |
+	| `CustomFormats` | Multiline text box | `string.Empty` | Custom formats | Use date and time string format syntax and DOW (Day of Week), WOM (Week of Month), WOY (Week of the year), ELF (Era long format), WFT (Windows File Time), UXT (Unix Time), UXMS (Unix Time in milliseconds), OAD (OLE Automation date), EXC (Excel's 1900 based date value), EXF (Excel's 1904 based date value). If the format starts with UTC:, then Universal Time (UTC) is used. (Use a backslash to escape format sequences and the backslash character as text.) |
 
 ## Classes
 
