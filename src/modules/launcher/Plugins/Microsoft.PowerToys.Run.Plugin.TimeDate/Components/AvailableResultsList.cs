@@ -6,9 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection.Metadata;
+using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
-using Microsoft.VisualBasic.Logging;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
@@ -76,10 +75,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // Custom formats
                 foreach (string f in TimeDateSettings.Instance.CustomFormats)
                 {
-                    // bool isUtcFormat = true;
                     string[] formatParts = f.Split("=", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                     string formatSyntax = formatParts.Length == 2 ? formatParts[1] : string.Empty;
                     string searchTags = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagCustom");
+                    DateTime dtObject = dateTimeNow;
 
                     // If Length = 0 then empty string.
                     if (formatParts.Length >= 1)
@@ -95,13 +94,28 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                             bool containsCustomSyntax = TimeAndDateHelper.StringContainsCustomFormatSyntax(formatSyntax);
                             if (formatSyntax.StartsWith("UTC:", StringComparison.InvariantCulture))
                             {
-                                // isUtcFormat = true;
-                                // formatSyntax = formatSyntax.Remove(0, 4); => Not do this here.
                                 searchTags = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagCustomUtc");
+                                dtObject = dateTimeNowUtc;
                             }
 
                             // Get formated date
-                            var value = "xxx";
+                            var value = TimeAndDateHelper.ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, era, Regex.Replace(formatSyntax, "^UTC:", string.Empty), firstWeekRule, firstDayOfTheWeek);
+                            try
+                            {
+                                value = dtObject.ToString(value, CultureInfo.CurrentCulture);
+                            }
+                            catch
+                            {
+                                if (!containsCustomSyntax)
+                                {
+                                    throw;
+                                }
+                                else
+                                {
+                                    // Do not fail as we have custom format syntax. Instead fix backslashes.
+                                    value = Regex.Replace(value, @"(?<!\\)\\", string.Empty).Replace("\\\\", "\\");
+                                }
+                            }
 
                             // Add result
                             results.Add(new AvailableResult()

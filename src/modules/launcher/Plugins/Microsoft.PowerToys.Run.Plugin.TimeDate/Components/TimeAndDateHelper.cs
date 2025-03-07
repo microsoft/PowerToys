@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -16,6 +17,16 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
     {
         private static readonly Regex _regexSpecialInputFormats = new Regex(@"^.*(u|ums|ft|oa|exc|exf)\d");
         private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|WOM|WOY|ELF|WFT|UXT|UXMS|OAD|EXC|EXF)");
+        private static readonly Regex _regexCustomDateTimeDow = new Regex(@"(?<!\\)DOW");
+        private static readonly Regex _regexCustomDateTimeWom = new Regex(@"(?<!\\)WOM");
+        private static readonly Regex _regexCustomDateTimeWoy = new Regex(@"(?<!\\)WOY");
+        private static readonly Regex _regexCustomDateTimeElf = new Regex(@"(?<!\\)ELF");
+        private static readonly Regex _regexCustomDateTimeWft = new Regex(@"(?<!\\)WFT");
+        private static readonly Regex _regexCustomDateTimeUxt = new Regex(@"(?<!\\)UXT");
+        private static readonly Regex _regexCustomDateTimeUxms = new Regex(@"(?<!\\)UXMS");
+        private static readonly Regex _regexCustomDateTimeOad = new Regex(@"(?<!\\)OAD");
+        private static readonly Regex _regexCustomDateTimeExc = new Regex(@"(?<!\\)EXC");
+        private static readonly Regex _regexCustomDateTimeExf = new Regex(@"(?<!\\)EXF");
 
         /// <summary>
         /// Get the format for the time string
@@ -87,9 +98,22 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             return ((date.DayOfWeek + daysInWeek - formatSettingFirstDayOfWeek) % daysInWeek) + adjustment;
         }
 
-        internal static double ConvertToOleAutomationFormat(OADateFormats type, DateTime date)
+        internal static double ConvertToOleAutomationFormat(DateTime date, OADateFormats type)
         {
-            throw new NotImplementedException();
+            double v = date.ToOADate();
+
+            switch (type)
+            {
+                case OADateFormats.Excel1904:
+                    // Excel with base 1904: Adjust by -1462;
+                    return v - 1462;
+                case OADateFormats.Excel1900:
+                    // Excel with base 1900: Adjust by -1 if v < 61.
+                    return v < 61 ? v - 1 : v;
+                default:
+                    // OLE Automation date: Return as is.
+                    return v;
+            }
         }
 
         /// <summary>
@@ -207,9 +231,38 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <param name="calWeek">Value for relacing calendar week.</param>
         /// <param name="format">Format definition.</param>
         /// <returns>Formated date/time string.</returns>
-        internal static string ConvertToCustomFormat(DateTime date, long unix, long unixMilliseconds, int calWeek, string eraLongFormat, string format)
+        internal static string ConvertToCustomFormat(DateTime date, long unix, long unixMilliseconds, int calWeek, string eraLongFormat, string format, CalendarWeekRule firstWeekRule, DayOfWeek firstDayOfTheWeek)
         {
-            throw new NotImplementedException();
+            string result = format;
+
+            // DOW: Number of day in week
+            result = _regexCustomDateTimeDow.Replace(result, GetNumberOfDayInWeek(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));
+
+            // WOM: Week of Month
+            result = _regexCustomDateTimeWom.Replace(result, GetWeekOfMonth(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));
+
+            // ELF: Era in long format
+            result = _regexCustomDateTimeElf.Replace(result, eraLongFormat);
+
+            // WFT: Week of Month
+            result = _regexCustomDateTimeWft.Replace(result, date.ToFileTime().ToString(CultureInfo.CurrentCulture));
+
+            // UXT: Unix time stamp
+            result = _regexCustomDateTimeUxt.Replace(result, unix.ToString(CultureInfo.CurrentCulture));
+
+            // UXMS: Unix time stamp milli seconds
+            result = _regexCustomDateTimeUxms.Replace(result, unixMilliseconds.ToString(CultureInfo.CurrentCulture));
+
+            // OAD: OLE Automation date
+            result = _regexCustomDateTimeOad.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.OLEAutomation).ToString(CultureInfo.CurrentCulture));
+
+            // EXC: Excel date value with base 1900
+            result = _regexCustomDateTimeExc.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.Excel1900).ToString(CultureInfo.CurrentCulture));
+
+            // EXF: Excel date value with base 1904
+            result = _regexCustomDateTimeExf.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.Excel1904).ToString(CultureInfo.CurrentCulture));
+
+            return result;
         }
 
         /// <summary>
