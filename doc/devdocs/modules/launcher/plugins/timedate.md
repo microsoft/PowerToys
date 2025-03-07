@@ -64,7 +64,7 @@ The following formats are currently available:
 | RFC1123 | Sat, 05 Mar 2022 16:23:04 GMT | x | x | |
 | OLE Automation date | 45723.44143763889 | | x | x |
 | Excel's 1900 date value | 45723.44143763889 | | x | x |
-| Excle's 1904 date value | 44261.44143763889 | | x | x |
+| Excel's 1904 date value | 44261.44143763889 | | x | x |
 
 **Custom format definition**
 The user can create its own formats. One per line in the settings text box. The format of each line is `<name>=<syntax pattern>`.
