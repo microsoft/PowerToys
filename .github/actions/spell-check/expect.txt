@@ -13,6 +13,7 @@ AColumn
 acrt
 ACTIVATEAPP
 activationaction
+ADate
 ADDSTRING
 ADDUNDORECORD
 ADifferent
@@ -393,6 +394,7 @@ DWORDLONG
 dworigin
 dwrite
 dxgi
+eab
 easeofaccess
 ecount
 EData
@@ -444,6 +446,7 @@ EXAND
 EXCLUDEFROMCAPTURE
 executionpolicy
 exename
+exf
 EXITSIZEMOVE
 exlist
 EXPCMDFLAGS
@@ -861,6 +864,7 @@ MARKDOWNPREVIEWHANDLERCPP
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
+mber
 MBR
 MDICHILD
 MDL
@@ -1707,6 +1711,8 @@ USRDLL
 UType
 uuidv
 uwp
+ums
+uxt
 uxtheme
 vabdq
 validmodulename
@@ -1789,6 +1795,7 @@ webcam
 webpage
 websites
 wekyb
+wft
 wgpocpl
 WIC
 wifi
@@ -1845,6 +1852,7 @@ WNDCLASSEXW
 WNDCLASSW
 WNDPROC
 wnode
+wom
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL
