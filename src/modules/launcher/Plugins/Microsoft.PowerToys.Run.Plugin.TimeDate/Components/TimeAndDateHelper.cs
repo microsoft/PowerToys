@@ -16,11 +16,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
     internal static class TimeAndDateHelper
     {
         private static readonly Regex _regexSpecialInputFormats = new Regex(@"^.*(u|ums|ft|oa|exc|exf)\d");
-        private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|WOM|WOY|ELF|WFT|UXT|UXMS|OAD|EXC|EXF)");
+        private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|WOM|WOY|EAB|WFT|UXT|UXMS|OAD|EXC|EXF)");
         private static readonly Regex _regexCustomDateTimeDow = new Regex(@"(?<!\\)DOW");
         private static readonly Regex _regexCustomDateTimeWom = new Regex(@"(?<!\\)WOM");
         private static readonly Regex _regexCustomDateTimeWoy = new Regex(@"(?<!\\)WOY");
-        private static readonly Regex _regexCustomDateTimeElf = new Regex(@"(?<!\\)ELF");
+        private static readonly Regex _regexCustomDateTimeEab = new Regex(@"(?<!\\)EAB");
         private static readonly Regex _regexCustomDateTimeWft = new Regex(@"(?<!\\)WFT");
         private static readonly Regex _regexCustomDateTimeUxt = new Regex(@"(?<!\\)UXT");
         private static readonly Regex _regexCustomDateTimeUxms = new Regex(@"(?<!\\)UXMS");
@@ -229,9 +229,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// <param name="unix">Value for replacing "Unix Time Stamp".</param>
         /// <param name="unixMilliseconds">Value for replacing "Unix Time Stamp in milliseconds".</param>
         /// <param name="calWeek">Value for relacing calendar week.</param>
+        /// <param name="eraShortFormat">Era abbreviation.</param>
         /// <param name="format">Format definition.</param>
         /// <returns>Formated date/time string.</returns>
-        internal static string ConvertToCustomFormat(DateTime date, long unix, long unixMilliseconds, int calWeek, string eraLongFormat, string format, CalendarWeekRule firstWeekRule, DayOfWeek firstDayOfTheWeek)
+        internal static string ConvertToCustomFormat(DateTime date, long unix, long unixMilliseconds, int calWeek, string eraShortFormat, string format, CalendarWeekRule firstWeekRule, DayOfWeek firstDayOfTheWeek)
         {
             string result = format;
 
@@ -245,7 +246,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             result = _regexCustomDateTimeWoy.Replace(result, calWeek.ToString(CultureInfo.CurrentCulture));
 
             // ELF: Era in long format
-            result = _regexCustomDateTimeElf.Replace(result, eraLongFormat);
+            result = _regexCustomDateTimeEab.Replace(result, eraShortFormat);
 
             // WFT: Week of Month
             result = _regexCustomDateTimeWft.Replace(result, date.ToFileTime().ToString(CultureInfo.CurrentCulture));

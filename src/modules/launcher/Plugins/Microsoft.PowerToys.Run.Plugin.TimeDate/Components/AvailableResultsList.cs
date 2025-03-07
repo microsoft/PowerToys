@@ -99,7 +99,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                             }
 
                             // Get formated date
-                            var value = TimeAndDateHelper.ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, era, Regex.Replace(formatSyntax, "^UTC:", string.Empty), firstWeekRule, firstDayOfTheWeek);
+                            var value = TimeAndDateHelper.ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, eraShort, Regex.Replace(formatSyntax, "^UTC:", string.Empty), firstWeekRule, firstDayOfTheWeek);
                             try
                             {
                                 value = dtObject.ToString(value, CultureInfo.CurrentCulture);
