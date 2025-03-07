@@ -493,7 +493,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Custom formats using local time.
+        ///   Looks up a localized string similar to Custom formats.
         /// </summary>
         internal static string Microsoft_plugin_timedate_Setting_CustomFormats {
             get {
