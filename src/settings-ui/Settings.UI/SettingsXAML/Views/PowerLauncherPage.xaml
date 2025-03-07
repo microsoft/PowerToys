@@ -88,6 +88,7 @@
                     <TextBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         MaxWidth="450"
+                        IsSpellCheckEnabled="False"
                         MaxLength="{x:Bind TextBoxMaxLength, Mode=OneWay}"
                         PlaceholderText="{x:Bind Path=PlaceholderText}"
                         Text="{x:Bind TextValue, Mode=TwoWay}" />
@@ -135,6 +136,7 @@
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         MinHeight="160"
                         AcceptsReturn="True"
+                        IsSpellCheckEnabled="False"
                         PlaceholderText="{x:Bind Path=PlaceholderText}"
                         ScrollViewer.IsVerticalRailEnabled="True"
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
@@ -209,6 +211,7 @@
                     <TextBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         MaxWidth="450"
+                        IsSpellCheckEnabled="False"
                         MaxLength="{x:Bind TextBoxMaxLength, Mode=OneWay}"
                         PlaceholderText="{x:Bind Path=PlaceholderText}"
                         Text="{x:Bind TextValue, Mode=TwoWay}" />
@@ -248,6 +251,7 @@
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         MinHeight="160"
                         AcceptsReturn="True"
+                        IsSpellCheckEnabled="False"
                         PlaceholderText="{x:Bind Path=PlaceholderText}"
                         ScrollViewer.IsVerticalRailEnabled="True"
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
