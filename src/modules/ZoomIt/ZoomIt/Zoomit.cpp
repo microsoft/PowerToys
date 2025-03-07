@@ -49,7 +49,7 @@ namespace util
 }
 
 // This workaround keeps live zoom enabled after zooming out at level 1 (not zoomed) and disables
-// live zoom when recording is stopped.
+// live zoom when recording is stopped
 #define WINDOWS_CURSOR_RECORDING_WORKAROUND 1
 
 HINSTANCE		g_hInstance;
