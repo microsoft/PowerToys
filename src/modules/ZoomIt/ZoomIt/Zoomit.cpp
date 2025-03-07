@@ -320,10 +320,10 @@ void EnsureForeground()
 //----------------------------------------------------------------------------
 void RestoreForeground()
 {
-    // If the main window is not visible, move foreground to the next window
+    // If the main window is not visible, move foreground to the next window.
     if( !IsWindowVisible( g_hWndMain ) ) {
 
-        // Activate the next window by unhiding and hiding the main window
+        // Activate the next window by unhiding and hiding the main window.
         MoveWindow( g_hWndMain, 0, 0, 0, 0, FALSE );
         ShowWindow( g_hWndMain, SW_SHOWNA );
         ShowWindow( g_hWndMain, SW_HIDE );
