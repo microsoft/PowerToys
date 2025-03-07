@@ -68,7 +68,7 @@ The following formats are currently available:
 
 **Custom format definition**
 The user can create its own formats. One per line in the settings text box. The format of each line is `<name>=<syntax pattern>`.
-If the syntax pattern starting with `UTC:` then we use the UTC time instaed of the local time.
+If the syntax pattern starting with `UTC:` then we use the UTC time instead of the local time.
 As syntax pattern the pattern from `DateTime.ToString()` and the following custom pattern are available:
 - DOW: Number of the day in the week.
 - WOM: Number of week in the month.
@@ -78,8 +78,8 @@ As syntax pattern the pattern from `DateTime.ToString()` and the following custo
 - UXT: Unix time stamp.
 - UMS: Unix time stamp in milliseconds.
 - OAD: OLE Automation date.
-- EXC: Excle's 1900 based date value.
-- EXF: Excle's 1904 based date value.
+- EXC: Excel's 1900 based date value.
+- EXF: Excel's 1904 based date value.
 
 ### Add new formats
 - To add a new formats you have to add them to the method `GetList()` of the [`AvailableResultsList`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.TimeDate/Components/AvailableResultsList.cs) class.

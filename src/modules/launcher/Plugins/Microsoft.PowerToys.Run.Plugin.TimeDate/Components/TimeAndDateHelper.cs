@@ -259,7 +259,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             // UXT: Unix time stamp
             result = _regexCustomDateTimeUxt.Replace(result, unix.ToString(CultureInfo.CurrentCulture));
 
-            // UXMS: Unix time stamp milli seconds
+            // UMS: Unix time stamp milli seconds
             result = _regexCustomDateTimeUms.Replace(result, unixMilliseconds.ToString(CultureInfo.CurrentCulture));
 
             // OAD: OLE Automation date
