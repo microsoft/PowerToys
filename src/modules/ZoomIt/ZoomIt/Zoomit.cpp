@@ -559,7 +559,7 @@ BOOLEAN ExtractImageResource( PTCHAR ResourceName, PTCHAR TargetFile )
 // Run64bitVersion
 //
 // Returns true if this is the 32-bit version of the executable
-// and we're on 64-bit Windows
+// and we're on 64-bit Windows.
 // 
 //--------------------------------------------------------------------
 DWORD 
