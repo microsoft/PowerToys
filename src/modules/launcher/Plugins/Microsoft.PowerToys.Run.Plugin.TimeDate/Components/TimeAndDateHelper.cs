@@ -241,6 +241,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             // WOM: Week of Month
             result = _regexCustomDateTimeWom.Replace(result, GetWeekOfMonth(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));
 
+            // WOY: Week of Month
+            result = _regexCustomDateTimeWoy.Replace(result, calWeek.ToString(CultureInfo.CurrentCulture));
+
             // ELF: Era in long format
             result = _regexCustomDateTimeElf.Replace(result, eraLongFormat);
 
