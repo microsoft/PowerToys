@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Windows.Storage.Streams;
+
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class IconInfo : IIconInfo
@@ -28,5 +30,11 @@ public partial class IconInfo : IIconInfo
     internal IconInfo()
         : this(string.Empty)
     {
+    }
+
+    public static IconInfo FromStream(IRandomAccessStream stream)
+    {
+        var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+        return new IconInfo(data, data);
     }
 }
