@@ -77,6 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
+                IsNew = moduleType == ModuleType.FileActionsMenu,
                 EnabledChangedCallback = EnabledChangedOnUI,
                 DashboardModuleItems = GetModuleItems(moduleType),
             });
@@ -176,6 +177,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.CropAndLock => GetModuleItemsCropAndLock(),
                 ModuleType.EnvironmentVariables => GetModuleItemsEnvironmentVariables(),
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
+                ModuleType.FileActionsMenu => GetModuleItemsFileActionsMenu(),
                 ModuleType.FileLocksmith => GetModuleItemsFileLocksmith(),
                 ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
                 ModuleType.Hosts => GetModuleItemsHosts(),
@@ -271,11 +273,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
-        private ObservableCollection<DashboardModuleItem> GetModuleItemsFileLocksmith()
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsFileActionsMenu()
         {
+            ISettingsRepository<FileActionsMenuSettings> moduleSettingsRepository = SettingsRepository<FileActionsMenuSettings>.GetInstance(new SettingsUtils());
+            var settings = moduleSettingsRepository.SettingsConfig;
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleTextItem() { Label = resourceLoader.GetString("FileLocksmith_ShortDescription") },
+                new DashboardModuleTextItem() { Label = resourceLoader.GetString("FileActionsMenu_ShortDescription") },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Activation_Shortcut_Title"), Shortcut = settings.Properties.FileActionsMenuShortcut.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -305,6 +310,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 list.Add(new DashboardModuleTextItem() { Label = shortDescription });
             }
 
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsFileLocksmith()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleTextItem() { Label = resourceLoader.GetString("FileLocksmith_ShortDescription") },
+            };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 

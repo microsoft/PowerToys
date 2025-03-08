@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <FileActionsMenuPluginName>FileContentActions</FileActionsMenuPluginName>
+  </PropertyGroup>
+
+  <Import Project="..\FileActionsMenuPlugin.Props"/>
+
+  <ItemGroup>
+    <Content Include="..\..\..\..\Monaco\monaco_languages.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

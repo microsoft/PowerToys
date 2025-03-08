@@ -24,13 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         {
             get
             {
-                if (frame == null)
-                {
-                    frame = Window.Current.Content as Frame;
-                    RegisterFrameEvents();
-                }
-
-                return frame;
+                return frame ?? throw new InvalidOperationException("Frame is not initialized.");
             }
 
             set

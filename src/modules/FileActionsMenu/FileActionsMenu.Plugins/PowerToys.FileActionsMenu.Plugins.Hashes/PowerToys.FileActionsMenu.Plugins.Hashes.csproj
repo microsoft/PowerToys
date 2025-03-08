@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <FileActionsMenuPluginName>Hashes</FileActionsMenuPluginName>
+  </PropertyGroup>
+
+  <Import Project="..\FileActionsMenuPlugin.Props"/>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Hashing" />
+  </ItemGroup>
+</Project>
