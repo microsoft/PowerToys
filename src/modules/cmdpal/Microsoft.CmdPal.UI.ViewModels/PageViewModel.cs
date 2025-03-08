@@ -206,8 +206,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     public void ShowException(Exception ex, string? extensionHint = null)
     {
         // Set the extensionHint to the Page Title (if we have one, and one not provided).
-        extensionHint ??= _pageModel?.Unsafe?.Title;
-
+        // extensionHint ??= _pageModel?.Unsafe?.Title;
+        extensionHint ??= ExtensionHost.Extension?.ExtensionDisplayName ?? Title;
         Task.Factory.StartNew(
             () =>
         {

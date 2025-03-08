@@ -13,6 +13,8 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     protected bool IsInitialized { get; private set; }
 
+    protected bool IsFastInitialized { get; private set; }
+
     public bool HasIcon => Icon.IsSet;
 
     // These are properties that are "observable" from the extension object
@@ -34,9 +36,9 @@ public partial class CommandViewModel : ExtensionObjectViewModel
         Icon = new(null);
     }
 
-    public override void InitializeProperties()
+    public void FastInitializeProperties()
     {
-        if (IsInitialized)
+        if (IsFastInitialized)
         {
             return;
         }
@@ -48,6 +50,27 @@ public partial class CommandViewModel : ExtensionObjectViewModel
         }
 
         Name = model.Name ?? string.Empty;
+        IsFastInitialized = true;
+    }
+
+    public override void InitializeProperties()
+    {
+        if (IsInitialized)
+        {
+            return;
+        }
+
+        if (!IsFastInitialized)
+        {
+            FastInitializeProperties();
+        }
+
+        var model = Model.Unsafe;
+        if (model == null)
+        {
+            return;
+        }
+
         var ico = model.Icon;
         if (ico != null)
         {
@@ -55,8 +78,6 @@ public partial class CommandViewModel : ExtensionObjectViewModel
             Icon.InitializeProperties();
             UpdateProperty(nameof(Icon));
         }
-
-        UpdateProperty(nameof(Name));
 
         model.PropChanged += Model_PropChanged;
     }

@@ -73,7 +73,11 @@ public partial class MainListPage : DynamicListPage,
         {
             lock (_tlcManager.TopLevelCommands)
             {
-                return _tlcManager.TopLevelCommands.Select(tlc => tlc).Where(tlc => !string.IsNullOrEmpty(tlc.Title)).ToArray();
+                return _tlcManager
+                    .TopLevelCommands
+                    .Select(tlc => tlc)
+                    .Where(tlc => !string.IsNullOrEmpty(tlc.Title))
+                    .ToArray();
             }
         }
         else

@@ -62,6 +62,11 @@ public partial class ProviderSettingsViewModel(
         var thisProvider = _provider;
         var providersCommands = thisProvider.TopLevelItems;
         List<TopLevelViewModel> results = [];
+
+        // Remember! This comes in on the UI thread!
+        // TODO: GH #426
+        // Probably just do a background InitializeProperties
+        // Or better yet, merge TopLevelCommandWrapper and TopLevelViewModel
         foreach (var command in providersCommands)
         {
             var match = topLevelCommands.Where(tlc => tlc.Model.Unsafe == command).FirstOrDefault();

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -14,7 +15,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ListViewModel : PageViewModel
+public partial class ListViewModel : PageViewModel, IDisposable
 {
     // private readonly HashSet<ListItemViewModel> _itemCache = [];
 
@@ -25,7 +26,7 @@ public partial class ListViewModel : PageViewModel
     [ObservableProperty]
     public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
 
-    public ObservableCollection<ListItemViewModel> Items { get; set; } = [];
+    private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
 
     private readonly ExtensionObject<IListPage> _model;
 
@@ -51,6 +52,9 @@ public partial class ListViewModel : PageViewModel
     public CommandItemViewModel EmptyContent { get; private set; }
 
     private bool _isDynamic;
+
+    private Task? _initializeItemsTask;
+    private CancellationTokenSource? _cancellationTokenSource;
 
     public override bool IsInitialized
     {
@@ -107,6 +111,7 @@ public partial class ListViewModel : PageViewModel
             }
 
             ItemsUpdated?.Invoke(this, EventArgs.Empty);
+            UpdateEmptyContent();
         }
     }
 
@@ -130,10 +135,23 @@ public partial class ListViewModel : PageViewModel
                 ListItemViewModel viewModel = new(item, this);
 
                 // If an item fails to load, silently ignore it.
-                if (viewModel.SafeInitializeProperties())
+                if (viewModel.SafeFastInit())
                 {
                     newViewModels.Add(viewModel);
                 }
+            }
+
+            var firstTwenty = newViewModels.Take(20);
+            foreach (var item in firstTwenty)
+            {
+                item?.SafeInitializeProperties();
+            }
+
+            // Cancel any ongoing search
+            if (_cancellationTokenSource != null)
+            {
+                Debug.WriteLine("Cancelling old initialize task");
+                _cancellationTokenSource.Cancel();
             }
 
             lock (_listLock)
@@ -154,6 +172,20 @@ public partial class ListViewModel : PageViewModel
             throw;
         }
 
+        _cancellationTokenSource = new CancellationTokenSource();
+
+        _initializeItemsTask = new Task(() =>
+        {
+            try
+            {
+                InitializeItemsTask(_cancellationTokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        });
+        _initializeItemsTask.Start();
+
         Task.Factory.StartNew(
             () =>
             {
@@ -170,7 +202,7 @@ public partial class ListViewModel : PageViewModel
                     {
                         // A dynamic list? Even better! Just stick everything into
                         // FilteredItems. The extension already did any filtering it cared about.
-                        ListHelpers.InPlaceUpdateList(FilteredItems, Items);
+                        ListHelpers.InPlaceUpdateList(FilteredItems, Items.Where(i => !i.IsInErrorState));
                     }
 
                     UpdateEmptyContent();
@@ -181,6 +213,26 @@ public partial class ListViewModel : PageViewModel
             CancellationToken.None,
             TaskCreationOptions.None,
             PageContext.Scheduler);
+    }
+
+    private void InitializeItemsTask(CancellationToken ct)
+    {
+        // Were we already canceled?
+        ct.ThrowIfCancellationRequested();
+
+        foreach (var item in Items)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            // TODO: GH #502
+            // We should probably remove the item from the list if it
+            // entered the error state. I had issues doing that without having
+            // multiple threads muck with `Items` (and possibly FilteredItems!)
+            // at once.
+            item.SafeInitializeProperties();
+
+            ct.ThrowIfCancellationRequested();
+        }
     }
 
     /// <summary>
@@ -216,6 +268,7 @@ public partial class ListViewModel : PageViewModel
     public static IEnumerable<ListItemViewModel> FilterList(IEnumerable<ListItemViewModel> items, string query)
     {
         var scores = items
+            .Where(i => !i.IsInErrorState)
             .Select(li => new ScoredListItemViewModel() { ViewModel = li, Score = ScoreListItem(query, li) })
             .Where(score => score.Score > 0)
             .OrderByDescending(score => score.Score);
@@ -262,6 +315,11 @@ public partial class ListViewModel : PageViewModel
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel item)
     {
+        if (!item.SafeSlowInit())
+        {
+            return;
+        }
+
         // GH #322:
         // For inexplicable reasons, if you try updating the command bar and
         // the details on the same UI thread tick as updating the list, we'll
@@ -309,7 +367,7 @@ public partial class ListViewModel : PageViewModel
         UpdateProperty(nameof(SearchText));
 
         EmptyContent = new(new(model.EmptyContent), PageContext);
-        EmptyContent.InitializeProperties();
+        EmptyContent.SlowInitializeProperties();
 
         FetchItems();
         model.ItemsChanged += Model_ItemsChanged;
@@ -372,5 +430,13 @@ public partial class ListViewModel : PageViewModel
            CancellationToken.None,
            TaskCreationOptions.None,
            PageContext.Scheduler);
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        _cancellationTokenSource?.Cancel();
+        _cancellationTokenSource?.Dispose();
+        _cancellationTokenSource = null;
     }
 }

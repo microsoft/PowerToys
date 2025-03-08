@@ -16,7 +16,15 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     private readonly ExtensionObject<ICommandItem> _commandItemModel = new(null);
     private CommandContextItemViewModel? _defaultCommandContextItem;
 
-    protected bool IsInitialized { get; private set; }
+    internal InitializedState Initialized { get; private set; } = InitializedState.Uninitialized;
+
+    protected bool IsFastInitialized => IsInErrorState || Initialized.HasFlag(InitializedState.FastInitialized);
+
+    protected bool IsInitialized => IsInErrorState || Initialized.HasFlag(InitializedState.Initialized);
+
+    protected bool IsSelectedInitialized => IsInErrorState || Initialized.HasFlag(InitializedState.SelectionInitialized);
+
+    public bool IsInErrorState => Initialized.HasFlag(InitializedState.Error);
 
     // These are properties that are "observable" from the extension object
     // itself, in the sense that they get raised by PropChanged events from the
@@ -65,6 +73,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
     }
 
+    private static readonly IconInfoViewModel _errorIcon;
+
+    static CommandItemViewModel()
+    {
+        _errorIcon = new(new IconInfo("\uEA39")); // ErrorBadge
+        _errorIcon.InitializeProperties();
+    }
+
     public CommandItemViewModel(ExtensionObject<ICommandItem> item, IPageContext errorContext)
         : base(errorContext)
     {
@@ -72,10 +88,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Command = new(null, errorContext);
     }
 
-    //// Called from ListViewModel on background thread started in ListPage.xaml.cs
-    public override void InitializeProperties()
+    public void FastInitializeProperties()
     {
-        if (IsInitialized)
+        if (IsFastInitialized)
         {
             return;
         }
@@ -87,16 +102,71 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         Command = new(model.Command, PageContext);
-        Command.InitializeProperties();
+        Command.FastInitializeProperties();
 
         _itemTitle = model.Title;
         Subtitle = model.Subtitle;
+
+        Initialized |= InitializedState.FastInitialized;
+    }
+
+    //// Called from ListViewModel on background thread started in ListPage.xaml.cs
+    public override void InitializeProperties()
+    {
+        if (IsInitialized)
+        {
+            return;
+        }
+
+        if (!IsFastInitialized)
+        {
+            FastInitializeProperties();
+        }
+
+        var model = _commandItemModel.Unsafe;
+        if (model == null)
+        {
+            return;
+        }
+
+        Command.InitializeProperties();
 
         var listIcon = model.Icon;
         if (listIcon != null)
         {
             _listItemIcon = new(listIcon);
             _listItemIcon.InitializeProperties();
+        }
+
+        // TODO: Do these need to go into FastInit?
+        model.PropChanged += Model_PropChanged;
+        Command.PropertyChanged += Command_PropertyChanged;
+
+        UpdateProperty(nameof(Name));
+        UpdateProperty(nameof(Title));
+        UpdateProperty(nameof(Subtitle));
+        UpdateProperty(nameof(Icon));
+        UpdateProperty(nameof(IsInitialized));
+
+        Initialized |= InitializedState.Initialized;
+    }
+
+    public void SlowInitializeProperties()
+    {
+        if (IsSelectedInitialized)
+        {
+            return;
+        }
+
+        if (!IsInitialized)
+        {
+            InitializeProperties();
+        }
+
+        var model = _commandItemModel.Unsafe;
+        if (model == null)
+        {
+            return;
         }
 
         var more = model.MoreCommands;
@@ -132,14 +202,45 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             _defaultCommandContextItem._listItemIcon = _listItemIcon;
         }
 
-        model.PropChanged += Model_PropChanged;
-        Command.PropertyChanged += Command_PropertyChanged;
-        UpdateProperty(nameof(Name));
-        UpdateProperty(nameof(Title));
-        UpdateProperty(nameof(Subtitle));
-        UpdateProperty(nameof(Icon));
+        Initialized |= InitializedState.SelectionInitialized;
+        UpdateProperty(nameof(MoreCommands));
+        UpdateProperty(nameof(AllCommands));
+        UpdateProperty(nameof(IsSelectedInitialized));
+    }
 
-        IsInitialized = true;
+    public bool SafeFastInit()
+    {
+        try
+        {
+            FastInitializeProperties();
+            return true;
+        }
+        catch (Exception)
+        {
+            Command = new(null, PageContext);
+            _itemTitle = "Error";
+            Subtitle = "Item failed to load";
+            MoreCommands = [];
+            _listItemIcon = _errorIcon;
+            Initialized |= InitializedState.Error;
+        }
+
+        return false;
+    }
+
+    public bool SafeSlowInit()
+    {
+        try
+        {
+            SlowInitializeProperties();
+            return true;
+        }
+        catch (Exception)
+        {
+            Initialized |= InitializedState.Error;
+        }
+
+        return false;
     }
 
     public bool SafeInitializeProperties()
@@ -155,8 +256,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             _itemTitle = "Error";
             Subtitle = "Item failed to load";
             MoreCommands = [];
-            _listItemIcon = new(new IconInfo("❌"));
-            _listItemIcon.InitializeProperties();
+            _listItemIcon = _errorIcon;
+            Initialized |= InitializedState.Error;
         }
 
         return false;
@@ -258,4 +359,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 break;
         }
     }
+}
+
+[Flags]
+internal enum InitializedState
+{
+    Uninitialized = 0,
+    FastInitialized = 1,
+    Initialized = 2,
+    SelectionInitialized = 4,
+    Error = 8,
 }

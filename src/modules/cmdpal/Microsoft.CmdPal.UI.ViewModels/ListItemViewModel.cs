@@ -34,6 +34,12 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
 
     public override void InitializeProperties()
     {
+        if (IsInitialized)
+        {
+            return;
+        }
+
+        // This sets IsInitialized = true
         base.InitializeProperties();
 
         var li = Model.Unsafe;
