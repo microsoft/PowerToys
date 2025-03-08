@@ -392,8 +392,14 @@ HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, B
     PERCEIVED type;
     PERCEIVEDFLAG flag;
     IShellItem* shellItem;
+
     //Check extension of first item in the list (the item which is right-clicked on)
-    psiItemArray->GetItemAt(0, &shellItem);
+    HRESULT getItemAtResult = psiItemArray->GetItemAt(0, &shellItem);
+    if(!SUCCEEDED(getItemAtResult)) {
+        // Avoid crashes in the following code.
+        return E_FAIL;
+    }
+
     LPTSTR pszPath;
     // Retrieves the entire file system path of the file from its shell item
     HRESULT getDisplayResult = shellItem->GetDisplayName(SIGDN_FILESYSPATH, &pszPath);
