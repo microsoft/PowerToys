@@ -35,7 +35,7 @@ void template_folder::rescan_template_folder()
         }
         else
         {
-            if (!utilities::is_hidden(entry.path()))
+            if (!helpers::filesystem::is_hidden(entry.path()))
             {
                 files.push_back({ entry.path().wstring(), new template_item(entry) });
             }

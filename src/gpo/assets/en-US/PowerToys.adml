@@ -227,6 +227,14 @@ If you disable this policy, the setting is disabled and the extension is shown.
 
 If you don't configure this policy, the user takes control over the setting and can enable or disable it.
 </string>
+      <string id="NewPlusReplaceVariablesInTemplateFilenamesDescription">This policy configures if supported variables will get replaced in template filenames.
+
+If you enable this policy, the setting is enabled and supported variables in filenames will get replaced.
+
+If you disable this policy, the setting is disabled and variables in filenames will not get replaced.
+
+If you don't configure this policy, the user will be able to control the setting and can enable or disable it.
+</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledState">Configure global utility enabled state</string>
       <string id="ConfigureEnabledUtilityAdvancedPaste">Advanced Paste: Configure enabled state</string>
@@ -289,7 +297,7 @@ If you don't configure this policy, the user takes control over the setting and 
       <string id="MwbPolicyDefinedIpMappingRules">Predefined IP Address mapping rules</string>
       <string id="NewPlusHideTemplateFilenameExtension">Hide template filename extension</string>
       <string id="AllowDiagnosticData">Allow sending diagnostic data</string>
-      <string id="ConfigureRunAtStartup">Configure the run at startup setting</string>
+      <string id="ConfigureRunAtStartup">Configure the run at startup setting</string>      
     </stringTable>
 
     <presentationTable>

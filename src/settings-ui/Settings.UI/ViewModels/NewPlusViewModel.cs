@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using global::PowerToys.GPOWrapper;
@@ -18,8 +17,6 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
-using Windows.ApplicationModel.VoiceCommands;
-using Windows.System;
 
 using static Microsoft.PowerToys.Settings.UI.Helpers.ShellGetFolder;
 
@@ -50,6 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _hideFileExtension = Settings.Properties.HideFileExtension.Value;
             _hideStartingDigits = Settings.Properties.HideStartingDigits.Value;
             _templateLocation = Settings.Properties.TemplateLocation.Value;
+            _replaceVariables = Settings.Properties.ReplaceVariables.Value;
             InitializeEnabledValue();
             InitializeGpoValues();
 
@@ -77,6 +75,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Policy for hide file extension setting
             _hideFileExtensionGpoRuleConfiguration = GPOWrapper.GetConfiguredNewPlusHideTemplateFilenameExtensionValue();
             _hideFileExtensionIsGPOConfigured = _hideFileExtensionGpoRuleConfiguration == GpoRuleConfigured.Disabled || _hideFileExtensionGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+
+            // Same for Replace Variables
+            _replaceVariablesIsGPOConfigured = GPOWrapper.GetConfiguredNewPlusReplaceVariablesValue() == GpoRuleConfigured.Enabled
+                                                    || GPOWrapper.GetConfiguredNewPlusReplaceVariablesValue() == GpoRuleConfigured.Disabled;
         }
 
         public bool IsEnabled
@@ -92,6 +94,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(IsEnabled));
                     OnPropertyChanged(nameof(IsHideFileExtSettingsCardEnabled));
                     OnPropertyChanged(nameof(IsHideFileExtSettingGPOConfigured));
+                    OnPropertyChanged(nameof(IsReplaceVariablesSettingGPOConfigured));
+                    OnPropertyChanged(nameof(IsReplaceVariablesSettingsCardEnabled));
 
                     OutGoingGeneralSettings outgoingMessage = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoingMessage.ToString());
@@ -156,6 +160,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsHideFileExtSettingGPOConfigured => _isNewPlusEnabled && _hideFileExtensionIsGPOConfigured;
 
+        public bool IsReplaceVariablesSettingsCardEnabled => _isNewPlusEnabled && !_replaceVariablesIsGPOConfigured;
+
+        public bool IsReplaceVariablesSettingGPOConfigured => _isNewPlusEnabled && _replaceVariablesIsGPOConfigured;
+
         public bool HideStartingDigits
         {
             get => _hideStartingDigits;
@@ -166,6 +174,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _hideStartingDigits = value;
                     Settings.Properties.HideStartingDigits.Value = value;
                     OnPropertyChanged(nameof(HideStartingDigits));
+
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool ReplaceVariables
+        {
+            get
+            {
+                // Check to see if setting has been enabled or disabled via GPO, and if so, use that value
+                if (IsReplaceVariablesSettingGPOConfigured)
+                {
+                    return GPOWrapper.GetConfiguredNewPlusReplaceVariablesValue() == GpoRuleConfigured.Enabled;
+                }
+
+                return _replaceVariables;
+            }
+
+            set
+            {
+                if (_replaceVariables != value)
+                {
+                    _replaceVariables = value;
+                    Settings.Properties.ReplaceVariables.Value = value;
+                    OnPropertyChanged(nameof(ReplaceVariables));
 
                     NotifySettingsChanged();
                 }
@@ -236,11 +270,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _templateLocation;
         private bool _hideFileExtension;
         private bool _hideStartingDigits;
+        private bool _replaceVariables;
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private GpoRuleConfigured _hideFileExtensionGpoRuleConfiguration;
         private bool _hideFileExtensionIsGPOConfigured;
+        private bool _replaceVariablesIsGPOConfigured;
 
         public void RefreshEnabledState()
         {

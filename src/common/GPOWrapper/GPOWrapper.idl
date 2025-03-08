@@ -68,6 +68,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredNewPlusHideTemplateFilenameExtensionValue();
             static GpoRuleConfigured GetAllowDataDiagnosticsValue();
             static GpoRuleConfigured GetConfiguredRunAtStartupValue();
+            static GpoRuleConfigured GetConfiguredNewPlusReplaceVariablesValue();
         }
     }
 }
