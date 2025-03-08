@@ -105,6 +105,7 @@ public sealed partial class SearchBar : UserControl,
         }
 
         var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
         if (e.Key == VirtualKey.Down)
         {
             WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
@@ -170,6 +171,10 @@ public sealed partial class SearchBar : UserControl,
             {
                 CurrentPageViewModel.Filter = FilterBox.Text;
             }
+        }
+        else if (e.Key == VirtualKey.Left && altPressed)
+        {
+            WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
         }
     }
 
