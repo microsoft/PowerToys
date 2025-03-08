@@ -52,6 +52,11 @@ namespace SnapshotUtils
 
         for (const auto window : windows)
         {
+            if (WindowFilter::FilterPopup(window))
+            {
+                continue;
+            }
+
             // filter by window rect size
             RECT rect = WindowUtils::GetWindowRect(window);
             if (rect.right - rect.left <= 0 || rect.bottom - rect.top <= 0)
@@ -93,7 +98,7 @@ namespace SnapshotUtils
                 continue;
             }
 
-            // fix for the packaged apps that are not caught when minimized, e.g., Settings.
+            // fix for the packaged apps that are not caught when minimized, e.g. Settings, Microsoft ToDo, ...
             if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))
             {
                 for (auto otherWindow : windows)
@@ -108,11 +113,6 @@ namespace SnapshotUtils
                         break;
                     }
                 }
-            }
-
-            if (WindowFilter::FilterPopup(window))
-            {
-                continue;
             }
 
             auto data = Utils::Apps::GetApp(processPath, pid, installedApps);

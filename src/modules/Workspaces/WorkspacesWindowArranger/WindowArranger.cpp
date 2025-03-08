@@ -14,6 +14,11 @@
 #include <WindowProperties/WorkspacesWindowPropertyUtils.h>
 #include <WorkspacesLib/PwaHelper.h>
 
+namespace NonLocalizable
+{
+    const std::wstring ApplicationFrameHost = L"ApplicationFrameHost.exe";
+}
+
 namespace PlacementHelper
 {
     // When calculating the coordinates difference (== 'distance') between 2 windows, there are additional values added to the real distance
@@ -157,6 +162,11 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 
     for (HWND window : m_windowsBefore)
     {
+        if (WindowFilter::FilterPopup(window))
+        {
+            continue;
+        }
+
         if (std::find(movedWindows.begin(), movedWindows.end(), window) != movedWindows.end())
         {
             continue;
@@ -170,6 +180,24 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 
         DWORD pid{};
         GetWindowThreadProcessId(window, &pid);
+        std::wstring title = WindowUtils::GetWindowTitle(window);
+
+        // fix for the packaged apps that are not caught when minimized, e.g. Settings, Microsoft ToDo, ...
+        if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))
+        {
+            for (auto otherWindow : m_windowsBefore)
+            {
+                DWORD otherPid{};
+                GetWindowThreadProcessId(otherWindow, &otherPid);
+
+                // searching for the window with the same title but different PID
+                if (pid != otherPid && title == WindowUtils::GetWindowTitle(otherWindow))
+                {
+                    processPath = get_process_path(otherPid);
+                    break;
+                }
+            }
+        }
 
         auto data = Utils::Apps::GetApp(processPath, pid, m_installedApps);
         if (!data.has_value())
