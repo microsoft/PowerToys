@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -78,9 +79,25 @@ public partial class BookmarksCommandProvider : CommandProvider
             new BookmarkPlaceholderPage(bookmark) :
             new UrlCommand(bookmark);
 
-        var listItem = new CommandItem(command);
+        var listItem = new CommandItem(command) { Icon = command.Icon };
 
         List<CommandContextItem> contextMenu = [];
+
+        // Add commands for folder types
+        if (command is UrlCommand urlCommand)
+        {
+            if (urlCommand.Type == "folder")
+            {
+                contextMenu.Add(
+                    new CommandContextItem(new DirectoryPage(urlCommand.Url)));
+
+                contextMenu.Add(
+                    new CommandContextItem(new OpenInTerminalCommand(urlCommand.Url)));
+            }
+
+            listItem.Subtitle = urlCommand.Url;
+        }
+
         var edit = new AddBookmarkPage(bookmark.Name, bookmark.Bookmark) { Icon = EditIcon };
         edit.AddedCommand += AddNewCommand_AddedCommand;
         contextMenu.Add(new CommandContextItem(edit));
@@ -106,18 +123,6 @@ public partial class BookmarksCommandProvider : CommandProvider
             Icon = DeleteIcon,
         };
         contextMenu.Add(delete);
-
-        // Add commands for folder types
-        if (command is UrlCommand urlCommand)
-        {
-            if (urlCommand.Type == "folder")
-            {
-                contextMenu.Add(
-                    new CommandContextItem(new OpenInTerminalCommand(urlCommand.Url)));
-            }
-
-            listItem.Subtitle = urlCommand.Url;
-        }
 
         listItem.MoreCommands = contextMenu.ToArray();
 

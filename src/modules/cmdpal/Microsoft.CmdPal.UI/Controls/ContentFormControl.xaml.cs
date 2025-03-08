@@ -93,7 +93,11 @@ public sealed partial class ContentFormControl : UserControl
     {
         _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
         ContentGrid.Children.Clear();
-        ContentGrid.Children.Add(_renderedCard.FrameworkElement);
+        if (_renderedCard.FrameworkElement != null)
+        {
+            ContentGrid.Children.Add(_renderedCard.FrameworkElement);
+        }
+
         _renderedCard.Action += Rendered_Action;
     }
 

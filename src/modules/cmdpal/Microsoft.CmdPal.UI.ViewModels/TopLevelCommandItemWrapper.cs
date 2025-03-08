@@ -180,8 +180,12 @@ public partial class TopLevelCommandItemWrapper : ListItem
                     var listIcon = model.Icon;
                     Icon = model.Icon;
                     break;
-
-                    // TODO! MoreCommands array, which needs to also raise HasMoreCommands
+                case nameof(MoreCommands):
+                    this.MoreCommands = model.MoreCommands;
+                    break;
+                case nameof(Command):
+                    this.Command = model.Command;
+                    break;
             }
         }
         catch

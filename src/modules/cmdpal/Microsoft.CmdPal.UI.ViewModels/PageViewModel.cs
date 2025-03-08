@@ -20,7 +20,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLoading))]
-    public partial bool IsInitialized { get; protected set; }
+    public virtual partial bool IsInitialized { get; protected set; }
 
     [ObservableProperty]
     public partial string ErrorMessage { get; protected set; } = string.Empty;

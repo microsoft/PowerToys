@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Data;
@@ -27,7 +29,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
     public IndexerPage()
     {
         Id = "com.microsoft.indexer.fileSearch";
-        Icon = new IconInfo("\uEC50");
+        Icon = Icons.FileExplorerSegoe;
         Name = Resources.Indexer_Title;
         PlaceholderText = Resources.Indexer_PlaceholderText;
 

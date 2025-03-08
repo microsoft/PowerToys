@@ -192,7 +192,11 @@ public sealed partial class ListPage : Page,
 
     public void Receive(ActivateSelectedListItemMessage message)
     {
-        if (ItemsList.SelectedItem is ListItemViewModel item)
+        if (ViewModel?.ShowEmptyContent ?? false)
+        {
+            ViewModel?.InvokeItemCommand.Execute(null);
+        }
+        else if (ItemsList.SelectedItem is ListItemViewModel item)
         {
             ViewModel?.InvokeItemCommand.Execute(item);
         }
@@ -200,7 +204,11 @@ public sealed partial class ListPage : Page,
 
     public void Receive(ActivateSecondaryCommandMessage message)
     {
-        if (ItemsList.SelectedItem is ListItemViewModel item)
+        if (ViewModel?.ShowEmptyContent ?? false)
+        {
+            ViewModel?.InvokeSecondaryCommandCommand.Execute(null);
+        }
+        else if (ItemsList.SelectedItem is ListItemViewModel item)
         {
             ViewModel?.InvokeSecondaryCommandCommand.Execute(item);
         }

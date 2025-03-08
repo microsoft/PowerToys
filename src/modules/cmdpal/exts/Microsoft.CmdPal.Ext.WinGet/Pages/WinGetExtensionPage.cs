@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,6 +50,8 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         IListItem[] items = [];
         lock (_resultsLock)
         {
+            // emptySearchForTag ===
+            // we don't have results yet, we haven't typed anything, and we're searching for a tag
             var emptySearchForTag = _results == null &&
                 string.IsNullOrEmpty(SearchText) &&
                 HasTag;
@@ -62,17 +63,20 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
                 return items;
             }
 
-            items = (_results == null || !_results.Any())
-                ? [
-                    new ListItem(new NoOpCommand())
-                    {
-                        Title = (string.IsNullOrEmpty(SearchText) && !HasTag) ?
+            if (_results != null && _results.Any())
+            {
+                IsLoading = false;
+                return _results.Select(PackageToListItem).ToArray();
+            }
+        }
+
+        EmptyContent = new CommandItem(new NoOpCommand())
+        {
+            Icon = WinGetIcon,
+            Title = (string.IsNullOrEmpty(SearchText) && !HasTag) ?
                             "Start typing to search for packages" :
                             "No packages found",
-                    }
-                ]
-                : _results.Select(PackageToListItem).ToArray();
-        }
+        };
 
         IsLoading = false;
 

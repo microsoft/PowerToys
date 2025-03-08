@@ -226,6 +226,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions)
     {
+        // TODO This most definitely needs a lock
         foreach (var extension in extensions)
         {
             try

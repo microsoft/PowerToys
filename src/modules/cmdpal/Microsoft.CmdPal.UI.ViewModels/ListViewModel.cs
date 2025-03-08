@@ -33,6 +33,11 @@ public partial class ListViewModel : PageViewModel
 
     public event TypedEventHandler<ListViewModel, object>? ItemsUpdated;
 
+    public bool ShowEmptyContent =>
+        IsInitialized &&
+        FilteredItems.Count == 0 &&
+        IsLoading == false;
+
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
     public bool ShowDetails { get; private set; }
@@ -43,12 +48,24 @@ public partial class ListViewModel : PageViewModel
 
     public string SearchText { get; private set; } = string.Empty;
 
+    public CommandItemViewModel EmptyContent { get; private set; }
+
     private bool _isDynamic;
+
+    public override bool IsInitialized
+    {
+        get => base.IsInitialized; protected set
+        {
+            base.IsInitialized = value;
+            UpdateEmptyContent();
+        }
+    }
 
     public ListViewModel(IListPage model, TaskScheduler scheduler, CommandPaletteHost host)
         : base(model, scheduler, host)
     {
         _model = new(model);
+        EmptyContent = new(new(null), PageContext);
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?
@@ -155,6 +172,8 @@ public partial class ListViewModel : PageViewModel
                         // FilteredItems. The extension already did any filtering it cared about.
                         ListHelpers.InPlaceUpdateList(FilteredItems, Items);
                     }
+
+                    UpdateEmptyContent();
                 }
 
                 ItemsUpdated?.Invoke(this, EventArgs.Empty);
@@ -205,16 +224,38 @@ public partial class ListViewModel : PageViewModel
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
+    // This is what gets invoked when the user presses <enter>
     [RelayCommand]
-    private void InvokeItem(ListItemViewModel item) =>
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
-
-    [RelayCommand]
-    private void InvokeSecondaryCommand(ListItemViewModel item)
+    private void InvokeItem(ListItemViewModel? item)
     {
-        if (item.SecondaryCommand != null)
+        if (item != null)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.SecondaryCommand.Command.Model, item.Model));
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
+        }
+        else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe != null)
+        {
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
+                EmptyContent.PrimaryCommand.Command.Model,
+                EmptyContent.PrimaryCommand.Model));
+        }
+    }
+
+    // This is what gets invoked when the user presses <ctrl+enter>
+    [RelayCommand]
+    private void InvokeSecondaryCommand(ListItemViewModel? item)
+    {
+        if (item != null)
+        {
+            if (item.SecondaryCommand != null)
+            {
+                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.SecondaryCommand.Command.Model, item.Model));
+            }
+        }
+        else if (ShowEmptyContent && EmptyContent.SecondaryCommand?.Model.Unsafe != null)
+        {
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(
+                EmptyContent.SecondaryCommand.Command.Model,
+                EmptyContent.SecondaryCommand.Model));
         }
     }
 
@@ -250,25 +291,28 @@ public partial class ListViewModel : PageViewModel
     {
         base.InitializeProperties();
 
-        var listPage = _model.Unsafe;
-        if (listPage == null)
+        var model = _model.Unsafe;
+        if (model == null)
         {
             return; // throw?
         }
 
-        _isDynamic = listPage is IDynamicListPage;
+        _isDynamic = model is IDynamicListPage;
 
-        ShowDetails = listPage.ShowDetails;
+        ShowDetails = model.ShowDetails;
         UpdateProperty(nameof(ShowDetails));
 
-        ModelPlaceholderText = listPage.PlaceholderText;
+        ModelPlaceholderText = model.PlaceholderText;
         UpdateProperty(nameof(PlaceholderText));
 
-        SearchText = listPage.SearchText;
+        SearchText = model.SearchText;
         UpdateProperty(nameof(SearchText));
 
+        EmptyContent = new(new(model.EmptyContent), PageContext);
+        EmptyContent.InitializeProperties();
+
         FetchItems();
-        listPage.ItemsChanged += Model_ItemsChanged;
+        model.ItemsChanged += Model_ItemsChanged;
     }
 
     public void LoadMoreIfNeeded()
@@ -300,8 +344,33 @@ public partial class ListViewModel : PageViewModel
             case nameof(SearchText):
                 this.SearchText = model.SearchText;
                 break;
+            case nameof(EmptyContent):
+                EmptyContent = new(new(model.EmptyContent), PageContext);
+                EmptyContent.InitializeProperties();
+                break;
+            case nameof(IsLoading):
+                UpdateEmptyContent();
+                break;
         }
 
         UpdateProperty(propertyName);
+    }
+
+    private void UpdateEmptyContent()
+    {
+        UpdateProperty(nameof(ShowEmptyContent));
+        if (!ShowEmptyContent || EmptyContent.Model.Unsafe == null)
+        {
+            return;
+        }
+
+        Task.Factory.StartNew(
+           () =>
+           {
+               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(EmptyContent));
+           },
+           CancellationToken.None,
+           TaskCreationOptions.None,
+           PageContext.Scheduler);
     }
 }

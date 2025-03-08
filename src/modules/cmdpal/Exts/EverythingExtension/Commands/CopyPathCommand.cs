@@ -2,9 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.UI.Xaml;
 
 internal sealed partial class CopyPathCommand : InvokableCommand
 {

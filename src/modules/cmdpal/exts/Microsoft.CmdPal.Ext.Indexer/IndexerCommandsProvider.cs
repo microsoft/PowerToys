@@ -10,6 +10,8 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 
 public partial class IndexerCommandsProvider : CommandProvider
 {
+    private readonly FallbackOpenFileItem _fallbackFileItem = new();
+
     public IndexerCommandsProvider()
     {
         DisplayName = Resources.IndexerCommandsProvider_DisplayName;
@@ -25,4 +27,9 @@ public partial class IndexerCommandsProvider : CommandProvider
             }
         ];
     }
+
+    public override IFallbackCommandItem[] FallbackCommands() =>
+        [
+            _fallbackFileItem
+        ];
 }

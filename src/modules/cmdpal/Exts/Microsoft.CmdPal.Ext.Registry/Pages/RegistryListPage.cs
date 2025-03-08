@@ -16,11 +16,20 @@ internal sealed partial class RegistryListPage : DynamicListPage
 {
     public static IconInfo RegistryIcon { get; } = new("\uE74C"); // OEM
 
+    private readonly CommandItem _emptyMessage;
+
     public RegistryListPage()
     {
         Icon = RegistryIcon;
         Name = "Windows Registry";
         Id = "com.microsoft.cmdpal.registry";
+        _emptyMessage = new CommandItem()
+        {
+            Icon = RegistryIcon,
+            Title = "Registry key not found", // TODO:LOC
+            Subtitle = SearchText,
+        };
+        EmptyContent = _emptyMessage;
     }
 
     public List<ListItem> Query(string query)
@@ -58,7 +67,11 @@ internal sealed partial class RegistryListPage : DynamicListPage
         return [];
     }
 
-    public override void UpdateSearchText(string oldSearch, string newSearch) => RaiseItemsChanged(0);
+    public override void UpdateSearchText(string oldSearch, string newSearch)
+    {
+        _emptyMessage.Subtitle = newSearch;
+        RaiseItemsChanged(0);
+    }
 
     public override IListItem[] GetItems() => Query(SearchText).ToArray();
 }
