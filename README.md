@@ -214,3 +214,4 @@ The application logs basic diagnostic data (telemetry). For more information on 
 [usingPowerToys-docs-link]: https://aka.ms/powertoys-docs
 
 # so we can test our project power toys
+
