@@ -47,10 +47,10 @@ namespace HostsUILib.Helpers
             {
                 case HostsDeleteBackupMode.Count:
                     DeleteBackupsByCount(_userSettings.DeleteBackupsCount);
-                    return;
+                    break;
                 case HostsDeleteBackupMode.Age:
                     DeleteBackupsByAge(_userSettings.DeleteBackupsDays, _userSettings.DeleteBackupsCount);
-                    return;
+                    break;
             }
         }
 
