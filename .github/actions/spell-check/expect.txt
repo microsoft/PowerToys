@@ -734,6 +734,7 @@ KEYBDINPUT
 keyboardeventhandlers
 keyboardmanagercommon
 KEYBOARDMANAGEREDITOR
+KEYBOARDMANAGEREDITORLIBRARYWRAPPER
 keyboardmanagerstate
 keyboardmanagerui
 KEYEVENTF
@@ -1282,7 +1283,7 @@ rectp
 RECTSOURCE
 recyclebin
 Redist
-reencode
+Reencode
 reencoded
 REFCLSID
 REFGUID
@@ -1302,6 +1303,7 @@ regroot
 regsvr
 REINSTALLMODE
 reloadable
+Relogger
 remappings
 REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL

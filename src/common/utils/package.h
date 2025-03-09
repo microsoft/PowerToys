@@ -10,6 +10,7 @@
 #include <winrt/Windows.Management.Deployment.h>
 
 #include "../logger/logger.h"
+#include "../version/version.h"
 
 namespace package {
     inline BOOL IsWin11OrGreater()
@@ -47,10 +48,14 @@ namespace package {
         for (auto const& package : packageManager.FindPackagesForUser({}))
         {
             const auto& packageFullName = std::wstring{ package.Id().FullName() };
+            const auto& packageVersion = package.Id().Version();
 
             if (packageFullName.contains(packageDisplayName))
             {
-                return true;
+                if (packageVersion.Major == VERSION_MAJOR && packageVersion.Minor == VERSION_MINOR && packageVersion.Revision == VERSION_REVISION)
+                {
+                    return true;
+                }
             }
         }
 
@@ -72,6 +77,7 @@ namespace package {
             // Declare use of an external location
             AddPackageOptions options;
             options.ExternalLocationUri(externalUri);
+            options.ForceUpdateFromAnyVersion(true);
 
             IAsyncOperationWithProgress<DeploymentResult, DeploymentProgress> deploymentOperation = packageManager.AddPackageByUriAsync(packageUri, options);
             deploymentOperation.get();

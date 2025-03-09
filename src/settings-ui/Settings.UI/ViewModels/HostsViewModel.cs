@@ -16,7 +16,7 @@ using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class HostsViewModel : Observable
+    public partial class HostsViewModel : Observable
     {
         private bool _isElevated;
         private GpoRuleConfigured _enabledGpoRuleConfiguration;

@@ -14,7 +14,7 @@ namespace ManagedCommon
     /// <param name="sender">Sender ThemeListener</param>
     public delegate void ThemeChangedEvent(ThemeListener sender);
 
-    public class ThemeListener : IDisposable
+    public partial class ThemeListener : IDisposable
     {
         /// <summary>
         /// Gets the App Theme.
