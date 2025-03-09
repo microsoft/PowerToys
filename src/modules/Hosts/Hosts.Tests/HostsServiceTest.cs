@@ -282,7 +282,7 @@ namespace Hosts.Tests
         }
 
         [TestMethod]
-        public async Task Hosts_Backup_Not_Done()
+        public async Task Hosts_Backup_Not_Executed()
         {
             var content =
 @"10.1.1.1 host host.local # comment
@@ -307,7 +307,7 @@ namespace Hosts.Tests
         }
 
         [TestMethod]
-        public async Task Hosts_Backup_Done()
+        public async Task Hosts_Backup_Executed_Once()
         {
             var content =
 @"10.1.1.1 host host.local # comment
@@ -325,6 +325,7 @@ namespace Hosts.Tests
             var data = await service.ReadAsync();
             var entries = data.Entries.ToList();
             entries.Add(new Entry(0, "10.1.1.30", "host30 host30.local", "new entry", false));
+            await service.WriteAsync(data.AdditionalLines, data.Entries);
             await service.WriteAsync(data.AdditionalLines, data.Entries);
 
             Assert.AreEqual(1, fileSystem.Directory.GetFiles(BackupPath).Length);
