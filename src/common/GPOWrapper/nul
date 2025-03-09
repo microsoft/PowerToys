@@ -1,0 +1,1040 @@
+/* Header file automatically generated from GPOWrapper.idl */
+/*
+ * File built with Microsoft(R) MIDLRT Compiler Engine Version 10.00.0231 
+ */
+
+#pragma warning( disable: 4049 )  /* more than 64k source lines */
+
+/* verify that the <rpcndr.h> version is high enough to compile this file*/
+#ifndef __REQUIRED_RPCNDR_H_VERSION__
+#define __REQUIRED_RPCNDR_H_VERSION__ 500
+#endif
+
+/* verify that the <rpcsal.h> version is high enough to compile this file*/
+#ifndef __REQUIRED_RPCSAL_H_VERSION__
+#define __REQUIRED_RPCSAL_H_VERSION__ 100
+#endif
+
+#include <rpc.h>
+#include <rpcndr.h>
+
+#ifndef __RPCNDR_H_VERSION__
+#error this stub requires an updated version of <rpcndr.h>
+#endif /* __RPCNDR_H_VERSION__ */
+
+#ifndef COM_NO_WINDOWS_H
+#include <windows.h>
+#include <ole2.h>
+#endif /*COM_NO_WINDOWS_H*/
+#ifndef __nul___
+#define __nul___
+#ifndef __nul_p___
+#define __nul_p___
+
+
+#pragma once
+
+// Ensure that the setting of the /ns_prefix command line switch is consistent for all headers.
+// If you get an error from the compiler indicating "warning C4005: 'CHECK_NS_PREFIX_STATE': macro redefinition", this
+// indicates that you have included two different headers with different settings for the /ns_prefix MIDL command line switch
+#if !defined(DISABLE_NS_PREFIX_CHECKS)
+#define CHECK_NS_PREFIX_STATE "always"
+#endif // !defined(DISABLE_NS_PREFIX_CHECKS)
+
+
+#pragma push_macro("MIDL_CONST_ID")
+#undef MIDL_CONST_ID
+#define MIDL_CONST_ID const __declspec(selectany)
+
+
+// Header files for imported files
+#include "winrtbase.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.AI.MachineLearning.MachineLearningContract\5.0.0.0\Windows.AI.MachineLearning.MachineLearningContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.AI.MachineLearning.Preview.MachineLearningPreviewContract\2.0.0.0\Windows.AI.MachineLearning.Preview.MachineLearningPreviewContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.ApplicationModel.Calls.Background.CallsBackgroundContract\4.0.0.0\Windows.ApplicationModel.Calls.Background.CallsBackgroundContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.ApplicationModel.Calls.CallsPhoneContract\7.0.0.0\Windows.ApplicationModel.Calls.CallsPhoneContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.ApplicationModel.Calls.CallsVoipContract\4.0.0.0\Windows.ApplicationModel.Calls.CallsVoipContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.ApplicationModel.CommunicationBlocking.CommunicationBlockingContract\2.0.0.0\Windows.ApplicationModel.CommunicationBlocking.CommunicationBlockingContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.ApplicationModel.SocialInfo.SocialInfoContract\2.0.0.0\Windows.ApplicationModel.SocialInfo.SocialInfoContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.ApplicationModel.StartupTaskContract\3.0.0.0\Windows.ApplicationModel.StartupTaskContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Devices.Custom.CustomDeviceContract\1.0.0.0\Windows.Devices.Custom.CustomDeviceContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Devices.DevicesLowLevelContract\3.0.0.0\Windows.Devices.DevicesLowLevelContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Devices.Printers.PrintersContract\1.0.0.0\Windows.Devices.Printers.PrintersContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Devices.SmartCards.SmartCardBackgroundTriggerContract\3.0.0.0\Windows.Devices.SmartCards.SmartCardBackgroundTriggerContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Devices.SmartCards.SmartCardEmulatorContract\6.0.0.0\Windows.Devices.SmartCards.SmartCardEmulatorContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Foundation.FoundationContract\4.0.0.0\Windows.Foundation.FoundationContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Foundation.UniversalApiContract\15.0.0.0\Windows.Foundation.UniversalApiContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Gaming.XboxLive.StorageApiContract\1.0.0.0\Windows.Gaming.XboxLive.StorageApiContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Graphics.Printing3D.Printing3DContract\4.0.0.0\Windows.Graphics.Printing3D.Printing3DContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Networking.Connectivity.WwanContract\2.0.0.0\Windows.Networking.Connectivity.WwanContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Networking.Sockets.ControlChannelTriggerContract\3.0.0.0\Windows.Networking.Sockets.ControlChannelTriggerContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Security.Isolation.IsolatedWindowsEnvironmentContract\4.0.0.0\Windows.Security.Isolation.Isolatedwindowsenvironmentcontract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Services.Maps.GuidanceContract\3.0.0.0\Windows.Services.Maps.GuidanceContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Services.Maps.LocalSearchContract\4.0.0.0\Windows.Services.Maps.LocalSearchContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Services.Store.StoreContract\4.0.0.0\Windows.Services.Store.StoreContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Services.TargetedContent.TargetedContentContract\1.0.0.0\Windows.Services.TargetedContent.TargetedContentContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Storage.Provider.CloudFilesContract\7.0.0.0\Windows.Storage.Provider.CloudFilesContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.System.Profile.ProfileHardwareTokenContract\1.0.0.0\Windows.System.Profile.ProfileHardwareTokenContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.System.Profile.ProfileRetailInfoContract\1.0.0.0\Windows.System.Profile.ProfileRetailInfoContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.System.Profile.ProfileSharedModeContract\2.0.0.0\Windows.System.Profile.ProfileSharedModeContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.System.Profile.SystemManufacturers.SystemManufacturersContract\3.0.0.0\Windows.System.Profile.SystemManufacturers.SystemManufacturersContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.System.SystemManagementContract\7.0.0.0\Windows.System.SystemManagementContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.UI.UIAutomation.UIAutomationContract\2.0.0.0\Windows.UI.UIAutomation.UIAutomationContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.UI.ViewManagement.ViewManagementViewScalingContract\1.0.0.0\Windows.UI.ViewManagement.ViewManagementViewScalingContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.UI.Xaml.Core.Direct.XamlDirectContract\5.0.0.0\Windows.UI.Xaml.Core.Direct.XamlDirectContract.h"
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+#if defined(__MIDL_USE_C_ENUM)
+#define MIDL_ENUM enum
+#else
+#define MIDL_ENUM enum class
+#endif
+/* Forward Declarations */
+#ifndef ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_FWD_DEFINED__
+namespace ABI {
+    namespace PowerToys {
+        namespace GPOWrapper {
+            interface IGPOWrapper;
+        } /* GPOWrapper */
+    } /* PowerToys */
+} /* ABI */
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper ABI::PowerToys::GPOWrapper::IGPOWrapper
+
+#endif // ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_FWD_DEFINED__
+
+#ifndef ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_FWD_DEFINED__
+namespace ABI {
+    namespace PowerToys {
+        namespace GPOWrapper {
+            interface IGPOWrapperStatics;
+        } /* GPOWrapper */
+    } /* PowerToys */
+} /* ABI */
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics ABI::PowerToys::GPOWrapper::IGPOWrapperStatics
+
+#endif // ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_FWD_DEFINED__
+
+
+
+/*
+ *
+ * Struct PowerToys.GPOWrapper.GpoRuleConfigured
+ *
+ */
+
+namespace ABI {
+    namespace PowerToys {
+        namespace GPOWrapper {
+            /* [version, v1_enum] */
+            MIDL_ENUM GpoRuleConfigured : int
+            {
+                WrongValue = -3,
+                Unavailable = -2,
+                NotConfigured = -1,
+                Disabled = 0,
+                Enabled = 1,
+            };
+            const GpoRuleConfigured GpoRuleConfigured_WrongValue = GpoRuleConfigured::WrongValue;
+            const GpoRuleConfigured GpoRuleConfigured_Unavailable = GpoRuleConfigured::Unavailable;
+            const GpoRuleConfigured GpoRuleConfigured_NotConfigured = GpoRuleConfigured::NotConfigured;
+            const GpoRuleConfigured GpoRuleConfigured_Disabled = GpoRuleConfigured::Disabled;
+            const GpoRuleConfigured GpoRuleConfigured_Enabled = GpoRuleConfigured::Enabled;
+            
+        } /* GPOWrapper */
+    } /* PowerToys */
+} /* ABI */
+
+namespace ABI {
+    namespace PowerToys {
+        namespace GPOWrapper {
+            class GPOWrapper;
+        } /* GPOWrapper */
+    } /* PowerToys */
+} /* ABI */
+
+
+
+/*
+ *
+ * Interface PowerToys.GPOWrapper.IGPOWrapper
+ *
+ * Interface is a part of the implementation of type PowerToys.GPOWrapper.GPOWrapper
+ *
+ *
+ * The IID for this interface was automatically generated by MIDLRT.
+ *
+ * Interface IID generation seed: PowerToys.GPOWrapper.IGPOWrapper:
+ *
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_INTERFACE_DEFINED__
+extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_PowerToys_GPOWrapper_IGPOWrapper[] = L"PowerToys.GPOWrapper.IGPOWrapper";
+namespace ABI {
+    namespace PowerToys {
+        namespace GPOWrapper {
+            /* [uuid("714ceb20-c766-596a-82f9-7b0252bdbeb9"), version, object, exclusiveto] */
+            MIDL_INTERFACE("714ceb20-c766-596a-82f9-7b0252bdbeb9")
+            IGPOWrapper : public IInspectable
+            {
+            public:
+                
+            };
+
+            MIDL_CONST_ID IID & IID_IGPOWrapper=_uuidof(IGPOWrapper);
+            
+        } /* GPOWrapper */
+    } /* PowerToys */
+} /* ABI */
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper;
+#endif /* !defined(____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_INTERFACE_DEFINED__) */
+
+
+/*
+ *
+ * Interface PowerToys.GPOWrapper.IGPOWrapperStatics
+ *
+ * Interface is a part of the implementation of type PowerToys.GPOWrapper.GPOWrapper
+ *
+ *
+ * The IID for this interface was automatically generated by MIDLRT.
+ *
+ * Interface IID generation seed: PowerToys.GPOWrapper.IGPOWrapperStatics:HRESULT GetConfiguredAlwaysOnTopEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredAwakeEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredCmdNotFoundEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredColorPickerEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredCropAndLockEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredFancyZonesEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredFileLocksmithEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredSvgPreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMarkdownPreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMonacoPreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredPdfPreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredGcodePreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredSvgThumbnailsEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredPdfThumbnailsEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredGcodeThumbnailsEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredStlThumbnailsEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredHostsFileEditorEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredImageResizerEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredKeyboardManagerEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredFindMyMouseEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMouseHighlighterEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMouseJumpEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMousePointerCrosshairsEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMouseWithoutBordersEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredPowerRenameEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredPowerLauncherEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredQuickAccentEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredRegistryPreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredScreenRulerEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredShortcutGuideEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredTextExtractorEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredAdvancedPasteEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredZoomItEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredPeekEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetDisableNewUpdateToastValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetDisableAutomaticUpdateDownloadValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetDisableShowWhatsNewAfterUpdatesValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetAllowExperimentationValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetRunPluginEnabledValue(String,PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredEnvironmentVariablesEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredQoiPreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredQoiThumbnailsEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetAllowedAdvancedPasteOnlineAIModelsValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredNewPlusEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredWorkspacesEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbClipboardSharingEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbFileTransferEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbUseOriginalUserInterfaceValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbDisallowBlockingScreensaverValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbSameSubnetOnlyValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbValidateRemoteIpValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbDisableUserDefinedIpMappingRulesValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbPolicyDefinedIpMappingRules(String*);HRESULT GetConfiguredNewPlusHideTemplateFilenameExtensionValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetAllowDataDiagnosticsValue(PowerToys.GPOWrapper.GpoRuleConfigured*);
+ *
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_INTERFACE_DEFINED__
+extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_PowerToys_GPOWrapper_IGPOWrapperStatics[] = L"PowerToys.GPOWrapper.IGPOWrapperStatics";
+namespace ABI {
+    namespace PowerToys {
+        namespace GPOWrapper {
+            /* [uuid("b20b786e-f1b4-5beb-a09f-4e44ee2a4f49"), version, object, exclusiveto] */
+            MIDL_INTERFACE("b20b786e-f1b4-5beb-a09f-4e44ee2a4f49")
+            IGPOWrapperStatics : public IInspectable
+            {
+            public:
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredAlwaysOnTopEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredAwakeEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredCmdNotFoundEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredColorPickerEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredCropAndLockEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredFancyZonesEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredFileLocksmithEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredSvgPreviewEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMarkdownPreviewEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMonacoPreviewEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredPdfPreviewEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredGcodePreviewEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredSvgThumbnailsEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredPdfThumbnailsEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredGcodeThumbnailsEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredStlThumbnailsEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredHostsFileEditorEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredImageResizerEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredKeyboardManagerEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredFindMyMouseEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMouseHighlighterEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMouseJumpEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMousePointerCrosshairsEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMouseWithoutBordersEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredPowerRenameEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredPowerLauncherEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredQuickAccentEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredRegistryPreviewEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredScreenRulerEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredShortcutGuideEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredTextExtractorEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredAdvancedPasteEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredZoomItEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredPeekEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetDisableNewUpdateToastValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetDisableAutomaticUpdateDownloadValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetDisableShowWhatsNewAfterUpdatesValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetAllowExperimentationValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetRunPluginEnabledValue(
+                    /* [in] */HSTRING pluginID,
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredEnvironmentVariablesEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredQoiPreviewEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredQoiThumbnailsEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetAllowedAdvancedPasteOnlineAIModelsValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredNewPlusEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredWorkspacesEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMwbClipboardSharingEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMwbFileTransferEnabledValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMwbUseOriginalUserInterfaceValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMwbDisallowBlockingScreensaverValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMwbSameSubnetOnlyValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMwbValidateRemoteIpValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMwbDisableUserDefinedIpMappingRulesValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredMwbPolicyDefinedIpMappingRules(
+                    /* [out, retval] */HSTRING * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetConfiguredNewPlusHideTemplateFilenameExtensionValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE GetAllowDataDiagnosticsValue(
+                    /* [out, retval] */ABI::PowerToys::GPOWrapper::GpoRuleConfigured * result
+                    ) = 0;
+                
+            };
+
+            MIDL_CONST_ID IID & IID_IGPOWrapperStatics=_uuidof(IGPOWrapperStatics);
+            
+        } /* GPOWrapper */
+    } /* PowerToys */
+} /* ABI */
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics;
+#endif /* !defined(____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_INTERFACE_DEFINED__) */
+
+
+/*
+ *
+ * Class PowerToys.GPOWrapper.GPOWrapper
+ *
+ * RuntimeClass contains static methods.
+ *
+ * Class implements the following interfaces:
+ *    PowerToys.GPOWrapper.IGPOWrapper ** Default Interface **
+ *
+ * Class Threading Model:  Both Single and Multi Threaded Apartment
+ *
+ * Class Marshaling Behavior:  Agile - Class is agile
+ *
+ */
+
+#ifndef RUNTIMECLASS_PowerToys_GPOWrapper_GPOWrapper_DEFINED
+#define RUNTIMECLASS_PowerToys_GPOWrapper_GPOWrapper_DEFINED
+extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_PowerToys_GPOWrapper_GPOWrapper[] = L"PowerToys.GPOWrapper.GPOWrapper";
+#endif
+
+
+
+#else // !defined(__cplusplus)
+/* Forward Declarations */
+#ifndef ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_FWD_DEFINED__
+typedef interface __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper;
+
+#endif // ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_FWD_DEFINED__
+
+#ifndef ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_FWD_DEFINED__
+typedef interface __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics;
+
+#endif // ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_FWD_DEFINED__
+
+
+/*
+ *
+ * Struct PowerToys.GPOWrapper.GpoRuleConfigured
+ *
+ */
+
+/* [version, v1_enum] */
+enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured
+{
+    GpoRuleConfigured_WrongValue = -3,
+    GpoRuleConfigured_Unavailable = -2,
+    GpoRuleConfigured_NotConfigured = -1,
+    GpoRuleConfigured_Disabled = 0,
+    GpoRuleConfigured_Enabled = 1,
+};
+
+
+
+/*
+ *
+ * Interface PowerToys.GPOWrapper.IGPOWrapper
+ *
+ * Interface is a part of the implementation of type PowerToys.GPOWrapper.GPOWrapper
+ *
+ *
+ * The IID for this interface was automatically generated by MIDLRT.
+ *
+ * Interface IID generation seed: PowerToys.GPOWrapper.IGPOWrapper:
+ *
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_INTERFACE_DEFINED__
+extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_PowerToys_GPOWrapper_IGPOWrapper[] = L"PowerToys.GPOWrapper.IGPOWrapper";
+/* [uuid("714ceb20-c766-596a-82f9-7b0252bdbeb9"), version, object, exclusiveto] */
+typedef struct __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperVtbl
+{
+    BEGIN_INTERFACE
+    HRESULT ( STDMETHODCALLTYPE *QueryInterface)(
+    __RPC__in __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper * This,
+    /* [in] */ __RPC__in REFIID riid,
+    /* [annotation][iid_is][out] */
+    _COM_Outptr_  void **ppvObject
+    );
+
+ULONG ( STDMETHODCALLTYPE *AddRef )(
+    __RPC__in __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper * This
+    );
+
+ULONG ( STDMETHODCALLTYPE *Release )(
+    __RPC__in __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper * This
+    );
+
+HRESULT ( STDMETHODCALLTYPE *GetIids )(
+    __RPC__in __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper * This,
+    /* [out] */ __RPC__out ULONG *iidCount,
+    /* [size_is][size_is][out] */ __RPC__deref_out_ecount_full_opt(*iidCount) IID **iids
+    );
+
+HRESULT ( STDMETHODCALLTYPE *GetRuntimeClassName )(
+    __RPC__in __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper * This,
+    /* [out] */ __RPC__deref_out_opt HSTRING *className
+    );
+
+HRESULT ( STDMETHODCALLTYPE *GetTrustLevel )(
+    __RPC__in __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper * This,
+    /* [OUT ] */ __RPC__out TrustLevel *trustLevel
+    );
+END_INTERFACE
+    
+} __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperVtbl;
+
+interface __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper
+{
+    CONST_VTBL struct __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperVtbl *lpVtbl;
+};
+
+#ifdef COBJMACROS
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_QueryInterface(This,riid,ppvObject) \
+( (This)->lpVtbl->QueryInterface(This,riid,ppvObject) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_AddRef(This) \
+        ( (This)->lpVtbl->AddRef(This) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_Release(This) \
+        ( (This)->lpVtbl->Release(This) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_GetIids(This,iidCount,iids) \
+        ( (This)->lpVtbl->GetIids(This,iidCount,iids) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_GetRuntimeClassName(This,className) \
+        ( (This)->lpVtbl->GetRuntimeClassName(This,className) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_GetTrustLevel(This,trustLevel) \
+        ( (This)->lpVtbl->GetTrustLevel(This,trustLevel) )
+
+
+#endif /* COBJMACROS */
+
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper;
+#endif /* !defined(____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapper_INTERFACE_DEFINED__) */
+
+
+/*
+ *
+ * Interface PowerToys.GPOWrapper.IGPOWrapperStatics
+ *
+ * Interface is a part of the implementation of type PowerToys.GPOWrapper.GPOWrapper
+ *
+ *
+ * The IID for this interface was automatically generated by MIDLRT.
+ *
+ * Interface IID generation seed: PowerToys.GPOWrapper.IGPOWrapperStatics:HRESULT GetConfiguredAlwaysOnTopEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredAwakeEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredCmdNotFoundEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredColorPickerEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredCropAndLockEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredFancyZonesEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredFileLocksmithEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredSvgPreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMarkdownPreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMonacoPreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredPdfPreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredGcodePreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredSvgThumbnailsEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredPdfThumbnailsEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredGcodeThumbnailsEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredStlThumbnailsEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredHostsFileEditorEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredImageResizerEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredKeyboardManagerEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredFindMyMouseEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMouseHighlighterEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMouseJumpEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMousePointerCrosshairsEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMouseWithoutBordersEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredPowerRenameEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredPowerLauncherEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredQuickAccentEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredRegistryPreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredScreenRulerEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredShortcutGuideEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredTextExtractorEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredAdvancedPasteEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredZoomItEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredPeekEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetDisableNewUpdateToastValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetDisableAutomaticUpdateDownloadValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetDisableShowWhatsNewAfterUpdatesValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetAllowExperimentationValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetRunPluginEnabledValue(String,PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredEnvironmentVariablesEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredQoiPreviewEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredQoiThumbnailsEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetAllowedAdvancedPasteOnlineAIModelsValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredNewPlusEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredWorkspacesEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbClipboardSharingEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbFileTransferEnabledValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbUseOriginalUserInterfaceValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbDisallowBlockingScreensaverValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbSameSubnetOnlyValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbValidateRemoteIpValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbDisableUserDefinedIpMappingRulesValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetConfiguredMwbPolicyDefinedIpMappingRules(String*);HRESULT GetConfiguredNewPlusHideTemplateFilenameExtensionValue(PowerToys.GPOWrapper.GpoRuleConfigured*);HRESULT GetAllowDataDiagnosticsValue(PowerToys.GPOWrapper.GpoRuleConfigured*);
+ *
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_INTERFACE_DEFINED__
+extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_PowerToys_GPOWrapper_IGPOWrapperStatics[] = L"PowerToys.GPOWrapper.IGPOWrapperStatics";
+/* [uuid("b20b786e-f1b4-5beb-a09f-4e44ee2a4f49"), version, object, exclusiveto] */
+typedef struct __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStaticsVtbl
+{
+    BEGIN_INTERFACE
+    HRESULT ( STDMETHODCALLTYPE *QueryInterface)(
+    __RPC__in __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+    /* [in] */ __RPC__in REFIID riid,
+    /* [annotation][iid_is][out] */
+    _COM_Outptr_  void **ppvObject
+    );
+
+ULONG ( STDMETHODCALLTYPE *AddRef )(
+    __RPC__in __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This
+    );
+
+ULONG ( STDMETHODCALLTYPE *Release )(
+    __RPC__in __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This
+    );
+
+HRESULT ( STDMETHODCALLTYPE *GetIids )(
+    __RPC__in __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+    /* [out] */ __RPC__out ULONG *iidCount,
+    /* [size_is][size_is][out] */ __RPC__deref_out_ecount_full_opt(*iidCount) IID **iids
+    );
+
+HRESULT ( STDMETHODCALLTYPE *GetRuntimeClassName )(
+    __RPC__in __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+    /* [out] */ __RPC__deref_out_opt HSTRING *className
+    );
+
+HRESULT ( STDMETHODCALLTYPE *GetTrustLevel )(
+    __RPC__in __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+    /* [OUT ] */ __RPC__out TrustLevel *trustLevel
+    );
+HRESULT ( STDMETHODCALLTYPE *GetConfiguredAlwaysOnTopEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredAwakeEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredCmdNotFoundEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredColorPickerEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredCropAndLockEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredFancyZonesEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredFileLocksmithEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredSvgPreviewEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMarkdownPreviewEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMonacoPreviewEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredPdfPreviewEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredGcodePreviewEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredSvgThumbnailsEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredPdfThumbnailsEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredGcodeThumbnailsEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredStlThumbnailsEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredHostsFileEditorEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredImageResizerEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredKeyboardManagerEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredFindMyMouseEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMouseHighlighterEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMouseJumpEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMousePointerCrosshairsEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMouseWithoutBordersEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredPowerRenameEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredPowerLauncherEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredQuickAccentEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredRegistryPreviewEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredScreenRulerEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredShortcutGuideEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredTextExtractorEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredAdvancedPasteEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredZoomItEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredPeekEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetDisableNewUpdateToastValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetDisableAutomaticUpdateDownloadValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetDisableShowWhatsNewAfterUpdatesValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetAllowExperimentationValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetRunPluginEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [in] */HSTRING pluginID,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredEnvironmentVariablesEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredQoiPreviewEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredQoiThumbnailsEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetAllowedAdvancedPasteOnlineAIModelsValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredNewPlusEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredWorkspacesEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMwbClipboardSharingEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMwbFileTransferEnabledValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMwbUseOriginalUserInterfaceValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMwbDisallowBlockingScreensaverValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMwbSameSubnetOnlyValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMwbValidateRemoteIpValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMwbDisableUserDefinedIpMappingRulesValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredMwbPolicyDefinedIpMappingRules )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */HSTRING * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetConfiguredNewPlusHideTemplateFilenameExtensionValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    HRESULT ( STDMETHODCALLTYPE *GetAllowDataDiagnosticsValue )(
+        __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics * This,
+        /* [out, retval] */enum __x_ABI_CPowerToys_CGPOWrapper_CGpoRuleConfigured * result
+        );
+    END_INTERFACE
+    
+} __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStaticsVtbl;
+
+interface __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics
+{
+    CONST_VTBL struct __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStaticsVtbl *lpVtbl;
+};
+
+#ifdef COBJMACROS
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_QueryInterface(This,riid,ppvObject) \
+( (This)->lpVtbl->QueryInterface(This,riid,ppvObject) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_AddRef(This) \
+        ( (This)->lpVtbl->AddRef(This) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_Release(This) \
+        ( (This)->lpVtbl->Release(This) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetIids(This,iidCount,iids) \
+        ( (This)->lpVtbl->GetIids(This,iidCount,iids) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetRuntimeClassName(This,className) \
+        ( (This)->lpVtbl->GetRuntimeClassName(This,className) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetTrustLevel(This,trustLevel) \
+        ( (This)->lpVtbl->GetTrustLevel(This,trustLevel) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredAlwaysOnTopEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredAlwaysOnTopEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredAwakeEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredAwakeEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredCmdNotFoundEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredCmdNotFoundEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredColorPickerEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredColorPickerEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredCropAndLockEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredCropAndLockEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredFancyZonesEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredFancyZonesEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredFileLocksmithEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredFileLocksmithEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredSvgPreviewEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredSvgPreviewEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMarkdownPreviewEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMarkdownPreviewEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMonacoPreviewEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMonacoPreviewEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredPdfPreviewEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredPdfPreviewEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredGcodePreviewEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredGcodePreviewEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredSvgThumbnailsEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredSvgThumbnailsEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredPdfThumbnailsEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredPdfThumbnailsEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredGcodeThumbnailsEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredGcodeThumbnailsEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredStlThumbnailsEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredStlThumbnailsEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredHostsFileEditorEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredHostsFileEditorEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredImageResizerEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredImageResizerEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredKeyboardManagerEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredKeyboardManagerEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredFindMyMouseEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredFindMyMouseEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMouseHighlighterEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMouseHighlighterEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMouseJumpEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMouseJumpEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMousePointerCrosshairsEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMousePointerCrosshairsEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMouseWithoutBordersEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMouseWithoutBordersEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredPowerRenameEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredPowerRenameEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredPowerLauncherEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredPowerLauncherEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredQuickAccentEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredQuickAccentEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredRegistryPreviewEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredRegistryPreviewEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredScreenRulerEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredScreenRulerEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredShortcutGuideEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredShortcutGuideEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredTextExtractorEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredTextExtractorEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredAdvancedPasteEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredAdvancedPasteEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredZoomItEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredZoomItEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredPeekEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredPeekEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetDisableNewUpdateToastValue(This,result) \
+    ( (This)->lpVtbl->GetDisableNewUpdateToastValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetDisableAutomaticUpdateDownloadValue(This,result) \
+    ( (This)->lpVtbl->GetDisableAutomaticUpdateDownloadValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetDisableShowWhatsNewAfterUpdatesValue(This,result) \
+    ( (This)->lpVtbl->GetDisableShowWhatsNewAfterUpdatesValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetAllowExperimentationValue(This,result) \
+    ( (This)->lpVtbl->GetAllowExperimentationValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetRunPluginEnabledValue(This,pluginID,result) \
+    ( (This)->lpVtbl->GetRunPluginEnabledValue(This,pluginID,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredEnvironmentVariablesEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredEnvironmentVariablesEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredQoiPreviewEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredQoiPreviewEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredQoiThumbnailsEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredQoiThumbnailsEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetAllowedAdvancedPasteOnlineAIModelsValue(This,result) \
+    ( (This)->lpVtbl->GetAllowedAdvancedPasteOnlineAIModelsValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredNewPlusEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredNewPlusEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredWorkspacesEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredWorkspacesEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMwbClipboardSharingEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMwbClipboardSharingEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMwbFileTransferEnabledValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMwbFileTransferEnabledValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMwbUseOriginalUserInterfaceValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMwbUseOriginalUserInterfaceValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMwbDisallowBlockingScreensaverValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMwbDisallowBlockingScreensaverValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMwbSameSubnetOnlyValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMwbSameSubnetOnlyValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMwbValidateRemoteIpValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMwbValidateRemoteIpValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMwbDisableUserDefinedIpMappingRulesValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMwbDisableUserDefinedIpMappingRulesValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredMwbPolicyDefinedIpMappingRules(This,result) \
+    ( (This)->lpVtbl->GetConfiguredMwbPolicyDefinedIpMappingRules(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetConfiguredNewPlusHideTemplateFilenameExtensionValue(This,result) \
+    ( (This)->lpVtbl->GetConfiguredNewPlusHideTemplateFilenameExtensionValue(This,result) )
+
+#define __x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_GetAllowDataDiagnosticsValue(This,result) \
+    ( (This)->lpVtbl->GetAllowDataDiagnosticsValue(This,result) )
+
+
+#endif /* COBJMACROS */
+
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics;
+#endif /* !defined(____x_ABI_CPowerToys_CGPOWrapper_CIGPOWrapperStatics_INTERFACE_DEFINED__) */
+
+
+/*
+ *
+ * Class PowerToys.GPOWrapper.GPOWrapper
+ *
+ * RuntimeClass contains static methods.
+ *
+ * Class implements the following interfaces:
+ *    PowerToys.GPOWrapper.IGPOWrapper ** Default Interface **
+ *
+ * Class Threading Model:  Both Single and Multi Threaded Apartment
+ *
+ * Class Marshaling Behavior:  Agile - Class is agile
+ *
+ */
+
+#ifndef RUNTIMECLASS_PowerToys_GPOWrapper_GPOWrapper_DEFINED
+#define RUNTIMECLASS_PowerToys_GPOWrapper_GPOWrapper_DEFINED
+extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_PowerToys_GPOWrapper_GPOWrapper[] = L"PowerToys.GPOWrapper.GPOWrapper";
+#endif
+
+
+
+#endif // defined(__cplusplus)
+#pragma pop_macro("MIDL_CONST_ID")
+#endif // __nul_p_\10\References\10.0.22621.0\WinP
+èb__
+
+#endif // __nul_\10\References\10.0.22621.0\WinP
+èb__

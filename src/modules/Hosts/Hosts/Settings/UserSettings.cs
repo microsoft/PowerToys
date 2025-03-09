@@ -47,6 +47,8 @@ namespace Hosts.Settings
 
         public event EventHandler LoopbackDuplicatesChanged;
 
+        public bool AddLeadingWhitespace { get; private set; }
+
         public UserSettings()
         {
             _settingsUtils = new SettingsUtils();
@@ -54,6 +56,7 @@ namespace Hosts.Settings
             LoopbackDuplicates = false;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;
+            AddLeadingWhitespace = false;
 
             LoadSettingsFromJson();
 

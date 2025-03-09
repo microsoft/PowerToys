@@ -20,6 +20,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool LoopbackDuplicates { get; set; }
 
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool AddLeadingWhitespace { get; set; }
+
         public HostsAdditionalLinesPosition AdditionalLinesPosition { get; set; }
 
         public HostsEncoding Encoding { get; set; }
@@ -29,6 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowStartupWarning = true;
             LaunchAdministrator = true;
             LoopbackDuplicates = false;
+            AddLeadingWhitespace = false;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;
         }
