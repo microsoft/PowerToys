@@ -4895,6 +4895,53 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="SettingsPage_NewInfoBadge.Text" xml:space="preserve">
     <value>NEW</value>
-	<comment>Must be all caps</comment>
+    <comment>Must be all caps</comment>
+  </data>
+  <data name="Hosts_Backup_GroupSettings.Header" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="Hosts_Backup.Header" xml:space="preserve">
+    <value>Backup hosts file</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Backup.Description" xml:space="preserve">
+    <value>Automatically create a backup of the hosts file when you save for the first time in a session</value>
+    <comment>"Hosts" refers to the system hosts file, do not loc</comment>
+  </data>
+  <data name="Hosts_Backup_Location.Header" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Hosts_ButtonSelectLocation.Text" xml:space="preserve">
+    <value>Select location</value>
+  </data>
+  <data name="Hosts_Delete_Backup.Header" xml:space="preserve">
+    <value>Automatically delete backups</value>
+  </data>
+  <data name="Hosts_Backup_AgeCountBased_DaysInput.Header" xml:space="preserve">
+    <value>Days</value>
+  </data>
+  <data name="Hosts_Backup_CountBased_CountInput.Header" xml:space="preserve">
+    <value>Backups count</value>
+  </data>
+  <data name="Hosts_Backup_CountBased_CountInput.Description" xml:space="preserve">
+    <value>Set the number of backups to retain, deleting older ones once the limit is reached</value>
+  </data>
+  <data name="Hosts_Backup_AgeCountBased_DaysInput.Description" xml:space="preserve">
+    <value>Set the number of days to retain backups, deleting older ones once the limit is reached</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_Never.Content" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_CountBased.Content" xml:space="preserve">
+    <value>Based on count</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_AgeAndCountBased.Content" xml:space="preserve">
+    <value>Based on age and count</value>
+  </data>
+  <data name="Hosts_Backup_AgeCountBased_CountInput.Description" xml:space="preserve">
+    <value>Set an optional number of backups to always retain, despite their age</value>
+  </data>
+  <data name="Hosts_Backup_AgeCountBased_CountInput.Header" xml:space="preserve">
+    <value>Backups count</value>
   </data>
 </root>

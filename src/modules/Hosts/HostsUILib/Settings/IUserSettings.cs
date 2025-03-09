@@ -16,6 +16,16 @@ namespace HostsUILib.Settings
 
         public HostsEncoding Encoding { get; }
 
+        public bool BackupHosts { get; }
+
+        public string BackupPath { get; }
+
+        public HostsDeleteBackupMode DeleteBackupsMode { get; }
+
+        public int DeleteBackupsDays { get; }
+
+        public int DeleteBackupsCount { get; }
+
         event EventHandler LoopbackDuplicatesChanged;
 
         public delegate void OpenSettingsFunction();
