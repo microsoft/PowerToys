@@ -41,6 +41,8 @@ namespace HostsUILib.Helpers
 
         public Encoding Encoding => _userSettings.Encoding == HostsEncoding.Utf8 ? new UTF8Encoding(false) : new UTF8Encoding(true);
 
+        public bool AddLeadingWhitespace;
+
         public HostsService(
             IFileSystem fileSystem,
             IUserSettings userSettings,
@@ -147,17 +149,21 @@ namespace HostsUILib.Helpers
                 {
                     var lineBuilder = new StringBuilder();
 
-                    if (!e.Valid)
+                    if (!e.Valid)  //this is where i need to work with the linebuilder function                         //can i put it in as an elseif statement in between the if??
                     {
                         lineBuilder.Append(e.Line);
                     }
                     else
                     {
                         if (!e.Active)
-                        {
-                            lineBuilder.Append('#').Append(' ');
-                        }
-                        else if (anyDisabled)
+                        {                                                                                                                       //if AddLeadingWhitespace == false
+                            lineBuilder.Append('#').Append(' ');                                                                                //dont append space
+                        }                                                                                                                       //append leading whitespacespace
+                        else if (anyDisabled) && (AddLeadingWhitespace == false)                                                                //else
+                        {                                                                                                                       //append leading whitespacespace
+                            lineBuilder.Append(e.line);
+                        }                                                                                                                        
+                        else if (anyDisabled)                                                                                                   
                         {
                             lineBuilder.Append(' ').Append(' ');
                         }

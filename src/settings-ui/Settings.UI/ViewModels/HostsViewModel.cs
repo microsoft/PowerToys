@@ -131,6 +131,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool AddLeadingWhitespace
+        {
+            get => Settings.Properties.AddLeadingWhitespace;
+            set
+            {
+                if (value != Settings.Properties.AddLeadingWhitespace)
+                {
+                    Settings.Properties.AddLeadingWhitespace = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public HostsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<HostsSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, bool isElevated)
         {
             SettingsUtils = settingsUtils;

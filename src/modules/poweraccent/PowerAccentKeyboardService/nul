@@ -1,0 +1,1069 @@
+/* Header file automatically generated from KeyboardListener.idl */
+/*
+ * File built with Microsoft(R) MIDLRT Compiler Engine Version 10.00.0231 
+ */
+
+#pragma warning( disable: 4049 )  /* more than 64k source lines */
+
+/* verify that the <rpcndr.h> version is high enough to compile this file*/
+#ifndef __REQUIRED_RPCNDR_H_VERSION__
+#define __REQUIRED_RPCNDR_H_VERSION__ 500
+#endif
+
+/* verify that the <rpcsal.h> version is high enough to compile this file*/
+#ifndef __REQUIRED_RPCSAL_H_VERSION__
+#define __REQUIRED_RPCSAL_H_VERSION__ 100
+#endif
+
+#include <rpc.h>
+#include <rpcndr.h>
+
+#ifndef __RPCNDR_H_VERSION__
+#error this stub requires an updated version of <rpcndr.h>
+#endif /* __RPCNDR_H_VERSION__ */
+
+#ifndef COM_NO_WINDOWS_H
+#include <windows.h>
+#include <ole2.h>
+#endif /*COM_NO_WINDOWS_H*/
+#ifndef __nul___
+#define __nul___
+#ifndef __nul_p___
+#define __nul_p___
+
+
+#pragma once
+
+// Ensure that the setting of the /ns_prefix command line switch is consistent for all headers.
+// If you get an error from the compiler indicating "warning C4005: 'CHECK_NS_PREFIX_STATE': macro redefinition", this
+// indicates that you have included two different headers with different settings for the /ns_prefix MIDL command line switch
+#if !defined(DISABLE_NS_PREFIX_CHECKS)
+#define CHECK_NS_PREFIX_STATE "always"
+#endif // !defined(DISABLE_NS_PREFIX_CHECKS)
+
+
+#pragma push_macro("MIDL_CONST_ID")
+#undef MIDL_CONST_ID
+#define MIDL_CONST_ID const __declspec(selectany)
+
+
+// Header files for imported files
+#include "winrtbase.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.AI.MachineLearning.MachineLearningContract\5.0.0.0\Windows.AI.MachineLearning.MachineLearningContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.AI.MachineLearning.Preview.MachineLearningPreviewContract\2.0.0.0\Windows.AI.MachineLearning.Preview.MachineLearningPreviewContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.ApplicationModel.Calls.Background.CallsBackgroundContract\4.0.0.0\Windows.ApplicationModel.Calls.Background.CallsBackgroundContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.ApplicationModel.Calls.CallsPhoneContract\7.0.0.0\Windows.ApplicationModel.Calls.CallsPhoneContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.ApplicationModel.Calls.CallsVoipContract\4.0.0.0\Windows.ApplicationModel.Calls.CallsVoipContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.ApplicationModel.CommunicationBlocking.CommunicationBlockingContract\2.0.0.0\Windows.ApplicationModel.CommunicationBlocking.CommunicationBlockingContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.ApplicationModel.SocialInfo.SocialInfoContract\2.0.0.0\Windows.ApplicationModel.SocialInfo.SocialInfoContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.ApplicationModel.StartupTaskContract\3.0.0.0\Windows.ApplicationModel.StartupTaskContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Devices.Custom.CustomDeviceContract\1.0.0.0\Windows.Devices.Custom.CustomDeviceContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Devices.DevicesLowLevelContract\3.0.0.0\Windows.Devices.DevicesLowLevelContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Devices.Printers.PrintersContract\1.0.0.0\Windows.Devices.Printers.PrintersContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Devices.SmartCards.SmartCardBackgroundTriggerContract\3.0.0.0\Windows.Devices.SmartCards.SmartCardBackgroundTriggerContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Devices.SmartCards.SmartCardEmulatorContract\6.0.0.0\Windows.Devices.SmartCards.SmartCardEmulatorContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Foundation.FoundationContract\4.0.0.0\Windows.Foundation.FoundationContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Foundation.UniversalApiContract\15.0.0.0\Windows.Foundation.UniversalApiContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Gaming.XboxLive.StorageApiContract\1.0.0.0\Windows.Gaming.XboxLive.StorageApiContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Graphics.Printing3D.Printing3DContract\4.0.0.0\Windows.Graphics.Printing3D.Printing3DContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Networking.Connectivity.WwanContract\2.0.0.0\Windows.Networking.Connectivity.WwanContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Networking.Sockets.ControlChannelTriggerContract\3.0.0.0\Windows.Networking.Sockets.ControlChannelTriggerContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Security.Isolation.IsolatedWindowsEnvironmentContract\4.0.0.0\Windows.Security.Isolation.Isolatedwindowsenvironmentcontract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Services.Maps.GuidanceContract\3.0.0.0\Windows.Services.Maps.GuidanceContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Services.Maps.LocalSearchContract\4.0.0.0\Windows.Services.Maps.LocalSearchContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Services.Store.StoreContract\4.0.0.0\Windows.Services.Store.StoreContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Services.TargetedContent.TargetedContentContract\1.0.0.0\Windows.Services.TargetedContent.TargetedContentContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.Storage.Provider.CloudFilesContract\7.0.0.0\Windows.Storage.Provider.CloudFilesContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.System.Profile.ProfileHardwareTokenContract\1.0.0.0\Windows.System.Profile.ProfileHardwareTokenContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.System.Profile.ProfileRetailInfoContract\1.0.0.0\Windows.System.Profile.ProfileRetailInfoContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.System.Profile.ProfileSharedModeContract\2.0.0.0\Windows.System.Profile.ProfileSharedModeContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.System.Profile.SystemManufacturers.SystemManufacturersContract\3.0.0.0\Windows.System.Profile.SystemManufacturers.SystemManufacturersContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.System.SystemManagementContract\7.0.0.0\Windows.System.SystemManagementContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.UI.UIAutomation.UIAutomationContract\2.0.0.0\Windows.UI.UIAutomation.UIAutomationContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.UI.ViewManagement.ViewManagementViewScalingContract\1.0.0.0\Windows.UI.ViewManagement.ViewManagementViewScalingContract.h"
+#include "C:\Program Files (x86)\Windows Kits\10\References\10.0.22621.0\Windows.UI.Xaml.Core.Direct.XamlDirectContract\5.0.0.0\Windows.UI.Xaml.Core.Direct.XamlDirectContract.h"
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+#if defined(__MIDL_USE_C_ENUM)
+#define MIDL_ENUM enum
+#else
+#define MIDL_ENUM enum class
+#endif
+/* Forward Declarations */
+#ifndef ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_FWD_DEFINED__
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            interface IShowToolbar;
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar ABI::PowerToys::PowerAccentKeyboardService::IShowToolbar
+
+#endif // ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_FWD_DEFINED__
+
+#ifndef ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_FWD_DEFINED__
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            interface IHideToolbar;
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar ABI::PowerToys::PowerAccentKeyboardService::IHideToolbar
+
+#endif // ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_FWD_DEFINED__
+
+#ifndef ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_FWD_DEFINED__
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            interface INextChar;
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar ABI::PowerToys::PowerAccentKeyboardService::INextChar
+
+#endif // ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_FWD_DEFINED__
+
+#ifndef ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_FWD_DEFINED__
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            interface IIsLanguageLetter;
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter ABI::PowerToys::PowerAccentKeyboardService::IIsLanguageLetter
+
+#endif // ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_FWD_DEFINED__
+
+#ifndef ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_FWD_DEFINED__
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            interface IKeyboardListener;
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener ABI::PowerToys::PowerAccentKeyboardService::IKeyboardListener
+
+#endif // ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_FWD_DEFINED__
+
+
+
+/*
+ *
+ * Struct PowerToys.PowerAccentKeyboardService.LetterKey
+ *
+ */
+
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            /* [version, v1_enum] */
+            MIDL_ENUM LetterKey : int
+            {
+                None = 0,
+                VK_0 = 48,
+                VK_1 = 49,
+                VK_2 = 50,
+                VK_3 = 51,
+                VK_4 = 52,
+                VK_5 = 53,
+                VK_6 = 54,
+                VK_7 = 55,
+                VK_8 = 56,
+                VK_9 = 57,
+                VK_A = 65,
+                VK_B = 66,
+                VK_C = 67,
+                VK_D = 68,
+                VK_E = 69,
+                VK_F = 70,
+                VK_G = 71,
+                VK_H = 72,
+                VK_I = 73,
+                VK_J = 74,
+                VK_K = 75,
+                VK_L = 76,
+                VK_M = 77,
+                VK_N = 78,
+                VK_O = 79,
+                VK_P = 80,
+                VK_Q = 81,
+                VK_R = 82,
+                VK_S = 83,
+                VK_T = 84,
+                VK_U = 85,
+                VK_V = 86,
+                VK_W = 87,
+                VK_X = 88,
+                VK_Y = 89,
+                VK_Z = 90,
+                VK_PLUS = 187,
+                VK_COMMA = 188,
+                VK_PERIOD = 190,
+                VK_MINUS = 189,
+                VK_MULTIPLY_ = 106,
+                VK_SLASH_ = 191,
+                VK_DIVIDE_ = 111,
+            };
+            const LetterKey LetterKey_None = LetterKey::None;
+            const LetterKey LetterKey_VK_0 = LetterKey::VK_0;
+            const LetterKey LetterKey_VK_1 = LetterKey::VK_1;
+            const LetterKey LetterKey_VK_2 = LetterKey::VK_2;
+            const LetterKey LetterKey_VK_3 = LetterKey::VK_3;
+            const LetterKey LetterKey_VK_4 = LetterKey::VK_4;
+            const LetterKey LetterKey_VK_5 = LetterKey::VK_5;
+            const LetterKey LetterKey_VK_6 = LetterKey::VK_6;
+            const LetterKey LetterKey_VK_7 = LetterKey::VK_7;
+            const LetterKey LetterKey_VK_8 = LetterKey::VK_8;
+            const LetterKey LetterKey_VK_9 = LetterKey::VK_9;
+            const LetterKey LetterKey_VK_A = LetterKey::VK_A;
+            const LetterKey LetterKey_VK_B = LetterKey::VK_B;
+            const LetterKey LetterKey_VK_C = LetterKey::VK_C;
+            const LetterKey LetterKey_VK_D = LetterKey::VK_D;
+            const LetterKey LetterKey_VK_E = LetterKey::VK_E;
+            const LetterKey LetterKey_VK_F = LetterKey::VK_F;
+            const LetterKey LetterKey_VK_G = LetterKey::VK_G;
+            const LetterKey LetterKey_VK_H = LetterKey::VK_H;
+            const LetterKey LetterKey_VK_I = LetterKey::VK_I;
+            const LetterKey LetterKey_VK_J = LetterKey::VK_J;
+            const LetterKey LetterKey_VK_K = LetterKey::VK_K;
+            const LetterKey LetterKey_VK_L = LetterKey::VK_L;
+            const LetterKey LetterKey_VK_M = LetterKey::VK_M;
+            const LetterKey LetterKey_VK_N = LetterKey::VK_N;
+            const LetterKey LetterKey_VK_O = LetterKey::VK_O;
+            const LetterKey LetterKey_VK_P = LetterKey::VK_P;
+            const LetterKey LetterKey_VK_Q = LetterKey::VK_Q;
+            const LetterKey LetterKey_VK_R = LetterKey::VK_R;
+            const LetterKey LetterKey_VK_S = LetterKey::VK_S;
+            const LetterKey LetterKey_VK_T = LetterKey::VK_T;
+            const LetterKey LetterKey_VK_U = LetterKey::VK_U;
+            const LetterKey LetterKey_VK_V = LetterKey::VK_V;
+            const LetterKey LetterKey_VK_W = LetterKey::VK_W;
+            const LetterKey LetterKey_VK_X = LetterKey::VK_X;
+            const LetterKey LetterKey_VK_Y = LetterKey::VK_Y;
+            const LetterKey LetterKey_VK_Z = LetterKey::VK_Z;
+            const LetterKey LetterKey_VK_PLUS = LetterKey::VK_PLUS;
+            const LetterKey LetterKey_VK_COMMA = LetterKey::VK_COMMA;
+            const LetterKey LetterKey_VK_PERIOD = LetterKey::VK_PERIOD;
+            const LetterKey LetterKey_VK_MINUS = LetterKey::VK_MINUS;
+            const LetterKey LetterKey_VK_MULTIPLY_ = LetterKey::VK_MULTIPLY_;
+            const LetterKey LetterKey_VK_SLASH_ = LetterKey::VK_SLASH_;
+            const LetterKey LetterKey_VK_DIVIDE_ = LetterKey::VK_DIVIDE_;
+            
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+
+
+/*
+ *
+ * Struct PowerToys.PowerAccentKeyboardService.TriggerKey
+ *
+ */
+
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            /* [version, v1_enum] */
+            MIDL_ENUM TriggerKey : int
+            {
+                Right = 39,
+                Left = 37,
+                Space = 32,
+            };
+            const TriggerKey TriggerKey_Right = TriggerKey::Right;
+            const TriggerKey TriggerKey_Left = TriggerKey::Left;
+            const TriggerKey TriggerKey_Space = TriggerKey::Space;
+            
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+
+
+/*
+ *
+ * Struct PowerToys.PowerAccentKeyboardService.InputType
+ *
+ */
+
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            /* [version, v1_enum] */
+            MIDL_ENUM InputType : int
+            {
+                None,
+                Space,
+                Left,
+                Right,
+                Char,
+            };
+            const InputType InputType_None = InputType::None;
+            const InputType InputType_Space = InputType::Space;
+            const InputType InputType_Left = InputType::Left;
+            const InputType InputType_Right = InputType::Right;
+            const InputType InputType_Char = InputType::Char;
+            
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+
+
+/*
+ *
+ * Delegate PowerToys.PowerAccentKeyboardService.ShowToolbar
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_INTERFACE_DEFINED__
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            /* [object, uuid("37197089-5438-4479-af57-30ab3f3c8be4"), version] */
+            MIDL_INTERFACE("37197089-5438-4479-af57-30ab3f3c8be4")
+            IShowToolbar : public IUnknown
+            {
+            public:
+                virtual HRESULT STDMETHODCALLTYPE Invoke(
+                    /* [in] */ABI::PowerToys::PowerAccentKeyboardService::LetterKey key
+                    ) = 0;
+                
+            };
+
+            MIDL_CONST_ID IID & IID_IShowToolbar=_uuidof(IShowToolbar);
+            
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar;
+#endif /* !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_INTERFACE_DEFINED__) */
+
+
+/*
+ *
+ * Delegate PowerToys.PowerAccentKeyboardService.HideToolbar
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_INTERFACE_DEFINED__
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            /* [object, uuid("8eb79d6b-1826-424f-9fbc-af21ae19725e"), version] */
+            MIDL_INTERFACE("8eb79d6b-1826-424f-9fbc-af21ae19725e")
+            IHideToolbar : public IUnknown
+            {
+            public:
+                virtual HRESULT STDMETHODCALLTYPE Invoke(
+                    /* [in] */ABI::PowerToys::PowerAccentKeyboardService::InputType inputType
+                    ) = 0;
+                
+            };
+
+            MIDL_CONST_ID IID & IID_IHideToolbar=_uuidof(IHideToolbar);
+            
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar;
+#endif /* !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_INTERFACE_DEFINED__) */
+
+
+/*
+ *
+ * Delegate PowerToys.PowerAccentKeyboardService.NextChar
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_INTERFACE_DEFINED__
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            /* [object, uuid("db72d45c-a5a2-446f-bdc1-506e9121764a"), version] */
+            MIDL_INTERFACE("db72d45c-a5a2-446f-bdc1-506e9121764a")
+            INextChar : public IUnknown
+            {
+            public:
+                virtual void STDMETHODCALLTYPE Invoke(
+                    ABI::PowerToys::PowerAccentKeyboardService::TriggerKey inputSpace,
+                    ::boolean shiftPressed
+                    ) = 0;
+                
+            };
+
+            MIDL_CONST_ID IID & IID_INextChar=_uuidof(INextChar);
+            
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar;
+#endif /* !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_INTERFACE_DEFINED__) */
+
+
+/*
+ *
+ * Delegate PowerToys.PowerAccentKeyboardService.IsLanguageLetter
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_INTERFACE_DEFINED__
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            /* [object, uuid("20be2919-2b91-4313-b6e0-4c3484fe91ef"), version] */
+            MIDL_INTERFACE("20be2919-2b91-4313-b6e0-4c3484fe91ef")
+            IIsLanguageLetter : public IUnknown
+            {
+            public:
+                virtual void STDMETHODCALLTYPE Invoke(
+                    ABI::PowerToys::PowerAccentKeyboardService::LetterKey key,
+                    /* [out] */::boolean * result
+                    ) = 0;
+                
+            };
+
+            MIDL_CONST_ID IID & IID_IIsLanguageLetter=_uuidof(IIsLanguageLetter);
+            
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter;
+#endif /* !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_INTERFACE_DEFINED__) */
+
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            class KeyboardListener;
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+
+
+
+/*
+ *
+ * Interface PowerToys.PowerAccentKeyboardService.IKeyboardListener
+ *
+ * Interface is a part of the implementation of type PowerToys.PowerAccentKeyboardService.KeyboardListener
+ *
+ *
+ * The IID for this interface was automatically generated by MIDLRT.
+ *
+ * Interface IID generation seed: PowerToys.PowerAccentKeyboardService.IKeyboardListener:HRESULT InitHook();HRESULT UnInitHook();HRESULT SetShowToolbarEvent(PowerToys.PowerAccentKeyboardService.ShowToolbar*);HRESULT SetHideToolbarEvent(PowerToys.PowerAccentKeyboardService.HideToolbar*);HRESULT SetNextCharEvent(PowerToys.PowerAccentKeyboardService.NextChar*);HRESULT SetIsLanguageLetterDelegate(PowerToys.PowerAccentKeyboardService.IsLanguageLetter*);HRESULT UpdateActivationKey(Int32);HRESULT UpdateDoNotActivateOnGameMode(Boolean);HRESULT UpdateInputTime(Int32);HRESULT UpdateExcludedApps(String);
+ *
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_INTERFACE_DEFINED__
+extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_PowerToys_PowerAccentKeyboardService_IKeyboardListener[] = L"PowerToys.PowerAccentKeyboardService.IKeyboardListener";
+namespace ABI {
+    namespace PowerToys {
+        namespace PowerAccentKeyboardService {
+            /* [uuid("2892c5af-18a2-549d-a8a5-80d6090135b4"), version, object, exclusiveto] */
+            MIDL_INTERFACE("2892c5af-18a2-549d-a8a5-80d6090135b4")
+            IKeyboardListener : public IInspectable
+            {
+            public:
+                virtual HRESULT STDMETHODCALLTYPE InitHook(void) = 0;
+                virtual HRESULT STDMETHODCALLTYPE UnInitHook(void) = 0;
+                virtual HRESULT STDMETHODCALLTYPE SetShowToolbarEvent(
+                    /* [in] */ABI::PowerToys::PowerAccentKeyboardService::IShowToolbar  * showToolbarEvent
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE SetHideToolbarEvent(
+                    /* [in] */ABI::PowerToys::PowerAccentKeyboardService::IHideToolbar  * hideToolbarEvent
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE SetNextCharEvent(
+                    /* [in] */ABI::PowerToys::PowerAccentKeyboardService::INextChar  * nextCharEvent
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE SetIsLanguageLetterDelegate(
+                    /* [in] */ABI::PowerToys::PowerAccentKeyboardService::IIsLanguageLetter  * isLanguageLetterDelegate
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE UpdateActivationKey(
+                    /* [in] */int activationKey
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE UpdateDoNotActivateOnGameMode(
+                    /* [in] */::boolean doNotActivateOnGameMode
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE UpdateInputTime(
+                    /* [in] */int inputTime
+                    ) = 0;
+                virtual HRESULT STDMETHODCALLTYPE UpdateExcludedApps(
+                    /* [in] */HSTRING excludedApps
+                    ) = 0;
+                
+            };
+
+            MIDL_CONST_ID IID & IID_IKeyboardListener=_uuidof(IKeyboardListener);
+            
+        } /* PowerAccentKeyboardService */
+    } /* PowerToys */
+} /* ABI */
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener;
+#endif /* !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_INTERFACE_DEFINED__) */
+
+
+/*
+ *
+ * Class PowerToys.PowerAccentKeyboardService.KeyboardListener
+ *
+ * RuntimeClass can be activated.
+ *
+ * Class implements the following interfaces:
+ *    PowerToys.PowerAccentKeyboardService.IKeyboardListener ** Default Interface **
+ *
+ * Class Threading Model:  Both Single and Multi Threaded Apartment
+ *
+ * Class Marshaling Behavior:  Agile - Class is agile
+ *
+ */
+
+#ifndef RUNTIMECLASS_PowerToys_PowerAccentKeyboardService_KeyboardListener_DEFINED
+#define RUNTIMECLASS_PowerToys_PowerAccentKeyboardService_KeyboardListener_DEFINED
+extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_PowerToys_PowerAccentKeyboardService_KeyboardListener[] = L"PowerToys.PowerAccentKeyboardService.KeyboardListener";
+#endif
+
+
+
+#else // !defined(__cplusplus)
+/* Forward Declarations */
+#ifndef ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_FWD_DEFINED__
+typedef interface __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar;
+
+#endif // ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_FWD_DEFINED__
+
+#ifndef ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_FWD_DEFINED__
+typedef interface __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar;
+
+#endif // ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_FWD_DEFINED__
+
+#ifndef ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_FWD_DEFINED__
+typedef interface __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar;
+
+#endif // ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_FWD_DEFINED__
+
+#ifndef ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_FWD_DEFINED__
+typedef interface __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter;
+
+#endif // ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_FWD_DEFINED__
+
+#ifndef ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_FWD_DEFINED__
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_FWD_DEFINED__
+typedef interface __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener;
+
+#endif // ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_FWD_DEFINED__
+
+
+/*
+ *
+ * Struct PowerToys.PowerAccentKeyboardService.LetterKey
+ *
+ */
+
+/* [version, v1_enum] */
+enum __x_ABI_CPowerToys_CPowerAccentKeyboardService_CLetterKey
+{
+    LetterKey_None = 0,
+    LetterKey_VK_0 = 48,
+    LetterKey_VK_1 = 49,
+    LetterKey_VK_2 = 50,
+    LetterKey_VK_3 = 51,
+    LetterKey_VK_4 = 52,
+    LetterKey_VK_5 = 53,
+    LetterKey_VK_6 = 54,
+    LetterKey_VK_7 = 55,
+    LetterKey_VK_8 = 56,
+    LetterKey_VK_9 = 57,
+    LetterKey_VK_A = 65,
+    LetterKey_VK_B = 66,
+    LetterKey_VK_C = 67,
+    LetterKey_VK_D = 68,
+    LetterKey_VK_E = 69,
+    LetterKey_VK_F = 70,
+    LetterKey_VK_G = 71,
+    LetterKey_VK_H = 72,
+    LetterKey_VK_I = 73,
+    LetterKey_VK_J = 74,
+    LetterKey_VK_K = 75,
+    LetterKey_VK_L = 76,
+    LetterKey_VK_M = 77,
+    LetterKey_VK_N = 78,
+    LetterKey_VK_O = 79,
+    LetterKey_VK_P = 80,
+    LetterKey_VK_Q = 81,
+    LetterKey_VK_R = 82,
+    LetterKey_VK_S = 83,
+    LetterKey_VK_T = 84,
+    LetterKey_VK_U = 85,
+    LetterKey_VK_V = 86,
+    LetterKey_VK_W = 87,
+    LetterKey_VK_X = 88,
+    LetterKey_VK_Y = 89,
+    LetterKey_VK_Z = 90,
+    LetterKey_VK_PLUS = 187,
+    LetterKey_VK_COMMA = 188,
+    LetterKey_VK_PERIOD = 190,
+    LetterKey_VK_MINUS = 189,
+    LetterKey_VK_MULTIPLY_ = 106,
+    LetterKey_VK_SLASH_ = 191,
+    LetterKey_VK_DIVIDE_ = 111,
+};
+
+
+/*
+ *
+ * Struct PowerToys.PowerAccentKeyboardService.TriggerKey
+ *
+ */
+
+/* [version, v1_enum] */
+enum __x_ABI_CPowerToys_CPowerAccentKeyboardService_CTriggerKey
+{
+    TriggerKey_Right = 39,
+    TriggerKey_Left = 37,
+    TriggerKey_Space = 32,
+};
+
+
+/*
+ *
+ * Struct PowerToys.PowerAccentKeyboardService.InputType
+ *
+ */
+
+/* [version, v1_enum] */
+enum __x_ABI_CPowerToys_CPowerAccentKeyboardService_CInputType
+{
+    InputType_None,
+    InputType_Space,
+    InputType_Left,
+    InputType_Right,
+    InputType_Char,
+};
+
+
+/*
+ *
+ * Delegate PowerToys.PowerAccentKeyboardService.ShowToolbar
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_INTERFACE_DEFINED__
+/* [object, uuid("37197089-5438-4479-af57-30ab3f3c8be4"), version] */
+typedef struct __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbarVtbl
+{
+    BEGIN_INTERFACE
+    HRESULT ( STDMETHODCALLTYPE *QueryInterface )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar * This,
+    /* [in] */ __RPC__in REFIID riid,
+    /* [annotation][iid_is][out] */
+    _COM_Outptr_  void **ppvObject);
+
+ULONG ( STDMETHODCALLTYPE *AddRef )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar * This);
+
+ULONG ( STDMETHODCALLTYPE *Release )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar * This);
+HRESULT ( STDMETHODCALLTYPE *Invoke )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar * This,
+        /* [in] */enum __x_ABI_CPowerToys_CPowerAccentKeyboardService_CLetterKey key
+        );
+    END_INTERFACE
+    
+} __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbarVtbl;
+
+interface __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar
+{
+    CONST_VTBL struct __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbarVtbl *lpVtbl;
+};
+
+#ifdef COBJMACROS
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_QueryInterface(This,riid,ppvObject) \
+( (This)->lpVtbl->QueryInterface(This,riid,ppvObject) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_AddRef(This) \
+        ( (This)->lpVtbl->AddRef(This) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_Release(This) \
+        ( (This)->lpVtbl->Release(This) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_Invoke(This,key) \
+    ( (This)->lpVtbl->Invoke(This,key) )
+
+
+#endif /* COBJMACROS */
+
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar;
+#endif /* !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar_INTERFACE_DEFINED__) */
+
+
+/*
+ *
+ * Delegate PowerToys.PowerAccentKeyboardService.HideToolbar
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_INTERFACE_DEFINED__
+/* [object, uuid("8eb79d6b-1826-424f-9fbc-af21ae19725e"), version] */
+typedef struct __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbarVtbl
+{
+    BEGIN_INTERFACE
+    HRESULT ( STDMETHODCALLTYPE *QueryInterface )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar * This,
+    /* [in] */ __RPC__in REFIID riid,
+    /* [annotation][iid_is][out] */
+    _COM_Outptr_  void **ppvObject);
+
+ULONG ( STDMETHODCALLTYPE *AddRef )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar * This);
+
+ULONG ( STDMETHODCALLTYPE *Release )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar * This);
+HRESULT ( STDMETHODCALLTYPE *Invoke )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar * This,
+        /* [in] */enum __x_ABI_CPowerToys_CPowerAccentKeyboardService_CInputType inputType
+        );
+    END_INTERFACE
+    
+} __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbarVtbl;
+
+interface __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar
+{
+    CONST_VTBL struct __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbarVtbl *lpVtbl;
+};
+
+#ifdef COBJMACROS
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_QueryInterface(This,riid,ppvObject) \
+( (This)->lpVtbl->QueryInterface(This,riid,ppvObject) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_AddRef(This) \
+        ( (This)->lpVtbl->AddRef(This) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_Release(This) \
+        ( (This)->lpVtbl->Release(This) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_Invoke(This,inputType) \
+    ( (This)->lpVtbl->Invoke(This,inputType) )
+
+
+#endif /* COBJMACROS */
+
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar;
+#endif /* !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar_INTERFACE_DEFINED__) */
+
+
+/*
+ *
+ * Delegate PowerToys.PowerAccentKeyboardService.NextChar
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_INTERFACE_DEFINED__
+/* [object, uuid("db72d45c-a5a2-446f-bdc1-506e9121764a"), version] */
+typedef struct __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextCharVtbl
+{
+    BEGIN_INTERFACE
+    HRESULT ( STDMETHODCALLTYPE *QueryInterface )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar * This,
+    /* [in] */ __RPC__in REFIID riid,
+    /* [annotation][iid_is][out] */
+    _COM_Outptr_  void **ppvObject);
+
+ULONG ( STDMETHODCALLTYPE *AddRef )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar * This);
+
+ULONG ( STDMETHODCALLTYPE *Release )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar * This);
+void ( STDMETHODCALLTYPE *Invoke )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar * This,
+        enum __x_ABI_CPowerToys_CPowerAccentKeyboardService_CTriggerKey inputSpace,
+        boolean shiftPressed
+        );
+    END_INTERFACE
+    
+} __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextCharVtbl;
+
+interface __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar
+{
+    CONST_VTBL struct __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextCharVtbl *lpVtbl;
+};
+
+#ifdef COBJMACROS
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_QueryInterface(This,riid,ppvObject) \
+( (This)->lpVtbl->QueryInterface(This,riid,ppvObject) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_AddRef(This) \
+        ( (This)->lpVtbl->AddRef(This) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_Release(This) \
+        ( (This)->lpVtbl->Release(This) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_Invoke(This,inputSpace,shiftPressed) \
+    ( (This)->lpVtbl->Invoke(This,inputSpace,shiftPressed) )
+
+
+#endif /* COBJMACROS */
+
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar;
+#endif /* !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar_INTERFACE_DEFINED__) */
+
+
+/*
+ *
+ * Delegate PowerToys.PowerAccentKeyboardService.IsLanguageLetter
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_INTERFACE_DEFINED__
+/* [object, uuid("20be2919-2b91-4313-b6e0-4c3484fe91ef"), version] */
+typedef struct __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetterVtbl
+{
+    BEGIN_INTERFACE
+    HRESULT ( STDMETHODCALLTYPE *QueryInterface )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter * This,
+    /* [in] */ __RPC__in REFIID riid,
+    /* [annotation][iid_is][out] */
+    _COM_Outptr_  void **ppvObject);
+
+ULONG ( STDMETHODCALLTYPE *AddRef )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter * This);
+
+ULONG ( STDMETHODCALLTYPE *Release )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter * This);
+void ( STDMETHODCALLTYPE *Invoke )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter * This,
+        enum __x_ABI_CPowerToys_CPowerAccentKeyboardService_CLetterKey key,
+        /* [out] */boolean * result
+        );
+    END_INTERFACE
+    
+} __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetterVtbl;
+
+interface __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter
+{
+    CONST_VTBL struct __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetterVtbl *lpVtbl;
+};
+
+#ifdef COBJMACROS
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_QueryInterface(This,riid,ppvObject) \
+( (This)->lpVtbl->QueryInterface(This,riid,ppvObject) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_AddRef(This) \
+        ( (This)->lpVtbl->AddRef(This) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_Release(This) \
+        ( (This)->lpVtbl->Release(This) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_Invoke(This,key,result) \
+    ( (This)->lpVtbl->Invoke(This,key,result) )
+
+
+#endif /* COBJMACROS */
+
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter;
+#endif /* !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter_INTERFACE_DEFINED__) */
+
+
+
+/*
+ *
+ * Interface PowerToys.PowerAccentKeyboardService.IKeyboardListener
+ *
+ * Interface is a part of the implementation of type PowerToys.PowerAccentKeyboardService.KeyboardListener
+ *
+ *
+ * The IID for this interface was automatically generated by MIDLRT.
+ *
+ * Interface IID generation seed: PowerToys.PowerAccentKeyboardService.IKeyboardListener:HRESULT InitHook();HRESULT UnInitHook();HRESULT SetShowToolbarEvent(PowerToys.PowerAccentKeyboardService.ShowToolbar*);HRESULT SetHideToolbarEvent(PowerToys.PowerAccentKeyboardService.HideToolbar*);HRESULT SetNextCharEvent(PowerToys.PowerAccentKeyboardService.NextChar*);HRESULT SetIsLanguageLetterDelegate(PowerToys.PowerAccentKeyboardService.IsLanguageLetter*);HRESULT UpdateActivationKey(Int32);HRESULT UpdateDoNotActivateOnGameMode(Boolean);HRESULT UpdateInputTime(Int32);HRESULT UpdateExcludedApps(String);
+ *
+ *
+ */
+#if !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_INTERFACE_DEFINED__)
+#define ____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_INTERFACE_DEFINED__
+extern const __declspec(selectany) _Null_terminated_ WCHAR InterfaceName_PowerToys_PowerAccentKeyboardService_IKeyboardListener[] = L"PowerToys.PowerAccentKeyboardService.IKeyboardListener";
+/* [uuid("2892c5af-18a2-549d-a8a5-80d6090135b4"), version, object, exclusiveto] */
+typedef struct __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListenerVtbl
+{
+    BEGIN_INTERFACE
+    HRESULT ( STDMETHODCALLTYPE *QueryInterface)(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This,
+    /* [in] */ __RPC__in REFIID riid,
+    /* [annotation][iid_is][out] */
+    _COM_Outptr_  void **ppvObject
+    );
+
+ULONG ( STDMETHODCALLTYPE *AddRef )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This
+    );
+
+ULONG ( STDMETHODCALLTYPE *Release )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This
+    );
+
+HRESULT ( STDMETHODCALLTYPE *GetIids )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This,
+    /* [out] */ __RPC__out ULONG *iidCount,
+    /* [size_is][size_is][out] */ __RPC__deref_out_ecount_full_opt(*iidCount) IID **iids
+    );
+
+HRESULT ( STDMETHODCALLTYPE *GetRuntimeClassName )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This,
+    /* [out] */ __RPC__deref_out_opt HSTRING *className
+    );
+
+HRESULT ( STDMETHODCALLTYPE *GetTrustLevel )(
+    __RPC__in __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This,
+    /* [OUT ] */ __RPC__out TrustLevel *trustLevel
+    );
+HRESULT ( STDMETHODCALLTYPE *InitHook )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This
+        );
+    HRESULT ( STDMETHODCALLTYPE *UnInitHook )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This
+        );
+    HRESULT ( STDMETHODCALLTYPE *SetShowToolbarEvent )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This,
+        /* [in] */__x_ABI_CPowerToys_CPowerAccentKeyboardService_CIShowToolbar  * showToolbarEvent
+        );
+    HRESULT ( STDMETHODCALLTYPE *SetHideToolbarEvent )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This,
+        /* [in] */__x_ABI_CPowerToys_CPowerAccentKeyboardService_CIHideToolbar  * hideToolbarEvent
+        );
+    HRESULT ( STDMETHODCALLTYPE *SetNextCharEvent )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This,
+        /* [in] */__x_ABI_CPowerToys_CPowerAccentKeyboardService_CINextChar  * nextCharEvent
+        );
+    HRESULT ( STDMETHODCALLTYPE *SetIsLanguageLetterDelegate )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This,
+        /* [in] */__x_ABI_CPowerToys_CPowerAccentKeyboardService_CIIsLanguageLetter  * isLanguageLetterDelegate
+        );
+    HRESULT ( STDMETHODCALLTYPE *UpdateActivationKey )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This,
+        /* [in] */int activationKey
+        );
+    HRESULT ( STDMETHODCALLTYPE *UpdateDoNotActivateOnGameMode )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This,
+        /* [in] */boolean doNotActivateOnGameMode
+        );
+    HRESULT ( STDMETHODCALLTYPE *UpdateInputTime )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This,
+        /* [in] */int inputTime
+        );
+    HRESULT ( STDMETHODCALLTYPE *UpdateExcludedApps )(
+        __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener * This,
+        /* [in] */HSTRING excludedApps
+        );
+    END_INTERFACE
+    
+} __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListenerVtbl;
+
+interface __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener
+{
+    CONST_VTBL struct __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListenerVtbl *lpVtbl;
+};
+
+#ifdef COBJMACROS
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_QueryInterface(This,riid,ppvObject) \
+( (This)->lpVtbl->QueryInterface(This,riid,ppvObject) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_AddRef(This) \
+        ( (This)->lpVtbl->AddRef(This) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_Release(This) \
+        ( (This)->lpVtbl->Release(This) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_GetIids(This,iidCount,iids) \
+        ( (This)->lpVtbl->GetIids(This,iidCount,iids) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_GetRuntimeClassName(This,className) \
+        ( (This)->lpVtbl->GetRuntimeClassName(This,className) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_GetTrustLevel(This,trustLevel) \
+        ( (This)->lpVtbl->GetTrustLevel(This,trustLevel) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_InitHook(This) \
+    ( (This)->lpVtbl->InitHook(This) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_UnInitHook(This) \
+    ( (This)->lpVtbl->UnInitHook(This) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_SetShowToolbarEvent(This,showToolbarEvent) \
+    ( (This)->lpVtbl->SetShowToolbarEvent(This,showToolbarEvent) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_SetHideToolbarEvent(This,hideToolbarEvent) \
+    ( (This)->lpVtbl->SetHideToolbarEvent(This,hideToolbarEvent) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_SetNextCharEvent(This,nextCharEvent) \
+    ( (This)->lpVtbl->SetNextCharEvent(This,nextCharEvent) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_SetIsLanguageLetterDelegate(This,isLanguageLetterDelegate) \
+    ( (This)->lpVtbl->SetIsLanguageLetterDelegate(This,isLanguageLetterDelegate) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_UpdateActivationKey(This,activationKey) \
+    ( (This)->lpVtbl->UpdateActivationKey(This,activationKey) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_UpdateDoNotActivateOnGameMode(This,doNotActivateOnGameMode) \
+    ( (This)->lpVtbl->UpdateDoNotActivateOnGameMode(This,doNotActivateOnGameMode) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_UpdateInputTime(This,inputTime) \
+    ( (This)->lpVtbl->UpdateInputTime(This,inputTime) )
+
+#define __x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_UpdateExcludedApps(This,excludedApps) \
+    ( (This)->lpVtbl->UpdateExcludedApps(This,excludedApps) )
+
+
+#endif /* COBJMACROS */
+
+
+EXTERN_C const IID IID___x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener;
+#endif /* !defined(____x_ABI_CPowerToys_CPowerAccentKeyboardService_CIKeyboardListener_INTERFACE_DEFINED__) */
+
+
+/*
+ *
+ * Class PowerToys.PowerAccentKeyboardService.KeyboardListener
+ *
+ * RuntimeClass can be activated.
+ *
+ * Class implements the following interfaces:
+ *    PowerToys.PowerAccentKeyboardService.IKeyboardListener ** Default Interface **
+ *
+ * Class Threading Model:  Both Single and Multi Threaded Apartment
+ *
+ * Class Marshaling Behavior:  Agile - Class is agile
+ *
+ */
+
+#ifndef RUNTIMECLASS_PowerToys_PowerAccentKeyboardService_KeyboardListener_DEFINED
+#define RUNTIMECLASS_PowerToys_PowerAccentKeyboardService_KeyboardListener_DEFINED
+extern const __declspec(selectany) _Null_terminated_ WCHAR RuntimeClass_PowerToys_PowerAccentKeyboardService_KeyboardListener[] = L"PowerToys.PowerAccentKeyboardService.KeyboardListener";
+#endif
+
+
+
+#endif // defined(__cplusplus)
+#pragma pop_macro("MIDL_CONST_ID")
+#endif // __nul_p_\10\References\10.0.22621.0\Win__
+
+#endif // __nul_\10\References\10.0.22621.0\Win__
