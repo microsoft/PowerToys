@@ -49,11 +49,12 @@ namespace Hosts.Settings
 
         public string BackupPath { get; private set; }
 
-        public bool DeleteBackups { get; private set; }
+        // Moved from Settings.UI.Library
+        public HostsDeleteBackupMode DeleteBackupsMode { get; private set; }
 
-        public int DaysToKeep { get; private set; }
+        public int DeleteBackupsDays { get; private set; }
 
-        public int CopiesToKeep { get; private set; }
+        public int DeleteBackupsCount { get; private set; }
 
         public event EventHandler LoopbackDuplicatesChanged;
 
@@ -66,9 +67,9 @@ namespace Hosts.Settings
             Encoding = HostsEncoding.Utf8;
             BackupHosts = true;
             BackupPath = @"C:\Windows\system32\drivers\etc";
-            DeleteBackups = true;
-            DaysToKeep = 15;
-            CopiesToKeep = 5;
+            DeleteBackupsMode = HostsDeleteBackupMode.Age;
+            DeleteBackupsDays = 15;
+            DeleteBackupsCount = 5;
 
             LoadSettingsFromJson();
 
@@ -105,9 +106,9 @@ namespace Hosts.Settings
                             LoopbackDuplicates = settings.Properties.LoopbackDuplicates;
                             BackupHosts = settings.Properties.BackupHosts;
                             BackupPath = settings.Properties.BackupPath;
-                            DeleteBackups = settings.Properties.DeleteBackups;
-                            DaysToKeep = settings.Properties.DaysToKeep;
-                            CopiesToKeep = settings.Properties.CopiesToKeep;
+                            DeleteBackupsMode = (HostsDeleteBackupMode)settings.Properties.DeleteBackupsMode;
+                            DeleteBackupsDays = settings.Properties.DeleteBackupsDays;
+                            DeleteBackupsCount = settings.Properties.DeleteBackupsCount;
                         }
 
                         retry = false;

@@ -20,11 +20,11 @@ namespace HostsUILib.Settings
 
         public string BackupPath { get; }
 
-        public bool DeleteBackups { get; }
+        public HostsDeleteBackupMode DeleteBackupsMode { get; }
 
-        public int DaysToKeep { get; }
+        public int DeleteBackupsDays { get; }
 
-        public int CopiesToKeep { get; }
+        public int DeleteBackupsCount { get; }
 
         event EventHandler LoopbackDuplicatesChanged;
 

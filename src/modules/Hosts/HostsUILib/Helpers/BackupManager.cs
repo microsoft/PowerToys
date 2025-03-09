@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using HostsUILib.Settings;
@@ -43,23 +43,53 @@ namespace HostsUILib.Helpers
 
         public void DeleteBackups()
         {
-            if (!_userSettings.DeleteBackups || (_userSettings.DaysToKeep <= 0 && _userSettings.CopiesToKeep <= 0))
+            switch (_userSettings.DeleteBackupsMode)
+            {
+                case HostsDeleteBackupMode.Count:
+                    DeleteBackupsByCount(_userSettings.DeleteBackupsCount);
+                    return;
+                case HostsDeleteBackupMode.Age:
+                    DeleteBackupsByAge(_userSettings.DeleteBackupsDays, _userSettings.DeleteBackupsCount);
+                    return;
+            }
+        }
+
+        public void DeleteBackupsByCount(int count)
+        {
+            if (count < 1)
             {
                 return;
             }
 
-            var files = _fileSystem.Directory.GetFiles(_userSettings.BackupPath, $"*{BackupSuffix}*").Select(f => new FileInfo(f));
+            var backups = GetBackups().OrderByDescending(f => f.CreationTime).Skip(count).ToArray();
+            DeleteAll(backups);
+        }
 
-            if (_userSettings.CopiesToKeep > 0)
+        public void DeleteBackupsByAge(int days, int count)
+        {
+            if (days < 1)
             {
-                files = files.OrderByDescending(f => f.CreationTime).Skip(_userSettings.CopiesToKeep);
+                return;
             }
 
-            if (_userSettings.DaysToKeep > 0)
+            var backupsEnumerable = GetBackups();
+
+            if (count > 0)
             {
-                files = files.Where(f => f.CreationTime < DateTime.Now.AddDays(-_userSettings.DaysToKeep));
+                backupsEnumerable = backupsEnumerable.OrderByDescending(f => f.CreationTime).Skip(count);
             }
 
+            var backups = backupsEnumerable.Where(f => f.CreationTime < DateTime.Now.AddDays(-days)).ToArray();
+            DeleteAll(backups);
+        }
+
+        private IEnumerable<IFileInfo> GetBackups()
+        {
+            return _fileSystem.Directory.GetFiles(_userSettings.BackupPath, $"*{BackupSuffix}*").Select(_fileSystem.FileInfo.New);
+        }
+
+        private void DeleteAll(IFileInfo[] files)
+        {
             foreach (var f in files)
             {
                 _fileSystem.File.Delete(f.FullName);
