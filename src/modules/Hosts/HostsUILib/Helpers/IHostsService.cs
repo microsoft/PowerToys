@@ -12,7 +12,7 @@ namespace HostsUILib.Helpers
 {
     public interface IHostsService
     {
-        static string HostsFilePath { get; }
+        string HostsFilePath { get; }
 
         event EventHandler FileChanged;
 
