@@ -27,12 +27,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public string BackupPath { get; set; }
 
-        [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool DeleteBackups { get; set; }
+        public HostsDeleteBackupMode DeleteBackupsMode { get; set; }
 
-        public int DaysToKeep { get; set; }
+        public int DeleteBackupsDays { get; set; }
 
-        public int CopiesToKeep { get; set; }
+        public int DeleteBackupsCount { get; set; }
 
         public HostsProperties()
         {
@@ -43,9 +42,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Encoding = HostsEncoding.Utf8;
             BackupHosts = true;
             BackupPath = @"C:\Windows\System32\drivers\etc";
-            DeleteBackups = true;
-            DaysToKeep = 30;
-            CopiesToKeep = 5;
+            DeleteBackupsMode = HostsDeleteBackupMode.Age;
+            DeleteBackupsDays = 15;
+            DeleteBackupsCount = 5;
         }
     }
 }
