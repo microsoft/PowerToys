@@ -159,49 +159,47 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool DeleteBackups
+        public int DeleteBackupsMode
         {
-            get => Settings.Properties.DeleteBackups;
+            get => (int)Settings.Properties.DeleteBackupsMode;
             set
             {
-                if (value != Settings.Properties.DeleteBackups)
+                if (value != (int)Settings.Properties.DeleteBackupsMode)
                 {
-                    Settings.Properties.DeleteBackups = value;
+                    Settings.Properties.DeleteBackupsMode = (HostsDeleteBackupMode)value;
                     NotifyPropertyChanged();
-                    OnPropertyChanged(nameof(ShowDeleteBackupWarning));
+                    OnPropertyChanged(nameof(MinimumDaysToKeep));
                 }
             }
         }
 
-        public int DaysToKeep
+        public int DeleteBackupsDays
         {
-            get => Settings.Properties.DaysToKeep;
+            get => Settings.Properties.DeleteBackupsDays;
             set
             {
-                if (value != Settings.Properties.DaysToKeep)
+                if (value != Settings.Properties.DeleteBackupsDays)
                 {
-                    Settings.Properties.DaysToKeep = value;
+                    Settings.Properties.DeleteBackupsDays = value;
                     NotifyPropertyChanged();
-                    OnPropertyChanged(nameof(ShowDeleteBackupWarning));
                 }
             }
         }
 
-        public int CopiesToKeep
+        public int DeleteBackupsCount
         {
-            get => Settings.Properties.CopiesToKeep;
+            get => Settings.Properties.DeleteBackupsCount;
             set
             {
-                if (value != Settings.Properties.CopiesToKeep)
+                if (value != Settings.Properties.DeleteBackupsCount)
                 {
-                    Settings.Properties.CopiesToKeep = value;
+                    Settings.Properties.DeleteBackupsCount = value;
                     NotifyPropertyChanged();
-                    OnPropertyChanged(nameof(ShowDeleteBackupWarning));
                 }
             }
         }
 
-        public bool ShowDeleteBackupWarning => DeleteBackups && DaysToKeep <= 0 && CopiesToKeep <= 0;
+        public int MinimumDaysToKeep => DeleteBackupsMode == 1 ? 1 : 0;
 
         public HostsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<HostsSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, bool isElevated)
         {
