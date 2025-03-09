@@ -5016,22 +5016,34 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Hosts_ButtonSelectLocation.Text" xml:space="preserve">
     <value>Select location</value>
   </data>
-  <data name="Hosts_Delete_Backup.Content" xml:space="preserve">
-    <value>Automatically delete old backups</value>
+  <data name="Hosts_Delete_Backup.Header" xml:space="preserve">
+    <value>Automatically delete backups</value>
   </data>
-  <data name="Hosts_Backup_DaysToKeep.Header" xml:space="preserve">
-    <value>Days to keep</value>
+  <data name="Hosts_Backup_AgeCountBased_DaysInput.Header" xml:space="preserve">
+    <value>Days</value>
   </data>
-  <data name="Hosts_Backup_CopiesToKeep.Header" xml:space="preserve">
-    <value>Backups to keep</value>
+  <data name="Hosts_Backup_CountBased_CountInput.Header" xml:space="preserve">
+    <value>Backups count</value>
   </data>
-  <data name="Hosts_Backup_CopiesToKeep.Description" xml:space="preserve">
-    <value>Specify a fixed number of backup copies to retain</value>
+  <data name="Hosts_Backup_CountBased_CountInput.Description" xml:space="preserve">
+    <value>Set the number of backups to retain, deleting older ones once the limit is reached</value>
   </data>
-  <data name="Hosts_Backup_DaysToKeep.Description" xml:space="preserve">
-    <value>Specify the number of days to retain backups</value>
+  <data name="Hosts_Backup_AgeCountBased_DaysInput.Description" xml:space="preserve">
+    <value>Set the number of days to retain backups, deleting older ones once the limit is reached</value>
   </data>
-  <data name="Hosts_DeleteBackupWarning.Title" xml:space="preserve">
-    <value>Backups will never will be kept indefinitely with the current configuration</value>
+  <data name="Hosts_DeleteBackupMode_Never.Content" xml:space="preserve">
+    <value>Never</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_CountBased.Content" xml:space="preserve">
+    <value>Based on count</value>
+  </data>
+  <data name="Hosts_DeleteBackupMode_AgeAndCountBased.Content" xml:space="preserve">
+    <value>Based on age and count</value>
+  </data>
+  <data name="Hosts_Backup_AgeCountBased_CountInput.Description" xml:space="preserve">
+    <value>Set an optional number of backups to always retain, despite their age</value>
+  </data>
+  <data name="Hosts_Backup_AgeCountBased_CountInput.Header" xml:space="preserve">
+    <value>Backups count</value>
   </data>
 </root>
