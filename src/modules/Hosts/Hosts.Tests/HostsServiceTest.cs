@@ -314,7 +314,7 @@ namespace Hosts.Tests
 
             var fileSystem = new CustomMockFileSystem();
             var userSettings = new Mock<IUserSettings>();
-            userSettings.Setup(m => m.AddLeadingWhitespace).Returns(HostsAddLeadingWhitesapce);
+            userSettings.Setup(m => m.AddLeadingWhitespace).Returns(HostsAddLeadingWhitespace);
             var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
             fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
 
