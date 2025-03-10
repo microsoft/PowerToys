@@ -26,7 +26,8 @@ namespace KeyboardManagerEditorUI
         public MainWindow()
         {
             this.InitializeComponent();
-
+            this.ExtendsContentIntoTitleBar = true;
+            this.SetTitleBar(titleBar);
             RootView.SelectedItem = RootView.MenuItems[0];
         }
 

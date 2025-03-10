@@ -57,10 +57,6 @@ namespace KeyboardManagerEditorUI
             window = new MainWindow();
 
             var appWindow = window.AppWindow;
-            var titleBar = appWindow.TitleBar;
-
-            titleBar.ExtendsContentIntoTitleBar = true;
-            titleBar.BackgroundColor = Colors.Transparent;
 
             var windowSize = new Windows.Graphics.SizeInt32(960, 600);
             appWindow.Resize(windowSize);
