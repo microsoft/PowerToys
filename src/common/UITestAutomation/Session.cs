@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.UITest
             // leverage findAll to filter out mismatched elements
             var collection = this.FindAll<T>(by, timeoutMS);
 
-            Assert.IsTrue(collection.Count > 0, $"Element not found using selector: {by}");
+            Assert.AreNotEqual(0, collection.Count, $"Element not found using selector: {by}");
 
             return collection[0];
         }
