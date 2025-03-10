@@ -298,5 +298,31 @@ namespace Hosts.Tests
             var hidden = fileSystem.FileInfo.New(service.HostsFilePath).Attributes.HasFlag(FileAttributes.Hidden);
             Assert.IsTrue(hidden);
         }
+
+        [TestMethod]
+        public async Task Toggle_Leading_Whitespace()
+        {
+            var content =
+@"  10.1.1.1 host host.local # comment
+  10.1.1.2 host2 host2.local # another comment
+";
+
+            var contentResult =
+@"10.1.1.1 host host.local # comment
+10.1.1.2 host2 host2.local # another comment
+";
+
+            var fileSystem = new CustomMockFileSystem();
+            var userSettings = new Mock<IUserSettings>();
+            userSettings.Setup(m => m.AddLeadingWhitespace).Returns(HostsAddLeadingWhitesapce);
+            var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
+            fileSystem.AddFile(service.HostsFilePath, new MockFileData(content));
+
+            var data = await service.ReadAsync();
+            await service.WriteAsync(data.AdditionalLines, data.Entries);
+
+            var result = fileSystem.GetFile(service.HostsFilePath);
+            Assert.AreEqual(result.TextContents, contentResult);
+        }
     }
 }

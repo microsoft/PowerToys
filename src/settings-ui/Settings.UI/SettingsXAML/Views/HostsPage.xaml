@@ -62,11 +62,8 @@
                             <ComboBoxItem x:Uid="Hosts_Encoding_Utf8Bom" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="Hosts_AddLeadingWhitespace" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.AddLeadingWhitespace, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Hosts_AddLeadingWhitespace_Top" />
-                            <ComboBoxItem x:Uid="Hosts_AddLeadingWhitespace_Bottom" />
-                        </ComboBox>
+                    <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_AddLeadingWhitespace" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AddLeadingWhitespace, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
