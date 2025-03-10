@@ -6,7 +6,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class StatusMessage : BaseObservable, IStatusMessage
 {
-    public string Message
+    public virtual string Message
     {
         get;
         set
@@ -18,7 +18,7 @@ public partial class StatusMessage : BaseObservable, IStatusMessage
 
 = string.Empty;
 
-    public MessageState State
+    public virtual MessageState State
     {
         get;
         set
@@ -30,7 +30,7 @@ public partial class StatusMessage : BaseObservable, IStatusMessage
 
 = MessageState.Info;
 
-    public IProgressState? Progress
+    public virtual IProgressState? Progress
     {
         get;
         set

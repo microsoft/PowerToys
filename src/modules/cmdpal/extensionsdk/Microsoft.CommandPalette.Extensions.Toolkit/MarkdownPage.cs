@@ -11,7 +11,7 @@ public partial class MarkdownPage : Page, IMarkdownPage
 {
     private IDetails? _details;
 
-    public IDetails? Details
+    public virtual IDetails? Details
     {
         get => _details;
         set
@@ -21,7 +21,7 @@ public partial class MarkdownPage : Page, IMarkdownPage
         }
     }
 
-    public IContextItem[] Commands { get; set; } = [];
+    public virtual IContextItem[] Commands { get; set; } = [];
 
     public virtual string[] Bodies() => [];
 

@@ -12,7 +12,7 @@ internal sealed partial class FallbackLogItem : FallbackCommandItem
     private readonly LogMessagesPage _logMessagesPage;
 
     public FallbackLogItem()
-        : base(new LogMessagesPage())
+        : base(new LogMessagesPage(), "View log messages") // TODO:LOC
     {
         _logMessagesPage = (LogMessagesPage)Command!;
         Title = string.Empty;

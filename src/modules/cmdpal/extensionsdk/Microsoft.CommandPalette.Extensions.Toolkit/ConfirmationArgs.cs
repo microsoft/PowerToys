@@ -6,11 +6,11 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class ConfirmationArgs : IConfirmationArgs
 {
-    public string? Title { get; set; }
+    public virtual string? Title { get; set; }
 
-    public string? Description { get; set; }
+    public virtual string? Description { get; set; }
 
-    public ICommand? PrimaryCommand { get; set; }
+    public virtual ICommand? PrimaryCommand { get; set; }
 
-    public bool IsPrimaryCommandCritical { get; set; }
+    public virtual bool IsPrimaryCommandCritical { get; set; }
 }

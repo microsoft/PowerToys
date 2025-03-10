@@ -36,7 +36,7 @@ internal sealed partial class SpongebotCommandsProvider : CommandProvider
             return null;
         }
 
-        var listItem = new FallbackCommandItem(mainPage)
+        var listItem = new FallbackCommandItem(mainPage, displayTitle: "Spongebob, mocking")
         {
             MoreCommands = [
                 new CommandContextItem(mainPage.CopyCommand),

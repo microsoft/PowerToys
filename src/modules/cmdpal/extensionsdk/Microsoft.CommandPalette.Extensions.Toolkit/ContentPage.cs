@@ -10,7 +10,7 @@ public abstract partial class ContentPage : Page, IContentPage
 {
     public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
 
-    public IDetails? Details
+    public virtual IDetails? Details
     {
         get => field;
         set
@@ -20,11 +20,11 @@ public abstract partial class ContentPage : Page, IContentPage
         }
     }
 
-    public IContextItem[] Commands { get; set; } = [];
+    public virtual IContextItem[] Commands { get; set; } = [];
 
     public abstract IContent[] GetContent();
 
-    protected void RaiseItemsChanged(int totalItems)
+    protected void RaiseItemsChanged(int totalItems = -1)
     {
         try
         {

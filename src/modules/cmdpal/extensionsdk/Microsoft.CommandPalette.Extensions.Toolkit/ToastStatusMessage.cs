@@ -9,9 +9,9 @@ public partial class ToastStatusMessage
     private readonly Lock _showLock = new();
     private bool _shown;
 
-    public StatusMessage Message { get; init; }
+    public virtual StatusMessage Message { get; init; }
 
-    public int Duration { get; init; } = 2500;
+    public virtual int Duration { get; init; } = 2500;
 
     public ToastStatusMessage(StatusMessage message)
     {

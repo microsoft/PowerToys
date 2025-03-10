@@ -4,11 +4,41 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class Filter : IFilter
+public partial class Filter : BaseObservable, IFilter
 {
-    public IIconInfo Icon => throw new NotImplementedException();
+    public virtual IIconInfo Icon
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Icon));
+        }
+    }
 
-    public string Id => throw new NotImplementedException();
+= new IconInfo();
 
-    public string Name => throw new NotImplementedException();
+    public virtual string Id
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Id));
+        }
+    }
+
+= string.Empty;
+
+    public virtual string Name
+    {
+        get;
+        set
+        {
+            field = value;
+            OnPropertyChanged(nameof(Name));
+        }
+    }
+
+= string.Empty;
 }

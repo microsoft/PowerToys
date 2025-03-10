@@ -24,7 +24,7 @@ public partial class TreeContent : BaseObservable, ITreeContent
 
     public virtual IContent[] GetChildren() => Children;
 
-    protected void RaiseItemsChanged(int totalItems)
+    protected void RaiseItemsChanged(int totalItems = -1)
     {
         try
         {

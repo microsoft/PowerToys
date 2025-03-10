@@ -11,7 +11,7 @@ internal sealed partial class FallbackReloadItem : FallbackCommandItem
     private readonly ReloadExtensionsCommand _reloadCommand;
 
     public FallbackReloadItem()
-        : base(new ReloadExtensionsCommand())
+        : base(new ReloadExtensionsCommand(), "Reload extensions") // TODO:LOC
     {
         _reloadCommand = (ReloadExtensionsCommand)Command!;
         Title = string.Empty;

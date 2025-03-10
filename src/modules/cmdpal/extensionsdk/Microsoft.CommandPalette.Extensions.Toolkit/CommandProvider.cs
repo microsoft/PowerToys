@@ -8,11 +8,11 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public abstract partial class CommandProvider : ICommandProvider
 {
-    public string Id { get; protected set; } = string.Empty;
+    public virtual string Id { get; protected set; } = string.Empty;
 
-    public string DisplayName { get; protected set; } = string.Empty;
+    public virtual string DisplayName { get; protected set; } = string.Empty;
 
-    public IconInfo Icon { get; protected set; } = new IconInfo();
+    public virtual IconInfo Icon { get; protected set; } = new IconInfo();
 
     public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
 
@@ -22,9 +22,9 @@ public abstract partial class CommandProvider : ICommandProvider
 
     public virtual ICommand? GetCommand(string id) => null;
 
-    public ICommandSettings? Settings { get; protected set; }
+    public virtual ICommandSettings? Settings { get; protected set; }
 
-    public bool Frozen { get; protected set; } = true;
+    public virtual bool Frozen { get; protected set; } = true;
 
     IIconInfo ICommandProvider.Icon => Icon;
 
@@ -36,7 +36,7 @@ public abstract partial class CommandProvider : ICommandProvider
     }
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 
-    protected void RaiseItemsChanged(int totalItems)
+    protected void RaiseItemsChanged(int totalItems = -1)
     {
         try
         {

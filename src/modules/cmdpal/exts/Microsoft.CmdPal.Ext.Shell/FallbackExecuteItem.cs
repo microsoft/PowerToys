@@ -13,7 +13,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
     private readonly ExecuteItem _executeItem;
 
     public FallbackExecuteItem(SettingsManager settings)
-        : base(new ExecuteItem(string.Empty, settings))
+        : base(new ExecuteItem(string.Empty, settings), "Run command") // TODO:LOC
     {
         _executeItem = (ExecuteItem)this.Command!;
         Title = string.Empty;

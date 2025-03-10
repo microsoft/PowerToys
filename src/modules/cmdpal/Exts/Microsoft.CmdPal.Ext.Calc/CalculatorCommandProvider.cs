@@ -137,7 +137,7 @@ internal sealed partial class FallbackCalculatorItem : FallbackCommandItem
     private readonly CopyTextCommand _copyCommand = new(string.Empty);
 
     public FallbackCalculatorItem()
-        : base(new NoOpCommand())
+        : base(new NoOpCommand(), "Calculator") // TODO:LOC
     {
         Command = _copyCommand;
         _copyCommand.Name = string.Empty;

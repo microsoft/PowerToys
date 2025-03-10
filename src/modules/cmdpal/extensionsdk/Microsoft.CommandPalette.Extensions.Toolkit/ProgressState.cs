@@ -10,7 +10,7 @@ public partial class ProgressState : BaseObservable, IProgressState
 
     private uint _progressPercent;
 
-    public bool IsIndeterminate
+    public virtual bool IsIndeterminate
     {
         get => _isIndeterminate;
         set
@@ -20,7 +20,7 @@ public partial class ProgressState : BaseObservable, IProgressState
         }
     }
 
-    public uint ProgressPercent
+    public virtual uint ProgressPercent
     {
         get => _progressPercent;
         set

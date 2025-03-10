@@ -8,9 +8,10 @@ public partial class FallbackCommandItem : CommandItem, IFallbackCommandItem, IF
 {
     private IFallbackHandler? _fallbackHandler;
 
-    public FallbackCommandItem(ICommand command)
+    public FallbackCommandItem(ICommand command, string displayTitle)
         : base(command)
     {
+        DisplayTitle = displayTitle;
         if (command is IFallbackHandler f)
         {
             _fallbackHandler = f;
@@ -22,6 +23,8 @@ public partial class FallbackCommandItem : CommandItem, IFallbackCommandItem, IF
         get => _fallbackHandler ?? this;
         init => _fallbackHandler = value;
     }
+
+    public virtual string DisplayTitle { get; }
 
     public virtual void UpdateQuery(string query) => _fallbackHandler?.UpdateQuery(query);
 }

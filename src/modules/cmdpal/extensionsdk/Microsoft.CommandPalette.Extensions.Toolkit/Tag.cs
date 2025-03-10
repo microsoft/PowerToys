@@ -10,7 +10,7 @@ public partial class Tag : BaseObservable, ITag
     private OptionalColor _background;
     private string _text = string.Empty;
 
-    public OptionalColor Foreground
+    public virtual OptionalColor Foreground
     {
         get => _foreground;
         set
@@ -20,7 +20,7 @@ public partial class Tag : BaseObservable, ITag
         }
     }
 
-    public OptionalColor Background
+    public virtual OptionalColor Background
     {
         get => _background;
         set
@@ -30,7 +30,7 @@ public partial class Tag : BaseObservable, ITag
         }
     }
 
-    public IIconInfo Icon
+    public virtual IIconInfo Icon
     {
         get;
         set
@@ -42,7 +42,7 @@ public partial class Tag : BaseObservable, ITag
 
 = new IconInfo();
 
-    public string Text
+    public virtual string Text
     {
         get => _text;
         set
@@ -52,7 +52,7 @@ public partial class Tag : BaseObservable, ITag
         }
     }
 
-    public string ToolTip
+    public virtual string ToolTip
     {
         get;
         set

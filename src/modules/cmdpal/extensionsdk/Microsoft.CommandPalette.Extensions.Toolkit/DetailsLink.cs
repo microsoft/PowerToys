@@ -6,9 +6,9 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class DetailsLink : IDetailsLink
 {
-    public Uri? Link { get; set; }
+    public virtual Uri? Link { get; set; }
 
-    public string Text { get; set; } = string.Empty;
+    public virtual string Text { get; set; } = string.Empty;
 
     public DetailsLink()
     {

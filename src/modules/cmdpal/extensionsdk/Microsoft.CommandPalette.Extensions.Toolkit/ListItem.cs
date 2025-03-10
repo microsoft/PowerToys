@@ -12,7 +12,7 @@ public partial class ListItem : CommandItem, IListItem
     private string _section = string.Empty;
     private string _textToSuggest = string.Empty;
 
-    public ITag[] Tags
+    public virtual ITag[] Tags
     {
         get => _tags;
         set
@@ -22,7 +22,7 @@ public partial class ListItem : CommandItem, IListItem
         }
     }
 
-    public IDetails? Details
+    public virtual IDetails? Details
     {
         get => _details;
         set
@@ -32,7 +32,7 @@ public partial class ListItem : CommandItem, IListItem
         }
     }
 
-    public string Section
+    public virtual string Section
     {
         get => _section;
         set
@@ -42,7 +42,7 @@ public partial class ListItem : CommandItem, IListItem
         }
     }
 
-    public string TextToSuggest
+    public virtual string TextToSuggest
     {
         get => _textToSuggest;
         set

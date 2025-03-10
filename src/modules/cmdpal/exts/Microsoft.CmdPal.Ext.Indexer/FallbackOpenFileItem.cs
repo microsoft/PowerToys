@@ -12,7 +12,7 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 internal sealed partial class FallbackOpenFileItem : FallbackCommandItem
 {
     public FallbackOpenFileItem()
-        : base(new NoOpCommand())
+        : base(new NoOpCommand(), "Find file from path") // TODO:LOC
     {
         Title = string.Empty;
         Subtitle = string.Empty;

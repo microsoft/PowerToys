@@ -27,7 +27,7 @@ public partial class BuiltInsCommandProvider : CommandProvider
 
     public override IFallbackCommandItem[] FallbackCommands() =>
         [
-            new FallbackCommandItem(quitCommand) { Subtitle = "Exit Command Palette" },
+            new FallbackCommandItem(quitCommand, displayTitle: "Exit Command Palette") { Subtitle = "Exit Command Palette" },
             _fallbackReloadItem,
             _fallbackLogItem,
         ];

@@ -6,9 +6,9 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class CopyTextCommand : InvokableCommand
 {
-    public string Text { get; set; }
+    public virtual string Text { get; set; }
 
-    public CommandResult Result { get; set; } = CommandResult.ShowToast("Copied to clipboard");
+    public virtual CommandResult Result { get; set; } = CommandResult.ShowToast("Copied to clipboard");
 
     public CopyTextCommand(string text)
     {

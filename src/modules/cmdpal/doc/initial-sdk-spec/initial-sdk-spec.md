@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2025-02-03
+last updated: 2025-03-08
 issue id: n/a
 ---
 
@@ -1493,6 +1493,7 @@ interface IFallbackHandler {
 
 interface IFallbackCommandItem requires ICommandItem {
     IFallbackHandler FallbackHandler{ get; };
+    String DisplayTitle { get; };
 };
 
 interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsChanged
@@ -1631,6 +1632,14 @@ have its own ListItem it updates manually.
 > If your extension has top-level `FallbackCommandItem`s, then
 > DevPal will treat your `ICommandProvider` as fresh, never frozen, regardless
 of the value of `Frozen` you set.
+
+The `DisplayTitle` property allows the user to see a descriptive name for the
+command, without the context of what's been typed. This property is what devpal
+will show to the user in the settings for your application.
+
+For example: a "Search the Web" command would just set its `DisplayTitle` to    
+"Search the web", but the `UpdateQuery` method might change the title to "Search
+the web for {searchText}"
 
 ##### `GetCommand`
 

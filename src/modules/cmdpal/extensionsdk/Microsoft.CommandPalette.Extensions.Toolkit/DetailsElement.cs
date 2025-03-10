@@ -6,7 +6,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class DetailsElement : IDetailsElement
 {
-    public string Key { get; set; } = string.Empty;
+    public virtual string Key { get; set; } = string.Empty;
 
-    public IDetailsData? Data { get; set; }
+    public virtual IDetailsData? Data { get; set; }
 }

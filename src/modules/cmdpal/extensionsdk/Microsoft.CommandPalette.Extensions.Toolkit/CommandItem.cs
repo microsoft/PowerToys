@@ -8,7 +8,7 @@ public partial class CommandItem : BaseObservable, ICommandItem
 {
     private ICommand? _command;
 
-    public IIconInfo? Icon
+    public virtual IIconInfo? Icon
     {
         get => field;
         set
@@ -18,7 +18,7 @@ public partial class CommandItem : BaseObservable, ICommandItem
         }
     }
 
-    public string Title
+    public virtual string Title
     {
         get => !string.IsNullOrEmpty(field) ? field : _command?.Name ?? string.Empty;
 
@@ -31,7 +31,7 @@ public partial class CommandItem : BaseObservable, ICommandItem
 
 = string.Empty;
 
-    public string Subtitle
+    public virtual string Subtitle
     {
         get;
         set
@@ -53,7 +53,7 @@ public partial class CommandItem : BaseObservable, ICommandItem
         }
     }
 
-    public IContextItem[] MoreCommands
+    public virtual IContextItem[] MoreCommands
     {
         get;
         set

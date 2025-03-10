@@ -8,9 +8,9 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class IconInfo : IIconInfo
 {
-    public IconData Dark { get; set; } = new();
+    public virtual IconData Dark { get; set; } = new();
 
-    public IconData Light { get; set; } = new();
+    public virtual IconData Light { get; set; } = new();
 
     IIconData IIconInfo.Dark => Dark;
 

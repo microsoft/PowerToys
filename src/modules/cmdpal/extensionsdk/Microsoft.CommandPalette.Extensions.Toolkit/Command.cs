@@ -6,7 +6,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class Command : BaseObservable, ICommand
 {
-    public string Name
+    public virtual string Name
     {
         get;
         set
@@ -18,7 +18,7 @@ public partial class Command : BaseObservable, ICommand
 
 = string.Empty;
 
-    public string Id { get; protected set; } = string.Empty;
+    public virtual string Id { get; protected set; } = string.Empty;
 
     public virtual IconInfo Icon
     {

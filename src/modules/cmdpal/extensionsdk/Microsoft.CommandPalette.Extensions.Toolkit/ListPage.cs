@@ -18,7 +18,7 @@ public partial class ListPage : Page, IListPage
 
     public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
 
-    public string PlaceholderText
+    public virtual string PlaceholderText
     {
         get => _placeholderText;
         set
@@ -38,7 +38,7 @@ public partial class ListPage : Page, IListPage
         }
     }
 
-    public bool ShowDetails
+    public virtual bool ShowDetails
     {
         get => _showDetails;
         set
@@ -48,7 +48,7 @@ public partial class ListPage : Page, IListPage
         }
     }
 
-    public bool HasMoreItems
+    public virtual bool HasMoreItems
     {
         get => _hasMore;
         set
@@ -58,7 +58,7 @@ public partial class ListPage : Page, IListPage
         }
     }
 
-    public IFilters? Filters
+    public virtual IFilters? Filters
     {
         get => _filters;
         set
@@ -68,7 +68,7 @@ public partial class ListPage : Page, IListPage
         }
     }
 
-    public IGridProperties? GridProperties
+    public virtual IGridProperties? GridProperties
     {
         get => _gridProperties;
         set
@@ -78,7 +78,7 @@ public partial class ListPage : Page, IListPage
         }
     }
 
-    public ICommandItem? EmptyContent
+    public virtual ICommandItem? EmptyContent
     {
         get => _emptyContent;
         set
@@ -94,7 +94,7 @@ public partial class ListPage : Page, IListPage
     {
     }
 
-    protected void RaiseItemsChanged(int totalItems)
+    protected void RaiseItemsChanged(int totalItems = -1)
     {
         try
         {

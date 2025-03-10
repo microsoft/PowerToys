@@ -6,7 +6,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class Details : BaseObservable, IDetails
 {
-    public IIconInfo HeroImage
+    public virtual IIconInfo HeroImage
     {
         get => field;
         set
@@ -18,7 +18,7 @@ public partial class Details : BaseObservable, IDetails
 
 = new IconInfo();
 
-    public string Title
+    public virtual string Title
     {
         get;
         set
@@ -30,7 +30,7 @@ public partial class Details : BaseObservable, IDetails
 
 = string.Empty;
 
-    public string Body
+    public virtual string Body
     {
         get;
         set
@@ -42,7 +42,7 @@ public partial class Details : BaseObservable, IDetails
 
 = string.Empty;
 
-    public IDetailsElement[] Metadata
+    public virtual IDetailsElement[] Metadata
     {
         get;
         set
