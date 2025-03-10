@@ -5,10 +5,10 @@ labels:
 - Issue-Bug
 - Needs-Triage
 body:
-  - type: textarea
-    attributes:
-      label: Microsoft PowerToys version
-      placeholder: 0.70.0
-      description: Hover over system tray icon or look at Settings
-    validations:
-      required: true
+- type: textarea
+  attributes:
+    label: Microsoft PowerToys version
+    placeholder: 0.70.0
+    description: Hover over system tray icon or look at Settings
+  validations:
+    required: true
