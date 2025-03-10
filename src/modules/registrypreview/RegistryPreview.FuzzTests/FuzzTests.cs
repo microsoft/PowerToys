@@ -23,10 +23,10 @@ namespace RegistryPreview.FuzzTests
         {
             string registryLine;
 
-            // Simulate registry file content as filenameText
-            var filenameText = GenerateRegistryHeader(input);
+            // Simulate registry file content as registryContent
+            var registryContent = GenerateRegistryHeader(input);
 
-            string[] registryLines = filenameText.Split("\r");
+            string[] registryLines = registryContent.Split("\r");
 
             if (registryLines.Length <= 1)
             {
@@ -75,10 +75,10 @@ namespace RegistryPreview.FuzzTests
         {
             string registryLine;
 
-            var filenameText = GenerateRegistryHeader(input);
+            var registryContent = GenerateRegistryHeader(input);
 
-            filenameText = filenameText.Replace("\r\n", "\r");
-            string[] registryLines = filenameText.Split("\r");
+            registryContent = registryContent.Replace("\r\n", "\r");
+            string[] registryLines = registryContent.Split("\r");
 
             if (registryLines.Length <= 1)
             {
@@ -178,16 +178,14 @@ namespace RegistryPreview.FuzzTests
             string header = new Random().Next(2) == 0 ? REGISTRYHEADER4 : REGISTRYHEADER5;
 
             string inputText = System.Text.Encoding.UTF8.GetString(input);
-            string filenameText = header + "\r\n" + inputText;
+            string registryContent = header + "\r" + inputText;
 
-            return filenameText.Replace("\r\n", "\r");
+            return registryContent;
         }
 
         private static bool IsValidRegistryHeader(string line)
         {
             // Convert the line to lowercase once for comparison
-            var lineLower = line.ToLowerInvariant();
-
             switch (line)
             {
                 case REGISTRYHEADER4:
