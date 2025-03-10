@@ -61,6 +61,21 @@ public partial class EvilSamplesPage : ListPage
                HeroImage = null,
                Metadata = [new DetailsElement() { Key = "Oops all nulls", Data = new DetailsTags() { Tags = null } }],
            },
+        },
+        new ListItem(new AnonymousCommand(action: () =>
+        {
+            ToastStatusMessage toast = new("I should appear immediately");
+            toast.Show();
+            Thread.Sleep(5000);
+        }) { Result = CommandResult.KeepOpen() })
+        {
+           Title = "I take just forever to return something",
+           Subtitle = "The toast should appear immediately.",
+           MoreCommands = null,
+           Details = new Details()
+           {
+               Body = "This is a test for GH#512. If it doesn't appear immediately, it's likely InvokeCommand is happening on the UI thread.",
+           },
         }
     ];
 

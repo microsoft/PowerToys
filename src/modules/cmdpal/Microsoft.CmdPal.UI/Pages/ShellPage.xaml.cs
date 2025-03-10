@@ -42,6 +42,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private readonly ToastWindow _toast = new();
 
+    private readonly Lock _invokeLock = new();
+    private Task? _handleInvokeTask;
+
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -177,22 +180,51 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             }
             else if (command is IInvokableCommand invokable)
             {
-                var result = invokable.Invoke(message.Context);
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    HandleCommandResultOnUiThread(result);
-                });
+                HandleInvokeCommand(message, invokable);
             }
         }
         catch (Exception ex)
         {
-            if (command is IPageContext page)
+            // TODO: It would be better to do this as a page exception, rather
+            // than a silent log message.
+            CommandPaletteHost.Instance.Log(ex.Message);
+        }
+    }
+
+    private void HandleInvokeCommand(PerformCommandMessage message, IInvokableCommand invokable)
+    {
+        lock (_invokeLock)
+        {
+            if (_handleInvokeTask != null)
             {
-                page.ShowException(ex);
+                // do nothing - a command is already doing a thing
             }
             else
             {
-                // TODO: Logging
+                _handleInvokeTask = Task.Run(() =>
+                {
+                    try
+                    {
+                        var result = invokable.Invoke(message.Context);
+                        DispatcherQueue.TryEnqueue(() =>
+                        {
+                            try
+                            {
+                                HandleCommandResultOnUiThread(result);
+                            }
+                            finally
+                            {
+                                _handleInvokeTask = null;
+                            }
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        // TODO: It would be better to do this as a page exception, rather
+                        // than a silent log message.
+                        CommandPaletteHost.Instance.Log(ex.Message);
+                    }
+                });
             }
         }
     }

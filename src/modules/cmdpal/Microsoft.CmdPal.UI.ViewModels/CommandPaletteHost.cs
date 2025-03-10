@@ -183,4 +183,9 @@ public sealed partial class CommandPaletteHost : IExtensionHost
         this.ProcessLogMessage(new LogMessage(message));
 #endif
     }
+
+    public void Log(string message)
+    {
+        this.ProcessLogMessage(new LogMessage(message));
+    }
 }
