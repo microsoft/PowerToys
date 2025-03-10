@@ -75,6 +75,7 @@ namespace Microsoft.PowerToys.UITest
             try
             {
                 appDriver?.Kill();
+                appDriver?.WaitForExit(); // Optional: Wait for the process to exit
             }
             catch (Exception ex)
             {
