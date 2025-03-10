@@ -1,6 +1,5 @@
 name: "🕷️ Bug report"
 description: Report errors or unexpected behavior
-type: Bug
 labels:
 - Issue-Bug
 - Needs-Triage
@@ -8,12 +7,11 @@ body:
 - type: markdown
   attributes:
     value: Please make sure to [search for existing issues](https://github.com/microsoft/PowerToys/issues) before filing a new one!
-
-- type: input
-  id: version
+- id: version
+  type: input
   attributes:
     label: Microsoft PowerToys version
-    placeholder: 0.65.0
+    placeholder: 0.70.0
     description: Hover over system tray icon or look at Settings
   validations:
     required: true
@@ -68,7 +66,6 @@ body:
       - Keyboard Manager
       - Mouse Utilities
       - Mouse Without Borders
-      - New+ 
       - Peek
       - PowerRename
       - PowerToys Run
@@ -79,9 +76,8 @@ body:
       - Shortcut Guide
       - System tray interaction
       - TextExtractor
-      - Workspaces
+      - Video Conference Mute
       - Welcome / PowerToys Tour window
-      - ZoomIt
   validations:
     required: true
 
