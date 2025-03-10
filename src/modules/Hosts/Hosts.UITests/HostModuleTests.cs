@@ -125,8 +125,9 @@ namespace Hosts.UITests
             // Add new URL override and a warning tip should be shown
             this.AddEntry("192.168.0.1", "localhost", true);
 
-            Assert.IsTrue(
-                this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count == 1,
+            Assert.AreEqual(
+                1,
+                this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count,
                 "Should display host-file saving error if not run as administrator");
         }
 
