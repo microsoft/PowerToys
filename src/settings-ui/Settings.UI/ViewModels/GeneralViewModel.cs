@@ -256,6 +256,46 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _initLanguagesIndex;
         private bool _languageChanged;
 
+        private string reportBugLink;
+
+        // Gets or sets a value indicating whether run powertoys on start-up.
+        public string ReportBugLink
+        {
+            get => reportBugLink;
+            set
+            {
+                reportBugLink = value;
+                OnPropertyChanged(nameof(ReportBugLink));
+            }
+        }
+
+        public void InitializeReportBugLink()
+        {
+            var version = GetPowerToysVersion();
+
+            var gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CTriage-Needed&template=bug_report.yml" +
+                "&version=" + version;
+
+            ReportBugLink = gitHubURL;
+        }
+
+        private string GetPowerToysVersion()
+        {
+            return "0.99.0"; // Replace with the actual method to get the version.
+        }
+
+        private string GetOSVersion()
+        {
+            // Implement a method to get the OS version
+            return "OS_VERSION_PLACEHOLDER";
+        }
+
+        private string GetDotNetVersion()
+        {
+            // Implement a method to get the .NET version
+            return "DOT_NET_VERSION_PLACEHOLDER";
+        }
+
         // Gets or sets a value indicating whether run powertoys on start-up.
         public bool Startup
         {
