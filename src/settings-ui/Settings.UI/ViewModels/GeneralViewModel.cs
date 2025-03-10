@@ -273,7 +273,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var version = GetPowerToysVersion();
 
-            var gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CTriage-Needed&template=bug_report.yml" +
+            var gitHubURL = "https://github.com/donlaci/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CTriage-Needed&template=bug_report.yml" +
                 "&version=" + version;
 
             ReportBugLink = gitHubURL;
