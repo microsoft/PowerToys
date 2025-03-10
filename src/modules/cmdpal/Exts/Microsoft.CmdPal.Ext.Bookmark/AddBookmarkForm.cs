@@ -13,10 +13,15 @@ namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 internal sealed partial class AddBookmarkForm : FormContent
 {
-    internal event TypedEventHandler<object, object?>? AddedCommand;
+    internal event TypedEventHandler<object, BookmarkData>? AddedCommand;
 
-    public AddBookmarkForm(string name = "", string url = "")
+    private readonly BookmarkData? _bookmark;
+
+    public AddBookmarkForm(BookmarkData? bookmark)
     {
+        _bookmark = bookmark;
+        var name = _bookmark?.Name ?? string.Empty;
+        var url = _bookmark?.Bookmark ?? string.Empty;
         TemplateJson = $$"""
 {
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
@@ -90,22 +95,12 @@ internal sealed partial class AddBookmarkForm : FormContent
             bookmarkType = "web";
         }
 
-        var formData = new BookmarkData()
-        {
-            Name = formName.ToString(),
-            Bookmark = formBookmark.ToString(),
-            Type = bookmarkType,
-        };
+        var updated = _bookmark ?? new BookmarkData();
+        updated.Name = formName.ToString();
+        updated.Bookmark = formBookmark.ToString();
+        updated.Type = bookmarkType;
 
-        // Construct a new json blob with the name and url
-        var jsonPath = BookmarksCommandProvider.StateJsonPath();
-        var data = Bookmarks.ReadFromFile(jsonPath);
-
-        data.Data.Add(formData);
-
-        Bookmarks.WriteToFile(jsonPath, data);
-
-        AddedCommand?.Invoke(this, null);
+        AddedCommand?.Invoke(this, updated);
         return CommandResult.GoHome();
     }
 }
