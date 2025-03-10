@@ -193,6 +193,11 @@ namespace Microsoft.PowerToys.UITest
             if (this.Root != null)
             {
                 var window = this.Root.FindElementByName(windowName);
+                if (window == null)
+                {
+                    window = this.Root.FindElementByName("Administrator: " + windowName);
+                }
+
                 Assert.IsNotNull(window, $"Failed to attach. Window '{windowName}' not found");
 
                 var windowHandle = new nint(int.Parse(window.GetAttribute("NativeWindowHandle")));
