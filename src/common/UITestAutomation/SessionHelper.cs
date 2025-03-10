@@ -35,6 +35,7 @@ namespace Microsoft.PowerToys.UITest
                 Verb = "runas",
             };
 
+            this.ExitExe(winAppDriverProcessInfo.FileName);
             this.appDriver = Process.Start(winAppDriverProcessInfo);
 
             var desktopCapabilities = new AppiumOptions();
@@ -53,6 +54,7 @@ namespace Microsoft.PowerToys.UITest
         public SessionHelper Init()
         {
             string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            this.ExitExe(path + this.sessionPath);
             this.StartExe(path + this.sessionPath);
 
             Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");

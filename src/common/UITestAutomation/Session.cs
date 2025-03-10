@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -20,6 +21,8 @@ namespace Microsoft.PowerToys.UITest
 
         private WindowsDriver<WindowsElement> WindowsDriver { get; set; }
 
+        private List<nint> windowList = new List<nint>();
+
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(nint hWnd);
 
@@ -27,6 +30,29 @@ namespace Microsoft.PowerToys.UITest
         {
             this.Root = root;
             this.WindowsDriver = windowsDriver;
+        }
+
+        /// <summary>
+        /// Cleans up the Session Exe.
+        /// </summary>
+        public void Cleanup()
+        {
+            for (var i = 0; i < this.windowList.Count; i++)
+            {
+                var windowHandle = this.windowList[i];
+                if (windowHandle != 0)
+                {
+                    var process = Process.GetProcessById((int)windowHandle);
+
+                    if (process != null)
+                    {
+                        process.Kill();
+                        process.WaitForExit();
+                    }
+                }
+            }
+
+            windowList.Clear();
         }
 
         /// <summary>
@@ -178,6 +204,8 @@ namespace Microsoft.PowerToys.UITest
                 appCapabilities.AddAdditionalCapability("deviceName", "WindowsPC");
                 this.WindowsDriver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
                 Assert.IsNotNull(this.WindowsDriver, "Attach WindowsDriver is null");
+
+                this.windowList.Add(windowHandle);
 
                 // Set implicit timeout to make element search retry every 500 ms
                 this.WindowsDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
