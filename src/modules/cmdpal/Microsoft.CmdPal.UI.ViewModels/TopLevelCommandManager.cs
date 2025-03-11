@@ -16,13 +16,16 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class TopLevelCommandManager : ObservableObject,
-    IRecipient<ReloadCommandsMessage>
+    IRecipient<ReloadCommandsMessage>,
+    IPageContext
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly TaskScheduler _taskScheduler;
 
     private readonly List<CommandProviderWrapper> _builtInCommands = [];
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
+
+    TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
     public TopLevelCommandManager(IServiceProvider serviceProvider)
     {
@@ -31,7 +34,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
     }
 
-    public ObservableCollection<TopLevelCommandItemWrapper> TopLevelCommands { get; set; } = [];
+    public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
 
     [ObservableProperty]
     public partial bool IsLoading { get; private set; } = true;
@@ -60,13 +63,18 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         await commandProvider.LoadTopLevelCommands();
 
+        var settings = _serviceProvider.GetService<SettingsModel>()!;
+
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
+            CommandItemViewModel commandItemViewModel = new(new(i), this);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, settings, _serviceProvider);
+
             TopLevelCommandItemWrapper wrapper = new(
                 new(i), fallback, commandProvider.ExtensionHost, commandProvider.ProviderId, _serviceProvider);
             lock (TopLevelCommands)
             {
-                TopLevelCommands.Add(wrapper);
+                TopLevelCommands.Add(topLevelViewModel);
             }
         };
 
@@ -310,4 +318,10 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     public void Receive(ReloadCommandsMessage message) =>
         ReloadAllCommandsAsync().ConfigureAwait(false);
+
+    void IPageContext.ShowException(Exception ex, string? extensionHint)
+    {
+        var errorMessage = $"A bug occurred in {$"the \"{extensionHint}\"" ?? "an unknown's"} extension's code:\n{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n\n";
+        CommandPaletteHost.Instance.Log(errorMessage);
+    }
 }
