@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -20,23 +21,28 @@ using Windows.Foundation.Collections;
 
 namespace KeyboardManagerEditorUI
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainWindow : Window
     {
-        [DllImport("KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool CheckIfRemappingsAreValid();
-
         public MainWindow()
         {
             this.InitializeComponent();
+            this.ExtendsContentIntoTitleBar = true;
+            this.SetTitleBar(titleBar);
+            RootView.SelectedItem = RootView.MenuItems[0];
         }
 
-        private void MyButton_Click(object sender, RoutedEventArgs e)
+        private void RootView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            // Call the C++ function to check if the current remappings are valid
-            myButton.Content = CheckIfRemappingsAreValid() ? "Valid" : "Invalid";
+            if (args.SelectedItem is NavigationViewItem selectedItem)
+            {
+                switch ((string)selectedItem.Tag)
+                {
+                    case "Remappings": NavigationFrame.Navigate(typeof(Pages.Shortcuts)); break;
+                    case "Programs": NavigationFrame.Navigate(typeof(Pages.Programs)); break;
+                    case "Text": NavigationFrame.Navigate(typeof(Pages.Text)); break;
+                    case "URLs": NavigationFrame.Navigate(typeof(Pages.URLs)); break;
+                }
+            }
         }
     }
 }

@@ -18,6 +18,22 @@
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\$(MSBuildProjectName)</OutputPath>
   </PropertyGroup>
 
+  <PropertyGroup>
+	<EnableDefaultXamlItems>true</EnableDefaultXamlItems>
+	<EnableXamlJitOptimization>true</EnableXamlJitOptimization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Pages\ExistingUI.xaml" />
+    <None Remove="Pages\Programs.xaml" />
+    <None Remove="Pages\Shortcuts.xaml" />
+    <None Remove="Pages\Text.xaml" />
+    <None Remove="Pages\URLs.xaml" />
+    <None Remove="Styles\CommonStyle.xaml" />
+    <None Remove="Styles\InputControl.xaml" />
+    <None Remove="Styles\KeyVisual.xaml" />
+  </ItemGroup>
+
   <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
@@ -33,6 +49,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
+	<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
@@ -40,7 +57,44 @@
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Assets\" />
+    <Page Update="Styles\CommonStyle.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\URLs.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\Text.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\Programs.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\Shortcuts.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Styles\InputControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Styles\KeyVisual.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Pages\ExistingUI.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <!--

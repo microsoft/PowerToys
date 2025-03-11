@@ -7,7 +7,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.UI;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -35,8 +38,14 @@ namespace KeyboardManagerEditorUI
         public App()
         {
             this.InitializeComponent();
-            Logger.InitializeLogger("\\Keyboard Manager\\WinUI3Editor\\Logs");
-            Logger.LogInfo("keyboard-manager WinUI3 editor logger is initialized");
+
+            Task.Run(() =>
+            {
+                Logger.InitializeLogger("\\Keyboard Manager\\WinUI3Editor\\Logs");
+                Logger.LogInfo("keyboard-manager WinUI3 editor logger is initialized");
+            });
+
+            UnhandledException += App_UnhandledException;
         }
 
         /// <summary>
@@ -46,8 +55,36 @@ namespace KeyboardManagerEditorUI
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             window = new MainWindow();
-            window.Activate();
+
+            var appWindow = window.AppWindow;
+
+            var windowSize = new Windows.Graphics.SizeInt32(960, 600);
+            appWindow.Resize(windowSize);
+
+            Task.Run(() =>
+            {
+                App.Current.Resources.MergedDictionaries.Add(new ResourceDictionary()
+                {
+                    Source = new Uri("ms-appx:///Styles/CommonStyle.xaml"),
+                });
+            }).ContinueWith(_ =>
+            {
+                window.DispatcherQueue.TryEnqueue(() =>
+                {
+                    window.Activate();
+                    window.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+                    {
+                        (window.Content as FrameworkElement)?.UpdateLayout();
+                    });
+                });
+            });
+
             Logger.LogInfo("keyboard-manager WinUI3 editor window is launched");
+        }
+
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Logger.LogError("Unhandled exception", e.Exception);
         }
 
         private Window? window;

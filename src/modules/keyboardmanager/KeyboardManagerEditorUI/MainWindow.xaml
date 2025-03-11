@@ -6,13 +6,67 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:KeyboardManagerEditorUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="using:KeyboardManagerEditorUI.Pages"
     Title="KeyboardManagerEditorUI"
     mc:Ignorable="d">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+    <Grid
+        x:Name="LayoutRoot"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid x:Name="titleBar">
+            <StackPanel
+                Grid.ColumnSpan="2"
+                Margin="16,8,8,8"
+                VerticalAlignment="Top"
+                Orientation="Horizontal">
+                <Image Width="16" Source="ms-appx:///Assets/FluentIconsKeyboardManager.png" />
+                <TextBlock
+                    Margin="12,0,0,0"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="Keyboard Manager" />
+            </StackPanel>
+        </Grid>
 
-    <StackPanel
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        Orientation="Horizontal">
-        <Button x:Name="myButton" Click="MyButton_Click">Click Me</Button>
-    </StackPanel>
+        <NavigationView
+            x:Name="RootView"
+            Grid.Row="1"
+            IsBackButtonVisible="Collapsed"
+            IsBackEnabled="False"
+            IsPaneToggleButtonVisible="False"
+            PaneDisplayMode="Top"
+            SelectionChanged="RootView_SelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Remappings" Tag="Remappings">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEDA7;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Programs" Tag="Programs">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xECAA;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Text" Tag="Text">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8D2;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="URLs" Tag="URLs">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8A7;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+            <NavigationView.Content>
+                <Frame x:Name="NavigationFrame" Margin="0,0,0,0" />
+            </NavigationView.Content>
+        </NavigationView>
+    </Grid>
 </Window>
