@@ -78,7 +78,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         }
 
         [TestInitialize]
-        public void TesTestInitializetCleanup()
+        public void TestInitialize()
         {
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
