@@ -166,7 +166,7 @@ namespace RegistryPreviewUILib
             var binaryPreviewBox = new HB.HexBox()
             {
                 Height = 300,
-                Width = 500,
+                Width = 495,
                 ShowAddress = true,
                 ShowData = true,
                 ShowText = true,
@@ -180,6 +180,7 @@ namespace RegistryPreviewUILib
                 DataFormat = HB.DataFormat.Hexadecimal,
                 DataSignedness = HB.DataSignedness.Unsigned,
                 DataType = HB.DataType.Int_1,
+                EnforceProperties = true,
                 Visibility = Visibility.Collapsed,
                 DataSource = data,
             };
