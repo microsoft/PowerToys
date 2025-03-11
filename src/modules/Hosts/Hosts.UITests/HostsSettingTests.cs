@@ -68,7 +68,13 @@ namespace Hosts.UITests
             Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed after click Accept button in Warning Dialog");
 
             // Close Hosts File Editor window
-            this.Session.Find<Window>("Hosts File Editor").Close();
+            var hostWindow = this.FindAll<Window>("Hosts File Editor");
+            if (hostWindow.Count == 0)
+            {
+                hostWindow = this.FindAll<Window>("Administrator: Hosts File Editor");
+            }
+
+            hostWindow[0].Close();
 
             // Restore back to PowerToysSettings Session
             this.Session.Attach(PowerToysModule.PowerToysSettings);
@@ -82,7 +88,13 @@ namespace Hosts.UITests
             Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed");
 
             // Close Hosts File Editor window
-            this.Session.Find<Window>("Hosts File Editor").Close();
+            hostWindow = this.FindAll<Window>("Hosts File Editor");
+            if (hostWindow.Count == 0)
+            {
+                hostWindow = this.FindAll<Window>("Administrator: Hosts File Editor");
+            }
+
+            hostWindow[0].Close();
 
             // Restore back to PowerToysSettings Session
             this.Session.Attach(PowerToysModule.PowerToysSettings);
@@ -112,7 +124,13 @@ namespace Hosts.UITests
                 this.Find<NavigationViewItem>("Advanced").Click();
             }
 
-            this.Find<NavigationViewItem>("Hosts File Editor").Click();
+            var hostWindow = this.FindAll<Window>("Hosts File Editor");
+            if (hostWindow.Count == 0)
+            {
+                hostWindow = this.FindAll<Window>("Administrator: Hosts File Editor");
+            }
+
+            hostWindow[0].Click();
 
             this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
             this.Find<ToggleSwitch>("Launch as administrator").Toggle(launchAsAdmin);

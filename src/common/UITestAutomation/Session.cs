@@ -192,10 +192,10 @@ namespace Microsoft.PowerToys.UITest
         {
             if (this.Root != null)
             {
-                var window = this.Root.FindElementByName(windowName);
+                var window = this.Root.FindElementByName("Administrator: " + windowName);
                 if (window == null)
                 {
-                    window = this.Root.FindElementByName("Administrator: " + windowName);
+                    window = this.Root.FindElementByName(windowName);
                 }
 
                 Assert.IsNotNull(window, $"Failed to attach. Window '{windowName}' not found");
