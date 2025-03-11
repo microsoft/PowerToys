@@ -15,7 +15,7 @@ Param(
 $referencedFileVersionsPerDll = @{}
 $totalFailures = 0
 
-Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude *UITests*,MouseJump.Common.UnitTests*,*.FuzzTests* | ForEach-Object {
+Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude *UITest*,MouseJump.Common.UnitTests*,*.FuzzTests* | ForEach-Object {
     # Temporarily exclude All UI-Test, Fuzzer-Test projects because of Appium.WebDriver dependencies
     $depsJsonFullFileName = $_.FullName
     $depsJsonFileName = $_.Name

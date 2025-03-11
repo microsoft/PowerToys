@@ -62,10 +62,10 @@ namespace PlacementHelper
         else
         {
             placement.showCmd = SW_RESTORE;
+            ScreenToWorkAreaCoords(window, monitor, rect);
+            placement.rcNormalPosition = rect;
         }
 
-        ScreenToWorkAreaCoords(window, monitor, rect);
-        placement.rcNormalPosition = rect;
         placement.flags |= WPF_ASYNCWINDOWPLACEMENT;
 
         auto result = ::SetWindowPlacement(window, &placement);

@@ -55,9 +55,9 @@ namespace AdvancedPaste.Controls
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(ViewModel.Busy) || e.PropertyName == nameof(ViewModel.PasteActionError))
+            if (e.PropertyName is nameof(ViewModel.IsBusy) or nameof(ViewModel.PasteActionError))
             {
-                var state = ViewModel.Busy ? "LoadingState" : ViewModel.PasteActionError.HasText ? "ErrorState" : "DefaultState";
+                var state = ViewModel.IsBusy ? "LoadingState" : ViewModel.PasteActionError.HasText ? "ErrorState" : "DefaultState";
                 VisualStateManager.GoToState(this, state, true);
             }
         }
@@ -77,6 +77,9 @@ namespace AdvancedPaste.Controls
 
         [RelayCommand]
         private async Task GenerateCustomAIAsync() => await ViewModel.ExecuteCustomAIFormatFromCurrentQueryAsync(PasteActionSource.PromptBox);
+
+        [RelayCommand]
+        private async Task CancelPasteActionAsync() => await ViewModel.CancelPasteActionAsync();
 
         private async void InputTxtBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
         {

@@ -84,7 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.Elapsed += DelayedTimer_Tick;
             _delayedTimer.AutoReset = false;
 
-            foreach (var action in _additionalActions.AllActions)
+            foreach (var action in _additionalActions.GetAllActions())
             {
                 action.PropertyChanged += OnAdditionalActionPropertyChanged;
             }
@@ -366,7 +366,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                           .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
 
         public bool IsAdditionalActionConflictingCopyShortcut =>
-            _additionalActions.AllActions
+            _additionalActions.GetAllActions()
                               .OfType<AdvancedPasteAdditionalAction>()
                               .Select(additionalAction => additionalAction.Shortcut)
                               .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));

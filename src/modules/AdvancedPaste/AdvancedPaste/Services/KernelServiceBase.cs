@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Helpers;
@@ -36,12 +37,14 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
 
     protected abstract AIServiceUsage GetAIServiceUsage(ChatMessageContent chatMessage);
 
-    public async Task<DataPackage> TransformClipboardAsync(string prompt, DataPackageView clipboardData, bool isSavedQuery)
+    public async Task<DataPackage> TransformClipboardAsync(string prompt, DataPackageView clipboardData, bool isSavedQuery, CancellationToken cancellationToken, IProgress<double> progress)
     {
         Logger.LogTrace();
 
         var kernel = CreateKernel();
         kernel.SetDataPackageView(clipboardData);
+        kernel.SetCancellationToken(cancellationToken);
+        kernel.SetProgress(progress);
 
         CacheKey cacheKey = new() { Prompt = prompt, AvailableFormats = await clipboardData.GetAvailableFormatsAsync() };
         var maybeCacheValue = _queryCacheService.ReadOrNull(cacheKey);
@@ -51,7 +54,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
 
         try
         {
-            (chatHistory, var usage) = cacheUsed ? await ExecuteCachedActionChain(kernel, maybeCacheValue.ActionChain) : await ExecuteAICompletion(kernel, prompt);
+            (chatHistory, var usage) = cacheUsed ? await ExecuteCachedActionChain(kernel, maybeCacheValue.ActionChain) : await ExecuteAICompletion(kernel, prompt, cancellationToken);
 
             LogResult(cacheUsed, isSavedQuery, kernel.GetOrAddActionChain(), usage);
 
@@ -84,7 +87,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
             AdvancedPasteSemanticKernelErrorEvent errorEvent = new(ex is PasteActionModeratedException ? PasteActionModeratedException.ErrorDescription : ex.Message);
             PowerToysTelemetry.Log.WriteEvent(errorEvent);
 
-            if (ex is PasteActionException)
+            if (ex is PasteActionException or OperationCanceledException)
             {
                 throw;
             }
@@ -127,7 +130,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
         return $"{combinedSystemMessage}{newLine}{newLine}User instructions:{newLine}{userPromptMessage.Content}";
     }
 
-    private async Task<(ChatHistory ChatHistory, AIServiceUsage Usage)> ExecuteAICompletion(Kernel kernel, string prompt)
+    private async Task<(ChatHistory ChatHistory, AIServiceUsage Usage)> ExecuteAICompletion(Kernel kernel, string prompt, CancellationToken cancellationToken)
     {
         ChatHistory chatHistory = [];
 
@@ -141,10 +144,10 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
         chatHistory.AddSystemMessage($"Available clipboard formats: {await kernel.GetDataFormatsAsync()}");
         chatHistory.AddUserMessage(prompt);
 
-        await _promptModerationService.ValidateAsync(GetFullPrompt(chatHistory));
+        await _promptModerationService.ValidateAsync(GetFullPrompt(chatHistory), cancellationToken);
 
         var chatResult = await kernel.GetRequiredService<IChatCompletionService>()
-                                     .GetChatMessageContentAsync(chatHistory, PromptExecutionSettings, kernel);
+                                     .GetChatMessageContentAsync(chatHistory, PromptExecutionSettings, kernel, cancellationToken);
         chatHistory.Add(chatResult);
 
         var totalUsage = chatHistory.Select(GetAIServiceUsage)
@@ -157,6 +160,8 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
     {
         foreach (var item in actionChain)
         {
+            kernel.GetCancellationToken().ThrowIfCancellationRequested();
+
             if (item.Arguments.Count > 0)
             {
                 await ExecutePromptTransformAsync(kernel, item.Format, item.Arguments[PromptParameterName]);
@@ -208,14 +213,14 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
             async dataPackageView =>
             {
                 var input = await dataPackageView.GetTextAsync();
-                string output = await GetPromptBasedOutput(format, prompt, input);
+                string output = await GetPromptBasedOutput(format, prompt, input, kernel.GetCancellationToken(), kernel.GetProgress());
                 return DataPackageHelpers.CreateFromText(output);
             });
 
-    private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input) =>
+    private async Task<string> GetPromptBasedOutput(PasteFormats format, string prompt, string input, CancellationToken cancellationToken, IProgress<double> progress) =>
         format switch
         {
-            PasteFormats.CustomTextTransformation => await _customTextTransformService.TransformTextAsync(prompt, input),
+            PasteFormats.CustomTextTransformation => await _customTextTransformService.TransformTextAsync(prompt, input, cancellationToken, progress),
             _ => throw new ArgumentException($"Unsupported format {format} for prompt transform", nameof(format)),
         };
 
@@ -223,7 +228,7 @@ public abstract class KernelServiceBase(IKernelQueryCacheService queryCacheServi
         ExecuteTransformAsync(
            kernel,
            new ActionChainItem(format, Arguments: []),
-           async dataPackageView => await TransformHelpers.TransformAsync(format, dataPackageView));
+           async dataPackageView => await TransformHelpers.TransformAsync(format, dataPackageView, kernel.GetCancellationToken(), kernel.GetProgress()));
 
     private static async Task<string> ExecuteTransformAsync(Kernel kernel, ActionChainItem actionChainItem, Func<DataPackageView, Task<DataPackage>> transformFunc)
     {

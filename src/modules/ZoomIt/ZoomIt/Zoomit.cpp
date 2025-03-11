@@ -49,7 +49,7 @@ namespace util
 }
 
 // This workaround keeps live zoom enabled after zooming out at level 1 (not zoomed) and disables
-// live zoom when recording is stopped.
+// live zoom when recording is stopped
 #define WINDOWS_CURSOR_RECORDING_WORKAROUND 1
 
 HINSTANCE		g_hInstance;
@@ -320,10 +320,10 @@ void EnsureForeground()
 //----------------------------------------------------------------------------
 void RestoreForeground()
 {
-    // If the main window is not visible, move foreground to the next window
+    // If the main window is not visible, move foreground to the next window.
     if( !IsWindowVisible( g_hWndMain ) ) {
 
-        // Activate the next window by unhiding and hiding the main window
+        // Activate the next window by unhiding and hiding the main window.
         MoveWindow( g_hWndMain, 0, 0, 0, 0, FALSE );
         ShowWindow( g_hWndMain, SW_SHOWNA );
         ShowWindow( g_hWndMain, SW_HIDE );
@@ -493,7 +493,7 @@ bool IsAutostartConfigured()
 // RunningOnWin64
 //
 // Returns true if this is the 32-bit version of the executable
-// and we're on 64-bit Windows
+// and we're on 64-bit Windows.
 // 
 //--------------------------------------------------------------------
 typedef BOOL (__stdcall *P_IS_WOW64PROCESS)(
@@ -559,7 +559,7 @@ BOOLEAN ExtractImageResource( PTCHAR ResourceName, PTCHAR TargetFile )
 // Run64bitVersion
 //
 // Returns true if this is the 32-bit version of the executable
-// and we're on 64-bit Windows
+// and we're on 64-bit Windows.
 // 
 //--------------------------------------------------------------------
 DWORD 

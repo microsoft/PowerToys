@@ -14,6 +14,7 @@ public sealed class AdvancedPasteAdditionalActions
     {
         public const string ImageToText = "image-to-text";
         public const string PasteAsFile = "paste-as-file";
+        public const string Transcode = "transcode";
     }
 
     [JsonPropertyName(PropertyNames.ImageToText)]
@@ -22,6 +23,22 @@ public sealed class AdvancedPasteAdditionalActions
     [JsonPropertyName(PropertyNames.PasteAsFile)]
     public AdvancedPastePasteAsFileAction PasteAsFile { get; init; } = new();
 
-    [JsonIgnore]
-    public IEnumerable<IAdvancedPasteAction> AllActions => new IAdvancedPasteAction[] { ImageToText, PasteAsFile }.Concat(PasteAsFile.SubActions);
+    [JsonPropertyName(PropertyNames.Transcode)]
+    public AdvancedPasteTranscodeAction Transcode { get; init; } = new();
+
+    public IEnumerable<IAdvancedPasteAction> GetAllActions()
+    {
+        Queue<IAdvancedPasteAction> queue = new([ImageToText, PasteAsFile, Transcode]);
+
+        while (queue.Count != 0)
+        {
+            var action = queue.Dequeue();
+            yield return action;
+
+            foreach (var subAction in action.SubActions)
+            {
+                queue.Enqueue(subAction);
+            }
+        }
+    }
 }

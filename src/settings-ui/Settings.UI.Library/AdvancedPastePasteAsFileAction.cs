@@ -52,5 +52,5 @@ public sealed class AdvancedPastePasteAsFileAction : Observable, IAdvancedPasteA
     }
 
     [JsonIgnore]
-    public IEnumerable<AdvancedPasteAdditionalAction> SubActions => [PasteAsTxtFile, PasteAsPngFile, PasteAsHtmlFile];
+    public IEnumerable<IAdvancedPasteAction> SubActions => [PasteAsTxtFile, PasteAsPngFile, PasteAsHtmlFile];
 }

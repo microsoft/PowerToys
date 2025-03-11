@@ -15,14 +15,22 @@ namespace ManagedCommon
 {
     public static class Logger
     {
-        private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
-        private static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location).ProductVersion;
-
         private static readonly string Error = "Error";
         private static readonly string Warning = "Warning";
         private static readonly string Info = "Info";
         private static readonly string Debug = "Debug";
         private static readonly string TraceFlag = "Trace";
+
+        private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
+
+        /*
+         * Please pay more attention!
+         * If you want to publish it with Native AOT enabled (or publish as a single file).
+         * You need to find another way to remove Assembly.Location usage.
+         */
+#pragma warning disable IL3000 // Avoid accessing Assembly file path when publishing as a single file
+        private static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location).ProductVersion;
+#pragma warning restore IL3000 // Avoid accessing Assembly file path when publishing as a single file
 
         /// <summary>
         /// Initializes the logger and sets the path for logging.
@@ -53,18 +61,16 @@ namespace ManagedCommon
             Trace.AutoFlush = true;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void LogError(string message)
+        public static void LogError(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
-            Log(message, Error);
+            Log(message, Error, memberName, sourceFilePath, sourceLineNumber);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void LogError(string message, Exception ex)
+        public static void LogError(string message, Exception ex, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
             if (ex == null)
             {
-                Log(message, Error);
+                Log(message, Error, memberName, sourceFilePath, sourceLineNumber);
             }
             else
             {
@@ -83,38 +89,33 @@ namespace ManagedCommon
                     "Stack trace: " + Environment.NewLine +
                     ex.StackTrace;
 
-                Log(exMessage, Error);
+                Log(exMessage, Error, memberName, sourceFilePath, sourceLineNumber);
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void LogWarning(string message)
+        public static void LogWarning(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
-            Log(message, Warning);
+            Log(message, Warning, memberName, sourceFilePath, sourceLineNumber);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void LogInfo(string message)
+        public static void LogInfo(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
-            Log(message, Info);
+            Log(message, Info, memberName, sourceFilePath, sourceLineNumber);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void LogDebug(string message)
+        public static void LogDebug(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
-            Log(message, Debug);
+            Log(message, Debug, memberName, sourceFilePath, sourceLineNumber);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void LogTrace()
+        public static void LogTrace([System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
         {
-            Log(string.Empty, TraceFlag);
+            Log(string.Empty, TraceFlag, memberName, sourceFilePath, sourceLineNumber);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void Log(string message, string type)
+        private static void Log(string message, string type, string memberName, string sourceFilePath, int sourceLineNumber)
         {
-            Trace.WriteLine("[" + DateTime.Now.TimeOfDay + "] [" + type + "] " + GetCallerInfo());
+            Trace.WriteLine("[" + DateTime.Now.TimeOfDay + "] [" + type + "] " + GetCallerInfo(memberName, sourceFilePath, sourceLineNumber));
             Trace.Indent();
             if (message != string.Empty)
             {
@@ -124,49 +125,27 @@ namespace ManagedCommon
             Trace.Unindent();
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static string GetCallerInfo()
+        private static string GetCallerInfo(string memberName, string sourceFilePath, int sourceLineNumber)
         {
-            StackTrace stackTrace = new();
-
-            var callerMethod = GetCallerMethod(stackTrace);
-
-            return $"{callerMethod?.DeclaringType?.Name}::{callerMethod.Name}";
-        }
-
-        private static MethodBase GetCallerMethod(StackTrace stackTrace)
-        {
-            const int topFrame = 3;
-
-            var topMethod = stackTrace.GetFrame(topFrame)?.GetMethod();
+            string callerFileName = "Unknown";
 
             try
             {
-                if (topMethod?.Name == nameof(IAsyncStateMachine.MoveNext) && typeof(IAsyncStateMachine).IsAssignableFrom(topMethod?.DeclaringType))
+                string fileName = Path.GetFileName(sourceFilePath);
+                if (!string.IsNullOrEmpty(fileName))
                 {
-                    // Async method; return actual method as determined by heuristic:
-                    // "Nearest method on stack to async state-machine's MoveNext() in same namespace but in a different type".
-                    // There are tighter ways of determining the actual method, but this is good enough and probably faster.
-                    for (int deepFrame = topFrame + 1; deepFrame < stackTrace.FrameCount; deepFrame++)
-                    {
-                        var deepMethod = stackTrace.GetFrame(deepFrame)?.GetMethod();
-
-                        if (deepMethod?.DeclaringType != topMethod?.DeclaringType && deepMethod?.DeclaringType?.Namespace == topMethod?.DeclaringType?.Namespace)
-                        {
-                            return deepMethod;
-                        }
-                    }
+                    callerFileName = fileName;
                 }
             }
             catch (Exception)
             {
-                // Ignore exceptions in Release. The code above won't throw, but if it does, we don't want to crash the app.
+                callerFileName = "Unknown";
 #if DEBUG
                 throw;
 #endif
             }
 
-            return topMethod;
+            return $"{callerFileName}::{memberName}::{sourceLineNumber}";
         }
     }
 }

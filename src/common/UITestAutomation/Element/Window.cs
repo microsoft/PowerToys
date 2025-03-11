@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.UITest
         {
             if (byClickButton)
             {
-                Find<Button>(By.Name("Maximize")).Click();
+                Find<Button>("Maximize").Click();
             }
             else
             {
@@ -37,7 +37,7 @@ namespace Microsoft.PowerToys.UITest
         {
             if (byClickButton)
             {
-                Find<Button>(By.Name("Restore")).Click();
+                Find<Button>("Restore").Click();
             }
             else
             {
@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.UITest
         {
             if (byClickButton)
             {
-                Find<Button>(By.Name("Minimize")).Click();
+                Find<Button>("Minimize").Click();
             }
             else
             {
@@ -74,7 +74,7 @@ namespace Microsoft.PowerToys.UITest
         {
             if (byClickButton)
             {
-                Find<Button>(By.Name("Close")).Click();
+                Find<Button>("Close").Click();
             }
             else
             {

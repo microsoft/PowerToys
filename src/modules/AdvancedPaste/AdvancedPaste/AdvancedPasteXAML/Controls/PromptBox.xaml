@@ -178,17 +178,36 @@
                                         Padding="0"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch">
-                                        <Image
-                                            x:Name="AIGlyphImage"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            Source="/Assets/AdvancedPaste/SemanticKernel.svg"
-                                            Visibility="{Binding DataContext.IsAdvancedAIEnabled, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                        <PathIcon
-                                            x:Name="AIGlyph"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            Data="M128 766q0-42 24-77t65-48l178-57q32-11 61-30t52-42q50-50 71-114l58-179q13-40 48-65t78-26q42 0 77 24t50 65l58 177q21 66 72 117 49 50 117 72l176 58q43 14 69 48t26 80q0 41-25 76t-64 49l-178 58q-66 21-117 72-32 32-51 73t-33 84-26 83-30 73-45 51-71 20q-42 0-77-24t-49-65l-58-178q-8-25-19-47t-28-43q-34-43-77-68t-89-41-89-27-78-29-55-45-21-75zm1149 7q-76-29-145-53t-129-60-104-88-73-138l-57-176-67 176q-18 48-42 89t-60 78q-34 34-76 61t-89 43l-177 57q75 29 144 53t127 60 103 89 73 137l57 176 67-176q37-97 103-168t168-103l177-57zm-125 759q0-31 20-57t49-36l99-32q34-11 53-34t30-51 20-59 20-54 33-41 58-16q32 0 59 19t38 50q6 20 11 40t13 40 17 38 25 34q16 17 39 26t48 18 49 16 44 20 31 32 12 50q0 33-18 60t-51 38q-19 6-39 11t-41 13-39 17-34 25q-24 25-35 62t-24 73-35 61-68 25q-32 0-59-19t-38-50q-6-18-11-39t-13-41-17-40-24-33q-18-17-41-27t-47-17-49-15-43-20-30-33-12-54zm583 4q-43-13-74-30t-55-41-40-55-32-74q-12 41-29 72t-42 55-55 42-71 31q81 23 128 71t71 129q15-43 31-74t40-54 53-40 75-32z"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Visibility="{Binding DataContext.IsAdvancedAIEnabled, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                                        <ProgressRing
+                                            Width="30"
+                                            Height="30"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            IsActive="{Binding DataContext.IsBusy, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                            IsIndeterminate="{Binding DataContext.HasIndeterminateTransformProgress, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                            Maximum="100"
+                                            Minimum="0"
+                                            Visibility="{Binding DataContext.IsBusy, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}"
+                                            Value="{Binding DataContext.TransformProgress, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
+
+                                        <StackPanel
+                                            Margin="0"
+                                            Padding="0"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            Visibility="{Binding DataContext.IsBusy, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                            <Image
+                                                x:Name="AIGlyphImage"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                Source="/Assets/AdvancedPaste/SemanticKernel.svg"
+                                                Visibility="{Binding DataContext.IsAdvancedAIEnabled, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                            <PathIcon
+                                                x:Name="AIGlyph"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                Data="M128 766q0-42 24-77t65-48l178-57q32-11 61-30t52-42q50-50 71-114l58-179q13-40 48-65t78-26q42 0 77 24t50 65l58 177q21 66 72 117 49 50 117 72l176 58q43 14 69 48t26 80q0 41-25 76t-64 49l-178 58q-66 21-117 72-32 32-51 73t-33 84-26 83-30 73-45 51-71 20q-42 0-77-24t-49-65l-58-178q-8-25-19-47t-28-43q-34-43-77-68t-89-41-89-27-78-29-55-45-21-75zm1149 7q-76-29-145-53t-129-60-104-88-73-138l-57-176-67 176q-18 48-42 89t-60 78q-34 34-76 61t-89 43l-177 57q75 29 144 53t127 60 103 89 73 137l57 176 67-176q37-97 103-168t168-103l177-57zm-125 759q0-31 20-57t49-36l99-32q34-11 53-34t30-51 20-59 20-54 33-41 58-16q32 0 59 19t38 50q6 20 11 40t13 40 17 38 25 34q16 17 39 26t48 18 49 16 44 20 31 32 12 50q0 33-18 60t-51 38q-19 6-39 11t-41 13-39 17-34 25q-24 25-35 62t-24 73-35 61-68 25q-32 0-59-19t-38-50q-6-18-11-39t-13-41-17-40-24-33q-18-17-41-27t-47-17-49-15-43-20-30-33-12-54zm583 4q-43-13-74-30t-55-41-40-55-32-74q-12 41-29 72t-42 55-55 42-71 31q81 23 128 71t71 129q15-43 31-74t40-54 53-40 75-32z"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Visibility="{Binding DataContext.IsAdvancedAIEnabled, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                                        </StackPanel>
                                     </StackPanel>
                                 </Viewbox>
                                 <ScrollViewer
@@ -572,6 +591,24 @@
                                 Duration="0:0:0.167" />
                         </animations:Implicit.HideAnimations>
                     </Button>
+                    <Button
+                        x:Name="CancelBtn"
+                        x:Uid="CancelBtnAutomation"
+                        Padding="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                        Command="{x:Bind CancelPasteActionCommand}"
+                        Content="{ui:FontIcon Glyph=&#xE711;,
+                                              FontSize=16}"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        IsEnabled="False"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Visibility="Collapsed">
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="CancelBtnToolTip" TextWrapping="WrapWholeWords" />
+                        </ToolTipService.ToolTip>
+                    </Button>
                     <!--  Transparent overlay to show tooltip  -->
                     <Grid
                         x:Name="SendBtnOverlay"
@@ -679,6 +716,10 @@
                         <Setter Target="Loader.IsLoading" Value="True" />
                         <Setter Target="InputTxtBox.IsEnabled" Value="False" />
                         <Setter Target="SendBtn.IsEnabled" Value="False" />
+                        <Setter Target="SendBtn.Visibility" Value="Collapsed" />
+                        <Setter Target="SendBtnOverlay.Visibility" Value="Collapsed" />
+                        <Setter Target="CancelBtn.IsEnabled" Value="True" />
+                        <Setter Target="CancelBtn.Visibility" Value="Visible" />
                         <Setter Target="DisclaimerPresenter.Visibility" Value="Collapsed" />
                         <Setter Target="LoadingText.Visibility" Value="Visible" />
                     </VisualState.Setters>

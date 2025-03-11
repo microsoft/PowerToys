@@ -17,13 +17,6 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     internal static class FindHelper
     {
-        public static T Find<T, TW>(Func<TW> findElementFunc, WindowsDriver<WindowsElement>? driver, int timeoutMS)
-            where T : Element, new()
-        {
-            var item = findElementFunc() as WindowsElement;
-            return NewElement<T>(item, driver, timeoutMS);
-        }
-
         public static ReadOnlyCollection<T>? FindAll<T, TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, WindowsDriver<WindowsElement>? driver, int timeoutMS)
             where T : Element, new()
         {
@@ -32,7 +25,7 @@ namespace Microsoft.PowerToys.UITest
             {
                 var element = item as WindowsElement;
                 return NewElement<T>(element, driver, timeoutMS);
-            }).ToList();
+            }).Where(item => item.IsMatchingTarget()).ToList();
 
             return new ReadOnlyCollection<T>(res);
         }

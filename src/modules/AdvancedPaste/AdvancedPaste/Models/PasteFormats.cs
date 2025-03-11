@@ -84,10 +84,32 @@ public enum PasteFormats
 
     [PasteFormatMetadata(
         IsCoreAction = false,
+        ResourceId = "TranscodeToMp3",
+        IconGlyph = "\uE8D6",
+        RequiresAIService = false,
+        CanPreview = false,
+        SupportedClipboardFormats = ClipboardFormat.Audio | ClipboardFormat.Video,
+        IPCKey = AdvancedPasteTranscodeAction.PropertyNames.TranscodeToMp3,
+        KernelFunctionDescription = "Takes an audio or video file in the clipboard and transcodes it to MP3.")]
+    TranscodeToMp3,
+
+    [PasteFormatMetadata(
+        IsCoreAction = false,
+        ResourceId = "TranscodeToMp4",
+        IconGlyph = "\uE714",
+        RequiresAIService = false,
+        CanPreview = false,
+        SupportedClipboardFormats = ClipboardFormat.Video,
+        IPCKey = AdvancedPasteTranscodeAction.PropertyNames.TranscodeToMp4,
+        KernelFunctionDescription = "Takes a video file in the clipboard and transcodes it to MP4 (H.264/AAC).")]
+    TranscodeToMp4,
+
+    [PasteFormatMetadata(
+        IsCoreAction = false,
         IconGlyph = "\uE945",
         RequiresAIService = true,
         CanPreview = true,
-        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html | ClipboardFormat.Audio | ClipboardFormat.Image,
+        SupportedClipboardFormats = ClipboardFormat.Text | ClipboardFormat.Html | ClipboardFormat.Audio | ClipboardFormat.Video | ClipboardFormat.Image,
         RequiresPrompt = true)]
     KernelQuery,
 

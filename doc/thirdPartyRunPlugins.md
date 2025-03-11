@@ -42,6 +42,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [CanIUse](https://github.com/skttl/ptrun-caniuse) | [skttl](https://github.com/skttl) | Look up browser feature support with caniuse.com |
 | [TailwindCSS](https://github.com/skttl/ptrun-tailwindcss) | [skttl](https://github.com/skttl) | Search the documentation of TailwindCSS |
 | [HttpStatusCodes](https://github.com/grzhan/HttpStatusCodePowerToys) | [grzhan](https://github.com/grzhan) | Search for http status codes |
+| [SVGL](https://github.com/Sameerjs6/powertoys-svgl) | [SameerJS6](https://github.com/SameerJS6) | Search, Browse and copy SVG logos from SVGL. |
 
 ## Extending software plugins
 
@@ -63,3 +64,4 @@ Below are community created plugins that target a website or software.  They are
 | [SSH](https://github.com/8LWXpg/PowerToysRun-SSH) | [8LWXpg](https://github.com/8LWXpg) | Connect to ssh clients |
 | [Bilibili](https://github.com/Whuihuan/PowerToysRun-Bilibili) | [Whuihuan](https://github.com/Whuihuan) | Use AVID or BVID to parse and jump to Bilibili |
 | [YubicoOauthOTP](https://github.com/dlnilsson/Community.PowerToys.Run.Plugin.YubicoOauthOTP) | [dlnilsson](https://github.com/dlnilsson) | Display generated codes from OATH accounts stored on the YubiKey in powerToys Run  |
+| [Firefox Bookmark](https://github.com/8LWXpg/PowerToysRun-FirefoxBookmark) | [8LWXpg](https://github.com/8LWXpg) | Open bookmarks in Firefox based browser |
