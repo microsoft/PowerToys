@@ -119,7 +119,6 @@ namespace RegistryPreviewUILib
                         break;
                     case ContentDialogResult.Secondary:
                         // Don't save and continue the file open!
-                        UpdateUnsavedFileState(false);
                         break;
                     default:
                         // Don't open the new file!
