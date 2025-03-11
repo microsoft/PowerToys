@@ -31,11 +31,6 @@ namespace Microsoft.PowerToys.UITest
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver());
         }
 
-        ~UITestBase()
-        {
-            this.sessionHelper.Cleanup();
-        }
-
         /// <summary>
         /// Initializes the test.
         /// </summary>
@@ -51,6 +46,16 @@ namespace Microsoft.PowerToys.UITest
                     this.Find("DEBUG").Find<Button>("Close").Click();
                 }
             }
+        }
+
+        /// <summary>
+        /// Initializes the test.
+        /// </summary>
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            this.Session.Cleanup();
+            this.sessionHelper.Cleanup();
         }
 
         /// <summary>

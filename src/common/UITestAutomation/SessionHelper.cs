@@ -35,6 +35,7 @@ namespace Microsoft.PowerToys.UITest
                 Verb = "runas",
             };
 
+            this.ExitExe(winAppDriverProcessInfo.FileName);
             this.appDriver = Process.Start(winAppDriverProcessInfo);
 
             var desktopCapabilities = new AppiumOptions();
@@ -53,6 +54,7 @@ namespace Microsoft.PowerToys.UITest
         public SessionHelper Init()
         {
             string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            this.ExitExe(path + this.sessionPath);
             this.StartExe(path + this.sessionPath);
 
             Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
@@ -68,15 +70,50 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void Cleanup()
         {
+            this.ExitScopeExe();
             try
             {
                 appDriver?.Kill();
+                appDriver?.WaitForExit();
             }
             catch (Exception ex)
             {
                 // Handle exceptions if needed
                 Debug.WriteLine($"Exception during Cleanup: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Exit a exe.
+        /// </summary>
+        /// <param name="path">The path to the application executable.</param>
+        public void ExitExe(string path)
+        {
+            // Exit Exe
+            string exeName = Path.GetFileNameWithoutExtension(path);
+
+            // PowerToys.FancyZonesEditor
+            Process[] processes = Process.GetProcessesByName(exeName);
+            foreach (Process process in processes)
+            {
+                try
+                {
+                    process.Kill();
+                    process.WaitForExit(); // Optional: Wait for the process to exit
+                }
+                catch (Exception ex)
+                {
+                    Assert.Fail($"Failed to terminate process {process.ProcessName} (ID: {process.Id}): {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Exit now exe.
+        /// </summary>
+        public void ExitScopeExe()
+        {
+            this.ExitExe(sessionPath);
         }
 
         /// <summary>
