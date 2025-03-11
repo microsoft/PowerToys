@@ -168,7 +168,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     Settings.Properties.DeleteBackupsMode = (HostsDeleteBackupMode)value;
                     NotifyPropertyChanged();
-                    OnPropertyChanged(nameof(MinimumDaysToKeep));
+                    OnPropertyChanged(nameof(MinimumBackupsCount));
                 }
             }
         }
@@ -199,7 +199,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int MinimumDaysToKeep => DeleteBackupsMode == 1 ? 1 : 0;
+        public int MinimumBackupsCount => DeleteBackupsMode == 1 ? 1 : 0;
 
         public HostsViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<HostsSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, bool isElevated)
         {
