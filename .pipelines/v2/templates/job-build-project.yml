@@ -215,6 +215,10 @@ jobs:
       & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
     displayName: Download and install WiX 3.14 development build
 
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\.pipelines\installWiXVNext.ps1"
+    displayName: Download and install WiX 4/5 development build
+
   - ${{ parameters.beforeBuildSteps }}
 
   - task: VSBuild@1
@@ -388,6 +392,21 @@ jobs:
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
 
   - template: steps-build-installer.yml
+    parameters:
+      codeSign: ${{ parameters.codeSign }}
+      signingIdentity: ${{ parameters.signingIdentity }}
+      versionNumber: ${{ parameters.versionNumber }}
+      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+      buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
+
+  - template: steps-build-installer-vnext.yml
+    parameters:
+      codeSign: ${{ parameters.codeSign }}
+      signingIdentity: ${{ parameters.signingIdentity }}
+      versionNumber: ${{ parameters.versionNumber }}
+      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+
+  - template: steps-build-installer-vnext.yml
     parameters:
       codeSign: ${{ parameters.codeSign }}
       signingIdentity: ${{ parameters.signingIdentity }}
