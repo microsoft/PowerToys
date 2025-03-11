@@ -440,7 +440,7 @@ namespace RegistryPreviewUILib
         /// Sets indicator for programatic text change and adds text changed handler
         /// </summary>
         /// <remarks>
-        /// Use this always, if buttton actions temporary disable the text changed event
+        /// Use this always, if button actions temporary disable the text changed event
         /// </remarks>
         private void ButtonAction_RestoreTextChangedEvent()
         {
