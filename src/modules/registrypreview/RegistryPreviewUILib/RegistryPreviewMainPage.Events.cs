@@ -146,7 +146,6 @@ namespace RegistryPreviewUILib
             {
                 // mute the TextChanged handler to make for clean UI
                 MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
-                editorContentChangedScripted = true;
 
                 // update file name
                 _appFileName = storageFile.Path;
@@ -156,7 +155,7 @@ namespace RegistryPreviewUILib
                 UpdateUnsavedFileState(false);
 
                 // Restore the event handler as we're loaded
-                MonacoEditor.TextChanged += MonacoEditor_TextChanged;
+                ButtonAction_RestoreTextChangedEvent();
             }
         }
 
@@ -180,7 +179,6 @@ namespace RegistryPreviewUILib
         private async void SaveAsButton_Click(object sender, RoutedEventArgs e)
         {
             // mute the TextChanged handler to make for clean UI
-            editorContentChangedScripted = true;
             MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
 
             if (!AskFileName(_appFileName) || !SaveFile())
@@ -191,7 +189,7 @@ namespace RegistryPreviewUILib
             UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
 
             // restore the TextChanged handler
-            MonacoEditor.TextChanged += MonacoEditor_TextChanged;
+            ButtonAction_RestoreTextChangedEvent();
         }
 
         /// <summary>
@@ -200,7 +198,6 @@ namespace RegistryPreviewUILib
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
             // mute the TextChanged handler to make for clean UI
-            editorContentChangedScripted = true;
             MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
 
             // reload the current Registry file and update the toolbar accordingly.
@@ -209,7 +206,7 @@ namespace RegistryPreviewUILib
             UpdateUnsavedFileState(false);
 
             // restore the TextChanged handler
-            MonacoEditor.TextChanged += MonacoEditor_TextChanged;
+            ButtonAction_RestoreTextChangedEvent();
         }
 
         /// <summary>
@@ -437,6 +434,20 @@ namespace RegistryPreviewUILib
 
                 editorContentChangedScripted = false;
             });
+        }
+
+        /// <summary>
+        /// Sets indicator for programatic text change and adds text changed handler
+        /// </summary>
+        /// <remarks>
+        /// Use this always, if buttton actions temporary disable the text changed event
+        /// </remarks>
+        private void ButtonAction_RestoreTextChangedEvent()
+        {
+            // Solves the problem that enabling the event handler fires it one time.
+            // These one time fired event would causes wrong unsaved changes state.
+            editorContentChangedScripted = true;
+            MonacoEditor.TextChanged += MonacoEditor_TextChanged;
         }
 
         // Commands to show data preview
