@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -88,6 +89,7 @@ namespace RegistryPreviewUILib
                     };
                     ScrollViewer.SetVerticalScrollBarVisibility(multiLineBox, ScrollBarVisibility.Auto);
                     ScrollViewer.SetHorizontalScrollBarVisibility(multiLineBox, ScrollBarVisibility.Auto);
+                    AutomationProperties.SetName(multiLineBox, resourceLoader.GetString("DataPreview_AutomationPropertiesName_MultilineTextValue"));
                     panel.Children.Add(multiLineBox);
                     break;
                 case "REG_EXPAND_SZ":
@@ -101,6 +103,7 @@ namespace RegistryPreviewUILib
                         RequestedTheme = panel.ActualTheme,
                         Text = value,
                     };
+                    AutomationProperties.SetName(stringBox, resourceLoader.GetString("DataPreview_AutomationPropertiesName_TextValue"));
                     panel.Children.Add(stringBox);
                     break;
             }
@@ -184,6 +187,7 @@ namespace RegistryPreviewUILib
                 Visibility = Visibility.Collapsed,
                 DataSource = data,
             };
+            AutomationProperties.SetName(binaryPreviewBox, resourceLoader.GetString("DataPreview_AutomationPropertiesName_BinaryDataPreview"));
             binaryPreviewBox.Loaded += BinaryPreview_HexBoxLoaded;
 
             // Create TextBox
@@ -199,6 +203,7 @@ namespace RegistryPreviewUILib
                 RequestedTheme = panel.ActualTheme,
                 Visibility = Visibility.Collapsed,
             };
+            AutomationProperties.SetName(visibleText, resourceLoader.GetString("DataPreview_AutomationPropertiesName_VisibleTextPreview"));
 
             // Add controls: 0 = SelectorBar, 1 = ProgressRing, 2 = HexBox, 3 = TextBox
             panel.Children.Add(navBar);

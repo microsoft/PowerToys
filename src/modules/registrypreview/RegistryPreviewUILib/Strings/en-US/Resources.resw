@@ -300,6 +300,9 @@
   <data name="ShowDataPreviewButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Show enhanced preview</value>
   </data>
+  <data name="ShowDataPreviewButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Show enhanced preview</value>
+  </data>
   <data name="DataPreviewTitle" xml:space="preserve">
     <value>View data</value>
   </data>
@@ -326,5 +329,17 @@
   <data name="DataPreviewDataView" xml:space="preserve">
     <value>Data</value>
     <comment>Like "binary data"</comment>
+  </data>
+  <data name="DataPreview_AutomationPropertiesName_MultilineTextValue" xml:space="preserve">
+    <value>Multiline text value</value>
+  </data>
+  <data name="DataPreview_AutomationPropertiesName_TextValue" xml:space="preserve">
+    <value>Text value</value>
+  </data>
+  <data name="DataPreview_AutomationPropertiesName_BinaryDataPreview" xml:space="preserve">
+    <value>Binary data preview</value>
+  </data>
+  <data name="DataPreview_AutomationPropertiesName_VisibleTextPreview" xml:space="preserve">
+    <value>Visible text preview</value>
   </data>
 </root>
