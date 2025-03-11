@@ -29,7 +29,7 @@ public partial class ToastStatusMessage
         {
             if (!_shown)
             {
-                ExtensionHost.ShowStatus(Message);
+                ExtensionHost.ShowStatus(Message, StatusContext.Extension);
                 _ = Task.Run(() =>
                 {
                     Thread.Sleep(Duration);

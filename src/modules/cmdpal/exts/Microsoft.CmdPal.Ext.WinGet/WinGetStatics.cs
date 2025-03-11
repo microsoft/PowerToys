@@ -98,7 +98,7 @@ internal static class WinGetStatics
         if (connectResult.Status == ConnectResultStatus.CatalogError)
         {
             _errorMessage.Message = $"Error {connectResult.ExtendedErrorCode.HResult}. Are you connected to the internet?";
-            WinGetExtensionHost.Instance.ShowStatus(_errorMessage);
+            WinGetExtensionHost.Instance.ShowStatus(_errorMessage, StatusContext.Extension);
         }
 
         return compositeCatalog;

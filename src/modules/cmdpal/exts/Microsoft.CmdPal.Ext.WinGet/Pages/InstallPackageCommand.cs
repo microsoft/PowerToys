@@ -64,7 +64,7 @@ public partial class InstallPackageCommand : InvokableCommand
             // Uninstall
             _installBanner.State = MessageState.Info;
             _installBanner.Message = $"Uninstalling {_package.Name}...";
-            WinGetExtensionHost.Instance.ShowStatus(_installBanner);
+            WinGetExtensionHost.Instance.ShowStatus(_installBanner, StatusContext.Extension);
 
             var installOptions = WinGetStatics.WinGetFactory.CreateUninstallOptions();
             installOptions.PackageUninstallScope = PackageUninstallScope.Any;
@@ -80,7 +80,7 @@ public partial class InstallPackageCommand : InvokableCommand
             // Install
             _installBanner.State = MessageState.Info;
             _installBanner.Message = $"Installing {_package.Name}...";
-            WinGetExtensionHost.Instance.ShowStatus(_installBanner);
+            WinGetExtensionHost.Instance.ShowStatus(_installBanner, StatusContext.Extension);
 
             var installOptions = WinGetStatics.WinGetFactory.CreateInstallOptions();
             installOptions.PackageInstallScope = PackageInstallScope.Any;
@@ -155,7 +155,7 @@ public partial class InstallPackageCommand : InvokableCommand
                 {
                     downloadText += $"{FormatBytes(progress.BytesDownloaded)} of {FormatBytes(progress.BytesRequired)}";
                     _installBanner.Progress ??= new ProgressState() { IsIndeterminate = false };
-                    var downloaded = (float)progress.BytesDownloaded / (float)progress.BytesRequired;
+                    var downloaded = progress.BytesDownloaded / (float)progress.BytesRequired;
                     var percent = downloaded * 100.0f;
                     ((ProgressState)_installBanner.Progress).ProgressPercent = (uint)percent;
                     _installBanner.Message = downloadText;

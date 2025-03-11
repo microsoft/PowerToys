@@ -40,7 +40,7 @@ public partial class ExtensionHost
         LogMessage(logMessage);
     }
 
-    public static void ShowStatus(IStatusMessage message)
+    public static void ShowStatus(IStatusMessage message, StatusContext context)
     {
         if (Host != null)
         {
@@ -48,7 +48,7 @@ public partial class ExtensionHost
             {
                 try
                 {
-                    await Host.ShowStatus(message);
+                    await Host.ShowStatus(message, context);
                 }
                 catch (Exception)
                 {

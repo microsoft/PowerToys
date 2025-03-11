@@ -29,7 +29,7 @@ public sealed partial class ContentPage : Page,
 
     // Using a DependencyProperty as the backing store for ViewModel.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty ViewModelProperty =
-        DependencyProperty.Register(nameof(ViewModel), typeof(ContentPageViewModel), typeof(FormsPage), new PropertyMetadata(null));
+        DependencyProperty.Register(nameof(ViewModel), typeof(ContentPageViewModel), typeof(ContentPage), new PropertyMetadata(null));
 
     public ContentPage()
     {

@@ -47,7 +47,7 @@ public sealed partial class CommandPaletteHost : IExtensionHost
         _builtInProvider = builtInProvider;
     }
 
-    public IAsyncAction ShowStatus(IStatusMessage? message)
+    public IAsyncAction ShowStatus(IStatusMessage? message, StatusContext context)
     {
         if (message == null)
         {
@@ -58,7 +58,7 @@ public sealed partial class CommandPaletteHost : IExtensionHost
 
         _ = Task.Run(() =>
         {
-            ProcessStatusMessage(message);
+            ProcessStatusMessage(message, context);
         });
 
         return Task.CompletedTask.AsAsyncAction();
@@ -117,7 +117,7 @@ public sealed partial class CommandPaletteHost : IExtensionHost
             _globalLogPageContext.Scheduler);
     }
 
-    public void ProcessStatusMessage(IStatusMessage message)
+    public void ProcessStatusMessage(IStatusMessage message, StatusContext context)
     {
         // If this message is already in the list of messages, just bring it to the top
         var oldVm = StatusMessages.Where(messageVM => messageVM.Model.Unsafe == message).FirstOrDefault();

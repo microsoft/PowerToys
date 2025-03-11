@@ -121,7 +121,7 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
         _creatingMessage.State = MessageState.Info;
         _creatingMessage.Message = _creatingText;
         _creatingMessage.Progress = new ProgressState() { IsIndeterminate = true };
-        BuiltinsExtensionHost.Instance.ShowStatus(_creatingMessage);
+        BuiltinsExtensionHost.Instance.ShowStatus(_creatingMessage, StatusContext.Extension);
 
         try
         {

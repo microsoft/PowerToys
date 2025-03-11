@@ -45,7 +45,7 @@ public partial class ExtensionHostInstance
         LogMessage(logMessage);
     }
 
-    public void ShowStatus(IStatusMessage message)
+    public void ShowStatus(IStatusMessage message, StatusContext context)
     {
         if (Host != null)
         {
@@ -53,7 +53,7 @@ public partial class ExtensionHostInstance
             {
                 try
                 {
-                    await Host.ShowStatus(message);
+                    await Host.ShowStatus(message, context);
                 }
                 catch (Exception)
                 {

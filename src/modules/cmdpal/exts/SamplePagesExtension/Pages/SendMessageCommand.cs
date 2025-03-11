@@ -26,7 +26,7 @@ internal sealed partial class SendMessageCommand : InvokableCommand
         }
 
         var message = new StatusMessage() { Message = $"I am status message no.{sentMessages++}", State = kind };
-        ExtensionHost.ShowStatus(message);
+        ExtensionHost.ShowStatus(message, StatusContext.Page);
         return CommandResult.KeepOpen();
     }
 }
@@ -67,7 +67,7 @@ internal sealed partial class SingleMessageCommand : InvokableCommand
         }
         else
         {
-            ExtensionHost.ShowStatus(_myMessage);
+            ExtensionHost.ShowStatus(_myMessage, StatusContext.Page);
         }
 
         Shown = !Shown;
@@ -104,7 +104,7 @@ internal sealed partial class IndeterminateProgressMessageCommand : InvokableCom
     {
         if (_state == State.NotStarted)
         {
-            ExtensionHost.ShowStatus(_myMessage);
+            ExtensionHost.ShowStatus(_myMessage, StatusContext.Page);
             _ = Task.Run(() =>
             {
                 Thread.Sleep(3000);
@@ -126,7 +126,7 @@ internal sealed partial class IndeterminateProgressMessageCommand : InvokableCom
         }
         else if (_state == State.Started)
         {
-            ExtensionHost.ShowStatus(_myMessage);
+            ExtensionHost.ShowStatus(_myMessage, StatusContext.Page);
         }
 
         return CommandResult.KeepOpen();

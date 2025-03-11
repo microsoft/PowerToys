@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2025-03-08
+last updated: 2025-03-10
 issue id: n/a
 ---
 
@@ -55,8 +55,6 @@ functionality.
         - [Updating the list](#updating-the-list)
         - [Empty content](#empty-content)
         - [Filtering the list](#filtering-the-list)
-      - [Markdown Pages](#markdown-pages)
-      - [Form Pages](#form-pages)
       - [Content Pages](#content-pages)
         - [Markdown Content](#markdown-content)
         - [Form Content](#form-content)
@@ -301,7 +299,7 @@ The structure of the data DevPal caches will look something like the following:
             "commands":
             [
                 {
-                    "id": "TemplateExtension.MyFistCommand",
+                    "id": "TemplateExtension.MyFirstCommand",
                     "icon": "",
                     "title": "",
                     "subtitle": "",
@@ -1160,36 +1158,6 @@ Again: this only applies to the top-level list items of frozen command
 providers. Once the command provider is instantiated and running, `IListItem`s
 on nested pages will all work exactly as expected. -->
 
-#### Markdown Pages
-
-Deprecated. Don't use me. Use ContentPage instead. 
-
-```csharp
-interface IMarkdownPage requires IPage {
-    String[] Bodies(); // TODO! should this be an IBody, so we can make it observable?
-    IDetails Details();
-    IContextItem[] Commands { get; };
-}
-```
-
-#### Form Pages
-
-Deprecated. Don't use me. Use ContentPage instead. 
-
-```csharp
-
-interface IForm { // TODO! should this be observable?
-    String TemplateJson();
-    String DataJson();
-    String StateJson();
-    ICommandResult SubmitForm(String payload);
-}
-interface IFormPage requires IPage {
-    IForm[] Forms();
-}
-```
-
-
 #### Content Pages
 
 Content pages are used for extensions that want to display richer content than
@@ -1886,6 +1854,12 @@ enum MessageState
     Error,
 };
 
+enum StatusContext
+{
+    Page,
+    Extension
+};
+
 interface IProgressState requires INotifyPropChanged
 {
     Boolean IsIndeterminate { get; };
@@ -1908,10 +1882,7 @@ interface ILogMessage
 
 interface IExtensionHost
 {
-    UInt64 HostingHwnd { get; };
-    String LanguageOverride { get; };
-
-    Windows.Foundation.IAsyncAction ShowStatus(IStatusMessage message);
+    Windows.Foundation.IAsyncAction ShowStatus(IStatusMessage message, StatusContext context);
     Windows.Foundation.IAsyncAction HideStatus(IStatusMessage message);
 
     Windows.Foundation.IAsyncAction LogMessage(ILogMessage message);

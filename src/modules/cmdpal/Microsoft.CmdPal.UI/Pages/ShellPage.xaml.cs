@@ -144,8 +144,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         {
                             IsNested = !isMainPage,
                         },
-                        IFormPage formsPage => new FormsPageViewModel(formsPage, _mainTaskScheduler, host),
-                        IMarkdownPage markdownPage => new MarkdownPageViewModel(markdownPage, _mainTaskScheduler, host),
                         IContentPage contentPage => new ContentPageViewModel(contentPage, _mainTaskScheduler, host),
                         _ => throw new NotSupportedException(),
                     };
@@ -158,8 +156,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         page switch
                         {
                             IListPage => typeof(ListPage),
-                            IFormPage => typeof(FormsPage),
-                            IMarkdownPage => typeof(MarkdownPage),
                             IContentPage => typeof(ContentPage),
                             _ => throw new NotSupportedException(),
                         },

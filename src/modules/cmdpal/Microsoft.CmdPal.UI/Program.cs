@@ -16,7 +16,7 @@ internal sealed class Program
     // LOAD BEARING
     //
     // Main cannot be async. If it is, then the clipboard won't work, and neither will narrator.
-    [STAThread]
+    [MTAThread]
     private static int Main(string[] args)
     {
         if (Helpers.GpoValueChecker.GetConfiguredCmdPalEnabledValue() == Helpers.GpoRuleConfiguredValue.Disabled)
