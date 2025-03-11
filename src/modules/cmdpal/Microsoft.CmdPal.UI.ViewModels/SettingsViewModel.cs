@@ -4,12 +4,11 @@
 
 using System.Collections.ObjectModel;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsViewModel : PageViewModel
+public partial class SettingsViewModel
 {
     private readonly SettingsModel _settings;
     private readonly IServiceProvider _serviceProvider;
@@ -87,16 +86,9 @@ public partial class SettingsViewModel : PageViewModel
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)
-        : base(null, scheduler, CommandPaletteHost.Instance)
     {
         _settings = settings;
         _serviceProvider = serviceProvider;
-
-        Icon = new(new IconInfo("\uE713"));
-        Icon.InitializeProperties();
-        IsInitialized = true;
-        ModelIsLoading = false;
-        Title = "Settings";
 
         var activeProviders = GetCommandProviders();
         var allProviderSettings = _settings.ProviderSettings;

@@ -19,8 +19,8 @@ public partial class NewExtensionPage : ContentPage
 
     public NewExtensionPage()
     {
-        Name = "Open";
-        Title = "Create a new extension";
+        Name = Properties.Resources.builtin_create_extension_name;
+        Title = Properties.Resources.builtin_create_extension_title;
         Icon = new IconInfo("\uEA86"); // Puzzle
 
         _inputForm.FormSubmitted += FormSubmitted;

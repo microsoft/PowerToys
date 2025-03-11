@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.Indexer.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Data;
+using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
@@ -34,7 +35,7 @@ internal sealed partial class ExploreListItem : ListItem
                 () => { PathChangeRequested?.Invoke(this, FilePath); })
             {
                 Result = CommandResult.KeepOpen(),
-                Name = "Browse", // TODO:LOC
+                Name = Resources.Indexer_Command_Browse,
             };
             context.Add(new CommandContextItem(new DirectoryPage(indexerItem.FullPath)));
         }
@@ -46,7 +47,7 @@ internal sealed partial class ExploreListItem : ListItem
         MoreCommands = [
             ..context,
             new CommandContextItem(new OpenWithCommand(indexerItem)),
-            new CommandContextItem(new ShowFileInFolderCommand(indexerItem.FullPath)), // TODO:LOC, like IndexerListItem
+            new CommandContextItem(new ShowFileInFolderCommand(indexerItem.FullPath) { Name = Resources.Indexer_Command_ShowInFolder }),
             new CommandContextItem(new CopyPathCommand(indexerItem)),
             new CommandContextItem(new OpenInConsoleCommand(indexerItem)),
             new CommandContextItem(new OpenPropertiesCommand(indexerItem)),

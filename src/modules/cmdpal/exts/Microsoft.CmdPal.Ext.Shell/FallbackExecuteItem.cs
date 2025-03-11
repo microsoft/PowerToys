@@ -4,6 +4,7 @@
 
 using Microsoft.CmdPal.Ext.Shell.Commands;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
+using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell;
@@ -13,7 +14,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
     private readonly ExecuteItem _executeItem;
 
     public FallbackExecuteItem(SettingsManager settings)
-        : base(new ExecuteItem(string.Empty, settings), "Run command") // TODO:LOC
+        : base(new ExecuteItem(string.Empty, settings), Resources.shell_command_display_title)
     {
         _executeItem = (ExecuteItem)this.Command!;
         Title = string.Empty;

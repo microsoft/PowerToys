@@ -2,14 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics.CodeAnalysis;
-using System.IO.Compression;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 
@@ -70,7 +66,7 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
         return CommandResult.KeepOpen();
     }
 
-    private static readonly string CardTemplate = """
+    private static readonly string CardTemplate = $$"""
 {
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
     "type": "AdaptiveCard",
@@ -78,7 +74,7 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
     "body": [
         {
             "type": "TextBlock",
-            "text": "Successfully created your new extension!",
+            "text": "{{Properties.Resources.builtin_create_extension_success}}",
             "size": "large",
             "weight": "bolder",
             "style": "heading",
@@ -86,7 +82,7 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
         },
         {
             "type": "TextBlock",
-            "text": "Your new extension \"${displayName}\" was created in:",
+            "text": "{{Properties.Resources.builtin_created_in_text}}",
             "wrap": true
         },
         {
@@ -96,44 +92,44 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
         },
         {
             "type": "TextBlock",
-            "text": "Next steps",
+            "text": "{{Properties.Resources.builtin_created_next_steps_title}}",
             "style": "heading",
             "wrap": true
         },
         {
             "type": "TextBlock",
-            "text": "Now that your extension project has been created, open the solution up in Visual Studio to start writing your extension code.",
+            "text": "{{Properties.Resources.builtin_created_next_steps}}",
             "wrap": true
         },
         {
             "type": "TextBlock",
-            "text": "Navigate to `${name}Page.cs` to start adding items to the list, or to `${name}CommandsProvider.cs` to add new commands.",
+            "text": "{{Properties.Resources.builtin_created_next_steps_p2}}",
             "wrap": true
         },
         {
             "type": "TextBlock",
-            "text": "Once you're ready to test deploy the package locally with Visual Studio, then run the \"Reload\" command in the Command Palette to load your new extension.",
+            "text": "{{Properties.Resources.builtin_created_next_steps_p3}}",
             "wrap": true
         }
     ],
     "actions": [
         {
             "type": "Action.Submit",
-            "title": "Open Solution",
+            "title": "{{Properties.Resources.builtin_create_extension_open_solution}}",
             "data": {
                 "x": "sln"
             }
         },
         {
             "type": "Action.Submit",
-            "title": "Open directory",
+            "title": "{{Properties.Resources.builtin_create_extension_open_directory}}",
             "data": {
                 "x": "dir"
             }
         },
         {
             "type": "Action.Submit",
-            "title": "Create another",
+            "title": "{{Properties.Resources.builtin_create_extension_create_another}}",
             "data": {
                 "x": "new"
             }

@@ -5,6 +5,7 @@
 using System.Globalization;
 using System.Text;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
+using Microsoft.CmdPal.Ext.WebSearch.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using BrowserInfo = Microsoft.CmdPal.Ext.WebSearch.Helpers.DefaultBrowserInfo;
 
@@ -16,7 +17,7 @@ internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
     private static readonly CompositeFormat PluginOpen = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open);
 
     public FallbackExecuteSearchItem(SettingsManager settings)
-        : base(new SearchWebCommand(string.Empty, settings), "Search the web") // TODO:LOC
+        : base(new SearchWebCommand(string.Empty, settings), Resources.command_item_title)
     {
         _executeItem = (SearchWebCommand)this.Command!;
         Title = string.Empty;

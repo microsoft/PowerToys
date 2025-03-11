@@ -11,11 +11,11 @@ internal sealed partial class FallbackReloadItem : FallbackCommandItem
     private readonly ReloadExtensionsCommand _reloadCommand;
 
     public FallbackReloadItem()
-        : base(new ReloadExtensionsCommand(), "Reload extensions") // TODO:LOC
+        : base(new ReloadExtensionsCommand(), Properties.Resources.builtin_reload_display_title)
     {
         _reloadCommand = (ReloadExtensionsCommand)Command!;
         Title = string.Empty;
-        Subtitle = "Reload Command Palette extensions";
+        Subtitle = Properties.Resources.builtin_reload_subtitle;
     }
 
     public override void UpdateQuery(string query)

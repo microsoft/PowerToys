@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -14,7 +15,7 @@ internal sealed partial class OpenInTerminalCommand : InvokableCommand
 
     public OpenInTerminalCommand(string folder)
     {
-        Name = "Open in Terminal";
+        Name = Resources.bookmarks_open_in_terminal_name;
         _folder = folder;
     }
 

@@ -4,8 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -27,7 +29,7 @@ public partial class BookmarksCommandProvider : CommandProvider
     public BookmarksCommandProvider()
     {
         Id = "Bookmarks";
-        DisplayName = "Bookmarks";
+        DisplayName = Resources.bookmarks_display_name;
         Icon = new IconInfo("\uE718"); // Pin
 
         _addNewCommand.AddedCommand += AddNewCommand_AddedCommand;
@@ -96,7 +98,7 @@ public partial class BookmarksCommandProvider : CommandProvider
         catch (Exception ex)
         {
             // debug log error
-            Console.WriteLine($"Error loading commands: {ex.Message}");
+            Debug.WriteLine($"Error loading commands: {ex.Message}");
         }
     }
 
@@ -130,8 +132,8 @@ public partial class BookmarksCommandProvider : CommandProvider
         contextMenu.Add(new CommandContextItem(edit));
 
         var delete = new CommandContextItem(
-            title: "Delete bookmark",
-            name: "Delete",
+            title: Resources.bookmarks_delete_title,
+            name: Resources.bookmarks_delete_name,
             action: () =>
             {
                 if (_bookmarks != null)

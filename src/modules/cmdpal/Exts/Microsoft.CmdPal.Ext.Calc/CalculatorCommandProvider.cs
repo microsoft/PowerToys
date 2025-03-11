@@ -5,6 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
+using System.Text;
+using Microsoft.CmdPal.Ext.Calc.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -13,13 +16,13 @@ namespace Microsoft.CmdPal.Ext.Calc;
 
 public partial class CalculatorCommandProvider : CommandProvider
 {
-    private readonly ListItem _listItem = new(new CalculatorListPage()) { Subtitle = "Press = to type an equation" };
+    private readonly ListItem _listItem = new(new CalculatorListPage()) { Subtitle = Resources.calculator_top_level_subtitle };
     private readonly FallbackCalculatorItem _fallback = new();
 
     public CalculatorCommandProvider()
     {
         Id = "Calculator";
-        DisplayName = "Calculator";
+        DisplayName = Resources.calculator_display_name;
         Icon = new IconInfo("\ue8ef"); // Calculator
     }
 
@@ -28,13 +31,15 @@ public partial class CalculatorCommandProvider : CommandProvider
     public override IFallbackCommandItem[] FallbackCommands() => [_fallback];
 }
 
-// todo
-// list page, dynamic
-// first SaveCommand, title=result, subtitle=query, more:copy to clipboard
-//  - when you save, insert into list at spot 1
-//  - also on save, change searchtext to result
-// rest:
-//  * copy, suggest result
+// The calculator page is a dynamic list page
+// * The first command is where we display the results. Title=result, Subtitle=query
+//   - The default command is `SaveCommand`.
+//     - When you save, insert into list at spot 1
+//     - change SearchText to the result
+//   - MoreCommands: a single `CopyCommand` to copy the result to the clipboard
+// * The rest of the items are previously saved results
+//   - Command is a CopyCommand
+//   - Each item also sets the TextToSuggest to the result
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
 public sealed partial class CalculatorListPage : DynamicListPage
 {
@@ -42,12 +47,13 @@ public sealed partial class CalculatorListPage : DynamicListPage
     private readonly SaveCommand _saveCommand = new();
     private readonly CopyTextCommand _copyContextCommand;
     private readonly CommandContextItem _copyContextMenuItem;
+    private static readonly CompositeFormat ErrorMessage = System.Text.CompositeFormat.Parse(Properties.Resources.calculator_error);
 
     public CalculatorListPage()
     {
         Icon = new IconInfo("\ue8ef"); // Calculator
-        Name = "Calculator";
-        PlaceholderText = "Type an equation...";
+        Name = Resources.calculator_title;
+        PlaceholderText = Resources.calculator_placeholder_text;
         Id = "com.microsoft.cmdpal.calculator";
 
         _copyContextCommand = new CopyTextCommand(string.Empty);
@@ -83,7 +89,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
         var firstItem = _items[0];
         if (string.IsNullOrEmpty(newSearch))
         {
-            firstItem.Title = "Type an equation...";
+            firstItem.Title = Resources.calculator_placeholder_text;
             firstItem.Subtitle = string.Empty;
             firstItem.MoreCommands = [];
         }
@@ -106,7 +112,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
         }
         catch (Exception e)
         {
-            result = $"Error: {e.Message}";
+            result = string.Format(CultureInfo.CurrentCulture, ErrorMessage, e.Message);
             return false;
         }
     }
@@ -121,7 +127,7 @@ public sealed partial class SaveCommand : InvokableCommand
 
     public SaveCommand()
     {
-        Name = "Save";
+        Name = Resources.calculator_save_command_name;
     }
 
     public override ICommandResult Invoke()
@@ -137,12 +143,12 @@ internal sealed partial class FallbackCalculatorItem : FallbackCommandItem
     private readonly CopyTextCommand _copyCommand = new(string.Empty);
 
     public FallbackCalculatorItem()
-        : base(new NoOpCommand(), "Calculator") // TODO:LOC
+        : base(new NoOpCommand(), Resources.calculator_title)
     {
         Command = _copyCommand;
         _copyCommand.Name = string.Empty;
         Title = string.Empty;
-        Subtitle = "Type an equation...";
+        Subtitle = Resources.calculator_placeholder_text;
         Icon = new IconInfo("\ue8ef"); // Calculator
     }
 
@@ -151,7 +157,7 @@ internal sealed partial class FallbackCalculatorItem : FallbackCommandItem
         if (CalculatorListPage.ParseQuery(query, out var result))
         {
             _copyCommand.Text = result;
-            _copyCommand.Name = string.IsNullOrWhiteSpace(query) ? string.Empty : "Copy";
+            _copyCommand.Name = string.IsNullOrWhiteSpace(query) ? string.Empty : Resources.calculator_copy_command_name;
             Title = result;
 
             // we have to make the subtitle the equation,

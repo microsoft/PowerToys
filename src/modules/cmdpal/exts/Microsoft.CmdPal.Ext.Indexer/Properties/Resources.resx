@@ -120,6 +120,9 @@
   <data name="IndexerCommandsProvider_DisplayName" xml:space="preserve">
     <value>Indexer file search commands</value>
   </data>
+  <data name="Indexer_Command_Browse" xml:space="preserve">
+    <value>Browse</value>
+  </data>
   <data name="Indexer_Command_CopyPath" xml:space="preserve">
     <value>Copy path</value>
   </data>
@@ -137,6 +140,18 @@
   </data>
   <data name="Indexer_Command_ShowInFolder" xml:space="preserve">
     <value>Show in folder</value>
+  </data>
+  <data name="Indexer_File_Does_Not_Exist" xml:space="preserve">
+    <value>This file doesn't exist</value>
+  </data>
+  <data name="Indexer_File_Is_File_Not_Folder" xml:space="preserve">
+    <value>This is a file, not a folder</value>
+  </data>
+  <data name="Indexer_Find_Path_fallback_display_title" xml:space="preserve">
+    <value>Find file from path</value>
+  </data>
+  <data name="Indexer_Folder_Is_Empty" xml:space="preserve">
+    <value>This folder is empty</value>
   </data>
   <data name="Indexer_PlaceholderText" xml:space="preserve">
     <value>Search for files and folders...</value>

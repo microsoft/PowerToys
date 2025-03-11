@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,77 +117,134 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="cmd_plugin_name" xml:space="preserve">
-    <value>Shell</value>
-  </data>
-  <data name="cmd_plugin_description" xml:space="preserve">
-    <value>Executes commands (e.g. 'ping', 'cmd')</value>
-  </data>
-  <data name="cmd_has_been_executed_times" xml:space="preserve">
-    <value>this command has been executed {0} times</value>
-  </data>
-  <data name="cmd_execute_through_shell" xml:space="preserve">
-    <value>execute command through command shell</value>
-  </data>
-  <data name="cmd_run_as_administrator" xml:space="preserve">
-    <value>Run as administrator (Ctrl+Shift+Enter)</value>
-  </data>
-  <data name="cmd_command_failed" xml:space="preserve">
-    <value>Error running the command</value>
-  </data>
-  <data name="cmd_command_not_found" xml:space="preserve">
-    <value>Command not found</value>
-  </data>
-  <data name="cmd_run_as_user" xml:space="preserve">
-    <value>Run as different user (Ctrl+Shift+U)</value>
-  </data>
-  <data name="leave_shell_open" xml:space="preserve">
-    <value>Keep shell open</value>
-  </data>
-  <data name="shell_command_execution" xml:space="preserve">
-    <value>Command execution</value>
-  </data>
-  <data name="run_command_in_command_prompt" xml:space="preserve">
-    <value>Run in Command Prompt (cmd.exe)</value>
-  </data>
-  <data name="run_command_in_powershell" xml:space="preserve">
-    <value>Run in PowerShell (PowerShell.exe)</value>
-  </data>
-  <data name="find_executable_file_and_run_it" xml:space="preserve">
-    <value>Find and run the executable file</value>
-  </data>
-  <data name="run_command_in_powershell_seven" xml:space="preserve">
-    <value>Run in PowerShell 7 (pwsh.exe)</value>
-  </data>
-  <data name="run_command_in_windows_terminal_cmd" xml:space="preserve">
-    <value>Run in Command Prompt (cmd.exe) using Windows Terminal</value>
-  </data>
-  <data name="run_command_in_windows_terminal_powershell" xml:space="preserve">
-    <value>Run in PowerShell (PowerShell.exe) using Windows Terminal</value>
-  </data>
-  <data name="run_command_in_windows_terminal_powershell_seven" xml:space="preserve">
-    <value>Run in PowerShell 7 (pwsh.exe) using Windows Terminal</value>
-  </data>
-  <data name="run_plugin_cmd_wait_message" xml:space="preserve">
-    <value>Press Enter to continue</value>
-    <comment>"Enter" means the Enter key on the keyboard.</comment>
-  </data>
-  <data name="shell_command_execution_description" xml:space="preserve">
-    <value>All entries using the Windows Terminal force the Windows Terminal as the console host regardless of the system settings</value>
-  </data>
-  <data name="shell_command_name" xml:space="preserve">
-    <value>Run commands</value>
-  </data>
-  <data name="generic_run_command" xml:space="preserve">
-    <value>Run</value>
-  </data>
-  <data name="settings_page_name" xml:space="preserve">
-    <value>Settings</value>
-  </data>
-  <data name="list_placeholder_text" xml:space="preserve">
-    <value>Type the name of a command to run</value>
-  </data>
-  <data name="shell_command_display_title" xml:space="preserve">
-    <value>Run commands</value>
-  </data>
+
+<data name="winget_display_name" xml:space="preserve">
+  <value>WinGet</value>
+  <comment></comment>
+</data>
+<data name="winget_install_extensions_name" xml:space="preserve">
+  <value>Install Extensions</value>
+  <comment></comment>
+</data>
+<data name="winget_install_extensions_title" xml:space="preserve">
+  <value>Install Command Palette extensions</value>
+  <comment></comment>
+</data>
+<data name="winget_install_extensions_subtitle" xml:space="preserve">
+  <value>Search for extensions on WinGet</value>
+  <comment></comment>
+</data>
+<data name="winget_search_store_title" xml:space="preserve">
+  <value>Search for extensions in the Store</value>
+  <comment></comment>
+</data>
+<data name="winget_page_name" xml:space="preserve">
+  <value>Search WinGet</value>
+  <comment></comment>
+</data>
+<data name="winget_create_catalog_error" xml:space="preserve">
+  <value>Error {0}. Are you connected to the internet?</value>
+  <comment></comment>
+</data>
+<data name="winget_uninstall_name" xml:space="preserve">
+  <value>Uninstall</value>
+  <comment></comment>
+</data>
+<data name="winget_install_name" xml:space="preserve">
+  <value>Install</value>
+  <comment></comment>
+</data>
+<data name="winget_uninstalling_package" xml:space="preserve">
+  <value>Uninstalling {0}...</value>
+  <comment>{0} will be replaced by the name of an app package</comment>
+</data>
+<data name="winget_installing_package" xml:space="preserve">
+  <value>Installing {0}...</value>
+  <comment>{0} will be replaced by the name of an app package</comment>
+</data>
+<data name="winget_install_package_finished" xml:space="preserve">
+  <value>Finished install for {0}</value>
+  <comment>{0} will be replaced by the name of an app package</comment>
+</data>
+<data name="winget_uninstall_package_finished" xml:space="preserve">
+  <value>Finished uninstall for {0}</value>
+  <comment>{0} will be replaced by the name of an app package</comment>
+</data>
+<data name="winget_downloading" xml:space="preserve">
+  <value>Downloading</value>
+  <comment></comment>
+</data>
+<data name="winget_queued_package_download" xml:space="preserve">
+  <value>Queued {0} for download...</value>
+  <comment>{0} will be replaced by the name of an app package</comment>
+</data>
+<data name="winget_download_progress" xml:space="preserve">
+  <value>Downloading. {0} of {1}</value>
+  <comment>{0} will be replaced with a number of bytes downloaded, and {1} will be replaced with the total number to download</comment>
+</data>
+<data name="winget_install_package_finishing" xml:space="preserve">
+  <value>Finishing install for {0}...</value>
+  <comment>{0} will be replaced by the name of an app package</comment>
+</data>
+<data name="winget_install_finished" xml:space="preserve">
+  <value>Finished install</value>
+  <comment></comment>
+</data>
+<data name="winget_queued_package_uninstall" xml:space="preserve">
+  <value>Queued {0} for uninstall...</value>
+  <comment>{0} will be replaced by the name of an app package</comment>
+</data>
+<data name="winget_uninstall_package_finishing" xml:space="preserve">
+  <value>Finishing uninstall for {0}...</value>
+  <comment>{0} will be replaced by the name of an app package</comment>
+</data>
+<data name="winget_uninstall_finished" xml:space="preserve">
+  <value>Finished uninstall.</value>
+  <comment></comment>
+</data>
+<data name="winget_author" xml:space="preserve">
+  <value>Author</value>
+  <comment></comment>
+</data>
+<data name="winget_publisher" xml:space="preserve">
+  <value>Publisher</value>
+  <comment></comment>
+</data>
+<data name="winget_copyright" xml:space="preserve">
+  <value>Copyright</value>
+  <comment></comment>
+</data>
+<data name="winget_license" xml:space="preserve">
+  <value>License</value>
+  <comment></comment>
+</data>
+<data name="winget_release_notes" xml:space="preserve">
+  <value>Release Notes</value>
+  <comment></comment>
+</data>
+<data name="winget_view_release_notes" xml:space="preserve">
+  <value>View Release Notes</value>
+  <comment></comment>
+</data>
+<data name="winget_view_online" xml:space="preserve">
+  <value>View online</value>
+  <comment></comment>
+</data>
+<data name="winget_publisher_support" xml:space="preserve">
+  <value>Publisher Support</value>
+  <comment></comment>
+</data>
+<data name="winget_placeholder_text" xml:space="preserve">
+  <value>Start typing to search for packages</value>
+  <comment></comment>
+</data>
+<data name="winget_no_packages_found" xml:space="preserve">
+  <value>No packages found</value>
+  <comment></comment>
+</data>
+<data name="winget_unexpected_error" xml:space="preserve">
+  <value>Unexpected error: {0}</value>
+  <comment>{0} will be replaced by an error code</comment>
+</data>
+
 </root>

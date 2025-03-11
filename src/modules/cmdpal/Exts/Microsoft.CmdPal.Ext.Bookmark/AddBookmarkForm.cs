@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
@@ -32,25 +33,25 @@ internal sealed partial class AddBookmarkForm : FormContent
             "type": "Input.Text",
             "style": "text",
             "id": "name",
-            "label": "Name",
+            "label": "{{Resources.bookmarks_form_name_label}}",
             "value": {{JsonSerializer.Serialize(name)}},
             "isRequired": true,
-            "errorMessage": "Name is required"
+            "errorMessage": "{{Resources.bookmarks_form_name_required}}"
         },
         {
             "type": "Input.Text",
             "style": "text",
             "id": "bookmark",
             "value": {{JsonSerializer.Serialize(url)}},
-            "label": "URL or File Path",
+            "label": "{{Resources.bookmarks_form_bookmark_label}}",
             "isRequired": true,
-            "errorMessage": "URL or File Path is required"
+            "errorMessage": "{{Resources.bookmarks_form_bookmark_required}}"
         }
     ],
     "actions": [
         {
             "type": "Action.Submit",
-            "title": "Save",
+            "title": "{{Resources.bookmarks_form_save}}",
             "data": {
                 "name": "name",
                 "bookmark": "bookmark"

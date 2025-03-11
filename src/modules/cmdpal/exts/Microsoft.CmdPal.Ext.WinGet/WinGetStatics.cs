@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -32,6 +34,8 @@ internal static class WinGetStatics
     private static readonly StatusMessage _errorMessage = new() { State = MessageState.Error };
 
     public static Func<string, ICommandItem?>? AppSearchCallback { get; set; }
+
+    private static readonly CompositeFormat CreateCatalogErrorMessage = System.Text.CompositeFormat.Parse(Properties.Resources.winget_create_catalog_error);
 
     static WinGetStatics()
     {
@@ -97,7 +101,7 @@ internal static class WinGetStatics
 
         if (connectResult.Status == ConnectResultStatus.CatalogError)
         {
-            _errorMessage.Message = $"Error {connectResult.ExtendedErrorCode.HResult}. Are you connected to the internet?";
+            _errorMessage.Message = string.Format(CultureInfo.CurrentCulture, CreateCatalogErrorMessage, connectResult.ExtendedErrorCode.HResult);
             WinGetExtensionHost.Instance.ShowStatus(_errorMessage, StatusContext.Extension);
         }
 

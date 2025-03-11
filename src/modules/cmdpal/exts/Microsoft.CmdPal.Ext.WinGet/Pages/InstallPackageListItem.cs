@@ -68,16 +68,16 @@ public partial class InstallPackageListItem : ListItem
         // key -> {text, url}
         Dictionary<string, (string, string)> simpleData = new()
         {
-            { "Author", (metadata.Author, string.Empty) },
-            { "Publisher", (metadata.Publisher, metadata.PublisherUrl) },
-            { "Copyright", (metadata.Copyright, metadata.CopyrightUrl) },
-            { "License", (metadata.License, metadata.LicenseUrl) },
-            { "Release Notes", (metadata.ReleaseNotes, string.Empty) },
+            { Properties.Resources.winget_author, (metadata.Author, string.Empty) },
+            { Properties.Resources.winget_publisher, (metadata.Publisher, metadata.PublisherUrl) },
+            { Properties.Resources.winget_copyright, (metadata.Copyright, metadata.CopyrightUrl) },
+            { Properties.Resources.winget_license, (metadata.License, metadata.LicenseUrl) },
+            { Properties.Resources.winget_release_notes, (metadata.ReleaseNotes, string.Empty) },
 
             // The link to the release notes will only show up if there is an
             // actual URL for the release notes
-            { "View Release Notes", (string.IsNullOrEmpty(metadata.ReleaseNotesUrl) ? string.Empty : "View online", metadata.ReleaseNotesUrl) },
-            { "Publisher Support", (string.Empty, metadata.PublisherSupportUrl) },
+            { Properties.Resources.winget_view_release_notes, (string.IsNullOrEmpty(metadata.ReleaseNotesUrl) ? string.Empty : Properties.Resources.winget_view_online, metadata.ReleaseNotesUrl) },
+            { Properties.Resources.winget_publisher_support, (string.Empty, metadata.PublisherSupportUrl) },
         };
         var docs = metadata.Documentations.ToArray();
         foreach (var item in docs)

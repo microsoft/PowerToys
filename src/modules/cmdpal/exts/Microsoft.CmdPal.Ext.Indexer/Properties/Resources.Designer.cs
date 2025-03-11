@@ -61,6 +61,15 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Browse.
+        /// </summary>
+        internal static string Indexer_Command_Browse {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Browse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy path.
         /// </summary>
         internal static string Indexer_Command_CopyPath {
@@ -111,6 +120,42 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         internal static string Indexer_Command_ShowInFolder {
             get {
                 return ResourceManager.GetString("Indexer_Command_ShowInFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This file doesn&apos;t exist.
+        /// </summary>
+        internal static string Indexer_File_Does_Not_Exist {
+            get {
+                return ResourceManager.GetString("Indexer_File_Does_Not_Exist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This is a file, not a folder.
+        /// </summary>
+        internal static string Indexer_File_Is_File_Not_Folder {
+            get {
+                return ResourceManager.GetString("Indexer_File_Is_File_Not_Folder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Find file from path.
+        /// </summary>
+        internal static string Indexer_Find_Path_fallback_display_title {
+            get {
+                return ResourceManager.GetString("Indexer_Find_Path_fallback_display_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This folder is empty.
+        /// </summary>
+        internal static string Indexer_Folder_Is_Empty {
+            get {
+                return ResourceManager.GetString("Indexer_Folder_Is_Empty", resourceCulture);
             }
         }
         

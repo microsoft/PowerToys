@@ -117,6 +117,68 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AppName" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppNameDev" xml:space="preserve">
+    <value>Command Palette Dev</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="AppNameCan" xml:space="preserve">
+    <value>Command Palette Canary</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppNamePre" xml:space="preserve">
+    <value>Command Palette Preview</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppStoreName" xml:space="preserve">
+    <value>Windows Command Palette</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppStoreNameDev" xml:space="preserve">
+    <value>Windows Command Palette Dev</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="AppStoreNameCan" xml:space="preserve">
+    <value>Windows Command Palette Canary</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}. "Canary" in this context means an unstable or nightly build of a software product, not the bird.</comment>
+  </data>
+  <data name="AppStoreNamePre" xml:space="preserve">
+    <value>Windows Command Palette Preview</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppShortName" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppShortNameDev" xml:space="preserve">
+    <value>Command Palette Dev</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="AppShortNameCan" xml:space="preserve">
+    <value>Command Palette Canary</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppShortNamePre" xml:space="preserve">
+    <value>Command Palette Preview</value>
+    <comment>{Locked=qps-ploc,qps-ploca,qps-plocm}</comment>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>The Windows Command Palette</value>
+  </data>
+  <data name="AppDescriptionDev" xml:space="preserve">
+    <value>A dev build of the Command Palette</value>
+    <comment>{Locked} The dev build will never be seen in multiple languages</comment>
+  </data>
+  <data name="AppDescriptionCan" xml:space="preserve">
+    <value>The Windows Command Palette (Canary build)</value>
+    <comment>{Locked}</comment>
+  </data>
+  <data name="AppDescriptionPre" xml:space="preserve">
+    <value>The Windows Command Palette (Preview build)</value>
+  </data>
   <data name="Activation_Shortcut_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
@@ -171,24 +233,15 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Commands</value>
     <comment>A section header for information about the app</comment>
   </data>
-  <data name="Run_PositionHeader.Header" xml:space="preserve">
-    <value>Preferred monitor position</value>
-    <comment>as in Show Command Palette on primary monitor</comment>
+  <data name="SettingsWindowTitle" xml:space="preserve">
+    <value>Command Palette Settings</value>
+    <comment>The title of the settings window for the app</comment>
   </data>
-  <data name="Run_PositionHeader.Description" xml:space="preserve">
-    <value>If multiple monitors are in use, Command Palette can be launched on the desired monitor</value>
-    <comment>as in Show Command Palette on primary monitor</comment>
+  <data name="ToastWindowTitle" xml:space="preserve">
+    <value>Command Palette Toast</value>
+    <comment>The title of the toast window for the command palette</comment>
   </data>
-  <data name="Run_Radio_Position_Cursor.Content" xml:space="preserve">
-    <value>Monitor with mouse cursor</value>
-  </data>
-  <data name="Run_Radio_Position_Focus.Content" xml:space="preserve">
-    <value>Monitor with focused window</value>
-  </data>
-  <data name="Run_Radio_Position_Primary_Monitor.Content" xml:space="preserve">
-    <value>Primary monitor</value>
-  </data>
-  <data name="Run_Radio_Position_In_Place.Content" xml:space="preserve">
-    <value>Don't move</value>
+  <data name="DefaultSearchPlaceholderText" xml:space="preserve">
+    <value>Type here to search...</value>
   </data>
 </root>

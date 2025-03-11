@@ -151,6 +151,24 @@ namespace Microsoft.CmdPal.Ext.Registry.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Registry key not found.
+        /// </summary>
+        internal static string Registry_Key_Not_Found {
+            get {
+                return ResourceManager.GetString("Registry_Key_Not_Found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows Registry.
+        /// </summary>
+        internal static string Registry_Page_Title {
+            get {
+                return ResourceManager.GetString("Registry_Page_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Registry key.
         /// </summary>
         internal static string RegistryKey {

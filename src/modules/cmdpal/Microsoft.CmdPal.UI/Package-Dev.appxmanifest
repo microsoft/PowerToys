@@ -19,16 +19,16 @@
   IgnorableNamespaces="uap mp rescap uap3 uap17 desktop6 virtualization">
 
   <Identity
-	Name="Microsoft.CommandPalette.Dev"
-	Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
-	Version="0.0.1.0" />
+    Name="Microsoft.CommandPalette.Dev"
+    Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+    Version="0.0.1.0" />
 
   <mp:PhoneIdentity PhoneProductId="69b8faa1-5ada-484f-999d-4998c7ff2082" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Command Palette Dev</DisplayName>
+    <DisplayName>ms-resource:AppNameDev</DisplayName>
     <PublisherDisplayName>A Lone Developer</PublisherDisplayName>
-	  <Logo>Assets\StoreLogo.png</Logo>
+    <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
   <Dependencies>
@@ -45,8 +45,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="Command Palette Dev"
-        Description="Windows Command Palette Dev"
+        DisplayName="ms-resource:AppNameDev"
+        Description="ms-resource:AppDescriptionDev"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
@@ -54,21 +54,21 @@
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
 
-	  <Extensions>
+      <Extensions>
 
-		<uap3:Extension Category="windows.appExtensionHost">
-		  <uap3:AppExtensionHost>
-			<uap3:Name>com.microsoft.commandpalette</uap3:Name>
-		  </uap3:AppExtensionHost>
-		</uap3:Extension>
+        <uap3:Extension Category="windows.appExtensionHost">
+          <uap3:AppExtensionHost>
+            <uap3:Name>com.microsoft.commandpalette</uap3:Name>
+          </uap3:AppExtensionHost>
+        </uap3:Extension>
 
-	  </Extensions>
+      </Extensions>
 
     </Application>
   </Applications>
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
-	<rescap:Capability Name="unvirtualizedResources" />
+    <rescap:Capability Name="unvirtualizedResources" />
   </Capabilities>
 </Package>

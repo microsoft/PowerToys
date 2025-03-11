@@ -13,4 +13,6 @@ internal static class ResourceLoaderInstance
     {
         ResourceLoader = new ResourceLoader("resources.pri");
     }
+
+    internal static string GetString(string resourceId) => ResourceLoader.GetString(resourceId);
 }

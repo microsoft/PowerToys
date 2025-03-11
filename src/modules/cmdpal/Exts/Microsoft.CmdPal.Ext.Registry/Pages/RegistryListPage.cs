@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Ext.Registry.Classes;
 using Microsoft.CmdPal.Ext.Registry.Helpers;
+using Microsoft.CmdPal.Ext.Registry.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -21,12 +22,12 @@ internal sealed partial class RegistryListPage : DynamicListPage
     public RegistryListPage()
     {
         Icon = RegistryIcon;
-        Name = "Windows Registry";
+        Name = Title = Resources.Registry_Page_Title;
         Id = "com.microsoft.cmdpal.registry";
         _emptyMessage = new CommandItem()
         {
             Icon = RegistryIcon,
-            Title = "Registry key not found", // TODO:LOC
+            Title = Resources.Registry_Key_Not_Found,
             Subtitle = SearchText,
         };
         EmptyContent = _emptyMessage;

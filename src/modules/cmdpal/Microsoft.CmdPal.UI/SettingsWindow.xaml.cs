@@ -10,6 +10,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -23,7 +24,7 @@ public sealed partial class SettingsWindow : Window,
         this.InitializeComponent();
         this.ExtendsContentIntoTitleBar = true;
         this.AppWindow.SetIcon("ms-appx:///Assets/Icons/StoreLogo.png");
-        this.AppWindow.Title = "Command Palette Settings";
+        this.AppWindow.Title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         PositionCentered();
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);

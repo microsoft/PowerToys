@@ -179,4 +179,10 @@
   <data name="CopyValueData" xml:space="preserve">
     <value>Copy value data</value>
   </data>
+  <data name="Registry_Page_Title" xml:space="preserve">
+    <value>Windows Registry</value>
+  </data>
+  <data name="Registry_Key_Not_Found" xml:space="preserve">
+    <value>Registry key not found</value>
+  </data>
 </root>

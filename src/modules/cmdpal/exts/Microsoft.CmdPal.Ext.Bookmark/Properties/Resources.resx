@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,77 +117,48 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="cmd_plugin_name" xml:space="preserve">
-    <value>Shell</value>
+  <data name="bookmarks_display_name" xml:space="preserve">
+    <value>Bookmarks</value>
   </data>
-  <data name="cmd_plugin_description" xml:space="preserve">
-    <value>Executes commands (e.g. 'ping', 'cmd')</value>
+  <data name="bookmarks_add_title" xml:space="preserve">
+    <value>Add a bookmark</value>
   </data>
-  <data name="cmd_has_been_executed_times" xml:space="preserve">
-    <value>this command has been executed {0} times</value>
+  <data name="bookmarks_edit_name" xml:space="preserve">
+    <value>Edit bookmark</value>
   </data>
-  <data name="cmd_execute_through_shell" xml:space="preserve">
-    <value>execute command through command shell</value>
+  <data name="bookmarks_add_name" xml:space="preserve">
+    <value>Add bookmark</value>
   </data>
-  <data name="cmd_run_as_administrator" xml:space="preserve">
-    <value>Run as administrator (Ctrl+Shift+Enter)</value>
+  <data name="bookmarks_delete_title" xml:space="preserve">
+    <value>Delete bookmark</value>
   </data>
-  <data name="cmd_command_failed" xml:space="preserve">
-    <value>Error running the command</value>
+  <data name="bookmarks_delete_name" xml:space="preserve">
+    <value>Delete</value>
   </data>
-  <data name="cmd_command_not_found" xml:space="preserve">
-    <value>Command not found</value>
+  <data name="bookmarks_open_in_terminal_name" xml:space="preserve">
+    <value>Open in Terminal</value>
+    <comment>"Terminal" should be the localized name of the Windows Terminal</comment>
   </data>
-  <data name="cmd_run_as_user" xml:space="preserve">
-    <value>Run as different user (Ctrl+Shift+U)</value>
+  <data name="bookmarks_form_name_label" xml:space="preserve">
+    <value>Name</value>
   </data>
-  <data name="leave_shell_open" xml:space="preserve">
-    <value>Keep shell open</value>
+  <data name="bookmarks_form_save" xml:space="preserve">
+    <value>Save</value>
   </data>
-  <data name="shell_command_execution" xml:space="preserve">
-    <value>Command execution</value>
+  <data name="bookmarks_form_open" xml:space="preserve">
+    <value>Open</value>
   </data>
-  <data name="run_command_in_command_prompt" xml:space="preserve">
-    <value>Run in Command Prompt (cmd.exe)</value>
+  <data name="bookmarks_form_name_required" xml:space="preserve">
+    <value>Name is required</value>
   </data>
-  <data name="run_command_in_powershell" xml:space="preserve">
-    <value>Run in PowerShell (PowerShell.exe)</value>
+  <data name="bookmarks_form_bookmark_label" xml:space="preserve">
+    <value>URL or file path</value>
   </data>
-  <data name="find_executable_file_and_run_it" xml:space="preserve">
-    <value>Find and run the executable file</value>
+  <data name="bookmarks_form_bookmark_required" xml:space="preserve">
+    <value>URL or file path is required</value>
   </data>
-  <data name="run_command_in_powershell_seven" xml:space="preserve">
-    <value>Run in PowerShell 7 (pwsh.exe)</value>
-  </data>
-  <data name="run_command_in_windows_terminal_cmd" xml:space="preserve">
-    <value>Run in Command Prompt (cmd.exe) using Windows Terminal</value>
-  </data>
-  <data name="run_command_in_windows_terminal_powershell" xml:space="preserve">
-    <value>Run in PowerShell (PowerShell.exe) using Windows Terminal</value>
-  </data>
-  <data name="run_command_in_windows_terminal_powershell_seven" xml:space="preserve">
-    <value>Run in PowerShell 7 (pwsh.exe) using Windows Terminal</value>
-  </data>
-  <data name="run_plugin_cmd_wait_message" xml:space="preserve">
-    <value>Press Enter to continue</value>
-    <comment>"Enter" means the Enter key on the keyboard.</comment>
-  </data>
-  <data name="shell_command_execution_description" xml:space="preserve">
-    <value>All entries using the Windows Terminal force the Windows Terminal as the console host regardless of the system settings</value>
-  </data>
-  <data name="shell_command_name" xml:space="preserve">
-    <value>Run commands</value>
-  </data>
-  <data name="generic_run_command" xml:space="preserve">
-    <value>Run</value>
-  </data>
-  <data name="settings_page_name" xml:space="preserve">
-    <value>Settings</value>
-  </data>
-  <data name="list_placeholder_text" xml:space="preserve">
-    <value>Type the name of a command to run</value>
-  </data>
-  <data name="shell_command_display_title" xml:space="preserve">
-    <value>Run commands</value>
+  <data name="bookmarks_required_placeholder" xml:space="preserve">
+    <value>{0} is required</value>
+    <comment>{0} will be replaced by a parameter name provided by the user</comment>
   </data>
 </root>

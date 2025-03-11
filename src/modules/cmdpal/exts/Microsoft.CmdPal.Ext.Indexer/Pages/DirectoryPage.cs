@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Indexer.Data;
+using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
@@ -24,7 +25,7 @@ public sealed partial class DirectoryPage : ListPage
     {
         _path = path;
         Icon = Icons.FileExplorerSegoe;
-        Name = "Browse"; // TODO:LOC
+        Name = Resources.Indexer_Command_Browse;
         Title = path;
     }
 
@@ -38,8 +39,8 @@ public sealed partial class DirectoryPage : ListPage
         if (!Path.Exists(_path))
         {
             EmptyContent = new CommandItem(
-                title: "This path doesn't exist",
-                subtitle: $"{_path}"); // TODO:LOC
+                title: Resources.Indexer_File_Does_Not_Exist,
+                subtitle: $"{_path}");
             return [];
         }
 
@@ -49,7 +50,7 @@ public sealed partial class DirectoryPage : ListPage
         if ((attr & FileAttributes.Directory) != FileAttributes.Directory)
         {
             EmptyContent = new CommandItem(
-                title: "This is a file, not a folder", subtitle: $"{_path}") // TODO:LOC
+                title: Resources.Indexer_File_Is_File_Not_Folder, subtitle: $"{_path}")
             {
                 Icon = Icons.Document,
             };
@@ -63,7 +64,7 @@ public sealed partial class DirectoryPage : ListPage
             var item = new IndexerItem() { FullPath = _path, FileName = Path.GetFileName(_path) };
             var listItemForUs = new IndexerListItem(item, IncludeBrowseCommand.Exclude);
             EmptyContent = new CommandItem(
-                title: "This folder is empty", subtitle: $"{_path}") // TODO:LOC
+                title: Resources.Indexer_Folder_Is_Empty, subtitle: $"{_path}")
             {
                 Icon = Icons.FolderOpen,
                 Command = listItemForUs.Command,

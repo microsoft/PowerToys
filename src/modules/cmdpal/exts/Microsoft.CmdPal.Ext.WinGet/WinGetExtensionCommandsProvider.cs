@@ -13,7 +13,7 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
 {
     public WinGetExtensionCommandsProvider()
     {
-        DisplayName = "WinGet";
+        DisplayName = Properties.Resources.winget_display_name;
         Id = "WinGet";
         Icon = WinGetExtensionPage.WinGetIcon;
 
@@ -24,16 +24,16 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
         new ListItem(new WinGetExtensionPage()),
 
          new ListItem(
-            new WinGetExtensionPage(WinGetExtensionPage.ExtensionsTag) { Title = "Install Extensions" })
+            new WinGetExtensionPage(WinGetExtensionPage.ExtensionsTag) { Title = Properties.Resources.winget_install_extensions_title })
          {
-            Title = "Install Command Palette extensions",
-            Subtitle = "Search for extensions on WinGet",
+            Title = Properties.Resources.winget_install_extensions_title,
+            Subtitle = Properties.Resources.winget_install_extensions_subtitle,
          },
 
         new ListItem(
             new OpenUrlCommand("ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette"))
          {
-            Title = "Search for extensions on the Store",
+            Title = Properties.Resources.winget_search_store_title,
             Icon = IconHelpers.FromRelativePath("Assets\\ms-store.png"),
          },
     ];

@@ -241,6 +241,15 @@ namespace Microsoft.CmdPal.Ext.Shell.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Run commands.
+        /// </summary>
+        public static string shell_command_display_title {
+            get {
+                return ResourceManager.GetString("shell_command_display_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Command execution.
         /// </summary>
         public static string shell_command_execution {

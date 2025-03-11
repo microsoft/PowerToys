@@ -28,69 +28,69 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
     "body": [
         {
             "type": "TextBlock",
-            "text": "Create your new extension",
+            "text": "{{Properties.Resources.builtin_create_extension_page_title}}",
             "size": "large"
         },
         {
             "type": "TextBlock",
-            "text": "Use this page to create a new extension project.",
+            "text": "{{Properties.Resources.builtin_create_extension_page_text}}",
             "wrap": true
         },
         {
             "type": "TextBlock",
-            "text": "Extension name",
+            "text": "{{Properties.Resources.builtin_create_extension_name_header}}",
             "weight": "bolder",
             "size": "default"
         },
         {
             "type": "TextBlock",
-            "text": "This is the name of your new extension project. It should be a valid C# class name. Best practice is to also include the word 'Extension' in the name.",
+            "text": "{{Properties.Resources.builtin_create_extension_name_description}}",
             "wrap": true
         },
         {
             "type": "Input.Text",
-            "label": "Extension name",
+            "label": "{{Properties.Resources.builtin_create_extension_name_label}}",
             "isRequired": true,
-            "errorMessage": "Extension name is required, without spaces",
+            "errorMessage": "{{Properties.Resources.builtin_create_extension_name_required}}",
             "id": "ExtensionName",
             "placeholder": "ExtensionName",
             "regex": "^[^\\s]+$"
         },
         {
             "type": "TextBlock",
-            "text": "Display name",
+            "text": "{{Properties.Resources.builtin_create_extension_display_name_header}}",
             "weight": "bolder",
             "size": "default"
         },
         {
             "type": "TextBlock",
-            "text": "The name of your extension as users will see it.",
+            "text": "{{Properties.Resources.builtin_create_extension_display_name_description}}",
             "wrap": true
         },
         {
             "type": "Input.Text",
-            "label": "Display name",
+            "label": "{{Properties.Resources.builtin_create_extension_display_name_label}}",
             "isRequired": true,
-            "errorMessage": "Display name is required",
+            "errorMessage": "{{Properties.Resources.builtin_create_extension_display_name_required}}",
             "id": "DisplayName",
             "placeholder": "My new extension"
         },
         {
             "type": "TextBlock",
-            "text": "Output path",
+            "text": "{{Properties.Resources.builtin_create_extension_directory_header}}",
             "weight": "bolder",
             "size": "default"
         },
         {
             "type": "TextBlock",
-            "text": "Where should the new extension be created? This path will be created if it doesn't exist",
+            "text": "{{Properties.Resources.builtin_create_extension_directory_description}}",
             "wrap": true
         },
         {
             "type": "Input.Text",
-            "label": "Output path",
+            "label": "{{Properties.Resources.builtin_create_extension_directory_label}}",
             "isRequired": true,
-            "errorMessage": "Output path is required",
+            "errorMessage": "{{Properties.Resources.builtin_create_extension_directory_required}}",
             "id": "OutputPath",
             "placeholder": "C:\\users\\me\\dev"
         }
@@ -98,7 +98,7 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
     "actions": [
         {
             "type": "Action.Submit",
-            "title": "Create extension",
+            "title": "{{Properties.Resources.builtin_create_extension_submit}}",
             "associatedInputs": "auto"
         }
     ]
@@ -127,17 +127,9 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
         {
             CreateExtension(extensionName, displayName, outputPath);
 
-            // _creatingMessage.Progress = null;
-            // _creatingMessage.State = MessageState.Success;
-            // _creatingMessage.Message = $"Successfully created extension";
             BuiltinsExtensionHost.Instance.HideStatus(_creatingMessage);
 
-            // BuiltinsExtensionHost.Instance.HideStatus(_creatingMessage);
             RaiseFormSubmit(new CreatedExtensionForm(extensionName, displayName, outputPath));
-
-            // _toast.Message.State = MessageState.Success;
-            // _toast.Message.Message = $"Successfully created extension";
-            // _toast.Show();
         }
         catch (Exception e)
         {
@@ -145,15 +137,8 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
 
             _creatingMessage.State = MessageState.Error;
             _creatingMessage.Message = $"Error: {e.Message}";
-
-            // _toast.Show();
         }
 
-        // _ = Task.Run(() =>
-        // {
-        //    Thread.Sleep(2500);
-        //    BuiltinsExtensionHost.Instance.HideStatus(_creatingMessage);
-        // });
         return CommandResult.KeepOpen();
     }
 
@@ -163,8 +148,6 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
 
         // Unzip `template.zip` to a temp dir:
         var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-        // Console.WriteLine($"Extracting to {tempDir}");
 
         // Does the output path exist?
         if (!Directory.Exists(outputPath))
@@ -179,8 +162,6 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
         foreach (var file in files)
         {
             var text = File.ReadAllText(file);
-
-            Console.WriteLine($"  Processing {file}");
 
             // Replace all the instances of `FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF` with a new random guid:
             text = text.Replace("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", newGuid);
@@ -203,8 +184,6 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
             Directory.CreateDirectory(Path.GetDirectoryName(newFileName)!);
 
             File.WriteAllText(newFileName, text);
-
-            Console.WriteLine($"  Wrote {newFileName}");
 
             // Delete the old file
             File.Delete(file);

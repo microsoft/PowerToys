@@ -13,7 +13,7 @@ public partial class OpenSettingsCommand : InvokableCommand
 {
     public OpenSettingsCommand()
     {
-        Name = "Open Settings";
+        Name = Properties.Resources.builtin_open_settings_name;
         Icon = new IconInfo("\uE713");
     }
 

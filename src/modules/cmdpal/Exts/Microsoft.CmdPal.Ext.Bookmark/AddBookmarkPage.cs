@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -26,8 +27,8 @@ internal sealed partial class AddBookmarkPage : ContentPage
         var url = bookmark?.Bookmark ?? string.Empty;
         Icon = new IconInfo("\ued0e");
         var isAdd = string.IsNullOrEmpty(name) && string.IsNullOrEmpty(url);
-        Title = isAdd ? "Add a bookmark" : "Edit bookmark";
-        Name = isAdd ? "Add bookmark" : "Edit bookmark";
+        Title = isAdd ? Resources.bookmarks_add_title : Resources.bookmarks_edit_name;
+        Name = isAdd ? Resources.bookmarks_add_name : Resources.bookmarks_edit_name;
         _addBookmark = new(bookmark);
     }
 }

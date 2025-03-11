@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,77 +117,123 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="cmd_plugin_name" xml:space="preserve">
-    <value>Shell</value>
+  <data name="builtin_open_settings_subtitle" xml:space="preserve">
+    <value>Open Command Palette settings</value>
   </data>
-  <data name="cmd_plugin_description" xml:space="preserve">
-    <value>Executes commands (e.g. 'ping', 'cmd')</value>
+  <data name="builtin_new_extension_subtitle" xml:space="preserve">
+    <value>Creates a project for a new Command Palette extension</value>
   </data>
-  <data name="cmd_has_been_executed_times" xml:space="preserve">
-    <value>this command has been executed {0} times</value>
+  <data name="builtin_quit_subtitle" xml:space="preserve">
+    <value>Exit Command Palette</value>
   </data>
-  <data name="cmd_execute_through_shell" xml:space="preserve">
-    <value>execute command through command shell</value>
+  <data name="builtin_display_name" xml:space="preserve">
+    <value>Built-in commands</value>
   </data>
-  <data name="cmd_run_as_administrator" xml:space="preserve">
-    <value>Run as administrator (Ctrl+Shift+Enter)</value>
+  <data name="builtin_log_subtitle" xml:space="preserve">
+    <value>View log messages</value>
   </data>
-  <data name="cmd_command_failed" xml:space="preserve">
-    <value>Error running the command</value>
+  <data name="builtin_log_title" xml:space="preserve">
+    <value>View log</value>
   </data>
-  <data name="cmd_command_not_found" xml:space="preserve">
-    <value>Command not found</value>
+  <data name="builtin_reload_subtitle" xml:space="preserve">
+    <value>Reload Command Palette extensions</value>
   </data>
-  <data name="cmd_run_as_user" xml:space="preserve">
-    <value>Run as different user (Ctrl+Shift+U)</value>
+  <data name="builtin_reload_name" xml:space="preserve">
+    <value>Reload</value>
   </data>
-  <data name="leave_shell_open" xml:space="preserve">
-    <value>Keep shell open</value>
+  <data name="builtin_log_name" xml:space="preserve">
+    <value>View log</value>
   </data>
-  <data name="shell_command_execution" xml:space="preserve">
-    <value>Command execution</value>
+  <data name="builtin_log_page_name" xml:space="preserve">
+    <value>Log</value>
   </data>
-  <data name="run_command_in_command_prompt" xml:space="preserve">
-    <value>Run in Command Prompt (cmd.exe)</value>
+  <data name="builtin_creating_extension_message" xml:space="preserve">
+    <value>Creating new extension...</value>
   </data>
-  <data name="run_command_in_powershell" xml:space="preserve">
-    <value>Run in PowerShell (PowerShell.exe)</value>
+  <data name="builtin_create_extension_name" xml:space="preserve">
+    <value>Open</value>
   </data>
-  <data name="find_executable_file_and_run_it" xml:space="preserve">
-    <value>Find and run the executable file</value>
+  <data name="builtin_create_extension_title" xml:space="preserve">
+    <value>Create a new extension</value>
   </data>
-  <data name="run_command_in_powershell_seven" xml:space="preserve">
-    <value>Run in PowerShell 7 (pwsh.exe)</value>
+  <data name="builtin_open_settings_name" xml:space="preserve">
+    <value>Open Settings</value>
   </data>
-  <data name="run_command_in_windows_terminal_cmd" xml:space="preserve">
-    <value>Run in Command Prompt (cmd.exe) using Windows Terminal</value>
+  <data name="builtin_create_extension_success" xml:space="preserve">
+    <value>Successfully created your new extension!</value>
   </data>
-  <data name="run_command_in_windows_terminal_powershell" xml:space="preserve">
-    <value>Run in PowerShell (PowerShell.exe) using Windows Terminal</value>
+  <data name="builtin_created_in_text" xml:space="preserve">
+    <value>Your new extension '${displayName}' was created in:</value>
+    <comment>{Locked="'${displayName}'"}</comment>
   </data>
-  <data name="run_command_in_windows_terminal_powershell_seven" xml:space="preserve">
-    <value>Run in PowerShell 7 (pwsh.exe) using Windows Terminal</value>
+  <data name="builtin_created_next_steps_title" xml:space="preserve">
+    <value>Next steps</value>
   </data>
-  <data name="run_plugin_cmd_wait_message" xml:space="preserve">
-    <value>Press Enter to continue</value>
-    <comment>"Enter" means the Enter key on the keyboard.</comment>
+  <data name="builtin_created_next_steps" xml:space="preserve">
+    <value>Now that your extension project has been created, open the solution up in Visual Studio to start writing your extension code.</value>
   </data>
-  <data name="shell_command_execution_description" xml:space="preserve">
-    <value>All entries using the Windows Terminal force the Windows Terminal as the console host regardless of the system settings</value>
+  <data name="builtin_created_next_steps_p2" xml:space="preserve">
+    <value>Navigate to `${name}Page.cs` to start adding items to the list, or to `${name}CommandsProvider.cs` to add new commands.</value>
+    <comment>{Locked="`${name}Page.cs`", "`${name}CommandsProvider.cs`"}</comment>
   </data>
-  <data name="shell_command_name" xml:space="preserve">
-    <value>Run commands</value>
+  <data name="builtin_created_next_steps_p3" xml:space="preserve">
+    <value>Once you're ready to test deploy the package locally with Visual Studio, then run the \"Reload\" command in the Command Palette to load your new extension.</value>
   </data>
-  <data name="generic_run_command" xml:space="preserve">
-    <value>Run</value>
+  <data name="builtin_create_extension_page_title" xml:space="preserve">
+    <value>Create your new extension</value>
   </data>
-  <data name="settings_page_name" xml:space="preserve">
-    <value>Settings</value>
+  <data name="builtin_create_extension_page_text" xml:space="preserve">
+    <value>Use this page to create a new extension project.</value>
   </data>
-  <data name="list_placeholder_text" xml:space="preserve">
-    <value>Type the name of a command to run</value>
+  <data name="builtin_create_extension_name_header" xml:space="preserve">
+    <value>Extension name</value>
   </data>
-  <data name="shell_command_display_title" xml:space="preserve">
-    <value>Run commands</value>
+  <data name="builtin_create_extension_name_description" xml:space="preserve">
+    <value>This is the name of your new extension project. It should be a valid C# class name. Best practice is to also include the word 'Extension' in the name.</value>
+  </data>
+  <data name="builtin_create_extension_name_label" xml:space="preserve">
+    <value>Extension name</value>
+  </data>
+  <data name="builtin_create_extension_name_required" xml:space="preserve">
+    <value>Extension name is required, without spaces</value>
+  </data>
+  <data name="builtin_create_extension_display_name_header" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="builtin_create_extension_display_name_description" xml:space="preserve">
+    <value>The name of your extension as users will see it.</value>
+  </data>
+  <data name="builtin_create_extension_display_name_label" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="builtin_create_extension_display_name_required" xml:space="preserve">
+    <value>Display name is required</value>
+  </data>
+  <data name="builtin_create_extension_directory_header" xml:space="preserve">
+    <value>Output path</value>
+  </data>
+  <data name="builtin_create_extension_directory_description" xml:space="preserve">
+    <value>Where should the new extension be created? This path will be created if it doesn't exist</value>
+  </data>
+  <data name="builtin_create_extension_directory_label" xml:space="preserve">
+    <value>Output path</value>
+  </data>
+  <data name="builtin_create_extension_directory_required" xml:space="preserve">
+    <value>Output path is required</value>
+  </data>
+  <data name="builtin_create_extension_open_solution" xml:space="preserve">
+    <value>Open Solution</value>
+  </data>
+  <data name="builtin_create_extension_open_directory" xml:space="preserve">
+    <value>Open directory</value>
+  </data>
+  <data name="builtin_create_extension_create_another" xml:space="preserve">
+    <value>Create another</value>
+  </data>
+  <data name="builtin_create_extension_submit" xml:space="preserve">
+    <value>Create extension</value>
+  </data>
+  <data name="builtin_reload_display_title" xml:space="preserve">
+    <value>Reload Command Palette extensions</value>
   </data>
 </root>

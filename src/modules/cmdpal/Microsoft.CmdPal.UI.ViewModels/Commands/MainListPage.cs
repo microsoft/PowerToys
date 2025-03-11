@@ -28,7 +28,6 @@ public partial class MainListPage : DynamicListPage,
 
     public MainListPage(IServiceProvider serviceProvider)
     {
-        Name = "Command Palette";
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
         _serviceProvider = serviceProvider;
 

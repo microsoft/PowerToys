@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:cmdpalUi="using:Microsoft.CmdPal.UI"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -19,6 +20,7 @@
                 x:Key="InvertedStringVisibilityConverter"
                 EmptyValue="Visible"
                 NotEmptyValue="Collapsed" />
+            <cmdpalUi:PlaceholderTextConverter x:Key="PlaceholderTextConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -30,7 +32,7 @@
             VerticalAlignment="Stretch"
             VerticalContentAlignment="Stretch"
             KeyDown="FilterBox_KeyDown"
-            PlaceholderText="{x:Bind CurrentPageViewModel.PlaceholderText, Mode=OneWay}"
+            PlaceholderText="{x:Bind CurrentPageViewModel.PlaceholderText, Converter={StaticResource PlaceholderTextConverter}, Mode=OneWay}"
             PreviewKeyDown="FilterBox_PreviewKeyDown"
             PreviewKeyUp="FilterBox_PreviewKeyUp"
             Style="{StaticResource SearchTextBoxStyle}"

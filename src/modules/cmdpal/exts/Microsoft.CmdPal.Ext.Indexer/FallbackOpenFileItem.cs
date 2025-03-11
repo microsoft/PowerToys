@@ -4,6 +4,7 @@
 
 using System.IO;
 using Microsoft.CmdPal.Ext.Indexer.Data;
+using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
 
@@ -12,7 +13,7 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 internal sealed partial class FallbackOpenFileItem : FallbackCommandItem
 {
     public FallbackOpenFileItem()
-        : base(new NoOpCommand(), "Find file from path") // TODO:LOC
+        : base(new NoOpCommand(), Resources.Indexer_Find_Path_fallback_display_title)
     {
         Title = string.Empty;
         Subtitle = string.Empty;

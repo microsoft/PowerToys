@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
@@ -31,6 +33,16 @@ public partial class InstallPackageCommand : InvokableCommand
 
     public event EventHandler<InstallPackageCommand>? InstallStateChanged;
 
+    private static readonly CompositeFormat UninstallingPackage = System.Text.CompositeFormat.Parse(Properties.Resources.winget_uninstalling_package);
+    private static readonly CompositeFormat InstallingPackage = System.Text.CompositeFormat.Parse(Properties.Resources.winget_installing_package);
+    private static readonly CompositeFormat InstallPackageFinished = System.Text.CompositeFormat.Parse(Properties.Resources.winget_install_package_finished);
+    private static readonly CompositeFormat UninstallPackageFinished = System.Text.CompositeFormat.Parse(Properties.Resources.winget_uninstall_package_finished);
+    private static readonly CompositeFormat QueuedPackageDownload = System.Text.CompositeFormat.Parse(Properties.Resources.winget_queued_package_download);
+    private static readonly CompositeFormat InstallPackageFinishing = System.Text.CompositeFormat.Parse(Properties.Resources.winget_install_package_finishing);
+    private static readonly CompositeFormat QueuedPackageUninstall = System.Text.CompositeFormat.Parse(Properties.Resources.winget_queued_package_uninstall);
+    private static readonly CompositeFormat UninstallPackageFinishing = System.Text.CompositeFormat.Parse(Properties.Resources.winget_uninstall_package_finishing);
+    private static readonly CompositeFormat DownloadProgress = System.Text.CompositeFormat.Parse(Properties.Resources.winget_download_progress);
+
     public InstallPackageCommand(CatalogPackage package, bool isInstalled)
     {
         _package = package;
@@ -47,7 +59,7 @@ public partial class InstallPackageCommand : InvokableCommand
     private void UpdateAppearance()
     {
         Icon = IsInstalled ? CompletedIcon : DownloadIcon;
-        Name = IsInstalled ? "Uninstall" : "Install";
+        Name = IsInstalled ? Properties.Resources.winget_uninstall_name : Properties.Resources.winget_install_name;
     }
 
     public override ICommandResult Invoke()
@@ -63,7 +75,7 @@ public partial class InstallPackageCommand : InvokableCommand
         {
             // Uninstall
             _installBanner.State = MessageState.Info;
-            _installBanner.Message = $"Uninstalling {_package.Name}...";
+            _installBanner.Message = string.Format(CultureInfo.CurrentCulture, UninstallingPackage, _package.Name);
             WinGetExtensionHost.Instance.ShowStatus(_installBanner, StatusContext.Extension);
 
             var installOptions = WinGetStatics.WinGetFactory.CreateUninstallOptions();
@@ -79,7 +91,7 @@ public partial class InstallPackageCommand : InvokableCommand
         {
             // Install
             _installBanner.State = MessageState.Info;
-            _installBanner.Message = $"Installing {_package.Name}...";
+            _installBanner.Message = string.Format(CultureInfo.CurrentCulture, InstallingPackage, _package.Name);
             WinGetExtensionHost.Instance.ShowStatus(_installBanner, StatusContext.Extension);
 
             var installOptions = WinGetStatics.WinGetFactory.CreateInstallOptions();
@@ -101,7 +113,10 @@ public partial class InstallPackageCommand : InvokableCommand
         try
         {
             await action.AsTask();
-            _installBanner.Message = $"Finished {(IsInstalled ? "uninstall" : "install")} for {_package.Name}";
+            _installBanner.Message = IsInstalled ?
+                string.Format(CultureInfo.CurrentCulture, UninstallPackageFinished, _package.Name) :
+                string.Format(CultureInfo.CurrentCulture, InstallPackageFinished, _package.Name);
+
             _installBanner.Progress = null;
             _installBanner.State = MessageState.Success;
             _installTask = null;
@@ -144,16 +159,15 @@ public partial class InstallPackageCommand : InvokableCommand
         IAsyncOperationWithProgress<InstallResult, InstallProgress> operation,
         InstallProgress progress)
     {
-        var downloadText = "Downloading. ";
         switch (progress.State)
         {
             case PackageInstallProgressState.Queued:
-                _installBanner.Message = $"Queued {_package.Name} for download...";
+                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, QueuedPackageDownload, _package.Name);
                 break;
             case PackageInstallProgressState.Downloading:
                 if (progress.BytesRequired > 0)
                 {
-                    downloadText += $"{FormatBytes(progress.BytesDownloaded)} of {FormatBytes(progress.BytesRequired)}";
+                    var downloadText = string.Format(CultureInfo.CurrentCulture, DownloadProgress, FormatBytes(progress.BytesDownloaded), FormatBytes(progress.BytesRequired));
                     _installBanner.Progress ??= new ProgressState() { IsIndeterminate = false };
                     var downloaded = progress.BytesDownloaded / (float)progress.BytesRequired;
                     var percent = downloaded * 100.0f;
@@ -163,14 +177,14 @@ public partial class InstallPackageCommand : InvokableCommand
 
                 break;
             case PackageInstallProgressState.Installing:
-                _installBanner.Message = $"Installing {_package.Name}...";
+                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, InstallingPackage, _package.Name);
                 _installBanner.Progress = new ProgressState() { IsIndeterminate = true };
                 break;
             case PackageInstallProgressState.PostInstall:
-                _installBanner.Message = $"Finishing install for {_package.Name}...";
+                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, InstallPackageFinishing, _package.Name);
                 break;
             case PackageInstallProgressState.Finished:
-                _installBanner.Message = "Finished install.";
+                _installBanner.Message = Properties.Resources.winget_install_finished;
 
                 // progressBar.IsIndeterminate(false);
                 _installBanner.Progress = null;
@@ -189,18 +203,18 @@ public partial class InstallPackageCommand : InvokableCommand
         switch (progress.State)
         {
             case PackageUninstallProgressState.Queued:
-                _installBanner.Message = $"Queued {_package.Name} for uninstall...";
+                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, QueuedPackageUninstall, _package.Name);
                 break;
 
             case PackageUninstallProgressState.Uninstalling:
-                _installBanner.Message = $"Uninstalling {_package.Name}...";
+                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, UninstallingPackage, _package.Name);
                 _installBanner.Progress = new ProgressState() { IsIndeterminate = true };
                 break;
             case PackageUninstallProgressState.PostUninstall:
-                _installBanner.Message = $"Finishing uninstall for {_package.Name}...";
+                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, UninstallPackageFinishing, _package.Name);
                 break;
             case PackageUninstallProgressState.Finished:
-                _installBanner.Message = "Finished uninstall.";
+                _installBanner.Message = Properties.Resources.winget_uninstall_finished;
                 _installBanner.Progress = null;
                 _installBanner.State = MessageState.Success;
                 break;

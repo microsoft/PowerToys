@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Indexer.Data;
+using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
@@ -28,7 +29,7 @@ public sealed partial class DirectoryExplorePage : DynamicListPage
     {
         _path = path;
         Icon = Icons.FileExplorerSegoe;
-        Name = "Browse"; // TODO:LOC
+        Name = Resources.Indexer_Command_Browse;
         Title = path;
     }
 
@@ -87,7 +88,7 @@ public sealed partial class DirectoryExplorePage : DynamicListPage
         IsLoading = true;
         if (!Path.Exists(_path))
         {
-            EmptyContent = new CommandItem(title: "This file doesn't exist!"); // TODO:LOC
+            EmptyContent = new CommandItem(title: Resources.Indexer_File_Does_Not_Exist);
             return [];
         }
 
@@ -96,7 +97,7 @@ public sealed partial class DirectoryExplorePage : DynamicListPage
         // detect whether its a directory or file
         if ((attr & FileAttributes.Directory) != FileAttributes.Directory)
         {
-            EmptyContent = new CommandItem(title: "This is a file, not a folder!"); // TODO:LOC
+            EmptyContent = new CommandItem(title: Resources.Indexer_File_Is_File_Not_Folder);
             return [];
         }
 

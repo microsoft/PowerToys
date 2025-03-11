@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WinGet.Pages;
@@ -18,6 +20,8 @@ namespace Microsoft.CmdPal.Ext.WinGet;
 
 internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 {
+    private static readonly CompositeFormat ErrorMessage = System.Text.CompositeFormat.Parse(Properties.Resources.winget_unexpected_error);
+
     private readonly string _tag = string.Empty;
 
     public bool HasTag => !string.IsNullOrEmpty(_tag);
@@ -40,7 +44,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
     public WinGetExtensionPage(string tag = "")
     {
         Icon = tag == ExtensionsTag ? ExtensionsIcon : WinGetIcon;
-        Name = "Search Winget";
+        Name = Properties.Resources.winget_page_name;
         _tag = tag;
         ShowDetails = true;
     }
@@ -74,8 +78,8 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         {
             Icon = WinGetIcon,
             Title = (string.IsNullOrEmpty(SearchText) && !HasTag) ?
-                            "Start typing to search for packages" :
-                            "No packages found",
+                            Properties.Resources.winget_placeholder_text :
+                            Properties.Resources.winget_no_packages_found,
         };
 
         IsLoading = false;
@@ -225,7 +229,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             // TODO more error handling like this:
             if (searchResults.Status != FindPackagesResultStatus.Ok)
             {
-                _errorMessage.Message = $"Unexpected error: {searchResults.Status}";
+                _errorMessage.Message = string.Format(CultureInfo.CurrentCulture, ErrorMessage, searchResults.Status);
                 WinGetExtensionHost.Instance.ShowStatus(_errorMessage, StatusContext.Page);
                 return [];
             }

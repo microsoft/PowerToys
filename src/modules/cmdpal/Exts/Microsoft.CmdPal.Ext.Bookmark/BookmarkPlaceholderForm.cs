@@ -4,9 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 
@@ -14,6 +17,8 @@ namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 internal sealed partial class BookmarkPlaceholderForm : FormContent
 {
+    private static readonly CompositeFormat ErrorMessage = System.Text.CompositeFormat.Parse(Resources.bookmarks_required_placeholder);
+
     private readonly List<string> _placeholderNames;
 
     private readonly string _bookmark = string.Empty;
@@ -27,6 +32,7 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
         _placeholderNames = matches.Select(m => m.Groups[1].Value).ToList();
         var inputs = _placeholderNames.Select(p =>
         {
+            var errorMessage = string.Format(CultureInfo.CurrentCulture, ErrorMessage, p);
             return $$"""
 {
     "type": "Input.Text",
@@ -34,7 +40,7 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
     "id": "{{p}}",
     "label": "{{p}}",
     "isRequired": true,
-    "errorMessage": "{{p}} is required"
+    "errorMessage": "{{errorMessage}}"
 }
 """;
         }).ToList();
@@ -47,12 +53,12 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
   "type": "AdaptiveCard",
   "version": "1.5",
   "body": [
-""" + allInputs + """
+""" + allInputs + $$"""
   ],
   "actions": [
     {
       "type": "Action.Submit",
-      "title": "Open",
+      "title": "{{Resources.bookmarks_form_open}}",
       "data": {
         "placeholder": "placeholder"
       }

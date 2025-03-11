@@ -22,5 +22,6 @@ public partial class QuitCommand : InvokableCommand, IFallbackHandler
         return CommandResult.KeepOpen();
     }
 
+    // this sneaky hidden behavior, I'm not event gonna try to localize this.
     public void UpdateQuery(string query) => Name = query.StartsWith('q') ? "Quit" : string.Empty;
 }

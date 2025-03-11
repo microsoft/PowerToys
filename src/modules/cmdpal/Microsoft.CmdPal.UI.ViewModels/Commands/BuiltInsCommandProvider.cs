@@ -21,13 +21,13 @@ public partial class BuiltInsCommandProvider : CommandProvider
 
     public override ICommandItem[] TopLevelCommands() =>
         [
-            new CommandItem(openSettings) { Subtitle = "Open Command Palette settings" },
-            new CommandItem(_newExtension) { Title = _newExtension.Title, Subtitle = "Creates a project for a new Command Palette extension" },
+            new CommandItem(openSettings) { Subtitle = Properties.Resources.builtin_open_settings_subtitle },
+            new CommandItem(_newExtension) { Title = _newExtension.Title, Subtitle = Properties.Resources.builtin_new_extension_subtitle },
         ];
 
     public override IFallbackCommandItem[] FallbackCommands() =>
         [
-            new FallbackCommandItem(quitCommand, displayTitle: "Exit Command Palette") { Subtitle = "Exit Command Palette" },
+            new FallbackCommandItem(quitCommand, displayTitle: Properties.Resources.builtin_quit_subtitle) { Subtitle = Properties.Resources.builtin_quit_subtitle },
             _fallbackReloadItem,
             _fallbackLogItem,
         ];
@@ -35,7 +35,7 @@ public partial class BuiltInsCommandProvider : CommandProvider
     public BuiltInsCommandProvider()
     {
         Id = "Core";
-        DisplayName = "Built-in commands";
+        DisplayName = Properties.Resources.builtin_display_name;
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
     }
 
