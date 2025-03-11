@@ -56,7 +56,7 @@ namespace Hosts.Settings
             LoopbackDuplicates = false;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;
-            AddLeadingWhitespace = false;
+            AddLeadingWhitespace = true;
 
             LoadSettingsFromJson();
 

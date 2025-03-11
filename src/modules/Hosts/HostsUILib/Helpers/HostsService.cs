@@ -158,12 +158,8 @@ namespace HostsUILib.Helpers
                         if (!e.Active)
                         {                                                                                                                       
                             lineBuilder.Append('#').Append(' ');                                                                                
-                        }                                                                                                                     
-                        else if (anyDisabled) && (AddLeadingWhitespace == false)                                                               
-                        {                                                                                                                       
-                            lineBuilder.Append(e.line);
-                        }                                                                                                                        
-                        else if (anyDisabled)                                                                                                   
+                        }                                                                                                                                                                                                                                            
+                        else if (!AddLeadingWhitespace)                                                                                                   
                         {
                             lineBuilder.Append(' ').Append(' ');
                         }

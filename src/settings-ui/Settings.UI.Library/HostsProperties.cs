@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowStartupWarning = true;
             LaunchAdministrator = true;
             LoopbackDuplicates = false;
-            AddLeadingWhitespace = false;
+            AddLeadingWhitespace = true;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;
         }
