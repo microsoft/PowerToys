@@ -51,16 +51,13 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Cleanups the test
+        /// Cleanups the test.
         /// </summary>
         [TestCleanup]
         public void TestCleanup()
         {
-            if (this.sessionHelper != null)
-            {
-                this.sessionHelper.Cleanup();
-                this.sessionHelper = null;
-            }
+            this.Session.Cleanup();
+            this.sessionHelper.Cleanup();
         }
 
         /// <summary>

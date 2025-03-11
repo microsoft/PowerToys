@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
@@ -22,6 +23,8 @@ namespace Microsoft.PowerToys.UITest
         private WindowsDriver<WindowsElement> WindowsDriver { get; set; }
 
         private const string AdministratorPrefix = "Administrator: ";
+        
+        private List<IntPtr> windowList = new List<nint>();
 
         /// <summary>
         /// Gets Main Window Handler
@@ -47,6 +50,29 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Cleans up the Session Exe.
+        /// </summary>
+        public void Cleanup()
+        {
+            for (var i = 0; i < this.windowList.Count; i++)
+            {
+                var windowHandle = this.windowList[i];
+                if (windowHandle != 0)
+                {
+                    var process = Process.GetProcessById((int)windowHandle);
+
+                    if (process != null)
+                    {
+                        process.Kill();
+                        process.WaitForExit();
+                    }
+                }
+            }
+
+            windowList.Clear();
+        }
+
+        /// <summary>
         /// Finds an Element or its derived class by selector.
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
@@ -61,7 +87,7 @@ namespace Microsoft.PowerToys.UITest
             // leverage findAll to filter out mismatched elements
             var collection = this.FindAll<T>(by, timeoutMS);
 
-            Assert.IsTrue(collection.Count > 0, $"Element not found using selector: {by}");
+            Assert.AreNotEqual(0, collection.Count, $"Element not found using selector: {by}");
 
             return collection[0];
         }
@@ -347,19 +373,8 @@ namespace Microsoft.PowerToys.UITest
 
             if (this.Root != null)
             {
-                // search window handler by window title (admin and non-admin titles)
-                var matchingWindows = ApiHelper.FindDesktopWindowHandler([windowName, AdministratorPrefix + windowName]);
-
-                if (matchingWindows.Count == 0)
-                {
-                    Assert.Fail($"Failed to attach. Window '{windowName}' not found");
-                }
-
-                // pick one from matching windows
-                this.MainWindowHandler = matchingWindows[0].HWnd;
-                this.IsElevated = matchingWindows[0].Title.StartsWith(AdministratorPrefix);
-
-                ApiHelper.SetForegroundWindow(this.MainWindowHandler);
+                var window = this.Root.FindElementByName(windowName);
+                Assert.IsNotNull(window, $"Failed to attach. Window '{windowName}' not found");
 
                 var hexWindowHandle = this.MainWindowHandler.ToInt64().ToString("x");
                 var appCapabilities = new AppiumOptions();
@@ -367,6 +382,8 @@ namespace Microsoft.PowerToys.UITest
                 appCapabilities.AddAdditionalCapability("appTopLevelWindow", hexWindowHandle);
                 appCapabilities.AddAdditionalCapability("deviceName", "WindowsPC");
                 this.WindowsDriver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
+
+                this.windowList.Add(this.MainWindowHandler);
 
                 // Set implicit timeout to make element search retry every 500 ms
                 this.WindowsDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
