@@ -54,7 +54,7 @@
             Id="PG-SP-ID"
             PublicFolder="Public"
             DisplayName="Sample Pages Extension"
-            Description="Sample Pages Extension for Run">
+            Description="Sample Pages for Command Palette. Used to demonstrate all the features of Command Palette">
             <uap3:Properties>
               <CmdPalProvider>
                 <Activation>

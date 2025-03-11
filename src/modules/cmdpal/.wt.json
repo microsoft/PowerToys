@@ -23,7 +23,7 @@
             "description": "Create a new PR targeting the right fork.\nReplace {branch} with the actual branch you want to merge."
         },
         {
-            "": "pushd .\\ExtensionTemplate\\ ; git archive -o ..\\Microsoft.CmdPal.UI.ViewModels\\Assets\\template.zip HEAD -- .\\TemplateCmdPalExtension\\ ; popd",
+            "input": "pushd .\\ExtensionTemplate\\ ; git archive -o ..\\Microsoft.CmdPal.UI.ViewModels\\Assets\\template.zip HEAD -- .\\TemplateCmdPalExtension\\ ; popd",
             "name": "Update template project",
             "description": "zips up the ExtensionTemplate into our assets. Run this in the cmdpal/ directory."
         }

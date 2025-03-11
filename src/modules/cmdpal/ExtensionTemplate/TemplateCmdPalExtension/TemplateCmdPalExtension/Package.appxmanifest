@@ -12,6 +12,8 @@
     Name="TemplateCmdPalExtension"
     Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
     Version="0.0.1.0" />
+  <!-- When you're ready to publish your extension, you'll need to change the
+       Publisher= to match your own identity -->
 
   <Properties>
     <DisplayName>TemplateDisplayName</DisplayName>

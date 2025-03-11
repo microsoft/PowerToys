@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -178,4 +179,14 @@ internal sealed partial class PostForm : FormContent
 
         return CommandResult.KeepOpen();
     }
+}
+
+[JsonSerializable(typeof(float))]
+[JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(string))]
+[JsonSerializable(typeof(bool))]
+[JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true)]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Just used here")]
+internal sealed partial class JsonSerializationContext : JsonSerializerContext
+{
 }

@@ -17,6 +17,6 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true)]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Just used here")]
-public partial class JsonSerializationContext : JsonSerializerContext
+internal partial class JsonSerializationContext : JsonSerializerContext
 {
 }
