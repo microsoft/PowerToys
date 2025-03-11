@@ -10,6 +10,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
     <Page.Resources>
+        <tkconverters:ResourceNameToResourceStringConverter x:Key="ResourceNameToResourceStringConverter" />
         <tkconverters:DoubleToVisibilityConverter
             x:Key="CountBasedVisibilityConverter"
             FalseValue="Collapsed"
@@ -128,19 +129,19 @@
 
                             <!--  Count  -->
                             <tkcontrols:SettingsCard
-                                x:Uid="Hosts_Backup_CountBased_CountInput"
+                                x:Name="BackupsCountInputSettingsCard"
                                 IsEnabled="{x:Bind ViewModel.BackupHosts, Mode=OneWay}"
                                 Visibility="{x:Bind ViewModel.DeleteBackupsMode, Converter={StaticResource CountBasedVisibilityConverter}, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    Minimum="{x:Bind ViewModel.MinimumDaysToKeep, Mode=OneWay}"
+                                    Minimum="{x:Bind ViewModel.MinimumBackupsCount, Mode=OneWay}"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.DeleteBackupsCount, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
 
                             <!--  Age and count  -->
                             <tkcontrols:SettingsCard
-                                x:Uid="Hosts_Backup_AgeCountBased_DaysInput"
+                                x:Uid="Hosts_Backup_DaysInput"
                                 IsEnabled="{x:Bind ViewModel.BackupHosts, Mode=OneWay}"
                                 Visibility="{x:Bind ViewModel.DeleteBackupsMode, Converter={StaticResource AgeBasedVisibilityConverter}, Mode=OneWay}">
                                 <NumberBox
@@ -150,12 +151,12 @@
                                     Value="{x:Bind ViewModel.DeleteBackupsDays, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
-                                x:Uid="Hosts_Backup_AgeCountBased_CountInput"
+                                x:Name="BackupsCountInputAgeSettingsCard"
                                 IsEnabled="{x:Bind ViewModel.BackupHosts, Mode=OneWay}"
                                 Visibility="{x:Bind ViewModel.DeleteBackupsMode, Converter={StaticResource AgeBasedVisibilityConverter}, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    Minimum="{x:Bind ViewModel.MinimumDaysToKeep, Mode=OneWay}"
+                                    Minimum="{x:Bind ViewModel.MinimumBackupsCount, Mode=OneWay}"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.DeleteBackupsCount, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>

@@ -37,8 +37,15 @@ namespace HostsUILib.Helpers
             }
 
             var backupPath = _fileSystem.Path.Combine(_userSettings.BackupPath, $"hosts{BackupSuffix}{DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture)}");
-            _fileSystem.File.Copy(hostsFilePath, backupPath);
-            _backupDone = true;
+
+            try
+            {
+                _fileSystem.File.Copy(hostsFilePath, backupPath);
+                _backupDone = true;
+            }
+            catch
+            {
+            }
         }
 
         public void DeleteBackups()
