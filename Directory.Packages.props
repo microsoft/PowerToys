@@ -49,8 +49,8 @@
       This is present due to a bug in CsWinRT where WPF projects cause the analyzer to fail.
 	-->
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
-    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.6.241114003" />
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.6.250205002" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
@@ -92,7 +92,8 @@
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
-    <PackageVersion Include="HexBox.WinUI" Version="0.2.1" />
+    <!-- The warning NU1605 (package downgrade) is thrown by HexBox.WinUI for Microsoft.Windows.SDK.BuildTools -->
+    <PackageVersion Include="HexBox.WinUI" Version="0.2.1" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->
