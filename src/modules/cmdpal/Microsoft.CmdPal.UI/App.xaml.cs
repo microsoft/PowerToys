@@ -6,7 +6,6 @@ using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
-using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.Shell;
@@ -88,7 +87,9 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
-        services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
+
+        // TODO GH #527 re-enable the clipboard commands
+        // services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
         services.AddSingleton<ICommandProvider>(winget);

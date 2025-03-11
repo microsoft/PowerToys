@@ -41,6 +41,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem
         {
             Title = string.Empty;
             Subtitle = string.Empty;
+            Command = new NoOpCommand();
         }
     }
 }

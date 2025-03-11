@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
@@ -50,15 +51,21 @@ internal static class ClipboardHelper
 
     internal static void SetClipboardTextContent(string text)
     {
-        ExtensionHost.LogMessage(new LogMessage() { Message = "Copied text to clipboard" });
-
         if (!string.IsNullOrEmpty(text))
         {
             DataPackage output = new();
             output.SetText(text);
-            Clipboard.SetContentWithOptions(output, null);
-
-            Flush();
+            try
+            {
+                // Clipboard.SetContentWithOptions(output, null);
+                Clipboard.SetContent(output);
+                Flush();
+                ExtensionHost.LogMessage(new LogMessage() { Message = "Copied text to clipboard" });
+            }
+            catch (COMException ex)
+            {
+                ExtensionHost.LogMessage($"Error: {ex.HResult}\n{ex.Source}\n{ex.StackTrace}");
+            }
         }
     }
 
@@ -144,7 +151,7 @@ internal static class ClipboardHelper
     {
         var ignoreKeyEventFlag = (UIntPtr)0x5555;
 
-        NativeMethods.INPUT inputShift = new NativeMethods.INPUT
+        var inputShift = new NativeMethods.INPUT
         {
             type = NativeMethods.INPUTTYPE.INPUT_KEYBOARD,
             data = new NativeMethods.InputUnion
@@ -160,7 +167,7 @@ internal static class ClipboardHelper
             },
         };
 
-        NativeMethods.INPUT[] inputs = new NativeMethods.INPUT[] { inputShift };
+        var inputs = new NativeMethods.INPUT[] { inputShift };
         _ = NativeMethods.SendInput(1, inputs, NativeMethods.INPUT.Size);
     }
 

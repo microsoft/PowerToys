@@ -127,6 +127,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             if (command is IPage page)
             {
+                // TODO GH #526 This needs more better locking too
                 _ = _queue.TryEnqueue(() =>
                 {
                     // Also hide our details pane about here, if we had one
@@ -193,6 +194,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void HandleInvokeCommand(PerformCommandMessage message, IInvokableCommand invokable)
     {
+        // TODO GH #525 This needs more better locking.
         lock (_invokeLock)
         {
             if (_handleInvokeTask != null)
@@ -220,6 +222,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     }
                     catch (Exception ex)
                     {
+                        _handleInvokeTask = null;
+
                         // TODO: It would be better to do this as a page exception, rather
                         // than a silent log message.
                         CommandPaletteHost.Instance.Log(ex.Message);
