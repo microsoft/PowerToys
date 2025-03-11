@@ -716,7 +716,6 @@ Indo
 inetcpl
 Infobar
 INFOEXAMPLE
-Infotip
 infotip
 INITDIALOG
 INITGUID
