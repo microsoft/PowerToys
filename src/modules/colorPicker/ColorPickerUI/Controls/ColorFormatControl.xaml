@@ -171,9 +171,7 @@
                 Style="{StaticResource SubtleButtonStyle}"
                 ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}">
                 <Button.Content>
-                    <TextBlock
-                        FontFamily="{StaticResource IconFontFamily}"
-                        Text="&#xE8C8;" />
+                    <TextBlock FontFamily="{StaticResource IconFontFamily}" Text="&#xE8C8;" />
                 </Button.Content>
             </Button>
         </Grid>

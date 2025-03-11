@@ -23,26 +23,35 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <DockPanel Grid.Row="0" Background="Transparent" MouseLeftButtonDown="TitleBar_MouseDown" MouseRightButtonUp="TitleBar_MouseRightClick">
-                <Image Source="pack://application:,,,/Assets/ColorPicker/icon.ico" 
-                   Width="20" Height="20"
-                   Margin="10,5,5,8"/>
-                <TextBlock Text="{x:Static p:Resources.CP_Title}" VerticalAlignment="Center" Margin="10"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button 
-                    Content="&#xE711;" 
-                    FontFamily="{StaticResource IconFontFamily}"
-                    Width="50" 
-                    Height="30"
-                    Margin="10,-10,-2,1"
-                    Style="{StaticResource TitleBarCloseButtonStyle}"
-                    Click="Close_Click"/>
+            <DockPanel
+                Grid.Row="0"
+                Background="Transparent"
+                MouseLeftButtonDown="TitleBar_MouseDown"
+                MouseRightButtonUp="TitleBar_MouseRightClick">
+                <Image
+                    Width="20"
+                    Height="20"
+                    Margin="10,5,5,8"
+                    Source="pack://application:,,,/Assets/ColorPicker/icon.ico" />
+                <TextBlock
+                    Margin="10"
+                    VerticalAlignment="Center"
+                    Text="{x:Static p:Resources.CP_Title}" />
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <Button
+                        Width="50"
+                        Height="30"
+                        Margin="10,-10,-2,1"
+                        Click="Close_Click"
+                        Content="&#xE711;"
+                        FontFamily="{StaticResource IconFontFamily}"
+                        Style="{StaticResource TitleBarCloseButtonStyle}" />
                 </StackPanel>
             </DockPanel>
             <ContentPresenter
-            x:Name="contentPresenter"
-            Grid.Row="1"
-            Content="{Binding Content}" />
+                x:Name="contentPresenter"
+                Grid.Row="1"
+                Content="{Binding Content}" />
         </Grid>
     </Border>
 </Window>

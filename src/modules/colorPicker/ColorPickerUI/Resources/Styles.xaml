@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:ColorPicker.Converters"
     xmlns:helpers="clr-namespace:ColorPicker.Helpers">
-    
+
     <FontFamily x:Key="IconFontFamily">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
     <!--  CONVERTERS  -->
     <BooleanToVisibilityConverter x:Key="bool2VisibilityConverter" />
@@ -13,8 +13,9 @@
     <converters:NumberToVisibilityConverter x:Key="numberToVisibilityConverter" />
     <converters:NumberToInvertedVisibilityConverter x:Key="numberToInvertedVisibilityConverter" />
 
-    <!--  Copied from https://github.com/dotnet/wpf/blob/v9.0.1/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Styles/Button.xaml
-    This can be removed and use AccentButtonStyle when https://github.com/dotnet/wpf/issues/10413 gets fixed.  
+    <!--
+        Copied from https://github.com/dotnet/wpf/blob/v9.0.1/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Styles/Button.xaml
+        This can be removed and use AccentButtonStyle when https://github.com/dotnet/wpf/issues/10413 gets fixed.
     -->
     <Style x:Key="CustomAccentButtonStyle" TargetType="{x:Type Button}">
         <Setter Property="FocusVisualStyle" Value="{DynamicResource DefaultControlFocusVisualStyle}" />
@@ -34,24 +35,26 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
-                    <Border x:Name="ContentBorder" 
-                     Width="{TemplateBinding Width}" 
-                     Height="{TemplateBinding Height}" 
-                     MinWidth="{TemplateBinding MinWidth}" 
-                     MinHeight="{TemplateBinding MinHeight}" 
-                     Padding="{TemplateBinding Padding}" 
-                     HorizontalAlignment="{TemplateBinding HorizontalAlignment}" 
-                     VerticalAlignment="{TemplateBinding VerticalAlignment}" 
-                     Background="{TemplateBinding Background}" 
-                     BorderBrush="{TemplateBinding BorderBrush}" 
-                     BorderThickness="{TemplateBinding BorderThickness}" 
-                     CornerRadius="{TemplateBinding Border.CornerRadius}">
-                        <ContentPresenter x:Name="ContentPresenter" 
-                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
-                         Content="{TemplateBinding Content}" 
-                         ContentTemplate="{TemplateBinding ContentTemplate}" 
-                         TextElement.Foreground="{TemplateBinding Foreground}" />
+                    <Border
+                        x:Name="ContentBorder"
+                        Width="{TemplateBinding Width}"
+                        Height="{TemplateBinding Height}"
+                        MinWidth="{TemplateBinding MinWidth}"
+                        MinHeight="{TemplateBinding MinHeight}"
+                        Padding="{TemplateBinding Padding}"
+                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding Border.CornerRadius}">
+                        <ContentPresenter
+                            x:Name="ContentPresenter"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            TextElement.Foreground="{TemplateBinding Foreground}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -81,17 +84,19 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
-                    <Border x:Name="ContentBorder" 
-                 Background="{TemplateBinding Background}" 
-                 BorderBrush="{TemplateBinding BorderBrush}" 
-                 BorderThickness="{TemplateBinding BorderThickness}" 
-                 CornerRadius="{TemplateBinding Border.CornerRadius}">
-                        <ContentPresenter x:Name="ContentPresenter" 
-                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
-                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
-                     Content="{TemplateBinding Content}" 
-                     ContentTemplate="{TemplateBinding ContentTemplate}" 
-                     TextElement.Foreground="{TemplateBinding Foreground}" />
+                    <Border
+                        x:Name="ContentBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding Border.CornerRadius}">
+                        <ContentPresenter
+                            x:Name="ContentPresenter"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            TextElement.Foreground="{TemplateBinding Foreground}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
