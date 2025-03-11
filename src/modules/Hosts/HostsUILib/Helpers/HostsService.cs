@@ -41,7 +41,7 @@ namespace HostsUILib.Helpers
 
         public Encoding Encoding => _userSettings.Encoding == HostsEncoding.Utf8 ? new UTF8Encoding(false) : new UTF8Encoding(true);
 
-        public bool AddLeadingWhitespace;
+        private bool AddLeadingWhitespace;
 
         public HostsService(
             IFileSystem fileSystem,
@@ -149,17 +149,17 @@ namespace HostsUILib.Helpers
                 {
                     var lineBuilder = new StringBuilder();
 
-                    if (!e.Valid)                        
+                    if (!e.Valid)
                     {
                         lineBuilder.Append(e.Line);
                     }
                     else
                     {
                         if (!e.Active)
-                        {                                                                                                                       
-                            lineBuilder.Append('#').Append(' ');                                                                                
-                        }                                                                                                                                                                                                                                            
-                        else if (!AddLeadingWhitespace)                                                                                                   
+                        {
+                            lineBuilder.Append('#').Append(' ');
+                        }
+                        else if (!AddLeadingWhitespace)
                         {
                             lineBuilder.Append(' ').Append(' ');
                         }
