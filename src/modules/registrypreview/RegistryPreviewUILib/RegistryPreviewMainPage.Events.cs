@@ -119,8 +119,7 @@ namespace RegistryPreviewUILib
                         break;
                     case ContentDialogResult.Secondary:
                         // Don't save and continue the file open!
-                        saveButton.IsEnabled = false;
-                        UpdateUnsavedFileIndicator(false);
+                        UpdateUnsavedFileState(false);
                         break;
                     default:
                         // Don't open the new file!
@@ -154,8 +153,7 @@ namespace RegistryPreviewUILib
                 UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
 
                 // disable the Save button as it's a new file
-                saveButton.IsEnabled = false;
-                UpdateUnsavedFileIndicator(false);
+                UpdateUnsavedFileState(false);
 
                 // Restore the event handler as we're loaded
                 MonacoEditor.TextChanged += MonacoEditor_TextChanged;
@@ -208,9 +206,7 @@ namespace RegistryPreviewUILib
             // reload the current Registry file and update the toolbar accordingly.
             UpdateToolBarAndUI(await OpenRegistryFile(_appFileName), true, true);
 
-            // disable the Save button as it's a new file
-            saveButton.IsEnabled = false;
-            UpdateUnsavedFileIndicator(false);
+            UpdateUnsavedFileState(false);
 
             // restore the TextChanged handler
             MonacoEditor.TextChanged += MonacoEditor_TextChanged;
@@ -341,7 +337,7 @@ namespace RegistryPreviewUILib
                         break;
                     case ContentDialogResult.Secondary:
                         // Don't save and continue the file open!
-                        saveButton.IsEnabled = false;
+                        UpdateUnsavedFileState(false);
                         break;
                     default:
                         // Don't open the new file!
@@ -436,8 +432,7 @@ namespace RegistryPreviewUILib
                 RefreshRegistryFile();
                 if (!editorContentChangedScripted)
                 {
-                    saveButton.IsEnabled = true;
-                    UpdateUnsavedFileIndicator(true);
+                    UpdateUnsavedFileState(true);
                 }
 
                 editorContentChangedScripted = false;

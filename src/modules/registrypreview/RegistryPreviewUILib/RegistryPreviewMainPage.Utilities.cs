@@ -876,8 +876,7 @@ namespace RegistryPreviewUILib
                         break;
                     case ContentDialogResult.Secondary:
                         // Don't save, and then close!
-                        UpdateUnsavedFileIndicator(false);
-                        saveButton.IsEnabled = false;
+                        UpdateUnsavedFileState(false);
                         break;
                     default:
                         // Cancel closing!
@@ -953,22 +952,30 @@ namespace RegistryPreviewUILib
             type.InvokeMember("ProtectedCursor", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.SetProperty | BindingFlags.Instance, null, uiElement, new object[] { cursor }, CultureInfo.InvariantCulture);
         }
 
-        public void UpdateUnsavedFileIndicator(bool show)
+        public void UpdateUnsavedFileState(bool unsavedChanges)
         {
-            // get and cut current title
+            // get, cut and analyze the current title
             string currentTitle = Regex.Replace(_mainWindow.Title, APPNAME + @"$|\s-\s" + APPNAME + @"$", string.Empty);
-
-            // verify
             bool titleContainsIndicator = currentTitle.StartsWith(_unsavedFileIndicator, StringComparison.CurrentCultureIgnoreCase);
 
-            // update
-            if (!titleContainsIndicator && show)
+            // update window title and save button state
+            if (unsavedChanges)
             {
-                _updateWindowTitleFunction(_unsavedFileIndicator + currentTitle);
+                saveButton.IsEnabled = true;
+
+                if (!titleContainsIndicator)
+                {
+                    _updateWindowTitleFunction(_unsavedFileIndicator + currentTitle);
+                }
             }
-            else if (titleContainsIndicator && !show)
+            else if (!unsavedChanges)
             {
-                _updateWindowTitleFunction(currentTitle.TrimStart(_unsavedFileIndicatorChars));
+                saveButton.IsEnabled = false;
+
+                if (titleContainsIndicator)
+                {
+                    _updateWindowTitleFunction(currentTitle.TrimStart(_unsavedFileIndicatorChars));
+                }
             }
         }
 
@@ -1033,8 +1040,8 @@ namespace RegistryPreviewUILib
                 streamWriter.Close();
 
                 // only change when the save is successful
+                UpdateUnsavedFileState(false);
                 _updateWindowTitleFunction(_appFileName);
-                saveButton.IsEnabled = false;
             }
             catch (UnauthorizedAccessException ex)
             {
