@@ -1934,6 +1934,15 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PasteAsHtmlFile.Header" xml:space="preserve">
     <value>Paste as .html file</value>
   </data>
+  <data name="Transcode.Header" xml:space="preserve">
+    <value>Transcode audio / video</value>
+  </data>
+  <data name="TranscodeToMp3.Header" xml:space="preserve">
+    <value>Transcode to .mp3</value>
+  </data>
+  <data name="TranscodeToMp4.Header" xml:space="preserve">
+    <value>Transcode to .mp4 (H.264/AAC)</value>
+  </data>
   <data name="AdvancedPaste_EnableAIDialogOpenAIApiKey.Text" xml:space="preserve">
     <value>OpenAI API key:</value>
   </data>
