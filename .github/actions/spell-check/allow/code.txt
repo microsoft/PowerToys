@@ -53,6 +53,8 @@ YVU
 YVYU
 zipfolder
 CODEOWNERS
+VNext
+vnext
 
 # FONTS
 
@@ -89,6 +91,7 @@ onefuzzingestionpreparationtool
 OTP
 Yubi
 Yubico
+svgl
 
 # KEYS
 

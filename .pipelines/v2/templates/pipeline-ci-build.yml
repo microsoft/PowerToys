@@ -36,20 +36,10 @@ parameters:
     default: false
 
 stages:
-  # Allow manual builds to skip pre-check
-  - ${{ if ne(variables['Build.Reason'], 'Manual') }}:
-    - stage: Precheck
-      jobs:
-        - template: job-ci-precheck.yml
-
   - ${{ each platform in parameters.buildPlatforms }}:
     - stage: Build_${{ platform }}
       displayName: Build ${{ platform }}
-      ${{ if ne(variables['Build.Reason'], 'Manual') }}:
-        dependsOn: [Precheck]
-        condition: and(succeeded(), ne(dependencies.Precheck.outputs['Precheck.verifyBuildRequest.skipBuild'], 'Yes'))
-      ${{ else }}:
-        dependsOn: []
+      dependsOn: []
       jobs:
         - template: job-build-project.yml
           parameters:
