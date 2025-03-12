@@ -119,6 +119,7 @@ namespace RegistryPreview.FuzzTests
             }
             else if (registryLine.StartsWith('"') && registryLine.EndsWith("=-", StringComparison.InvariantCulture))
             {
+                // remove "=-"
                 registryLine = registryLine[..^2];
 
                 // remove the "'s without removing all of them
