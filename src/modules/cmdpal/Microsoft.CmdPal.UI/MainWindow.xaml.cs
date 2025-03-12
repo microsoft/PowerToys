@@ -273,8 +273,11 @@ public sealed partial class MainWindow : Window,
         PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
     }
 
-    public void Receive(QuitMessage message) =>
-        Close();
+    public void Receive(QuitMessage message)
+    {
+        // This might come in on a background thread
+        DispatcherQueue.TryEnqueue(() => Close());
+    }
 
     public void Receive(DismissMessage message) =>
         PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);

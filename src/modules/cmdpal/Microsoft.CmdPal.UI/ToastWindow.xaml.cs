@@ -97,8 +97,11 @@ public sealed partial class ToastWindow : Window,
         });
     }
 
-    public void Receive(QuitMessage message) =>
-        Close();
+    public void Receive(QuitMessage message)
+    {
+        // This might come in on a background thread
+        DispatcherQueue.TryEnqueue(() => Close());
+    }
 
     ////// Literally everything below here is for acrylic //////
 
