@@ -60,9 +60,6 @@ namespace Microsoft.PowerToys.UITest
 
             Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
 
-            // Set default timeout to 5 seconds
-            this.Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
-
             return this;
         }
 
@@ -94,6 +91,9 @@ namespace Microsoft.PowerToys.UITest
             opts.AddAdditionalCapability("app", appPath);
             Console.WriteLine($"appPath: {appPath}");
             this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
+
+            // Set default timeout to 5 seconds
+            this.Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
         }
 
         /// <summary>

@@ -43,7 +43,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             [TestMethod]
             public void FirstLaunch() // verify the session is initialized
             {
-                Assert.IsNotNull(Session.Find("FancyZones Layout"));
+                Assert.IsNotNull(Session.Find<Element>("FancyZones Layout"));
             }
         }
     }

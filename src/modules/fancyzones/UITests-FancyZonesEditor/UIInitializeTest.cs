@@ -80,6 +80,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
             this.RestartScopeExe();
 
+            Session.Find<Element>("Monitor 1").Click();
+            Session.Find<Element>("Monitor 2").Click();
             Assert.IsFalse(Session.Find<Element>("Monitor 1").Selected);
             Assert.IsTrue(Session.Find<Element>("Monitor 2").Selected);
         }
@@ -115,6 +117,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
             this.RestartScopeExe();
 
+            Session.Find<Element>("Monitor 1").Click();
             var monitor = Session.Find<Element>("Monitor 1");
             var scaling = monitor.Find<Element>(By.AccessibilityId("ScalingText"));
             Assert.AreEqual("200%", scaling.Text);
@@ -151,6 +154,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
             this.RestartScopeExe();
 
+            Session.Find<Element>("Monitor 1").Click();
             var monitor = Session.Find<Element>("Monitor 1");
             var resolution = monitor.Find<Element>(By.AccessibilityId("ResolutionText"));
             Assert.AreEqual("1920 × 1080", resolution.Text);
@@ -187,6 +191,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
             this.RestartScopeExe();
 
+            Session.Find<Element>("Monitor 1").Click();
             var monitor = Session.Find<Element>("Monitor 1");
             Assert.IsNotNull(monitor);
             Assert.IsTrue(monitor.Selected);
@@ -758,6 +763,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // verify editor opens without errors
             this.RestartScopeExe();
+            Session.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.MainWindow)).Click();
             Assert.IsNotNull(Session.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.MainWindow)));
         }
     }
