@@ -23,8 +23,8 @@ namespace Microsoft.PowerToys.UITest
         private WindowsDriver<WindowsElement> WindowsDriver { get; set; }
 
         private const string AdministratorPrefix = "Administrator: ";
-        
-        private List<IntPtr> windowList = new List<nint>();
+
+        private List<IntPtr> windowList = new List<IntPtr>();
 
         /// <summary>
         /// Gets Main Window Handler
@@ -373,7 +373,12 @@ namespace Microsoft.PowerToys.UITest
 
             if (this.Root != null)
             {
-                var window = this.Root.FindElementByName(windowName);
+                var window = this.Root.FindElementByName("Administrator: " + windowName);
+                if (window == null)
+                {
+                    window = this.Root.FindElementByName(windowName);
+                }
+
                 Assert.IsNotNull(window, $"Failed to attach. Window '{windowName}' not found");
 
                 var hexWindowHandle = this.MainWindowHandler.ToInt64().ToString("x");
@@ -384,6 +389,8 @@ namespace Microsoft.PowerToys.UITest
                 this.WindowsDriver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
 
                 this.windowList.Add(this.MainWindowHandler);
+
+                this.windowList.Add(windowHandle);
 
                 // Set implicit timeout to make element search retry every 500 ms
                 this.WindowsDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);

@@ -159,15 +159,14 @@ namespace Microsoft.PowerToys.UITest
             where T : Element, new()
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
-            var foundElement = FindElementHelper.Find<T, AppiumWebElement>(
-                () =>
-                {
-                    var element = this.windowsElement.FindElement(by.ToSeleniumBy());
-                    Assert.IsNotNull(element, $"Element not found using selector: {by}");
-                    return element;
-                },
-                this.driver,
-                timeoutMS);
+
+            // leverage findAll to filter out mismatched elements
+            var collection = this.FindAll<T>(by, timeoutMS);
+
+            Assert.IsTrue(collection.Count > 0, $"Element not found using selector: {by}");
+
+            return collection[0];
+        }
 
         /// <summary>
         /// Finds an element by the selector.
