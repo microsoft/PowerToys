@@ -46,13 +46,13 @@ internal static class Logger
         Logger.Log(log);
     }
 
-    internal static void Log(Exception e)
+    internal static void Log(Exception e, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
     {
         if (e is not KnownException)
         {
             string exText = e.ToString();
 
-            Log($"!Exception!: {exText}");
+            Log($"!Exception!: {exText}", memberName, sourceFilePath, sourceLineNumber);
 
             if (DateTime.UtcNow.Hour != lastHour)
             {
@@ -77,18 +77,18 @@ internal static class Logger
     private const string HeaderRECEIVED =
         "Be{0},Ke{1},Mo{2},He{3},Mx{4},Tx{5},Im{6},By{7},Cl{8},Dr{9},De{10},Ed{11},In{12},Ni{13},Pc{14}/{15}";
 
-    internal static void LogDebug(string log, bool clearLog = false)
+    internal static void LogDebug(string log, bool clearLog = false, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
     {
 #if DEBUG
-        Log(log, clearLog);
+        Log(log, clearLog, memberName, sourceFilePath, sourceLineNumber);
 #endif
     }
 
-    internal static void Log(string log, bool clearLog = false)
+    internal static void Log(string log, bool clearLog = false, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
     {
         log = DateTime.Now.ToString("MM/dd HH:mm:ss.fff", CultureInfo.InvariantCulture) + $"({Thread.CurrentThread.ManagedThreadId})" + log;
 
-        ManagedCommon.Logger.LogInfo(log);
+        ManagedCommon.Logger.LogInfo(log, memberName, sourceFilePath, sourceLineNumber);
         lock (AllLogsLock)
         {
             if (clearLog)
