@@ -57,15 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            if (colorPickerSettingsRepository == null)
-            {
-                // used in release. This method converts the settings stored in the previous form, so we have forwards compatibility
-                _colorPickerSettings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerSettings.ModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
-            }
-            else
-            {
-                _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig; // used in the unit tests
-            }
+            _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
 

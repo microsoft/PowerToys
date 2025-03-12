@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -97,6 +98,9 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
         get => _isValid;
         private set => Set(ref _isValid, value);
     }
+
+    [JsonIgnore]
+    public IEnumerable<IAdvancedPasteAction> SubActions => [];
 
     public object Clone()
     {
