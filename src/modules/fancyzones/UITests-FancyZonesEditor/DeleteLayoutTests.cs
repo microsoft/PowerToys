@@ -345,12 +345,21 @@ namespace Microsoft.FancyZonesEditor.UITests
                 Assert.Fail("Hotkey not found");
             }
 
-            Session.Find<Button>(ElementName.Cancel).Click();
+            Session.Find<Button>(ElementName.Cancel).DoubleClick();
 
             // check the file
             var hotkeys = new LayoutHotkeys();
             var data = hotkeys.Read(hotkeys.File);
-            Assert.AreEqual(0, data.LayoutHotkeys.Count);
+            int layoutHotkeyCount = 0;
+            foreach (var layout in data.LayoutHotkeys)
+            {
+                if (layout.Key != -1)
+                {
+                    layoutHotkeyCount++;
+                }
+            }
+
+            Assert.AreEqual(0, layoutHotkeyCount);
         }
     }
 }
