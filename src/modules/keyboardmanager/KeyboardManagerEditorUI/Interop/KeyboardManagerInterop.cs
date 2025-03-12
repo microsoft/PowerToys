@@ -90,15 +90,15 @@ namespace KeyboardManagerEditorUI.Interop
         [DllImport(DllName)]
         internal static extern void FreeString(IntPtr str);
 
-        public static string GetStringAndFree(IntPtr ptr)
+        public static string GetStringAndFree(IntPtr handle)
         {
-            if (ptr == IntPtr.Zero)
+            if (handle == IntPtr.Zero)
             {
                 return string.Empty;
             }
 
-            string? result = Marshal.PtrToStringUni(ptr);
-            FreeString(ptr);
+            string? result = Marshal.PtrToStringUni(handle);
+            FreeString(handle);
             return result ?? string.Empty;
         }
     }

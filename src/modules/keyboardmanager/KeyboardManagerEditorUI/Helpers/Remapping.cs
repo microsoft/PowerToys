@@ -4,13 +4,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
-    public class Remapping
+    public partial class Remapping : INotifyPropertyChanged
     {
         public List<string> OriginalKeys { get; set; } = new List<string>();
 
@@ -20,6 +22,26 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public string AppName { get; set; } = "All Apps";
 
-        public bool IsEnabled { get; set; } = true;
+        private bool IsEnabledValue { get; set; } = true;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public bool IsEnabled
+        {
+            get => IsEnabledValue;
+            set
+            {
+                if (IsEnabledValue != value)
+                {
+                    IsEnabledValue = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

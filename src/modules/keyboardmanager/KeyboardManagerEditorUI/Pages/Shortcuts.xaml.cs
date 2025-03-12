@@ -178,7 +178,7 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async void ListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            if (e.ClickedItem is Remapping selectedShortcut)
+            if (e.ClickedItem is Remapping selectedShortcut && selectedShortcut.IsEnabled)
             {
                 ShortcutControl.SetOriginalKeys(selectedShortcut.OriginalKeys);
                 ShortcutControl.SetRemappedKeys(selectedShortcut.RemappedKeys);
