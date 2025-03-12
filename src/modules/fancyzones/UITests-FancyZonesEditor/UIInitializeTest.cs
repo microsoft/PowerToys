@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using System.Xml.Linq;
 using FancyZonesEditor.Models;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests;
@@ -246,7 +247,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     {
                         Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
                         Type = CustomLayout.Canvas.TypeToString(),
-                        Name = "Layout 0",
+                        Name = "Custom layout 1",
                         Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
                         {
                             RefHeight = 1080,
@@ -356,7 +357,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     {
                         Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
                         Type = CustomLayout.Canvas.TypeToString(),
-                        Name = "Layout 0",
+                        Name = "Custom layout 1",
                         Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
                         {
                             RefHeight = 1080,
@@ -440,7 +441,7 @@ namespace Microsoft.FancyZonesEditor.UITests
                     {
                         Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
                         Type = CustomLayout.Canvas.TypeToString(),
-                        Name = "Layout 0",
+                        Name = "Custom layout 1",
                         Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
                         {
                             RefHeight = 1080,
@@ -473,7 +474,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
 
             this.RestartScopeExe();
-
+            Session.Find<Element>(customLayoutListWrapper.CustomLayouts[0].Name).Click();
             var defaultLayout = Session.Find<Element>(customLayoutListWrapper.CustomLayouts[0].Name);
             Assert.IsNotNull(defaultLayout);
             Assert.IsTrue(defaultLayout.Selected);
@@ -533,12 +534,13 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             this.RestartScopeExe();
 
+            Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.Grid]).Click();
             var defaultLayout = Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.Grid]);
             Assert.IsNotNull(defaultLayout);
             Assert.IsTrue(defaultLayout.Selected);
 
             // check the number of zones and spacing
-            Session.Find<Button>(TestConstants.TemplateLayoutNames[LayoutType.Grid]).Click();
+            Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.Grid]).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ZoneCount, int.Parse(Session.Find<Element>(By.AccessibilityId(AccessibilityId.TemplateZoneSlider))?.Text!, CultureInfo.InvariantCulture));
             Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.Spacing, int.Parse(Session.Find<Element>(By.AccessibilityId(AccessibilityId.SpacingSlider))?.Text!, CultureInfo.InvariantCulture));
             Assert.AreEqual(defaultLayoutsListWrapper.DefaultLayouts[0].Layout.ShowSpacing, Session.Find<Element>(By.AccessibilityId(AccessibilityId.SpacingSlider))?.Enabled);
