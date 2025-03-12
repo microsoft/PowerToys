@@ -3,10 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
@@ -24,7 +22,7 @@ namespace Microsoft.PowerToys.UITest
 
         private const string AdministratorPrefix = "Administrator: ";
 
-        private List<IntPtr> windowList = new List<IntPtr>();
+        private List<IntPtr> windowHandlers = new List<IntPtr>();
 
         /// <summary>
         /// Gets Main Window Handler
@@ -54,22 +52,30 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void Cleanup()
         {
-            for (var i = 0; i < this.windowList.Count; i++)
+            /*
+            foreach (var windowHandle in this.windowHandlers)
             {
-                var windowHandle = this.windowList[i];
-                if (windowHandle != 0)
+                if (windowHandle == IntPtr.Zero)
+                {
+                    continue;
+                }
+
+                try
                 {
                     var process = Process.GetProcessById((int)windowHandle);
-
-                    if (process != null)
+                    if (process != null && !process.HasExited)
                     {
                         process.Kill();
                         process.WaitForExit();
                     }
                 }
+                catch
+                {
+                }
             }
+            */
 
-            windowList.Clear();
+            windowHandlers.Clear();
         }
 
         /// <summary>
@@ -370,25 +376,31 @@ namespace Microsoft.PowerToys.UITest
         public Session Attach(string windowName, WindowSize size = WindowSize.UnSpecified)
         {
             this.IsElevated = null;
+            this.MainWindowHandler = IntPtr.Zero;
 
             if (this.Root != null)
             {
-                var window = this.Root.FindElementByName("Administrator: " + windowName);
-                if (window == null)
+                // search window handler by window title (admin and non-admin titles)
+                var matchingWindows = ApiHelper.FindDesktopWindowHandler([windowName, AdministratorPrefix + windowName]);
+                if (matchingWindows.Count == 0 || matchingWindows[0].HWnd == IntPtr.Zero)
                 {
-                    window = this.Root.FindElementByName(windowName);
+                    Assert.Fail($"Failed to attach. Window '{windowName}' not found");
                 }
 
-                Assert.IsNotNull(window, $"Failed to attach. Window '{windowName}' not found");
+                // pick one from matching windows
+                this.MainWindowHandler = matchingWindows[0].HWnd;
+                this.IsElevated = matchingWindows[0].Title.StartsWith(AdministratorPrefix);
+
+                ApiHelper.SetForegroundWindow(this.MainWindowHandler);
 
                 var hexWindowHandle = this.MainWindowHandler.ToInt64().ToString("x");
-                var appCapabilities = new AppiumOptions();
 
+                var appCapabilities = new AppiumOptions();
                 appCapabilities.AddAdditionalCapability("appTopLevelWindow", hexWindowHandle);
                 appCapabilities.AddAdditionalCapability("deviceName", "WindowsPC");
                 this.WindowsDriver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
 
-                this.windowList.Add(this.MainWindowHandler);
+                this.windowHandlers.Add(this.MainWindowHandler);
 
                 // Set implicit timeout to make element search retry every 500 ms
                 this.WindowsDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);

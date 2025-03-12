@@ -98,8 +98,11 @@ namespace Microsoft.PowerToys.UITest
             {
                 try
                 {
-                    process.Kill();
-                    process.WaitForExit(); // Optional: Wait for the process to exit
+                    if (!process.HasExited)
+                    {
+                        process.Kill();
+                        process.WaitForExit(); // Optional: Wait for the process to exit
+                    }
                 }
                 catch (Exception ex)
                 {
