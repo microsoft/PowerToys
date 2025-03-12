@@ -2,17 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
-using OpenQA.Selenium.Interactions;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -45,17 +40,48 @@ namespace Microsoft.PowerToys.UITest
             where T : Element, new()
         {
             Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
-            var foundElement = FindElementHelper.Find<T, WindowsElement>(
-                () =>
-                {
-                    var element = this.WindowsDriver.FindElement(by.ToSeleniumBy());
-                    Assert.IsNotNull(element, $"Element not found using selector: {by}");
-                    return element;
-                },
-                this.WindowsDriver,
-                timeoutMS);
 
-            return foundElement;
+            // leverage findAll to filter out mismatched elements
+            var collection = this.FindAll<T>(by, timeoutMS);
+
+            Assert.IsTrue(collection.Count > 0, $"Element not found using selector: {by}");
+
+            return collection[0];
+        }
+
+        /// <summary>
+        /// Shortcut for this.Find<T>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>The found element.</returns>
+        public T Find<T>(string name, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.Find<T>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Find<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The selector to find the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>The found element.</returns>
+        public Element Find(By by, int timeoutMS = 3000)
+        {
+            return this.Find<Element>(by, timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Find<Element>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>The found element.</returns>
+        public Element Find(string name, int timeoutMS = 3000)
+        {
+            return this.Find<Element>(By.Name(name), timeoutMS);
         }
 
         /// <summary>
@@ -65,21 +91,58 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<T>? FindAll<T>(By by, int timeoutMS = 3000)
+        public ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 3000)
             where T : Element, new()
         {
             Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
-            var foundElements = FindElementHelper.FindAll<T, WindowsElement>(
+            var foundElements = FindHelper.FindAll<T, WindowsElement>(
                 () =>
                 {
                     var elements = this.WindowsDriver.FindElements(by.ToSeleniumBy());
-                    Assert.IsTrue(elements.Count > 0, $"Elements not found using selector: {by}");
                     return elements;
                 },
                 this.WindowsDriver,
                 timeoutMS);
 
-            return foundElements;
+            return foundElements ?? new ReadOnlyCollection<T>([]);
+        }
+
+        /// <summary>
+        /// Finds all elements by selector.
+        /// Shortcut for this.FindAll<T>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the elements, should be Element or its derived class.</typeparam>
+        /// <param name="name">The name to find the elements.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>A read-only collection of the found elements.</returns>
+        public ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.FindAll<T>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Finds all elements by selector.
+        /// Shortcut for this.FindAll<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The selector to find the elements.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>A read-only collection of the found elements.</returns>
+        public ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 3000)
+        {
+            return this.FindAll<Element>(by, timeoutMS);
+        }
+
+        /// <summary>
+        /// Finds all elements by selector.
+        /// Shortcut for this.FindAll<Element>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <param name="name">The name to find the elements.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>A read-only collection of the found elements.</returns>
+        public ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 3000)
+        {
+            return this.FindAll<Element>(By.Name(name), timeoutMS);
         }
 
         /// <summary>
@@ -110,6 +173,7 @@ namespace Microsoft.PowerToys.UITest
                 SetForegroundWindow(windowHandle);
                 var hexWindowHandle = windowHandle.ToString("x");
                 var appCapabilities = new AppiumOptions();
+
                 appCapabilities.AddAdditionalCapability("appTopLevelWindow", hexWindowHandle);
                 appCapabilities.AddAdditionalCapability("deviceName", "WindowsPC");
                 this.WindowsDriver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);

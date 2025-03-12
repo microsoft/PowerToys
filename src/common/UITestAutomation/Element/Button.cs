@@ -2,13 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Appium.Windows;
-using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Remote;
-using OpenQA.Selenium.Support.Events;
-
 namespace Microsoft.PowerToys.UITest
 {
     /// <summary>
@@ -16,5 +9,14 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     public class Button : Element
     {
+        private static readonly string ExpectedControlType = "ControlType.Button";
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Button"/> class.
+        /// </summary>
+        public Button()
+        {
+            this.TargetControlType = Button.ExpectedControlType;
+        }
     }
 }

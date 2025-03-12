@@ -14,12 +14,13 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Windows.Globalization;
 using Windows.Media.Ocr;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerOcrViewModel : Observable, IDisposable
+    public partial class PowerOcrViewModel : Observable, IDisposable
     {
         private bool disposedValue;
 
@@ -236,7 +237,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        CultureInfo.InvariantCulture,
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        PowerOcrSettings.ModuleName,
-                       JsonSerializer.Serialize(_powerOcrSettings)));
+                       JsonSerializer.Serialize(_powerOcrSettings, SourceGenerationContextContext.Default.PowerOcrSettings)));
         }
 
         public void RefreshEnabledState()

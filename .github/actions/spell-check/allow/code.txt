@@ -91,6 +91,7 @@ onefuzzingestionpreparationtool
 OTP
 Yubi
 Yubico
+svgl
 
 # KEYS
 
