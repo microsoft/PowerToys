@@ -24,6 +24,8 @@ namespace Microsoft.PowerToys.UITest
 
         private List<IntPtr> windowHandlers = new List<IntPtr>();
 
+        private Window? MainWindow { get; set; }
+
         /// <summary>
         /// Gets Main Window Handler
         /// </summary>
@@ -355,6 +357,18 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Close the main window.
+        /// </summary>
+        public void CloseMainWindow()
+        {
+            if (MainWindow != null)
+            {
+                MainWindow.Close();
+                MainWindow = null;
+            }
+        }
+
+        /// <summary>
         /// Attaches to an existing PowerToys module.
         /// </summary>
         /// <param name="module">The PowerToys module to attach to.</param>
@@ -409,6 +423,9 @@ namespace Microsoft.PowerToys.UITest
                 {
                     this.SetMainWindowSize(size);
                 }
+
+                // Set MainWindow
+                MainWindow = Find<Window>(matchingWindows[0].Title);
             }
             else
             {

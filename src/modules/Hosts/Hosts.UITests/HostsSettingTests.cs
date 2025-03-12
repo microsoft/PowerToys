@@ -73,7 +73,7 @@ namespace Hosts.UITests
             Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed after click Accept button in Warning Dialog");
 
             // Close Hosts File Editor window
-            this.Session.Find<Window>("Hosts File Editor").Close();
+            this.Session.CloseMainWindow();
 
             // Restore back to PowerToysSettings Session
             this.Session.Attach(PowerToysModule.PowerToysSettings);
@@ -87,7 +87,7 @@ namespace Hosts.UITests
             Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed");
 
             // Close Hosts File Editor window
-            this.Session.Find<Window>("Hosts File Editor").Close();
+            this.Session.CloseMainWindow();
 
             // Restore back to PowerToysSettings Session
             this.Session.Attach(PowerToysModule.PowerToysSettings);
