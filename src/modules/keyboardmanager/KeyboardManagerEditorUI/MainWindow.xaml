@@ -40,6 +40,7 @@
             IsBackButtonVisible="Collapsed"
             IsBackEnabled="False"
             IsPaneToggleButtonVisible="False"
+            IsSettingsVisible="False"
             PaneDisplayMode="Top"
             SelectionChanged="RootView_SelectionChanged">
             <NavigationView.MenuItems>

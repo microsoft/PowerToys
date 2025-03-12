@@ -28,6 +28,8 @@ namespace KeyboardManagerEditorUI
             this.InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(titleBar);
+
+            // Set the default page
             RootView.SelectedItem = RootView.MenuItems[0];
         }
 
