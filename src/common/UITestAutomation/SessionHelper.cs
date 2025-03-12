@@ -52,7 +52,7 @@ namespace Microsoft.PowerToys.UITest
         [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
         public SessionHelper Init()
         {
-            string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string? path = @"C:\Users\nxu\AppData\Local\PowerToys\1\2\3"; // Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             this.StartExe(path + this.sessionPath);
 
             Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
@@ -70,7 +70,8 @@ namespace Microsoft.PowerToys.UITest
         {
             try
             {
-                appDriver?.Kill();
+                Driver!.CloseApp();
+                appDriver?.Kill(true);
             }
             catch (Exception ex)
             {

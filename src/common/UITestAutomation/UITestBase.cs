@@ -18,22 +18,16 @@ namespace Microsoft.PowerToys.UITest
     [TestClass]
     public class UITestBase
     {
-        public Session Session { get; set; }
-
-        private readonly SessionHelper sessionHelper;
+        public required Session Session { get; set; }
 
         private readonly PowerToysModule scope;
+        private readonly WindowSize size;
+        private SessionHelper? sessionHelper;
 
-        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings)
+        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
         {
             this.scope = scope;
-            this.sessionHelper = new SessionHelper(scope).Init();
-            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver());
-        }
-
-        ~UITestBase()
-        {
-            this.sessionHelper.Cleanup();
+            this.size = size;
         }
 
         /// <summary>
@@ -42,6 +36,9 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
+            this.sessionHelper = new SessionHelper(scope).Init();
+            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
+
             if (this.scope == PowerToysModule.PowerToysSettings)
             {
                 // close Debug warning dialog if any
@@ -50,6 +47,19 @@ namespace Microsoft.PowerToys.UITest
                 {
                     this.Find("DEBUG").Find<Button>("Close").Click();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Cleanups the test
+        /// </summary>
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            if (this.sessionHelper != null)
+            {
+                this.sessionHelper.Cleanup();
+                this.sessionHelper = null;
             }
         }
 
@@ -68,7 +78,7 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Shortcut for this.Session.Find<Element>(By.Name(name), timeoutMS)
+        /// Shortcut for this.Session.Find<Element>(name, timeoutMS)
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="name">The name of the element.</param>
@@ -92,7 +102,7 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Shortcut for this.Session.Find<Element>(By.Name(name), timeoutMS)
+        /// Shortcut for this.Session.Find<Element>(name, timeoutMS)
         /// </summary>
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
@@ -100,6 +110,102 @@ namespace Microsoft.PowerToys.UITest
         protected Element Find(string name, int timeoutMS = 3000)
         {
             return this.Session.Find(name, timeoutMS);
+        }
+
+        /// <summary>
+        /// Has only one Element or its derived class by selector.
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="by">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if only has one element, otherwise false.</returns>
+        public bool HasOne<T>(By by, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.FindAll<T>(by, timeoutMS).Count == 1;
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.HasOne<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if only has one element, otherwise false.</returns>
+        public bool HasOne(By by, int timeoutMS = 3000)
+        {
+            return this.Session.HasOne<Element>(by, timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.HasOne<T>(name, timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if only has one element, otherwise false.</returns>
+        public bool HasOne<T>(string name, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.Session.HasOne<T>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.HasOne<Element>(name, timeoutMS)
+        /// </summary>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if only has one element, otherwise false.</returns>
+        public bool HasOne(string name, int timeoutMS = 3000)
+        {
+            return this.Session.HasOne<Element>(name, timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.Has<T>(by, timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="by">The selector to find the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if  has one or more element, otherwise false.</returns>
+        public bool Has<T>(By by, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.Session.FindAll<T>(by, timeoutMS).Count >= 1;
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.Has<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The selector to find the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if  has one or more element, otherwise false.</returns>
+        public bool Has(By by, int timeoutMS = 3000)
+        {
+            return this.Session.Has<Element>(by, timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.Has<T>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if  has one or more element, otherwise false.</returns>
+        public bool Has<T>(string name, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.Session.Has<T>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.Has<Element>(name, timeoutMS)
+        /// </summary>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if  has one or more element, otherwise false.</returns>
+        public bool Has(string name, int timeoutMS = 3000)
+        {
+            return this.Session.Has<Element>(name, timeoutMS);
         }
 
         /// <summary>

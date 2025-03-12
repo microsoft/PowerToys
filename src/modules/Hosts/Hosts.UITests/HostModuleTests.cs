@@ -13,7 +13,7 @@ namespace Hosts.UITests
     public class HostModuleTests : UITestBase
     {
         public HostModuleTests()
-            : base(PowerToysModule.Hosts)
+            : base(PowerToysModule.Hosts, WindowSize.Small_Vertical)
         {
         }
 
@@ -31,14 +31,14 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("Hosts.Basic.EmptyViewShouldWork")]
         public void TestEmptyView()
         {
             this.CloseWarningDialog();
             this.RemoveAllEntries();
 
             // 'Add an entry' button (only show-up when list is empty) should be visible
-            Assert.IsTrue(this.FindAll<HyperlinkButton>("Add an entry").Count == 1, "'Add an entry' button should be visible in the empty view");
+            Assert.IsTrue(this.HasOne<HyperlinkButton>("Add an entry"), "'Add an entry' button should be visible in the empty view");
 
             // Click 'Add an entry' from empty-view for adding Host override rule
             this.Find<HyperlinkButton>("Add an entry").Click();
@@ -46,8 +46,8 @@ namespace Hosts.UITests
             this.AddEntry("192.168.0.1", "localhost", false, false);
 
             // Should have one row now and not more empty view
-            Assert.IsTrue(this.FindAll<Button>("Delete").Count == 1, "Should have one row now");
-            Assert.IsTrue(this.FindAll<HyperlinkButton>("Add an entry").Count == 0, "'Add an entry' button should be invisible if not empty view");
+            Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
+            Assert.IsFalse(this.HasOne<HyperlinkButton>("Add an entry"), "'Add an entry' button should be invisible if not empty view");
         }
 
         /// <summary>
@@ -58,17 +58,17 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("Hosts.Basic.AddEntryButtonShouldWork")]
         public void TestAddingEntry()
         {
             this.CloseWarningDialog();
             this.RemoveAllEntries();
 
-            Assert.IsTrue(this.FindAll<Button>("Delete").Count == 0, "Should have no row after removing all");
+            Assert.IsFalse(this.Has<Button>("Delete"), "Should have no row after removing all");
 
             this.AddEntry("192.168.0.1", "localhost", true);
 
-            Assert.IsTrue(this.FindAll<Button>("Delete").Count == 1, "Should have one row now");
+            Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("Hosts.Basic.CanNotAddMoreThenNighHosts")]
         public void TestTooManyHosts()
         {
             this.CloseWarningDialog();
@@ -116,18 +116,46 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("Hosts.Basic.ErrorMessgeShowupIfNotRunAsAdmin")]
         public void TestErrorMessageWithNonAdminPermission()
         {
-            this.CloseWarningDialog();
-            this.RemoveAllEntries();
+            if (this.Session.IsElevated == false)
+            {
+                this.CloseWarningDialog();
+                this.RemoveAllEntries();
 
-            // Add new URL override and a warning tip should be shown
-            this.AddEntry("192.168.0.1", "localhost", true);
+                // Add new URL override and a warning tip should be shown
+                this.AddEntry("192.168.0.1", "localhost", true);
 
-            Assert.IsTrue(
-                this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count == 1,
-                "Should display host-file saving error if not run as administrator");
+                Assert.IsTrue(
+                    this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count == 1,
+                    "Should display host-file saving error if not run as administrator");
+            }
+        }
+
+        /// <summary>
+        /// Test No Error-message in the Hosts-File-Editor
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Validating error message should be shown if not run as admin.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
+        [TestMethod("Hosts.Basic.NoErrorMessgeShowupIfRunAsAdmin")]
+        public void TestNoErrorMessageWithNonAdminPermission()
+        {
+            if (this.Session.IsElevated == true)
+            {
+                this.CloseWarningDialog();
+                this.RemoveAllEntries();
+
+                // Add new URL override and a warning tip should be shown
+                this.AddEntry("192.168.0.1", "localhost", true);
+
+                Assert.IsFalse(
+                    this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count == 1,
+                    "Should display host-file saving error if not run as administrator");
+            }
         }
 
         /// <summary>
@@ -144,7 +172,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("Hosts.Basic.FiltersControlShouldWork")]
         public void TestFilterControl()
         {
             this.CloseWarningDialog();

@@ -4,8 +4,10 @@
 
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 
@@ -20,17 +22,33 @@ namespace Microsoft.PowerToys.UITest
 
         private WindowsDriver<WindowsElement> WindowsDriver { get; set; }
 
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(nint hWnd);
+        private const string AdministratorPrefix = "Administrator: ";
 
-        public Session(WindowsDriver<WindowsElement> root, WindowsDriver<WindowsElement> windowsDriver)
+        /// <summary>
+        /// Gets Main Window Handler
+        /// </summary>
+        public IntPtr MainWindowHandler { get; private set; }
+
+        /// <summary>
+        /// Gets the RunAsAdmin flag.
+        /// If true, the session is running as admin.
+        /// If false, the session is not running as admin.
+        /// If null, no information is available.
+        /// </summary>
+        public bool? IsElevated { get; private set; }
+
+        public Session(WindowsDriver<WindowsElement> root, WindowsDriver<WindowsElement> windowsDriver, PowerToysModule scope, WindowSize size)
         {
+            this.MainWindowHandler = IntPtr.Zero;
             this.Root = root;
             this.WindowsDriver = windowsDriver;
+
+            // Attach to the scope & reset MainWindowHandler
+            this.Attach(scope, size);
         }
 
         /// <summary>
-        /// Finds an element by selector.
+        /// Finds an Element or its derived class by selector.
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="by">The selector to find the element.</param>
@@ -85,7 +103,103 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Finds all elements by selector.
+        /// Has only one Element or its derived class by selector.
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="by">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if only has one element, otherwise false.</returns>
+        public bool HasOne<T>(By by, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.FindAll<T>(by, timeoutMS).Count == 1;
+        }
+
+        /// <summary>
+        /// Shortcut for this.HasOne<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if only has one element, otherwise false.</returns>
+        public bool HasOne(By by, int timeoutMS = 3000)
+        {
+            return this.HasOne<Element>(by, timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.HasOne<T>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if only has one element, otherwise false.</returns>
+        public bool HasOne<T>(string name, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.HasOne<T>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.HasOne<Element>(name, timeoutMS)
+        /// </summary>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if only has one element, otherwise false.</returns>
+        public bool HasOne(string name, int timeoutMS = 3000)
+        {
+            return this.HasOne<Element>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Has one or more Element or its derived class by selector.
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="by">The selector to find the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if  has one or more element, otherwise false.</returns>
+        public bool Has<T>(By by, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.FindAll<T>(by, timeoutMS).Count >= 1;
+        }
+
+        /// <summary>
+        /// Shortcut for this.Has<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The selector to find the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if  has one or more element, otherwise false.</returns>
+        public bool Has(By by, int timeoutMS = 3000)
+        {
+            return this.Has<Element>(by, timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Has<T>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if  has one or more element, otherwise false.</returns>
+        public bool Has<T>(string name, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.Has<T>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Has<Element>(name, timeoutMS)
+        /// </summary>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>True if  has one or more element, otherwise false.</returns>
+        public bool Has(string name, int timeoutMS = 3000)
+        {
+            return this.Has<Element>(name, timeoutMS);
+        }
+
+        /// <summary>
+        /// Finds all Element or its derived class by selector.
         /// </summary>
         /// <typeparam name="T">The class of the elements, should be Element or its derived class.</typeparam>
         /// <param name="by">The selector to find the elements.</param>
@@ -146,14 +260,79 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Sets the main window size.
+        /// </summary>
+        /// <param name="size">WindowSize enum</param>
+        public void SetMainWindowSize(WindowSize size)
+        {
+            if (size == WindowSize.UnSpecified)
+            {
+                return;
+            }
+
+            int width = 0, height = 0;
+
+            switch (size)
+            {
+                case WindowSize.Small:
+                    width = 640;
+                    height = 480;
+                    break;
+                case WindowSize.Small_Vertical:
+                    width = 480;
+                    height = 640;
+                    break;
+                case WindowSize.Medium:
+                    width = 1024;
+                    height = 768;
+                    break;
+                case WindowSize.Medium_Vertical:
+                    width = 768;
+                    height = 1024;
+                    break;
+                case WindowSize.Large:
+                    width = 1920;
+                    height = 1080;
+                    break;
+                case WindowSize.Large_Vertical:
+                    width = 1080;
+                    height = 1920;
+                    break;
+            }
+
+            if (width > 0 && height > 0)
+            {
+                this.SetMainWindowSize(width, height);
+            }
+        }
+
+        /// <summary>
+        /// Sets the main window size based on Width and Height.
+        /// </summary>
+        /// <param name="width">the width in pixel</param>
+        /// <param name="height">the height in pixel</param>
+        public void SetMainWindowSize(int width, int height)
+        {
+            if (this.MainWindowHandler == IntPtr.Zero
+                || width <= 0
+                || height <= 0)
+            {
+                return;
+            }
+
+            ApiHelper.SetWindowPos(this.MainWindowHandler, IntPtr.Zero, 0, 0, width, height, ApiHelper.SetWindowPosNoMove | ApiHelper.SetWindowPosNoZorder | ApiHelper.SetWindowPosShowWindow);
+        }
+
+        /// <summary>
         /// Attaches to an existing PowerToys module.
         /// </summary>
         /// <param name="module">The PowerToys module to attach to.</param>
+        /// <param name="size">The window size to set. Default is no change to window size</param>
         /// <returns>The attached session.</returns>
-        public Session Attach(PowerToysModule module)
+        public Session Attach(PowerToysModule module, WindowSize size = WindowSize.UnSpecified)
         {
             string windowName = ModuleConfigData.Instance.GetModuleWindowName(module);
-            return this.Attach(windowName);
+            return this.Attach(windowName, size);
         }
 
         /// <summary>
@@ -161,26 +340,42 @@ namespace Microsoft.PowerToys.UITest
         /// The session should be attached when a new app is started.
         /// </summary>
         /// <param name="windowName">The window name to attach to.</param>
+        /// <param name="size">The window size to set. Default is no change to window size</param>
         /// <returns>The attached session.</returns>
-        public Session Attach(string windowName)
+        public Session Attach(string windowName, WindowSize size = WindowSize.UnSpecified)
         {
+            this.IsElevated = null;
+
             if (this.Root != null)
             {
-                var window = this.Root.FindElementByName(windowName);
-                Assert.IsNotNull(window, $"Failed to attach. Window '{windowName}' not found");
+                // search window handler by window title (admin and non-admin titles)
+                var matchingWindows = ApiHelper.FindDesktopWindowHandler([windowName, AdministratorPrefix + windowName]);
 
-                var windowHandle = new nint(int.Parse(window.GetAttribute("NativeWindowHandle")));
-                SetForegroundWindow(windowHandle);
-                var hexWindowHandle = windowHandle.ToString("x");
+                if (matchingWindows.Count == 0)
+                {
+                    Assert.Fail($"Failed to attach. Window '{windowName}' not found");
+                }
+
+                // pick one from matching windows
+                this.MainWindowHandler = matchingWindows[0].HWnd;
+                this.IsElevated = matchingWindows[0].Title.StartsWith(AdministratorPrefix);
+
+                ApiHelper.SetForegroundWindow(this.MainWindowHandler);
+
+                var hexWindowHandle = this.MainWindowHandler.ToInt64().ToString("x");
                 var appCapabilities = new AppiumOptions();
 
                 appCapabilities.AddAdditionalCapability("appTopLevelWindow", hexWindowHandle);
                 appCapabilities.AddAdditionalCapability("deviceName", "WindowsPC");
                 this.WindowsDriver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
-                Assert.IsNotNull(this.WindowsDriver, "Attach WindowsDriver is null");
 
                 // Set implicit timeout to make element search retry every 500 ms
                 this.WindowsDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
+
+                if (size != WindowSize.UnSpecified)
+                {
+                    this.SetMainWindowSize(size);
+                }
             }
             else
             {
@@ -188,6 +383,62 @@ namespace Microsoft.PowerToys.UITest
             }
 
             return this;
+        }
+
+        private static class ApiHelper
+        {
+            [DllImport("user32.dll")]
+            public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+            public const uint SetWindowPosNoMove = 0x0002;
+            public const uint SetWindowPosNoZorder = 0x0004;
+            public const uint SetWindowPosShowWindow = 0x0040;
+
+            [DllImport("user32.dll", SetLastError = true)]
+            public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+            // Delegate for the EnumWindows callback function
+            private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+            // P/Invoke declaration for EnumWindows
+            [DllImport("user32.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+            // P/Invoke declaration for GetWindowTextLength
+            [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+            private static extern int GetWindowTextLength(IntPtr hWnd);
+
+            // P/Invoke declaration for GetWindowText
+            [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+            private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+            public static List<(IntPtr HWnd, string Title)> FindDesktopWindowHandler(string[] matchingWindowsTitles)
+            {
+                var windows = new List<(IntPtr HWnd, string Title)>();
+
+                _ = EnumWindows(
+                    (hWnd, lParam) =>
+                    {
+                        int length = GetWindowTextLength(hWnd);
+                        if (length > 0)
+                        {
+                            var builder = new StringBuilder(length + 1);
+                            _ = GetWindowText(hWnd, builder, builder.Capacity);
+
+                            var title = builder.ToString();
+                            if (matchingWindowsTitles.Contains(title))
+                            {
+                                windows.Add((hWnd, title));
+                            }
+                        }
+
+                        return true; // Continue enumeration
+                    },
+                    IntPtr.Zero);
+
+                return windows;
+            }
         }
     }
 }

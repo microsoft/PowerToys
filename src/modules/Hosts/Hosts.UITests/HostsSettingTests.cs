@@ -29,7 +29,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("Hosts.Settings.ShowWarningDialogIfRunAsAdmin")]
         public void TestWarningDialog()
         {
             this.LaunchFromSetting(showWarning: true);
@@ -54,7 +54,7 @@ namespace Hosts.UITests
             // wait for 500 ms to make sure Hosts File Editor is launched
             Task.Delay(500).Wait();
 
-            this.Session.Attach(PowerToysModule.Hosts);
+            this.Session.Attach(PowerToysModule.Hosts, WindowSize.Small_Vertical);
 
             // Should show warning dialog
             Assert.IsTrue(this.FindAll("Warning").Count > 0, "Should show warning dialog");
