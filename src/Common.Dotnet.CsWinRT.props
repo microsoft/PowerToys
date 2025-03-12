@@ -2,7 +2,7 @@
 <!-- Some items may be set in Directory.Build.props in root -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <WindowsSdkPackageVersion>10.0.22621.48</WindowsSdkPackageVersion>
+    <WindowsSdkPackageVersion>10.0.22621.57</WindowsSdkPackageVersion>
     <TargetFramework>net9.0-windows10.0.22621.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
