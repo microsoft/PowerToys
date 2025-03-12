@@ -12,6 +12,11 @@ namespace Hosts.UITests
     [TestClass]
     public class HostsSettingTests : UITestBase
     {
+        public HostsSettingTests()
+        : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
+        {
+        }
+
         /// <summary>
         /// Test Warning Dialog at startup
         /// <list type="bullet">
