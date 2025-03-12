@@ -390,8 +390,6 @@ namespace Microsoft.PowerToys.UITest
 
                 this.windowList.Add(this.MainWindowHandler);
 
-                this.windowList.Add(windowHandle);
-
                 // Set implicit timeout to make element search retry every 500 ms
                 this.WindowsDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
 

@@ -57,7 +57,7 @@ namespace Microsoft.PowerToys.UITest
         public void TestCleanup()
         {
             this.Session.Cleanup();
-            this.sessionHelper.Cleanup();
+            this.sessionHelper!.Cleanup();
         }
 
         /// <summary>

@@ -98,8 +98,8 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Click the UI element.
         /// </summary>
-        /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click.</param>
-        public void Click(bool rightClick = false)
+        /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
+        public virtual void Click(bool rightClick = false)
         {
             PerformAction((actions, windowElement) =>
             {
@@ -116,6 +116,8 @@ namespace Microsoft.PowerToys.UITest
                 {
                     actions.Click();
                 }
+
+                actions.Build().Perform();
             });
         }
 
@@ -166,6 +168,32 @@ namespace Microsoft.PowerToys.UITest
             Assert.IsTrue(collection.Count > 0, $"Element not found using selector: {by}");
 
             return collection[0];
+        }
+
+        /// <summary>
+        /// Finds an element by the selector.
+        /// Shortcut for this.Find<T>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class type of the element to find.</typeparam>
+        /// <param name="name">The name for finding the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds.</param>
+        /// <returns>The found element.</returns>
+        public T Find<T>(string name, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.Find<T>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Finds an element by the selector.
+        /// Shortcut for this.Find<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The selector to use for finding the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds.</param>
+        /// <returns>The found element.</returns>
+        public Element Find(By by, int timeoutMS = 3000)
+        {
+            return this.Find<Element>(by, timeoutMS);
         }
 
         /// <summary>
@@ -244,9 +272,17 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Simulates a manual operation on the element.
         /// </summary>
-        private void PerformAction(Action<Actions> action)
+        /// <param name="action">The action to perform on the element.</param>
+        /// <param name="msPreAction">The number of milliseconds to wait before the action. Default value is 500 ms</param>
+        /// <param name="msPostAction">The number of milliseconds to wait after the action. Default value is 500 ms</param>
+        protected void PerformAction(Action<Actions, WindowsElement> action, int msPreAction = 500, int msPostAction = 500)
         {
-            var element = this.windowsElement;
+            if (msPreAction > 0)
+            {
+                Task.Delay(msPreAction).Wait();
+            }
+
+            var windowElement = this.windowsElement!;
             Actions actions = new Actions(this.driver);
             action(actions, windowElement);
 

@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void Cleanup()
         {
-            this.ExitScopeExe();
+            this.ExitExe(this.sessionPath);
             try
             {
                 appDriver?.Kill();
@@ -86,11 +86,11 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Exit a exe.
         /// </summary>
-        /// <param name="path">The path to the application executable.</param>
-        public void ExitExe(string path)
+        /// <param name="appPath">The path to the application executable.</param>
+        public void ExitExe(string appPath)
         {
             // Exit Exe
-            string exeName = Path.GetFileNameWithoutExtension(path);
+            string exeName = Path.GetFileNameWithoutExtension(appPath);
 
             // PowerToys.FancyZonesEditor
             Process[] processes = Process.GetProcessesByName(exeName);
@@ -106,14 +106,6 @@ namespace Microsoft.PowerToys.UITest
                     Assert.Fail($"Failed to terminate process {process.ProcessName} (ID: {process.Id}): {ex.Message}");
                 }
             }
-        }
-
-        /// <summary>
-        /// Exit now exe.
-        /// </summary>
-        public void ExitScopeExe()
-        {
-            this.ExitExe(sessionPath);
         }
 
         /// <summary>
