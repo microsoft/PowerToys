@@ -6,7 +6,6 @@
     xmlns:local="clr-namespace:ColorPicker"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:ColorPicker.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     mc:Ignorable="d">
     <UserControl.Resources>
         <Style x:Key="ReadonlyTextBoxStyle" TargetType="{x:Type TextBox}">
@@ -66,7 +65,6 @@
                                         HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                                         IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                                         IsTabStop="{TemplateBinding ScrollViewer.IsTabStop}"
-                                        Style="{StaticResource DefaultTextBoxScrollViewerStyle}"
                                         TextElement.Foreground="{TemplateBinding Foreground}"
                                         VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}" />
                                 </Grid>
@@ -173,7 +171,7 @@
                 Style="{StaticResource SubtleButtonStyle}"
                 ToolTipService.ToolTip="{x:Static p:Resources.Copy_to_clipboard}">
                 <Button.Content>
-                    <ui:SymbolIcon FontSize="20" Symbol="Copy20" />
+                    <TextBlock FontFamily="{StaticResource IconFontFamily}" Text="&#xE8C8;" />
                 </Button.Content>
             </Button>
         </Grid>
