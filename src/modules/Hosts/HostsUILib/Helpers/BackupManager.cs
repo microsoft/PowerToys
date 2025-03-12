@@ -43,8 +43,9 @@ namespace HostsUILib.Helpers
                 _fileSystem.File.Copy(hostsFilePath, backupPath);
                 _backupDone = true;
             }
-            catch
+            catch (Exception ex)
             {
+                LoggerInstance.Logger.LogError("Backup failed", ex);
             }
         }
 
