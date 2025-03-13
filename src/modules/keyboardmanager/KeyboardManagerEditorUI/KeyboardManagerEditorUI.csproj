@@ -26,7 +26,6 @@
   <ItemGroup>
     <None Remove="Pages\ExistingUI.xaml" />
     <None Remove="Pages\Programs.xaml" />
-    <None Remove="Pages\Shortcuts.xaml" />
     <None Remove="Pages\Text.xaml" />
     <None Remove="Pages\URLs.xaml" />
     <None Remove="Styles\CommonStyle.xaml" />
@@ -77,7 +76,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Pages\Shortcuts.xaml">
+    <Page Update="Pages\Remappings.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
