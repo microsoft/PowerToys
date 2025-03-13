@@ -554,6 +554,34 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Grid_MoveSplitter_Save()
         {
+            EditorParameters editorParameters = new EditorParameters();
+            ParamsWrapper parameters = new ParamsWrapper
+            {
+                ProcessId = 1,
+                SpanZonesAcrossMonitors = false,
+                Monitors = new List<NativeMonitorDataWrapper>
+                {
+                    new NativeMonitorDataWrapper
+                    {
+                        Monitor = "monitor-1",
+                        MonitorInstanceId = "instance-id-1",
+                        MonitorSerialNumber = "serial-number-1",
+                        MonitorNumber = 1,
+                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        Dpi = 192,
+                        LeftCoordinate = 0,
+                        TopCoordinate = 0,
+                        WorkAreaHeight = 1040,
+                        WorkAreaWidth = 1440,
+                        MonitorHeight = 1080,
+                        MonitorWidth = 1440,
+                        IsSelected = true,
+                    },
+                },
+            };
+            FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
+            this.RestartScopeExe();
+
             var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString() && x.Name == "Grid-9");
             FancyZonesEditorHelper.ClickContextMenuItem(Session, grid.Name, FancyZonesEditorHelper.ElementName.EditZones);
 
