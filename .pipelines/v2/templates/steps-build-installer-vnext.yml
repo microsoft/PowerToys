@@ -38,7 +38,7 @@ steps:
   - task: VSBuild@1
     displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build PowerToysSetupCustomActions
     inputs:
-      solution: "**/installer/PowerToysSetupVNext.sln"
+      solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
       msbuildArgs: >-
         /t:PowerToysSetupCustomActions
@@ -68,7 +68,7 @@ steps:
   - task: VSBuild@1
     displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build MSI
     inputs:
-      solution: "**/installer/PowerToysSetupVNext.sln"
+      solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
       msbuildArgs: >-
         -restore
@@ -115,7 +115,7 @@ steps:
   - task: VSBuild@1
     displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build Bootstrapper
     inputs:
-      solution: "**/installer/PowerToysSetupVNext.sln"
+      solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
       msbuildArgs: >-
         /t:PowerToysBootstrapper
