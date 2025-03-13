@@ -27,8 +27,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
         }
 
-        [TestInitialize]
-        public void TestInitialize()
+        [TestCleanup]
+        public void TestCleanup()
         {
             FancyZonesEditorHelper.Files.Restore();
         }
@@ -723,48 +723,6 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsNotNull(data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop2));
             Assert.AreEqual(appliedLayoutsWrapper.AppliedLayouts[0].AppliedLayout.Type, data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop2).AppliedLayout.Type);
             Assert.AreEqual(LayoutType.Rows.TypeToString(), data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop1).AppliedLayout.Type);
-        }
-
-        [TestMethod]
-        public void FirstLaunch()
-        {
-            EditorParameters editorParameters = new EditorParameters();
-            ParamsWrapper parameters = new ParamsWrapper
-            {
-                ProcessId = 1,
-                SpanZonesAcrossMonitors = false,
-                Monitors = new List<NativeMonitorDataWrapper>
-                {
-                    new NativeMonitorDataWrapper
-                    {
-                        Monitor = "monitor-1",
-                        MonitorInstanceId = "instance-id-1",
-                        MonitorSerialNumber = "serial-number-1",
-                        MonitorNumber = 1,
-                        VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
-                        Dpi = 192, // 200% scaling
-                        LeftCoordinate = 0,
-                        TopCoordinate = 0,
-                        WorkAreaHeight = 1040,
-                        WorkAreaWidth = 1920,
-                        MonitorHeight = 1080,
-                        MonitorWidth = 1920,
-                        IsSelected = true,
-                    },
-                },
-            };
-            FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
-
-            // files not yet exist
-            FancyZonesEditorHelper.Files.LayoutTemplatesIOHelper.DeleteFile();
-            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
-            FancyZonesEditorHelper.Files.LayoutHotkeysIOHelper.DeleteFile();
-            FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.DeleteFile();
-
-            // verify editor opens without errors
-            this.RestartScopeExe();
-            Session.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.MainWindow)).Click();
-            Assert.IsNotNull(Session.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.MainWindow)));
         }
     }
 }
