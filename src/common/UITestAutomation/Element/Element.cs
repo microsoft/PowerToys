@@ -99,7 +99,8 @@ namespace Microsoft.PowerToys.UITest
         /// Click the UI element.
         /// </summary>
         /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
-        public virtual void Click(bool rightClick = false)
+        /// <param name="clickHoldMS">Mouse click hold time. Default value is 300 ms</param>
+        public virtual void Click(bool rightClick = false, int clickHoldMS = 300)
         {
             PerformAction((actions, windowElement) =>
             {
@@ -110,14 +111,14 @@ namespace Microsoft.PowerToys.UITest
 
                 if (rightClick)
                 {
-                    actions.ContextClick();
+                    actions.ContextClick().Build().Perform();
                 }
                 else
                 {
-                    actions.Click();
+                    actions.ClickAndHold().Build().Perform();
+                    Task.Delay(clickHoldMS).Wait();
+                    actions.Release().Build().Perform();
                 }
-
-                actions.Build().Perform();
             });
         }
 
@@ -275,7 +276,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="action">The action to perform on the element.</param>
         /// <param name="msPreAction">The number of milliseconds to wait before the action. Default value is 500 ms</param>
         /// <param name="msPostAction">The number of milliseconds to wait after the action. Default value is 500 ms</param>
-        protected void PerformAction(Action<Actions, WindowsElement> action, int msPreAction = 1000, int msPostAction = 1000)
+        protected void PerformAction(Action<Actions, WindowsElement> action, int msPreAction = 500, int msPostAction = 500)
         {
             if (msPreAction > 0)
             {
