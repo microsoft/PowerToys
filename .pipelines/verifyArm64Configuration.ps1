@@ -6,6 +6,19 @@ Param(
 
 Write-Output "Verifying Arm64 configuration for $solution"
 
+if ($solution -like "*PowerToysSetupVNext.sln*")  {
+    # 获取当前命令执行的路径
+    $currentPath = Get-Location
+
+    # 获取当前路径下的所有文件
+    $files = Get-ChildItem -Path $currentPath
+    Write-Output "work here.>>>>>>>>>>>>>>>>>>>>>>"
+    # 打印文件列表
+    foreach ($file in $files) {
+        Write-Output $file.Name
+    }
+}
+
 $errorTable = @{}
 
 $MSBuildLoc = & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -prerelease -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\Microsoft.Build.dll

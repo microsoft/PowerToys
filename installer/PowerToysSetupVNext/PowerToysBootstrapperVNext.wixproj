@@ -23,13 +23,13 @@
     <Platform Condition="'$(Platform)'!='x64'">arm64</Platform>
     <ProductVersion>3.10</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>PowerToysSetup-$(Version)-$(Platform)</OutputName>
+    <OutputName>PowerToysSetupVNext-$(Version)-$(Platform)</OutputName>
     <OutputType>Bundle</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
-    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetup-$(Version)-$(Platform)</OutputName>
-    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetup-$(Version)-$(Platform)</OutputName>
-    <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
-    <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutputPath>
+    <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetupVNext-$(Version)-$(Platform)</OutputName>
+    <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetupVNext-$(Version)-$(Platform)</OutputName>
+    <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetupVNext</OutputPath>
+    <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetupVNext</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
     <NuGetPackageImportStamp />
   </PropertyGroup>
