@@ -92,7 +92,6 @@ namespace Microsoft.PowerToys.UITest
             // Exit Exe
             string exeName = Path.GetFileNameWithoutExtension(appPath);
 
-            // PowerToys.FancyZonesEditor
             Process[] processes = Process.GetProcessesByName(exeName);
             foreach (Process process in processes)
             {
@@ -119,6 +118,7 @@ namespace Microsoft.PowerToys.UITest
         {
             var opts = new AppiumOptions();
             opts.AddAdditionalCapability("app", appPath);
+            opts.AddAdditionalCapability("ms:waitForAppLaunch", "5");
             this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
         }
 

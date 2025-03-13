@@ -275,7 +275,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="action">The action to perform on the element.</param>
         /// <param name="msPreAction">The number of milliseconds to wait before the action. Default value is 500 ms</param>
         /// <param name="msPostAction">The number of milliseconds to wait after the action. Default value is 500 ms</param>
-        protected void PerformAction(Action<Actions, WindowsElement> action, int msPreAction = 500, int msPostAction = 500)
+        protected void PerformAction(Action<Actions, WindowsElement> action, int msPreAction = 1000, int msPostAction = 1000)
         {
             if (msPreAction > 0)
             {
