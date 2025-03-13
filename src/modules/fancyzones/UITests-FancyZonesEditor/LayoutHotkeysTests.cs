@@ -306,6 +306,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Initialize()
         {
+            Session.Find<Button>("Maximize").Click();
+
             foreach (var layout in CustomLayouts.CustomLayouts)
             {
                 Session.Find<Element>(layout.Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
@@ -350,6 +352,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Assign_Save()
         {
+            Session.Find<Button>("Maximize").Click();
             var layout = CustomLayouts.CustomLayouts[4]; // a layout without assigned hotkey
             Session.Find<Element>(layout.Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
 
@@ -393,6 +396,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Assign_Cancel()
         {
+            Session.Find<Button>("Maximize").Click();
             var layout = CustomLayouts.CustomLayouts[4]; // a layout without assigned hotkey
             Session.Find<Element>(layout.Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
 
@@ -432,6 +436,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Assign_AllPossibleValues()
         {
+            Session.Find<Button>("Maximize").Click();
             for (int i = 0; i < 10; i++)
             {
                 string layoutName = $"Layout {i}";
@@ -478,6 +483,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Reset_Save()
         {
+            Session.Find<Button>("Maximize").Click();
             var layout = CustomLayouts.CustomLayouts[0]; // a layout with assigned hotkey
             int assignedKey = Hotkeys.LayoutHotkeys.Find(x => x.LayoutId == layout.Uuid).Key;
             Session.Find<Element>(layout.Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
@@ -518,6 +524,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Reset_Cancel()
         {
+            Session.Find<Button>("Maximize").Click();
             var layout = CustomLayouts.CustomLayouts[0]; // a layout with assigned hotkey
             int assignedKey = Hotkeys.LayoutHotkeys.Find(x => x.LayoutId == layout.Uuid).Key;
             Session.Find<Element>(layout.Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
