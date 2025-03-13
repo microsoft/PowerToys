@@ -100,8 +100,8 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="imagePath">The path to the image file.</param>
         /// <param name="outputPath">The path to save the output image file.</param>
         /// <param name="targetColor">The target color to make transparent.</param>
-        /// <param name="fuzz">The fuzz factor for color comparison, default is 5.</param>
-        private static void MakeColorTransparent(string imagePath, string outputPath, Color targetColor, int fuzz = 5)
+        /// <param name="fuzz">The fuzz factor for color comparison, default is 2.</param>
+        private static void MakeColorTransparent(string imagePath, string outputPath, Color targetColor, int fuzz = 2)
         {
             var hsl = GetHSL(targetColor);
 
@@ -131,8 +131,8 @@ namespace Microsoft.PowerToys.UITest
         /// Erases the user preference color from an image. Will overwrite this image.
         /// </summary>
         /// <param name="imagePath">The path to the image file.</param>
-        /// <param name="fuzz">The fuzz factor for color comparison, default is 5.</param>
-        public static void EraseUserPreferenceColor(string imagePath, int fuzz = 5)
+        /// <param name="fuzz">The fuzz factor for color comparison, default is 2.</param>
+        public static void EraseUserPreferenceColor(string imagePath, int fuzz = 2)
         {
             Color systemColor = GetSystemAccentColor();
             string tempPath = Path.GetTempFileName();
@@ -158,9 +158,9 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="c1">The first color.</param>
         /// <param name="c2">The second color.</param>
-        /// <param name="fuzz">The fuzz factor, default is 5.</param>
+        /// <param name="fuzz">The fuzz factor, default is 2.</param>
         /// <returns>True if the hues are the same, otherwise false.</returns>
-        public static bool HueIsSame(Color c1, Color c2, int fuzz = 5)
+        public static bool HueIsSame(Color c1, Color c2, int fuzz = 2)
         {
             var h1 = GetHSL(c1).H;
             var h2 = GetHSL(c2).H;
