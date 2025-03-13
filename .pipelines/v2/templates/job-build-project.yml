@@ -435,6 +435,13 @@ jobs:
       contents: "**/PowerToys*Setup-*.exe"
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)
+  
+  - task: CopyFiles@2
+    displayName: Stage Installers
+    inputs:
+      contents: "**/PowerToys*SetupVNext-*.exe"
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)
 
   - task: CopyFiles@2
     displayName: Stage Symbols
