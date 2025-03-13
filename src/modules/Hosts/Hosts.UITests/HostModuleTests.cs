@@ -159,7 +159,7 @@ namespace Hosts.UITests
                 this.AddEntry("192.168.0.1", "localhost", true);
 
                 Assert.IsFalse(
-                    this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count == 1,
+                    this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count > 0,
                     "Should display host-file saving error if not run as administrator");
             }
         }
@@ -290,7 +290,7 @@ namespace Hosts.UITests
             // Delete all existing host-override rules
             foreach (var deleteBtn in this.FindAll<Button>("Delete"))
             {
-                deleteBtn.Click();
+                deleteBtn.DoubleClick();
                 this.Find<Button>("Yes").Click();
             }
 

@@ -24,26 +24,22 @@ namespace Microsoft.PowerToys.UITest
         /// Click the ListItem element.
         /// </summary>
         /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
-        /// <param name="clickHoldMS">Mouse click hold time. Default value is 300 ms</param>
-        public override void Click(bool rightClick = false, int clickHoldMS = 300)
+        public override void Click(bool rightClick = false)
         {
             PerformAction((actions, windowElement) =>
             {
-                actions.MoveToElement(windowElement);
-
-                // Move 2by2 offset to make click more stable instead of click on the border of the element
-                actions.MoveByOffset(10, 10);
+                actions.MoveToElement(windowElement, 10, 10);
 
                 if (rightClick)
                 {
-                    actions.ContextClick().Build().Perform();
+                    actions.ContextClick();
                 }
                 else
                 {
-                    actions.ClickAndHold().Build().Perform();
-                    Task.Delay(clickHoldMS).Wait();
-                    actions.Release().Build().Perform();
+                    actions.Click();
                 }
+
+                actions.Build().Perform();
             });
         }
 

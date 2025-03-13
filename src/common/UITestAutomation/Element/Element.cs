@@ -99,8 +99,7 @@ namespace Microsoft.PowerToys.UITest
         /// Click the UI element.
         /// </summary>
         /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
-        /// <param name="clickHoldMS">Mouse click hold time. Default value is 300 ms</param>
-        public virtual void Click(bool rightClick = false, int clickHoldMS = 300)
+        public virtual void Click(bool rightClick = false)
         {
             PerformAction((actions, windowElement) =>
             {
@@ -111,14 +110,14 @@ namespace Microsoft.PowerToys.UITest
 
                 if (rightClick)
                 {
-                    actions.ContextClick().Build().Perform();
+                    actions.ContextClick();
                 }
                 else
                 {
-                    actions.ClickAndHold().Build().Perform();
-                    Task.Delay(clickHoldMS).Wait();
-                    actions.Release().Build().Perform();
+                    actions.Click();
                 }
+
+                actions.Build().Perform();
             });
         }
 
@@ -297,10 +296,15 @@ namespace Microsoft.PowerToys.UITest
         /// Save UI Element to a PNG file.
         /// </summary>
         /// <param name="path">the full path</param>
-        internal void SaveToPngFile(string path)
+        internal void SaveToPngFile(string path, bool eraseUserPreferenceColor)
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method SaveToFile with parameter: path = {path}");
             this.windowsElement.GetScreenshot().SaveAsFile(path);
+
+            if (eraseUserPreferenceColor)
+            {
+                VisualHelper.EraseUserPreferenceColor(path);
+            }
         }
     }
 }

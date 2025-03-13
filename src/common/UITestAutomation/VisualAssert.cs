@@ -51,7 +51,9 @@ namespace Microsoft.PowerToys.UITest
             var baselineImageResourceName = callerAssembly.GetManifestResourceNames().Where(name => name.Contains(scenarioSubname)).FirstOrDefault();
 
             var tempTestImagePath = GetTempFilePath(scenarioSubname, "test", ".png");
-            element.SaveToPngFile(tempTestImagePath);
+
+            // Save the image with the user preference color erased
+            element.SaveToPngFile(tempTestImagePath, true);
 
             if (string.IsNullOrEmpty(baselineImageResourceName)
                 || !Path.GetFileNameWithoutExtension(baselineImageResourceName).EndsWith(scenarioSubname))
@@ -121,7 +123,7 @@ namespace Microsoft.PowerToys.UITest
             {
                 for (int y = excludeBorderHeight; y < baselineImage.Height - excludeBorderHeight; y++)
                 {
-                    if (!VisualAssert.PixIsSame(baselineImage.GetPixel(x, y), testImage.GetPixel(x, y)))
+                    if (!VisualHelper.PixIsSame(baselineImage.GetPixel(x, y), testImage.GetPixel(x, y)))
                     {
                         return false;
                     }
@@ -129,18 +131,6 @@ namespace Microsoft.PowerToys.UITest
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Compare two pixels with a fuzz factor
-        /// </summary>
-        /// <param name="c1">base color</param>
-        /// <param name="c2">test color</param>
-        /// <param name="fuzz">fuzz factor, default is 10</param>
-        /// <returns>true if same, otherwise is false</returns>
-        private static bool PixIsSame(Color c1, Color c2, int fuzz = 10)
-        {
-            return Math.Abs(c1.A - c2.A) <= fuzz && Math.Abs(c1.R - c2.R) <= fuzz && Math.Abs(c1.G - c2.G) <= fuzz && Math.Abs(c1.B - c2.B) <= fuzz;
         }
     }
 }
