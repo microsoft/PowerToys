@@ -582,6 +582,7 @@ GUITHREADINFO
 GValue
 gwl
 GWLP
+GWLSTYLE
 hangeul
 Hanzi
 Hardlines
@@ -1705,6 +1706,9 @@ TLayout
 tlb
 tlbimp
 tlc
+TPMLEFTALIGN
+TPMRETURNCMD
+TMPVAR
 TNP
 Toolhelp
 toolkitconverters
@@ -1916,6 +1920,7 @@ WMI
 WMICIM
 wmimgmt
 wmp
+WMSYSCOMMAND
 wnd
 WNDCLASS
 WNDCLASSEX
