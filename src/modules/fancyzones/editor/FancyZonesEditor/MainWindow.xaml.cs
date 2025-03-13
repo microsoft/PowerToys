@@ -491,6 +491,8 @@ namespace FancyZonesEditor
                 App.FancyZonesEditorIO.SerializeAppliedLayouts();
                 App.FancyZonesEditorIO.SerializeCustomLayouts();
                 App.FancyZonesEditorIO.SerializeDefaultLayouts();
+                App.FancyZonesEditorIO.SerializeLayoutHotkeys();
+                App.FancyZonesEditorIO.SerializeLayoutTemplates();
             }
         }
 
