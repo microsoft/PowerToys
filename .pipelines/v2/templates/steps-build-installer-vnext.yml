@@ -22,10 +22,10 @@ steps:
 
   - pwsh: |-
       $IsPerUser = $${{ parameters.buildUserInstaller }}
-      $InstallerBuildSlug = "MachineSetupVNext"
+      $InstallerBuildSlug = "MachineSetup"
       $InstallerBasename = "PowerToysSetupVNext"
       If($IsPerUser) {
-        $InstallerBuildSlug = "UserSetupVNext"
+        $InstallerBuildSlug = "UserSetup"
         $InstallerBasename = "PowerToysUserSetupVNext"
       }
       $InstallerBasename += "-${{ parameters.versionNumber }}-$(BuildPlatform)"
