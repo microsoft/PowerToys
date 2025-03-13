@@ -58,7 +58,6 @@ namespace Microsoft.FancyZonesEditor.UITests
             };
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
-            // files not yet exist
             DefaultLayouts defaultLayouts = new DefaultLayouts();
             DefaultLayouts.DefaultLayoutsListWrapper defaultLayoutsListWrapper = new DefaultLayouts.DefaultLayoutsListWrapper
             {
