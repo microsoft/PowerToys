@@ -4,11 +4,7 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-<?ifdef env.IsPipeline?>
   <?define CmdPalBuildDir="$(var.BinDir)\WinUI3Apps\CmdPal\"?>
-<?else?>
-  <?define CmdPalBuildDir="$(var.BinDir)\WinUI3Apps\CmdPalDev\"?>
-<?endif?>
 
   <Fragment>
     <DirectoryRef Id="WinUI3AppsInstallFolder">
