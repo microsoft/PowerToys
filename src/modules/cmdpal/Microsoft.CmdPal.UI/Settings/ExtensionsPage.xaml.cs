@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.CmdPal.UI.Pages;
+namespace Microsoft.CmdPal.UI.Settings;
 
 public sealed partial class ExtensionsPage : Page
 {

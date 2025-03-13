@@ -70,12 +70,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
 
-    <!-- The following hardcoded package versions are to work around security vulnerabilities in 4.3.0 -->
-    <PackageReference Include="System.Net.Http" />
-    <PackageReference Include="System.Private.Uri" />
-    <PackageReference Include="System.Text.RegularExpressions" />
-    <PackageReference Include="System.IO.Abstractions" />
-
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="System.Text.Json" />
 
@@ -83,8 +77,6 @@
     <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
     <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" />
     <PackageReference Include="AdaptiveCards.Templating" />
-
-    <PackageReference Include="HtmlAgilityPack" />
   </ItemGroup>
 
   <!--

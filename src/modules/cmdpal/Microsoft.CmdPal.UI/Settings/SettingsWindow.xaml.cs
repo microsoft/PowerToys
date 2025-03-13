@@ -12,7 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
-namespace Microsoft.CmdPal.UI;
+namespace Microsoft.CmdPal.UI.Settings;
 
 public sealed partial class SettingsWindow : Window,
     IRecipient<NavigateToExtensionSettingsMessage>

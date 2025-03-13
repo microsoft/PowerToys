@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml.Controls;
 using Windows.ApplicationModel;
 
-namespace Microsoft.CmdPal.UI.Pages;
+namespace Microsoft.CmdPal.UI.Settings;
 
 public sealed partial class GeneralPage : Page
 {

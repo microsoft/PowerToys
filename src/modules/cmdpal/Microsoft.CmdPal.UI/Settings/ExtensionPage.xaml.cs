@@ -6,7 +6,7 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
-namespace Microsoft.CmdPal.UI.Pages;
+namespace Microsoft.CmdPal.UI.Settings;
 
 public sealed partial class ExtensionPage : Page
 {
@@ -21,13 +21,8 @@ public sealed partial class ExtensionPage : Page
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        if (e.Parameter is ProviderSettingsViewModel vm)
-        {
-            ViewModel = vm;
-        }
-        else
-        {
-            throw new ArgumentException($"{nameof(ExtensionPage)} navigation args should be passed a {nameof(ProviderSettingsViewModel)}");
-        }
+        ViewModel = e.Parameter is ProviderSettingsViewModel vm
+            ? vm
+            : throw new ArgumentException($"{nameof(ExtensionPage)} navigation args should be passed a {nameof(ProviderSettingsViewModel)}");
     }
 }

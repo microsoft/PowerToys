@@ -51,7 +51,7 @@
         </com:Extension>
         <uap3:Extension Category="windows.appExtension">
           <uap3:AppExtension Name="com.microsoft.commandpalette"
-            Id="PG-SP-ID"
+            Id="ID"
             PublicFolder="Public"
             DisplayName="Sample Pages Extension"
             Description="Sample Pages for Command Palette. Used to demonstrate all the features of Command Palette">

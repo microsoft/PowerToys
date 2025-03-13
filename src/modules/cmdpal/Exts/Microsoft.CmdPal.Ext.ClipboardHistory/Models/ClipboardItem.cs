@@ -4,12 +4,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Commands;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage.Streams;
@@ -18,35 +16,31 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 
 public class ClipboardItem
 {
-    public string Content { get; set; }
+    public string? Content { get; set; }
 
-    public ClipboardHistoryItem Item { get; set; }
+    public required ClipboardHistoryItem Item { get; set; }
 
     public DateTimeOffset Timestamp => Item?.Timestamp ?? DateTimeOffset.MinValue;
 
-    public RandomAccessStreamReference ImageData { get; set; }
+    public RandomAccessStreamReference? ImageData { get; set; }
 
     public string GetDataType()
     {
         // Check if there is valid image data
-        if (ImageData != null)
+        if (IsImage)
         {
             return "Image";
         }
 
         // Check if there is valid text content
-        return !string.IsNullOrEmpty(Content) ? "Text" : "Unknown";
+        return IsText ? "Text" : "Unknown";
     }
 
-    private bool IsImage()
-    {
-        return GetDataType() == "Image";
-    }
+    [MemberNotNullWhen(true, nameof(ImageData))]
+    private bool IsImage => ImageData != null;
 
-    private bool IsText()
-    {
-        return GetDataType() == "Text";
-    }
+    [MemberNotNullWhen(true, nameof(Content))]
+    private bool IsText => !string.IsNullOrEmpty(Content);
 
     public static List<string> ShiftLinesLeft(List<string> lines)
     {
@@ -62,7 +56,7 @@ public class ClipboardItem
         }
 
         // Remove the minimum leading whitespace from each line
-        List<string> shiftedLines = lines.Select(line => line.Substring(minLeadingWhitespace)).ToList();
+        var shiftedLines = lines.Select(line => line.Substring(minLeadingWhitespace)).ToList();
 
         return shiftedLines;
     }
@@ -74,7 +68,7 @@ public class ClipboardItem
             .Min(line => line.TakeWhile(char.IsWhiteSpace).Count());
 
         // Remove the minimum leading whitespace from each line
-        List<string> shiftedLines = lines.Select(line =>
+        var shiftedLines = lines.Select(line =>
             line.Length >= minLeadingWhitespace
             ? line.Substring(minLeadingWhitespace)
             : line).ToList();
@@ -93,7 +87,7 @@ public class ClipboardItem
             Data = new DetailsLink(Item.Timestamp.DateTime.ToString(DateTimeFormatInfo.CurrentInfo)),
         });
 
-        if (IsImage())
+        if (IsImage)
         {
             var iconData = new IconData(ImageData);
             var heroImage = new IconInfo(iconData, iconData);
@@ -113,7 +107,7 @@ public class ClipboardItem
                 ],
             };
         }
-        else if (IsText())
+        else if (IsText)
         {
             var splitContent = Content.Split("\n");
             var head = splitContent.AsSpan(0, Math.Min(3, splitContent.Length)).ToArray().ToList();
@@ -142,7 +136,7 @@ public class ClipboardItem
             {
                 Title = "Unknown",
                 Subtitle = GetDataType(),
-                Details = new Details { Title = GetDataType(), Body = Content },
+                Details = new Details { Title = GetDataType() },
             };
         }
 

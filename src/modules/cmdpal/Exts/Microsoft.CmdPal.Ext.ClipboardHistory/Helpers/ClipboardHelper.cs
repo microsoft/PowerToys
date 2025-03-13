@@ -126,19 +126,33 @@ internal static class ClipboardHelper
 
     internal static void SetClipboardContent(ClipboardItem clipboardItem, ClipboardFormat clipboardFormat)
     {
-        if (clipboardItem.Content == null && clipboardItem.ImageData == null)
-        {
-            ExtensionHost.LogMessage(new LogMessage() { Message = "No valid clipboard content" });
-            return;
-        }
-
         switch (clipboardFormat)
         {
             case ClipboardFormat.Text:
-                SetClipboardTextContent(clipboardItem.Content); break;
+                if (clipboardItem.Content == null)
+                {
+                    ExtensionHost.LogMessage(new LogMessage() { Message = "No valid clipboard content" });
+                    return;
+                }
+                else
+                {
+                    SetClipboardTextContent(clipboardItem.Content);
+                }
+
+                break;
 
             case ClipboardFormat.Image:
-                SetClipboardImageContent(clipboardItem.ImageData); break;
+                if (clipboardItem.ImageData == null)
+                {
+                    ExtensionHost.LogMessage(new LogMessage() { Message = "No valid clipboard content" });
+                    return;
+                }
+                else
+                {
+                    SetClipboardImageContent(clipboardItem.ImageData);
+                }
+
+                break;
 
             default:
                 ExtensionHost.LogMessage(new LogMessage { Message = "Unsupported clipboard format." });
@@ -213,7 +227,7 @@ internal static class ClipboardHelper
     internal static async Task<string> GetClipboardHtmlContentAsync(DataPackageView clipboardData) =>
         clipboardData.Contains(StandardDataFormats.Html) ? await clipboardData.GetHtmlFormatAsync() : string.Empty;
 
-    internal static async Task<SoftwareBitmap> GetClipboardImageContentAsync(DataPackageView clipboardData)
+    internal static async Task<SoftwareBitmap?> GetClipboardImageContentAsync(DataPackageView clipboardData)
     {
         using var stream = await GetClipboardImageStreamAsync(clipboardData);
         if (stream != null)
@@ -225,7 +239,7 @@ internal static class ClipboardHelper
         return null;
     }
 
-    private static async Task<IRandomAccessStream> GetClipboardImageStreamAsync(DataPackageView clipboardData)
+    private static async Task<IRandomAccessStream?> GetClipboardImageStreamAsync(DataPackageView clipboardData)
     {
         if (clipboardData.Contains(StandardDataFormats.StorageItems))
         {
