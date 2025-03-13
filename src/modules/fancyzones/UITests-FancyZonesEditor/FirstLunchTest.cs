@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using System.Windows.Forms;
 using System.Xml.Linq;
 using FancyZonesEditor.Models;
 using FancyZonesEditorCommon.Data;
@@ -149,6 +150,10 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void FirstLaunch()
         {
+            int screenWidth = Screen.PrimaryScreen!.Bounds.Width;
+            int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+            Assert.Fail($"screenWidth is {screenWidth}. screenHeight is {screenHeight}");
+
             Session.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.MainWindow)).Click();
             Assert.IsNotNull(Session.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.MainWindow)));
         }
