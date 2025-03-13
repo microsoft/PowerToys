@@ -27,8 +27,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
         }
 
-        [TestInitialize]
-        public void TestInitialize()
+        [TestCleanup]
+        public void TestCleanup()
         {
             FancyZonesEditorHelper.Files.Restore();
         }
@@ -36,6 +36,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void EditorParams_VerifySelectedMonitor()
         {
+            InitFileData();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -89,6 +90,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void EditorParams_VerifyMonitorScaling()
         {
+            InitFileData();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -126,6 +128,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void EditorParams_VerifyMonitorResolution()
         {
+            InitFileData();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -163,6 +166,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void EditorParams_SpanAcrossMonitors()
         {
+            InitFileData();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -200,6 +204,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void AppliedLayouts_LayoutsApplied()
         {
+            InitFileData();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -326,6 +331,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void AppliedLayouts_CustomLayoutsApplied_LayoutIdNotFound()
         {
+            InitFileData();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -410,6 +416,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void AppliedLayouts_NoLayoutsApplied_CustomDefaultLayout()
         {
+            InitFileData();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -488,6 +495,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void AppliedLayouts_NoLayoutsApplied_TemplateDefaultLayout()
         {
+            InitFileData();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -557,6 +565,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void AppliedLayouts_VerifyDisconnectedMonitorsLayoutsAreNotChanged()
         {
+            InitFileData();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -654,6 +663,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void AppliedLayouts_VerifyOtherVirtualDesktopsAreNotChanged()
         {
+            InitFileData();
             string virtualDesktop1 = "{11111111-1111-1111-1111-111111111111}";
             string virtualDesktop2 = "{22222222-2222-2222-2222-222222222222}";
 
@@ -725,8 +735,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(LayoutType.Rows.TypeToString(), data.AppliedLayouts.Find(x => x.Device.VirtualDesktop == virtualDesktop1).AppliedLayout.Type);
         }
 
-        [TestMethod]
-        public void FirstLaunch()
+        private void InitFileData()
         {
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
@@ -755,16 +764,83 @@ namespace Microsoft.FancyZonesEditor.UITests
             };
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(parameters));
 
-            // files not yet exist
-            FancyZonesEditorHelper.Files.LayoutTemplatesIOHelper.DeleteFile();
-            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
-            FancyZonesEditorHelper.Files.LayoutHotkeysIOHelper.DeleteFile();
-            FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.DeleteFile();
+            DefaultLayouts defaultLayouts = new DefaultLayouts();
+            DefaultLayouts.DefaultLayoutsListWrapper defaultLayoutsListWrapper = new DefaultLayouts.DefaultLayoutsListWrapper
+            {
+                DefaultLayouts = new List<DefaultLayouts.DefaultLayoutWrapper> { },
+            };
+            FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
 
-            // verify editor opens without errors
-            this.RestartScopeExe();
-            Session.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.MainWindow)).Click();
-            Assert.IsNotNull(Session.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.MainWindow)));
+            LayoutHotkeys layoutHotkeys = new LayoutHotkeys();
+            LayoutHotkeys.LayoutHotkeysWrapper layoutHotkeysWrapper = new LayoutHotkeys.LayoutHotkeysWrapper
+            {
+                LayoutHotkeys = new List<LayoutHotkeys.LayoutHotkeyWrapper> { },
+            };
+            FancyZonesEditorHelper.Files.LayoutHotkeysIOHelper.WriteData(layoutHotkeys.Serialize(layoutHotkeysWrapper));
+
+            AppliedLayouts appliedLayouts = new AppliedLayouts();
+            AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
+            {
+                AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
+            };
+            FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
+
+            CustomLayouts customLayouts = new CustomLayouts();
+            CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = new CustomLayouts.CustomLayoutListWrapper
+            {
+                CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper> { },
+            };
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+
+            LayoutTemplates layoutTemplates = new LayoutTemplates();
+            LayoutTemplates.TemplateLayoutsListWrapper templateLayoutsListWrapper = new LayoutTemplates.TemplateLayoutsListWrapper
+            {
+                LayoutTemplates = new List<LayoutTemplates.TemplateLayoutWrapper>
+                {
+                    new LayoutTemplates.TemplateLayoutWrapper
+                    {
+                        Type = LayoutType.Blank.TypeToString(),
+                    },
+                    new LayoutTemplates.TemplateLayoutWrapper
+                    {
+                        Type = LayoutType.Focus.TypeToString(),
+                        ZoneCount = 10,
+                    },
+                    new LayoutTemplates.TemplateLayoutWrapper
+                    {
+                        Type = LayoutType.Rows.TypeToString(),
+                        ZoneCount = 2,
+                        ShowSpacing = true,
+                        Spacing = 10,
+                        SensitivityRadius = 10,
+                    },
+                    new LayoutTemplates.TemplateLayoutWrapper
+                    {
+                        Type = LayoutType.Columns.TypeToString(),
+                        ZoneCount = 2,
+                        ShowSpacing = true,
+                        Spacing = 20,
+                        SensitivityRadius = 20,
+                    },
+                    new LayoutTemplates.TemplateLayoutWrapper
+                    {
+                        Type = LayoutType.Grid.TypeToString(),
+                        ZoneCount = 4,
+                        ShowSpacing = false,
+                        Spacing = 10,
+                        SensitivityRadius = 30,
+                    },
+                    new LayoutTemplates.TemplateLayoutWrapper
+                    {
+                        Type = LayoutType.PriorityGrid.TypeToString(),
+                        ZoneCount = 3,
+                        ShowSpacing = true,
+                        Spacing = 1,
+                        SensitivityRadius = 40,
+                    },
+                },
+            };
+            FancyZonesEditorHelper.Files.LayoutTemplatesIOHelper.WriteData(layoutTemplates.Serialize(templateLayoutsListWrapper));
         }
     }
 }

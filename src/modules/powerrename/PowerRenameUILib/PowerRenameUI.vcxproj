@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.241114003\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.241114003\build\native\Microsoft.WindowsAppSDK.props')" />
+  <Import Project="..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.props')" />
   <Import Project="..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props')" />
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
@@ -209,7 +209,7 @@
     <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
     <Import Project="..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets')" />
     <Import Project="..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2739.15\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2739.15\build\native\Microsoft.Web.WebView2.targets')" />
-    <Import Project="..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.241114003\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.241114003\build\native\Microsoft.WindowsAppSDK.targets')" />
+    <Import Project="..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -223,8 +223,8 @@
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props'))" />
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets'))" />
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2739.15\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Web.WebView2.1.0.2739.15\build\native\Microsoft.Web.WebView2.targets'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.241114003\build\native\Microsoft.WindowsAppSDK.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.241114003\build\native\Microsoft.WindowsAppSDK.props'))" />
-    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.241114003\build\native\Microsoft.WindowsAppSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.241114003\build\native\Microsoft.WindowsAppSDK.targets'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.props'))" />
+    <Error Condition="!Exists('..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.WindowsAppSDK.1.6.250205002\build\native\Microsoft.WindowsAppSDK.targets'))" />
   </Target>
   <Target Name="AddWildCardItems" AfterTargets="BuildGenerateSources">
     <ItemGroup>

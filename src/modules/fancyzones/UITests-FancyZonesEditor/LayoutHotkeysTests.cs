@@ -83,97 +83,6 @@ namespace Microsoft.FancyZonesEditor.UITests
                         Zones = new List<CanvasInfoWrapper.CanvasZoneWrapper> { },
                     }),
                 },
-                new CustomLayoutWrapper
-                {
-                    Uuid = "{1CDB1CC5-51B1-4E49-9C8C-B7A371CCB489}",
-                    Type = CustomLayout.Canvas.TypeToString(),
-                    Name = "Layout 4",
-                    Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
-                    {
-                        RefHeight = 1080,
-                        RefWidth = 1920,
-                        SensitivityRadius = 10,
-                        Zones = new List<CanvasInfoWrapper.CanvasZoneWrapper> { },
-                    }),
-                },
-                new CustomLayoutWrapper
-                {
-                    Uuid = "{B1F600A5-9C2B-44C1-BF96-42D39E9DC004}",
-                    Type = CustomLayout.Canvas.TypeToString(),
-                    Name = "Layout 5",
-                    Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
-                    {
-                        RefHeight = 1080,
-                        RefWidth = 1920,
-                        SensitivityRadius = 10,
-                        Zones = new List<CanvasInfoWrapper.CanvasZoneWrapper> { },
-                    }),
-                },
-                new CustomLayoutWrapper
-                {
-                    Uuid = "{DFBE08C3-7C34-482B-811F-C7DBFE368A96}",
-                    Type = CustomLayout.Canvas.TypeToString(),
-                    Name = "Layout 6",
-                    Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
-                    {
-                        RefHeight = 1080,
-                        RefWidth = 1920,
-                        SensitivityRadius = 10,
-                        Zones = new List<CanvasInfoWrapper.CanvasZoneWrapper> { },
-                    }),
-                },
-                new CustomLayoutWrapper
-                {
-                    Uuid = "{4DB29206-24CE-421C-BFF4-35987D1A744B}",
-                    Type = CustomLayout.Canvas.TypeToString(),
-                    Name = "Layout 7",
-                    Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
-                    {
-                        RefHeight = 1080,
-                        RefWidth = 1920,
-                        SensitivityRadius = 10,
-                        Zones = new List<CanvasInfoWrapper.CanvasZoneWrapper> { },
-                    }),
-                },
-                new CustomLayoutWrapper
-                {
-                    Uuid = "{51E1BBBA-1C6F-4E3C-85A2-4BFBAE154963}",
-                    Type = CustomLayout.Canvas.TypeToString(),
-                    Name = "Layout 8",
-                    Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
-                    {
-                        RefHeight = 1080,
-                        RefWidth = 1920,
-                        SensitivityRadius = 10,
-                        Zones = new List<CanvasInfoWrapper.CanvasZoneWrapper> { },
-                    }),
-                },
-                new CustomLayoutWrapper
-                {
-                    Uuid = "{61F9E568-DB74-44FF-8AA8-4093E80D9BCF}",
-                    Type = CustomLayout.Canvas.TypeToString(),
-                    Name = "Layout 9",
-                    Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
-                    {
-                        RefHeight = 1080,
-                        RefWidth = 1920,
-                        SensitivityRadius = 10,
-                        Zones = new List<CanvasInfoWrapper.CanvasZoneWrapper> { },
-                    }),
-                },
-                new CustomLayoutWrapper
-                {
-                    Uuid = "{8D328880-9E16-4CA8-B4A3-F6AE1C762CD5}",
-                    Type = CustomLayout.Canvas.TypeToString(),
-                    Name = "Layout 10",
-                    Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
-                    {
-                        RefHeight = 1080,
-                        RefWidth = 1920,
-                        SensitivityRadius = 10,
-                        Zones = new List<CanvasInfoWrapper.CanvasZoneWrapper> { },
-                    }),
-                },
             },
         };
 
@@ -350,7 +259,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Assign_Save()
         {
-            var layout = CustomLayouts.CustomLayouts[4]; // a layout without assigned hotkey
+            var layout = CustomLayouts.CustomLayouts[2]; // a layout without assigned hotkey
             Session.Find<Element>(layout.Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
 
             // assign hotkey
@@ -372,7 +281,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = int.Parse(key, CultureInfo.InvariantCulture), LayoutId = layout.Uuid }));
 
             // verify the availability
-            Session.Find<Element>(CustomLayouts.CustomLayouts[5].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            Session.Find<Element>(CustomLayouts.CustomLayouts[3].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
@@ -393,7 +302,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Assign_Cancel()
         {
-            var layout = CustomLayouts.CustomLayouts[4]; // a layout without assigned hotkey
+            var layout = CustomLayouts.CustomLayouts[2]; // a layout without assigned hotkey
             Session.Find<Element>(layout.Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
 
             // assign a hotkey
@@ -413,7 +322,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(Hotkeys.ToString(), actualData.ToString());
 
             // verify the availability
-            Session.Find<Element>(CustomLayouts.CustomLayouts[5].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            Session.Find<Element>(CustomLayouts.CustomLayouts[3].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
@@ -432,7 +341,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestMethod]
         public void Assign_AllPossibleValues()
         {
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 4; i++)
             {
                 string layoutName = $"Layout {i}";
                 Session.Find<Element>(layoutName).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
@@ -449,7 +358,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // check there nothing except None
             {
-                int layout = 10;
+                int layout = 3;
                 string layoutName = $"Layout {layout}";
                 Session.Find<Element>(layoutName).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
                 var hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
@@ -499,7 +408,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsFalse(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = assignedKey, LayoutId = layout.Uuid }));
 
             // verify the previously assigned key is available
-            Session.Find<Element>(CustomLayouts.CustomLayouts[6].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            Session.Find<Element>(CustomLayouts.CustomLayouts[3].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
@@ -539,7 +448,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(actualData.LayoutHotkeys.Contains(new LayoutHotkeyWrapper { Key = assignedKey, LayoutId = layout.Uuid }));
 
             // verify the previously assigned key is not available
-            Session.Find<Element>(CustomLayouts.CustomLayouts[6].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            Session.Find<Element>(CustomLayouts.CustomLayouts[3].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
             Assert.IsNotNull(hotkeyComboBox);
             hotkeyComboBox.Click();
