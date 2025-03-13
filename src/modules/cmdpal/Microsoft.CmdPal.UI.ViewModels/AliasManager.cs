@@ -38,7 +38,7 @@ public partial class AliasManager : ObservableObject
                 if (topLevelCommand != null)
                 {
                     WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
-                    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new(topLevelCommand.Command)));
+                    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(topLevelCommand));
                     return true;
                 }
             }

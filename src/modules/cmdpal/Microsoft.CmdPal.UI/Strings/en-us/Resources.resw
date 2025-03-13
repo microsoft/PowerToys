@@ -264,4 +264,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Run_Radio_Position_In_Place.Content" xml:space="preserve">
     <value>Don't move</value>
   </data>
+  <data name="ConfirmationDialog_ConfirmButtonText" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="ConfirmationDialog_CancelButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
 </root>

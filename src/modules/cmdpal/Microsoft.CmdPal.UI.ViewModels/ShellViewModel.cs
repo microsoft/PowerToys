@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -38,7 +39,7 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
 
         // Built-ins have loaded. We can display our page at this point.
         _mainListPage = new MainListPage(_serviceProvider);
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new(_mainListPage!)));
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_mainListPage)));
 
         _ = Task.Run(async () =>
         {

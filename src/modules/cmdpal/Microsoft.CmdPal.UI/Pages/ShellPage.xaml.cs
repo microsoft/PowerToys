@@ -12,6 +12,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
@@ -93,6 +94,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     }
 
     public void Receive(PerformCommandMessage message)
+    {
+        PerformCommand(message);
+    }
+
+    private void PerformCommand(PerformCommandMessage message)
     {
         var command = message.Command.Unsafe;
         if (command == null)
@@ -230,6 +236,62 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    // This gets called from the UI thread
+    private void HandleConfirmArgs(IConfirmationArgs args)
+    {
+        ConfirmResultViewModel vm = new(args, ViewModel.CurrentPage);
+        var initializeDialogTask = Task.Run(() => { InitializeConfirmationDialog(vm); });
+        initializeDialogTask.Wait();
+
+        var resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
+        var confirmText = resourceLoader.GetString("ConfirmationDialog_ConfirmButtonText");
+        var cancelText = resourceLoader.GetString("ConfirmationDialog_CancelButtonText");
+
+        var name = string.IsNullOrEmpty(vm.PrimaryCommand.Name) ? confirmText : vm.PrimaryCommand.Name;
+        ContentDialog dialog = new()
+        {
+            Title = vm.Title,
+            Content = vm.Description,
+            PrimaryButtonText = name,
+            CloseButtonText = cancelText,
+            XamlRoot = this.XamlRoot,
+        };
+
+        if (vm.IsPrimaryCommandCritical)
+        {
+            dialog.DefaultButton = ContentDialogButton.Close;
+
+            // TODO: Maybe we need to style the primary button to be red?
+            // dialog.PrimaryButtonStyle = new Style(typeof(Button))
+            // {
+            //     Setters =
+            //     {
+            //         new Setter(Button.ForegroundProperty, new SolidColorBrush(Colors.Red)),
+            //         new Setter(Button.BackgroundProperty, new SolidColorBrush(Colors.Red)),
+            //     },
+            // };
+        }
+
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                var performMessage = new PerformCommandMessage(vm);
+                PerformCommand(performMessage);
+            }
+            else
+            {
+                // cancel
+            }
+        });
+    }
+
+    private void InitializeConfirmationDialog(ConfirmResultViewModel vm)
+    {
+        vm.SafeInitializePropertiesSynchronous();
+    }
+
     private void HandleCommandResultOnUiThread(ICommandResult? result)
     {
         try
@@ -271,6 +333,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     case CommandResultKind.KeepOpen:
                         {
                             // Do nothing.
+                            break;
+                        }
+
+                    case CommandResultKind.Confirm:
+                        {
+                            if (result.Args is IConfirmationArgs a)
+                            {
+                                HandleConfirmArgs(a);
+                            }
+
                             break;
                         }
 
@@ -408,7 +480,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(message.Hwnd));
                     }
 
-                    var msg = new PerformCommandMessage(new(topLevelCommand.Command)) { WithAnimation = false };
+                    var msg = new PerformCommandMessage(topLevelCommand) { WithAnimation = false };
                     WeakReferenceMessenger.Default.Send<PerformCommandMessage>(msg);
 
                     // we can't necessarily SelectSearch() here, because when the page is loaded,

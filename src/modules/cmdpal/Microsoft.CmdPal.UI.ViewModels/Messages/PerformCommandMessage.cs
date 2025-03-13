@@ -24,6 +24,12 @@ public record PerformCommandMessage
         Context = null;
     }
 
+    public PerformCommandMessage(TopLevelCommandItemWrapper topLevelCommand)
+    {
+        Command = new(topLevelCommand.Command);
+        Context = null;
+    }
+
     public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<IListItem> context)
     {
         Command = command;
@@ -40,5 +46,11 @@ public record PerformCommandMessage
     {
         Command = command;
         Context = context.Unsafe;
+    }
+
+    public PerformCommandMessage(ConfirmResultViewModel vm)
+    {
+        Command = vm.PrimaryCommand.Model;
+        Context = null;
     }
 }
