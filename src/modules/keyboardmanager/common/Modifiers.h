@@ -18,7 +18,8 @@ public:
         altKey = ModifierKey::Disabled;
         shiftKey = ModifierKey::Disabled;
     }
-    bool operator==(const Modifiers& other) const
+
+    inline bool operator==(const Modifiers& other) const
     {
         return winKey == other.winKey && ctrlKey == other.ctrlKey && altKey == other.altKey && shiftKey == other.shiftKey;
     }

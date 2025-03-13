@@ -924,7 +924,7 @@ namespace KeyboardEventHandlers
                             {
                                 // Reset the remap state
                                 it->second.isShortcutInvoked = false;
-                                it->second.modifierKeysInvoked.winKey = ModifierKey::Disabled;
+                                it->second.modifierKeysInvoked.Reset();
                                 it->second.isOriginalActionKeyPressed = false;
                             }
 
@@ -993,7 +993,7 @@ namespace KeyboardEventHandlers
                                 {
                                     // Reset the remap state
                                     it->second.isShortcutInvoked = false;
-                                    it->second.modifierKeysInvoked.winKey = ModifierKey::Disabled;
+                                    it->second.modifierKeysInvoked.Reset();
                                     it->second.isOriginalActionKeyPressed = false;
                                 }
 
