@@ -27,14 +27,8 @@ namespace Peek.UI.Models
             Items = new IFileSystemItem[Count];
         }
 
-        public IEnumerator<IFileSystemItem> GetEnumerator()
-        {
-            return new NeighboringItemsEnumerator(this);
-        }
+        public IEnumerator<IFileSystemItem> GetEnumerator() => new NeighboringItemsEnumerator(this);
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

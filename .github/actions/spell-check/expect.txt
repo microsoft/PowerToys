@@ -490,6 +490,7 @@ flac
 flyouts
 FMask
 FOF
+WANTNUKEWARNING
 FOFX
 FOLDERID
 folderpath
@@ -1418,6 +1419,7 @@ SHCNE
 SHCNF
 SHCONTF
 Shcore
+shellapi
 SHELLDETAILS
 SHELLDLL
 shellex
@@ -1812,6 +1814,7 @@ windowssearch
 windowssettings
 WINDOWSTYLES
 WINDOWSTYLESICON
+winerror
 WINEVENT
 winget
 wingetcreate
