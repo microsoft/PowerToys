@@ -95,7 +95,7 @@ namespace Microsoft.PowerToys.UITest
             // leverage findAll to filter out mismatched elements
             var collection = this.FindAll<T>(by, timeoutMS);
 
-            Assert.AreNotEqual(0, collection.Count, $"UI-Element({typeof(T).Name}) not found using selector: {by}");
+            Assert.IsTrue(collection.Count > 0, $"UI-Element({typeof(T).Name}) not found using selector: {by}");
 
             return collection[0];
         }
