@@ -163,12 +163,8 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
                 return;
             }
 
-            int dx = xOffset / 10;
-            int dy = yOffset / 10;
-            for (int i = 0; i < 10; i++)
-            {
-                thumbs[index].Drag(dx, dy);
-            }
+            thumbs[index].Drag(xOffset, yOffset);
+            Console.WriteLine($"Moving splitter {index} by ({xOffset}, {yOffset})");
         }
 
         public static void ClickDeleteZone(Session session, int zoneNumber)

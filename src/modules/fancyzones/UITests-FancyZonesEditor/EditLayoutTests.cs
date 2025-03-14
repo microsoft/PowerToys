@@ -571,9 +571,9 @@ namespace Microsoft.FancyZonesEditor.UITests
                         Dpi = 192,
                         LeftCoordinate = 0,
                         TopCoordinate = 0,
-                        WorkAreaHeight = 840,
+                        WorkAreaHeight = 780,
                         WorkAreaWidth = 1240,
-                        MonitorHeight = 880,
+                        MonitorHeight = 780,
                         MonitorWidth = 1240,
                         IsSelected = true,
                     },
@@ -585,7 +585,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString() && x.Name == "Grid-9");
             FancyZonesEditorHelper.ClickContextMenuItem(Session, grid.Name, FancyZonesEditorHelper.ElementName.EditZones);
 
-            FancyZonesEditorHelper.MoveSplitter(Session, 2, -100, 0);
+            FancyZonesEditorHelper.MoveSplitter(Session, 2, -50, 0);
             Session.Find<Button>(ElementName.Save).Click();
 
             // check the file
@@ -603,9 +603,9 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // Columns are changed
             Assert.AreEqual(expected.Columns, actual.Columns);
-            Assert.IsTrue(expected.ColumnsPercentage[0] > actual.ColumnsPercentage[0]);
-            Assert.IsTrue(expected.ColumnsPercentage[1] < actual.ColumnsPercentage[1]);
-            Assert.AreEqual(expected.ColumnsPercentage[2], actual.ColumnsPercentage[2]);
+            Assert.IsTrue(expected.ColumnsPercentage[0] > actual.ColumnsPercentage[0], $"{expected.ColumnsPercentage[0]} > {actual.ColumnsPercentage[0]}");
+            Assert.IsTrue(expected.ColumnsPercentage[1] < actual.ColumnsPercentage[1], $"{expected.ColumnsPercentage[1]} < {actual.ColumnsPercentage[1]}");
+            Assert.AreEqual(expected.ColumnsPercentage[2], actual.ColumnsPercentage[2], $"{expected.ColumnsPercentage[2]} == {actual.ColumnsPercentage[2]}");
 
             // cells are not changed
             for (int i = 0; i < expected.CellChildMap.Length; i++)
