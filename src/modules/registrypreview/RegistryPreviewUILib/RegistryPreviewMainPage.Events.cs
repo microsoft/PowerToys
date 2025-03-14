@@ -357,5 +357,12 @@ namespace RegistryPreviewUILib
                 saveButton.IsEnabled = true;
             });
         }
+
+        // Command to show data preview
+        public void ButtonEnhancePreview_Click(object sender, RoutedEventArgs e)
+        {
+            RegistryValue data = ((Button)sender).DataContext as RegistryValue;
+            ShowEnhancedDataPreview(data.Name, data.Type, data.Value);
+        }
     }
 }

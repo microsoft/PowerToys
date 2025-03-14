@@ -1373,3 +1373,4 @@ EXHIBIT A -Mozilla Public License.
 - UTF.Unknown 2.5.1
 - WinUIEx 2.2.0
 - WPF-UI 3.0.5
+- SkiaSharp.Views.WinUI 2.88.9
