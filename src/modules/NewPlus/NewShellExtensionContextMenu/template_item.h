@@ -15,7 +15,7 @@ namespace newplus
     public:
         template_item(const std::filesystem::path entry);
 
-        std::wstring get_menu_title(const bool show_extension, const bool show_starting_digits) const;
+        std::wstring get_menu_title(const bool show_extension, const bool show_starting_digits, const bool show_resolved_variables) const;
 
         std::wstring get_target_filename(const bool include_starting_digits) const;
 

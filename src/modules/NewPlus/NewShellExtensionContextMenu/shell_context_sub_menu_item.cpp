@@ -22,7 +22,8 @@ IFACEMETHODIMP shell_context_sub_menu_item::GetTitle(_In_opt_ IShellItemArray* i
 {
     return SHStrDup(this->template_entry->get_menu_title(
         !utilities::get_newplus_setting_hide_extension(),
-        !utilities::get_newplus_setting_hide_starting_digits()
+        !utilities::get_newplus_setting_hide_starting_digits(),
+        utilities::get_newplus_setting_resolve_variables()
     ).c_str(), title);
 }
 
@@ -95,6 +96,7 @@ IFACEMETHODIMP separator_context_menu_item::GetIcon(_In_opt_ IShellItemArray*, _
 
 IFACEMETHODIMP separator_context_menu_item::GetFlags(_Out_ EXPCMDFLAGS* returned_flags)
 {
+    // Separators no longer work on Windows 11 regular context menu. They do still work on the extended context menu.
     *returned_flags = ECF_ISSEPARATOR;
     return S_OK;
 }
