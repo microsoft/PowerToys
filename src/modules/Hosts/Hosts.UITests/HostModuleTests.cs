@@ -291,7 +291,7 @@ namespace Hosts.UITests
             foreach (var deleteBtn in this.FindAll<Button>("Delete"))
             {
                 deleteBtn.Click();
-                var window = this.Find<Window>(By.XPath("//Window[contains(@Name, '.')]"));
+                var window = this.Find<Window>(By.XPath("//Window[not(contains(@Name, 'Editor')) and not(contains(@Name, 'Popup'))]"));
                 window.Find<Button>("Yes").Click();
             }
 
