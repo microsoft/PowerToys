@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -31,6 +31,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private readonly ExtensionObject<IListPage> _model;
 
     private readonly Lock _listLock = new();
+
+    private bool _isLoading;
 
     public event TypedEventHandler<ListViewModel, object>? ItemsUpdated;
 
@@ -112,6 +114,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             ItemsUpdated?.Invoke(this, EventArgs.Empty);
             UpdateEmptyContent();
+            _isLoading = false;
         }
     }
 
@@ -209,6 +212,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 }
 
                 ItemsUpdated?.Invoke(this, EventArgs.Empty);
+                _isLoading = false;
             },
             CancellationToken.None,
             TaskCreationOptions.None,
@@ -375,9 +379,26 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public void LoadMoreIfNeeded()
     {
-        if (_model.Unsafe?.HasMoreItems ?? false)
+        var model = this._model.Unsafe;
+        if (model == null)
         {
-            _model.Unsafe.LoadMore();
+            return;
+        }
+
+        if (model.HasMoreItems && !_isLoading)
+        {
+            _isLoading = true;
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    model.LoadMore();
+                }
+                catch (Exception ex)
+                {
+                    ShowException(ex, model.Name);
+                }
+            });
         }
     }
 
