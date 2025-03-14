@@ -155,6 +155,7 @@ namespace KeyboardManagerEditorUI.Pages
             RemappingControl.SetRemappedKeys(new List<string>());
             RemappingControl.SetApp(false, string.Empty);
 
+            // Show the dialog to add a new remapping
             KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
             await KeyDialog.ShowAsync();
             KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
@@ -168,12 +169,15 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async void ListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            if (e.ClickedItem is Remapping selectedShortcut && selectedShortcut.IsEnabled)
+            if (e.ClickedItem is Remapping selectedRemapping && selectedRemapping.IsEnabled)
             {
-                RemappingControl.SetOriginalKeys(selectedShortcut.OriginalKeys);
-                RemappingControl.SetRemappedKeys(selectedShortcut.RemappedKeys);
-                RemappingControl.SetApp(!selectedShortcut.IsAllApps, selectedShortcut.AppName);
+                RemappingControl.SetOriginalKeys(selectedRemapping.OriginalKeys);
+                RemappingControl.SetRemappedKeys(selectedRemapping.RemappedKeys);
+                RemappingControl.SetApp(!selectedRemapping.IsAllApps, selectedRemapping.AppName);
+
+                KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
                 await KeyDialog.ShowAsync();
+                KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
             }
         }
 
