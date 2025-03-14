@@ -51,6 +51,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="SkiaSharp.Views.WinUI" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -68,5 +69,6 @@
 
   <ItemGroup>
     <Folder Include="Controls\MonacoEditor\" />
+    <Folder Include="Controls\HexBox\" />
   </ItemGroup>
 </Project>

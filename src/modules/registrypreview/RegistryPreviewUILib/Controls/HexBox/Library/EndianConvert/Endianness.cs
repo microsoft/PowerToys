@@ -1,0 +1,22 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+namespace RegistryPreviewUILib.HexBox.Library.EndianConvert
+{
+    /// <summary>
+    /// Represents the endianness of a value in a computer architecture.
+    /// </summary>
+    public enum Endianness
+    {
+        /// <summary>
+        /// Most significant byte first.
+        /// </summary>
+        BigEndian,
+
+        /// <summary>
+        /// Least significant byte first.
+        /// </summary>
+        LittleEndian,
+    }
+}

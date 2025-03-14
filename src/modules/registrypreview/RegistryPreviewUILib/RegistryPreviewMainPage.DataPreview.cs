@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Foundation.Metadata;
 using Windows.UI.ViewManagement;
+using HB = RegistryPreviewUILib.HexBox;
 
 namespace RegistryPreviewUILib
 {
@@ -163,7 +164,6 @@ namespace RegistryPreviewUILib
                 IsSelected = false,
             });
 
-            /* Temp disabled. reimplement after copy control.
             // Create HexBox
             var binaryPreviewBox = new HB.HexBox()
             {
@@ -187,7 +187,7 @@ namespace RegistryPreviewUILib
                 DataSource = data,
             };
             AutomationProperties.SetName(binaryPreviewBox, resourceLoader.GetString("DataPreview_AutomationPropertiesName_BinaryDataPreview"));
-            binaryPreviewBox.Loaded += BinaryPreview_HexBoxLoaded; */
+            binaryPreviewBox.Loaded += BinaryPreview_HexBoxLoaded;
 
             // Create TextBox
             var visibleText = new TextBox()
@@ -240,7 +240,7 @@ namespace RegistryPreviewUILib
             var stackPanel = sender.Parent as StackPanel;
             var progressRing = (ProgressRing)stackPanel.Children[1];
 
-            // var hexBox = (HB.HexBox)stackPanel.Children[2];
+            var hexBox = (HB.HexBox)stackPanel.Children[2];
             var textBox = (TextBox)stackPanel.Children[3];
 
             if (sender.SelectedItem.Tag.ToString() == "DataView")
@@ -249,12 +249,11 @@ namespace RegistryPreviewUILib
                 if (_isDataPreviewHexBoxLoaded)
                 {
                     progressRing.Visibility = Visibility.Collapsed;
-
-                    // hexBox.Visibility = Visibility.Visible;
+                    hexBox.Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    // hexBox.Visibility = Visibility.Collapsed;
+                    hexBox.Visibility = Visibility.Collapsed;
                     progressRing.Visibility = Visibility.Visible;
                 }
             }
@@ -262,7 +261,7 @@ namespace RegistryPreviewUILib
             {
                 progressRing.Visibility = Visibility.Collapsed;
 
-                // hexBox.Visibility = Visibility.Collapsed;
+                hexBox.Visibility = Visibility.Collapsed;
                 textBox.Visibility = Visibility.Visible;
 
                 // Workaround for wrong text selection (color) after switching back to "Visible text"
@@ -271,7 +270,7 @@ namespace RegistryPreviewUILib
             }
         }
 
-        /* private static void BinaryPreview_HexBoxLoaded(object sender, RoutedEventArgs e)
+        private static void BinaryPreview_HexBoxLoaded(object sender, RoutedEventArgs e)
         {
             _isDataPreviewHexBoxLoaded = true;
             var hexBox = (HB.HexBox)sender;
@@ -284,6 +283,6 @@ namespace RegistryPreviewUILib
                 progressRing.Visibility = Visibility.Collapsed;
                 hexBox.Visibility = Visibility.Visible;
             }
-        } */
+        }
     }
 }

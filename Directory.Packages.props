@@ -29,7 +29,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.3" />
     <!-- Including Microsoft.Bcl.AsyncInterfaces to force version, since it's used by Microsoft.SemanticKernel. -->
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces"  Version="9.0.3" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.3" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.16" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.3" />
@@ -64,6 +64,7 @@
     <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="SharpCompress" Version="0.37.2" />
+    <PackageVersion Include="SkiaSharp.Views.WinUI" Version="2.88.9" />
     <PackageVersion Include="StreamJsonRpc" Version="2.19.27" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <!-- Package System.CodeDom added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Management but the 8.0.1 version wasn't published to nuget. -->
