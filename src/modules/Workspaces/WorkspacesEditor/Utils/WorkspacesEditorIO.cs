@@ -87,6 +87,7 @@ namespace WorkspacesEditor.Utils
                     Name = project.Name,
                     CreationTime = project.CreationTime,
                     IsShortcutNeeded = project.IsShortcutNeeded,
+                    IsLaunchOnStartup = project.IsLaunchOnStartup,
                     MoveExistingWindows = project.MoveExistingWindows,
                     LastLaunchedTime = project.LastLaunchedTime,
                     Applications = [],

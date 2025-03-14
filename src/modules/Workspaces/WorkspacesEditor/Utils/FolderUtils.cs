@@ -14,6 +14,11 @@ namespace WorkspacesEditor.Utils
             return Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         }
 
+        public static string Startup()
+        {
+            return Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+        }
+
         public static string Temp()
         {
             return Path.GetTempPath();
