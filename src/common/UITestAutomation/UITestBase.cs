@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 
@@ -18,6 +19,8 @@ namespace Microsoft.PowerToys.UITest
     [TestClass]
     public class UITestBase
     {
+        public required TestContext TestContext { get; set; }
+
         public required Session Session { get; set; }
 
         private readonly PowerToysModule scope;
@@ -255,6 +258,31 @@ namespace Microsoft.PowerToys.UITest
         protected ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 3000)
         {
             return this.Session.FindAll<Element>(By.Name(name), timeoutMS);
+        }
+
+        protected void AttachmentWrapper(Action action)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception)
+            {
+                this.CaptureScreenshot();
+                throw;
+            }
+        }
+
+        protected void CaptureScreenshot()
+        {
+            // Implement your screenshot capture logic here
+            // For example, save a screenshot to a file and return the file path
+            string screenshotPath = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "screenshot.png");
+
+            this.Session.Root.GetScreenshot().SaveAsFile(screenshotPath, ScreenshotImageFormat.Png);
+
+            // Save screenshot to screenshotPath & upload to test attachment
+            this.TestContext.AddResultFile(screenshotPath);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     public class Session
     {
-        private WindowsDriver<WindowsElement> Root { get; set; }
+        public WindowsDriver<WindowsElement> Root { get; set; }
 
         private WindowsDriver<WindowsElement> WindowsDriver { get; set; }
 

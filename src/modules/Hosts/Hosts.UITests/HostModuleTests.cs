@@ -34,24 +34,27 @@ namespace Hosts.UITests
         [TestMethod("Hosts.Basic.EmptyViewShouldWork")]
         public void TestEmptyView()
         {
-            this.CloseWarningDialog();
-            this.RemoveAllEntries();
+            this.AttachmentWrapper(() =>
+            {
+                this.CloseWarningDialog();
+                this.RemoveAllEntries();
 
-            // 'Add an entry' button (only show-up when list is empty) should be visible
-            Assert.IsTrue(this.HasOne<HyperlinkButton>("Add an entry"), "'Add an entry' button should be visible in the empty view");
+                // 'Add an entry' button (only show-up when list is empty) should be visible
+                Assert.IsTrue(this.HasOne<HyperlinkButton>("Add an entry1"), "'Add an entry' button should be visible in the empty view");
 
-            // VisualAssert.AreEqual(this.Find("Entries"), "EmptyView");
+                // VisualAssert.AreEqual(this.Find("Entries"), "EmptyView");
 
-            // Click 'Add an entry' from empty-view for adding Host override rule
-            this.Find<HyperlinkButton>("Add an entry").Click();
+                // Click 'Add an entry' from empty-view for adding Host override rule
+                this.Find<HyperlinkButton>("Add an entry").Click();
 
-            this.AddEntry("192.168.0.1", "localhost", false, false);
+                this.AddEntry("192.168.0.1", "localhost", false, false);
 
-            // Should have one row now and not more empty view
-            Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
-            Assert.IsFalse(this.Has<HyperlinkButton>("Add an entry"), "'Add an entry' button should be invisible if not empty view");
+                // Should have one row now and not more empty view
+                Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
+                Assert.IsFalse(this.Has<HyperlinkButton>("Add an entry"), "'Add an entry' button should be invisible if not empty view");
 
-            // VisualAssert.AreEqual(this.Find("Entries"), "NonEmptyView");
+                // VisualAssert.AreEqual(this.Find("Entries"), "NonEmptyView");
+            });
         }
 
         /// <summary>
@@ -65,16 +68,19 @@ namespace Hosts.UITests
         [TestMethod("Hosts.Basic.AddEntryButtonShouldWork")]
         public void TestAddingEntry()
         {
-            this.CloseWarningDialog();
-            this.RemoveAllEntries();
+            this.AttachmentWrapper(() =>
+            {
+                this.CloseWarningDialog();
+                this.RemoveAllEntries();
 
-            Assert.IsFalse(this.Has<Button>("Delete"), "Should have no row after removing all");
+                Assert.IsFalse(this.Has<Button>("Delete"), "Should have no row after removing all");
 
-            this.AddEntry("192.168.0.1", "localhost", true);
+                this.AddEntry("192.168.0.1", "localhost", true);
 
-            Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
+                Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
 
-            // VisualAssert.AreEqual(this.Find("Entries"));
+                // VisualAssert.AreEqual(this.Find("Entries"));
+            });
         }
 
         /// <summary>
