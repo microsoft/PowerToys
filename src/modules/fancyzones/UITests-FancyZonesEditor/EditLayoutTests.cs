@@ -55,8 +55,8 @@ namespace Microsoft.FancyZonesEditor.UITests
                     {
                         Rows = 3,
                         Columns = 3,
-                        RowsPercentage = new List<int> { 3333, 3333, 3334 },
-                        ColumnsPercentage = new List<int> { 3333, 3333, 3334 },
+                        RowsPercentage = new List<int> { 2333, 3333, 4334 },
+                        ColumnsPercentage = new List<int> { 2333, 3333, 4334 },
                         CellChildMap = new int[][] { [0, 1, 2], [3, 4, 5], [6, 7, 8] },
                         SensitivityRadius = 20,
                         Spacing = 3,
