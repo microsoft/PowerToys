@@ -82,7 +82,7 @@
                         <ItemsControl x:Name="RemappedKeys">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal" Spacing="4" />
+                                    <controls:WrapPanel HorizontalSpacing="4" Orientation="Horizontal" />
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
