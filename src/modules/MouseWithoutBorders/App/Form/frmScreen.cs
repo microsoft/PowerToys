@@ -78,7 +78,7 @@ namespace MouseWithoutBorders
             NotifyIcon.BalloonTipTitle = Application.ProductName;
             menuGenDumpFile.Visible = true;
 
-            Common.WndProcCounter++;
+            Helper.WndProcCounter++;
 
             try
             {
@@ -101,7 +101,7 @@ namespace MouseWithoutBorders
             }
             else
             {
-                Common.StartServiceAndSendLogoffSignal();
+                Service.StartServiceAndSendLogoffSignal();
                 Quit(true, true);
             }
         }
@@ -119,7 +119,7 @@ namespace MouseWithoutBorders
             NotifyIcon.Dispose();
             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
             {
-                Common.RunDDHelper(true);
+                Helper.RunDDHelper(true);
             }
 
             // Common.UnhookClipboard();
@@ -133,7 +133,7 @@ namespace MouseWithoutBorders
 
             Setting.Values.SwitchCount += Common.SwitchCount;
             Process me = Process.GetCurrentProcess();
-            Common.WndProcCounter++;
+            Helper.WndProcCounter++;
 
             try
             {
@@ -142,13 +142,13 @@ namespace MouseWithoutBorders
                     Common.Cleanup();
                 }
 
-                Common.WndProcCounter++;
+                Helper.WndProcCounter++;
                 if (!Common.RunOnScrSaverDesktop)
                 {
                     Common.ReleaseAllKeys();
                 }
 
-                Common.RunDDHelper(true);
+                Helper.RunDDHelper(true);
             }
             catch (Exception e)
             {
@@ -285,7 +285,7 @@ namespace MouseWithoutBorders
             helperTimer.Interval = 100;
             helperTimer.Tick += new EventHandler(HelperTimer_Tick);
             helperTimer.Start();
-            Common.WndProcCounter++;
+            Helper.WndProcCounter++;
 
             if (Environment.OSVersion.Version.Major > 6 ||
                    (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor >= 1))
@@ -307,7 +307,7 @@ namespace MouseWithoutBorders
 
         private void HelperTimer_Tick(object sender, EventArgs e)
         {
-            Common.WndProcCounter++;
+            Helper.WndProcCounter++;
 
             if (busy)
             {
@@ -338,7 +338,7 @@ namespace MouseWithoutBorders
 
                         if (Common.MainFormVisible)
                         {
-                            Common.MainFormDot();
+                            Helper.MainFormDot();
                         }
 
                         InputSimulation.ResetSystemKeyFlags();
@@ -357,7 +357,7 @@ namespace MouseWithoutBorders
                     {
                         if (!Common.SecondOpenSocketTry)
                         {
-                            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && !Common.GetUserName())
+                            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && !Helper.GetUserName())
                             {
                                 // While Windows 8 is hybrid-shutting down, user name would be empty (as returned from the .Net API), we should not do anything in this case.
                                 Logger.LogDebug("No active user.");
@@ -407,7 +407,7 @@ namespace MouseWithoutBorders
                                 // Common.ReHookClipboard();
                             }
 
-                            Common.RunDDHelper();
+                            Helper.RunDDHelper();
                         }
 
                         count = 0;
@@ -485,7 +485,7 @@ namespace MouseWithoutBorders
                     // One more time after 1/3 minutes (Sometimes XP has explorer started late)
                     if (count == 600 || count == 1800)
                     {
-                        Common.RunDDHelper();
+                        Helper.RunDDHelper();
                     }
 
                     if (count == 600)
@@ -545,7 +545,7 @@ namespace MouseWithoutBorders
 
                     if (Common.ToggleIcons != null)
                     {
-                        Common.ToggleIcon();
+                        Helper.ToggleIcon();
                     }
 
                     if (count % 20 == 0)
@@ -578,13 +578,13 @@ namespace MouseWithoutBorders
                     }
                     else if ((count % 36005) == 0)
                     {// One hour
-                        Common.SaveSwitchCount();
+                        Event.SaveSwitchCount();
 
                         int rv = 0;
 
-                        if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive() && (rv = Common.SendMessageToHelper(0x400, IntPtr.Zero, IntPtr.Zero)) <= 0)
+                        if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive() && (rv = Helper.SendMessageToHelper(0x400, IntPtr.Zero, IntPtr.Zero)) <= 0)
                         {
-                            Logger.TelemetryLogTrace($"{Common.HELPER_FORM_TEXT} not found: {rv}", SeverityLevel.Warning);
+                            Logger.TelemetryLogTrace($"{Helper.HELPER_FORM_TEXT} not found: {rv}", SeverityLevel.Warning);
                         }
                     }
                 }
@@ -776,7 +776,7 @@ namespace MouseWithoutBorders
                     break;
 
                 case NativeMethods.WM_HIDE_DRAG_DROP:
-                    Common.MainFormDot();
+                    Helper.MainFormDot();
 
                     /*
                     this.Width = 1;
@@ -795,14 +795,14 @@ namespace MouseWithoutBorders
                     break;
 
                 case NativeMethods.WM_HIDE_DD_HELPER:
-                    Common.MainForm3Pixels();
+                    Helper.MainForm3Pixels();
                     Common.MMSleep(0.2);
                     if (m.WParam.ToInt32() == 1)
                     {
                         InputSimulation.MouseUp(); // A file is being dragged
                     }
 
-                    IntPtr h = (IntPtr)NativeMethods.FindWindow(null, Common.HELPER_FORM_TEXT);
+                    IntPtr h = (IntPtr)NativeMethods.FindWindow(null, Helper.HELPER_FORM_TEXT);
 
                     if (h.ToInt32() > 0)
                     {
@@ -831,7 +831,7 @@ namespace MouseWithoutBorders
 
                 case WM_QUERYENDSESSION:
                     Logger.LogDebug("WM_QUERYENDSESSION...");
-                    Common.StartServiceAndSendLogoffSignal();
+                    Service.StartServiceAndSendLogoffSignal();
                     break;
 
                 case WM_ENDSESSION:

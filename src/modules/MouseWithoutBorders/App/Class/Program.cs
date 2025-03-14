@@ -36,6 +36,7 @@ using Newtonsoft.Json;
 using StreamJsonRpc;
 
 using Logger = MouseWithoutBorders.Core.Logger;
+using SettingsHelper = Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper;
 using Thread = MouseWithoutBorders.Core.Thread;
 
 [module: SuppressMessage("Microsoft.MSInternal", "CA904:DeclareTypesInMicrosoftOrSystemNamespace", Scope = "namespace", Target = "MouseWithoutBorders", Justification = "Dotnet port with style preservation")]
@@ -128,7 +129,7 @@ namespace MouseWithoutBorders.Class
                 {
                     if (args.Length > 2)
                     {
-                        Helper.UserLocalAppDataPath = args[2].Trim();
+                        SettingsHelper.UserLocalAppDataPath = args[2].Trim();
                     }
                 }
 
@@ -235,7 +236,7 @@ namespace MouseWithoutBorders.Class
                 Application.SetCompatibleTextRenderingDefault(false);
 
                 Common.Init();
-                Common.WndProcCounter++;
+                Core.Helper.WndProcCounter++;
 
                 var formScreen = new FrmScreen();
 
@@ -430,7 +431,7 @@ namespace MouseWithoutBorders.Class
                 Logger.Log(e);
             }
 
-            Common.StartMouseWithoutBordersService();
+            Service.StartMouseWithoutBordersService();
         }
 
         internal static string User { get; set; }
