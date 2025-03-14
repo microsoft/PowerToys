@@ -34,17 +34,14 @@ namespace KeyboardManagerEditorUI.Interop
 
         [DllImport(DllName)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool GetSingleKeyRemap(IntPtr config, int index, ref KeyboardMapping mapping);
+        internal static extern bool GetSingleKeyRemap(IntPtr config, int index, ref SingleKeyMapping mapping);
 
         [DllImport(DllName)]
         internal static extern int GetSingleKeyToTextRemapCount(IntPtr config);
 
         [DllImport(DllName)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool GetSingleKeyToTextRemap(
-            IntPtr config,
-            int index,
-            ref KeyboardTextMapping mapping);
+        internal static extern bool GetSingleKeyToTextRemap(IntPtr config, int index, ref KeyboardTextMapping mapping);
 
         [DllImport(DllName)]
         internal static extern int GetShortcutRemapCount(IntPtr config);
@@ -58,11 +55,7 @@ namespace KeyboardManagerEditorUI.Interop
 
         [DllImport(DllName)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool GetShortcutRemapByType(
-            IntPtr config,
-            int operationType,
-            int index,
-            ref ShortcutMapping mapping);
+        internal static extern bool GetShortcutRemapByType(IntPtr config, int operationType, int index, ref ShortcutMapping mapping);
 
         [DllImport(DllName)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -70,10 +63,7 @@ namespace KeyboardManagerEditorUI.Interop
 
         [DllImport(DllName)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool AddSingleKeyToShortcutRemap(
-        IntPtr config,
-        int originalKey,
-        [MarshalAs(UnmanagedType.LPWStr)] string targetKeys);
+        internal static extern bool AddSingleKeyToShortcutRemap(IntPtr config, int originalKey, [MarshalAs(UnmanagedType.LPWStr)] string targetKeys);
 
         [DllImport(DllName)]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -84,8 +74,10 @@ namespace KeyboardManagerEditorUI.Interop
             [MarshalAs(UnmanagedType.LPWStr)] string targetApp);
 
         [DllImport(DllName)]
-        internal static extern int GetKeyCodeFromName(
-        [MarshalAs(UnmanagedType.LPWStr)] string keyName);
+        internal static extern int GetKeyCodeFromName([MarshalAs(UnmanagedType.LPWStr)] string keyName);
+
+        [DllImport(DllName, CharSet = CharSet.Unicode)]
+        internal static extern void GetKeyDisplayName(int keyCode, [Out] StringBuilder keyName, int maxLength);
 
         [DllImport(DllName)]
         internal static extern void FreeString(IntPtr str);
@@ -104,7 +96,7 @@ namespace KeyboardManagerEditorUI.Interop
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct KeyboardMapping
+    public struct SingleKeyMapping
     {
         public int OriginalKey;
         public IntPtr TargetKey;

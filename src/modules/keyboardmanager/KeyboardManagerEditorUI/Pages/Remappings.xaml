@@ -173,14 +173,14 @@
         </StackPanel>
         <ContentDialog
             x:Name="KeyDialog"
-            Title="Remap a shortcut"
+            Title="Remappings"
             MinWidth="600"
             MaxWidth="600"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
             PrimaryButtonText="Save"
             SecondaryButtonText="Cancel">
             <Grid>
-                <styles:InputControl x:Name="ShortcutControl" />
+                <styles:InputControl x:Name="RemappingControl" />
             </Grid>
         </ContentDialog>
     </Grid>
