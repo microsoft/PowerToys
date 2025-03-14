@@ -164,7 +164,8 @@ namespace RegistryPreviewUILib
                 IsSelected = false,
             });
 
-            // Create HexBox
+            /* Temp disabled. reimplement after copy control.
+			// Create HexBox
             var binaryPreviewBox = new HB.HexBox()
             {
                 Height = 300,
@@ -187,7 +188,7 @@ namespace RegistryPreviewUILib
                 DataSource = data,
             };
             AutomationProperties.SetName(binaryPreviewBox, resourceLoader.GetString("DataPreview_AutomationPropertiesName_BinaryDataPreview"));
-            binaryPreviewBox.Loaded += BinaryPreview_HexBoxLoaded;
+            binaryPreviewBox.Loaded += BinaryPreview_HexBoxLoaded; */
 
             // Create TextBox
             var visibleText = new TextBox()
@@ -207,7 +208,8 @@ namespace RegistryPreviewUILib
             // Add controls: 0 = SelectorBar, 1 = ProgressRing, 2 = HexBox, 3 = TextBox
             panel.Children.Add(navBar);
             panel.Children.Add(new ProgressRing());
-            panel.Children.Add(binaryPreviewBox);
+
+            // panel.Children.Add(binaryPreviewBox);
             panel.Children.Add(visibleText);
         }
 

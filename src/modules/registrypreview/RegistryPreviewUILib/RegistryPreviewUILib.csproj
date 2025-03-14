@@ -23,8 +23,6 @@
     <!-- Properties for nuget package. -->
     <Description>Implements the UI control for the PowerToys Registry Preview Utility</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-	  <!-- The warning NU1605 (package downgrade) is thrown by HexBox.WinUI for Microsoft.Windows.SDK.BuildTools -->
-	  <NoWarn>NU1605</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -52,7 +50,6 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools"/>
-	<PackageReference Include="HexBox.WinUI"/>
     <PackageReference Include="Microsoft.WindowsAppSDK"/>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
