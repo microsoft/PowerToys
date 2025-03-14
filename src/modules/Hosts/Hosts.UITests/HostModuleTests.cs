@@ -290,8 +290,9 @@ namespace Hosts.UITests
             // Delete all existing host-override rules
             foreach (var deleteBtn in this.FindAll<Button>("Delete"))
             {
-                deleteBtn.DoubleClick();
-                this.Find<Button>("Yes").Click();
+                deleteBtn.Click();
+                var window = this.Find<Window>(By.XPath("//Window[contains(@Name, '.')]"));
+                window.Find<Button>("Yes").Click();
             }
 
             // Should have no row left, and no more delete button
