@@ -354,6 +354,9 @@ namespace Microsoft.PowerToys.UITest
             }
 
             ApiHelper.SetWindowPos(this.MainWindowHandler, IntPtr.Zero, 0, 0, width, height, ApiHelper.SetWindowPosNoMove | ApiHelper.SetWindowPosNoZorder | ApiHelper.SetWindowPosShowWindow);
+
+            // Wait for 3000ms after resize
+            Task.Delay(3000).Wait();
         }
 
         /// <summary>
