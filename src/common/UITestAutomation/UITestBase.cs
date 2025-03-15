@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
@@ -31,11 +32,6 @@ namespace Microsoft.PowerToys.UITest
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver());
         }
 
-        ~UITestBase()
-        {
-            this.sessionHelper.Cleanup();
-        }
-
         /// <summary>
         /// Initializes the test.
         /// </summary>
@@ -51,6 +47,15 @@ namespace Microsoft.PowerToys.UITest
                     this.Find("DEBUG").Find<Button>("Close").Click();
                 }
             }
+        }
+
+        /// <summary>
+        /// UnInitializes the test.
+        /// </summary>
+        [TestCleanup]
+        public void TestClean()
+        {
+            this.sessionHelper.Cleanup();
         }
 
         /// <summary>
@@ -152,6 +157,25 @@ namespace Microsoft.PowerToys.UITest
         protected ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 3000)
         {
             return this.Session.FindAll<Element>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Restart scope exe.
+        /// </summary>
+        public void RestartScopeExe()
+        {
+            this.sessionHelper.RestartScopeExe();
+            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver());
+            return;
+        }
+
+        /// <summary>
+        /// Restart scope exe.
+        /// </summary>
+        public void ExitScopeExe()
+        {
+            this.sessionHelper.ExitScopeExe();
+            return;
         }
     }
 }
