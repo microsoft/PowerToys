@@ -780,7 +780,6 @@ public:
                 return true;
             }
 
-
             const auto additional_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
             if (additional_action_index < m_additional_actions.size())
             {

@@ -1,0 +1,31 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+namespace Microsoft.Terminal.UI
+{
+
+    [bindable]
+    static runtimeclass Converters
+    {
+        // Booleans
+        static Boolean InvertBoolean(Boolean value);
+        // static Windows.UI.Xaml.Visibility InvertedBooleanToVisibility(Boolean value);
+
+        // Numbers
+        static Double PercentageToPercentageValue(Double value);
+        static Double PercentageValueToPercentage(Double value);
+        // static String PercentageToPercentageString(Double value);
+
+        // Strings
+        static Boolean StringsAreNotEqual(String expected, String actual);
+        static Boolean StringNotEmpty(String value);
+        // static Windows.UI.Xaml.Visibility StringNotEmptyToVisibility(String value);
+        static String StringOrEmptyIfPlaceholder(String placeholder, String value);
+
+        // Misc
+        // static Windows.UI.Text.FontWeight DoubleToFontWeight(Double value);
+        // static Windows.UI.Xaml.Media.SolidColorBrush ColorToBrush(Windows.UI.Color color);
+        // static Double FontWeightToDouble(Windows.UI.Text.FontWeight fontWeight);
+        // static Double MaxValueFromPaddingString(String paddingString);
+    }
+}

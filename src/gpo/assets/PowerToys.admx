@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.16" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.17" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <policyNamespaces>
     <target prefix="powertoys" namespace="Microsoft.Policies.PowerToys" />
   </policyNamespaces>
-  <resources minRequiredRevision="1.16"/><!-- Last changed with PowerToys v0.89.0 -->
+  <resources minRequiredRevision="1.17"/><!-- Last changed with PowerToys v0.90.0 -->
   <supportedOn>
     <definitions>
       <definition name="SUPPORTED_POWERTOYS_0_64_0" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0)"/>
@@ -25,6 +25,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_86_0" displayName="$(string.SUPPORTED_POWERTOYS_0_86_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_88_0" displayName="$(string.SUPPORTED_POWERTOYS_0_88_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_89_0" displayName="$(string.SUPPORTED_POWERTOYS_0_89_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_90_0" displayName="$(string.SUPPORTED_POWERTOYS_0_90_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
@@ -99,6 +100,16 @@
     <policy name="ConfigureEnabledUtilityCmdNotFound" class="Both" displayName="$(string.ConfigureEnabledUtilityCmdNotFound)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityCmdNotFound">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_77_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="ConfigureEnabledUtilityCmdPal" class="Both" displayName="$(string.ConfigureEnabledUtilityCmdPal)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityCmdPal">
+      <parentCategory ref="PowerToys" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_90_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

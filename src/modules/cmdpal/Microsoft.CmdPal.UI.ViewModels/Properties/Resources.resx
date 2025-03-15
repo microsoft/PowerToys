@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="builtin_open_settings_subtitle" xml:space="preserve">
+    <value>Open Command Palette settings</value>
+  </data>
+  <data name="builtin_new_extension_subtitle" xml:space="preserve">
+    <value>Creates a project for a new Command Palette extension</value>
+  </data>
+  <data name="builtin_quit_subtitle" xml:space="preserve">
+    <value>Exit Command Palette</value>
+  </data>
+  <data name="builtin_display_name" xml:space="preserve">
+    <value>Built-in commands</value>
+  </data>
+  <data name="builtin_log_subtitle" xml:space="preserve">
+    <value>View log messages</value>
+  </data>
+  <data name="builtin_log_title" xml:space="preserve">
+    <value>View log</value>
+  </data>
+  <data name="builtin_reload_subtitle" xml:space="preserve">
+    <value>Reload Command Palette extensions</value>
+  </data>
+  <data name="builtin_reload_name" xml:space="preserve">
+    <value>Reload</value>
+  </data>
+  <data name="builtin_log_name" xml:space="preserve">
+    <value>View log</value>
+  </data>
+  <data name="builtin_log_page_name" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="builtin_creating_extension_message" xml:space="preserve">
+    <value>Creating new extension...</value>
+  </data>
+  <data name="builtin_create_extension_name" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="builtin_create_extension_title" xml:space="preserve">
+    <value>Create a new extension</value>
+  </data>
+  <data name="builtin_open_settings_name" xml:space="preserve">
+    <value>Open Settings</value>
+  </data>
+  <data name="builtin_create_extension_success" xml:space="preserve">
+    <value>Successfully created your new extension!</value>
+  </data>
+  <data name="builtin_created_in_text" xml:space="preserve">
+    <value>Your new extension '${displayName}' was created in:</value>
+    <comment>{Locked="'${displayName}'"}</comment>
+  </data>
+  <data name="builtin_created_next_steps_title" xml:space="preserve">
+    <value>Next steps</value>
+  </data>
+  <data name="builtin_created_next_steps" xml:space="preserve">
+    <value>Now that your extension project has been created, open the solution up in Visual Studio to start writing your extension code.</value>
+  </data>
+  <data name="builtin_created_next_steps_p2" xml:space="preserve">
+    <value>Navigate to `${name}Page.cs` to start adding items to the list, or to `${name}CommandsProvider.cs` to add new commands.</value>
+    <comment>{Locked="`${name}Page.cs`", "`${name}CommandsProvider.cs`"}</comment>
+  </data>
+  <data name="builtin_created_next_steps_p3" xml:space="preserve">
+    <value>Once you're ready to test deploy the package locally with Visual Studio, then run the \"Reload\" command in the Command Palette to load your new extension.</value>
+  </data>
+  <data name="builtin_create_extension_page_title" xml:space="preserve">
+    <value>Create your new extension</value>
+  </data>
+  <data name="builtin_create_extension_page_text" xml:space="preserve">
+    <value>Use this page to create a new extension project.</value>
+  </data>
+  <data name="builtin_create_extension_name_header" xml:space="preserve">
+    <value>Extension name</value>
+  </data>
+  <data name="builtin_create_extension_name_description" xml:space="preserve">
+    <value>This is the name of your new extension project. It should be a valid C# class name. Best practice is to also include the word 'Extension' in the name.</value>
+  </data>
+  <data name="builtin_create_extension_name_label" xml:space="preserve">
+    <value>Extension name</value>
+  </data>
+  <data name="builtin_create_extension_name_required" xml:space="preserve">
+    <value>Extension name is required, without spaces</value>
+  </data>
+  <data name="builtin_create_extension_display_name_header" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="builtin_create_extension_display_name_description" xml:space="preserve">
+    <value>The name of your extension as users will see it.</value>
+  </data>
+  <data name="builtin_create_extension_display_name_label" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="builtin_create_extension_display_name_required" xml:space="preserve">
+    <value>Display name is required</value>
+  </data>
+  <data name="builtin_create_extension_directory_header" xml:space="preserve">
+    <value>Output path</value>
+  </data>
+  <data name="builtin_create_extension_directory_description" xml:space="preserve">
+    <value>Where should the new extension be created? This path will be created if it doesn't exist</value>
+  </data>
+  <data name="builtin_create_extension_directory_label" xml:space="preserve">
+    <value>Output path</value>
+  </data>
+  <data name="builtin_create_extension_directory_required" xml:space="preserve">
+    <value>Output path is required</value>
+  </data>
+  <data name="builtin_create_extension_open_solution" xml:space="preserve">
+    <value>Open Solution</value>
+  </data>
+  <data name="builtin_create_extension_open_directory" xml:space="preserve">
+    <value>Open directory</value>
+  </data>
+  <data name="builtin_create_extension_create_another" xml:space="preserve">
+    <value>Create another</value>
+  </data>
+  <data name="builtin_create_extension_submit" xml:space="preserve">
+    <value>Create extension</value>
+  </data>
+  <data name="builtin_reload_display_title" xml:space="preserve">
+    <value>Reload Command Palette extensions</value>
+  </data>
+</root>

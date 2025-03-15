@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Abstractions;
@@ -25,7 +24,7 @@ namespace AllExperiments
             }
 
             // Using InvariantCulture since this is used for a log file name
-            var logFilePath = Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
+            string logFilePath = Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
@@ -71,10 +70,10 @@ namespace AllExperiments
 
         private static string GetCallerInfo()
         {
-            StackTrace stackTrace = new StackTrace();
+            StackTrace stackTrace = new();
 
-            var methodName = stackTrace.GetFrame(3)?.GetMethod();
-            var className = methodName?.DeclaringType?.Name;
+            System.Reflection.MethodBase? methodName = stackTrace.GetFrame(3)?.GetMethod();
+            string? className = methodName?.DeclaringType?.Name;
             return "[Method]: " + methodName?.Name + " [Class]: " + className;
         }
     }

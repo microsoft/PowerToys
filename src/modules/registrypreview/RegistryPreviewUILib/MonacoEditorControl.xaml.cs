@@ -50,7 +50,7 @@ namespace RegistryPreviewUILib
 
             if (!IsLoading)
             {
-                var encodedText = HttpUtility.JavaScriptStringEncode(text);
+                string encodedText = HttpUtility.JavaScriptStringEncode(text);
                 await Browser.CoreWebView2.ExecuteScriptAsync($"editor.setValue('{encodedText}')");
             }
         }
@@ -87,8 +87,8 @@ namespace RegistryPreviewUILib
                 MonacoHelper.MonacoDirectory,
                 CoreWebView2HostResourceAccessKind.Allow);
 
-            var assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
-            var index = Path.GetFullPath(Path.Combine(assemblyDir, "Assets", "RegistryPreview", "index.html"));
+            string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
+            string index = Path.GetFullPath(Path.Combine(assemblyDir, "Assets", "RegistryPreview", "index.html"));
             Browser.CoreWebView2.Navigate(index);
         }
 
@@ -124,19 +124,19 @@ namespace RegistryPreviewUILib
 
         private void CoreWebView2_WebMessageReceived(CoreWebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
         {
-            var json = JsonNode.Parse(args.WebMessageAsJson);
+            JsonNode json = JsonNode.Parse(args.WebMessageAsJson);
             if (json == null)
             {
                 return;
             }
 
-            var id = json["id"];
+            JsonNode id = json["id"];
             if (id == null || !id.ToString().Equals("contentChanged", StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            var content = json["content"].ToString();
+            string content = json["content"].ToString();
             if (content == null)
             {
                 return;
@@ -148,7 +148,7 @@ namespace RegistryPreviewUILib
 
         private async Task SetThemeAsync()
         {
-            var theme = Application.Current.RequestedTheme == ApplicationTheme.Light ? "vs" : "vs-dark";
+            string theme = Application.Current.RequestedTheme == ApplicationTheme.Light ? "vs" : "vs-dark";
             await Browser.CoreWebView2.ExecuteScriptAsync($"monaco.editor.setTheme('{theme}')");
         }
 

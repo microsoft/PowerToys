@@ -1,0 +1,35 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.CmdPalPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <controls:SettingsPageControl x:Uid="CmdPal" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdPal.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <tkcontrols:SettingsCard
+                    x:Uid="CmdPal_Enable_CmdPal"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}"
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </tkcontrols:SettingsCard>
+                <InfoBar
+                    x:Uid="GPO_SettingIsManaged"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    Severity="Informational" />
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_CmdPal" Link="https://aka.ms/PowerToysOverview_CmdPal" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
+</Page>

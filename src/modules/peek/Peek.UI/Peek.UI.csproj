@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-    <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\Common.SelfContained.props" />
   <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
@@ -41,7 +41,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-      <Content Include="Assets\Peek\Icon.ico" />
+    <Content Include="Assets\Peek\Icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\Peek\AppList.scale-100.png" />
@@ -76,8 +76,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
@@ -85,6 +85,10 @@
     <PackageReference Include="WinUIEx" />
     <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
     <PackageReference Include="System.Text.Json" />
+    <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->
+    <PackageReference Include="CommunityToolkit.Common" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

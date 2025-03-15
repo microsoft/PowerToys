@@ -3,17 +3,21 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="AdaptiveCards.ObjectModel.WinUI3" Version="2.0.0-beta" />
+    <PackageVersion Include="AdaptiveCards.Rendering.WinUI3" Version="2.1.0-beta" />
+    <PackageVersion Include="AdaptiveCards.Templating" Version="2.0.2" />
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.17" />
-    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Animations" Version="8.0.240109" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Collections" Version="8.0.240109" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.0.240109" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.0.240109" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.0.240109" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.0.240109" />
-    <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.0.240109" />
+    <PackageVersion Include="CommunityToolkit.Common" Version="8.4.0" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Animations" Version="8.2.250129-preview2" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Collections" Version="8.2.250129-preview2" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250129-preview2" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.250129-preview2" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.2.250129-preview2" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.2.250129-preview2" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.2.250129-preview2" />
+    <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250129-preview2" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
     <PackageVersion Include="ControlzEx" Version="6.0.0" />
@@ -38,9 +42,10 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.3" />
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.15.0" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
-    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2739.15" />
+    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
     <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="9.0.3" />
+    <PackageVersion Include="Microsoft.WindowsPackageManager.ComInterop" Version="1.10.120-preview" />
     <PackageVersion Include="Microsoft.Windows.Compatibility" Version="9.0.3" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.2.46-beta" />
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
@@ -92,6 +97,7 @@
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
+    <PackageVersion Include="WyHash" Version="1.0.5" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->

@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.CmdPal.UI.Settings.ExtensionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:local="using:Microsoft.CmdPal.UI.Settings"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <converters:StringVisibilityConverter
+                x:Key="StringNotEmptyToVisibilityConverter"
+                EmptyValue="Collapsed"
+                NotEmptyValue="Visible" />
+            <converters:StringVisibilityConverter
+                x:Key="InvertedStringEmptyVisibilityConverter"
+                EmptyValue="Visible"
+                NotEmptyValue="Collapsed" />
+            <converters:BoolToVisibilityConverter
+                x:Key="BoolToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                TrueValue="Collapsed" />
+            <converters:EmptyStringToObjectConverter
+                x:Key="StringEmptyToBoolConverter"
+                EmptyValue="False"
+                NotEmptyValue="True" />
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="1" Padding="0,0,8,0">
+            <Grid Padding="8,-8,8,8">
+                <StackPanel
+                    MaxWidth="1000"
+                    HorizontalAlignment="Stretch"
+                    Spacing="{StaticResource SettingsCardSpacing}">
+
+                    <TextBlock x:Uid="ExtensionCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:TopLevelViewModel">
+                                <controls:SettingsExpander
+                                    DataContext="{x:Bind}"
+                                    Description="{x:Bind Subtitle, Mode=OneWay}"
+                                    Header="{x:Bind Title, Mode=OneWay}">
+                                    <controls:SettingsExpander.HeaderIcon>
+                                        <cpcontrols:ContentIcon>
+                                            <cpcontrols:ContentIcon.Content>
+                                                <cpcontrols:IconBox
+                                                    Width="20"
+                                                    Height="20"
+                                                    AutomationProperties.AccessibilityView="Raw"
+                                                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                                    SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                            </cpcontrols:ContentIcon.Content>
+                                        </cpcontrols:ContentIcon>
+                                    </controls:SettingsExpander.HeaderIcon>
+
+                                    <!--  Content goes here  -->
+
+                                    <controls:SettingsExpander.Items>
+                                        <controls:SettingsCard
+                                            Description="Directly open Command Palette to this command"
+                                            Header="Global hotkey"
+                                            HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                                            <cpcontrols:ShortcutControl HotkeySettings="{x:Bind Hotkey, Mode=TwoWay}" />
+                                        </controls:SettingsCard>
+
+                                        <controls:SettingsCard
+                                            Description="Typing this alias will navigate to this command. Direct aliases navigate as soon as you type the alias. Indirect aliases navigate after typing a trailing space"
+                                            Header="Alias"
+                                            HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}">
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBox Text="{x:Bind AliasText, Mode=TwoWay}" />
+                                                <ToggleSwitch
+                                                    IsEnabled="{x:Bind AliasText, Converter={StaticResource StringEmptyToBoolConverter}, Mode=OneWay}"
+                                                    IsOn="{x:Bind IsDirectAlias, Mode=TwoWay}"
+                                                    OffContent="Indirect"
+                                                    OnContent="Direct" />
+                                            </StackPanel>
+                                        </controls:SettingsCard>
+
+                                    </controls:SettingsExpander.Items>
+                                </controls:SettingsExpander>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+
+                    <TextBlock
+                        x:Uid="ExtensionSettingsHeader"
+                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                        Visibility="{x:Bind ViewModel.HasSettings}" />
+
+                    <Frame x:Name="SettingsFrame" Visibility="{x:Bind ViewModel.HasSettings}">
+                        <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
+                    </Frame>
+
+                    <TextBlock x:Uid="ExtensionAboutHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsCard
+                        Description="{x:Bind ViewModel.Extension.Publisher, Mode=OneWay}"
+                        Header="{x:Bind ViewModel.Extension.PackageDisplayName, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay}">
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            IsTextSelectionEnabled="True"
+                            Text="{x:Bind ViewModel.ExtensionVersion}" />
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard
+                        Description="These commands are built-in to the Windows Command Palette"
+                        Header="Built-in"
+                        Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>

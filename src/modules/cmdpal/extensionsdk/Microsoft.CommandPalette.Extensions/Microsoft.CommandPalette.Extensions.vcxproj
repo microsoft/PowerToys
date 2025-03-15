@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PathToRoot>..\..\..\..\..\</PathToRoot>
+    <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.6.250205002</WasdkNuget>
+    <CppWinRTNuget>$(PathToRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5</CppWinRTNuget>
+    <WindowsSdkBuildToolsNuget>$(PathToRoot)packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428</WindowsSdkBuildToolsNuget>
+    <WebView2Nuget>$(PathToRoot)packages\Microsoft.Web.WebView2.1.0.2903.40</WebView2Nuget>
+  </PropertyGroup>
+  <Import Project="$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props')" />
+  <Import Project="$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="$(WindowsSdkBuildToolsNuget)\build\Microsoft.Windows.SDK.BuildTools.props" Condition="Exists('$(WindowsSdkBuildToolsNuget)\build\Microsoft.Windows.SDK.BuildTools.props')" />
+  <PropertyGroup Label="Globals">
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
+    <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
+    <MinimalCoreWin>true</MinimalCoreWin>
+    <ProjectGuid>{305dd37e-c85d-4b08-aafe-7381fa890463}</ProjectGuid>
+    <ProjectName>Microsoft.CommandPalette.Extensions</ProjectName>
+    <RootNamespace>Microsoft.CommandPalette.Extensions</RootNamespace>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>false</AppContainerApplication>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\Microsoft.CommandPalette.Extensions\</OutDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '16.0'">v142</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '15.0'">v141</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '14.0'">v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <GenerateManifest>false</GenerateManifest>
+    <DesktopCompatible>true</DesktopCompatible>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <!-- We use MultiThreadedDebug, rather than MultiThreadedDebugDLL, to avoid DLL dependencies on VCRUNTIME140d.dll and MSVCP140d.dll. -->
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <!-- Link statically against the runtime and STL, but link dynamically against the CRT by ignoring the static CRT
+           lib and instead linking against the Universal CRT DLL import library. This "hybrid" linking mechanism is
+           supported according to the CRT maintainer. Dynamic linking against the CRT makes the binaries a bit smaller
+           than they would otherwise be if the CRT, runtime, and STL were all statically linked in. -->
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries);libucrtd.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalOptions>%(AdditionalOptions) /defaultlib:ucrtd.lib /profile /opt:ref /opt:icf</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <!-- We use MultiThreaded, rather than MultiThreadedDLL, to avoid DLL dependencies on VCRUNTIME140.dll and MSVCP140.dll. -->
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <!-- Link statically against the runtime and STL, but link dynamically against the CRT by ignoring the static CRT
+           lib and instead linking against the Universal CRT DLL import library. This "hybrid" linking mechanism is
+           supported according to the CRT maintainer. Dynamic linking against the CRT makes the binaries a bit smaller
+           than they would otherwise be if the CRT, runtime, and STL were all statically linked in. -->
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries);libucrt.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalOptions>%(AdditionalOptions) /defaultlib:ucrt.lib /profile /opt:ref /opt:icf</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level4</WarningLevel>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>%(AdditionalOptions) /bigobj /Zi</AdditionalOptions>
+      <PreprocessorDefinitions>_WINRT_DLL;WIN32_LEAN_AND_MEAN;WINRT_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+      <SpectreMitigation>Spectre</SpectreMitigation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>Microsoft.CommandPalette.Extensions.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- <ClCompile Include="Generated Files\module.g.cpp" /> -->
+    <ClCompile Include="winrt_module.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="Microsoft.CommandPalette.Extensions.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Microsoft.CommandPalette.Extensions.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="readme.txt">
+      <DeploymentContent>false</DeploymentContent>
+    </Text>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(WindowsSdkBuildToolsNuget)\build\Microsoft.Windows.SDK.BuildTools.targets" Condition="Exists('$(WindowsSdkBuildToolsNuget)\build\Microsoft.Windows.SDK.BuildTools.targets')" />
+    <Import Project="$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.targets')" />
+    <Import Project="$(WebView2Nuget)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(WebView2Nuget)\build\native\Microsoft.Web.WebView2.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(WindowsSdkBuildToolsNuget)\build\Microsoft.Windows.SDK.BuildTools.props')" Text="$([System.String]::Format('$(ErrorText)', '$(WindowsSdkBuildToolsNuget)\build\Microsoft.Windows.SDK.BuildTools.props'))" />
+    <Error Condition="!Exists('$(WindowsSdkBuildToolsNuget)\build\Microsoft.Windows.SDK.BuildTools.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(WindowsSdkBuildToolsNuget)\build\Microsoft.Windows.SDK.BuildTools.targets'))" />
+    <Error Condition="!Exists('$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props')" Text="$([System.String]::Format('$(ErrorText)', '$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props'))" />
+    <Error Condition="!Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.targets'))" />
+    <Error Condition="!Exists('$(WebView2Nuget)\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(WebView2Nuget)\build\native\Microsoft.Web.WebView2.targets'))" />
+  </Target>
+  <ItemGroup>
+    <ResourceCompile Include="version.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\version\version.vcxproj">
+      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

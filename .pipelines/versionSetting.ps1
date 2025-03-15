@@ -5,7 +5,10 @@ Param(
 
   [Parameter(Mandatory=$True,Position=2)]
   [AllowEmptyString()]
-  [string]$DevEnvironment = "Local"
+  [string]$DevEnvironment = "Local",
+
+  [Parameter(Mandatory=$True,Position=3)]
+  [string]$cmdPalVersionNumber = "0.0.1"
 )
 
 Write-Host $PSScriptRoot
@@ -38,8 +41,19 @@ $verPropReadFileLocation = $verPropWriteFileLocation;
 $verProps.Project.PropertyGroup.Version = $versionNumber;
 $verProps.Project.PropertyGroup.DevEnvironment = $DevEnvironment;
 
-Write-Host "xml" $verProps.Project.PropertyGroup.Version 
+Write-Host "xml" $verProps.Project.PropertyGroup.Version
 $verProps.Save($verPropWriteFileLocation);
+
+
+#### The same thing as above, but for the CmdPal version
+$verPropWriteFileLocation = $PSScriptRoot + '/../src/CmdPalVersion.props';
+$verPropReadFileLocation = $verPropWriteFileLocation;
+[XML]$verProps = Get-Content $verPropReadFileLocation
+$verProps.Project.PropertyGroup.CmdPalVersion = $cmdPalVersionNumber;
+$verProps.Project.PropertyGroup.DevEnvironment = $DevEnvironment;
+Write-Host "xml" $verProps.Project.PropertyGroup.Version
+$verProps.Save($verPropWriteFileLocation);
+#######
 
 # Set PowerRenameContextMenu package version in AppManifest.xml
 $powerRenameContextMenuAppManifestWriteFileLocation = $PSScriptRoot + '/../src/modules/powerrename/PowerRenameContextMenu/AppxManifest.xml';
@@ -76,3 +90,12 @@ $newPlusContextMenuAppManifestReadFileLocation = $newPlusContextMenuAppManifestW
 $newPlusContextMenuAppManifest.Package.Identity.Version = $versionNumber + '.0'
 Write-Host "NewPlusContextMenu version" $newPlusContextMenuAppManifest.Package.Identity.Version
 $newPlusContextMenuAppManifest.Save($newPlusContextMenuAppManifestWriteFileLocation);
+
+# Set package version in Package.appxmanifest
+$cmdPalAppManifestWriteFileLocation = $PSScriptRoot + '/../src/modules/cmdpal/Microsoft.CmdPal.UI/Package.appxmanifest';
+$cmdPalAppManifestReadFileLocation = $cmdPalAppManifestWriteFileLocation;
+
+[XML]$cmdPalAppManifest = Get-Content $cmdPalAppManifestReadFileLocation
+$cmdPalAppManifest.Package.Identity.Version = $cmdPalVersionNumber + '.0'
+Write-Host "CmdPal Package version: " $cmdPalAppManifest.Package.Identity.Version
+$cmdPalAppManifest.Save($cmdPalAppManifestWriteFileLocation);

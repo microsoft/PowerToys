@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata minClientVersion="2.5">
+    <id>Microsoft.CommandPalette.Extensions</id>
+    <version>0.0.0</version>
+    <title>Command Palette Extension SDK</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <description>Command Palette SDK provides support for creating Command Palette extensions on Windows.</description>
+    <releaseNotes>Release notes are available in the Power Toys repository.</releaseNotes>
+    <tags>Command Palette Extension SDK</tags>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <projectUrl>https://github.com/microsoft/powertoys</projectUrl>
+    <readme>docs\README.md</readme>
+    <dependencies>
+      <group targetFramework="net8.0-windows10.0.19041.0">
+        <dependency id="Microsoft.Windows.CsWinRT" version="2.2.0" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <!-- TODO : Add NOTICE.txt and LICENSE files -->
+    <file src="Microsoft.CommandPalette.Extensions.props" target="build\"/>
+    <file src="Microsoft.CommandPalette.Extensions.targets" target="build\"/>
+    <!-- AnyCPU Managed dlls from SDK.Lib project -->
+    <file src="..\Microsoft.CommandPalette.Extensions.Toolkit\x64\release\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.dll" target="lib\net8.0-windows10.0.19041.0\"/>
+    <file src="..\Microsoft.CommandPalette.Extensions.Toolkit\x64\release\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.deps.json" target="lib\net8.0-windows10.0.19041.0\"/>
+
+    <!-- Native dlls and winmd from SDK cpp project -->
+    <!-- TODO: we may not need this, since there are no implementations in the Microsoft.CommandPalette.Extensions namespace -->
+    <file src="..\Microsoft.CommandPalette.Extensions\x64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.dll" target="runtimes\win-x64\native\"/>
+    <file src="..\Microsoft.CommandPalette.Extensions\arm64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.dll" target="runtimes\win-arm64\native\"/>
+
+    <!-- Not putting in the following the lib folder because we don't want plugin project to directly reference the winmd -->
+    <file src="..\Microsoft.CommandPalette.Extensions\x64\release\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.winmd" target="winmd\"/>
+
+    <file src="..\README.md" target="docs\" />
+  </files>
+</package>

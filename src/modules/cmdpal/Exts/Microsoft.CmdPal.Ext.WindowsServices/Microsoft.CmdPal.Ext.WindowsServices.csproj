@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <PropertyGroup>
+    <RootNamespace>Microsoft.CmdPal.Ext.WindowsServices</RootNamespace>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>Microsoft.CmdPal.Ext.WindowsServices.pri</ProjectPriFileName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.ServiceProcess.ServiceController" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>
