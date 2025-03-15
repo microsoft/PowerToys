@@ -487,10 +487,12 @@ namespace FancyZonesEditor
                     }
                 }
 
+                model.Delete();
                 App.FancyZonesEditorIO.SerializeAppliedLayouts();
                 App.FancyZonesEditorIO.SerializeCustomLayouts();
                 App.FancyZonesEditorIO.SerializeDefaultLayouts();
-                model.Delete();
+                App.FancyZonesEditorIO.SerializeLayoutHotkeys();
+                App.FancyZonesEditorIO.SerializeLayoutTemplates();
             }
         }
 
