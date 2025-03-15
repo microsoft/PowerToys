@@ -283,11 +283,17 @@ namespace Hosts.UITests
         private void CloseWarningDialog()
         {
             // Find 'Accept' button which come in 'Warning' dialog
+            this.FindAll("Warning");
+            this.FindAll<Button>("Accept");
             if (this.FindAll("Warning").Count > 0 &&
                 this.FindAll<Button>("Accept").Count > 0)
             {
                 // Hide Warning dialog if any
                 this.Find<Button>("Accept").Click();
+            }
+            else
+            {
+                Assert.Fail("Not find the warning dialog");
             }
         }
 
