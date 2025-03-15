@@ -41,9 +41,6 @@ namespace Microsoft.PowerToys.UITest
             var desktopCapabilities = new AppiumOptions();
             desktopCapabilities.AddAdditionalCapability("app", "Root");
             this.Root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
-
-            // Set default timeout to 5 seconds
-            this.Root.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
         }
 
         /// <summary>
@@ -58,9 +55,6 @@ namespace Microsoft.PowerToys.UITest
             this.StartExe(path + this.sessionPath);
 
             Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
-
-            // Set default timeout to 5 seconds
-            this.Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
 
             return this;
         }

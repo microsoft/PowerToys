@@ -85,9 +85,9 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="by">The selector to find the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        public T Find<T>(By by, int timeoutMS = 3000)
+        public T Find<T>(By by, int timeoutMS = 5000)
             where T : Element, new()
         {
             Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
@@ -105,9 +105,9 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="name">The name of the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        public T Find<T>(string name, int timeoutMS = 3000)
+        public T Find<T>(string name, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.Find<T>(By.Name(name), timeoutMS);
@@ -117,9 +117,9 @@ namespace Microsoft.PowerToys.UITest
         /// Shortcut for this.Find<Element>(by, timeoutMS)
         /// </summary>
         /// <param name="by">The selector to find the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        public Element Find(By by, int timeoutMS = 3000)
+        public Element Find(By by, int timeoutMS = 5000)
         {
             return this.Find<Element>(by, timeoutMS);
         }
@@ -128,9 +128,9 @@ namespace Microsoft.PowerToys.UITest
         /// Shortcut for this.Find<Element>(By.Name(name), timeoutMS)
         /// </summary>
         /// <param name="name">The name of the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        public Element Find(string name, int timeoutMS = 3000)
+        public Element Find(string name, int timeoutMS = 5000)
         {
             return this.Find<Element>(By.Name(name), timeoutMS);
         }
@@ -140,9 +140,9 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="by">The name of the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if only has one element, otherwise false.</returns>
-        public bool HasOne<T>(By by, int timeoutMS = 3000)
+        public bool HasOne<T>(By by, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.FindAll<T>(by, timeoutMS).Count == 1;
@@ -152,9 +152,9 @@ namespace Microsoft.PowerToys.UITest
         /// Shortcut for this.HasOne<Element>(by, timeoutMS)
         /// </summary>
         /// <param name="by">The name of the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if only has one element, otherwise false.</returns>
-        public bool HasOne(By by, int timeoutMS = 3000)
+        public bool HasOne(By by, int timeoutMS = 5000)
         {
             return this.HasOne<Element>(by, timeoutMS);
         }
@@ -164,9 +164,9 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="name">The name of the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if only has one element, otherwise false.</returns>
-        public bool HasOne<T>(string name, int timeoutMS = 3000)
+        public bool HasOne<T>(string name, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.HasOne<T>(By.Name(name), timeoutMS);
@@ -176,9 +176,9 @@ namespace Microsoft.PowerToys.UITest
         /// Shortcut for this.HasOne<Element>(name, timeoutMS)
         /// </summary>
         /// <param name="name">The name of the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if only has one element, otherwise false.</returns>
-        public bool HasOne(string name, int timeoutMS = 3000)
+        public bool HasOne(string name, int timeoutMS = 5000)
         {
             return this.HasOne<Element>(By.Name(name), timeoutMS);
         }
@@ -188,9 +188,9 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="by">The selector to find the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if  has one or more element, otherwise false.</returns>
-        public bool Has<T>(By by, int timeoutMS = 3000)
+        public bool Has<T>(By by, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.FindAll<T>(by, timeoutMS).Count >= 1;
@@ -200,9 +200,9 @@ namespace Microsoft.PowerToys.UITest
         /// Shortcut for this.Has<Element>(by, timeoutMS)
         /// </summary>
         /// <param name="by">The selector to find the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if  has one or more element, otherwise false.</returns>
-        public bool Has(By by, int timeoutMS = 3000)
+        public bool Has(By by, int timeoutMS = 5000)
         {
             return this.Has<Element>(by, timeoutMS);
         }
@@ -212,9 +212,9 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="name">The name of the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if  has one or more element, otherwise false.</returns>
-        public bool Has<T>(string name, int timeoutMS = 3000)
+        public bool Has<T>(string name, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.Has<T>(By.Name(name), timeoutMS);
@@ -224,9 +224,9 @@ namespace Microsoft.PowerToys.UITest
         /// Shortcut for this.Has<Element>(name, timeoutMS)
         /// </summary>
         /// <param name="name">The name of the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if  has one or more element, otherwise false.</returns>
-        public bool Has(string name, int timeoutMS = 3000)
+        public bool Has(string name, int timeoutMS = 5000)
         {
             return this.Has<Element>(name, timeoutMS);
         }
@@ -236,9 +236,9 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <typeparam name="T">The class of the elements, should be Element or its derived class.</typeparam>
         /// <param name="by">The selector to find the elements.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 3000)
+        public ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 5000)
             where T : Element, new()
         {
             Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
@@ -260,9 +260,9 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <typeparam name="T">The class of the elements, should be Element or its derived class.</typeparam>
         /// <param name="name">The name to find the elements.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 3000)
+        public ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.FindAll<T>(By.Name(name), timeoutMS);
@@ -273,9 +273,9 @@ namespace Microsoft.PowerToys.UITest
         /// Shortcut for this.FindAll<Element>(by, timeoutMS)
         /// </summary>
         /// <param name="by">The selector to find the elements.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 3000)
+        public ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 5000)
         {
             return this.FindAll<Element>(by, timeoutMS);
         }
@@ -285,9 +285,9 @@ namespace Microsoft.PowerToys.UITest
         /// Shortcut for this.FindAll<Element>(By.Name(name), timeoutMS)
         /// </summary>
         /// <param name="name">The name to find the elements.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 3000)
+        public ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 5000)
         {
             return this.FindAll<Element>(By.Name(name), timeoutMS);
         }
@@ -415,9 +415,6 @@ namespace Microsoft.PowerToys.UITest
                 this.WindowsDriver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
 
                 this.windowHandlers.Add(this.MainWindowHandler);
-
-                // Set implicit timeout to make element search retry every 500 ms
-                this.WindowsDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
 
                 if (size != WindowSize.UnSpecified)
                 {

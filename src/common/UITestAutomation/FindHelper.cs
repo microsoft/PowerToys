@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.UITest
         public static ReadOnlyCollection<T>? FindAll<T, TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, WindowsDriver<WindowsElement>? driver, int timeoutMS)
             where T : Element, new()
         {
-            var items = findElementsFunc();
+            var items = FindElementsWithRetry(findElementsFunc, timeoutMS);
             var res = items.Select(item =>
             {
                 var element = item as WindowsElement;
@@ -30,6 +30,27 @@ namespace Microsoft.PowerToys.UITest
             return new ReadOnlyCollection<T>(res);
         }
 
+        private static ReadOnlyCollection<TW> FindElementsWithRetry<TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, int timeoutMS)
+{
+            int retryIntervalMS = 500;
+            timeoutMS = 1;
+            int elapsedTime = 0;
+
+            while (elapsedTime < timeoutMS)
+            {
+                var items = findElementsFunc();
+                if (items.Count > 0)
+                {
+                    return items;
+                }
+
+                Task.Delay(retryIntervalMS).Wait();
+                elapsedTime += retryIntervalMS;
+            }
+
+            return new ReadOnlyCollection<TW>(new List<TW>());
+        }
+
         public static T NewElement<T>(WindowsElement? element, WindowsDriver<WindowsElement>? driver, int timeoutMS)
              where T : Element, new()
         {
@@ -37,11 +58,6 @@ namespace Microsoft.PowerToys.UITest
             Assert.IsNotNull(element, $"New Element {typeof(T).Name} error: element is null.");
 
             T newElement = new T();
-            if (timeoutMS > 0)
-            {
-                // Only set timeout if it is positive value
-                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromMilliseconds(timeoutMS);
-            }
 
             newElement.SetSession(driver);
             newElement.SetWindowsElement(element);

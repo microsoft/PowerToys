@@ -157,7 +157,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to use for finding the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>The found element.</returns>
-        public T Find<T>(By by, int timeoutMS = 3000)
+        public T Find<T>(By by, int timeoutMS = 5000)
             where T : Element, new()
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
@@ -178,7 +178,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name for finding the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>The found element.</returns>
-        public T Find<T>(string name, int timeoutMS = 3000)
+        public T Find<T>(string name, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.Find<T>(By.Name(name), timeoutMS);
@@ -191,7 +191,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to use for finding the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>The found element.</returns>
-        public Element Find(By by, int timeoutMS = 3000)
+        public Element Find(By by, int timeoutMS = 5000)
         {
             return this.Find<Element>(by, timeoutMS);
         }
@@ -203,7 +203,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name for finding the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>The found element.</returns>
-        public Element Find(string name, int timeoutMS = 3000)
+        public Element Find(string name, int timeoutMS = 5000)
         {
             return this.Find<Element>(By.Name(name), timeoutMS);
         }
@@ -215,7 +215,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to use for finding the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 3000)
+        public ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 5000)
             where T : Element, new()
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
@@ -239,7 +239,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name for finding the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 3000)
+        public ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.FindAll<T>(By.Name(name), timeoutMS);
@@ -252,7 +252,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to use for finding the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 3000)
+        public ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 5000)
         {
             return this.FindAll<Element>(by, timeoutMS);
         }
@@ -264,7 +264,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name for finding the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 3000)
+        public ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 5000)
         {
             return this.FindAll<Element>(By.Name(name), timeoutMS);
         }

@@ -40,7 +40,7 @@ namespace Hosts.UITests
                 this.RemoveAllEntries();
 
                 // 'Add an entry' button (only show-up when list is empty) should be visible
-                Assert.IsTrue(this.HasOne<HyperlinkButton>("Add an entry1"), "'Add an entry' button should be visible in the empty view");
+                Assert.IsTrue(this.HasOne<HyperlinkButton>("Add an entry"), "'Add an entry' button should be visible in the empty view");
 
                 // VisualAssert.AreEqual(this.Find("Entries"), "EmptyView");
 
@@ -297,10 +297,7 @@ namespace Hosts.UITests
             foreach (var deleteBtn in this.FindAll<Button>("Delete"))
             {
                 deleteBtn.Click();
-                var window = this.Find<Window>(By.XPath("//Window[not(contains(@Name, 'Editor')) and not(contains(@Name, 'Popup'))]"));
-
-                window.Find<Button>("No");
-                window.Find<Button>("Yes").Click();
+                this.Find<Button>("Yes").Click();
             }
 
             // Should have no row left, and no more delete button
