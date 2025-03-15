@@ -180,7 +180,7 @@ bool NewSettings::GetHideFileExtension() const
         return false;
     }
 
-    return true;
+    return new_settings.hide_file_extension;
 }
 
 void NewSettings::SetHideFileExtension(const bool hide_file_extension)
@@ -207,7 +207,7 @@ bool NewSettings::GetReplaceVariables() const
         return false;
     }
 
-    return true;
+    return new_settings.replace_variables;
 }
 
 void NewSettings::SetReplaceVariables(const bool replace_variables)

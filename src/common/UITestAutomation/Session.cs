@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
+using OpenQA.Selenium.Interactions;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -98,8 +99,16 @@ namespace Microsoft.PowerToys.UITest
             var foundElements = FindHelper.FindAll<T, WindowsElement>(
                 () =>
                 {
-                    var elements = this.WindowsDriver.FindElements(by.ToSeleniumBy());
-                    return elements;
+                    if (by.GetIsAccessibilityId())
+                    {
+                        var elements = this.WindowsDriver.FindElementsByAccessibilityId(by.GetAccessibilityId());
+                        return elements;
+                    }
+                    else
+                    {
+                        var elements = this.WindowsDriver.FindElements(by.ToSeleniumBy());
+                        return elements;
+                    }
                 },
                 this.WindowsDriver,
                 timeoutMS);
@@ -146,6 +155,39 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Keyboard Action key.
+        /// </summary>
+        /// <param name="key1">The Keys1 to click.</param>
+        /// <param name="key2">The Keys2 to click.</param>
+        /// <param name="key3">The Keys3 to click.</param>
+        /// <param name="key4">The Keys4 to click.</param>
+        public void KeyboardAction(string key1, string key2 = "", string key3 = "", string key4 = "")
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                if (string.IsNullOrEmpty(key2))
+                {
+                    actions.SendKeys(key1);
+                }
+                else if (string.IsNullOrEmpty(key3))
+                {
+                    actions.SendKeys(key1).SendKeys(key2);
+                }
+                else if (string.IsNullOrEmpty(key4))
+                {
+                    actions.SendKeys(key1).SendKeys(key2).SendKeys(key3);
+                }
+                else
+                {
+                    actions.SendKeys(key1).SendKeys(key2).SendKeys(key3).SendKeys(key4);
+                }
+
+                actions.Release();
+                actions.Build().Perform();
+            });
+        }
+
+        /// <summary>
         /// Attaches to an existing PowerToys module.
         /// </summary>
         /// <param name="module">The PowerToys module to attach to.</param>
@@ -188,6 +230,29 @@ namespace Microsoft.PowerToys.UITest
             }
 
             return this;
+        }
+
+        /// <summary>
+        /// Simulates a manual operation on the element.
+        /// </summary>
+        /// <param name="action">The action to perform on the element.</param>
+        /// <param name="msPreAction">The number of milliseconds to wait before the action. Default value is 500 ms</param>
+        /// <param name="msPostAction">The number of milliseconds to wait after the action. Default value is 500 ms</param>
+        protected void PerformAction(Action<Actions, WindowsDriver<WindowsElement>> action, int msPreAction = 500, int msPostAction = 500)
+        {
+            if (msPreAction > 0)
+            {
+                Task.Delay(msPreAction).Wait();
+            }
+
+            var windowsDriver = this.WindowsDriver;
+            Actions actions = new Actions(this.WindowsDriver);
+            action(actions, windowsDriver);
+
+            if (msPostAction > 0)
+            {
+                Task.Delay(msPostAction).Wait();
+            }
         }
     }
 }
