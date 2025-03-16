@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.WinGet.Pages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -104,7 +105,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         // Cancel any ongoing search
         if (_cancellationTokenSource != null)
         {
-            Debug.WriteLine("Cancelling old search");
+            Logger.LogDebug("Cancelling old search", memberName: nameof(DoUpdateSearchText));
             _cancellationTokenSource.Cancel();
         }
 
@@ -139,18 +140,18 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         catch (OperationCanceledException)
         {
             // Handle cancellation gracefully (e.g., log or ignore)
-            Debug.WriteLine($"  Cancelled search for '{newSearch}'");
+            Logger.LogDebug($"  Cancelled search for '{newSearch}'");
         }
         catch (Exception ex)
         {
             // Handle other exceptions
-            Console.WriteLine(ex.Message);
+            Logger.LogError(ex.Message);
         }
     }
 
     private void UpdateWithResults(IEnumerable<CatalogPackage> results, string query)
     {
-        Debug.WriteLine($"Completed search for '{query}'");
+        Logger.LogDebug($"Completed search for '{query}'");
         lock (_resultsLock)
         {
             this._results = results;
@@ -174,7 +175,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         }
 
         var searchDebugText = $"{query}{(HasTag ? "+" : string.Empty)}{_tag}";
-        Debug.WriteLine($"Starting search for '{searchDebugText}'");
+        Logger.LogDebug($"Starting search for '{searchDebugText}'");
         var results = new HashSet<CatalogPackage>(new PackageIdCompare());
 
         // Default selector: this is the way to do a `winget search <query>`
@@ -217,7 +218,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         // foreach (var catalog in connections)
         {
-            Debug.WriteLine($"  Searching {catalog.Info.Name} ({query})");
+            Logger.LogDebug($"  Searching {catalog.Info.Name} ({query})", memberName: nameof(DoSearchAsync));
 
             ct.ThrowIfCancellationRequested();
 
@@ -234,7 +235,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
                 return [];
             }
 
-            Debug.WriteLine($"    got results for ({query})");
+            Logger.LogDebug($"    got results for ({query})", memberName: nameof(DoSearchAsync));
             foreach (var match in searchResults.Matches.ToArray())
             {
                 ct.ThrowIfCancellationRequested();
@@ -245,12 +246,12 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
                 results.Add(package);
             }
 
-            Debug.WriteLine($"    ({searchDebugText}): count: {results.Count}");
+            Logger.LogDebug($"    ({searchDebugText}): count: {results.Count}", memberName: nameof(DoSearchAsync));
         }
 
         stopwatch.Stop();
 
-        Debug.WriteLine($"Search \"{searchDebugText}\" took {stopwatch.ElapsedMilliseconds}ms");
+        Logger.LogDebug($"Search \"{searchDebugText}\" took {stopwatch.ElapsedMilliseconds}ms", memberName: nameof(DoSearchAsync));
 
         return results;
     }

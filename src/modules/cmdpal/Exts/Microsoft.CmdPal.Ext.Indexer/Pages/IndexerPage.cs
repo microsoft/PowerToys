@@ -5,8 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Data;
@@ -32,8 +30,6 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         Icon = Icons.FileExplorerSegoe;
         Name = Resources.Indexer_Title;
         PlaceholderText = Resources.Indexer_PlaceholderText;
-
-        Logger.InitializeLogger("\\CmdPal\\Indexer\\Logs");
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)

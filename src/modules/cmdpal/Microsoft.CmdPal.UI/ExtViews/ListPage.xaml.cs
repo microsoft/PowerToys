@@ -108,9 +108,6 @@ public sealed partial class ListPage : Page,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Debug.WriteLine("ItemsList_SelectionChanged");
-        // Debug.WriteLine($"  +{e.AddedItems.Count} / -{e.RemovedItems.Count}");
-        // Debug.WriteLine($"  selected='{ItemsList.SelectedItem}'");
         if (ItemsList.SelectedItem is ListItemViewModel item)
         {
             var vm = ViewModel;

@@ -5,6 +5,7 @@
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
@@ -134,6 +135,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             if (command is IPage page)
             {
+                Logger.LogDebug($"Navigating to page");
+
                 // TODO GH #526 This needs more better locking too
                 _ = _queue.TryEnqueue(() =>
                 {
@@ -184,6 +187,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             }
             else if (command is IInvokableCommand invokable)
             {
+                Logger.LogDebug($"Invoking command");
                 HandleInvokeCommand(message, invokable);
             }
         }
@@ -299,6 +303,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             if (result != null)
             {
                 var kind = result.Kind;
+                Logger.LogDebug($"handling {kind.ToString()}");
                 switch (kind)
                 {
                     case CommandResultKind.Dismiss:

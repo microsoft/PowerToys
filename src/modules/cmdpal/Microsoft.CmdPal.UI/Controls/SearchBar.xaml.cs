@@ -77,7 +77,6 @@ public sealed partial class SearchBar : UserControl,
         // _ = _queue.EnqueueAsync(() =>
         _queue.TryEnqueue(new(() =>
         {
-            Debug.WriteLine("Clear search");
             this.FilterBox.Text = string.Empty;
 
             if (CurrentPageViewModel != null)
@@ -232,8 +231,7 @@ public sealed partial class SearchBar : UserControl,
         _debounceTimer.Debounce(
             () =>
             {
-                // TODO: Actually Plumb Filtering
-                Debug.WriteLine($"Filter: {FilterBox.Text}");
+                // Actually plumb Filtering to the viewmodel
                 if (CurrentPageViewModel != null)
                 {
                     CurrentPageViewModel.Filter = FilterBox.Text;

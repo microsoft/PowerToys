@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ManagedCommon;
 using Microsoft.Windows.AppLifecycle;
 
 namespace Microsoft.CmdPal.UI;
@@ -24,6 +25,9 @@ internal sealed class Program
             // There's a GPO rule configured disabling CmdPal. Exit as soon as possible.
             return 0;
         }
+
+        Logger.InitializeLogger("\\CmdPal\\Logs\\");
+        Logger.LogDebug($"Starting at {DateTime.UtcNow}");
 
         WinRT.ComWrappersSupport.InitializeComWrappers();
         var isRedirect = DecideRedirection();

@@ -6,6 +6,7 @@ using CommunityToolkit.Common;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -85,7 +86,10 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
                 if (viewModel.InitializeCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
                 {
                     // TODO: Handle failure case
-                    System.Diagnostics.Debug.WriteLine(viewModel.InitializeCommand.ExecutionTask.Exception);
+                    if (viewModel.InitializeCommand.ExecutionTask.Exception is AggregateException ex)
+                    {
+                        Logger.LogError(ex.ToString());
+                    }
 
                     // TODO GH #239 switch back when using the new MD text block
                     // _ = _queue.EnqueueAsync(() =>

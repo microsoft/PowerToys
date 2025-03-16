@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
@@ -241,7 +241,7 @@ public partial class TopLevelCommandManager : ObservableObject,
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                Logger.LogError(ex.ToString());
             }
         }
     }

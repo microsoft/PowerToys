@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Specialized;
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -91,8 +90,6 @@ public partial class MainListPage : DynamicListPage,
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
         // Handle changes to the filter text here
-        Debug.WriteLine($"UpdateSearchText '{oldSearch}' -> '{newSearch}'");
-
         if (!string.IsNullOrEmpty(SearchText))
         {
             var aliases = _serviceProvider.GetService<AliasManager>()!;

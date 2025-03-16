@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -52,34 +54,22 @@ public sealed partial class AllAppsPage : ListPage
     {
         this.IsLoading = true;
 
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+
         var apps = GetPrograms();
+
+        var useThumbnails = AllAppsSettings.Instance.UseThumbnails;
         this.allAppsSection = apps
-                        .Select((app) => new AppListItem(app))
+                        .Select((app) => new AppListItem(app, useThumbnails))
                         .ToArray();
 
         this.IsLoading = false;
 
         AppCache.Instance.Value.ResetReloadFlag();
-        var useThumbnails = AllAppsSettings.Instance.UseThumbnails;
 
-        // if (useThumbnails)
-        // {
-        Task.Run(async () =>
-            {
-                foreach (var appListItem in this.allAppsSection)
-                {
-                    await appListItem.FetchIcon(useThumbnails);
-                }
-            });
-
-        // }
-        // else
-        // {
-        //    foreach (var appListItem in this.allAppsSection)
-        //    {
-        //        appListItem.FetchIcon(useThumbnails).ConfigureAwait(false);
-        //    }
-        // }
+        stopwatch.Stop();
+        Logger.LogTrace($"{nameof(AllAppsPage)}.{nameof(BuildListItems)} took: {stopwatch.ElapsedMilliseconds} ms");
     }
 
     internal List<AppItem> GetPrograms()

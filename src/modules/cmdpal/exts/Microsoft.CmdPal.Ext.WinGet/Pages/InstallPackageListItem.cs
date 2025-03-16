@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Management.Deployment;
@@ -40,7 +41,7 @@ public partial class InstallPackageListItem : ListItem
 
 {description}
 """;
-            IconInfo heroIcon = new IconInfo(string.Empty);
+            var heroIcon = new IconInfo(string.Empty);
             var icons = metadata.Icons;
             if (icons.Count > 0)
             {
@@ -164,7 +165,7 @@ public partial class InstallPackageListItem : ListItem
     {
         if (!ApiInformation.IsApiContractPresent("Microsoft.Management.Deployment", 12))
         {
-            Debug.WriteLine($"RefreshPackageCatalogAsync isn't available");
+            Logger.LogError($"RefreshPackageCatalogAsync isn't available");
             e.FakeChangeStatus();
             Command = e;
             Icon = (IconInfo?)Command.Icon;
@@ -174,7 +175,7 @@ public partial class InstallPackageListItem : ListItem
         _ = Task.Run(() =>
         {
             Stopwatch s = new();
-            Debug.WriteLine($"Starting RefreshPackageCatalogAsync");
+            Logger.LogDebug($"Starting RefreshPackageCatalogAsync");
             s.Start();
             var refs = WinGetStatics.AvailableCatalogs.ToArray();
 
@@ -185,12 +186,12 @@ public partial class InstallPackageListItem : ListItem
             }
 
             s.Stop();
-            Debug.WriteLine($"  RefreshPackageCatalogAsync took {s.ElapsedMilliseconds}ms");
+            Logger.LogDebug($"RefreshPackageCatalogAsync took {s.ElapsedMilliseconds}ms");
         }).ContinueWith((previous) =>
         {
             if (previous.IsCompletedSuccessfully)
             {
-                Debug.WriteLine($"Updating InstalledStatus");
+                Logger.LogDebug($"Updating InstalledStatus");
                 UpdatedInstalledStatus();
             }
         });

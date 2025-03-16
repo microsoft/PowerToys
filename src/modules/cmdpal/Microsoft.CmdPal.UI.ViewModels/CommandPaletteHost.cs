@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -85,7 +86,7 @@ public sealed partial class CommandPaletteHost : IExtensionHost
             return Task.CompletedTask.AsAsyncAction();
         }
 
-        Debug.WriteLine(message.Message);
+        Logger.LogDebug(message.Message);
 
         _ = Task.Run(() =>
         {
