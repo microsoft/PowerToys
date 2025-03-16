@@ -62,6 +62,13 @@
           </uap3:AppExtensionHost>
         </uap3:Extension>
 
+        <uap5:Extension Category="windows.startupTask">
+          <uap5:StartupTask
+            TaskId="CmdPalStartup"
+            Enabled="true"
+            DisplayName="ms-resource:StartupTaskName" />
+        </uap5:Extension>
+
       </Extensions>
 
     </Application>
