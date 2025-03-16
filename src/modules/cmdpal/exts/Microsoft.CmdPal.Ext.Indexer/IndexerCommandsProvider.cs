@@ -14,7 +14,9 @@ public partial class IndexerCommandsProvider : CommandProvider
 
     public IndexerCommandsProvider()
     {
+        Id = "Files";
         DisplayName = Resources.IndexerCommandsProvider_DisplayName;
+        Icon = Icons.FileExplorerSegoe;
     }
 
     public override ICommandItem[] TopLevelCommands()

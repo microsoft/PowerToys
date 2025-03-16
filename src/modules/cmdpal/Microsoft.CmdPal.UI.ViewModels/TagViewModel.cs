@@ -11,11 +11,13 @@ public partial class TagViewModel(ITag _tag, IPageContext context) : ExtensionOb
 {
     private readonly ExtensionObject<ITag> _tagModel = new(_tag);
 
+    public string ToolTip => string.IsNullOrEmpty(ModelToolTip) ? Text : ModelToolTip;
+
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
     public string Text { get; private set; } = string.Empty;
 
-    public string ToolTip { get; private set; } = string.Empty;
+    public string ModelToolTip { get; private set; } = string.Empty;
 
     public OptionalColor Foreground { get; private set; }
 
@@ -36,7 +38,7 @@ public partial class TagViewModel(ITag _tag, IPageContext context) : ExtensionOb
         Text = model.Text;
         Foreground = model.Foreground;
         Background = model.Background;
-        ToolTip = model.ToolTip;
+        ModelToolTip = model.ToolTip;
         Icon = new(model.Icon);
         Icon.InitializeProperties();
 

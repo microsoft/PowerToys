@@ -106,7 +106,7 @@ namespace Microsoft.CmdPal.Ext.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shell.
+        ///   Looks up a localized string similar to Run commands.
         /// </summary>
         public static string cmd_plugin_name {
             get {

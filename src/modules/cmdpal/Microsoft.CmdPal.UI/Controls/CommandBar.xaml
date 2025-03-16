@@ -145,7 +145,7 @@
             FontSize="12"
             Text="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}" />
-        <!--  TO DO: Replace with ItemsRepeater and bind "Primary commands"?  -->
+
         <StackPanel
             Grid.Column="2"
             HorizontalAlignment="Right"
@@ -230,6 +230,7 @@
                 Content="{ui:FontIcon Glyph=&#xE712;,
                                       FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}"
+                ToolTipService.ToolTip="Ctrl+k"
                 Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
                 <Button.Flyout>
                     <Flyout Placement="TopEdgeAlignedRight">

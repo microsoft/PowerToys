@@ -47,7 +47,6 @@
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
 
-            <!--  TODO: collapse item if it's empty  -->
             <Grid Padding="0,12,0,12" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="28" />
@@ -160,7 +159,6 @@
                 </StackPanel>
             </controls:Case>
         </controls:SwitchPresenter>
-
 
     </Grid>
 </Page>
