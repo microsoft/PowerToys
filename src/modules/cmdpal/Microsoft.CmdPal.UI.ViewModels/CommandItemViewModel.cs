@@ -325,14 +325,17 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                         ListHelpers.InPlaceUpdateList(MoreCommands, newContextMenu);
                     }
 
-                    MoreCommands.ForEach(contextItem =>
+                    newContextMenu.ForEach(contextItem =>
                     {
                         contextItem.InitializeProperties();
                     });
                 }
                 else
                 {
-                    MoreCommands.Clear();
+                    lock (MoreCommands)
+                    {
+                        MoreCommands.Clear();
+                    }
                 }
 
                 UpdateProperty(nameof(SecondaryCommand));
