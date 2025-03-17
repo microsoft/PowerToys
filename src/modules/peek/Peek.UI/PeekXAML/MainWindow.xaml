@@ -67,7 +67,10 @@
             x:Name="DeleteConfirmationDialog"
             x:Uid="DeleteConfirmationDialog"
             DefaultButton="Close">
-            <StackPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Spacing="12">
+            <StackPanel
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Spacing="12">
                 <TextBlock x:Uid="DeleteConfirmationDialog_Message" TextWrapping="Wrap" />
                 <CheckBox x:Name="DeleteDontWarnCheckbox" x:Uid="DeleteConfirmationDialog_DontWarnCheckbox" />
             </StackPanel>
