@@ -46,7 +46,7 @@ namespace package {
             dwlConditionMask);
     }
 
-    inline std::optional<Package> GetRegisteredPackage(std::wstring packageDisplayName)
+    inline std::optional<Package> GetRegisteredPackage(std::wstring packageDisplayName, bool checkVersion)
     {
         PackageManager packageManager;
 
@@ -57,7 +57,8 @@ namespace package {
 
             if (packageFullName.contains(packageDisplayName))
             {
-                if (packageVersion.Major == VERSION_MAJOR && packageVersion.Minor == VERSION_MINOR && packageVersion.Revision == VERSION_REVISION)
+                // If checkVersion is true, verify if the package has the same version as PowerToys.
+                if ((!checkVersion) || (packageVersion.Major == VERSION_MAJOR && packageVersion.Minor == VERSION_MINOR && packageVersion.Revision == VERSION_REVISION))
                 {
                     return { package };
                 }
@@ -67,9 +68,9 @@ namespace package {
         return {};
     }
 
-    inline bool IsPackageRegistered(std::wstring packageDisplayName)
+    inline bool IsPackageRegisteredWithPowerToysVersion(std::wstring packageDisplayName)
     {
-        return GetRegisteredPackage(packageDisplayName).has_value();
+        return GetRegisteredPackage(packageDisplayName, true).has_value();
     }
 
     inline bool RegisterSparsePackage(const std::wstring& externalLocation, const std::wstring& sparsePkgPath)
