@@ -91,7 +91,7 @@ namespace Microsoft.Plugin.Program.Storage
             }
         }
 
-        private void OnAppRenamed(object sender, RenamedEventArgs e)
+        private async Task DoOnAppRenamed(object sender, RenamedEventArgs e)
         {
             string oldPath = e.OldFullPath;
             string newPath = e.FullPath;
@@ -100,7 +100,7 @@ namespace Microsoft.Plugin.Program.Storage
             // the msi installer creates a shortcut, which is detected by the PT Run and ends up in calling this OnAppRenamed method
             // the thread needs to be halted for a short time to avoid locking the new shortcut file as we read it, otherwise the lock causes
             // in the issue scenario that a warning is popping up during the msi install process.
-            System.Threading.Thread.Sleep(1000);
+            await Task.Delay(1000).ConfigureAwait(false);
 
             string extension = Path.GetExtension(newPath);
             Win32Program.ApplicationType oldAppType = Win32Program.GetAppTypeFromPath(oldPath);
@@ -144,6 +144,14 @@ namespace Microsoft.Plugin.Program.Storage
             {
                 Add(newApp);
             }
+        }
+
+        private void OnAppRenamed(object sender, RenamedEventArgs e)
+        {
+            Task.Run(async () =>
+            {
+                await DoOnAppRenamed(sender, e).ConfigureAwait(false);
+            }).ConfigureAwait(false);
         }
 
         private void OnAppDeleted(object sender, FileSystemEventArgs e)
