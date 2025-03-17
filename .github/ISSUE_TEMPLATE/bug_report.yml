@@ -1,5 +1,6 @@
 name: "🕷️ Bug report"
 description: Report errors or unexpected behavior
+type: Bug
 labels:
 - Issue-Bug
 - Needs-Triage
@@ -16,7 +17,8 @@ body:
   validations:
     required: true
 
-- type: dropdown
+- id: installed
+  type: dropdown
   attributes:
     label: Installation method
     description: How / Where was PowerToys installed from?
@@ -33,7 +35,8 @@ body:
   validations:
     required: true
 
-- type: dropdown
+- id: iselevated
+  type: dropdown
   attributes:
     label: Running as admin
     description: Are you running PowerToys as Admin?
@@ -76,7 +79,7 @@ body:
       - Shortcut Guide
       - System tray interaction
       - TextExtractor
-      - Video Conference Mute
+      - Workspaces
       - Welcome / PowerToys Tour window
   validations:
     required: true
