@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.UITest
         }
 
         private static ReadOnlyCollection<TW> FindElementsWithRetry<TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, int timeoutMS)
-{
+        {
             int retryIntervalMS = 500;
             timeoutMS = 1;
             int elapsedTime = 0;

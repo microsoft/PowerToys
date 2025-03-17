@@ -59,6 +59,13 @@ namespace Microsoft.PowerToys.UITest
         [TestCleanup]
         public void TestCleanup()
         {
+            if (TestContext.CurrentTestOutcome is UnitTestOutcome.Failed
+                or UnitTestOutcome.Error
+                or UnitTestOutcome.Unknown)
+            {
+                this.CaptureLastScreenshot();
+            }
+
             this.Session.Cleanup();
             this.sessionHelper!.Cleanup();
         }
@@ -260,24 +267,14 @@ namespace Microsoft.PowerToys.UITest
             return this.Session.FindAll<Element>(By.Name(name), timeoutMS);
         }
 
-        protected void AttachmentWrapper(Action action)
-        {
-            try
-            {
-                action();
-            }
-            catch (Exception)
-            {
-                this.CaptureScreenshot();
-                throw;
-            }
-        }
-
-        protected void CaptureScreenshot()
+        /// <summary>
+        /// Captures the last screenshot when the test fails.
+        /// </summary>
+        protected void CaptureLastScreenshot()
         {
             // Implement your screenshot capture logic here
             // For example, save a screenshot to a file and return the file path
-            string screenshotPath = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "screenshot.png");
+            string screenshotPath = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "last_screenshot.png");
 
             this.Session.Root.GetScreenshot().SaveAsFile(screenshotPath, ScreenshotImageFormat.Png);
 
