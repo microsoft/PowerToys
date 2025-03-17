@@ -125,13 +125,7 @@ public sealed partial class ListPage : Page,
         // Might be able to fix in the future by stashing the removed item
         // here, then in Page_ItemsUpdated trying to select that cached item if
         // it's in the list (otherwise, clear the cache), but that seems
-        // aggressively bodgy for something that mostly just works today.
-
-        // When the selection changes, _smooth_ scroll to it.
-        // If you use ListView.ScrollIntoView() by itself, then this will
-        // intermittently _crash_ if an item has tags. The WCT extension
-        // though, to smooth scroll instead, slows things down just enough to
-        // prevent the crash.
+        // aggressively BODGY for something that mostly just works today.
         if (ItemsList.SelectedItem != null)
         {
             ItemsList.ScrollIntoView(ItemsList.SelectedItem);

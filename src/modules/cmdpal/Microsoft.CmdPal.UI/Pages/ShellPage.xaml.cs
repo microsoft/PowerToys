@@ -177,7 +177,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
                     if (isMainPage)
                     {
-                        // todo bodgy
+                        // todo BODGY
                         RootFrame.BackStack.Clear();
                     }
 

@@ -17,7 +17,9 @@ internal sealed class Program
     // LOAD BEARING
     //
     // Main cannot be async. If it is, then the clipboard won't work, and neither will narrator.
-    [MTAThread]
+    // That means you, the person thinking about making this a MTA thread. Don't
+    // do it. It won't work. That's not the solution.
+    [STAThread]
     private static int Main(string[] args)
     {
         if (Helpers.GpoValueChecker.GetConfiguredCmdPalEnabledValue() == Helpers.GpoRuleConfiguredValue.Disabled)
@@ -30,12 +32,12 @@ internal sealed class Program
         Logger.LogDebug($"Starting at {DateTime.UtcNow}");
 
         WinRT.ComWrappersSupport.InitializeComWrappers();
-        var isRedirect = DecideRedirection();
+        bool isRedirect = DecideRedirection();
         if (!isRedirect)
         {
             Microsoft.UI.Xaml.Application.Start((p) =>
             {
-                var context = new Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
+                Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext context = new(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
                 SynchronizationContext.SetSynchronizationContext(context);
                 app = new App();
             });
@@ -46,9 +48,9 @@ internal sealed class Program
 
     private static bool DecideRedirection()
     {
-        var isRedirect = false;
-        var args = AppInstance.GetCurrent().GetActivatedEventArgs();
-        var keyInstance = AppInstance.FindOrRegisterForKey("randomKey");
+        bool isRedirect = false;
+        AppActivationArguments args = AppInstance.GetCurrent().GetActivatedEventArgs();
+        AppInstance keyInstance = AppInstance.FindOrRegisterForKey("randomKey");
 
         if (keyInstance.IsCurrent)
         {

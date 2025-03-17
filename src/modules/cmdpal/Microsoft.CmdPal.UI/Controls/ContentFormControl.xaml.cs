@@ -39,7 +39,7 @@ public sealed partial class ContentFormControl : UserControl
         var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
         _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
 
-        // 5% bodgy: if we set this multiple times over the lifetime of the app,
+        // 5% BODGY: if we set this multiple times over the lifetime of the app,
         // then the second call will explode, because "CardOverrideStyles is already the child of another element".
         // SO only set this once.
         if (_renderer.OverrideStyles == null)

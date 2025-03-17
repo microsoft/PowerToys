@@ -102,7 +102,7 @@ namespace til // Terminal Implementation Library. Also: "Today I Learned"
     //
     //        til::observable<int> Foo(this, L"Foo", 42)
     //
-    //    which then kinda implies the creation of:
+    //    which then implies the creation of:
     //
     //        #define OBSERVABLE(type, name, ...) til::observable_property<type> name{ this, L## #name, this.PropertyChanged, __VA_ARGS__ };
     //

@@ -18,7 +18,7 @@ public partial class ReloadExtensionsCommand : InvokableCommand
 
     public override ICommandResult Invoke()
     {
-        // 1% bodgy: clear the search before reloading, so that we tell in-proc
+        // 1% BODGY: clear the search before reloading, so that we tell in-proc
         // fallback handlers the empty search text
         WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
         WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>();
