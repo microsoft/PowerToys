@@ -273,27 +273,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var version = GetPowerToysVersion();
 
-            var gitHubURL = "https://github.com/donlaci/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CTriage-Needed&template=bug_report.yml" +
-                "&version=" + version;
+            var gitHubURL = "https://github.com/donlaci/PowerToys/issues/new?template=bug_report.yml" +
+                "&version=" + version + "&iselevated=" + (IsElevated ? "1" : "2");
 
             ReportBugLink = gitHubURL;
         }
 
         private string GetPowerToysVersion()
         {
-            return "0.99.0"; // Replace with the actual method to get the version.
-        }
-
-        private string GetOSVersion()
-        {
-            // Implement a method to get the OS version
-            return "OS_VERSION_PLACEHOLDER";
-        }
-
-        private string GetDotNetVersion()
-        {
-            // Implement a method to get the .NET version
-            return "DOT_NET_VERSION_PLACEHOLDER";
+            return Helper.GetProductVersion().TrimStart('v');
         }
 
         // Gets or sets a value indicating whether run powertoys on start-up.
