@@ -132,7 +132,7 @@ internal static class DragDrop
     {
         if (!IsDropping)
         {
-            IntPtr h = (IntPtr)NativeMethods.FindWindow(null, Common.HELPER_FORM_TEXT);
+            IntPtr h = (IntPtr)NativeMethods.FindWindow(null, Helper.HELPER_FORM_TEXT);
             if (h.ToInt32() > 0)
             {
                 _ = Interlocked.Exchange(ref dragDropStep05ExCalledByIpc, 0);
@@ -189,7 +189,7 @@ internal static class DragDrop
 
         if (!IsDropping)
         {
-            _ = Common.ImpersonateLoggedOnUserAndDoSomething(() =>
+            _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
             {
                 if (!string.IsNullOrEmpty(dragFileName) && (File.Exists(dragFileName) || Directory.Exists(dragFileName)))
                 {
