@@ -4,6 +4,7 @@
 
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -102,6 +103,12 @@ public sealed partial class MainWindow : Window,
 
         // Make sure that we update the acrylic theme when the OS theme changes
         RootShellPage.ActualThemeChanged += (s, e) => UpdateAcrylic();
+
+        // Hardcoding event name to avoid bringing in the PowerToys.interop dependency. Event name must match CMDPAL_SHOW_EVENT from shared_constants.h
+        NativeEventWaiter.WaitForEventLoop("Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a", () =>
+        {
+            Summon(string.Empty);
+        });
     }
 
     private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings();

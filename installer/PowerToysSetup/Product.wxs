@@ -79,7 +79,9 @@
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
+<?ifdef env.IsPipeline?>
       <ComponentGroupRef Id="CmdPalComponentGroup" />
+<?endif?>
     </Feature>
 
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
