@@ -16,10 +16,11 @@ namespace Microsoft.PowerToys.UITest
         /// To use this VisualAssert, you need to set Window Theme to Light-Mode to avoid Theme color difference in baseline image.
         /// Such limiation could be removed either Auto-generate baseline image for both Light & Dark mode
         /// </summary>
+        /// <param name="testContext">TestContext object</param>
         /// <param name="element">Element object</param>
         /// <param name="scenarioSubname">additional scenario name if two or more scenarios in one test</param>
         [RequiresUnreferencedCode("This method uses reflection which may not be compatible with trimming.")]
-        public static void AreEqual(Element element, string scenarioSubname = "")
+        public static void AreEqual(TestContext? testContext, Element element, string scenarioSubname = "")
         {
             if (element == null)
             {
@@ -81,6 +82,12 @@ namespace Microsoft.PowerToys.UITest
 
             if (!isSame)
             {
+                if (testContext != null)
+                {
+                    testContext.AddResultFile(tempBaselineImagePath);
+                    testContext.AddResultFile(tempTestImagePath);
+                }
+
                 Assert.Fail($"Fail to validate visual result for scenario {scenarioSubname}, baseline image can be found file://{tempBaselineImagePath.Replace('\\', '/')}, and test image can be found file://{tempTestImagePath.Replace('\\', '/')}");
             }
         }
