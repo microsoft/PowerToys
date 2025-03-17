@@ -34,7 +34,7 @@ body:
   validations:
     required: true
 
-- id: iselevated
+- id: isElevated
   type: dropdown
   attributes:
     label: Running as admin
@@ -115,3 +115,4 @@ body:
       My Cool Application v0.3 (include a code snippet if it would help!)
   validations:
     required: false
+  
