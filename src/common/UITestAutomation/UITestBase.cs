@@ -29,6 +29,9 @@ namespace Microsoft.PowerToys.UITest
 
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
         {
+            // Wait for 30s after env setup
+            Task.Delay(30000).Wait();
+
             this.scope = scope;
             this.size = size;
         }

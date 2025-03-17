@@ -353,7 +353,7 @@ namespace Microsoft.PowerToys.UITest
                 return;
             }
 
-            ApiHelper.SetWindowPos(this.MainWindowHandler, ApiHelper.HWNDTOPMOST, 0, 0, width, height, ApiHelper.SetWindowPosNoMove | ApiHelper.SetWindowPosShowWindow);
+            ApiHelper.SetWindowPos(this.MainWindowHandler, IntPtr.Zero, 0, 0, width, height, ApiHelper.SetWindowPosNoMove | ApiHelper.SetWindowPosNoZorder | ApiHelper.SetWindowPosShowWindow);
 
             // Wait for 3000ms after resize
             Task.Delay(3000).Wait();
@@ -440,11 +440,9 @@ namespace Microsoft.PowerToys.UITest
             [DllImport("user32.dll")]
             public static extern bool SetForegroundWindow(IntPtr hWnd);
 
-            public const uint SetWindowPosNoSize = 0x0001;
             public const uint SetWindowPosNoMove = 0x0002;
             public const uint SetWindowPosNoZorder = 0x0004;
             public const uint SetWindowPosShowWindow = 0x0040;
-            public static readonly IntPtr HWNDTOPMOST = new IntPtr(-1);
 
             [DllImport("user32.dll", SetLastError = true)]
             public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
