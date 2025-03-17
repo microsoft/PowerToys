@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.ListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -17,10 +17,12 @@
     <Page.Resources>
         <!--  TODO: Figure out what we want to do here for filtering/grouping and where  -->
         <!--  https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.data.collectionviewsource  -->
-        <!--<CollectionViewSource
+        <CollectionViewSource
             x:Name="ItemsCVS"
-            IsSourceGrouped="True"
-            Source="{x:Bind ViewModel.Items, Mode=OneWay}" />-->
+            IsSourceGrouped="{x:Bind ViewModel.HasGrouping, Mode=OneWay}"
+            Source="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+            ItemsPath="Items">
+        </CollectionViewSource>
 
         <converters:StringVisibilityConverter
             x:Key="StringVisibilityConverter"
@@ -115,12 +117,12 @@
                     IsItemClickEnabled="True"
                     ItemClick="ItemsList_ItemClick"
                     ItemTemplate="{StaticResource ListItemViewModelTemplate}"
-                    ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+                    ItemsSource="{Binding ElementName=ItemsCVS, Path=View}"
                     SelectionChanged="ItemsList_SelectionChanged">
                     <ListView.ItemContainerTransitions>
                         <TransitionCollection />
                     </ListView.ItemContainerTransitions>
-                    <!--<ListView.GroupStyle>
+                    <ListView.GroupStyle>
                     <GroupStyle HidesIfEmpty="True">
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate>
@@ -131,7 +133,7 @@
                             </DataTemplate>
                         </GroupStyle.HeaderTemplate>
                     </GroupStyle>
-                </ListView.GroupStyle>-->
+                </ListView.GroupStyle>
                 </ListView>
             </controls:Case>
             <controls:Case Value="True">

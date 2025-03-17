@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -26,6 +26,24 @@ public partial class ListViewModel : PageViewModel, IDisposable
     public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
 
     private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
+
+    public bool HasGrouping
+    {
+        get
+        {
+            try
+            {
+                return FilteredItems.Any(i => !string.IsNullOrEmpty(i.Section));
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
+
+    [ObservableProperty]
+    public partial ObservableCollection<ListGroup> Groups { get; set; } = [];
 
     private readonly ExtensionObject<IListPage> _model;
 
@@ -245,6 +263,31 @@ public partial class ListViewModel : PageViewModel, IDisposable
             item.SafeInitializeProperties();
 
             ct.ThrowIfCancellationRequested();
+        }
+    }
+
+    public void UpdateGroupsIfNeeded()
+    {
+        Groups.Clear();
+        if (HasGrouping)
+        {
+            try
+            {
+                var groupedItems = FilteredItems
+                    .Where(item => !string.IsNullOrEmpty(item.Section))
+                    .GroupBy(item => item.Section)
+                    .Select(group => new ListGroup
+                    {
+                        Key = group.Key,
+                        Items = new ObservableCollection<ListItemViewModel>(group),
+                    }).ToList();
+
+                Groups = new ObservableCollection<ListGroup>(groupedItems);
+            }
+            catch (Exception ex)
+            {
+                ShowException(ex, _model?.Unsafe?.Name);
+            }
         }
     }
 
