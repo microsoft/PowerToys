@@ -249,18 +249,11 @@ public sealed partial class ListPage : Page,
     {
         if (ViewModel != null)
         {
-            // Ensure Groups is up-to-date first
             ViewModel?.UpdateGroupsIfNeeded();
 
-            // Now decide which collection the UI should see
-            if (ViewModel?.HasGrouping ?? false)
-            {
-                ItemsCVS.Source = ViewModel.Groups;
-            }
-            else
-            {
-                ItemsCVS.Source = ViewModel?.FilteredItems;
-            }
+            var grouping = ViewModel?.HasGrouping ?? false;
+            ItemsCVS.IsSourceGrouped = grouping;
+            ItemsCVS.Source = grouping ? ViewModel?.Groups : ViewModel?.FilteredItems;
         }
 
         // If for some reason, we don't have a selected item, fix that.
