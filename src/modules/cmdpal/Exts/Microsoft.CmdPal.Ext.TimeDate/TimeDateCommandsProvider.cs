@@ -24,7 +24,7 @@ public partial class TimeDateCommandsProvider : CommandProvider
 
         _command = new CommandItem(new TimeDateExtensionPage(_settingsManager))
         {
-            Icon = new IconInfo("\uEC92"), // DateTime icon
+            Icon = IconHelpers.FromRelativePath("Assets\\TimeDate.svg"),
             Title = Resources.Microsoft_plugin_timedate_plugin_name,
             Subtitle = GetTranslatedPluginDescription(),
             MoreCommands = [new CommandContextItem(_settingsManager.Settings.SettingsPage)],

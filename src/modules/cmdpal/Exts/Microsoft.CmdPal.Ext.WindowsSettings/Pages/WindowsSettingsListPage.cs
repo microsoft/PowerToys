@@ -13,15 +13,13 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings;
 
 internal sealed partial class WindowsSettingsListPage : DynamicListPage
 {
-    private readonly string _defaultIconPath;
     private readonly Classes.WindowsSettings _windowsSettings;
 
     public WindowsSettingsListPage(Classes.WindowsSettings windowsSettings)
     {
-        Icon = new IconInfo("\uE713"); // Settings
+        Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg");
         Name = "Windows Settings";
         Id = "com.microsoft.cmdpal.windowsSettings";
-        _defaultIconPath = "Images/WindowsSettings.light.png";
         _windowsSettings = windowsSettings;
     }
 
@@ -36,7 +34,7 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
             .Where(Predicate)
             .OrderBy(found => found.Name);
 
-        var newList = ResultHelper.GetResultList(filteredList, query, _defaultIconPath);
+        var newList = ResultHelper.GetResultList(filteredList, query);
         return newList;
 
         bool Predicate(WindowsSetting found)

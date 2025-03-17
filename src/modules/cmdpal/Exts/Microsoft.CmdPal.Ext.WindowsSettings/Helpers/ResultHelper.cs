@@ -23,8 +23,7 @@ internal static class ResultHelper
 {
     internal static List<ListItem> GetResultList(
         in IEnumerable<Classes.WindowsSetting> list,
-        string query,
-        in string iconPath)
+        string query)
     {
         var resultList = new List<ListItem>(list.Count());
 
@@ -32,7 +31,7 @@ internal static class ResultHelper
         {
             var result = new ListItem(new OpenSettingsCommand(entry))
             {
-                Icon = new IconInfo(iconPath),
+                Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg"),
                 Subtitle = entry.JoinedFullSettingsPath,
                 Title = entry.Name,
                 MoreCommands = ContextMenuHelper.GetContextMenu(entry).ToArray(),

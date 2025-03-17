@@ -9,6 +9,9 @@
     <ProjectPriFileName>Microsoft.CmdPal.Ext.Calc.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Assets\Calculator.svg" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
   </ItemGroup>
 
@@ -18,6 +21,15 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Assets\Calculator.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Calculator.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">

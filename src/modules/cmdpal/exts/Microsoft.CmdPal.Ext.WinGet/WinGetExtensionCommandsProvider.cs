@@ -34,7 +34,7 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
             new OpenUrlCommand("ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette"))
          {
             Title = Properties.Resources.winget_search_store_title,
-            Icon = IconHelpers.FromRelativePath("Assets\\ms-store.png"),
+            Icon = IconHelpers.FromRelativePaths("Assets\\Store.light.svg", "Assets\\Store.dark.svg"),
          },
     ];
 

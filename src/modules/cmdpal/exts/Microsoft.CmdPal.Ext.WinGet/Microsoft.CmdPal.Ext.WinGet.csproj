@@ -18,6 +18,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Store.dark.png" />
+    <None Remove="Assets\Store.dark.svg" />
+    <None Remove="Assets\Store.light.png" />
+    <None Remove="Assets\Store.light.svg" />
     <None Remove="Assets\WinGet.png" />
     <None Remove="Assets\WinGet.svg" />
   </ItemGroup>
@@ -74,6 +78,21 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Assets\Store.dark.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Store.dark.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Store.light.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Store.light.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">

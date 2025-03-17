@@ -10,14 +10,13 @@
     <ProjectPriFileName>Microsoft.CmdPal.Ext.WindowsTerminal.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
-	  <Content Include="Assets\WindowsTerminal.dark.png">
-      <Link>Assets\WindowsTerminal.dark.png</Link>
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Assets\WindowsTerminal.light.png">
-      <Link>Assets\WindowsTerminal.light.png</Link>
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
+    <Content Remove="Assets\WindowsTerminal.dark.png" />
+    <Content Remove="Assets\WindowsTerminal.dark.png" />
+    <Content Remove="Assets\WindowsTerminal.light.png" />
+    <Content Remove="Assets\WindowsTerminal.light.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Assets\WindowsTerminal.svg" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
@@ -28,6 +27,14 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\WindowsTerminal.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\WindowsTerminal.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">

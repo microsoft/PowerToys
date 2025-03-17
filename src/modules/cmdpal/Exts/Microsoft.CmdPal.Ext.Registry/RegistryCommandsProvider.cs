@@ -13,7 +13,7 @@ public partial class RegistryCommandsProvider : CommandProvider
     {
         Id = "Windows.Registry";
         DisplayName = $"Windows Registry";
-        Icon = new IconInfo("\uE74C"); // OEM
+        Icon = IconHelpers.FromRelativePath("Assets\\Registry.svg");
     }
 
     public override ICommandItem[] TopLevelCommands()

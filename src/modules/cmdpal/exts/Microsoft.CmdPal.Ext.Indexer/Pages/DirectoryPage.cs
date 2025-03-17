@@ -24,7 +24,7 @@ public sealed partial class DirectoryPage : ListPage
     public DirectoryPage(string path)
     {
         _path = path;
-        Icon = Icons.FileExplorerSegoe;
+        Icon = Icons.FileExplorer;
         Name = Resources.Indexer_Command_Browse;
         Title = path;
     }

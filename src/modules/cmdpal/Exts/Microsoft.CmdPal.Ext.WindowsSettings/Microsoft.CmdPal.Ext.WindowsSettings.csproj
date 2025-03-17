@@ -9,6 +9,7 @@
     <ProjectPriFileName>Microsoft.CmdPal.Ext.WindowsSettings.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Assets\WindowsSettings.svg" />
     <None Remove="WindowsSettings.json" />
   </ItemGroup>
   <ItemGroup>
@@ -26,6 +27,14 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\WindowsSettings.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\WindowsSettings.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">

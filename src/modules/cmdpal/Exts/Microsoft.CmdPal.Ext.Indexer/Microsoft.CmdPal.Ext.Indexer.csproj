@@ -8,6 +8,9 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Assets\FileExplorer.svg" />
+  </ItemGroup>
 
   <ItemGroup>
 	<PackageReference Include="Microsoft.Windows.CsWin32">
@@ -25,6 +28,15 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Assets\FileExplorer.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\FileExplorer.svg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
