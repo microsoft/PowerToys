@@ -207,8 +207,7 @@ namespace RegistryPreviewUILib
             // Add controls: 0 = SelectorBar, 1 = ProgressRing, 2 = HexBox, 3 = TextBox
             panel.Children.Add(navBar);
             panel.Children.Add(new ProgressRing());
-
-            // panel.Children.Add(binaryPreviewBox);
+            panel.Children.Add(binaryPreviewBox);
             panel.Children.Add(visibleText);
         }
 
@@ -239,7 +238,6 @@ namespace RegistryPreviewUILib
             // Child controls: 0 = SelectorBar, 1 = ProgressRing, 2 = HexBox, 3 = TextBox
             var stackPanel = sender.Parent as StackPanel;
             var progressRing = (ProgressRing)stackPanel.Children[1];
-
             var hexBox = (HB.HexBox)stackPanel.Children[2];
             var textBox = (TextBox)stackPanel.Children[3];
 
