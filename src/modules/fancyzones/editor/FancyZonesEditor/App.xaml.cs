@@ -59,7 +59,7 @@ namespace FancyZonesEditor
 
         public App()
         {
-            PowerToysTelemetry.Log.WriteEvent(new FancuZonesEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+            PowerToysTelemetry.Log.WriteEvent(new FancyZonesEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
 
             var languageTag = LanguageHelper.LoadLanguage();
 

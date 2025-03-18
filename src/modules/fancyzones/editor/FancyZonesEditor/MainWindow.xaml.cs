@@ -71,7 +71,7 @@ namespace FancyZonesEditor
             // reinit considering work area rect
             _settings.InitModels();
 
-            PowerToysTelemetry.Log.WriteEvent(new FancuZonesEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+            PowerToysTelemetry.Log.WriteEvent(new FancyZonesEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
         private void BringToFront()

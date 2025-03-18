@@ -10,7 +10,7 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace AdvancedPaste.Telemetry;
 
 [EventData]
-public class FancuZonesEditorStartEvent() : EventBase, IEvent
+public class FancyZonesEditorStartFinishEvent() : EventBase, IEvent
 {
     public long TimeStamp { get; set; }
 

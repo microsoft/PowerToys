@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using AdvancedPaste.Telemetry;
 using Hosts.Helpers;
 using HostsUILib.Helpers;
@@ -12,7 +13,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
-using System;
 using WinUIEx;
 
 // To learn more about WinUI, the WinUI project structure,
