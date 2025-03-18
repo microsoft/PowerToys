@@ -138,17 +138,13 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
                             // If style attribute exists, preserve existing styles
                             if (!string.IsNullOrEmpty(currentStyle) && currentStyle != "null")
                             {
-                                foreach (var stylePart in currentStyle.Split(';'))
-                                {
-                                    if (!string.IsNullOrEmpty(stylePart))
-                                    {
-                                        var styleKeyValue = stylePart.Split(':');
-                                        if (styleKeyValue.Length == 2)
-                                        {
-                                            styleDict[styleKeyValue[0].Trim()] = styleKeyValue[1].Trim();
-                                        }
-                                    }
-                                }
+                                styleDict = currentStyle
+                                    .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(stylePart => stylePart.Split(':', 2, StringSplitOptions.TrimEntries))
+                                    .Where(styleKeyValue => styleKeyValue.Length == 2 && !string.IsNullOrEmpty(styleKeyValue[0]))
+                                    .ToDictionary(
+                                        styleKeyValue => styleKeyValue[0],
+                                        styleKeyValue => styleKeyValue[1]);
                             }
                         }
                         catch (Exception ex)
