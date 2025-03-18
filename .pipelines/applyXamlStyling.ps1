@@ -41,7 +41,7 @@ Write-Output ""
 Write-Output "Restoring dotnet tools..."
 dotnet tool restore --disable-parallel --no-cache
 
-# User Regex syntax
+# Use Regex syntax
 $PathExcludes = "(\\obj\\)|(\\bin\\)|(\\x64\\)|(\\Generated Files\\PowerRenameXAML\\)|(\\RegistryPreviewUILib\\Controls\\HexBox\\)"
 
 if (-not $Passive)
