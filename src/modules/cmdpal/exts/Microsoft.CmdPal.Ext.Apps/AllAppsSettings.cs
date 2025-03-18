@@ -41,8 +41,6 @@ public class AllAppsSettings : JsonSettingsManager
 
     public bool EnablePathEnvironmentVariableSource => _enablePathEnvironmentVariableSource.Value;
 
-    public bool UseThumbnails => _useThumbnails.Value;
-
     private readonly ToggleSetting _enableStartMenuSource = new(
         Namespaced(nameof(EnableStartMenuSource)),
         Resources.enable_start_menu_source,
@@ -67,19 +65,13 @@ public class AllAppsSettings : JsonSettingsManager
         Resources.enable_path_environment_variable_source,
         false); // this one is very VERY noisy
 
-    private readonly ToggleSetting _useThumbnails = new(
-        Experimental(nameof(UseThumbnails)),
-        Resources.use_thumbnails_setting_label,
-        Resources.use_thumbnails_setting_description,
-        false); // This one can cause a crash on launch
-
     public double MinScoreThreshold { get; set; } = 0.75;
 
     internal const char SuffixSeparator = ';';
 
     internal static string SettingsJsonPath()
     {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+        string directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
         // now, the state is just next to the exe
@@ -94,7 +86,6 @@ public class AllAppsSettings : JsonSettingsManager
         Settings.Add(_enableDesktopSource);
         Settings.Add(_enableRegistrySource);
         Settings.Add(_enablePathEnvironmentVariableSource);
-        Settings.Add(_useThumbnails);
 
         // Load settings from file upon initialization
         LoadSettings();

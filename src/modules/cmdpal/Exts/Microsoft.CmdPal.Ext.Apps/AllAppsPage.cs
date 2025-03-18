@@ -57,11 +57,10 @@ public sealed partial class AllAppsPage : ListPage
         Stopwatch stopwatch = new();
         stopwatch.Start();
 
-        var apps = GetPrograms();
+        List<AppItem> apps = GetPrograms();
 
-        var useThumbnails = AllAppsSettings.Instance.UseThumbnails;
         this.allAppsSection = apps
-                        .Select((app) => new AppListItem(app, useThumbnails))
+                        .Select((app) => new AppListItem(app, true))
                         .ToArray();
 
         this.IsLoading = false;
@@ -74,7 +73,7 @@ public sealed partial class AllAppsPage : ListPage
 
     internal List<AppItem> GetPrograms()
     {
-        var uwpResults = AppCache.Instance.Value.UWPs
+        IEnumerable<AppItem> uwpResults = AppCache.Instance.Value.UWPs
             .Where((application) => application.Enabled)
             .Select(app =>
                 new AppItem()
@@ -89,11 +88,11 @@ public sealed partial class AllAppsPage : ListPage
                     Commands = app.GetCommands(),
                 });
 
-        var win32Results = AppCache.Instance.Value.Win32s
+        IEnumerable<AppItem> win32Results = AppCache.Instance.Value.Win32s
             .Where((application) => application.Enabled && application.Valid)
             .Select(app =>
             {
-                var icoPath = string.IsNullOrEmpty(app.IcoPath) ?
+                string icoPath = string.IsNullOrEmpty(app.IcoPath) ?
                     (app.AppType == Win32Program.ApplicationType.InternetShortcutApplication ?
                         app.IcoPath :
                         app.FullPath) :
