@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
@@ -103,16 +104,30 @@ public class ExtensionWrapper : IExtensionWrapper
             {
                 if (!IsRunning())
                 {
-                    var extensionPtr = nint.Zero;
+                    Logger.LogDebug($"Starting {ExtensionDisplayName} ({ExtensionClassId})");
+
+                    nint extensionPtr = nint.Zero;
                     try
                     {
                         // -2147024809: E_INVALIDARG
                         // -2147467262: E_NOINTERFACE
-                        var guid = typeof(IExtension).GUID;
-                        var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out var extensionObj);
+                        // -2147024893: E_PATH_NOT_FOUND
+                        Guid guid = typeof(IExtension).GUID;
+                        global::Windows.Win32.Foundation.HRESULT hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out object? extensionObj);
+
+                        if (hr.Value == -2147024893)
+                        {
+                            Logger.LogDebug($"Failed to find {ExtensionDisplayName}: {hr}. It may have been uninstalled or deleted.");
+
+                            // We don't really need to throw this exception.
+                            // We'll just return out nothing.
+                            return;
+                        }
+
                         extensionPtr = Marshal.GetIUnknownForObject(extensionObj);
                         if (hr < 0)
                         {
+                            Logger.LogDebug($"Failed to instantiate {ExtensionDisplayName}: {hr}");
                             Marshal.ThrowExceptionForHR(hr);
                         }
 
@@ -164,7 +179,7 @@ public class ExtensionWrapper : IExtensionWrapper
     {
         await StartExtensionAsync();
 
-        var supportedProviders = GetExtensionObject()?.GetProvider(_providerTypeMap[typeof(T)]);
+        object? supportedProviders = GetExtensionObject()?.GetProvider(_providerTypeMap[typeof(T)]);
         if (supportedProviders is IEnumerable<T> multipleProvidersSupported)
         {
             return multipleProvidersSupported;
