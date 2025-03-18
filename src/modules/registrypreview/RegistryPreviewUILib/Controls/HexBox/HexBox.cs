@@ -7,7 +7,8 @@
 //     2024-... republished by @hotkidfamily as "HexBox.WinUI".
 //     2025 Included in PowerToys.
 // </history>
-
+#pragma warning disable SA1210 // Using directives should be ordered alphabetically by namespace
+#pragma warning disable SA1208 // System using directives should be placed before other using directives
 using RegistryPreviewUILib.HexBox.Library.EndianConvert;
 using Microsoft.UI;
 using Microsoft.UI.Input;
@@ -29,6 +30,8 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
+#pragma warning restore SA1208 // System using directives should be placed before other using directives
+#pragma warning restore SA1210 // Using directives should be ordered alphabetically by namespace
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.

@@ -7,7 +7,6 @@
 //     2024-... republished by @hotkidfamily as "HexBox.WinUI".
 //     2025 Included in PowerToys.
 // </history>
-
 using System;
 using System.Windows.Input;
 
