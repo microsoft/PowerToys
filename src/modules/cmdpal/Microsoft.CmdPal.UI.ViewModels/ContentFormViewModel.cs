@@ -13,7 +13,7 @@ using Windows.Data.Json;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContentFormViewModel(IFormContent _form, IPageContext context) :
+public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPageContext> context) :
     ContentViewModel(context)
 {
     private readonly ExtensionObject<IFormContent> _formModel = new(_form);
@@ -96,7 +96,7 @@ public partial class ContentFormViewModel(IFormContent _form, IPageContext conte
                 }
                 catch (Exception ex)
                 {
-                    PageContext.ShowException(ex);
+                    ShowException(ex);
                 }
             });
         }

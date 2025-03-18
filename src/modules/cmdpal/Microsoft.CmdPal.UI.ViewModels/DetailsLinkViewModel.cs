@@ -9,7 +9,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class DetailsLinkViewModel(
     IDetailsElement _detailsElement,
-    IPageContext context) : DetailsElementViewModel(_detailsElement, context)
+    WeakReference<IPageContext> context) : DetailsElementViewModel(_detailsElement, context)
 {
     private readonly ExtensionObject<IDetailsLink> _dataModel =
         new(_detailsElement.Data as IDetailsLink);

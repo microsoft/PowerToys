@@ -7,7 +7,7 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class TagViewModel(ITag _tag, IPageContext context) : ExtensionObjectViewModel(context)
+public partial class TagViewModel(ITag _tag, WeakReference<IPageContext> context) : ExtensionObjectViewModel(context)
 {
     private readonly ExtensionObject<ITag> _tagModel = new(_tag);
 
@@ -24,8 +24,6 @@ public partial class TagViewModel(ITag _tag, IPageContext context) : ExtensionOb
     public OptionalColor Background { get; private set; }
 
     public IconInfoViewModel Icon { get; private set; } = new(null);
-
-    public ExtensionObject<ICommand> Command { get; private set; } = new(null);
 
     public override void InitializeProperties()
     {

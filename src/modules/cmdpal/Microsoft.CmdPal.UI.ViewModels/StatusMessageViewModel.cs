@@ -23,7 +23,7 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
 
     // public bool IsIndeterminate => Progress != null && Progress.IsIndeterminate;
     // public double ProgressValue => (Progress?.ProgressPercent ?? 0) / 100.0;
-    public StatusMessageViewModel(IStatusMessage message, IPageContext context)
+    public StatusMessageViewModel(IStatusMessage message, WeakReference<IPageContext> context)
         : base(context)
     {
         Model = new(message);
@@ -58,7 +58,7 @@ public partial class StatusMessageViewModel : ExtensionObjectViewModel
         }
         catch (Exception ex)
         {
-            PageContext.ShowException(ex);
+            ShowException(ex);
         }
     }
 

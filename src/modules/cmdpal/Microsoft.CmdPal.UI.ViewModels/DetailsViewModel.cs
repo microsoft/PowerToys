@@ -7,7 +7,7 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class DetailsViewModel(IDetails _details, IPageContext context) : ExtensionObjectViewModel(context)
+public partial class DetailsViewModel(IDetails _details, WeakReference<IPageContext> context) : ExtensionObjectViewModel(context)
 {
     private readonly ExtensionObject<IDetails> _detailsModel = new(_details);
 

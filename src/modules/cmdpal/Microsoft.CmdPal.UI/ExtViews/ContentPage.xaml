@@ -95,7 +95,7 @@
                     <ItemsRepeater
                         Margin="8"
                         VerticalAlignment="Stretch"
-                        ItemsSource="{x:Bind StupidGames, Mode=OneWay}"
+                        ItemsSource="{x:Bind Root, Mode=OneWay}"
                         Layout="{StaticResource VerticalStackLayout}">
                         <ItemsRepeater.ItemTemplate>
                             <cmdpalUI:ContentTemplateSelector

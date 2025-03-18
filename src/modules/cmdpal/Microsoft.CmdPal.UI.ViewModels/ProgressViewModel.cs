@@ -15,7 +15,7 @@ public partial class ProgressViewModel : ExtensionObjectViewModel
 
     public uint ProgressPercent { get; private set; }
 
-    public ProgressViewModel(IProgressState progress, IPageContext context)
+    public ProgressViewModel(IProgressState progress, WeakReference<IPageContext> context)
         : base(context)
     {
         Model = new(progress);
@@ -43,7 +43,7 @@ public partial class ProgressViewModel : ExtensionObjectViewModel
         }
         catch (Exception ex)
         {
-            PageContext.ShowException(ex);
+            ShowException(ex);
         }
     }
 

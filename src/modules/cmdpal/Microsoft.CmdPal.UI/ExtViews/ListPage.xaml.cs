@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,10 +19,10 @@ namespace Microsoft.CmdPal.UI;
 public sealed partial class ListPage : Page,
     IRecipient<NavigateNextCommand>,
     IRecipient<NavigatePreviousCommand>,
-     IRecipient<ActivateSelectedListItemMessage>,
-     IRecipient<ActivateSecondaryCommandMessage>
+    IRecipient<ActivateSelectedListItemMessage>,
+    IRecipient<ActivateSecondaryCommandMessage>
 {
-    public ListViewModel? ViewModel
+    private ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
         set => SetValue(ViewModelProperty, value);
@@ -34,7 +35,7 @@ public sealed partial class ListPage : Page,
     public ListPage()
     {
         this.InitializeComponent();
-
+        this.NavigationCacheMode = NavigationCacheMode.Disabled;
         this.ItemsList.Loaded += ItemsList_Loaded;
     }
 
@@ -56,9 +57,9 @@ public sealed partial class ListPage : Page,
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
         WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
-
         WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
+
         base.OnNavigatedTo(e);
     }
 
@@ -71,8 +72,23 @@ public sealed partial class ListPage : Page,
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
 
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            ViewModel.ItemsUpdated -= Page_ItemsUpdated;
+        }
+
+        if (e.NavigationMode != NavigationMode.New)
+        {
+            ViewModel?.SafeCleanup();
+            CleanupHelper.Cleanup(this);
+            Bindings.StopTracking();
+        }
+
         // Clean-up event listeners
         ViewModel = null;
+
+        GC.Collect();
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
@@ -219,6 +235,10 @@ public sealed partial class ListPage : Page,
             {
                 page.PropertyChanged += @this.ViewModel_PropertyChanged;
                 page.ItemsUpdated += @this.Page_ItemsUpdated;
+            }
+            else if (e.NewValue == null)
+            {
+                Logger.LogDebug("cleared viewmodel");
             }
         }
     }

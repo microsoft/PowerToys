@@ -7,7 +7,7 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ConfirmResultViewModel(IConfirmationArgs _args, IPageContext context) :
+public partial class ConfirmResultViewModel(IConfirmationArgs _args, WeakReference<IPageContext> context) :
     ExtensionObjectViewModel(context)
 {
     public ExtensionObject<IConfirmationArgs> Model { get; } = new(_args);

@@ -7,7 +7,7 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class CommandContextItemViewModel(ICommandContextItem contextItem, IPageContext context) : CommandItemViewModel(new(contextItem), context)
+public partial class CommandContextItemViewModel(ICommandContextItem contextItem, WeakReference<IPageContext> context) : CommandItemViewModel(new(contextItem), context)
 {
     public new ExtensionObject<ICommandContextItem> Model { get; } = new(contextItem);
 

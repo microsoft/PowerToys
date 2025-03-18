@@ -6,6 +6,7 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
@@ -113,6 +114,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             ViewModel.PerformTopLevelCommand(message);
         }
 
+        IExtensionWrapper? extension = null;
+
         // TODO: Actually loading up the page, or invoking the command -
         // that might belong in the model, not the view?
         // Especially considering the try/catch concerns around the fact that the
@@ -127,11 +130,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 var tlc = wrapper;
                 command = wrapper.Command;
                 host = tlc.ExtensionHost != null ? tlc.ExtensionHost! : host;
-                if (tlc.ExtensionHost?.Extension != null)
+                extension = tlc.ExtensionHost?.Extension;
+                if (extension != null)
                 {
-                    host.DebugLog($"Activated top-level command from {tlc.ExtensionHost.Extension.ExtensionDisplayName}");
+                    Logger.LogDebug($"Activated top-level command from {extension.ExtensionDisplayName}");
                 }
             }
+
+            ViewModel.SetActiveExtension(extension);
 
             if (command is IPage page)
             {
@@ -243,7 +249,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     // This gets called from the UI thread
     private void HandleConfirmArgs(IConfirmationArgs args)
     {
-        ConfirmResultViewModel vm = new(args, ViewModel.CurrentPage);
+        ConfirmResultViewModel vm = new(args, new(ViewModel.CurrentPage));
         var initializeDialogTask = Task.Run(() => { InitializeConfirmationDialog(vm); });
         initializeDialogTask.Wait();
 
@@ -526,6 +532,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // back to a recent page they visited (like the Pokedex) so we don't have to reload it from  scratch.
         // That'd be retrieved as we re-navigate in the PerformCommandMessage logic above
         RootFrame.ForwardStack.Clear();
+
+        if (!RootFrame.CanGoBack)
+        {
+            ViewModel.GoHome();
+        }
 
         if (focusSearch)
         {

@@ -136,7 +136,7 @@ public sealed partial class CommandPaletteHost : IExtensionHost
             return;
         }
 
-        var vm = new StatusMessageViewModel(message, _globalLogPageContext);
+        var vm = new StatusMessageViewModel(message, new(_globalLogPageContext));
         vm.SafeInitializePropertiesSynchronous();
 
         if (Extension != null)

@@ -7,11 +7,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Windows.Win32;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -30,6 +32,8 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
     public partial PageViewModel CurrentPage { get; set; } = new LoadingPageViewModel(null, _scheduler);
 
     private MainListPage? _mainListPage;
+
+    private IExtensionWrapper? _activeExtension;
 
     [RelayCommand]
     public async Task<bool> LoadAsync()
@@ -134,5 +138,40 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
         {
             _mainListPage.UpdateHistory(listItem);
         }
+    }
+
+    public void SetActiveExtension(IExtensionWrapper? extension)
+    {
+        if (extension != _activeExtension)
+        {
+            // There's not really a CoDisallowSetForegroundWindow, so we don't
+            // need to handle that
+            _activeExtension = extension;
+
+            var extensionComObject = _activeExtension?.GetExtensionObject();
+            if (extensionComObject != null)
+            {
+                try
+                {
+                    unsafe
+                    {
+                        var hr = PInvoke.CoAllowSetForegroundWindow(extensionComObject);
+                        if (hr != 0)
+                        {
+                            Logger.LogWarning($"Error giving foreground rights: 0x{hr.Value:X8}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex.ToString());
+                }
+            }
+        }
+    }
+
+    public void GoHome()
+    {
+        SetActiveExtension(null);
     }
 }

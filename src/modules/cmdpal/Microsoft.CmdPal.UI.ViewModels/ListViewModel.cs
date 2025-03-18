@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -135,7 +134,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // building new viewmodels for the ones we haven't already built.
             foreach (var item in newItems)
             {
-                ListItemViewModel viewModel = new(item, this);
+                ListItemViewModel viewModel = new(item, new(this));
 
                 // If an item fails to load, silently ignore it.
                 if (viewModel.SafeFastInit())
@@ -188,7 +187,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         });
         _initializeItemsTask.Start();
 
-        Task.Factory.StartNew(
+        DoOnUiThread(
             () =>
             {
                 lock (_listLock)
@@ -212,10 +211,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
                 ItemsUpdated?.Invoke(this, EventArgs.Empty);
                 _isLoading = false;
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            PageContext.Scheduler);
+            });
     }
 
     private void InitializeItemsTask(CancellationToken ct)
@@ -223,7 +219,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
         // Were we already canceled?
         ct.ThrowIfCancellationRequested();
 
-        foreach (var item in Items)
+        ListItemViewModel[] iterable;
+        lock (_listLock)
+        {
+            iterable = Items.ToArray();
+        }
+
+        foreach (var item in iterable)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -327,7 +329,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         // For inexplicable reasons, if you try updating the command bar and
         // the details on the same UI thread tick as updating the list, we'll
         // explode
-        Task.Factory.StartNew(
+        DoOnUiThread(
            () =>
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
@@ -342,10 +344,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                }
 
                TextToSuggest = item.TextToSuggest;
-           },
-           CancellationToken.None,
-           TaskCreationOptions.None,
-           PageContext.Scheduler);
+           });
     }
 
     public override void InitializeProperties()
@@ -442,14 +441,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return;
         }
 
-        Task.Factory.StartNew(
+        DoOnUiThread(
            () =>
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(EmptyContent));
-           },
-           CancellationToken.None,
-           TaskCreationOptions.None,
-           PageContext.Scheduler);
+           });
     }
 
     public void Dispose()
@@ -458,5 +454,37 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = null;
+    }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+
+        EmptyContent?.SafeCleanup();
+        EmptyContent = new(new(null), PageContext); // necessary?
+
+        _cancellationTokenSource?.Cancel();
+
+        lock (_listLock)
+        {
+            foreach (var item in Items)
+            {
+                item.SafeCleanup();
+            }
+
+            Items.Clear();
+            foreach (var item in FilteredItems)
+            {
+                item.SafeCleanup();
+            }
+
+            FilteredItems.Clear();
+        }
+
+        var model = _model.Unsafe;
+        if (model != null)
+        {
+            model.ItemsChanged -= Model_ItemsChanged;
+        }
     }
 }
