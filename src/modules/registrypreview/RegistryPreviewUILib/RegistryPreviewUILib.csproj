@@ -40,7 +40,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="MonacoEditorControl.xaml" />
+    <None Remove="Controls\MonacoEditor\MonacoEditorControl.xaml" />
+    <None Remove="Controls\HexBox\Themes\Generic.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,9 +61,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
+	
   <ItemGroup>
-    <Page Update="MonacoEditorControl.xaml">
+    <Page Update="Controls\MonacoEditor\MonacoEditorControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\HexBox\Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
