@@ -10,57 +10,17 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <converters:StringVisibilityConverter
-                x:Key="StringNotEmptyToVisibilityConverter"
-                EmptyValue="Collapsed"
-                NotEmptyValue="Visible" />
-            <converters:StringVisibilityConverter
-                x:Key="InvertedStringVisibilityConverter"
-                EmptyValue="Visible"
-                NotEmptyValue="Collapsed" />
-            <cmdpalUi:PlaceholderTextConverter x:Key="PlaceholderTextConverter" />
-        </ResourceDictionary>
-    </UserControl.Resources>
-
-    <StackPanel MinHeight="32" Orientation="Horizontal">
-        <!--  Search box  -->
-        <TextBox
-            x:Name="FilterBox"
-            MinHeight="32"
-            VerticalAlignment="Stretch"
-            VerticalContentAlignment="Stretch"
-            KeyDown="FilterBox_KeyDown"
-            PlaceholderText="{x:Bind CurrentPageViewModel.PlaceholderText, Converter={StaticResource PlaceholderTextConverter}, Mode=OneWay}"
-            PreviewKeyDown="FilterBox_PreviewKeyDown"
-            PreviewKeyUp="FilterBox_PreviewKeyUp"
-            Style="{StaticResource SearchTextBoxStyle}"
-            TextChanged="FilterBox_TextChanged" />
-
-        <Border
-            Margin="0,2,0,0"
-            Padding="4"
-            VerticalAlignment="Center"
-            Background="Transparent"
-            BorderBrush="{ThemeResource TextFillColorSecondaryBrush}"
-            BorderThickness="1"
-            CornerRadius="4"
-            Visibility="{x:Bind CurrentPageViewModel.ShowSuggestion, Mode=OneWay}">
-            <FontIcon
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                FontSize="8"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Glyph="&#xEBE7;" />
-            <!--  Right Arrow Key  -->
-        </Border>
-        <TextBlock
-            MinHeight="32"
-            Padding="{ThemeResource TextControlThemePadding}"
-            VerticalAlignment="Stretch"
-            Foreground="{ThemeResource TextControlPlaceholderForeground}"
-            Text="{x:Bind CurrentPageViewModel.TextToSuggest, Mode=OneWay}"
-            Visibility="{x:Bind CurrentPageViewModel.ShowSuggestion, Mode=OneWay}" />
-    </StackPanel>
+    <!--  Search box  -->
+    <TextBox
+        x:Name="FilterBox"
+        MinHeight="32"
+        VerticalAlignment="Stretch"
+        VerticalContentAlignment="Stretch"
+        KeyDown="FilterBox_KeyDown"
+        PlaceholderText="{x:Bind CurrentPageViewModel.PlaceholderText, Mode=OneWay}"
+        PreviewKeyDown="FilterBox_PreviewKeyDown"
+        PreviewKeyUp="FilterBox_PreviewKeyUp"
+        Style="{StaticResource SearchTextBoxStyle}"
+        TextChanged="FilterBox_TextChanged" />
+    <!--  Disabled Description="{x:Bind CurrentPageViewModel.TextToSuggest, Mode=OneWay}" for now, needs more work  -->
 </UserControl>

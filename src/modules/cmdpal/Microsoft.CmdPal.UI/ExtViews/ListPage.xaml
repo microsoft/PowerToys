@@ -73,7 +73,6 @@
                         VerticalAlignment="Center"
                         CharacterSpacing="12"
                         FontSize="14"
-                        FontWeight="SemiBold"
                         Text="{x:Bind Title, Mode=OneWay}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="NoWrap" />

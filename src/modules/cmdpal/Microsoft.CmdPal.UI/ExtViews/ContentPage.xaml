@@ -36,25 +36,13 @@
                 TreeTemplate="{StaticResource TreeContentTemplate}" />
 
             <DataTemplate x:Key="FormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
-                <Grid
-                    Margin="0,4,4,4"
-                    Padding="12,8,8,8"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1,1,1,2"
-                    CornerRadius="{StaticResource OverlayCornerRadius}">
+                <Grid Margin="0,4,4,4" Padding="12,8,8,8">
                     <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
                 </Grid>
             </DataTemplate>
 
             <DataTemplate x:Key="MarkdownContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
-                <Grid
-                    Margin="0,4,4,4"
-                    Padding="12,8,8,8"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1,1,1,2"
-                    CornerRadius="{StaticResource OverlayCornerRadius}">
+                <Grid Margin="0,4,4,4" Padding="12,8,8,8">
                     <toolkit:MarkdownTextBlock
                         Background="Transparent"
                         Header3FontSize="12"
@@ -87,10 +75,6 @@
                 <StackPanel
                     Margin="0,4,4,4"
                     Padding="12,8,8,8"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1,1,1,2"
-                    CornerRadius="{StaticResource OverlayCornerRadius}"
                     Orientation="Vertical">
                     <ItemsRepeater
                         Margin="8"
@@ -124,13 +108,14 @@
 
         </ResourceDictionary>
     </Page.Resources>
+    <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+        <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
+            <ItemsRepeater
+                VerticalAlignment="Stretch"
+                ItemTemplate="{StaticResource ContentTemplateSelector}"
+                ItemsSource="{x:Bind ViewModel.Content, Mode=OneWay}"
+                Layout="{StaticResource VerticalStackLayout}" />
+        </ScrollView>
+    </Grid>
 
-    <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
-        <ItemsRepeater
-            Margin="8"
-            VerticalAlignment="Stretch"
-            ItemTemplate="{StaticResource ContentTemplateSelector}"
-            ItemsSource="{x:Bind ViewModel.Content, Mode=OneWay}"
-            Layout="{StaticResource VerticalStackLayout}" />
-    </ScrollView>
 </Page>
