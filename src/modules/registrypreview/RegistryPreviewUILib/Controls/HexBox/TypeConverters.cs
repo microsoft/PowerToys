@@ -2,6 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+// <history>
+//     2020-... created by Filip Jeremic (fjeremic) as "HexView.Wpf".
+//     2024-... republished by @hotkidfamily as "HexBox.WinUI".
+//     2025 Included in PowerToys.
+// </history>
+
 using RegistryPreviewUILib.HexBox.Library.EndianConvert;
 using Microsoft.UI.Xaml.Data;
 using System;
