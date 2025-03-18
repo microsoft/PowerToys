@@ -300,13 +300,12 @@
                 <ScrollViewer
                     x:Name="DetailsContent"
                     Grid.Column="1"
-                    Padding="12"
                     HorizontalAlignment="Stretch"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                     BorderThickness="1,0,0,0"
                     Visibility="Collapsed">
-                    <Grid>
+                    <Grid Margin="12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />

@@ -87,7 +87,9 @@
                 </StackPanel>
 
                 <ItemsView
+                    Grid.RowSpan="2"
                     Grid.Column="2"
+                    VerticalAlignment="Center"
                     IsHitTestVisible="False"
                     IsItemInvokedEnabled="False"
                     IsTabStop="False"
@@ -137,24 +139,25 @@
                 <StackPanel
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Orientation="Vertical">
+                    Orientation="Vertical"
+                    Spacing="4">
                     <cpcontrols:IconBox
                         x:Name="IconBorder"
-                        Grid.Column="0"
-                        Width="64"
-                        Height="64"
+                        Width="56"
+                        Height="56"
                         Margin="8"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         SourceKey="{x:Bind ViewModel.EmptyContent.Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
-
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        HorizontalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="{x:Bind ViewModel.EmptyContent.Title, Mode=OneWay}" />
                     <TextBlock
                         HorizontalAlignment="Center"
-                        FontSize="24"
-                        Style="{ThemeResource HeaderTextBlockStyle}"
-                        Text="{x:Bind ViewModel.EmptyContent.Title, Mode=OneWay}" />
-                    <TextBlock HorizontalAlignment="Center" Text="{x:Bind ViewModel.EmptyContent.Subtitle, Mode=OneWay}" />
-
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind ViewModel.EmptyContent.Subtitle, Mode=OneWay}" />
                 </StackPanel>
             </controls:Case>
         </controls:SwitchPresenter>
