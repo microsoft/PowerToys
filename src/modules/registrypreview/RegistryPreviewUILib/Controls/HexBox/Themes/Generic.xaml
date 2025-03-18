@@ -26,6 +26,32 @@
                             <local:HexboxDataFormatBoolConverter x:Key="HexboxDataFormatBoolConverter" />
                             <local:HexboxDataTypeConverter x:Key="HexboxDataTypeConverter" />
                             <MenuFlyout x:Key="DataMenuFlyout">
+                                <!--  New code for PowerToys implementation  -->
+                                <MenuFlyoutItem
+                                    x:Uid="HexBox_CopyCommand"
+                                    Command="{Binding CopyCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                    Icon="Copy">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="C" Modifiers="Control" />
+                                    </MenuFlyoutItem.KeyboardAccelerators>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    x:Uid="HexBox_CopyTextCommand"
+                                    Command="{Binding CopyTextCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                    Icon="Font">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="C" Modifiers="Control,Shift" />
+                                    </MenuFlyoutItem.KeyboardAccelerators>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    x:Uid="HexBox_SelectAllCommand"
+                                    Command="{Binding SelectAllCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                    Icon="SelectAll">
+                                    <MenuFlyoutItem.KeyboardAccelerators>
+                                        <KeyboardAccelerator Key="A" Modifiers="Control" />
+                                    </MenuFlyoutItem.KeyboardAccelerators>
+                                </MenuFlyoutItem>
+                                <!-- Original source code from HexBox.WinUI.HexBox
                                 <MenuFlyoutItem
                                     Command="{Binding CopyCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}"
                                     Icon="Copy"
@@ -108,7 +134,7 @@
                                         IsChecked="{Binding ShowText, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay}"
                                         IsEnabled="False"
                                         Text="ASCII" />
-                                </MenuFlyoutSubItem>
+                                </MenuFlyoutSubItem>-->
                             </MenuFlyout>
                         </Grid.Resources>
 

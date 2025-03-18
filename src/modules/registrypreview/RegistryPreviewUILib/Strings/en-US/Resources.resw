@@ -342,4 +342,15 @@
   <data name="DataPreview_AutomationPropertiesName_VisibleTextPreview" xml:space="preserve">
     <value>Visible text preview</value>
   </data>
+  <data name="HexBox_CopyCommand.Text" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Like "copy the value"</comment>
+  </data>
+  <data name="HexBox_CopyTextCommand.Text" xml:space="preserve">
+    <value>Copy text</value>
+    <comment>Like "Copy the text"</comment>
+  </data>
+  <data name="HexBox_SelectAllCommand.Text" xml:space="preserve">
+    <value>Select all</value>
+  </data>
 </root>
