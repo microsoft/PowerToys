@@ -11,18 +11,7 @@ function Get-CSharpProjects {
     )
 
     # Get all .csproj files under the specified path
-    $csprojFiles = Get-ChildItem -Path $path -Recurse -Filter *.csproj
-
-    # Initialize an array to hold the file paths
-    $csprojArray = @()
-
-    foreach ($file in $csprojFiles) {
-        # Add the full path of each .csproj file to the array
-        $csprojArray += $file.FullName
-    }
-
-    # Return the array
-    return $csprojArray
+    return Get-ChildItem -Path $path -Recurse -Filter *.csproj | Select-Object -ExpandProperty FullName
 }
 
 # Check if the project file imports 'Common.Dotnet.CsWinRT.props'
