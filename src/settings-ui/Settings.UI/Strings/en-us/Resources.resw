@@ -3050,6 +3050,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Automatically close the Peek window after it loses focus</value>
     <comment>Peek is a product name, do not loc</comment>
   </data>
+  <data name="Peek_ConfirmFileDelete.Header" xml:space="preserve">
+    <value>Ask for confirmation before deleting files</value>
+  </data>
+  <data name="Peek_ConfirmFileDelete.Description" xml:space="preserve">
+    <value>When enabled, you will be prompted to confirm before moving files to the Recycle Bin.</value>
+  </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable round corners when window is snapped</value>
   </data>
@@ -4438,6 +4444,46 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="NewPlus_Hide_Starting_Digits_Description.Text" xml:space="preserve">
     <value>This option is useful when using digits, spaces and dots at the beginning of filenames to control the display order of templates</value>
     <comment>Template filename starting digits settings toggle</comment>
+  </data>
+  <data name="NewPlus_behavior.Header" xml:space="preserve">
+    <value>Behavior</value>
+    <comment>New+ behavior related settings label</comment>
+  </data>
+  <data name="NewPlus_Behaviour_Replace_Variables_Toggle.Header" xml:space="preserve">
+    <value>Replace variables in template filename</value>
+    <comment>New+ replace variables in template filename behavior toggle</comment>
+  </data>
+  <data name="NewPlus_Behaviour_Replace_Variables_Learn_More.Content" xml:space="preserve">
+    <value>Learn more about supported variables and see examples</value>
+    <comment>New+ help link to learn more about supported variables and see examples</comment>
+  </data>
+  <data name="NewPlus_Behaviour_Replace_Variables_Info_Card_Title.Text" xml:space="preserve">
+    <value>Commonly used variables</value>
+    <comment>New+ commonly used variables header in the flyout info card</comment>
+  </data>   
+  <data name="NewPlus_Year_YYYY_Variable_Description.Text" xml:space="preserve">
+    <value>Year, represented by a full four or five digits, depending on the calendar used.</value>
+    <comment>New+ description of the year $YYYY variable - casing of $YYYY is important</comment>
+  </data>
+  <data name="NewPlus_Month_MM_Variable_Description.Text" xml:space="preserve">
+    <value>Month, as digits with leading zeros for single-digit months.</value>
+    <comment>New+ description of the month $MM variable - casing of $MM is important</comment>
+  </data>
+  <data name="NewPlus_Day_DD_Variable_Description.Text" xml:space="preserve">
+    <value>Day of the month, as digits with leading zeros for single-digit days.</value>
+    <comment>New+ description of the day $DD variable - casing of $DD is important</comment>
+  </data>
+  <data name="NewPlus_Hour_hh_Variable_Description.Text" xml:space="preserve">
+    <value>Hours, with leading zeros for single-digit hours.</value>
+    <comment>New+ description of the hour $hh variable - casing of $hh is important</comment>
+  </data>
+  <data name="NewPlus_Minute_mm_Variable_Description.Text" xml:space="preserve">
+    <value>Minutes, with leading zeros for single-digit minutes.</value>
+    <comment>New+ description of the minute $mm variable - casing of $mm is important</comment>
+  </data>
+  <data name="NewPlus_Second_ss_Variable_Description.Text" xml:space="preserve">
+    <value>Seconds, with leading zeros for single-digit seconds.</value>
+    <comment>New+ description of the second $ss variable - casing of $ss is important</comment>
   </data>
   <data name="NewPlus.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
