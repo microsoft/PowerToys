@@ -3,7 +3,7 @@ export function regDefinition() {
         tokenPostfix: '.reg',
         tokenizer: {
             root: [
-                // Header (case sensitive)
+                // Header (case-sensitive)
                 [/Windows Registry Editor Version 5.00/, 'comment'],
                 [/REGEDIT4/, 'comment'],
                 // Comments

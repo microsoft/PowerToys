@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
@@ -13,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class SettingsRepository<T> : ISettingsRepository<T>
         where T : class, ISettingsConfig, new()
     {
-        private static readonly object _SettingsRepoLock = new object();
+        private static readonly Lock _SettingsRepoLock = new Lock();
 
         private static ISettingsUtils _settingsUtils;
 

@@ -18,12 +18,13 @@ using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.Win32;
 using Windows.Security.Credentials;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class AdvancedPasteViewModel : Observable, IDisposable
+    public partial class AdvancedPasteViewModel : Observable, IDisposable
     {
         private static readonly HashSet<string> WarnHotkeys = ["Ctrl + V", "Ctrl + Shift + V"];
 
@@ -35,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private readonly ISettingsUtils _settingsUtils;
-        private readonly object _delayedActionLock = new object();
+        private readonly System.Threading.Lock _delayedActionLock = new System.Threading.Lock();
 
         private readonly AdvancedPasteSettings _advancedPasteSettings;
         private readonly AdvancedPasteAdditionalActions _additionalActions;
@@ -83,7 +84,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.Elapsed += DelayedTimer_Tick;
             _delayedTimer.AutoReset = false;
 
-            foreach (var action in _additionalActions.AllActions)
+            foreach (var action in _additionalActions.GetAllActions())
             {
                 action.PropertyChanged += OnAdditionalActionPropertyChanged;
             }
@@ -319,6 +320,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsAdvancedAIEnabled
+        {
+            get => _advancedPasteSettings.Properties.IsAdvancedAIEnabled;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.IsAdvancedAIEnabled)
+                {
+                    _advancedPasteSettings.Properties.IsAdvancedAIEnabled = value;
+                    OnPropertyChanged(nameof(IsAdvancedAIEnabled));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool ShowCustomPreview
         {
             get => _advancedPasteSettings.Properties.ShowCustomPreview;
@@ -351,7 +366,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                           .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
 
         public bool IsAdditionalActionConflictingCopyShortcut =>
-            _additionalActions.AllActions
+            _additionalActions.GetAllActions()
                               .OfType<AdvancedPasteAdditionalAction>()
                               .Select(additionalAction => additionalAction.Shortcut)
                               .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
@@ -373,7 +388,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     CultureInfo.InvariantCulture,
                     "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                     AdvancedPasteSettings.ModuleName,
-                    JsonSerializer.Serialize(_advancedPasteSettings)));
+                    JsonSerializer.Serialize(_advancedPasteSettings, SourceGenerationContextContext.Default.AdvancedPasteSettings)));
         }
 
         public void RefreshEnabledState()
@@ -422,10 +437,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                PasswordVault vault = new PasswordVault();
-                PasswordCredential cred = new PasswordCredential("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey", password);
+                PasswordVault vault = new();
+                PasswordCredential cred = new("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey", password);
                 vault.Add(cred);
                 OnPropertyChanged(nameof(IsOpenAIEnabled));
+                IsAdvancedAIEnabled = true; // new users should get Semantic Kernel benefits immediately
                 NotifySettingsChanged();
             }
             catch (Exception)

@@ -10,16 +10,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-
-using Common.UI;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Windows.ApplicationModel.VoiceCommands;
 using Windows.System;
 
@@ -27,7 +25,7 @@ using static Microsoft.PowerToys.Settings.UI.Helpers.ShellGetFolder;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class NewPlusViewModel : Observable
+    public partial class NewPlusViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -191,7 +189,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        CultureInfo.InvariantCulture,
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        ModuleName,
-                       JsonSerializer.Serialize(Settings)));
+                       JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.NewPlusSettings)));
         }
 
         private Func<string, int> SendConfigMSG { get; }

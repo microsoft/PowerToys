@@ -17,7 +17,6 @@
                 "PowerToys.FilePreviewCommon.dll",
                 "PowerToys.Interop.dll",
                 "Tools\\PowerToys.BugReportTool.exe",
-                "WebcamReportTool\\PowerToys.WebcamReportTool.exe",
                 "StylesReportTool\\PowerToys.StylesReportTool.exe",
                 "Telemetry.dll",
                 "PowerToys.ManagedTelemetry.dll",
@@ -129,6 +128,7 @@
                 "PowerToys.KeyboardManager.dll",
                 "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
                 "KeyboardManagerEngine\\PowerToys.KeyboardManagerEngine.exe",
+                "PowerToys.KeyboardManagerEditorLibraryWrapper.dll",
 
                 "PowerToys.Launcher.dll",
                 "PowerToys.PowerLauncher.dll",
@@ -181,6 +181,7 @@
 
                 "WinUI3Apps\\PowerToys.NewPlus.ShellExtension.dll",
                 "WinUI3Apps\\NewPlusPackage.msix",
+                "WinUI3Apps\\PowerToys.NewPlus.ShellExtension.win10.dll",
 
                 "PowerAccent.Core.dll",
                 "PowerToys.PowerAccent.dll",
@@ -201,6 +202,7 @@
                 "PowerToys.WorkspacesLauncherUI.exe",
                 "PowerToys.WorkspacesLauncherUI.dll",
                 "PowerToys.WorkspacesModuleInterface.dll",
+                "PowerToys.WorkspacesCsharpLibrary.dll",
 
                 "WinUI3Apps\\PowerToys.RegistryPreviewExt.dll",
                 "WinUI3Apps\\PowerToys.RegistryPreviewUILib.dll",
@@ -210,10 +212,9 @@
                 "PowerToys.ShortcutGuide.exe",
                 "PowerToys.ShortcutGuideModuleInterface.dll",
 
-                "PowerToys.VideoConferenceModule.dll",
-                "PowerToys.VideoConferenceProxyFilter_x86.dll",
-                "PowerToys.VideoConferenceProxyFilter_x64.dll",
-                "PowerToys.VideoConferenceProxyFilter_arm64.dll",
+                "PowerToys.ZoomIt.exe",
+                "PowerToys.ZoomItModuleInterface.dll",
+                "PowerToys.ZoomItSettingsInterop.dll",
 
                 "WinUI3Apps\\PowerToys.Settings.dll",
                 "WinUI3Apps\\PowerToys.Settings.exe"
@@ -321,6 +322,11 @@
                 "WinUI3Apps\\ReverseMarkdown.dll",
                 "WinUI3Apps\\SharpCompress.dll",
                 "WinUI3Apps\\ZstdSharp.dll",
+                "TestableIO.System.IO.Abstractions.dll",
+                "WinUI3Apps\\TestableIO.System.IO.Abstractions.dll",
+                "TestableIO.System.IO.Abstractions.Wrappers.dll",
+                "WinUI3Apps\\TestableIO.System.IO.Abstractions.Wrappers.dll",
+                "WinUI3Apps\\OpenAI.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll",

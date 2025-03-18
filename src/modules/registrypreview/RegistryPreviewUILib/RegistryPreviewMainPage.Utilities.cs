@@ -23,6 +23,7 @@ namespace RegistryPreviewUILib
     public sealed partial class RegistryPreviewMainPage : Page
     {
         private static SemaphoreSlim _dialogSemaphore = new(1);
+        private string lastKeyPath;
 
         public delegate void UpdateWindowTitleFunction(string title);
 
@@ -196,7 +197,7 @@ namespace RegistryPreviewUILib
                 return false;
             }
 
-            // REG files have to start with one of two headers and it's case insensitive
+            // REG files have to start with one of two headers and it's case-insensitive
             registryLine = registryLines[0];
             registryLine = registryLine.ToLowerInvariant();
 
@@ -232,7 +233,7 @@ namespace RegistryPreviewUILib
                 }
                 else if (registryLine.StartsWith("@=", StringComparison.InvariantCulture))
                 {
-                    // This is the a Value called "(Default)" so we tweak the line for the UX
+                    // This is the Value called "(Default)" so we tweak the line for the UX
                     registryLine = registryLine.Replace("@=", "\"(Default)\"=");
                 }
 
@@ -261,6 +262,7 @@ namespace RegistryPreviewUILib
                     registryLine = StripFirstAndLast(registryLine);
 
                     treeViewNode = AddTextToTree(registryLine, imageName);
+                    lastKeyPath = registryLine;
                 }
                 else if (registryLine.StartsWith('"') && registryLine.EndsWith("=-", StringComparison.InvariantCulture))
                 {
@@ -271,7 +273,7 @@ namespace RegistryPreviewUILib
                     registryLine = StripFirstAndLast(registryLine);
 
                     // Create a new listview item that will be used to display the delete value and store it
-                    registryValue = new RegistryValue(registryLine, string.Empty, string.Empty);
+                    registryValue = new RegistryValue(registryLine, string.Empty, string.Empty, lastKeyPath);
                     SetValueToolTip(registryValue);
 
                     // store the ListViewItem, if we have a valid Key to attach to
@@ -310,7 +312,7 @@ namespace RegistryPreviewUILib
                     value = value.Trim();
 
                     // Create a new listview item that will be used to display the value
-                    registryValue = new RegistryValue(name, "REG_SZ", string.Empty);
+                    registryValue = new RegistryValue(name, "REG_SZ", string.Empty, lastKeyPath);
 
                     // if the first character is a " then this is a string value, so find the last most " which will avoid comments
                     if (value.StartsWith('"'))
@@ -553,19 +555,10 @@ namespace RegistryPreviewUILib
                                 var bytes = value.Split(',').Select(
                                     c => c.Length == 2 ? byte.Parse(c, NumberStyles.HexNumber, CultureInfo.InvariantCulture) : throw null).ToArray();
 
-                                if (registryValue.Type == "REG_MULTI_SZ")
-                                {
-                                    // Replace zeros (00,00) with spaces
-                                    for (int i = 0; i < bytes.Length; i += 2)
-                                    {
-                                        if (bytes[i] == 0 && bytes[i + 1] == 0)
-                                        {
-                                            bytes[i] = 0x20;
-                                        }
-                                    }
-                                }
-
                                 value = Encoding.Unicode.GetString(bytes);
+
+                                // Correctly format line breaks and remove trailing line breaks. (GitHub PowerToys #36629)
+                                value = value.Replace('\0', '\r').TrimEnd('\r');
                             }
                             catch
                             {
@@ -974,12 +967,7 @@ namespace RegistryPreviewUILib
         /// </summary>
         private string StripFirstAndLast(string line)
         {
-            if (line.Length > 1)
-            {
-                line = line.Remove(line.Length - 1, 1);
-                line = line.Remove(0, 1);
-            }
-
+            line = ParseHelper.StripFirstAndLast(line);
             return line;
         }
 
@@ -1047,27 +1035,7 @@ namespace RegistryPreviewUILib
         /// </summary>
         private void CheckKeyLineForBrackets(ref string registryLine, ref string imageName)
         {
-            // following the current behavior of the registry editor, find the last ] and treat everything else as ignorable
-            int lastBracket = registryLine.LastIndexOf(']');
-            if (lastBracket == -1)
-            {
-                // since we don't have a last bracket yet, add an extra space and continue processing
-                registryLine += " ";
-                imageName = ERRORIMAGE;
-            }
-            else
-            {
-                // having found the last ] and there is text after it, drop the rest of the string on the floor
-                if (lastBracket < registryLine.Length - 1)
-                {
-                    registryLine = registryLine.Substring(0, lastBracket + 1);
-                }
-
-                if (CheckForKnownGoodBranches(registryLine) == false)
-                {
-                    imageName = ERRORIMAGE;
-                }
-            }
+            ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
         }
 
         /// <summary>
@@ -1084,41 +1052,6 @@ namespace RegistryPreviewUILib
             }
 
             return value.TrimEnd();
-        }
-
-        /// <summary>
-        /// Make sure the root of a full path start with one of the five "hard coded" roots.  Throw an error for the branch if it doesn't.
-        /// </summary>
-        private bool CheckForKnownGoodBranches(string key)
-        {
-            if ((key.StartsWith("[HKEY_CLASSES_ROOT]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_CURRENT_USER]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_USERS]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_LOCAL_MACHINE]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_CURRENT_CONFIG]", StringComparison.InvariantCultureIgnoreCase) == false)
-                &&
-                (key.StartsWith(@"[HKEY_CLASSES_ROOT\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_CURRENT_USER\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_USERS\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_LOCAL_MACHINE\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_CURRENT_CONFIG\", StringComparison.InvariantCultureIgnoreCase) == false)
-                &&
-                (key.StartsWith("[HKCR]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKCU]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKU]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKLM]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKCC]", StringComparison.InvariantCultureIgnoreCase) == false)
-                &&
-                (key.StartsWith(@"[HKCR\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKCU\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKU\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKLM\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKCC\", StringComparison.InvariantCultureIgnoreCase) == false))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>

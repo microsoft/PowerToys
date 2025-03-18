@@ -39,7 +39,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredShortcutGuideEnabledValue();
         static GpoRuleConfigured GetConfiguredTextExtractorEnabledValue();
         static GpoRuleConfigured GetConfiguredAdvancedPasteEnabledValue();
-        static GpoRuleConfigured GetConfiguredVideoConferenceMuteEnabledValue();
+        static GpoRuleConfigured GetConfiguredZoomItEnabledValue();
         static GpoRuleConfigured GetConfiguredPeekEnabledValue();
         static GpoRuleConfigured GetDisableNewUpdateToastValue();
         static GpoRuleConfigured GetDisableAutomaticUpdateDownloadValue();
@@ -56,12 +56,14 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredMwbFileTransferEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbUseOriginalUserInterfaceValue();
         static GpoRuleConfigured GetConfiguredMwbDisallowBlockingScreensaverValue();
+        static GpoRuleConfigured GetConfiguredMwbAllowServiceModeValue();
         static GpoRuleConfigured GetConfiguredMwbSameSubnetOnlyValue();
         static GpoRuleConfigured GetConfiguredMwbValidateRemoteIpValue();
         static GpoRuleConfigured GetConfiguredMwbDisableUserDefinedIpMappingRulesValue();
         static winrt::hstring GPOWrapper::GetConfiguredMwbPolicyDefinedIpMappingRules();
         static GpoRuleConfigured GetConfiguredNewPlusHideTemplateFilenameExtensionValue();
         static GpoRuleConfigured GetAllowDataDiagnosticsValue();
+        static GpoRuleConfigured GetConfiguredRunAtStartupValue();
     };
 }
 

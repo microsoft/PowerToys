@@ -38,6 +38,38 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         return 0;
     }
 
+    std::wstring cmdLineStr{ GetCommandLineW() };
+    auto cmdArgs = split(cmdLineStr, L" ");
+    if (cmdArgs.workspaceId.empty())
+    {
+        Logger::warn("Incorrect command line arguments: no workspace id");
+        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+        return 1;
+    }
+
+    if (!cmdArgs.isRestarted)
+    {
+        // check if restart is needed. Only check it if not yet restarted to avoid endless restarting. Restart is needed if the process is elevated.
+        if (is_process_elevated())
+        {
+            Logger::warn("Workspaces Launcher is elevated, restart");
+
+            constexpr DWORD exe_path_size = 0xFFFF;
+            auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);
+            GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
+
+            const auto modulePath = get_module_folderpath();
+
+            std::string cmdLineStr(cmdline);
+            std::wstring cmdLineWStr(cmdLineStr.begin(), cmdLineStr.end());
+
+            std::wstring cmd = cmdArgs.workspaceId + L" " + std::to_wstring(cmdArgs.invokePoint) + L" " + NonLocalizable::restartedString;
+
+            RunNonElevatedEx(exe_path.get(), cmd, modulePath);
+            return 1;
+        }
+    }
+
     auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
     if (mutex == nullptr)
     {
@@ -48,34 +80,6 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     {
         Logger::warn(L"WorkspacesLauncher instance is already running");
         return 0;
-    }
-
-    std::wstring cmdLineStr{ GetCommandLineW() };
-    auto cmdArgs = split(cmdLineStr, L" ");
-    if (cmdArgs.workspaceId.empty())
-    {
-        Logger::warn("Incorrect command line arguments: no workspace id");
-        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-        return 1;
-    }
-
-    if (is_process_elevated())
-    {
-        Logger::warn("Workspaces Launcher is elevated, restart");
-
-        constexpr DWORD exe_path_size = 0xFFFF;
-        auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);
-        GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
-
-        const auto modulePath = get_module_folderpath();
-
-        std::string cmdLineStr(cmdline);
-        std::wstring cmdLineWStr(cmdLineStr.begin(), cmdLineStr.end());
-
-        std::wstring cmd = cmdArgs.workspaceId + L" " + std::to_wstring(cmdArgs.invokePoint);
-
-        RunNonElevatedEx(exe_path.get(), cmd, modulePath);
-        return 1;
     }
 
     // COM should be initialized before ShellExecuteEx is called.

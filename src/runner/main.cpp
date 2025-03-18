@@ -25,6 +25,7 @@
 #include <common/utils/os-detect.h>
 #include <common/utils/processApi.h>
 #include <common/utils/resources.h>
+#include <common/utils/clean_video_conference.h>
 
 #include "UpdateUtils.h"
 #include "ActionRunnerUtils.h"
@@ -132,7 +133,16 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         } }.detach();
 
         chdir_current_executable();
-        // Load Powertoys DLLs
+
+        // We deprecated a utility called Video Conference Mute, which registered itself as a video input device.
+        // When running elevated, we try to clean up the device registration from previous installations.
+        // This is done here too because a user-scope installer won't be able to remove the driver registration due to lack of permissions.
+        if (isProcessElevated)
+        {
+            clean_video_conference();
+        }
+
+        // Load PowerToys DLLs
 
         std::vector<std::wstring_view> knownModules = {
             L"PowerToys.FancyZonesModuleInterface.dll",
@@ -163,13 +173,8 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.CropAndLockModuleInterface.dll",
             L"PowerToys.CmdNotFoundModuleInterface.dll",
             L"PowerToys.WorkspacesModuleInterface.dll",
+            L"PowerToys.ZoomItModuleInterface.dll",
         };
-        const auto VCM_PATH = L"PowerToys.VideoConferenceModule.dll";
-        if (const auto mf = LoadLibraryA("mf.dll"))
-        {
-            FreeLibrary(mf);
-            knownModules.emplace_back(VCM_PATH);
-        }
 
         for (auto moduleSubdir : knownModules)
         {
@@ -275,6 +280,7 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     const std::wstring_view cant_drag_elevated_disable = L"cant_drag_elevated_disable/";
     const std::wstring_view couldnt_toggle_powerpreview_modules_disable = L"couldnt_toggle_powerpreview_modules_disable/";
     const std::wstring_view open_settings = L"open_settings/";
+    const std::wstring_view open_overview = L"open_overview/";
     const std::wstring_view update_now = L"update_now/";
 
     if (param == cant_drag_elevated_disable)
@@ -294,6 +300,11 @@ toast_notification_handler_result toast_notification_handler(const std::wstring_
     else if (param == open_settings)
     {
         open_menu_from_another_instance(std::nullopt);
+        return toast_notification_handler_result::exit_success;
+    }
+    else if (param == open_overview)
+    {
+        open_menu_from_another_instance("Overview");
         return toast_notification_handler_result::exit_success;
     }
     else

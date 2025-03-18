@@ -159,9 +159,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.RefreshSettingsOnExternalChange();
         }
 
-        private void ViewDiagnosticData_Click(object sender, RoutedEventArgs e)
+        private async void ViewDiagnosticData_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.ViewDiagnosticData();
+            await Task.Run(ViewModel.ViewDiagnosticData);
         }
     }
 }

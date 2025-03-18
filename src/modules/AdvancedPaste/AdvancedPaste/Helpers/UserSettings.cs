@@ -16,12 +16,12 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace AdvancedPaste.Settings
 {
-    internal sealed class UserSettings : IUserSettings, IDisposable
+    internal sealed partial class UserSettings : IUserSettings, IDisposable
     {
         private readonly SettingsUtils _settingsUtils;
         private readonly TaskScheduler _taskScheduler;
         private readonly IFileSystemWatcher _watcher;
-        private readonly object _loadingSettingsLock = new();
+        private readonly Lock _loadingSettingsLock = new();
         private readonly List<PasteFormats> _additionalActions;
         private readonly List<AdvancedPasteCustomAction> _customActions;
 
@@ -33,9 +33,9 @@ namespace AdvancedPaste.Settings
 
         public event EventHandler Changed;
 
-        public bool ShowCustomPreview { get; private set; }
+        public bool IsAdvancedAIEnabled { get; private set; }
 
-        public bool SendPasteKeyCombination { get; private set; }
+        public bool ShowCustomPreview { get; private set; }
 
         public bool CloseAfterLosingFocus { get; private set; }
 
@@ -43,12 +43,12 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
-        public UserSettings()
+        public UserSettings(IFileSystem fileSystem)
         {
-            _settingsUtils = new SettingsUtils();
+            _settingsUtils = new SettingsUtils(fileSystem);
 
+            IsAdvancedAIEnabled = false;
             ShowCustomPreview = true;
-            SendPasteKeyCombination = true;
             CloseAfterLosingFocus = false;
             _additionalActions = [];
             _customActions = [];
@@ -56,7 +56,7 @@ namespace AdvancedPaste.Settings
 
             LoadSettingsFromJson();
 
-            _watcher = Helper.GetFileWatcher(AdvancedPasteModuleName, "settings.json", OnSettingsFileChanged);
+            _watcher = Helper.GetFileWatcher(AdvancedPasteModuleName, "settings.json", OnSettingsFileChanged, fileSystem);
         }
 
         private void OnSettingsFileChanged()
@@ -98,8 +98,8 @@ namespace AdvancedPaste.Settings
                             {
                                 var properties = settings.Properties;
 
+                                IsAdvancedAIEnabled = properties.IsAdvancedAIEnabled;
                                 ShowCustomPreview = properties.ShowCustomPreview;
-                                SendPasteKeyCombination = properties.SendPasteKeyCombination;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
 
                                 var sourceAdditionalActions = properties.AdditionalActions;
@@ -108,7 +108,9 @@ namespace AdvancedPaste.Settings
                                     (PasteFormats.ImageToText, [sourceAdditionalActions.ImageToText]),
                                     (PasteFormats.PasteAsTxtFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsTxtFile]),
                                     (PasteFormats.PasteAsPngFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsPngFile]),
-                                    (PasteFormats.PasteAsHtmlFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsHtmlFile])
+                                    (PasteFormats.PasteAsHtmlFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsHtmlFile]),
+                                    (PasteFormats.TranscodeToMp3, [sourceAdditionalActions.Transcode, sourceAdditionalActions.Transcode.TranscodeToMp3]),
+                                    (PasteFormats.TranscodeToMp4, [sourceAdditionalActions.Transcode, sourceAdditionalActions.Transcode.TranscodeToMp4]),
                                 ];
 
                                 _additionalActions.Clear();
@@ -154,8 +156,8 @@ namespace AdvancedPaste.Settings
             {
                 if (disposing)
                 {
-                    _cancellationTokenSource.Dispose();
-                    _watcher.Dispose();
+                    _cancellationTokenSource?.Dispose();
+                    _watcher?.Dispose();
                 }
 
                 _disposedValue = true;

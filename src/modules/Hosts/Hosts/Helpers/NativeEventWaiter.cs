@@ -14,7 +14,7 @@ namespace Hosts.Helpers
         public static void WaitForEventLoop(string eventName, Action callback)
         {
             var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            new Thread(() =>
+            var t = new Thread(() =>
             {
                 var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
                 while (true)
@@ -24,7 +24,10 @@ namespace Hosts.Helpers
                         dispatcherQueue.TryEnqueue(() => callback());
                     }
                 }
-            }).Start();
+            });
+
+            t.IsBackground = true;
+            t.Start();
         }
     }
 }

@@ -2,11 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using Common;
 using Common.Utilities;
+using Microsoft.PowerToys.PreviewHandler.Svg.Telemetry.Events;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using SvgPreviewHandler;
@@ -139,8 +142,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                 svgData = SvgPreviewHandlerHelper.SwapNamespaces(svgData);
                 svgData = SvgPreviewHandlerHelper.AddStyleSVG(svgData);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = ex.Message });
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
             }
 
             try
@@ -157,6 +167,13 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                 AddWebViewControl(svgData);
                 Resize += FormResized;
                 base.DoPreview(dataSource);
+                try
+                {
+                    PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewed());
+                }
+                catch
+                { // Should not crash if sending telemetry is failing. Ignore the exception.
+                }
             }
             catch (Exception ex)
             {
@@ -284,6 +301,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <param name="dataSource">Stream reference to access source file.</param>
         private void PreviewError<T>(Exception exception, T dataSource)
         {
+            try
+            {
+                PowerToysTelemetry.Log.WriteEvent(new SvgFilePreviewError { Message = exception.Message });
+            }
+            catch
+            { // Should not crash if sending telemetry is failing. Ignore the exception.
+            }
+
             Controls.Clear();
             _infoBarAdded = true;
             AddTextBoxControl(Properties.Resource.SvgNotPreviewedError);

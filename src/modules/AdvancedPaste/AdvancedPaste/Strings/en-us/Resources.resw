@@ -123,9 +123,6 @@
   <data name="ClipboardEmptyWarning" xml:space="preserve">
     <value>Clipboard does not contain any usable formats</value>
   </data>
-  <data name="ClipboardDataNotTextWarning" xml:space="preserve">
-    <value>Clipboard data is not text</value>
-  </data>  
   <data name="OpenAINotConfigured" xml:space="preserve">
     <value>To custom with AI is not enabled</value>
   </data>
@@ -138,11 +135,26 @@
   <data name="OpenAIApiKeyError" xml:space="preserve">
     <value>OpenAI request failed with status code: </value>
   </data>
+  <data name="PasteActionCanceled" xml:space="preserve">
+    <value>The paste operation was canceled</value>
+  </data>
   <data name="PasteError" xml:space="preserve">
     <value>An error occurred during the paste operation</value>
-  </data>  
+  </data>
+  <data name="PasteActionModerated" xml:space="preserve">
+    <value>The paste operation was moderated due to sensitive content. Please try another query.</value>
+  </data>
   <data name="ClipboardHistoryButton.Text" xml:space="preserve">
     <value>Clipboard history</value>
+  </data>
+  <data name="ClipboardHistoryButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Clipboard history</value>
+  </data>
+  <data name="ClipboardHistoryImage" xml:space="preserve">
+    <value>Image data</value>
+  </data>
+  <data name="ClipboardHistoryItemMoreOptionsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More options</value>
   </data>
   <data name="ClipboardHistoryItemDeleteButton.Text" xml:space="preserve">
     <value>Delete</value>
@@ -179,7 +191,19 @@
   </data>
   <data name="PasteAsHtmlFile" xml:space="preserve">
     <value>Paste as .html file</value>
+  </data>
+  <data name="TranscodeToMp3" xml:space="preserve">
+    <value>Transcode to .mp3</value>
   </data>  
+  <data name="TranscodeToMp4" xml:space="preserve">
+    <value>Transcode to .mp4 (H.264/AAC)</value>
+  </data>
+  <data name="TranscodeErrorGeneral" xml:space="preserve">
+    <value>An error occurred while transcoding media file</value>
+  </data>
+  <data name="TranscodeErrorUnsupportedCodec" xml:space="preserve">
+    <value>The media file contains an unsupported codec</value>
+  </data>
   <data name="PasteButtonAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Paste</value>
   </data>
@@ -198,6 +222,9 @@
   <data name="SendBtnToolTip.Text" xml:space="preserve">
     <value>Generate and paste data</value>
   </data>
+  <data name="CancelBtnToolTip.Text" xml:space="preserve">
+    <value>Cancel paste operation</value>
+  </data>
   <data name="RegenerateBtnToolTip.Text" xml:space="preserve">
     <value>Regenerate</value>
   </data>
@@ -207,11 +234,17 @@
   <data name="SendButtonAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Generate and paste data</value>
   </data>
+  <data name="CancelBtnAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Cancel paste operation</value>
+  </data>
   <data name="SettingsBtn.Content" xml:space="preserve">
     <value>Open settings</value>
   </data>
   <data name="SettingsBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Open settings</value>
+  </data>
+  <data name="AIErrorMessage.Header" xml:space="preserve">
+    <value>The AI assistant provided the following message:</value>
   </data>
   <data name="ThumbsDownFeedback.Text" xml:space="preserve">
     <value>Thumbs down feedback</value>
@@ -248,5 +281,5 @@
   </data>
   <data name="PasteAsFile_FilePrefix" xml:space="preserve">
     <value>PowerToys_Paste_</value>
-  </data>  
+  </data>
 </root>

@@ -294,11 +294,12 @@ void UpdateCaptureState(const CommonState& commonState,
                                     cursorPos,
                                     perColorChannelEdgeDetection,
                                     pixelTolerance);
+    auto px2mmRatio = commonState.GetPhysicalPx2MmRatio(window);
 
 #if defined(DEBUG_EDGES)
     char buffer[256];
     sprintf_s(buffer,
-              "Cursor: [%ld,%ld] Bounds: [%ld,%ld]-[%ld,%ld] Screen size: [%zu, %zu]\n",
+              "Cursor: [%ld,%ld] Bounds: [%ld,%ld]-[%ld,%ld] Screen size: [%zu, %zu] Ratio: %g\n",
               cursorPos.x,
               cursorPos.y,
               bounds.left,
@@ -306,11 +307,12 @@ void UpdateCaptureState(const CommonState& commonState,
               bounds.right,
               bounds.bottom,
               textureView.view.width,
-              textureView.view.height);
+              textureView.view.height,
+              px2mmRatio);
     OutputDebugStringA(buffer);
 #endif
     state.Access([&](MeasureToolState& state) {
-        state.perScreen[window].measuredEdges = Measurement{ bounds };
+        state.perScreen[window].measuredEdges = Measurement{ bounds, px2mmRatio };
     });
 }
 

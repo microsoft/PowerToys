@@ -13,6 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -29,6 +30,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Win32;
@@ -37,7 +39,7 @@ using Windows.System.Profile;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class GeneralViewModel : Observable
+    public partial class GeneralViewModel : Observable
     {
         private static readonly object LockObject = new object();
         private static bool isBugReportThreadRunning;
@@ -48,7 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
 
-        public object ResourceLoader { get; set; }
+        public Windows.ApplicationModel.Resources.ResourceLoader ResourceLoader { get; set; }
 
         private Action HideBackupAndRestoreMessageAreaAction { get; set; }
 
@@ -86,7 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private SettingsBackupAndRestoreUtils settingsBackupAndRestoreUtils = SettingsBackupAndRestoreUtils.Instance;
 
-        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, Func<Task<string>> pickSingleFolderDialog = null, object resourceLoader = null)
+        public GeneralViewModel(ISettingsRepository<GeneralSettings> settingsRepository, string runAsAdminText, string runAsUserText, bool isElevated, bool isAdmin, Func<string, int> ipcMSGCallBackFunc, Func<string, int> ipcMSGRestartAsAdminMSGCallBackFunc, Func<string, int> ipcMSGCheckForUpdatesCallBackFunc, string configFileSubfolder = "", Action dispatcherAction = null, Action hideBackupAndRestoreMessageAreaAction = null, Action<int> doBackupAndRestoreDryRun = null, Func<Task<string>> pickSingleFolderDialog = null, Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = null)
         {
             CheckForUpdatesEventHandler = new ButtonClickCommand(CheckForUpdatesClick);
             RestartElevatedButtonEventHandler = new ButtonClickCommand(RestartElevated);
@@ -138,7 +140,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _isDevBuild = Helper.GetProductVersion() == "v0.0.1";
 
-            _startup = GeneralSettingsConfig.Startup;
+            _runAtStartupGpoRuleConfiguration = GPOWrapper.GetConfiguredRunAtStartupValue();
+            if (_runAtStartupGpoRuleConfiguration == GpoRuleConfigured.Disabled || _runAtStartupGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _runAtStartupIsGPOConfigured = true;
+                _startup = _runAtStartupGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                _startup = GeneralSettingsConfig.Startup;
+            }
+
             _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
@@ -185,6 +198,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             string etwDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\etw");
             DeleteDiagnosticDataOlderThan28Days(etwDirPath);
 
+            string localLowEtwDirPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw");
+            DeleteDiagnosticDataOlderThan28Days(localLowEtwDirPath);
+
             InitializeLanguages();
         }
 
@@ -218,6 +234,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static bool _isDevBuild;
         private bool _startup;
+        private GpoRuleConfigured _runAtStartupGpoRuleConfiguration;
+        private bool _runAtStartupIsGPOConfigured;
         private bool _isElevated;
         private bool _runElevated;
         private bool _isAdmin;
@@ -576,6 +594,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
+                if (_runAtStartupIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
                 if (_startup != value)
                 {
                     _startup = value;
@@ -847,6 +871,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsDataDiagnosticsGPOManaged
         {
             get => _enableDataDiagnosticsIsGpoDisallowed;
+        }
+
+        public bool IsRunAtStartupGPOManaged
+        {
+            get => _runAtStartupIsGPOConfigured;
         }
 
         public string SettingsBackupAndRestoreDir
@@ -1376,11 +1405,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (ResourceLoader != null)
             {
-                var type = ResourceLoader.GetType();
-                MethodInfo methodInfo = type.GetMethod("GetString");
-                object classInstance = Activator.CreateInstance(type, null);
-                object[] parametersArray = new object[] { resource };
-                var result = (string)methodInfo.Invoke(ResourceLoader, parametersArray);
+                var result = ResourceLoader.GetString(resource);
                 if (string.IsNullOrEmpty(result))
                 {
                     return resource.ToUpperInvariant() + "!!!";
@@ -1430,7 +1455,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsCustomAction customaction = new GeneralSettingsCustomAction(outsettings);
 
             var dataToSend = customaction.ToString();
-            dataToSend = JsonSerializer.Serialize(new { action = new { general = new { action_name = "restart_maintain_elevation" } } });
+            dataToSend = JsonSerializer.Serialize(ActionMessage.Create("restart_maintain_elevation"), SourceGenerationContextContext.Default.ActionMessage);
             SendRestartAsAdminConfigMSG(dataToSend);
         }
 
@@ -1581,7 +1606,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void ViewDiagnosticData()
         {
+            string localLowEtwDirPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), "AppData", "LocalLow", "Microsoft", "PowerToys", "etw");
             string etwDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft\\PowerToys\\etw");
+
+            if (Directory.Exists(localLowEtwDirPath))
+            {
+                if (!Directory.Exists(etwDirPath))
+                {
+                    Directory.CreateDirectory(etwDirPath);
+                }
+
+                string[] localLowEtlFiles = Directory.GetFiles(localLowEtwDirPath, "*.etl");
+
+                foreach (string file in localLowEtlFiles)
+                {
+                    string fileName = Path.GetFileName(file);
+                    string destFile = Path.Combine(etwDirPath, fileName);
+
+                    try
+                    {
+                        File.Copy(file, destFile, overwrite: true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to copy etl file: {fileName}. Error: {ex.Message}");
+                    }
+                }
+            }
+
             string tracerptPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "system32");
 
             ETLConverter converter = new ETLConverter(etwDirPath, tracerptPath);

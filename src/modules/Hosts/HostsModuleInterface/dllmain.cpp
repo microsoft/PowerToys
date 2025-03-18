@@ -216,6 +216,12 @@ public:
             m_hShowAdminEvent = nullptr;
         }
 
+        if (m_hTerminateEvent)
+        {
+            CloseHandle(m_hTerminateEvent);
+            m_hTerminateEvent = nullptr;
+        }
+
         delete this;
     }
 
@@ -280,6 +286,7 @@ public:
             SetEvent(m_hTerminateEvent);
             WaitForSingleObject(m_hProcess, 1500);
             TerminateProcess(m_hProcess, 1);
+            ResetEvent(m_hTerminateEvent);
         }
 
         m_enabled = false;

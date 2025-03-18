@@ -3,6 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace RegistryPreviewUILib
 {
@@ -17,11 +21,15 @@ namespace RegistryPreviewUILib
         private static Uri uriDeleteValue = new Uri("ms-appx:///Assets/RegistryPreview/deleted-value32.png");
         private static Uri uriErrorValue = new Uri("ms-appx:///Assets/RegistryPreview/error32.png");
 
+        public string Key { get; set; }
+
         public string Name { get; set; }
 
         public string Type { get; set; }
 
         public string Value { get; set; }
+
+        public string ValueOneLine => Value.Replace('\r', ' ');
 
         public string ToolTipText { get; set; }
 
@@ -46,12 +54,49 @@ namespace RegistryPreviewUILib
             }
         }
 
-        public RegistryValue(string name, string type, string value)
+        public RegistryValue(string name, string type, string value, string key)
         {
             this.Name = name;
             this.Type = type;
             this.Value = value;
             this.ToolTipText = string.Empty;
+            this.Key = key;
+        }
+
+        // Commands
+        public ICommand CopyToClipboardEntry_Click => new RelayCommand(CopyToClipboardEntry);
+
+        public ICommand CopyToClipboardWithPath_Click => new RelayCommand(CopyToClipboardEntryWithPath);
+
+        public ICommand CopyToClipboardName_Click => new RelayCommand(CopyToClipboardName);
+
+        public ICommand CopyToClipboardType_Click => new RelayCommand(CopyToClipboardType);
+
+        public ICommand CopyToClipboardData_Click => new RelayCommand(CopyToClipboardData);
+
+        private void CopyToClipboardEntry()
+        {
+            ClipboardHelper.CopyToClipboardAction($"{Name}\r\n{Type}\r\n{Value}");
+        }
+
+        private void CopyToClipboardEntryWithPath()
+        {
+            ClipboardHelper.CopyToClipboardAction($"{Key}\r\n{Name}\r\n{Type}\r\n{Value}");
+        }
+
+        private void CopyToClipboardName()
+        {
+            ClipboardHelper.CopyToClipboardAction(Name);
+        }
+
+        private void CopyToClipboardType()
+        {
+            ClipboardHelper.CopyToClipboardAction(Type);
+        }
+
+        private void CopyToClipboardData()
+        {
+            ClipboardHelper.CopyToClipboardAction(Value);
         }
     }
 }

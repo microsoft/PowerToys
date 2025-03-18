@@ -27,6 +27,9 @@ using MouseWithoutBorders.Core;
 #endif
 
 using SystemClipboard = System.Windows.Forms.Clipboard;
+#if !MM_HELPER
+using Thread = MouseWithoutBorders.Core.Thread;
+#endif
 
 namespace MouseWithoutBorders
 {
@@ -151,7 +154,7 @@ namespace MouseWithoutBorders
 
         public void SendDragFile(string fileName)
         {
-            Common.DragDropStep05Ex(fileName);
+            DragDrop.DragDropStep05Ex(fileName);
         }
 
         public void SendClipboardData(ByteArrayOrString data, bool isFilePath)

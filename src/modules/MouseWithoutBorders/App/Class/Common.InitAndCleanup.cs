@@ -23,6 +23,8 @@ using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Form;
 using Windows.UI.Input.Preview.Injection;
 
+using Thread = MouseWithoutBorders.Core.Thread;
+
 namespace MouseWithoutBorders
 {
     internal partial class Common
@@ -44,7 +46,7 @@ namespace MouseWithoutBorders
         internal static void UpdateMachineTimeAndID()
         {
             Common.MachineName = Common.MachineName.Trim();
-            _ = Common.MachinePool.TryUpdateMachineID(Common.MachineName, Common.MachineID, true);
+            _ = MachineStuff.MachinePool.TryUpdateMachineID(Common.MachineName, Common.MachineID, true);
         }
 
         private static void InitializeMachinePoolFromSettings()
@@ -57,13 +59,13 @@ namespace MouseWithoutBorders
                     info[i].Name = info[i].Name.Trim();
                 }
 
-                Common.MachinePool.Initialize(info);
-                Common.MachinePool.ResetIPAddressesForDeadMachines(true);
+                MachineStuff.MachinePool.Initialize(info);
+                MachineStuff.MachinePool.ResetIPAddressesForDeadMachines(true);
             }
             catch (Exception ex)
             {
                 Logger.Log(ex);
-                Common.MachinePool.Clear();
+                MachineStuff.MachinePool.Clear();
             }
         }
 
@@ -72,16 +74,16 @@ namespace MouseWithoutBorders
             try
             {
                 GetMachineName();
-                DesMachineID = NewDesMachineID = MachineID;
+                DesMachineID = MachineStuff.NewDesMachineID = MachineID;
 
                 // MessageBox.Show(machineID.ToString(CultureInfo.CurrentCulture)); // For test
                 InitializeMachinePoolFromSettings();
 
                 Common.MachineName = Common.MachineName.Trim();
-                _ = Common.MachinePool.LearnMachine(Common.MachineName);
-                _ = Common.MachinePool.TryUpdateMachineID(Common.MachineName, Common.MachineID, true);
+                _ = MachineStuff.MachinePool.LearnMachine(Common.MachineName);
+                _ = MachineStuff.MachinePool.TryUpdateMachineID(Common.MachineName, Common.MachineID, true);
 
-                Common.UpdateMachinePoolStringSetting();
+                MachineStuff.UpdateMachinePoolStringSetting();
             }
             catch (Exception e)
             {
@@ -91,7 +93,7 @@ namespace MouseWithoutBorders
 
         internal static void Init()
         {
-            _ = Common.GetUserName();
+            _ = Helper.GetUserName();
             Common.GeneratedKey = true;
 
             try
@@ -146,13 +148,13 @@ namespace MouseWithoutBorders
 
         private static void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
-            Common.WndProcCounter++;
+            Helper.WndProcCounter++;
 
             if (e.Mode is PowerModes.Resume or PowerModes.Suspend)
             {
                 Logger.TelemetryLogTrace($"{nameof(SystemEvents_PowerModeChanged)}: {e.Mode}", SeverityLevel.Information);
                 LastResumeSuspendTime = DateTime.UtcNow;
-                SwitchToMultipleMode(false, true);
+                MachineStuff.SwitchToMultipleMode(false, true);
             }
         }
 
@@ -165,21 +167,21 @@ namespace MouseWithoutBorders
             watchDogThread.Start();
             */
 
-            helper = new Thread(new ThreadStart(HelperThread), "Helper Thread");
+            helper = new Thread(new ThreadStart(Helper.HelperThread), "Helper Thread");
             helper.SetApartmentState(ApartmentState.STA);
             helper.Start();
         }
 
         private static void AskHelperThreadsToExit(int waitTime)
         {
-            signalHelperToExit = true;
-            signalWatchDogToExit = true;
+            Helper.signalHelperToExit = true;
+            Helper.signalWatchDogToExit = true;
             _ = EvSwitch.Set();
 
             int c = 0;
             if (helper != null && c < waitTime)
             {
-                while (signalHelperToExit)
+                while (Helper.signalHelperToExit)
                 {
                     Thread.Sleep(1);
                 }
@@ -249,7 +251,7 @@ namespace MouseWithoutBorders
         private static void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
             Logger.LogDebug("NetworkAvailabilityEventArgs.IsAvailable: " + e.IsAvailable.ToString(CultureInfo.InvariantCulture));
-            Common.WndProcCounter++;
+            Helper.WndProcCounter++;
             ScheduleReopenSocketsDueToNetworkChanges(!e.IsAvailable);
         }
 

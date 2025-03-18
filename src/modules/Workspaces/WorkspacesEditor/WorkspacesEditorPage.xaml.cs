@@ -185,20 +185,6 @@ namespace WorkspacesEditor
             application.CommandLineTextChanged(textBox.Text);
         }
 
-        private void MaximizedChecked(object sender, RoutedEventArgs e)
-        {
-            CheckBox checkBox = sender as CheckBox;
-            Models.Application application = checkBox.DataContext as Models.Application;
-            application.MaximizedChecked();
-        }
-
-        private void MinimizedChecked(object sender, RoutedEventArgs e)
-        {
-            CheckBox checkBox = sender as CheckBox;
-            Models.Application application = checkBox.DataContext as Models.Application;
-            application.MinimizedChecked();
-        }
-
         private void LaunchEditButtonClicked(object sender, RoutedEventArgs e)
         {
             Button button = sender as Button;

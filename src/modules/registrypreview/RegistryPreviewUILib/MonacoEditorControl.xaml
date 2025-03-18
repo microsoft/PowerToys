@@ -31,5 +31,10 @@
                 VerticalAlignment="Stretch"
                 Loaded="Browser_Loaded" />
         </Border>
+        <ContentDialog
+            x:Name="OpenUriDialog"
+            x:Uid="OpenUriDialog"
+            PrimaryButtonStyle="{ThemeResource AccentButtonStyle}"
+            SecondaryButtonClick="OpenUriDialog_SecondaryButtonClick" />
     </Grid>
 </UserControl>

@@ -32,12 +32,17 @@ using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Exceptions;
 
 using SystemClipboard = System.Windows.Forms.Clipboard;
+using Thread = MouseWithoutBorders.Core.Thread;
 
 namespace MouseWithoutBorders
 {
     internal partial class Common
     {
-        private const uint BIG_CLIPBOARD_DATA_TIMEOUT = 30000;
+        internal static readonly char[] Comma = new char[] { ',' };
+        internal static readonly char[] Star = new char[] { '*' };
+        internal static readonly char[] NullSeparator = new char[] { '\0' };
+
+        internal const uint BIG_CLIPBOARD_DATA_TIMEOUT = 30000;
         private const uint MAX_CLIPBOARD_DATA_SIZE_CAN_BE_SENT_INSTANTLY_TCP = 1024 * 1024; // 1MB
         private const uint MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT = 100 * 1024 * 1024; // 100MB
         private const int TEXT_HEADER_SIZE = 12;
@@ -46,11 +51,9 @@ namespace MouseWithoutBorders
         private static long lastClipboardEventTime;
         private static string lastMachineWithClipboardData;
         private static string lastDragDropFile;
-        private static long clipboardCopiedTime;
-
-        internal static readonly char[] Comma = new char[] { ',' };
-        internal static readonly char[] Star = new char[] { '*' };
-        internal static readonly char[] NullSeparator = new char[] { '\0' };
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static long clipboardCopiedTime;
+#pragma warning restore SA1307
 
         internal static ID LastIDWithClipboardData { get; set; }
 
@@ -150,7 +153,7 @@ namespace MouseWithoutBorders
 
                         string filePath = stringData;
 
-                        _ = Common.ImpersonateLoggedOnUserAndDoSomething(() =>
+                        _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                         {
                             if (File.Exists(filePath) || Directory.Exists(filePath))
                             {
@@ -259,6 +262,10 @@ namespace MouseWithoutBorders
 
             new Task(() =>
             {
+                // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+                // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+                using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                 System.Threading.Thread thread = Thread.CurrentThread;
                 thread.Name = $"{nameof(SendClipboardDataUsingTCP)}.{thread.ManagedThreadId}";
                 Thread.UpdateThreads(thread);
@@ -332,7 +339,7 @@ namespace MouseWithoutBorders
                             break;
 
                         default:
-                            ProcessPackage(data, tcp);
+                            Receiver.ProcessPackage(data, tcp);
                             if (++unexpectedCount > 100)
                             {
                                 Logger.Log("ReceiveClipboardDataUsingTCP: unexpectedCount > 100!");
@@ -368,7 +375,7 @@ namespace MouseWithoutBorders
             }
         }
 
-        private static readonly object ClipboardThreadOldLock = new();
+        private static readonly Lock ClipboardThreadOldLock = new();
         private static System.Threading.Thread clipboardThreadOld;
 
         internal static void GetRemoteClipboard(string postAction)
@@ -383,6 +390,10 @@ namespace MouseWithoutBorders
 
                 new Task(() =>
                 {
+                    // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+                    // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+                    using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                     System.Threading.Thread thread = Thread.CurrentThread;
                     thread.Name = $"{nameof(ConnectAndGetData)}.{thread.ManagedThreadId}";
                     Thread.UpdateThreads(thread);
@@ -420,7 +431,7 @@ namespace MouseWithoutBorders
                 if (!IsConnectedByAClientSocketTo(remoteMachine))
                 {
                     Logger.Log($"No potential inbound connection from {MachineName} to {remoteMachine}, ask for a push back instead.");
-                    ID machineId = MachinePool.ResolveID(remoteMachine);
+                    ID machineId = MachineStuff.MachinePool.ResolveID(remoteMachine);
 
                     if (machineId != ID.NONE)
                     {
@@ -568,7 +579,7 @@ namespace MouseWithoutBorders
                 {
                     if (postAct.Equals("desktop", StringComparison.OrdinalIgnoreCase))
                     {
-                        _ = ImpersonateLoggedOnUserAndDoSomething(() =>
+                        _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                         {
                             savingFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\MouseWithoutBorders\\";
 
@@ -685,7 +696,7 @@ namespace MouseWithoutBorders
                                 Path.GetFileName(fileName),
                                 remoteMachine);
 
-                            _ = ImpersonateLoggedOnUserAndDoSomething(() =>
+                            _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                             {
                                 ProcessStartInfo startInfo = new();
                                 startInfo.UseShellExecute = true;
@@ -829,7 +840,7 @@ namespace MouseWithoutBorders
 
                         Logger.LogDebug($"{nameof(ShakeHand)}: Connection from {name}:{package.Src}");
 
-                        if (Common.MachinePool.ResolveID(name) == package.Src && Common.IsConnectedTo(package.Src))
+                        if (MachineStuff.MachinePool.ResolveID(name) == package.Src && Common.IsConnectedTo(package.Src))
                         {
                             clientPushData = package.Type == PackageType.ClipboardPush;
                             postAction = package.PostAction;
