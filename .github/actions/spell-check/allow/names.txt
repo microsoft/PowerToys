@@ -89,12 +89,14 @@ Hemmerlein
 hlaueriksson
 Horvalds
 Howett
+hotkidfamily
 htcfreek
 Huynh
 Ionut
 jamrobot
 Jaswal
 jefflord
+Jeremic
 Jordi
 jyuwono
 kai
@@ -210,6 +212,7 @@ openai
 Quickime
 regedit
 roslyn
+Skia
 Spotify
 Vanara
 WEX
