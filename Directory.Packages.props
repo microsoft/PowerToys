@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <MSTestVersion>3.9.0-preview.25124.5</MSTestVersion>
+    <MSTestVersion>3.8.3</MSTestVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
