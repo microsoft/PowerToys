@@ -3,13 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using AdvancedPaste.Telemetry;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using RegistryPreview.Telemetry;
 using RegistryPreviewUILib;
 using Windows.Data.Json;
 using Windows.Graphics;

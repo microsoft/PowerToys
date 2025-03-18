@@ -9,9 +9,8 @@ using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
-
-using AdvancedPaste.Telemetry;
 using Common.UI;
+using FancyZoneEditor.Telemetry;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;

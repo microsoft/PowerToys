@@ -6,11 +6,10 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
-using AdvancedPaste.Telemetry;
-
 using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using WorkspacesEditor.Telemetry;
 using WorkspacesEditor.Utils;
 using WorkspacesEditor.ViewModels;
 

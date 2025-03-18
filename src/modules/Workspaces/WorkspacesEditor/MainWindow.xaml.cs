@@ -8,9 +8,9 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
-using AdvancedPaste.Telemetry;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using WorkspacesEditor.Telemetry;
 using WorkspacesEditor.Utils;
 using WorkspacesEditor.ViewModels;
 

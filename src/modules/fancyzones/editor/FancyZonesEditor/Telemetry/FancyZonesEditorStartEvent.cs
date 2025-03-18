@@ -7,7 +7,7 @@ using System.Diagnostics.Tracing;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
-namespace AdvancedPaste.Telemetry;
+namespace FancyZoneEditor.Telemetry;
 
 [EventData]
 public class FancyZonesEditorStartEvent() : EventBase, IEvent

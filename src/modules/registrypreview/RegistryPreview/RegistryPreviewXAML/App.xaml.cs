@@ -4,11 +4,11 @@
 
 using System;
 using System.Web;
-using AdvancedPaste.Telemetry;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
+using RegistryPreview.Telemetry;
 using Windows.ApplicationModel.Activation;
 
 // To learn more about WinUI, the WinUI project structure,

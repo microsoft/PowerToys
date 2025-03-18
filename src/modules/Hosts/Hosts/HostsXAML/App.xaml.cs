@@ -5,8 +5,9 @@
 using System;
 using System.IO.Abstractions;
 using System.Threading;
-using AdvancedPaste.Telemetry;
+
 using Common.UI;
+using HostsEditor.Telemetry;
 using HostsUILib.Helpers;
 using HostsUILib.Settings;
 using HostsUILib.ViewModels;

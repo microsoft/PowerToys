@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using AdvancedPaste.Telemetry;
 using Hosts.Helpers;
+using HostsEditor.Telemetry;
 using HostsUILib.Helpers;
 using HostsUILib.Views;
 using ManagedCommon;

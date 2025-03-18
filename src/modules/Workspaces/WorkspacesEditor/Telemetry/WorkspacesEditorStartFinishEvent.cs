@@ -7,7 +7,7 @@ using System.Diagnostics.Tracing;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
-namespace AdvancedPaste.Telemetry;
+namespace WorkspacesEditor.Telemetry;
 
 [EventData]
 public class WorkspacesEditorStartFinishEvent() : EventBase, IEvent

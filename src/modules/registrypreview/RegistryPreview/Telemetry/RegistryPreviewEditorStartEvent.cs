@@ -7,7 +7,7 @@ using System.Diagnostics.Tracing;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
-namespace AdvancedPaste.Telemetry;
+namespace RegistryPreview.Telemetry;
 
 [EventData]
 public class RegistryPreviewEditorStartEvent() : EventBase, IEvent
