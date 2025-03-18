@@ -86,6 +86,7 @@ namespace powertoys_gpo {
     const std::wstring POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES = L"MwbDisableUserDefinedIpMappingRules";
     const std::wstring POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES = L"MwbPolicyDefinedIpMappingRules";
     const std::wstring POLICY_NEW_PLUS_HIDE_TEMPLATE_FILENAME_EXTENSION = L"NewPlusHideTemplateFilenameExtension";
+    const std::wstring POLICY_NEW_PLUS_REPLACE_VARIABLES = L"NewPlusReplaceVariablesInTemplateFilenames";
 
     // Methods used for reading the registry
 #pragma region ReadRegistryMethods
@@ -609,5 +610,11 @@ namespace powertoys_gpo {
     {
         return getConfiguredValue(POLICY_NEW_PLUS_HIDE_TEMPLATE_FILENAME_EXTENSION);
     }
+
+    inline gpo_rule_configured_t getConfiguredNewPlusReplaceVariablesValue()
+    {
+        return getConfiguredValue(POLICY_NEW_PLUS_REPLACE_VARIABLES);
+    }
+    
 #pragma endregion IndividualModuleSettingPolicies
 }
