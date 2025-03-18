@@ -1,0 +1,56 @@
+parameters:
+  - name: versionNumber
+    type: string
+    default: 1.6
+  - name: useExperimentalVersion
+    type: boolean
+    default: false
+
+steps:
+- task: NuGetAuthenticate@1
+  displayName: 'NuGet Authenticate'
+
+- task: PowerShell@2
+  displayName: Update WinAppSDK Versions
+  inputs:
+    filePath: '$(build.sourcesdirectory)\.pipelines\UpdateVersions.ps1'
+    arguments: >
+      -winAppSdkVersionNumber ${{ parameters.versionNumber }}
+      -useExperimentalVersion $${{ parameters.useExperimentalVersion }}
+
+- script: echo $(WinAppSDKVersion)
+  displayName: 'Display WinAppSDK Version Found'
+
+- task: DownloadPipelineArtifact@2
+  displayName: 'Download WindowsAppSDK'
+  inputs:
+    buildType: 'specific'
+    project: '55e8140e-57ac-4e5f-8f9c-c7c15b51929d'
+    definition: '104083'
+    buildVersionToDownload: 'latestFromBranch'
+    branchName: 'refs/heads/release/${{ parameters.versionNumber }}-stable'
+    artifactName: 'WindowsAppSDK_Nuget_And_MSIX'
+    targetPath: '$(Build.SourcesDirectory)\localpackages'
+
+- script: dir $(Build.SourcesDirectory)\localpackages\NugetPackages
+  displayName: 'List downloaded packages'
+
+- task: NuGetCommand@2
+  displayName: 'Install WindowsAppSDK'
+  inputs:
+    command: 'custom'
+    arguments: >
+      install "Microsoft.WindowsAppSDK"
+      -Source "$(Build.SourcesDirectory)\localpackages\NugetPackages"
+      -Version "$(WinAppSDKVersion)"
+      -OutputDirectory "$(Build.SourcesDirectory)\localpackages\output"
+      -FallbackSource "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json"
+
+- task: NuGetCommand@2
+  displayName: 'Restore NuGet packages'
+  inputs:
+    command: 'restore'
+    feedsToUse: 'config'
+    nugetConfigPath: '$(build.sourcesdirectory)\nuget.config'
+    restoreSolution: '$(build.sourcesdirectory)\**\*.sln'
+    includeNuGetOrg: false

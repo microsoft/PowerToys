@@ -24,6 +24,12 @@ namespace MeasureToolUI
         {
             Logger.InitializeLogger("\\Measure Tool\\MeasureToolUI\\Logs");
 
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             this.InitializeComponent();
         }
 

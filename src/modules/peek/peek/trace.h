@@ -1,12 +1,11 @@
 #pragma once
 #include <interface/powertoy_module_interface.h>
 
-class Trace
+#include <common/Telemetry/TraceBase.h>
+
+class Trace : public telemetry::TraceBase
 {
 public:
-    static void RegisterProvider();
-    static void UnregisterProvider();
-
     // Log if the user has Peek enabled or disabled
     static void EnablePeek(const bool enabled) noexcept;
 

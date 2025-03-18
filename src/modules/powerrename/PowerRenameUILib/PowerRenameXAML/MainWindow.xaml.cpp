@@ -12,6 +12,8 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/process_path.h>
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 #include <atlstr.h>
 #include <exception>
 #include <string>
@@ -43,7 +45,7 @@ HWND CurrentWindow;
 void handleTheme()
 {
     auto theme = theme_listener.AppTheme;
-    auto isDark = theme == AppTheme::Dark;
+    auto isDark = theme == Theme::Dark;
     Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
     ThemeHelpers::SetImmersiveDarkMode(CurrentWindow, isDark);
 }
@@ -104,6 +106,8 @@ namespace winrt::PowerRenameUI::implementation
     MainWindow::MainWindow() :
         m_allSelected{ true }, m_managerEvents{ this }
     {
+        Trace::RegisterProvider();
+
         auto windowNative{ this->try_as<::IWindowNative>() };
         winrt::check_bool(windowNative);
         windowNative->get_WindowHandle(&m_window);
@@ -166,12 +170,17 @@ namespace winrt::PowerRenameUI::implementation
         auto factory = winrt::get_activation_factory<ResourceManager, IResourceManagerFactory>();
         ResourceManager manager = factory.CreateInstance(L"PowerToys.PowerRename.pri");
 
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"^", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_StartOfString").ValueAsString()));
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"$", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_EndOfString").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L".", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchAny").ValueAsString()));
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"+", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_OneOrMore").ValueAsString()));
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"?", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_ZeroOrOne").ValueAsString()));
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"*", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_ZeroOrMore").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\d", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchDigit").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\D", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchNonDigit").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\w", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchWordChar").ValueAsString()));
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\s", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchWS").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\S", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchNonWS").ValueAsString()));
-        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\S+", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchOneOrMoreWS").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\b", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchWordBoundary").ValueAsString()));
 
         m_dateTimeShortcuts = winrt::single_threaded_observable_vector<PowerRenameUI::PatternSnippet>();
@@ -210,6 +219,8 @@ namespace winrt::PowerRenameUI::implementation
         m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${ruuidv4}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Uuid").ValueAsString()));
 
         InitializeComponent();
+
+        m_etwTrace.UpdateState(true);
 
         listView_ExplorerItems().ApplyTemplate();
 #ifdef ENABLE_RECYCLING_VIRTUALIZATION_MODE
@@ -313,6 +324,11 @@ namespace winrt::PowerRenameUI::implementation
         {
             LastRunSettingsInstance().UpdateLastWindowSize(m_updatedWindowSize->first, m_updatedWindowSize->second);
         }
+
+        m_etwTrace.Flush();
+        m_etwTrace.UpdateState(false);
+
+        Trace::UnregisterProvider();
     }
 
     void MainWindow::InvalidateItemListViewState()

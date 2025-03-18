@@ -1,0 +1,119 @@
+trigger: none
+pr: none
+
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+# Expose all of these parameters for user configuration.
+parameters:
+  - name: publishSymbolsToPublic
+    displayName: "Publish Symbols to **PUBLIC** (use only for Final Builds)"
+    type: boolean
+    default: false
+
+  - name: versionNumber
+    displayName: "Version Number"
+    type: string
+    default: '0.0.1'
+
+  - name: buildConfigurations
+    displayName: "Build Configurations"
+    type: object
+    default:
+      - Release
+
+  - name: buildPlatforms
+    displayName: "Build Platforms"
+    type: object
+    default:
+      - x64
+      - arm64
+
+  - name: useVSPreview
+    type: boolean
+    displayName: "Build Using Visual Studio Preview"
+    default: false
+
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    customBuildTags:
+    - 1ES.PT.ViaStartRight
+    pool:
+      name: SHINE-INT-S
+      ${{ if eq(parameters.useVSPreview, true) }}:
+        demands: ImageOverride -equals SHINE-VS17-Preview
+      ${{ else }}:
+        image: SHINE-VS17-Latest
+      os: windows
+    sdl:
+      tsa:
+        enabled: true
+        configFile: '$(Build.SourcesDirectory)\.pipelines\tsa.json'
+
+    stages:
+      - stage: Build
+        displayName: Build
+        dependsOn: []
+        jobs:
+          - template: .pipelines/v2/templates/job-build-project.yml@self
+            parameters:
+              pool:
+                name: SHINE-INT-L
+                ${{ if eq(parameters.useVSPreview, true) }}:
+                  demands: ImageOverride -equals SHINE-VS17-Preview
+                ${{ else }}:
+                  image: SHINE-VS17-Latest
+                os: windows
+              variables:
+                IsPipeline: 1 # The installer uses this to detect whether it should pick up localizations
+                SkipCppCodeAnalysis: 1 # Skip the code analysis to speed up release CI. It runs on PR CI, anyway
+                # IsExperimentationLive: 1 # The build and installer use this to turn on experimentation
+              buildPlatforms: ${{ parameters.buildPlatforms }}
+              buildConfigurations: ${{ parameters.buildConfigurations }}
+              versionNumber: ${{ parameters.versionNumber }}
+              publishArtifacts: false # 1ES PT handles publication for us.
+              codeSign: true
+              runTests: false
+              signingIdentity:
+                serviceName: $(SigningServiceName)
+                appId: $(SigningAppId)
+                tenantId: $(SigningTenantId)
+                akvName: $(SigningAKVName)
+                authCertName: $(SigningAuthCertName)
+                signCertName: $(SigningSignCertName)
+                useManagedIdentity: $(SigningUseManagedIdentity)
+                clientId: $(SigningOriginalClientId)
+              # Have msbuild use the release nuget config profile
+              additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
+              beforeBuildSteps:
+                # Sets versions for all PowerToy created DLLs
+                - pwsh: |-
+                    .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
+                  displayName: Prepare versioning
+
+                # Prepare the localizations and telemetry config before the release build
+                - template: .pipelines/v2/templates/steps-fetch-and-prepare-localizations.yml@self
+
+                - script: |
+                    call nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config || exit /b 1
+                    move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
+                    move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
+                  displayName: Emplace telemetry files
+
+      - stage: Publish
+        displayName: Publish
+        dependsOn: [Build]
+        jobs:
+          - template: .pipelines/v2/templates/job-publish-symbols-using-symbolrequestprod-api.yml@self
+            parameters:
+              versionNumber: ${{ parameters.versionNumber }}
+              includePublicSymbolServer: ${{ parameters.publishSymbolsToPublic }}
+              subscription: $(SymbolPublishingServiceConnection)
+              symbolProject: $(SymbolPublishingProject)

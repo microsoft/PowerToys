@@ -53,13 +53,14 @@ namespace powertoys_gpo {
     const std::wstring POLICY_CONFIGURE_ENABLED_SHORTCUT_GUIDE = L"ConfigureEnabledUtilityShortcutGuide";
     const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR = L"ConfigureEnabledUtilityTextExtractor";
     const std::wstring POLICY_CONFIGURE_ENABLED_ADVANCED_PASTE = L"ConfigureEnabledUtilityAdvancedPaste";
-    const std::wstring POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE = L"ConfigureEnabledUtilityVideoConferenceMute";
+    const std::wstring POLICY_CONFIGURE_ENABLED_ZOOM_IT = L"ConfigureEnabledUtilityZoomIt";
     const std::wstring POLICY_CONFIGURE_ENABLED_REGISTRY_PREVIEW = L"ConfigureEnabledUtilityRegistryPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_WITHOUT_BORDERS = L"ConfigureEnabledUtilityMouseWithoutBorders";
     const std::wstring POLICY_CONFIGURE_ENABLED_PEEK = L"ConfigureEnabledUtilityPeek";
     const std::wstring POLICY_CONFIGURE_ENABLED_ENVIRONMENT_VARIABLES = L"ConfigureEnabledUtilityEnvironmentVariables";
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_PREVIEW = L"ConfigureEnabledUtilityFileExplorerQOIPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerQOIThumbnails";
+    const std::wstring POLICY_CONFIGURE_ENABLED_NEWPLUS = L"ConfigureEnabledUtilityNewPlus";
     const std::wstring POLICY_CONFIGURE_ENABLED_WORKSPACES = L"ConfigureEnabledUtilityWorkspaces";
 
     // The registry value names for PowerToys installer and update policies.
@@ -71,17 +72,23 @@ namespace powertoys_gpo {
 
     // The registry value names for other PowerToys policies.
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
+    const std::wstring POLICY_ALLOW_DATA_DIAGNOSTICS = L"AllowDataDiagnostics";
+    const std::wstring POLICY_CONFIGURE_RUN_AT_STARTUP = L"ConfigureRunAtStartup";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS = L"PowerLauncherAllPluginsEnabledState";
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS = L"AllowPowerToysAdvancedPasteOnlineAIModels";
     const std::wstring POLICY_MWB_CLIPBOARD_SHARING_ENABLED = L"MwbClipboardSharingEnabled";
     const std::wstring POLICY_MWB_FILE_TRANSFER_ENABLED = L"MwbFileTransferEnabled";
     const std::wstring POLICY_MWB_USE_ORIGINAL_USER_INTERFACE = L"MwbUseOriginalUserInterface";
     const std::wstring POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER = L"MwbDisallowBlockingScreensaver";
+    const std::wstring POLICY_MWB_ALLOW_SERVICE_MODE = L"MwbAllowServiceMode";
     const std::wstring POLICY_MWB_SAME_SUBNET_ONLY = L"MwbSameSubnetOnly";
     const std::wstring POLICY_MWB_VALIDATE_REMOTE_IP = L"MwbValidateRemoteIp";
     const std::wstring POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES = L"MwbDisableUserDefinedIpMappingRules";
     const std::wstring POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES = L"MwbPolicyDefinedIpMappingRules";
+    const std::wstring POLICY_NEW_PLUS_HIDE_TEMPLATE_FILENAME_EXTENSION = L"NewPlusHideTemplateFilenameExtension";
 
+    // Methods used for reading the registry
+#pragma region ReadRegistryMethods
     inline std::optional<std::wstring> readRegistryStringValue(HKEY hRootKey, const std::wstring& subKey, const std::wstring& value_name, const bool is_multi_line_text = false)
     {
         // Set value type
@@ -249,7 +256,11 @@ namespace powertoys_gpo {
             return getConfiguredValue(POLICY_CONFIGURE_ENABLED_GLOBAL_ALL_UTILITIES);
         }
     }
+#pragma endregion ReadRegistryMethods
 
+    // Utility enabled state policies
+    // (Always use 'getUtilityEnabledValue()'.)
+#pragma region UtilityEnabledStatePolicies
     inline gpo_rule_configured_t getConfiguredAlwaysOnTopEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP);
@@ -405,9 +416,9 @@ namespace powertoys_gpo {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_WORKSPACES);
     }
 
-    inline gpo_rule_configured_t getConfiguredVideoConferenceMuteEnabledValue()
+    inline gpo_rule_configured_t getConfiguredZoomItEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_VIDEO_CONFERENCE_MUTE);
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ZOOM_IT);
     }
 
     inline gpo_rule_configured_t getConfiguredMouseWithoutBordersEnabledValue()
@@ -430,6 +441,25 @@ namespace powertoys_gpo {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ENVIRONMENT_VARIABLES);
     }
 
+    inline gpo_rule_configured_t getConfiguredQoiPreviewEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_PREVIEW);
+    }
+
+    inline gpo_rule_configured_t getConfiguredQoiThumbnailsEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS);
+    }
+
+    inline gpo_rule_configured_t getConfiguredNewPlusEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_NEWPLUS);
+    }
+#pragma endregion UtilityEnabledStatePolicies
+
+    // Individual module setting policies
+    // (Never use 'getUtilityEnabledValue()'!)
+#pragma region IndividualModuleSettingPolicies
     inline gpo_rule_configured_t getDisablePerUserInstallationValue()
     {
         return getConfiguredValue(POLICY_DISABLE_PER_USER_INSTALLATION);
@@ -458,6 +488,16 @@ namespace powertoys_gpo {
     inline gpo_rule_configured_t getAllowExperimentationValue()
     {
         return getConfiguredValue(POLICY_ALLOW_EXPERIMENTATION);
+    }
+
+    inline gpo_rule_configured_t getAllowDataDiagnosticsValue()
+    {
+        return getConfiguredValue(POLICY_ALLOW_DATA_DIAGNOSTICS);
+    }
+
+    inline gpo_rule_configured_t getConfiguredRunAtStartupValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_RUN_AT_STARTUP);
     }
 
     inline gpo_rule_configured_t getRunPluginEnabledValue(std::string pluginID)
@@ -500,54 +540,49 @@ namespace powertoys_gpo {
         }        
     }
 
-    inline gpo_rule_configured_t getConfiguredQoiPreviewEnabledValue()
-    {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_PREVIEW);
-    }
-
-    inline gpo_rule_configured_t getConfiguredQoiThumbnailsEnabledValue()
-    {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS);
-    }
-
     inline gpo_rule_configured_t getAllowedAdvancedPasteOnlineAIModelsValue()
     {
-        return getUtilityEnabledValue(POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS);
+        return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbClipboardSharingEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_CLIPBOARD_SHARING_ENABLED);
+        return getConfiguredValue(POLICY_MWB_CLIPBOARD_SHARING_ENABLED);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbFileTransferEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_FILE_TRANSFER_ENABLED);
+        return getConfiguredValue(POLICY_MWB_FILE_TRANSFER_ENABLED);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbUseOriginalUserInterfaceValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_USE_ORIGINAL_USER_INTERFACE);
+        return getConfiguredValue(POLICY_MWB_USE_ORIGINAL_USER_INTERFACE);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbDisallowBlockingScreensaverValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER);
+        return getConfiguredValue(POLICY_MWB_DISALLOW_BLOCKING_SCREENSAVER);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMwbAllowServiceModeValue()
+    {
+        return getConfiguredValue(POLICY_MWB_ALLOW_SERVICE_MODE);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbSameSubnetOnlyValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_SAME_SUBNET_ONLY);
+        return getConfiguredValue(POLICY_MWB_SAME_SUBNET_ONLY);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbValidateRemoteIpValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_VALIDATE_REMOTE_IP);
+        return getConfiguredValue(POLICY_MWB_VALIDATE_REMOTE_IP);
     }
 
     inline gpo_rule_configured_t getConfiguredMwbDisableUserDefinedIpMappingRulesValue()
     {
-        return getUtilityEnabledValue(POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES);
+        return getConfiguredValue(POLICY_MWB_DISABLE_USER_DEFINED_IP_MAPPING_RULES);
     }
 
     inline std::wstring getConfiguredMwbPolicyDefinedIpMappingRules()
@@ -569,4 +604,10 @@ namespace powertoys_gpo {
             return std::wstring ();
         }
     }
+
+    inline gpo_rule_configured_t getConfiguredNewPlusHideTemplateFilenameExtensionValue()
+    {
+        return getConfiguredValue(POLICY_NEW_PLUS_HIDE_TEMPLATE_FILENAME_EXTENSION);
+    }
+#pragma endregion IndividualModuleSettingPolicies
 }

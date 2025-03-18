@@ -39,6 +39,7 @@ namespace Hosts
 
             var handle = this.GetWindowHandle();
 
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(handle);
             WindowHelpers.BringToForeground(handle);
             Activated += MainWindow_Activated;
 
@@ -61,6 +62,11 @@ namespace Hosts
         {
             MainGrid.Children.Add(MainPage);
             Grid.SetRow(MainPage, 1);
+        }
+
+        private void WindowEx_Closed(object sender, WindowEventArgs args)
+        {
+            (Application.Current as App).EtwTrace?.Dispose();
         }
     }
 }

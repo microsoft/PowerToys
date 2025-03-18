@@ -17,6 +17,7 @@ using PowerLauncher.Helper;
 using PowerLauncher.Plugin;
 using PowerLauncher.ViewModel;
 using PowerToys.Interop;
+using Windows.Globalization;
 using Wox;
 using Wox.Infrastructure;
 using Wox.Infrastructure.Image;
@@ -45,14 +46,28 @@ namespace PowerLauncher
         private SettingWindowViewModel _settingsVM;
         private StringMatcher _stringMatcher;
         private SettingsReader _settingsReader;
+        private ETWTrace etwTrace = new ETWTrace();
 
         // To prevent two disposals running at the same time.
-        private static readonly object _disposingLock = new object();
+        private static readonly Lock _disposingLock = new Lock();
 
         [STAThread]
         public static void Main()
         {
             NativeThreadCTS = new CancellationTokenSource();
+
+            try
+            {
+                string appLanguage = LanguageHelper.LoadLanguage();
+                if (!string.IsNullOrEmpty(appLanguage))
+                {
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
+                }
+            }
+            catch (CultureNotFoundException ex)
+            {
+                Logger.LogError("CultureNotFoundException: " + ex.Message);
+            }
 
             Log.Info($"Starting PowerToys Run with PID={Environment.ProcessId}", typeof(App));
             if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredPowerLauncherEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
@@ -87,6 +102,8 @@ namespace PowerLauncher
                     () =>
                     {
                         Log.Warn("RunExitEvent was signaled. Exiting PowerToys", typeof(App));
+                        application.etwTrace?.Dispose();
+                        application.etwTrace = null;
                         ExitPowerToys(application);
                     },
                     Application.Current.Dispatcher,
@@ -97,6 +114,8 @@ namespace PowerLauncher
                     RunnerHelper.WaitForPowerToysRunner(powerToysPid, () =>
                     {
                         Log.Info($"Runner with pid={powerToysPid} exited. Exiting PowerToys Run", typeof(App));
+                        application.etwTrace?.Dispose();
+                        application.etwTrace = null;
                         ExitPowerToys(application);
                     });
                 }

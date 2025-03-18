@@ -23,7 +23,6 @@
     <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
     <None Remove="Assets\Settings\Modules\APDialog.light.png" />
   </ItemGroup>
-
   <ItemGroup>
     <Page Remove="SettingsXAML\App.xaml" />
   </ItemGroup>
@@ -34,7 +33,7 @@
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
-    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTIncludes>PowerToys.GPOWrapper;PowerToys.ZoomItSettingsInterop</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
@@ -50,6 +49,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Images\MouseJump-Desktop.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
@@ -57,6 +61,8 @@
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
     <PackageReference Include="WinUIEx" />
+    <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
+    <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
@@ -81,8 +87,10 @@
     <ProjectReference Include="..\..\common\AllExperiments\AllExperiments.csproj" />
     <ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
     <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 
@@ -119,6 +127,9 @@
 
   <ItemGroup>
     <Page Update="SettingsXAML\OOBE\Views\OobeWorkspaces.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="SettingsXAML\Panels\MouseJumpPanel.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="SettingsXAML\Views\WorkspacesPage.xaml">

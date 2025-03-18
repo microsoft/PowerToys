@@ -1,0 +1,467 @@
+parameters:
+  - name: additionalBuildOptions
+    type: string
+    default: ''
+  - name: buildConfigurations
+    type: object
+    default:
+      - Release
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+      - arm64
+  - name: codeSign
+    type: boolean
+    default: false
+  - name: artifactStem
+    type: string
+    default: ''
+  - name: jobName
+    type: string
+    default: 'Build'
+  - name: condition
+    type: string
+    default: ''
+  - name: dependsOn
+    type: object
+    default: []
+  - name: pool
+    type: object
+    default: []
+  - name: beforeBuildSteps
+    type: stepList
+    default: []
+  - name: variables
+    type: object
+    default: {}
+  - name: publishArtifacts
+    type: boolean
+    default: true
+  - name: signingIdentity
+    type: object
+    default: {}
+  - name: enablePackageCaching
+    type: boolean
+    default: false
+  - name: enableMsBuildCaching
+    type: boolean
+    default: false
+  - name: runTests
+    type: boolean
+    default: true
+  - name: useVSPreview
+    type: boolean
+    default: false
+  - name: versionNumber
+    type: string
+    default: '0.0.1'
+  - name: useLatestWinAppSDK
+    type: boolean
+    default: false
+  - name: winAppSDKVersionNumber
+    type: string
+    default: 1.6
+  - name: useExperimentalVersion
+    type: boolean
+    default: false
+  - name: csProjectsToPublish
+    type: object
+    default:
+      - 'src/settings-ui/Settings.UI/PowerToys.Settings.csproj'
+      - 'src/modules/launcher/PowerLauncher/PowerLauncher.csproj'
+      - 'src/modules/previewpane/MonacoPreviewHandler/MonacoPreviewHandler.csproj'
+      - 'src/modules/previewpane/MarkdownPreviewHandler/MarkdownPreviewHandler.csproj'
+      - 'src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj'
+      - 'src/modules/previewpane/SvgThumbnailProvider/SvgThumbnailProvider.csproj'
+      - 'src/modules/FileLocksmith/FileLocksmithUI/FileLocksmithUI.csproj'
+
+jobs:
+- job: ${{ parameters.jobName }}
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
+  strategy:
+    matrix:
+      ${{ each config in parameters.buildConfigurations }}:
+        ${{ each platform in parameters.buildPlatforms }}:
+          ${{ config }}_${{ platform }}:
+            BuildConfiguration: ${{ config }}
+            BuildPlatform: ${{ platform }}
+            ${{ if eq(platform, 'x86') }}:
+              OutputBuildPlatform: Win32
+            ${{ elseif eq(platform, 'Any CPU') }}:
+              OutputBuildPlatform: AnyCPU
+            ${{ else }}:
+              OutputBuildPlatform: ${{ platform }}
+  variables:
+    # Azure DevOps abhors a vacuum
+    # If these are blank, expansion will fail later on... which will result in direct substitution of the variable *names*
+    # later on. We'll just... set them to a single space and if we need to, check IsNullOrWhiteSpace.
+    # Yup.
+    MSBuildCacheParameters: ' '
+    JobOutputDirectory: $(Build.ArtifactStagingDirectory)
+    LogOutputDirectory: $(Build.ArtifactStagingDirectory)\logs
+    JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
+    NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
+    NODE_OPTIONS: --max_old_space_size=16384
+    ${{ if eq(parameters.runTests, true) }}:
+      MSBuildMainBuildTargets: Build;Test
+    ${{ else }}:
+      MSBuildMainBuildTargets: Build
+    ${{ insert }}: ${{ parameters.variables }}
+    ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
+      RestoreAdditionalProjectSourcesArg: '/p:RestoreAdditionalProjectSources="$(Build.SourcesDirectory)\localpackages\NugetPackages"'
+    ${{ else }}:
+      RestoreAdditionalProjectSourcesArg: ''
+  displayName: Build
+  timeoutInMinutes: 240
+  cancelTimeoutInMinutes: 1
+  templateContext: # Required when this template is hosted in 1ES PT
+    outputs:
+    - output: pipelineArtifact
+      artifactName: $(JobOutputArtifactName)
+      targetPath: $(Build.ArtifactStagingDirectory)
+  steps:
+  - checkout: self
+    clean: true
+    submodules: true
+    persistCredentials: True
+    fetchTags: false
+    fetchDepth: 1
+
+  - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+    - pwsh: |-
+        $MSBuildCacheParameters = ""
+        $MSBuildCacheParameters += " -graph"
+        $MSBuildCacheParameters += " -reportfileaccesses"
+        $MSBuildCacheParameters += " -p:MSBuildCacheEnabled=true"
+        $MSBuildCacheParameters += " -p:MSBuildCacheLogDirectory=$(LogOutputDirectory)\MSBuildCacheLogs"
+        Write-Host "MSBuildCacheParameters: $MSBuildCacheParameters"
+        Write-Host "##vso[task.setvariable variable=MSBuildCacheParameters]$MSBuildCacheParameters"
+      displayName: Prepare MSBuildCache variables
+
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '8.0'
+
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '9.0'
+
+  - ${{ if eq(parameters.runTests, true) }}:
+    - task: VisualStudioTestPlatformInstaller@1
+      displayName: Ensure VSTest Platform
+
+  - pwsh: |-
+      & '.pipelines/applyXamlStyling.ps1' -Passive
+    displayName: Verify XAML formatting
+
+  - pwsh: |-
+      & '.pipelines/verifyNugetPackages.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
+    displayName: Verify Nuget package versions for PowerToys.sln
+
+  - pwsh: |-
+      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\PowerToys.sln'
+      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
+      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
+      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
+    displayName: Verify ARM64 configurations
+
+  - ${{ if eq(parameters.enablePackageCaching, true) }}:
+    - task: Cache@2
+      displayName: 'Cache nuget packages (PackageReference)'
+      inputs:
+        key: '"PackageReference" | "$(Agent.OS)" | Directory.Packages.props'
+        restoreKeys: |
+           "PackageReference" | "$(Agent.OS)"
+           "PackageReference"
+        path: $(NUGET_PACKAGES)
+
+    - task: Cache@2
+      displayName: 'Cache nuget packages (packages.config)'
+      inputs:
+        key: '"packages.config" | "$(Agent.OS)" | **/packages.config'
+        restoreKeys: |
+           "packages.config" | "$(Agent.OS)"
+           "packages.config"
+        path: packages
+  
+  - ${{ if eq(parameters.useLatestWinAppSDK, true)}}:
+    - template: .\steps-update-winappsdk-and-restore-nuget.yml
+      parameters:
+        versionNumber: ${{ parameters.winAppSDKVersionNumber }}
+        useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+  
+  - ${{ if eq(parameters.useLatestWinAppSDK, false)}}:
+    - template: .\steps-restore-nuget.yml
+
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\.pipelines\verifyAndSetLatestVCToolsVersion.ps1"
+    displayName: Work around DD-1541167 (VCToolsVersion)
+    ${{ if eq(parameters.useVSPreview, true) }}:
+      env:
+        VCWhereExtraVersionTarget: '-prerelease'
+
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
+    displayName: Download and install WiX 3.14 development build
+
+  - ${{ parameters.beforeBuildSteps }}
+
+  - task: VSBuild@1
+    ${{ if eq(parameters.runTests, true) }}:
+      displayName: Build and Test PowerToys main project
+    ${{ else }}:
+      displayName: Build PowerToys main project
+    inputs:
+      solution: 'PowerToys.sln'
+      vsVersion: 17.0
+      msbuildArgs: >-
+        -restore -graph
+        /p:RestorePackagesConfig=true
+        /p:CIBuild=true
+        /bl:$(LogOutputDirectory)\build-0-main.binlog
+        ${{ parameters.additionalBuildOptions }}
+        $(MSBuildCacheParameters)
+        /t:$(MSBuildMainBuildTargets)
+        $(RestoreAdditionalProjectSourcesArg)
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+  - task: VSBuild@1
+    displayName: Build BugReportTool
+    inputs:
+      solution: '**/tools/BugReportTool/BugReportTool.sln'
+      vsVersion: 17.0
+      msbuildArgs: >-
+        -restore -graph
+        /p:RestorePackagesConfig=true
+        /p:CIBuild=true
+        /bl:$(LogOutputDirectory)\build-bug-report.binlog
+        ${{ parameters.additionalBuildOptions }}
+        $(MSBuildCacheParameters)
+        $(RestoreAdditionalProjectSourcesArg)
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+  - task: VSBuild@1
+    displayName: Build StylesReportTool
+    inputs:
+      solution: '**/tools/StylesReportTool/StylesReportTool.sln'
+      vsVersion: 17.0
+      msbuildArgs: >-
+        -restore -graph
+        /p:RestorePackagesConfig=true
+        /p:CIBuild=true
+        /bl:$(LogOutputDirectory)\build-styles-report.binlog
+        ${{ parameters.additionalBuildOptions }}
+        $(MSBuildCacheParameters)
+        $(RestoreAdditionalProjectSourcesArg)
+      platform: $(BuildPlatform)
+      configuration: $(BuildConfiguration)
+      msbuildArchitecture: x64
+      maximumCpuCount: true
+    ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+  - ${{ each project in parameters.csProjectsToPublish }}:
+    - task: VSBuild@1
+      displayName: Publish ${{ project }} for Packaging
+      inputs:
+        solution: ${{ project }}
+        vsVersion: 17.0
+        msbuildArgs: >-
+          /target:Publish
+          /graph
+          /p:Configuration=$(BuildConfiguration);Platform=$(BuildPlatform);AppxBundle=Never
+          /p:VCRTForwarders-IncludeDebugCRT=false
+          /p:PowerToysRoot=$(Build.SourcesDirectory)
+          /p:PublishProfile=InstallationPublishProfile.pubxml
+          /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
+          $(RestoreAdditionalProjectSourcesArg)
+        platform: $(BuildPlatform)
+        configuration: $(BuildConfiguration)
+        msbuildArchitecture: x64
+        maximumCpuCount: true
+
+  ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
+  - task: CopyFiles@2
+    displayName: HACK Copy core WebView2 ARM64 dll to output directory
+    condition: eq(variables['BuildPlatform'],'arm64')
+    inputs:
+      contents: packages/Microsoft.Web.WebView2.1.0.2739.15/runtimes/win-ARM64/native_uap/Microsoft.Web.WebView2.Core.dll
+      targetFolder: $(Build.SourcesDirectory)/ARM64/Release/WinUI3Apps/
+      flattenFolders: True
+      OverWrite: True
+
+  # Check if deps.json files don't reference different dll versions.
+  - pwsh: |-
+      & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+    displayName: Audit deps.json files for all applications
+
+  # Check if asset files on the main application paths are playing nice and avoiding basic conflicts.
+  - pwsh: |-
+      & '.pipelines/verifyPossibleAssetConflicts.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+    displayName: Audit base applications path asset conflicts
+
+  - pwsh: |-
+      & '.pipelines/verifyPossibleAssetConflicts.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
+    displayName: Audit WinAppSDK applications path asset conflicts
+
+  # To streamline the pipeline and prevent errors, skip this step during compatibility tests with the latest WinAppSDK.
+  - ${{ if eq(parameters.useLatestWinAppSDK, false) }}:
+    - pwsh: |-
+        & '.pipelines/verifyNoticeMdAgainstNugetPackages.ps1' -path '$(build.sourcesdirectory)\'
+      displayName: Verify NOTICE.md and NuGet packages match
+
+  - ${{ if eq(parameters.runTests, true) }}:
+    # Publish test results which ran in MSBuild
+    - task: PublishTestResults@2
+      displayName: 'Publish Test Results'
+      inputs:
+        testResultsFormat: VSTest
+        testResultsFiles: '**/*.trx'
+      condition: ne(variables['BuildPlatform'],'arm64')
+
+    # Native dlls
+    - task: VSTest@2
+      condition: ne(variables['BuildPlatform'],'arm64') # No arm64 agents to run the tests.
+      displayName: 'Native Tests'
+      inputs:
+        platform: '$(BuildPlatform)'
+        configuration: '$(BuildConfiguration)'
+        testSelector: 'testAssemblies'
+        testAssemblyVer2: |
+          **\KeyboardManagerEngineTest.dll
+          **\KeyboardManagerEditorTest.dll
+          **\UnitTests-CommonLib.dll
+          **\PowerRenameUnitTests.dll
+          **\UnitTests-FancyZones.dll
+          !**\obj\**
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign Core PowerToys
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_core.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign DSC files
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: 'src/dsc/Microsoft.PowerToys.Configure'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_DSC.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  - template: steps-build-installer.yml
+    parameters:
+      codeSign: ${{ parameters.codeSign }}
+      signingIdentity: ${{ parameters.signingIdentity }}
+      versionNumber: ${{ parameters.versionNumber }}
+      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+
+  - template: steps-build-installer.yml
+    parameters:
+      codeSign: ${{ parameters.codeSign }}
+      signingIdentity: ${{ parameters.signingIdentity }}
+      versionNumber: ${{ parameters.versionNumber }}
+      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+      buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
+
+  # This saves ~1GiB per architecture. We won't need these later.
+  # Removes:
+  # - All .pdbs from any static libs .libs (which were only used during linking)
+  - pwsh: |-
+      $binDir = '$(Build.SourcesDirectory)'
+      $ImportLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.exp' | ForEach-Object { $_.FullName -Replace "exp$","lib" }
+      $StaticLibs = Get-ChildItem $binDir -Recurse -File -Filter '*.lib' | Where-Object FullName -NotIn $ImportLibs
+
+      $Items = @()
+      $Items += Get-Item ($StaticLibs.FullName -Replace "lib$","pdb") -ErrorAction:Ignore
+
+      $Items | Remove-Item -Recurse -Force -Verbose -ErrorAction:Ignore
+    displayName: Clean up static libs PDBs
+    errorActionPreference: silentlyContinue # It's OK if this silently fails
+
+  - task: CopyFiles@2
+    displayName: Stage Installers
+    inputs:
+      contents: "**/PowerToys*Setup-*.exe"
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)
+
+  - task: CopyFiles@2
+    displayName: Stage Symbols
+    inputs:
+      contents: |-
+        **\*.pdb
+        !**\vc143.pdb
+        !**\*test*.pdb
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)/symbols-$(BuildPlatform)/
+
+  - pwsh: |-
+      $p = "$(JobOutputDirectory)\"
+      $userHash = ((Get-Item $p\PowerToysUserSetup*.exe | Get-FileHash).Hash);
+      $machineHash = ((Get-Item $p\PowerToysSetup*.exe | Get-FileHash).Hash);
+      $userPlat = "hash_user_$(BuildPlatform).txt";
+      $machinePlat = "hash_machine_$(BuildPlatform).txt";
+      $combinedUserPath = $p + $userPlat;
+      $combinedMachinePath = $p + $machinePlat;
+      
+      echo $p
+
+      echo $userPlat
+      echo $userHash
+      echo $combinedUserPath
+
+      echo $machinePlat
+      echo $machineHash
+      echo $combinedMachinePath
+      
+      $userHash | out-file -filepath $combinedUserPath
+      $machineHash | out-file -filepath $combinedMachinePath
+    displayName: Calculate file hashes
+
+  # Publishing the GPO files
+  - pwsh: |-
+      New-Item "$(JobOutputDirectory)/gpo" -Type Directory
+      Copy-Item src\gpo\assets\* "$(JobOutputDirectory)/gpo" -Recurse
+    displayName: Stage GPO files
+
+  # Running the tests may result in future jobs consuming artifacts out of this build
+  - ${{ if eq(parameters.runTests, true) }}:
+    - task: CopyFiles@2
+      displayName: Stage entire build output
+      inputs:
+        sourceFolder: '$(Build.SourcesDirectory)'
+        contents: '$(BuildPlatform)/$(BuildConfiguration)/**/*'
+        targetFolder: '$(JobOutputDirectory)\$(BuildPlatform)\$(BuildConfiguration)'
+
+  - ${{ if eq(parameters.publishArtifacts, true) }}:
+    - publish: $(JobOutputDirectory)
+      artifact: $(JobOutputArtifactName)
+      displayName: Publish all outputs
+      condition: always()

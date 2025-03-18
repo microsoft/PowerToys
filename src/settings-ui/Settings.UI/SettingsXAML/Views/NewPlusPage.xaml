@@ -1,0 +1,98 @@
+<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.NewPlusPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <controls:SettingsPageControl x:Uid="NewPlus" ModuleImageSource="ms-appx:///Assets/Settings/Modules/NewPlus.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel
+                ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
+                Orientation="Vertical"
+                Spacing="2">
+                <tkcontrols:SettingsCard
+                    x:Uid="NewPlus_Enable_Toggle"
+                    HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
+                    IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </tkcontrols:SettingsCard>
+                <InfoBar
+                    x:Uid="GPO_SettingIsManaged"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
+                    Severity="Informational">
+                    <InfoBar.IconSource>
+                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                    </InfoBar.IconSource>
+                </InfoBar>
+
+                <controls:SettingsGroup x:Uid="NewPlus_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="NewPlus_Templates_Location"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                        Command="{x:Bind ViewModel.OpenCurrentNewTemplateFolder}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF12B;}"
+                        IsClickEnabled="True">
+                        <Button
+                            x:Uid="NewPlus_Templates_Location_Change"
+                            Command="{x:Bind ViewModel.PickAnotherNewTemplateFolder}"
+                            Style="{ThemeResource AccentButtonStyle}" />
+
+                        <tkcontrols:SettingsCard.Description>
+                            <StackPanel>
+                                <TextBlock Text="{x:Bind ViewModel.TemplateLocation, Mode=OneWay}" />
+                                <HyperlinkButton x:Uid="NewPlus_Templates_Location_Learn_More" NavigateUri="https://aka.ms/PowerToysOverview_NewPlus_TemplatesLocation" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard.Description>
+
+                    </tkcontrols:SettingsCard>
+
+                    <InfoBar
+                        x:Uid="NewPlus_TemplatesNotBackupAndRestoreWarning"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
+                        Severity="Informational" />
+
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle" IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
+                        <ToggleSwitch x:Uid="HideFileExtensionToggle" IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_SettingIsManaged"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
+                        <ToggleSwitch x:Uid="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
+                        <tkcontrols:SettingsCard.Description>
+                            <TextBlock x:Uid="NewPlus_Hide_Starting_Digits_Description" />
+                        </tkcontrols:SettingsCard.Description>
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="NewPlus_Learn_More" Link="https://aka.ms/PowerToysOverview_NewPlus" />
+        </controls:SettingsPageControl.PrimaryLinks>
+        <controls:SettingsPageControl.SecondaryLinks>
+            <controls:PageLink Link="https://www.linkedin.com/in/christian-gaardmark/" Text="Christian Gaardmark" />
+        </controls:SettingsPageControl.SecondaryLinks>
+    </controls:SettingsPageControl>
+
+</Page>

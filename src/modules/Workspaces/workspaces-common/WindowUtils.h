@@ -21,6 +21,7 @@ namespace WindowUtils
         const wchar_t WorkspacesSnapshotTool[] = L"POWERTOYS.WORKSPACESSNAPSHOTTOOL";
         const wchar_t WorkspacesEditor[] = L"POWERTOYS.WORKSPACESEDITOR";
         const wchar_t WorkspacesLauncher[] = L"POWERTOYS.WORKSPACESLAUNCHER";
+        const wchar_t WorkspacesWindowArranger[] = L"POWERTOYS.WORKSPACESWINDOWARRANGER";
     }
 
     inline bool IsRoot(HWND window) noexcept
@@ -79,7 +80,8 @@ namespace WindowUtils
             NonLocalizable::SearchUI, 
             NonLocalizable::HelpWindow,
             NonLocalizable::WorkspacesEditor, 
-            NonLocalizable::WorkspacesLauncher, 
+            NonLocalizable::WorkspacesLauncher,
+            NonLocalizable::WorkspacesWindowArranger,
             NonLocalizable::WorkspacesSnapshotTool, 
         };
         return (check_excluded_app(window, processPathUpper, defaultExcludedApps));

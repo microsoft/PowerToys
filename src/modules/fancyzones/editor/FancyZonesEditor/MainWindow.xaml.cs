@@ -226,7 +226,9 @@ namespace FancyZonesEditor
             }
 
             LayoutNameText.Text = defaultNamePrefix + " " + (++maxCustomIndex);
+
             GridLayoutRadioButton.IsChecked = true;
+            CanvasLayoutRadioButton.IsChecked = false;
             GridLayoutRadioButton.Focus();
             await NewLayoutDialog.ShowAsync();
         }
@@ -485,10 +487,12 @@ namespace FancyZonesEditor
                     }
                 }
 
+                model.Delete();
                 App.FancyZonesEditorIO.SerializeAppliedLayouts();
                 App.FancyZonesEditorIO.SerializeCustomLayouts();
                 App.FancyZonesEditorIO.SerializeDefaultLayouts();
-                model.Delete();
+                App.FancyZonesEditorIO.SerializeLayoutHotkeys();
+                App.FancyZonesEditorIO.SerializeLayoutTemplates();
             }
         }
 

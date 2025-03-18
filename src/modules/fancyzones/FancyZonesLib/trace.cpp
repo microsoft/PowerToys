@@ -10,6 +10,8 @@
 #include "FancyZonesLib/FancyZonesDataTypes.h"
 #include "FancyZonesLib/util.h"
 
+#include <common/Telemetry/TraceBase.h>
+
 // Telemetry strings should not be localized.
 #define LoggingProviderKey "Microsoft.PowerToys"
 
@@ -108,19 +110,9 @@ ZoneSetInfo GetZoneSetInfo(_In_opt_ Layout* layout, const LayoutAssignedWindows&
     return info;
 }
 
-void Trace::RegisterProvider() noexcept
-{
-    TraceLoggingRegister(g_hProvider);
-}
-
-void Trace::UnregisterProvider() noexcept
-{
-    TraceLoggingUnregister(g_hProvider);
-}
-
 void Trace::FancyZones::EnableFancyZones(bool enabled) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventEnableFancyZonesKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -130,7 +122,7 @@ void Trace::FancyZones::EnableFancyZones(bool enabled) noexcept
 
 void Trace::FancyZones::OnKeyDown(DWORD vkCode, bool win, bool control, bool inMoveSize) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventKeyDownKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -211,7 +203,7 @@ void Trace::FancyZones::DataChanged() noexcept
             activeZoneSetInfo += L", custom zone data was deleted";
         }
     }
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventZoneSettingsChangedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -226,7 +218,7 @@ void Trace::FancyZones::DataChanged() noexcept
 
 void Trace::FancyZones::EditorLaunched(int value) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventEditorLaunchKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -237,7 +229,7 @@ void Trace::FancyZones::EditorLaunched(int value) noexcept
 // Log if an error occurs in FZ
 void Trace::FancyZones::Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "FancyZones_Error",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -249,7 +241,7 @@ void Trace::FancyZones::Error(const DWORD errorCode, std::wstring errorMessage, 
 
 void Trace::FancyZones::QuickLayoutSwitched(bool shortcutUsed) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventQuickLayoutSwitchKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -260,7 +252,7 @@ void Trace::FancyZones::QuickLayoutSwitched(bool shortcutUsed) noexcept
 void Trace::FancyZones::SnapNewWindowIntoZone(Layout* activeLayout, const LayoutAssignedWindows& layoutWindows) noexcept
 {
     auto const zoneInfo = GetZoneSetInfo(activeLayout, layoutWindows);
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventSnapNewWindowIntoZone,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -273,7 +265,7 @@ void Trace::FancyZones::SnapNewWindowIntoZone(Layout* activeLayout, const Layout
 void Trace::FancyZones::KeyboardSnapWindowToZone(Layout* activeLayout, const LayoutAssignedWindows& layoutWindows) noexcept
 {
     auto const zoneInfo = GetZoneSetInfo(activeLayout, layoutWindows);
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventKeyboardSnapWindowToZone,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -299,7 +291,7 @@ void Trace::SettingsTelemetry(const Settings& settings) noexcept
     auto nextTabHotkeyStr = HotKeyToString(settings.nextTabHotkey);
     auto prevTabHotkeyStr = HotKeyToString(settings.prevTabHotkey);
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventSettingsKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -337,7 +329,7 @@ void Trace::SettingsTelemetry(const Settings& settings) noexcept
 
 void Trace::VirtualDesktopChanged() noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventDesktopChangedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -346,7 +338,7 @@ void Trace::VirtualDesktopChanged() noexcept
 
 void Trace::WorkArea::KeyUp(WPARAM wParam) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventWorkAreaKeyUpKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -357,7 +349,7 @@ void Trace::WorkArea::KeyUp(WPARAM wParam) noexcept
 void Trace::WorkArea::MoveOrResizeStarted(_In_opt_ Layout* activeLayout, const LayoutAssignedWindows& layoutWindows) noexcept
 {
     auto const zoneInfo = GetZoneSetInfo(activeLayout, layoutWindows);
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventMoveOrResizeStartedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -370,7 +362,7 @@ void Trace::WorkArea::MoveOrResizeStarted(_In_opt_ Layout* activeLayout, const L
 void Trace::WorkArea::MoveOrResizeEnd(_In_opt_ Layout* activeLayout, const LayoutAssignedWindows& layoutWindows) noexcept
 {
     auto const zoneInfo = GetZoneSetInfo(activeLayout, layoutWindows);
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventMoveOrResizeEndedKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -383,7 +375,7 @@ void Trace::WorkArea::MoveOrResizeEnd(_In_opt_ Layout* activeLayout, const Layou
 void Trace::WorkArea::CycleActiveZoneSet(_In_opt_ Layout* activeLayout, const LayoutAssignedWindows& layoutWindows, InputMode mode) noexcept
 {
     auto const zoneInfo = GetZoneSetInfo(activeLayout, layoutWindows);
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         EventCycleActiveZoneSetKey,
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),

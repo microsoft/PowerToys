@@ -7,8 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Security.Principal;
+
 using Microsoft.PowerToys.Settings.UI.Library.CustomAction;
 
 namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
@@ -53,16 +53,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             return sendCustomAction.ToJsonString();
         }
 
-        public static IFileSystemWatcher GetFileWatcher(string moduleName, string fileName, Action onChangedCallback)
+        public static IFileSystemWatcher GetFileWatcher(string moduleName, string fileName, Action onChangedCallback, IFileSystem fileSystem = null)
         {
-            var path = FileSystem.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{moduleName}");
+            fileSystem ??= FileSystem;
 
-            if (!FileSystem.Directory.Exists(path))
+            var path = fileSystem.Path.Combine(LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{moduleName}");
+
+            if (!fileSystem.Directory.Exists(path))
             {
-                FileSystem.Directory.CreateDirectory(path);
+                fileSystem.Directory.CreateDirectory(path);
             }
 
-            var watcher = FileSystem.FileSystemWatcher.CreateNew();
+            var watcher = fileSystem.FileSystemWatcher.New();
             watcher.Path = path;
             watcher.Filter = fileName;
             watcher.NotifyFilter = NotifyFilters.LastWrite;
@@ -94,6 +96,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             // PowerToys.exe is in the parent folder relative to Settings.
             var settingsPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             return Directory.GetParent(settingsPath).FullName;
+        }
+
+        public static string GetPowerToysInstallationWinUI3AppsAssetsFolder()
+        {
+            // return .\PowerToys\WinUI3Apps\Assets
+            return Path.Combine(GetPowerToysInstallationFolder(), "WinUI3Apps", "Assets");
         }
 
         private static readonly global::PowerToys.Interop.LayoutMapManaged LayoutMap = new global::PowerToys.Interop.LayoutMapManaged();
@@ -145,6 +153,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             catch (Exception)
             {
                 throw new FormatException("Bad product version format");
+            }
+        }
+
+        public static void CopyDirectory(string source_directory, string destination_directory, bool copy_recursively)
+        {
+            var current_directory_info = new DirectoryInfo(source_directory);
+
+            DirectoryInfo[] source_subdirectories = current_directory_info.GetDirectories();
+
+            Directory.CreateDirectory(destination_directory);
+
+            foreach (FileInfo file in current_directory_info.GetFiles())
+            {
+                string destination_file_path = Path.Combine(destination_directory, file.Name);
+                file.CopyTo(destination_file_path, true);
+            }
+
+            if (copy_recursively)
+            {
+                foreach (DirectoryInfo subdirectory in source_subdirectories)
+                {
+                    string newDestinationDir = Path.Combine(destination_directory, subdirectory.Name);
+                    CopyDirectory(subdirectory.FullName, newDestinationDir, true);
+                }
             }
         }
 

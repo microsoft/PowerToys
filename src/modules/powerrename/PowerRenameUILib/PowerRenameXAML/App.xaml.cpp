@@ -9,6 +9,7 @@
 
 #include <common/logger/logger.h>
 #include <common/logger/logger_settings.h>
+#include <common/utils/language_helper.h>
 #include <common/utils/logger_helper.h>
 #include <common/utils/gpo.h>
 
@@ -33,6 +34,12 @@ const std::wstring moduleName = L"PowerRename";
 /// </summary>
 App::App()
 {
+    std::wstring appLanguage = LanguageHelpers::load_language();
+    if (!appLanguage.empty())
+    {
+        Microsoft::Windows::Globalization::ApplicationLanguages::PrimaryLanguageOverride(appLanguage);
+    }
+
     InitializeComponent();
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION

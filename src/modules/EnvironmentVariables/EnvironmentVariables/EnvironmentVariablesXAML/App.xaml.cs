@@ -26,6 +26,8 @@ namespace EnvironmentVariables
     {
         public IHost Host { get; }
 
+        public ETWTrace EtwTrace { get; } = new ETWTrace();
+
         public static T GetService<T>()
             where T : class
         {
@@ -44,6 +46,12 @@ namespace EnvironmentVariables
         /// </summary>
         public App()
         {
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             this.InitializeComponent();
 
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>

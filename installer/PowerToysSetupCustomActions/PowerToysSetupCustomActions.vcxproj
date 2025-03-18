@@ -36,6 +36,9 @@
     <OutDir Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup\</OutDir>
     <IntDir Condition=" '$(PerUser)' != 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\MachineSetup\obj\</IntDir>
     <IntDir Condition=" '$(PerUser)' == 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\UserSetup\obj\</IntDir>
+    <!-- The CMD script below checks this value, and it is **CASE SENSITIVE** -->
+    <NormalizedPerUserValue>false</NormalizedPerUserValue>
+    <NormalizedPerUserValue Condition=" '$(PerUser)' == 'true' ">true</NormalizedPerUserValue>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <LinkIncremental>true</LinkIncremental>
@@ -60,6 +63,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ImageResizer.wxs"" ""$(ProjectDir)..\PowerToysSetup\ImageResizer.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs"" ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\MouseWithoutBorders.wxs"" ""$(ProjectDir)..\PowerToysSetup\MouseWithoutBorders.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\NewPlus.wxs"" ""$(ProjectDir)..\PowerToysSetup\NewPlus.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Peek.wxs"" ""$(ProjectDir)..\PowerToysSetup\Peek.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\PowerRename.wxs"" ""$(ProjectDir)..\PowerToysSetup\PowerRename.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Product.wxs"" ""$(ProjectDir)..\PowerToysSetup\Product.wxs.bk""""
@@ -69,11 +73,11 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Settings.wxs"" ""$(ProjectDir)..\PowerToysSetup\Settings.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ShortcutGuide.wxs"" ""$(ProjectDir)..\PowerToysSetup\ShortcutGuide.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Tools.wxs"" ""$(ProjectDir)..\PowerToysSetup\Tools.wxs.bk""""
-      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs"" ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinUI3Applications.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinUI3Applications.wxs.bk""""
-      if not "$(PerUser)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform)
-      if "$(PerUser)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(PerUser)
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Workspaces.wxs"" ""$(ProjectDir)..\PowerToysSetup\Workspaces.wxs.bk""""
+      if not "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform)
+      if "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(NormalizedPerUserValue)
       </Command>
       <Message>Backing up original files and populating .NET and WPF Runtime dependencies </Message>
     </PreBuildEvent>
@@ -155,6 +159,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+      <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

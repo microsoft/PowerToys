@@ -13,10 +13,16 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
 using CommunityToolkit.WinUI.UI.Controls;
+using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -24,23 +30,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
     public sealed partial class OobeWhatsNew : Page
     {
-        // Contains information for a release. Used to deserialize release JSON info from GitHub.
-        private sealed class PowerToysReleaseInfo
-        {
-            [JsonPropertyName("published_at")]
-            public DateTimeOffset PublishedDate { get; set; }
-
-            [JsonPropertyName("name")]
-            public string Name { get; set; }
-
-            [JsonPropertyName("tag_name")]
-            public string TagName { get; set; }
-
-            [JsonPropertyName("body")]
-            public string ReleaseNotes { get; set; }
-        }
-
         public OobePowerToysModule ViewModel { get; set; }
+
+        public bool ShowDataDiagnosticsInfoBar => GetShowDataDiagnosticsInfoBar();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OobeWhatsNew"/> class.
@@ -50,6 +42,33 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             this.InitializeComponent();
             ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.WhatsNew]);
             DataContext = ViewModel;
+        }
+
+        private bool GetShowDataDiagnosticsInfoBar()
+        {
+            var isDataDiagnosticsGpoDisallowed = GPOWrapper.GetAllowDataDiagnosticsValue() == GpoRuleConfigured.Disabled;
+
+            if (isDataDiagnosticsGpoDisallowed)
+            {
+                return false;
+            }
+
+            bool userActed = DataDiagnosticsSettings.GetUserActionValue();
+
+            if (userActed)
+            {
+                return false;
+            }
+
+            bool registryValue = DataDiagnosticsSettings.GetEnabledValue();
+
+            bool isFirstRunAfterUpdate = (App.Current as Microsoft.PowerToys.Settings.UI.App).ShowScoobe;
+            if (isFirstRunAfterUpdate && registryValue == false)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -77,7 +96,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             // https://docs.github.com/rest/overview/resources-in-the-rest-api#user-agent-required
             getReleaseInfoClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "PowerToys");
             releaseNotesJSON = await getReleaseInfoClient.GetStringAsync("https://api.github.com/repos/microsoft/PowerToys/releases");
-            IList<PowerToysReleaseInfo> releases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(releaseNotesJSON);
+            IList<PowerToysReleaseInfo> releases = JsonSerializer.Deserialize<IList<PowerToysReleaseInfo>>(releaseNotesJSON, SourceGenerationContextContext.Default.IListPowerToysReleaseInfo);
 
             // Get the latest releases
             var latestReleases = releases.OrderByDescending(release => release.PublishedDate).Take(5);
@@ -89,11 +108,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             // Regex to remove installer hash sections from the release notes, since there'll be no Highlights section for hotfix releases.
             Regex removeHotfixHashRegex = new Regex(RemoveHotFixInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
-
+            int counter = 0;
             foreach (var release in latestReleases)
             {
                 releaseNotesHtmlBuilder.AppendLine("# " + release.Name);
                 var notes = removeHashRegex.Replace(release.ReleaseNotes, "\r\n## Highlights");
+
+                // Add a unique counter to [github-current-release-work] to distinguish each release,
+                // since this variable is used for all latest releases when they are merged.
+                notes = notes.Replace("[github-current-release-work]", $"[github-current-release-work{++counter}]");
                 notes = removeHotfixHashRegex.Replace(notes, string.Empty);
                 releaseNotesHtmlBuilder.AppendLine(notes);
                 releaseNotesHtmlBuilder.AppendLine("&nbsp;");
@@ -164,6 +187,66 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     Process.Start(new ProcessStartInfo(link.ToString()) { UseShellExecute = true });
                 });
             }
+        }
+
+        private void DataDiagnostics_InfoBar_YesNo_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            string commandArg = string.Empty;
+            if (sender is Button senderBtn)
+            {
+                commandArg = senderBtn.CommandParameter.ToString();
+            }
+            else if (sender is HyperlinkButton senderLink)
+            {
+                commandArg = senderLink.CommandParameter.ToString();
+            }
+
+            if (string.IsNullOrEmpty(commandArg))
+            {
+                return;
+            }
+
+            // Update UI
+            if (commandArg == "Yes")
+            {
+                WhatsNewDataDiagnosticsInfoBar.Header = ResourceLoaderInstance.ResourceLoader.GetString("Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Title");
+            }
+            else
+            {
+                WhatsNewDataDiagnosticsInfoBar.Header = ResourceLoaderInstance.ResourceLoader.GetString("Oobe_WhatsNew_DataDiagnostics_No_Click_InfoBar_Title");
+            }
+
+            WhatsNewDataDiagnosticsInfoBarDescText.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            WhatsNewDataDiagnosticsInfoBarDescTextYesClicked.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            DataDiagnosticsButtonYes.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            DataDiagnosticsButtonNo.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+
+            // Set Data Diagnostics registry values
+            if (commandArg == "Yes")
+            {
+                DataDiagnosticsSettings.SetEnabledValue(true);
+            }
+            else
+            {
+                DataDiagnosticsSettings.SetEnabledValue(false);
+            }
+
+            DataDiagnosticsSettings.SetUserActionValue(true);
+
+            this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+            {
+                ShellPage.ShellHandler?.SignalGeneralDataUpdate();
+            });
+        }
+
+        private void DataDiagnostics_InfoBar_Close_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            WhatsNewDataDiagnosticsInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+        }
+
+        private void DataDiagnostics_OpenSettings_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
+        {
+            Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Overview, true);
         }
     }
 }

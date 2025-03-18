@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -121,10 +121,6 @@
     <value>Inspired by Rooler</value>
     <comment>Rooler is a name of the tool.</comment>
   </data>
-  <data name="Shell_VideoConference.Content" xml:space="preserve">
-    <value>Video Conference Mute</value>
-    <comment>Navigation view item name for Video Conference</comment>
-  </data>
   <data name="Shell_MeasureTool.Content" xml:space="preserve">
     <value>Screen Ruler</value>
     <comment>Product name: Navigation view item name for Screen Ruler</comment>
@@ -177,16 +173,19 @@
     <value>Vertical spacing</value>
   </data>
   <data name="MeasureTool_UnitsOfMeasure.Header" xml:space="preserve">
-    <value>Units of measurement</value>
+    <value>Extra units of measurement</value>
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Pixels.Content" xml:space="preserve">
-    <value>Pixels</value>
+    <value>Show only pixels</value>
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Inches.Content" xml:space="preserve">
     <value>Inches</value>
   </data>
   <data name="MeasureTool_UnitsOfMeasure_Centimeters.Content" xml:space="preserve">
     <value>Centimeters</value>
+  </data>
+  <data name="MeasureTool_UnitsOfMeasure_Millimeters.Content" xml:space="preserve">
+    <value>Millimeters</value>
   </data>
   <data name="MeasureTool_PixelTolerance.Header" xml:space="preserve">
     <value>Pixel tolerance for edge detection</value>
@@ -480,132 +479,6 @@
     <value>Ctrl three times</value>
     <comment>This is the Ctrl keyboard key</comment>
   </data>
-  <data name="VideoConference_Enable.Header" xml:space="preserve">
-    <value>Enable Video Conference Mute</value>
-  </data>
-  <data name="VideoConference.ModuleDescription" xml:space="preserve">
-    <value>Video Conference Mute is a quick and easy way to do a global "mute" of both your microphone and webcam. Disabling this module or closing PowerToys will unmute the microphone and camera.</value>
-  </data>
-  <data name="VideoConference_CameraAndMicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Mute camera &amp; microphone</value>
-  </data>
-  <data name="VideoConference_MicrophoneMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Mute microphone</value>
-  </data>
-  <data name="VideoConference_MicrophonePushToTalkHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Push to talk</value>
-  </data>
-  <data name="VideoConference_CameraMuteHotkeyControl_Header.Header" xml:space="preserve">
-    <value>Mute camera</value>
-  </data>
-  <data name="VideoConference_SelectedCamera.Header" xml:space="preserve">
-    <value>Selected camera</value>
-  </data>
-  <data name="VideoConference_SelectedMicrophone.Header" xml:space="preserve">
-    <value>Selected microphone</value>
-  </data>
-  <data name="VideoConference_PushToReverse.Header" xml:space="preserve">
-    <value>Push to reverse</value>
-  </data>
-  <data name="VideoConference_PushToReverse.Description" xml:space="preserve">
-    <value>If enabled, allows both push to talk and push to mute, depending on microphone state</value>
-  </data>
-  <data name="VideoConference_CameraOverlayImagePathHeader.Header" xml:space="preserve">
-    <value>Image displayed when camera is muted</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition.Header" xml:space="preserve">
-    <value>Toolbar position</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition_TopCenter.Content" xml:space="preserve">
-    <value>Top center</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition_TopLeftCorner.Content" xml:space="preserve">
-    <value>Top left corner</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition_TopRightCorner.Content" xml:space="preserve">
-    <value>Top right corner</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition_BottomLeftCorner.Content" xml:space="preserve">
-    <value>Bottom left corner</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition_BottomCenter.Content" xml:space="preserve">
-    <value>Bottom center</value>
-  </data>
-  <data name="VideoConference_ToolbarPosition_BottomRightCorner.Content" xml:space="preserve">
-    <value>Bottom right corner</value>
-  </data>
-  <data name="VideoConference_ToolbarMonitor.Header" xml:space="preserve">
-    <value>Show toolbar on</value>
-  </data>
-  <data name="VideoConference_ToolbarMonitor_Main.Content" xml:space="preserve">
-    <value>Main monitor</value>
-  </data>
-  <data name="VideoConference_ToolbarMonitor_UnderCursor.Content" xml:space="preserve">
-    <value>Monitor under cursor</value>
-  </data>
-  <data name="VideoConference_ToolbarMonitor_ActiveWindow.Content" xml:space="preserve">
-    <value>Active window monitor</value>
-  </data>
-  <data name="VideoConference_ToolbarMonitor_All.Content" xml:space="preserve">
-    <value>All monitors</value>
-  </data>
-  <data name="VideoConference_ToolbarHide.Header" xml:space="preserve">
-    <value>Hide toolbar</value>
-  </data>
-  <data name="VideoConference_ToolbarHideMuted.Content" xml:space="preserve">
-    <value>When both camera and microphone are muted</value>
-  </data>
-  <data name="VideoConference_ToolbarHideNever.Content" xml:space="preserve">
-    <value>Never</value>
-  </data>
-  <data name="VideoConference_ToolbarHideUnmuted.Content" xml:space="preserve">
-    <value>When both camera and microphone are unmuted</value>
-  </data>
-  <data name="VideoConference_ToolbarHideTimeout.Content" xml:space="preserve">
-    <value>After timeout</value>
-  </data>
-  <data name="VideoConference.ModuleTitle" xml:space="preserve">
-    <value>Video Conference Mute</value>
-  </data>
-  <data name="VideoConference_Camera.Header" xml:space="preserve">
-    <value>Camera</value>
-  </data>
-  <data name="VideoConference_Camera.Description" xml:space="preserve">
-    <value>To use this feature, make sure to select PowerToys VideoConference Mute as your camera source in your apps.</value>
-  </data>
-  <data name="VideoConference_Microphone.Header" xml:space="preserve">
-    <value>Microphone</value>
-  </data>
-  <data name="VideoConference_Toolbar.Header" xml:space="preserve">
-    <value>Toolbar</value>
-  </data>
-  <data name="VideoConference_Behavior.Header" xml:space="preserve">
-    <value>Behavior</value>
-  </data>
-  <data name="VideoConference_StartupAction.Header" xml:space="preserve">
-    <value>Startup action</value>
-  </data>
-  <data name="VideoConference_StartupActionNothing.Content" xml:space="preserve">
-    <value>Nothing</value>
-  </data>
-  <data name="VideoConference_StartupActionUnmute.Content" xml:space="preserve">
-    <value>Unmute</value>
-  </data>
-  <data name="VideoConference_StartupActionMute.Content" xml:space="preserve">
-    <value>Mute</value>
-  </data>
-  <data name="VideoConference_Shortcuts.Header" xml:space="preserve">
-    <value>Shortcuts</value>
-  </data>
-  <data name="VideoConference_CameraOverlayImageAlt.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Camera overlay image preview</value>
-  </data>
-  <data name="VideoConference_CameraOverlayImageBrowse.Content" xml:space="preserve">
-    <value>Browse</value>
-  </data>
-  <data name="VideoConference_CameraOverlayImageClear.Content" xml:space="preserve">
-    <value>Clear</value>
-  </data>
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
     <comment>Navigation view item name for General</comment>
@@ -721,6 +594,9 @@
   </data>
   <data name="AdvancedPaste_Direct_Access_Hotkeys_GroupSettings.Header" xml:space="preserve">
     <value>Actions</value>
+  </data>
+  <data name="AdvancedPaste_Additional_Actions_GroupSettings.Header" xml:space="preserve">
+    <value>Additional actions</value>
   </data>
   <data name="RemapKeysList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Current Key Remappings</value>
@@ -1003,7 +879,7 @@
     <value>Location</value>
   </data>
   <data name="General_SettingsBackupAndRestore_ButtonBackup.Content" xml:space="preserve">
-    <value>Backup</value>
+    <value>Back up</value>
   </data>
   <data name="General_SettingsBackupInfo_FileNameHeader.Text" xml:space="preserve">
     <value>File name:</value>
@@ -1228,10 +1104,10 @@
     <value>Appearance &amp; behavior</value>
   </data>
   <data name="General_SettingsBackupAndRestoreTitle.Header" xml:space="preserve">
-    <value>Backup &amp; restore</value>
+    <value>Back up &amp; restore</value>
   </data>
   <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
-    <value>Backup and restore your settings</value>
+    <value>Back up and restore your settings</value>
   </data>
   <data name="General_SettingsBackupAndRestore.Description" xml:space="preserve">
     <value>PowerToys will restart automatically if needed</value>
@@ -1293,10 +1169,6 @@
   <data name="ImageResizer_Size.Header" xml:space="preserve">
     <value>Unit</value>
   </data>
-  <data name="RemoveButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Remove</value>
-    <comment>Removes a user defined setting group for Image Resizer</comment>
-  </data>
   <data name="RemoveItem.Text" xml:space="preserve">
     <value>Delete</value>
   </data>
@@ -1320,6 +1192,10 @@
   <data name="ImageResizer_TIFFCompression.Header" xml:space="preserve">
     <value>TIFF compression</value>
     <comment>{Locked="TIFF"}</comment>
+  </data>
+  <data name="ImageResizer_AutoText" xml:space="preserve">
+    <value>(auto)</value>
+    <comment>Displayed on the preset card when the Width or Height property is zero. The same as "Input_Auto" in the ImageResizerUI project's resources.</comment>
   </data>
   <data name="File.Header" xml:space="preserve">
     <value>File</value>
@@ -2000,7 +1876,8 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Actions</value>
   </data>
   <data name="AdvancedPasteUI_Actions.Description" xml:space="preserve">
-    <value>Create and manage advanced paste custom actions</value>
+    <value>Create and manage advanced paste custom actions.
+(Requires Paste with AI to be enabled)</value>
   </data>
   <data name="AdvancedPasteUI_AddCustomActionButton.Content" xml:space="preserve">
     <value>Add custom action</value>
@@ -2041,6 +1918,30 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="PasteAsCustom_Shortcut.Header" xml:space="preserve">
     <value>Paste as Custom with AI directly</value>
+  </data>
+  <data name="ImageToText.Header" xml:space="preserve">
+    <value>Image to text</value>
+  </data>
+  <data name="PasteAsFile.Header" xml:space="preserve">
+    <value>Paste as file</value>
+  </data>
+  <data name="PasteAsTxtFile.Header" xml:space="preserve">
+    <value>Paste as .txt file</value>
+  </data>
+  <data name="PasteAsPngFile.Header" xml:space="preserve">
+    <value>Paste as .png file</value>
+  </data>
+  <data name="PasteAsHtmlFile.Header" xml:space="preserve">
+    <value>Paste as .html file</value>
+  </data>
+  <data name="Transcode.Header" xml:space="preserve">
+    <value>Transcode audio / video</value>
+  </data>
+  <data name="TranscodeToMp3.Header" xml:space="preserve">
+    <value>Transcode to .mp3</value>
+  </data>
+  <data name="TranscodeToMp4.Header" xml:space="preserve">
+    <value>Transcode to .mp4 (H.264/AAC)</value>
   </data>
   <data name="AdvancedPaste_EnableAIDialogOpenAIApiKey.Text" xml:space="preserve">
     <value>OpenAI API key:</value>
@@ -2106,9 +2007,6 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
     <value>Shortcut Guide presents the user with a listing of available shortcuts for the current state of the desktop.</value>
   </data>
-  <data name="Oobe_VideoConference.Description" xml:space="preserve">
-    <value>Video Conference Mute allows users to quickly mute the microphone and turn off the camera while on a conference call with a single keystroke, regardless of what application has focus on your computer.</value>
-  </data>
   <data name="Oobe_MouseUtils.Description" xml:space="preserve">
     <value>A collection of utilities to enhance your mouse.</value>
     <comment>Mouse as in the hardware peripheral</comment>
@@ -2120,6 +2018,51 @@ Take a moment to preview the various utilities listed or view our comprehensive 
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
     <value>Documentation on Microsoft Learn</value>
+  </data>
+  <data name="Oobe_Overview_Telemetry_Title.Text" xml:space="preserve">
+    <value>Help us make PowerToys better</value>
+  </data>
+  <data name="Oobe_Overview_Telemetry_Desc.Text" xml:space="preserve">
+    <value>Diagnostics &amp; feedback helps us to improve PowerToys and keep it secure, up to date, and working as expected.</value>
+  </data>
+  <data name="Oobe_Overview_DiagnosticsAndFeedback_Settings_Link.Content" xml:space="preserve">
+    <value>View more diagnostic data settings</value>
+  </data>
+  <data name="Oobe_Overview_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
+    <value>Learn more about the information PowerToys logs &amp; how it gets used</value>
+  </data>
+  <data name="Oobe_Overview_EnableDataDiagnostics.Header" xml:space="preserve">
+    <value>Diagnostic data</value>
+  </data>
+  <data name="Oobe_Overview_EnableDataDiagnostics.Description" xml:space="preserve">
+    <value>Helps inform bug fixes, performance, and product decisions</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar.Header" xml:space="preserve">
+    <value>Turn on diagnostic data to help us improve PowerToys?</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar_Desc.Text" xml:space="preserve">
+    <value>PowerToys diagnostic data is completely optional.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar_Button_Enable.Content" xml:space="preserve">
+    <value>Enable</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Title" xml:space="preserve">
+    <value>Thank you for helping to make PowerToys better!</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_No_Click_InfoBar_Title" xml:space="preserve">
+    <value>Preference updated.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_InfoBar_Desc.Text" xml:space="preserve">
+    <value>You can change this at any time from</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Yes_Click_OpenSettings_Text.Text" xml:space="preserve">
+    <value>settings.</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Button_Yes.Content" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Oobe_WhatsNew_DataDiagnostics_Button_No.Content" xml:space="preserve">
+    <value>No</value>
   </data>
   <data name="ReleaseNotes.Content" xml:space="preserve">
     <value>Release notes</value>
@@ -2208,18 +2151,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Oobe_TipsAndTricks.Text" xml:space="preserve">
     <value>Tips &amp; tricks</value>
   </data>
-  <data name="Oobe_VideoConference_ToggleMicVid.Text" xml:space="preserve">
-    <value>to toggle both your microphone and video</value>
-  </data>
-  <data name="Oobe_VideoConference_ToggleMic.Text" xml:space="preserve">
-    <value>to toggle your microphone</value>
-  </data>
-  <data name="Oobe_VideoConference_PushToTalkMic.Text" xml:space="preserve">
-    <value>to toggle your microphone until key release</value>
-  </data>
-  <data name="Oobe_VideoConference_ToggleVid.Text" xml:space="preserve">
-    <value>to toggle your video</value>
-  </data>
   <data name="Oobe_MeasureTool_Activation.Text" xml:space="preserve">
     <value>to bring up the Screen Ruler command bar.</value>
   </data>
@@ -2267,10 +2198,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Oobe_ShortcutGuide.Title" xml:space="preserve">
     <value>Shortcut Guide</value>
-    <comment>Do not localize this string</comment>
-  </data>
-  <data name="Oobe_VideoConference.Title" xml:space="preserve">
-    <value>Video Conference Mute</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Overview.Title" xml:space="preserve">
@@ -2434,11 +2361,28 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="ImageResizer_Unit_Pixel" xml:space="preserve">
     <value>Pixels</value>
   </data>
-  <data name="EditButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ImageResizer_EditButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Edit</value>
   </data>
   <data name="ImageResizer_EditSize.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Edit size</value>
+  </data>
+  <data name="ImageResizer_Presets.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>ImageResizer presets</value>
+  </data>
+  <data name="ImageResizer_AddSizeButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Add a new preset</value>
+  </data>
+  <data name="ImageResizer_RemoveButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ImageResizer_EditButton_Accessibility_Name" xml:space="preserve">
+    <value>Edit the {0} preset</value>
+    <comment>Expands to the AutomationProperties.Name value for the Edit button. Example: "Edit the Small preset".</comment>
+  </data>
+  <data name="ImageResizer_RemoveButton_Accessibility_Name" xml:space="preserve">
+    <value>Remove the {0} preset</value>
+    <comment>Expands to the AutomationProperties.Name value for the Remove button. Example: "Remove the Large preset".</comment>
   </data>
   <data name="No" xml:space="preserve">
     <value>No</value>
@@ -2543,10 +2487,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="LearnMore_ShortcutGuide.Text" xml:space="preserve">
     <value>Learn more about Shortcut Guide</value>
     <comment>Shortcut Guide is a product name, do not loc</comment>
-  </data>
-  <data name="LearnMore_VCM.Text" xml:space="preserve">
-    <value>Learn more about Video Conference Mute</value>
-    <comment>Video Conference Mute is a product name, do not loc</comment>
   </data>
   <data name="Oobe_FileExplorer.Title" xml:space="preserve">
     <value>File Explorer add-ons</value>
@@ -2887,17 +2827,8 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
     <value>Zone appearance</value>
   </data>
-  <data name="VideoConference_DeprecationWarning.Title" xml:space="preserve">
-    <value>VCM is moving into legacy mode (maintenance only).</value>
-  </data>
-  <data name="VideoConference_DeprecationWarningButton.Content" xml:space="preserve">
-    <value>Learn more</value>
-  </data>
   <data name="LearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
-  </data>
-  <data name="VideoConference_RunAsAdminRequired.Title" xml:space="preserve">
-    <value>You need to run as administrator to modify these settings.</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Header" xml:space="preserve">
     <value>Geometric Code</value>
@@ -3425,7 +3356,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>There was an error in the settings format. Please check the settings file:</value>
   </data>
   <data name="General_SettingsBackupAndRestore_BackupComplete" xml:space="preserve">
-    <value>Backup completed.</value>
+    <value>Back up completed.</value>
   </data>
   <data name="General_SettingsBackupAndRestore_NoBackupSyncPath" xml:space="preserve">
     <value>No backup location selected.</value>
@@ -3513,126 +3444,144 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Characters</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Header" xml:space="preserve">
-    <value>Choose a character set</value>
+    <value>Choose character sets</value>
   </data>
   <data name="QuickAccent_SelectedLanguage.Description" xml:space="preserve">
-    <value>Show only accented characters common to the selected set</value>
+    <value>Show only accented characters common to the selected sets</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_All.Content" xml:space="preserve">
     <value>All available</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Bulgarian.Content" xml:space="preserve">
+  <data name="QuickAccent_Group_Special" xml:space="preserve">
+    <value>Special sets</value>
+  </data>
+  <data name="QuickAccent_Group_Language" xml:space="preserve">
+    <value>Language sets</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Special" xml:space="preserve">
+    <value>Special Characters</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Bulgarian" xml:space="preserve">
     <value>Bulgarian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Catalan.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Catalan" xml:space="preserve">
     <value>Catalan</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Crimean.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Crimean" xml:space="preserve">
     <value>Crimean Tatar</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Currency.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Currency" xml:space="preserve">
     <value>Currency</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Croatian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Croatian" xml:space="preserve">
     <value>Croatian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Czech.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Czech" xml:space="preserve">
     <value>Czech</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Danish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Danish" xml:space="preserve">
     <value>Danish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Gaeilge.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Gaeilge" xml:space="preserve">
     <value>Gaeilge</value>
     <comment>Gaelic language spoken in Ireland</comment>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Gaidhlig.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Gaidhlig" xml:space="preserve">
     <value>Gàidhlig</value>
     <comment>Scottish Gaelic</comment>
   </data>
-  <data name="QuickAccent_SelectedLanguage_German.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_German" xml:space="preserve">
     <value>German</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Greek.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Greek" xml:space="preserve">
     <value>Greek</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Hebrew.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Hebrew" xml:space="preserve">
     <value>Hebrew</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_French.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_French" xml:space="preserve">
     <value>French</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Finnish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Finnish" xml:space="preserve">
     <value>Finnish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Estonian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Estonian" xml:space="preserve">
     <value>Estonian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Esperanto.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Esperanto" xml:space="preserve">
     <value>Esperanto</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_IPA.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_IPA" xml:space="preserve">
     <value>IPA</value>
     <comment>International Phonetic Alphabet</comment>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Lithuanian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Lithuanian" xml:space="preserve">
     <value>Lithuanian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Macedonian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Macedonian" xml:space="preserve">
     <value>Macedonian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Maori.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Maori" xml:space="preserve">
     <value>Maori</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Dutch.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Romanization" xml:space="preserve">
+    <value>Middle Eastern Romanization</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Dutch" xml:space="preserve">
     <value>Dutch</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Norwegian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Norwegian" xml:space="preserve">
     <value>Norwegian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Pinyin.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Pinyin" xml:space="preserve">
     <value>Pinyin</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Polish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Proto_Indo_European" xml:space="preserve">
+    <value>Proto Indo European</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Polish" xml:space="preserve">
     <value>Polish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Portuguese.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Portuguese" xml:space="preserve">
     <value>Portuguese</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Slovak.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Slovak" xml:space="preserve">
     <value>Slovak</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Slovenian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Slovenian" xml:space="preserve">
     <value>Slovenian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Spanish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Spanish" xml:space="preserve">
     <value>Spanish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Swedish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Swedish" xml:space="preserve">
     <value>Swedish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Turkish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Turkish" xml:space="preserve">
     <value>Turkish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Icelandic.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Icelandic" xml:space="preserve">
     <value>Icelandic</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Romanian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Romanian" xml:space="preserve">
     <value>Romanian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Serbian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Serbian" xml:space="preserve">
     <value>Serbian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Hungarian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Serbian_Cyrillic" xml:space="preserve">
+    <value>Serbian Cyrillic</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Hungarian" xml:space="preserve">
     <value>Hungarian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Italian.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Italian" xml:space="preserve">
     <value>Italian</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Kurdish.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Kurdish" xml:space="preserve">
     <value>Kurdish</value>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Welsh.Content" xml:space="preserve">
+  <data name="QuickAccent_SelectedLanguage_Welsh" xml:space="preserve">
     <value>Welsh</value>
   </data>
   <data name="Hosts.ModuleDescription" xml:space="preserve">
@@ -3824,6 +3773,33 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
     <value>Allow experimentation with new features</value>
   </data>
+  <data name="General_DiagnosticsAndFeedback.Header" xml:space="preserve">
+    <value>Diagnostics &amp; feedback</value>
+  </data>
+  <data name="GeneralPage_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
+    <value>Learn more about the information we log &amp; how it gets used</value>
+  </data>
+  <data name="GeneralPage_EnableDataDiagnostics.Header" xml:space="preserve">
+    <value>Diagnostic data</value>
+  </data>
+  <data name="GeneralPage_EnableDataDiagnostics.Description" xml:space="preserve">
+    <value>Helps inform bug fixes, performance, and improvements</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticData.Header" xml:space="preserve">
+    <value>View diagnostic data</value>
+  </data>
+  <data name="GeneralPage_EnableViewDiagnosticData.Header" xml:space="preserve">
+    <value>Enable viewing</value>
+  </data>
+  <data name="GeneralPage_EnableViewDiagnosticData.Description" xml:space="preserve">
+    <value>Uses up to 1GB (or more) of hard drive space on your PC</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataViewer.Header" xml:space="preserve">
+    <value>Diagnostic data viewer</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataViewer.Description" xml:space="preserve">
+    <value>Generate .xml files containing readable diagnostic data. Folder may include .xml and .etl files</value>
+  </data>
   <data name="Shell_AdvancedPaste.Content" xml:space="preserve">
     <value>Advanced Paste</value>
     <comment>Product name: Navigation view item name for Advanced Paste</comment>
@@ -3850,7 +3826,13 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Custom format preview</value>
   </data>
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Description" xml:space="preserve">
-    <value>Preview the output of the custom format before pasting</value>
+    <value>Preview the output of AI formats and Image to text before pasting</value>
+  </data>
+  <data name="AdvancedPaste_EnableAdvancedAI.Header" xml:space="preserve">
+    <value>Enable advanced AI</value>
+  </data>
+  <data name="AdvancedPaste_EnableAdvancedAI.Description" xml:space="preserve">
+    <value>Add advanced capabilities when using 'Paste with AI' including the power to 'chain' multiple transformations together and work with images and files. This feature may consume more API credits when used.</value>
   </data>
   <data name="Oobe_AdvancedPaste.Description" xml:space="preserve">
     <value>Advanced Paste is a tool to put your clipboard content into any format you need, focused towards developer workflows. It can paste as plain text, markdown, or json directly with the UX or with a direct keystroke invoke. These are fully locally executed. In addition, it has an AI powered option that is 100% opt-in and requires an Open AI key. Note: this will replace the formatted text in your clipboard with the selected format.</value>
@@ -4027,13 +4009,17 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Launch Registry Preview</value>
     <comment>"Registry Preview" is the name of the utility</comment>
   </data>
+  <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
+    <value>Mouse Jump</value>
+    <comment>Refers to the utility name</comment>
+  </data>
   <data name="MouseUtils_MouseJump.Description" xml:space="preserve">
     <value>Quickly move the mouse pointer long distances.</value>
     <comment>"Mouse Jump" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
-  <data name="MouseUtils_MouseJump.Header" xml:space="preserve">
-    <value>Mouse Jump</value>
-    <comment>Refers to the utility name</comment>
+  <data name="MouseUtils_Enable_MouseJump.Header" xml:space="preserve">
+    <value>Enable Mouse Jump</value>
+    <comment>"Mouse Jump" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MouseJump_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to turn on or off this mode</value>
@@ -4041,9 +4027,124 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="MouseUtils_MouseJump_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="MouseUtils_Enable_MouseJump.Header" xml:space="preserve">
-    <value>Enable Mouse Jump</value>
-    <comment>"Mouse Jump" is the name of the utility.</comment>
+  <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
+    <value>Thumbnail Size</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix.Text" xml:space="preserve">
+    <value>Constrain thumbnail image size to a maximum of</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix.Text" xml:space="preserve">
+    <value>pixels</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Height.Header" xml:space="preserve">
+    <value>Maximum height (px)</value>
+    <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Width.Header" xml:space="preserve">
+    <value>Maximum width (px)</value>
+    <comment>px = pixels</comment>
+  </data>
+  <data name="MouseUtils_MouseJump_Appearance.Header" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType.Header" xml:space="preserve">
+    <value>Preview style</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType.Description" xml:space="preserve">
+    <value>Select a predefined style, or apply a custom one</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType_Compact.Text" xml:space="preserve">
+    <value>Compact</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType_Bezelled.Text" xml:space="preserve">
+    <value>Bezelled</value>
+  </data>
+  <data name="MouseUtils_MouseJump_PreviewType_Custom.Text" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="MouseUtils_MouseJump_CopyStyle.Content" xml:space="preserve">
+    <value>Copy to Custom preview style</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BackgroundColor1.Header" xml:space="preserve">
+    <value>Background color 1</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BackgroundColor1.Description" xml:space="preserve">
+    <value>The start color for the background gradient fill on the preview image</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BackgroundColor2.Header" xml:space="preserve">
+    <value>Background color 2</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BackgroundColor2.Description" xml:space="preserve">
+    <value>The end color for the background gradient fill on the preview image</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderThickness.Header" xml:space="preserve">
+    <value>Border thickness</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderThickness.Description" xml:space="preserve">
+    <value>The thickness (in pixels) of the border that surrounds the preview image</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderColor.Header" xml:space="preserve">
+    <value>Border color</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderColor.Description" xml:space="preserve">
+    <value>The color of the border that surrounds the preview image</value>
+  </data>
+  <data name="MouseUtils_MouseJump_Border3dDepth.Header" xml:space="preserve">
+    <value>Border 3D depth</value>
+  </data>
+  <data name="MouseUtils_MouseJump_Border3dDepth.Description" xml:space="preserve">
+    <value>The width (in pixels) of the 3d effect on the border that surrounds the preview image</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderPadding.Header" xml:space="preserve">
+    <value>Border padding</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BorderPadding.Description" xml:space="preserve">
+    <value>The amount of padding to draw between the border that surrounds the main preview image and the screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BezelThickness.Header" xml:space="preserve">
+    <value>Bezel thickness</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BezelThickness.Description" xml:space="preserve">
+    <value>The thickness (in pixels) of the border that surrounds the individual screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BezelColor.Header" xml:space="preserve">
+    <value>Bezel color</value>
+  </data>
+  <data name="MouseUtils_MouseJump_BezelColor.Description" xml:space="preserve">
+    <value>The color of the border that surrounds the individual screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_Bezel3dDepth.Header" xml:space="preserve">
+    <value>Bezel 3D depth</value>
+  </data>
+  <data name="MouseUtils_MouseJump_Bezel3dDepth.Description" xml:space="preserve">
+    <value>The width (in pixels) of the 3d effect on the border that surrounds individual screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenMargin.Header" xml:space="preserve">
+    <value>Screen spacing</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenMargin.Description" xml:space="preserve">
+    <value>The width (in pixels) of the margin drawn between individual screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenColor1.Header" xml:space="preserve">
+    <value>Screen color 1</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenColor1.Description" xml:space="preserve">
+    <value>The start color for the background gradient fill on individual screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenColor2.Header" xml:space="preserve">
+    <value>Screen color 2</value>
+  </data>
+  <data name="MouseUtils_MouseJump_ScreenColor2.Description" xml:space="preserve">
+    <value>The end color for the background gradient fill on individual screen images</value>
+  </data>
+  <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_Title" xml:space="preserve">
+    <value>Copy to Custom preview style</value>
+  </data>
+  <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_Text" xml:space="preserve">
+    <value>This will replace the current settings in the Custom preview style.</value>
+  </data>
+  <data name="MouseUtils_MouseJump_CopyToCustomStyle_MessageBox_PrimaryButtonText" xml:space="preserve">
+    <value>Copy</value>
   </data>
   <data name="Hosts_Toggle_LoopbackDuplicates.Description" xml:space="preserve">
     <value>127.0.0.1, ::1, ...</value>
@@ -4070,23 +4171,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
-    <value>Thumbnail Size</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix.Text" xml:space="preserve">
-    <value>Constrain thumbnail image size to a maximum of</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Suffix.Text" xml:space="preserve">
-    <value>pixels</value>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Height.Header" xml:space="preserve">
-    <value>Maximum height (px)</value>
-    <comment>px = pixels</comment>
-  </data>
-  <data name="MouseUtils_MouseJump_ThumbnailSize_Edit_Width.Header" xml:space="preserve">
-    <value>Maximum width (px)</value>
-    <comment>px = pixels</comment>
   </data>
   <data name="Oobe_Peek.Description" xml:space="preserve">
     <value>A lightning fast file preview feature for Windows.</value>
@@ -4185,6 +4269,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Peek_SourceCode_WrapText.Content" xml:space="preserve">
     <value>Wrap text</value>
   </data>
+  <data name="Peek_SourceCode_Minimap.Content" xml:space="preserve">
+    <value>Show minimap</value>
+  </data>
   <data name="ShowPluginsOverview_All.Content" xml:space="preserve">
     <value>All</value>
   </data>
@@ -4216,6 +4303,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="GPO_SomeSettingsAreManaged.Title" xml:space="preserve">
     <value>Some settings are managed by your organization.</value>
   </data>
+  <data name="GPO_AdvancedPasteAi_SettingIsManaged.Title" xml:space="preserve">
+    <value>AI features are managed by your organization.</value>
+  </data>
   <data name="GPO_SettingIsManaged_ToolTip.Text" xml:space="preserve">
     <value>This setting is managed by your organization.</value>
   </data>
@@ -4230,6 +4320,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Peek_SourceCode_StickyScroll.Content" xml:space="preserve">
     <value>Enable sticky scroll</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Monaco_Minimap.Content" xml:space="preserve">
+    <value>Show minimap</value>
   </data>
   <data name="PrivacyLink.Text" xml:space="preserve">
     <value>OpenAI Privacy</value>
@@ -4276,6 +4369,93 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Automatically close the AdvancedPaste window after it loses focus</value>
     <comment>AdvancedPaste is a product name, do not loc</comment>
   </data>
+  <data name="GPO_CommandNotFound_ForceDisabled.Title" xml:space="preserve">
+    <value>The Command Not Found module is disabled by your organization.</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="GPO_CommandNotFound_ForceEnabled.Title" xml:space="preserve">
+    <value>The Command Not Found module is enabled by your organization.</value>
+    <comment>"Command Not Found" is a product name</comment>
+  </data>
+  <data name="NewPlus.ModuleTitle" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus.ModuleDescription" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates</value>
+  </data>
+  <data name="NewPlus_Product_Name.Content" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_Product_Description.Description" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates</value>
+    <comment>New+ product description</comment>
+  </data>
+  <data name="NewPlus_Learn_More.Text" xml:space="preserve">
+    <value>Learn more about New+</value>
+    <comment>New+ learn more link. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_Enable_Toggle.Header" xml:space="preserve">
+    <value>Enable New+</value>
+    <comment>Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
+    <value>PowerToys "Back up and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
+  </data>
+  <data name="NewPlus_Templates.Header" xml:space="preserve">
+    <value>Templates</value>
+    <comment>Templates label</comment>
+  </data>
+  <data name="NewPlus_Templates_Location.Header" xml:space="preserve">
+    <value>Location</value>
+    <comment>Templates Location label</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Path.Text" xml:space="preserve">
+    <value>...</value>
+    <comment>Do not localize</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Learn_More.Content" xml:space="preserve">
+    <value>Learn more about template location</value>
+    <comment>Read more about templates location</comment>
+  </data>
+  <data name="NewPlus_Templates_Location_Change.Content" xml:space="preserve">
+    <value>Change</value>
+    <comment>Button where user can Change the location of New templates</comment>
+  </data>
+  <data name="NewPlus_Display_Options.Header" xml:space="preserve">
+    <value>Display options</value>
+    <comment>Display options label</comment>
+  </data>
+  <data name="NewPlus_Hide_File_Extension_Toggle.Header" xml:space="preserve">
+    <value>Hide template filename extension</value>
+    <comment>Template file name extension settings toggle</comment>
+  </data>
+  <data name="NewPlus_Hide_Starting_Digits_Toggle.Header" xml:space="preserve">
+    <value>Hide template filename starting digits, spaces, and dots</value>
+    <comment>Template filename starting digits settings toggle</comment>
+  </data>
+  <data name="NewPlus_Hide_Starting_Digits_Description.Text" xml:space="preserve">
+    <value>This option is useful when using digits, spaces and dots at the beginning of filenames to control the display order of templates</value>
+    <comment>Template filename starting digits settings toggle</comment>
+  </data>
+  <data name="NewPlus.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit</comment>
+  </data>
+  <data name="Oobe_NewPlus.Title" xml:space="preserve">
+    <value>New+</value>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+  </data>
+  <data name="Oobe_NewPlus.Description" xml:space="preserve">
+    <value>Create files and folders from a personalized set of templates.</value>
+  </data>
+  <data name="Oobe_NewPlus_HowToUse.Text" xml:space="preserve">
+    <value>In File Explorer, right-click the desktop or a folder and via the New+ from the context menu select your template. You can add new templates by opening the template folder via "Open templates" and add new files and folders there.</value>
+  </data>
+  <data name="Oobe_NewPlus_TipsAndTricks.Text" xml:space="preserve">
+    <value>You can have multiple templates of the same file type, and you can even template folders!</value>
+  </data>
   <data name="Workspaces.ModuleDescription" xml:space="preserve">
     <value>Workspaces is a quick and easy way to launch a set of applications to custom positions and configurations with one-click.</value>
   </data>
@@ -4285,13 +4465,436 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Workspaces_ShortDescription" xml:space="preserve">
     <value>Create and launch Workspaces</value>
   </data>
+  <data name="Shell_ZoomIt.Content" xml:space="preserve">
+    <value>ZoomIt</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="ZoomIt_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable ZoomIt</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="ZoomIt.ModuleDescription" xml:space="preserve">
+    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="ZoomIt_ShortDescription" xml:space="preserve">
+    <value>A screen zoom, annotation, and recording tool for technical presentations and demos.</value>
+  </data>
+  <data name="ZoomIt.ModuleTitle" xml:space="preserve">
+    <value>ZoomIt</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="LearnMore_ZoomIt.Text" xml:space="preserve">
+    <value>Learn more about ZoomIt</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="ZoomIt.SecondaryLinksHeader" xml:space="preserve">
+    <value>Attribution</value>
+    <comment>giving credit to the projects this utility was based on</comment>
+  </data>
+  <data name="ZoomIt_SimultaneousStandaloneZoomItWarning.Title" xml:space="preserve">
+    <value>Running ZoomIt through PowerToys and the classical standalone ZoomIt executable at the same time is not supported. Please exit the original ZoomIt before enabling it here.</value>
+  </data>
+  <data name="ZoomIt_BehaviorGroup.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="ZoomIt_Toggle_ShowTrayIcon.Header" xml:space="preserve">
+    <value>Show tray icon</value>
+  </data>
+  <data name="ZoomIt_ZoomGroup.Header" xml:space="preserve">
+    <value>Zoom</value>
+  </data>
+  <data name="ZoomIt_ZoomGroup.Description" xml:space="preserve">
+    <value>After toggling ZoomIt you can zoom in with the mouse wheel or up and down arrow keys. Exit zoom mode with Escape or by pressing the right mouse button.
+
+Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.</value>
+  </data>
+  <data name="ZoomIt_Zoom_Shortcut.Header" xml:space="preserve">
+    <value>Zoom Toggle Hotkey</value>
+  </data>
+  <data name="ZoomIt_Toggle_AnimateZoom.Header" xml:space="preserve">
+    <value>Animate zoom in and zoom out</value>
+  </data>
+  <data name="ZoomIt_Slider_InitialMagnification.Header" xml:space="preserve">
+    <value>Specify the initial level of magnification when zooming in</value>
+  </data>
+  <data name="ZoomIt_LiveZoomGroup.Header" xml:space="preserve">
+    <value>Live Zoom</value>
+  </data>
+  <data name="ZoomIt_LiveZoomGroup.Description" xml:space="preserve">
+    <value>LiveZoom mode supports window updates to show while zoomed.
+
+Note that in LiveZoom you must use Ctrl+Up and Ctrl+Down to control the zoom level. To enter drawing mode, use the standard zoom-without-draw hotkey and then escape to go back to LiveZoom.
+
+Use LiveDraw to draw and annotate the live desktop. To activate LiveDraw, enter the hotkey with the Shift key in the opposite mode. You can remove LiveDraw annotations by activating LiveDraw and enter the escape key.
+
+To enter and exit LiveZoom, enter the hotkey specified below.</value>
+  </data>
+  <data name="ZoomIt_LiveZoom_Shortcut.Header" xml:space="preserve">
+    <value>Live Zoom Toggle Hotkey</value>
+  </data>
+  <data name="ZoomIt_DrawGroup.Header" xml:space="preserve">
+    <value>Draw</value>
+  </data>
+  <data name="ZoomIt_DrawGroup.Description" xml:space="preserve">
+    <value>Once zoomed, toggle drawing mode by pressing the left mouse button. Undo with Ctrl+Z and all drawing by pressing E. Center the cursor with the space bar. Exit drawing mode by pressing the right mouse button.
+
+Pen Control - Change the pen width by pressing left Ctrl and using the mouse wheel or the up and down arrow keys.
+
+Colors - Change the pen color by pressing R (red), G (green), B (blue), O (orange), Y (yellow) or P (pink).
+
+Highlight and Blur - Hold Shift while pressing a color key for a translucent highlighter color. Press X for blur or Shift+X for a stronger blur.
+
+Shapes - Draw a line by holding down the Shift key, a rectangle with the Ctrl key, an ellipse with the Tab key and an arrow with Shift+Ctrl.
+
+Screen - Clear the screen for a sketch pad by pressing W (white) or K (black). Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.</value>
+  </data>
+  <data name="ZoomIt_Draw_Shortcut.Header" xml:space="preserve">
+    <value>Draw without Zoom Hotkey</value>
+  </data>
+  <data name="ZoomIt_TypeGroup.Header" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="ZoomIt_TypeGroup.Description" xml:space="preserve">
+    <value>Once in drawing mode, type 't' to enter typing mode or shift+'t' to enter typing mode with right-aligned input. Exit typing mode by pressing escape or the left mouse button. Use the mouse wheel or up and down arrow keys to change the font size.
+
+The text color is the current drawing color.</value>
+  </data>
+  <data name="ZoomIt_Type_TextFont.Header" xml:space="preserve">
+    <value>Text font</value>
+  </data>
+  <data name="ZoomIt_Type_Font_Button.Content" xml:space="preserve">
+    <value>Choose Font</value>
+    <comment>Font refers to text font</comment>
+  </data>
+  <data name="ZoomIt_DemoTypeGroup.Header" xml:space="preserve">
+    <value>Demo Type</value>
+  </data>
+  <data name="ZoomIt_DemoTypeGroup.Description" xml:space="preserve">
+    <value>Use DemoType to have ZoomIt type text specified in the input file when you enter the DemoType toggle. You can also pull input from the clipboard if it is prefixed with the [start] keyword.
+
+Separate snippets with the [end] keyword and insert pauses into the text output with the [pause:n] keyword where 'n' is seconds. Send text via the clipboard with [paste] and [/paste]. Send keystrokes with [enter], [up], [down], [left] and [right].
+
+You can have ZoomIt send text automatically, or select the option to drive input with typing. ZoomIt will block keyboard input while sending output.
+
+When driving input, hit the space bar to unblock keyboard input at the end of a snippet. In auto mode, control will be returned upon completion.
+
+When you reach the end of the file, ZoomIt will reload the file and start at the beginning. Enter the hotkey with the Shift key in the opposite mode to step back to the last [end].</value>
+  </data>
+  <data name="ZoomIt_DemoType_Shortcut.Header" xml:space="preserve">
+    <value>Demo Type Toggle Hotkey</value>
+  </data>
+  <data name="ZoomIt_DemoType_File.Header" xml:space="preserve">
+    <value>Input file</value>
+  </data>
+  <data name="ZoomIt_DemoType_File_BrowseButton.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="ZoomIt_DemoType_File_Picker_Dialog_Title" xml:space="preserve">
+    <value>Specify DemoType file...</value>
+  </data>
+  <data name="FilePicker_AllFilesFilter" xml:space="preserve">
+    <value>All Files</value>
+  </data>
+  <data name="ZoomIt_DemoType_Toggle_UserDrivenMode.Header" xml:space="preserve">
+    <value>Drive input with typing</value>
+  </data>
+  <data name="ZoomIt_DemoType_SpeedSlider.Header" xml:space="preserve">
+    <value>DemoType typing speed</value>
+  </data>
+  <data name="ZoomIt_DemoType_SpeedSlider_Thumbnail_Explanation" xml:space="preserve">
+    <value>bigger is faster</value>
+  </data>
+  <data name="ZoomIt_BreakGroup.Header" xml:space="preserve">
+    <value>Break</value>
+  </data>
+  <data name="ZoomIt_BreakGroup.Description" xml:space="preserve">
+    <value>Enter timer mode by using the ZoomIt tray icon's Break menu item. Increase and decrease time with the arrow keys. If you Alt-Tab away from the timer window, reactivate it by left-clicking on the ZoomIt tray icon. Exit timer mode with Escape.
+
+Change the break timer color using the same keys that the drawing color. The break timer font is the same as text font.</value>
+  </data>
+  <data name="ZoomIt_Break_Shortcut.Header" xml:space="preserve">
+    <value>Start Break Timer Hotkey</value>
+  </data>
+  <data name="ZoomIt_Break_Timeout.Header" xml:space="preserve">
+    <value>Timer (minutes)</value>
+  </data>
+  <data name="ZoomIt_Break_ShowExpiredTime.Header" xml:space="preserve">
+    <value>Show Time Elapsed After Expiration</value>
+  </data>
+  <data name="ZoomIt_Break_PlaySoundsFile.Header" xml:space="preserve">
+    <value>Play Sound on Expiration</value>
+  </data>
+  <data name="ZoomIt_Break_SoundFile.Header" xml:space="preserve">
+    <value>Alarm Sound File</value>
+  </data>
+  <data name="ZoomIt_Break_SoundFile_BrowseButton.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="ZoomIt_Break_SoundFile_Picker_Dialog_Title" xml:space="preserve">
+    <value>Specify sound file...</value>
+  </data>
+  <data name="FilePicker_ZoomIt_SoundsFilter" xml:space="preserve">
+    <value>Sounds</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity.Header" xml:space="preserve">
+    <value>Timer Opacity</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_10Percent.Content" xml:space="preserve">
+    <value>10%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_20Percent.Content" xml:space="preserve">
+    <value>20%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_30Percent.Content" xml:space="preserve">
+    <value>30%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_40Percent.Content" xml:space="preserve">
+    <value>40%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_50Percent.Content" xml:space="preserve">
+    <value>50%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_60Percent.Content" xml:space="preserve">
+    <value>60%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_70Percent.Content" xml:space="preserve">
+    <value>70%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_80Percent.Content" xml:space="preserve">
+    <value>80%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_90Percent.Content" xml:space="preserve">
+    <value>90%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerOpacity_100Percent.Content" xml:space="preserve">
+    <value>100%</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition.Header" xml:space="preserve">
+    <value>Timer Position</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_TopLeftCorner.Content" xml:space="preserve">
+    <value>Top left corner</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_TopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_TopRightCorner.Content" xml:space="preserve">
+    <value>Top right corner</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_Center.Content" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_BottomLeftCorner.Content" xml:space="preserve">
+    <value>Bottom left corner</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_BottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="ZoomIt_Break_TimerPosition_BottomRightCorner.Content" xml:space="preserve">
+    <value>Bottom right corner</value>
+  </data>
+  <data name="ZoomIt_Break_ShowBackgroundBitmap.Header" xml:space="preserve">
+    <value>Show Background Bitmap</value>
+  </data>
+  <data name="ZoomIt_Break_ShowFadedDesktop.Content" xml:space="preserve">
+    <value>Use faded desktop as background</value>
+  </data>
+  <data name="ZoomIt_Break_ShowImageFile.Content" xml:space="preserve">
+    <value>Use image file as background</value>
+  </data>
+  <data name="ZoomIt_Break_BackgroundFile.Header" xml:space="preserve">
+    <value>Background Image File</value>
+  </data>
+  <data name="ZoomIt_Break_BackgroundFile_BrowseButton.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="ZoomIt_Break_BackgroundFile_Picker_Dialog_Title" xml:space="preserve">
+    <value>Specify background file...</value>
+  </data>
+  <data name="FilePicker_ZoomIt_BitmapFilesFilter" xml:space="preserve">
+    <value>Bitmap Files</value>
+  </data>
+  <data name="FilePicker_ZoomIt_AllPicturesFilter" xml:space="preserve">
+    <value>All Picture Files</value>
+  </data>
+  <data name="ZoomIt_Break_BackgroundStretch.Header" xml:space="preserve">
+    <value>Scale to screen</value>
+  </data>
+  <data name="ZoomIt_RecordGroup.Header" xml:space="preserve">
+    <value>Record</value>
+  </data>
+  <data name="ZoomIt_RecordGroup.Description" xml:space="preserve">
+    <value>Record video of the unzoomed live screen or a static zoomed session by entering the recording hot key and finish the recording by entering it again.
+
+To crop the portion of the screen that will be recorded, enter the hotkey with the Shift key in the opposite mode.
+
+To record a specific window, enter the hotkey with the Alt key in the opposite mode.</value>
+  </data>
+  <data name="ZoomIt_Record_Shortcut.Header" xml:space="preserve">
+    <value>Record Toggle Hotkey</value>
+  </data>
+  <data name="ZoomIt_Record_Scaling.Header" xml:space="preserve">
+    <value>Scaling</value>
+  </data>
+  <data name="ZoomIt_Record_CaptureAudio.Header" xml:space="preserve">
+    <value>Capture audio input</value>
+  </data>
+  <data name="ZoomIt_Record_Microphone.Header" xml:space="preserve">
+    <value>Microphone</value>
+  </data>
+  <data name="ZoomIt_Record_Microphones_Default_Name" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="ZoomIt_SnipGroup.Header" xml:space="preserve">
+    <value>Snip</value>
+  </data>
+  <data name="ZoomIt_SnipGroup.Description" xml:space="preserve">
+    <value>Copy a region of the screen to the clipboard or enter the hotkey with the Shift key in the opposite mode to save it to a file.</value>
+  </data>
+  <data name="ZoomIt_Snip_Shortcut.Header" xml:space="preserve">
+    <value>Snip Toggle Hotkey</value>
+  </data>
+  <data name="Oobe_ZoomIt.Description" xml:space="preserve">
+    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="Oobe_ZoomIt.Title" xml:space="preserve">
+    <value>ZoomIt</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
+  <data name="Oobe_ZoomIt_HowToUse.Text" xml:space="preserve">
+    <value>Enable ZoomIt from the Settings page and check available shortcuts and modes.</value>
+    <comment>{Locked="ZoomIt"}</comment>
+  </data>
   <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo.Title" xml:space="preserve">
     <value>Rules defined by your organization</value>
   </data>
   <data name="MouseWithoutBorders_PolicyIPAddressMappingInfo_TextBoxControl.Description" xml:space="preserve">
-    <value>You can not change, remove or disable these enforced rules.</value>
+    <value>You cannot change, remove or disable these enforced rules.</value>
   </data>
   <data name="OpenSettings.Content" xml:space="preserve">
     <value>Open settings</value>
+  </data>
+  <data name="LanguageHeader.Header" xml:space="preserve">
+    <value>Application language</value>
+  </data>
+  <data name="LanguageHeader.Description" xml:space="preserve">
+    <value>PowerToys will use OS language by default.</value>
+  </data>
+  <data name="LanguageRestartInfo.Title" xml:space="preserve">
+    <value>Restart PowerToys for language change to take effect.</value>
+  </data>
+  <data name="LanguageRestartInfoButton.Content" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="Default_Language" xml:space="preserve">
+    <value>Windows default</value>
+  </data>
+  <data name="Arabic_Saudi_Arabia_Language" xml:space="preserve">
+    <value>Arabic (Saudi Arabia)</value>
+  </data>
+  <data name="Czech_Language" xml:space="preserve">
+    <value>Czech</value>
+  </data>
+  <data name="German_Language" xml:space="preserve">
+    <value>German</value>
+  </data>
+  <data name="English_Language" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Spanish_Language" xml:space="preserve">
+    <value>Spanish</value>
+  </data>
+  <data name="Persian_Farsi_Language" xml:space="preserve">
+    <value>Persian (Farsi)</value>
+  </data>
+  <data name="French_Language" xml:space="preserve">
+    <value>French</value>
+  </data>
+  <data name="Hebrew_Israel_Language" xml:space="preserve">
+    <value>Hebrew (Israel)</value>
+  </data>
+  <data name="Hungarian_Language" xml:space="preserve">
+    <value>Hungarian</value>
+  </data>
+  <data name="Italian_Language" xml:space="preserve">
+    <value>Italian</value>
+  </data>
+  <data name="Japanese_Language" xml:space="preserve">
+    <value>Japanese</value>
+  </data>
+  <data name="Korean_Language" xml:space="preserve">
+    <value>Korean</value>
+  </data>
+  <data name="Dutch_Language" xml:space="preserve">
+    <value>Dutch</value>
+  </data>
+  <data name="Polish_Language" xml:space="preserve">
+    <value>Polish</value>
+  </data>
+  <data name="Portuguese_Brazil_Language" xml:space="preserve">
+    <value>Portuguese (Brazil)</value>
+  </data>
+  <data name="Portuguese_Portugal_Language" xml:space="preserve">
+    <value>Portuguese (Portugal)</value>
+  </data>
+  <data name="Russian_Language" xml:space="preserve">
+    <value>Russian</value>
+  </data>
+  <data name="Swedish_Language" xml:space="preserve">
+    <value>Swedish</value>
+  </data>
+  <data name="Turkish_Language" xml:space="preserve">
+    <value>Turkish</value>
+  </data>
+  <data name="Ukrainian_Language" xml:space="preserve">
+    <value>Ukrainian</value>
+  </data>
+  <data name="Chinese_Simplified_Language" xml:space="preserve">
+    <value>Chinese (Simplified)</value>
+  </data>
+  <data name="Chinese_Traditional_Language" xml:space="preserve">
+    <value>Chinese (Traditional)</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataViewerInfo.Title" xml:space="preserve">
+    <value>Restart PowerToys for enable viewing change to take effect.</value>
+  </data>
+  <data name="GeneralPage_ViewDiagnosticDataViewerInfoButton.Content" xml:space="preserve">
+    <value>Restart</value>
+  </data>
+  <data name="Shell_TopLevelAdvanced.Content" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="Shell_TopLevelFileManagement.Content" xml:space="preserve">
+    <value>File Management</value>
+  </data>
+  <data name="Shell_TopLevelInputOutput.Content" xml:space="preserve">
+    <value>Input / Output</value>
+  </data>
+  <data name="Shell_TopLevelWindowsAndLayouts.Content" xml:space="preserve">
+    <value>Windowing &amp; Layouts</value>
+  </data>
+  <data name="Shell_TopLevelSystemTools.Content" xml:space="preserve">
+    <value>System Tools</value>
+  </data>
+  <data name="Enable_Module.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Enable module</value>
+  </data>
+  <data name="PowerLauncher_PluginVersion.Text" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="PowerLauncher_PluginWebsite.Text" xml:space="preserve">
+    <value>Project website</value>
+  </data>
+  <data name="SettingsPage_NewInfoBadge.Text" xml:space="preserve">
+    <value>NEW</value>
+	<comment>Must be all caps</comment>
   </data>
 </root>

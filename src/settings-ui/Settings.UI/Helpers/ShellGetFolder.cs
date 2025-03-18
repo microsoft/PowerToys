@@ -27,6 +27,11 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         public static string GetFolderDialog(IntPtr hwndOwner)
         {
+            return GetFolderDialogWithFlags(hwndOwner, 0);
+        }
+
+        public static string GetFolderDialogWithFlags(IntPtr hwndOwner, uint ulFlags)
+        {
             // windows MAX_PATH with long path enable can be approximated 32k char long
             // allocating more than double (unicode) to hold the path
             StringBuilder sb = new StringBuilder(65000);
@@ -37,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             browseInfo.PidlRoot = IntPtr.Zero;
             browseInfo.PszDisplayName = null;
             browseInfo.LpszTitle = null;
-            browseInfo.UlFlags = 0;
+            browseInfo.UlFlags = ulFlags;
             browseInfo.Lpfn = null;
             browseInfo.LParam = IntPtr.Zero;
             browseInfo.IImage = 0;
@@ -60,6 +65,11 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             }
 
             return sb.ToString();
+        }
+
+        public struct FolderDialogFlags
+        {
+            public const uint _BIF_NEWDIALOGSTYLE = 0x00000040;
         }
     }
 }

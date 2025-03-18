@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
@@ -13,6 +14,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Data.Json;
 using Windows.System;
+using WinRT.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -121,6 +123,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static bool IsUserAnAdmin { get; set; }
 
+        private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
         /// Shell page constructor.
@@ -137,6 +141,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // shellFrame.Navigate(typeof(GeneralPage));
             IPCResponseHandleList.Add(ReceiveMessage);
             SetTitleBar();
+
+            if (_navViewParentLookup.Count > 0)
+            {
+                _navViewParentLookup.Clear();
+            }
+
+            var topLevelItems = navigationView.MenuItems.OfType<NavigationViewItem>().ToArray();
+
+            foreach (var parent in topLevelItems)
+            {
+                foreach (var child in parent.MenuItems.OfType<NavigationViewItem>())
+                {
+                    _navViewParentLookup.TryAdd(child.GetValue(NavHelper.NavigateToProperty) as Type, parent);
+                }
+            }
         }
 
         public static int SendDefaultIPCMessage(string msg)
@@ -276,7 +295,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private bool navigationViewInitialStateProcessed; // avoid announcing initial state of the navigation pane.
 
-        private void NavigationView_PaneOpened(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
+        private void NavigationView_PaneOpened(NavigationView sender, object args)
         {
             if (!navigationViewInitialStateProcessed)
             {
@@ -292,7 +311,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened))
             {
-                var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                var loader = ResourceLoaderInstance.ResourceLoader;
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
@@ -301,7 +320,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void NavigationView_PaneClosed(Microsoft.UI.Xaml.Controls.NavigationView sender, object args)
+        private void NavigationView_PaneClosed(NavigationView sender, object args)
         {
             if (!navigationViewInitialStateProcessed)
             {
@@ -317,7 +336,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (AutomationPeer.ListenerExists(AutomationEvents.MenuClosed))
             {
-                var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                var loader = ResourceLoaderInstance.ResourceLoader;
                 peer.RaiseNotificationEvent(
                     AutomationNotificationKind.ActionCompleted,
                     AutomationNotificationProcessing.ImportantMostRecent,
@@ -347,6 +366,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (selectedItem != null)
             {
                 Type pageType = selectedItem.GetValue(NavHelper.NavigateToProperty) as Type;
+
+                if (_navViewParentLookup.TryGetValue(pageType, out var parentItem) && !parentItem.IsExpanded)
+                {
+                    parentItem.IsExpanded = true;
+                }
+
                 NavigationService.Navigate(pageType);
             }
         }
@@ -397,6 +422,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // A custom title bar is required for full window theme and Mica support.
                 // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
                 u.ExtendsContentIntoTitleBar = true;
+                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(u));
                 u.SetTitleBar(AppTitleBar);
                 var loader = ResourceLoaderInstance.ResourceLoader;
                 AppTitleBarText.Text = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");

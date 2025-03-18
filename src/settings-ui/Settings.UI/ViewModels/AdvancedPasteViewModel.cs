@@ -13,16 +13,18 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Timers;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.Win32;
 using Windows.Security.Credentials;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class AdvancedPasteViewModel : Observable, IDisposable
+    public partial class AdvancedPasteViewModel : Observable, IDisposable
     {
         private static readonly HashSet<string> WarnHotkeys = ["Ctrl + V", "Ctrl + Shift + V"];
 
@@ -34,9 +36,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private readonly ISettingsUtils _settingsUtils;
-        private readonly object _delayedActionLock = new object();
+        private readonly System.Threading.Lock _delayedActionLock = new System.Threading.Lock();
 
         private readonly AdvancedPasteSettings _advancedPasteSettings;
+        private readonly AdvancedPasteAdditionalActions _additionalActions;
         private readonly ObservableCollection<AdvancedPasteCustomAction> _customActions;
         private Timer _delayedTimer;
 
@@ -68,6 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _advancedPasteSettings = advancedPasteSettingsRepository.SettingsConfig;
 
+            _additionalActions = _advancedPasteSettings.Properties.AdditionalActions;
             _customActions = _advancedPasteSettings.Properties.CustomActions.Value;
 
             InitializeEnabledValue();
@@ -79,6 +83,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _delayedTimer.Interval = SaveSettingsDelayInMs;
             _delayedTimer.Elapsed += DelayedTimer_Tick;
             _delayedTimer.AutoReset = false;
+
+            foreach (var action in _additionalActions.GetAllActions())
+            {
+                action.PropertyChanged += OnAdditionalActionPropertyChanged;
+            }
 
             foreach (var customAction in _customActions)
             {
@@ -141,6 +150,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public ObservableCollection<AdvancedPasteCustomAction> CustomActions => _customActions;
+
+        public AdvancedPasteAdditionalActions AdditionalActions => _additionalActions;
 
         private bool OpenAIKeyExists()
         {
@@ -309,6 +320,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsAdvancedAIEnabled
+        {
+            get => _advancedPasteSettings.Properties.IsAdvancedAIEnabled;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.IsAdvancedAIEnabled)
+                {
+                    _advancedPasteSettings.Properties.IsAdvancedAIEnabled = value;
+                    OnPropertyChanged(nameof(IsAdvancedAIEnabled));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool ShowCustomPreview
         {
             get => _advancedPasteSettings.Properties.ShowCustomPreview;
@@ -335,12 +360,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsConflictingCopyShortcut
-        {
-            get => _customActions.Select(customAction => customAction.Shortcut)
-                                 .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
-                                 .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
-        }
+        public bool IsConflictingCopyShortcut =>
+            _customActions.Select(customAction => customAction.Shortcut)
+                          .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
+                          .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
+
+        public bool IsAdditionalActionConflictingCopyShortcut =>
+            _additionalActions.GetAllActions()
+                              .OfType<AdvancedPasteAdditionalAction>()
+                              .Select(additionalAction => additionalAction.Shortcut)
+                              .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
 
         private void DelayedTimer_Tick(object sender, EventArgs e)
         {
@@ -359,7 +388,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     CultureInfo.InvariantCulture,
                     "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                     AdvancedPasteSettings.ModuleName,
-                    JsonSerializer.Serialize(_advancedPasteSettings)));
+                    JsonSerializer.Serialize(_advancedPasteSettings, SourceGenerationContextContext.Default.AdvancedPasteSettings)));
         }
 
         public void RefreshEnabledState()
@@ -397,6 +426,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PasswordCredential cred = vault.Retrieve("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey");
                 vault.Remove(cred);
                 OnPropertyChanged(nameof(IsOpenAIEnabled));
+                NotifySettingsChanged();
             }
             catch (Exception)
             {
@@ -407,10 +437,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                PasswordVault vault = new PasswordVault();
-                PasswordCredential cred = new PasswordCredential("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey", password);
+                PasswordVault vault = new();
+                PasswordCredential cred = new("https://platform.openai.com/api-keys", "PowerToys_AdvancedPaste_OpenAIKey", password);
                 vault.Add(cred);
                 OnPropertyChanged(nameof(IsOpenAIEnabled));
+                IsAdvancedAIEnabled = true; // new users should get Semantic Kernel benefits immediately
+                NotifySettingsChanged();
             }
             catch (Exception)
             {
@@ -456,6 +488,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             _settingsUtils.SaveSettings(_advancedPasteSettings.ToJsonString(), AdvancedPasteSettings.ModuleName);
             NotifySettingsChanged();
+        }
+
+        private void OnAdditionalActionPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            SaveAndNotifySettings();
+
+            if (e.PropertyName == nameof(AdvancedPasteAdditionalAction.Shortcut))
+            {
+                OnPropertyChanged(nameof(IsAdditionalActionConflictingCopyShortcut));
+            }
         }
 
         private void OnCustomActionPropertyChanged(object sender, PropertyChangedEventArgs e)

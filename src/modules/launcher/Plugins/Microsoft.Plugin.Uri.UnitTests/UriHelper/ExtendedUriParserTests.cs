@@ -132,7 +132,7 @@ namespace Microsoft.Plugin.Uri.UnitTests.UriHelper
         // All following cases should be parsed as application URI
         [DataRow("mailto:", true, null, "mailto:")]
         [DataRow("mailto:/", false, null, null)]
-        [DataRow("mailto:example@mail.com", true, null, "mailto:example@mail.com")]
+        [DataRow("mailto:mail@example.com", true, null, "mailto:mail@example.com")]
         [DataRow("ms-settings:", true, null, "ms-settings:")]
         [DataRow("ms-settings:/", false, null, null)]
         [DataRow("ms-settings://", false, null, null)]

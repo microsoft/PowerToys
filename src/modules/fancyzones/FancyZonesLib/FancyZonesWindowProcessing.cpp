@@ -65,16 +65,28 @@ FancyZonesWindowProcessing::ProcessabilityType FancyZonesWindowProcessing::Defin
         return ProcessabilityType::NotCurrentVirtualDesktop;
     }
 
-    // Ignore windows launched by Workspaces
-    if (FancyZonesWindowProperties::IsLaunchedByWorkspaces(window))
-    {
-        return ProcessabilityType::LaunchedByWorkspaces;
-	}
-
     return ProcessabilityType::Processable;
 }
 
-bool FancyZonesWindowProcessing::IsProcessable(HWND window) noexcept
+bool FancyZonesWindowProcessing::IsProcessableAutomatically(HWND window) noexcept
 {
-    return DefineWindowType(window) == ProcessabilityType::Processable;
+    auto type = DefineWindowType(window);
+    if (type != ProcessabilityType::Processable)
+    {
+        return false;
+    }
+
+    // Ignore windows launched by Workspaces
+    if (FancyZonesWindowProperties::IsLaunchedByWorkspaces(window))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool FancyZonesWindowProcessing::IsProcessableManually(HWND window) noexcept
+{
+    auto type = DefineWindowType(window);
+    return type == ProcessabilityType::Processable;
 }

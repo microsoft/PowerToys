@@ -18,9 +18,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JsonUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SnapshotUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>

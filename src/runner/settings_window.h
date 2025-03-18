@@ -16,7 +16,6 @@ enum class ESettingsWindowNames
     PowerRename,
     FileExplorer,
     ShortcutGuide,
-    VideoConference,
     Hosts,
     MeasureTool,
     PowerOCR,
@@ -25,6 +24,8 @@ enum class ESettingsWindowNames
     CropAndLock,
     EnvironmentVariables,
     AdvancedPaste,
+    NewPlus,
+    ZoomIt,
 };
 
 std::string ESettingsWindowNames_to_string(ESettingsWindowNames value);

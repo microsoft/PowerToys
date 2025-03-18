@@ -88,8 +88,8 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var thumbnail = await IconHelper.GetThumbnailAsync(Item.Path, cancellationToken)
-                        ?? await IconHelper.GetIconAsync(Item.Path, cancellationToken);
+                    var thumbnail = await ThumbnailHelper.GetThumbnailAsync(Item.Path, cancellationToken)
+                        ?? await ThumbnailHelper.GetIconAsync(Item.Path, cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();
 

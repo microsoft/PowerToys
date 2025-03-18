@@ -142,7 +142,14 @@ namespace Wox.Infrastructure
             }
             catch (System.IO.FileNotFoundException ex)
             {
-                Log.Exception("Path could not be retrieved", ex, GetType(), path);
+                Log.Exception("Path could not be retrieved " + path, ex, GetType(), path);
+                Marshal.ReleaseComObject(link);
+                return string.Empty;
+            }
+            catch (System.Exception ex)
+            {
+                Log.Exception("Exception loading path " + path, ex, GetType(), path);
+                Marshal.ReleaseComObject(link);
                 return string.Empty;
             }
 

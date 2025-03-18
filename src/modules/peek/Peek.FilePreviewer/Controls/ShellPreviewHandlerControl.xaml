@@ -13,5 +13,4 @@
     GotFocus="UserControl_GotFocus"
     IsEnabled="False"
     IsTabStop="True"
-    Loaded="UserControl_Loaded"
     mc:Ignorable="d" />

@@ -11,7 +11,7 @@
 #include <FancyZonesLib/trace.h>
 
 #include <common/utils/elevation.h>
-#include <common/notifications/NotificationUtil.h>
+#include <common/utils/resources.h>
 
 WindowMouseSnap::WindowMouseSnap(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas) :
     m_window(window),
@@ -27,17 +27,24 @@ WindowMouseSnap::~WindowMouseSnap()
     ResetWindowTransparency();
 }
 
-std::unique_ptr<WindowMouseSnap> WindowMouseSnap::Create(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas)
+std::unique_ptr<WindowMouseSnap> WindowMouseSnap::Create(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, notifications::NotificationUtil* notificationUtil)
 {
-    if (FancyZonesWindowUtils::IsCursorTypeIndicatingSizeEvent() || !FancyZonesWindowProcessing::IsProcessable(window))
+    if (FancyZonesWindowUtils::IsCursorTypeIndicatingSizeEvent() || !FancyZonesWindowProcessing::IsProcessableManually(window))
     {
         return nullptr;
     }
 
     if (!is_process_elevated() && IsProcessOfWindowElevated(window))
     {
-        // Notifies user if unable to drag elevated window
-        notifications::WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_FANCYZONES), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE), GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
+        if (notificationUtil != nullptr)
+        {
+            // Notifies user if unable to drag elevated window
+            notificationUtil->WarnIfElevationIsRequired(GET_RESOURCE_STRING(IDS_FANCYZONES),
+                                                        GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED),
+                                                        GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_LEARN_MORE),
+                                                        GET_RESOURCE_STRING(IDS_CANT_DRAG_ELEVATED_DIALOG_DONT_SHOW_AGAIN));
+        }
+
         return nullptr;
     }
 

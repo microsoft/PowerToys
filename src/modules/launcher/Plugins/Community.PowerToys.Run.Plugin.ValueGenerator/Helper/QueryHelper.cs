@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 
 using Community.PowerToys.Run.Plugin.ValueGenerator.Properties;
 
@@ -23,6 +22,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Helper
         private static readonly string GeneratorDescriptionUuidv3 = Resources.generator_description_uuidv3;
         private static readonly string GeneratorDescriptionUuidv4 = Resources.generator_description_uuidv4;
         private static readonly string GeneratorDescriptionUuidv5 = Resources.generator_description_uuidv5;
+        private static readonly string GeneratorDescriptionUuidv7 = Resources.generator_description_uuidv7;
         private static readonly string GeneratorDescriptionHash = Resources.generator_description_hash;
         private static readonly string GeneratorDescriptionBase64 = Resources.generator_description_base64;
         private static readonly string GeneratorDescriptionBase64d = Resources.generator_description_base64d;
@@ -90,6 +90,12 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.Helper
                 Keyword = "uuidv5",
                 Description = GetStringFormat(GeneratorDescriptionUuidv5),
                 Example = $"uuidv5 ns:<DNS, URL, OID, {GetStringFormat(Or)} X500> <{GetStringFormat(GeneratorDescriptionYourInput)}>",
+            },
+            new()
+            {
+                Keyword = "uuidv7",
+                Description = GetStringFormat(GeneratorDescriptionUuidv7),
+                Example = $"uuidv7 {GetStringFormat(Or)} uuid7",
             },
             new()
             {

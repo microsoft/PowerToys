@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="shell_context_menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shell_context_sub_menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shell_context_sub_menu_item.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="template_folder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="template_item.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dll_main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="powertoys_module.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="settings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="trace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="new_utilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="template_folder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="template_item.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shell_context_sub_menu_item.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shell_context_sub_menu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shell_context_menu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dll_main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="settings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="new_utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated Files/resource.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Assets\NewPlus\SmallTile.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\SplashScreen.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\Square150x150Logo.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\Square44x44Logo.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\StoreLogo.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\Wide310x150Logo.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\SmallTile.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\SplashScreen.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\Square150x150Logo.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\Square44x44Logo.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\StoreLogo.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\Wide310x150Logo.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="resources.resx">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="new.base.rc">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="dll.def">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="AppxManifest.xml">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\SmallTile.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\SplashScreen.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\Square150x150Logo.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\Square44x44Logo.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\StoreLogo.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\Wide310x150Logo.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\LargeTile.png">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\New_dark.ico">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\New_light.ico">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\Open_templates_dark.ico">
+      <Filter>Asset Files</Filter>
+    </None>
+    <None Include="Assets\NewPlus\Open_templates_light.ico">
+      <Filter>Asset Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{82bf7d46-1201-4fc2-99e0-6c1f48f97f1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{0c915b9c-0e6a-4d16-8620-507a10fc29c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Asset Files">
+      <UniqueIdentifier>{0c64a1a0-1f9e-4663-8649-454da469d15c}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{4f319851-7d86-4180-b3a3-fd497a320c34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{a998f674-d126-488b-8457-7673fe986f94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Template Examples">
+      <UniqueIdentifier>{b442cb0f-9f62-46e8-b269-fefa8ceacb21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Template Examples\Example folder">
+      <UniqueIdentifier>{e7904759-7b6c-4609-9c6d-e3eae3cb866c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Generated Files/new.rc">
+      <Filter>Generated Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="TemplateExamples\Any files or folders placed in the template folder are available via New+.txt" />
+    <CopyFileToFolders Include="TemplateExamples\Example folder\Example txt file.txt" />
+    <CopyFileToFolders Include="TemplateExamples\Example folder\Another example txt file.txt" />
+  </ItemGroup>
+</Project>

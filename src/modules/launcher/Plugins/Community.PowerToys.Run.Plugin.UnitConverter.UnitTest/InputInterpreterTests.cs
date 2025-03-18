@@ -68,9 +68,9 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.UnitTest
 
         [DataTestMethod]
         [DataRow(new string[] { "5", "CeLsIuS", "in", "faHrenheiT" }, new string[] { "5", "DegreeCelsius", "in", "DegreeFahrenheit" })]
-        [DataRow(new string[] { "5", "f", "in", "celsius" }, new string[] { "5", "°f", "in", "DegreeCelsius" })]
-        [DataRow(new string[] { "5", "c", "in", "f" }, new string[] { "5", "°c", "in", "°f" })]
-        [DataRow(new string[] { "5", "f", "in", "c" }, new string[] { "5", "°f", "in", "°c" })]
+        [DataRow(new string[] { "5", "f", "in", "celsius" }, new string[] { "5", "°F", "in", "DegreeCelsius" })]
+        [DataRow(new string[] { "5", "c", "in", "f" }, new string[] { "5", "°C", "in", "°F" })]
+        [DataRow(new string[] { "5", "f", "in", "c" }, new string[] { "5", "°F", "in", "°C" })]
 #pragma warning restore CA1861 // Avoid constant arrays as arguments
         public void PrefixesDegrees(string[] input, string[] expectedResult)
         {

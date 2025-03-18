@@ -69,14 +69,16 @@
       <ComponentGroupRef Id="RunComponentGroup" />
       <ComponentGroupRef Id="SettingsComponentGroup" />
       <ComponentGroupRef Id="ShortcutGuideComponentGroup" />
-      <ComponentGroupRef Id="VideoConferenceComponentGroup" />
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
       <ComponentGroupRef Id="EnvironmentVariablesComponentGroup" />
       <ComponentGroupRef Id="AdvancedPasteComponentGroup" />
+      <ComponentGroupRef Id="NewPlusComponentGroup" />
+      <ComponentGroupRef Id="NewPlusTemplatesComponentGroup" />
       <ComponentGroupRef Id="ResourcesComponentGroup" />
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
+      <ComponentGroupRef Id="WorkspacesComponentGroup" />
     </Feature>
 
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
@@ -192,6 +194,9 @@
       <?endif?>
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
       <Custom Action="LaunchPowerToys" Before="InstallFinalize">NOT Installed</Custom>
+
+      <!-- Clean Video Conference Mute registry keys that might be around from previous installations. We've deprecated this utility since then. -->
+      <Custom Action="CleanVideoConferenceRegistry" Before="InstallFinalize">NOT Installed</Custom>
 
     </InstallExecuteSequence>
 
@@ -388,6 +393,14 @@
                   Impersonate="yes"
                   BinaryKey="PTCustomActions"
                   DllEntry="DetectPrevInstallPathCA"
+                  />
+
+    <CustomAction Id="CleanVideoConferenceRegistry"
+                  Return="ignore"
+                  Impersonate="yes"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="CleanVideoConferenceRegistryCA"
                   />
 
     <CustomAction Id="ApplyModulesRegistryChangeSets"

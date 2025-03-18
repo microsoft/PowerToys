@@ -2,11 +2,12 @@
 
 #include <common/utils/json.h>
 
+#include <WorkspacesLib/LaunchingStateEnum.h>
+
 namespace WorkspacesData
 {
     std::wstring WorkspacesFile();
     std::wstring TempWorkspacesFile();
-    std::wstring LaunchWorkspacesFile();
 
     struct WorkspacesProject
     {
@@ -21,17 +22,16 @@ namespace WorkspacesData
 
                 RECT toRect() const noexcept;
 
-                inline bool operator==(const Position& other) const noexcept
-                {
-                    return x == other.x && y == other.y && width == other.width && height == other.height;
-                }
+                auto operator<=>(const Position&) const = default;
             };
 
+            std::wstring id;
             std::wstring name;
             std::wstring title;
             std::wstring path;
             std::wstring packageFullName;
             std::wstring appUserModelId;
+            std::wstring pwaAppId;
             std::wstring commandLineArgs;
             bool isElevated{};
             bool canLaunchElevated{};
@@ -39,6 +39,8 @@ namespace WorkspacesData
             bool isMaximized{};
             Position position{};
             unsigned int monitor{};
+
+            auto operator<=>(const Application&) const = default;
         };
 
         struct Monitor
@@ -80,33 +82,21 @@ namespace WorkspacesData
         std::vector<WorkspacesProject> projects;
     };
 
-    struct AppLaunchInfo
+    struct LaunchingAppState
     {
-        std::wstring name;
-        std::wstring path;
-        std::wstring state;
+        WorkspacesData::WorkspacesProject::Application application;
+        HWND window{};
+        LaunchingState state { LaunchingState::Waiting };
     };
 
-    namespace AppLaunchInfoJSON
-    {
-        json::JsonObject ToJson(const AppLaunchInfo& data);
-    }
-
-    namespace AppLaunchInfoListJSON
-    {
-        json::JsonObject ToJson(const std::vector<AppLaunchInfo>& data);
-    }
+    using LaunchingAppStateMap = std::map<WorkspacesData::WorkspacesProject::Application, LaunchingAppState>;
+    using LaunchingAppStateList = std::vector<std::pair<WorkspacesData::WorkspacesProject::Application, LaunchingState>>;
 
     struct AppLaunchData
     {
-        std::vector<AppLaunchInfo> appLaunchInfoList;
+        LaunchingAppStateMap appsStateList;
         int launcherProcessID = 0;
     };
-
-    namespace AppLaunchDataJSON
-    {
-        json::JsonObject ToJson(const AppLaunchData& data);
-    }
 
     namespace WorkspacesProjectJSON
     {
@@ -143,4 +133,22 @@ namespace WorkspacesData
         json::JsonObject ToJson(const std::vector<WorkspacesProject>& data);
         std::optional<std::vector<WorkspacesProject>> FromJson(const json::JsonObject& json);
     }
+
+    namespace AppLaunchInfoJSON
+    {
+        json::JsonObject ToJson(const LaunchingAppState& data);
+        std::optional<LaunchingAppState> FromJson(const json::JsonObject& json);
+    }
+
+    namespace AppLaunchInfoListJSON
+    {
+        json::JsonObject ToJson(const LaunchingAppStateMap& data);
+        std::optional<LaunchingAppStateMap> FromJson(const json::JsonObject& json);
+    }
+
+    namespace AppLaunchDataJSON
+    {
+        json::JsonObject ToJson(const AppLaunchData& data);
+    }
+
 };

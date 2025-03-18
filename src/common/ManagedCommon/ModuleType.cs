@@ -22,6 +22,7 @@ namespace ManagedCommon
         MouseJump,
         MousePointerCrosshairs,
         MouseWithoutBorders,
+        NewPlus,
         Peek,
         PowerRename,
         PowerLauncher,
@@ -31,5 +32,6 @@ namespace ManagedCommon
         ShortcutGuide,
         PowerOCR,
         Workspaces,
+        ZoomIt,
     }
 }

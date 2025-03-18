@@ -122,6 +122,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
                     Tag="MouseWithoutBorders" />
                 <NavigationViewItem
+                    x:Uid="NewPlus_Product_Name"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
+                    Tag="NewPlus" />
+                <NavigationViewItem
                     x:Uid="Shell_Peek"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}"
                     Tag="Peek" />
@@ -154,13 +158,13 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}"
                     Tag="TextExtractor" />
                 <NavigationViewItem
-                    x:Uid="Shell_VideoConference"
-                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/VideoConferenceMute.png}"
-                    Tag="VideoConference" />
-                <NavigationViewItem
                     x:Uid="Shell_Workspaces"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}"
                     Tag="Workspaces" />
+                <NavigationViewItem
+                    x:Uid="Shell_ZoomIt"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}"
+                    Tag="ZoomIt" />
             </NavigationView.MenuItems>
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem

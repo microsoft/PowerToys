@@ -83,7 +83,7 @@ namespace Peek.FilePreviewer.Previewers.Drive
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            var iconBitmap = await IconHelper.GetIconAsync(Item.Path, cancellationToken);
+            var iconBitmap = await ThumbnailHelper.GetIconAsync(Item.Path, cancellationToken);
             preview.IconPreview = iconBitmap ?? new SvgImageSource(new Uri("ms-appx:///Assets/Peek/DefaultFileIcon.svg"));
 
             Preview = preview;

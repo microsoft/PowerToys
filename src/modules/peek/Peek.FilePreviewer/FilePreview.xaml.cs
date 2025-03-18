@@ -13,6 +13,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Web.WebView2.Core;
 using Peek.Common.Extensions;
@@ -340,10 +341,8 @@ namespace Peek.FilePreviewer
             }
 
             // Fetch and format available file properties
-            var sb = new StringBuilder();
-
             string fileNameFormatted = ReadableStringHelper.FormatResourceString("PreviewTooltip_FileName", Item.Name);
-            sb.Append(fileNameFormatted);
+            var sb = new StringBuilder(fileNameFormatted, 256);
 
             cancellationToken.ThrowIfCancellationRequested();
             string fileType = await Task.Run(Item.GetContentTypeAsync);
@@ -359,6 +358,24 @@ namespace Peek.FilePreviewer
             sb.Append(fileSizeFormatted);
 
             InfoTooltip = sb.ToString();
+        }
+
+        /// <summary>
+        /// Set the placement of the tooltip for those previewers supporting the feature, ensuring it does not obscure the Main Window's title bar.
+        /// </summary>
+        private void ToolTipParentControl_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            var previewControl = sender as FrameworkElement;
+            if (previewControl != null)
+            {
+                var toolTip = ToolTipService.GetToolTip(previewControl) as ToolTip;
+                if (toolTip != null)
+                {
+                    var pos = e.GetCurrentPoint(previewControl).Position;
+                    toolTip.Placement = pos.Y < previewControl.ActualHeight / 2 ?
+                        PlacementMode.Bottom : PlacementMode.Top;
+                }
+            }
         }
     }
 }

@@ -142,7 +142,7 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Plugins: {0} - fail to load and would be disabled, please contact plugins creator for help.
+        ///   Looks up a localized string similar to Fail to initialize plugins: {0}.
         /// </summary>
         public static string FailedToInitializePluginsDescription {
             get {
@@ -151,7 +151,16 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fail to initialize plugins.
+        ///   Looks up a localized string similar to Please report the bug to https://aka.ms/powerToysReportBug. (For third-party plugins, please contact the plugin author.).
+        /// </summary>
+        public static string FailedToInitializePluginsDescriptionPartTwo {
+            get {
+                return ResourceManager.GetString("FailedToInitializePluginsDescriptionPartTwo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerToys Run - Plugin Initialization Error.
         /// </summary>
         public static string FailedToInitializePluginsTitle {
             get {
@@ -192,6 +201,15 @@ namespace PowerLauncher.Properties {
         public static string registerHotkeyFailed {
             get {
                 return ResourceManager.GetString("registerHotkeyFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerToys Run - Hotkey Error.
+        /// </summary>
+        public static string RegisterHotkeyFailedTitle {
+            get {
+                return ResourceManager.GetString("RegisterHotkeyFailedTitle", resourceCulture);
             }
         }
         

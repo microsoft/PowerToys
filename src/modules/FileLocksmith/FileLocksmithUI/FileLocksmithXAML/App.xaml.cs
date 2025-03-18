@@ -23,6 +23,12 @@ namespace FileLocksmithUI
         /// </summary>
         public App()
         {
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             Logger.InitializeLogger("\\File Locksmith\\FileLocksmithUI\\Logs");
 
             this.InitializeComponent();

@@ -35,8 +35,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
-  </ItemGroup>
 </Project>

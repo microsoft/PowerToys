@@ -7,6 +7,8 @@
     <AssemblyTitle>PowerToys.Run</AssemblyTitle>
     <OutputType>WinExe</OutputType>
     <UseWPF>true</UseWPF>
+    <!-- For some users, it crashes in ExtractAssociatedIcon https://github.com/microsoft/PowerToys/issues/37254. Workaround suggested here https://github.com/dotnet/wpf/issues/10483 was to disable CETCompat -->
+    <CETCompat>false</CETCompat>
     <UseWindowsForms>False</UseWindowsForms>
     <StartupObject>PowerLauncher.App</StartupObject>
     <ApplicationIcon>Assets\PowerLauncher\RunResource.ico</ApplicationIcon>
@@ -58,15 +60,8 @@
     <PackageReference Include="System.Data.OleDb" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
     <PackageReference Include="UnitsNet" />
-    <PackageReference Include="WPF-UI" />
-    <!-- HACK: Microsoft.Extensions.Hosting is referenced, even if it is not used, to force dll versions to be the same as in other projects. Really only needed since OneNote uses the LazyCache and NLog dependencies, which references older assemblies. -->
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
     <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
     <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="System.Diagnostics.EventLog">
-      <!-- This package is a dependency of Microsoft.Extensions.Logging.EventLog, but we need to set it here so we can exclude the assets, so it doesn't conflict with the 8.0.1 dll coming from .NET SDK. -->
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
