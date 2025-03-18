@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "bug_report.h"
 #include "Generated files/resource.h"
-#include <common/notifications/NotificationUtil.h>
+#include <common/notifications/notifications.h>
 #include <common/utils/exec.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
