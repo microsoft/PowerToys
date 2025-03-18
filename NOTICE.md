@@ -9,6 +9,7 @@ This software incorporates material from third parties.
 - Installer/Runner
 - Measure tool
 - Peek
+- Registry Preview
 
 ## Utility: Color Picker
 
