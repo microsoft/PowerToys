@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
+using AdvancedPaste.Telemetry;
 
 using Common.UI;
 using ManagedCommon;
@@ -36,6 +37,8 @@ namespace WorkspacesEditor
 
         public App()
         {
+            PowerToysTelemetry.Log.WriteEvent(new WorkspacesEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+
             WorkspacesEditorIO = new WorkspacesEditorIO();
         }
 

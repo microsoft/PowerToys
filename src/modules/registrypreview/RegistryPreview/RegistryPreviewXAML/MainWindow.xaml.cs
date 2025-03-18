@@ -3,8 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
+using AdvancedPaste.Telemetry;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -87,6 +88,8 @@ namespace RegistryPreview
             MainPage = new RegistryPreviewMainPage(this, this.UpdateWindowTitle, App.AppFilename);
 
             WindowHelpers.BringToForeground(windowHandle);
+
+            PowerToysTelemetry.Log.WriteEvent(new RegistryPreviewEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)

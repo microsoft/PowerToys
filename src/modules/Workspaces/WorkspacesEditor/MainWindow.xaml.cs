@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
+using AdvancedPaste.Telemetry;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using WorkspacesEditor.Utils;
@@ -87,6 +88,8 @@ namespace WorkspacesEditor
                 },
                 Application.Current.Dispatcher,
                 cancellationToken.Token);
+
+            PowerToysTelemetry.Log.WriteEvent(new WorkspacesEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
         private bool IsEditorInsideVisibleArea()

@@ -4,7 +4,7 @@
 
 using System;
 using System.Web;
-
+using AdvancedPaste.Telemetry;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
@@ -27,6 +27,8 @@ namespace RegistryPreview
         /// </summary>
         public App()
         {
+            PowerToysTelemetry.Log.WriteEvent(new RegistryPreviewEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+
             string appLanguage = LanguageHelper.LoadLanguage();
 
             if (!string.IsNullOrEmpty(appLanguage))

@@ -5,7 +5,7 @@
 using System;
 using System.IO.Abstractions;
 using System.Threading;
-
+using AdvancedPaste.Telemetry;
 using Common.UI;
 using HostsUILib.Helpers;
 using HostsUILib.Settings;
@@ -38,6 +38,8 @@ namespace Hosts
         /// </summary>
         public App()
         {
+            PowerToysTelemetry.Log.WriteEvent(new HostEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+
             string appLanguage = LanguageHelper.LoadLanguage();
             if (!string.IsNullOrEmpty(appLanguage))
             {

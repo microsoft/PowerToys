@@ -2,14 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using AdvancedPaste.Telemetry;
 using Hosts.Helpers;
 using HostsUILib.Helpers;
 using HostsUILib.Views;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
+using System;
 using WinUIEx;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -44,6 +47,8 @@ namespace Hosts
             Activated += MainWindow_Activated;
 
             MainPage = Host.GetService<HostsMainPage>();
+
+            PowerToysTelemetry.Log.WriteEvent(new HostEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
