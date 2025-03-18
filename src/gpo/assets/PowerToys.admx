@@ -671,5 +671,15 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <policy name="NewPlusReplaceVariablesInTemplateFilenames" class="Both" displayName="$(string.NewPlusReplaceVariablesInTemplateFilenames)" explainText="$(string.NewPlusReplaceVariablesInTemplateFilenamesDescription)" key="Software\Policies\PowerToys" valueName="NewPlusReplaceVariablesInTemplateFilenames">
+      <parentCategory ref="NewPlus" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_89_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
   </policies>
 </policyDefinitions>

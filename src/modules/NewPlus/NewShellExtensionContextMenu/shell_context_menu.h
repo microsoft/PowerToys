@@ -27,7 +27,7 @@ public:
 
 #pragma region IObjectWithSite
     IFACEMETHODIMP SetSite(_In_ IUnknown* site) noexcept;
-    IFACEMETHODIMP GetSite(_In_ REFIID riid, _COM_Outptr_ void** site) noexcept;
+    IFACEMETHODIMP GetSite(_In_ REFIID interface_type, _COM_Outptr_ void** site) noexcept;
 #pragma endregion
 
 protected:
