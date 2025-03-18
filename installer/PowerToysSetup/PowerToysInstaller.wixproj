@@ -68,6 +68,12 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' != 'true' ">
     <DefineConstants>$(DefineConstants);PerUser=false</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' == 'true' ">
+    <DefineConstants>$(DefineConstants);CIBuild=true</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' != 'true' ">
+    <DefineConstants>$(DefineConstants);CIBuild=false</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup>
     <!-- We do not support debug installer builds -->
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
