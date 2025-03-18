@@ -57,7 +57,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         {
             // emptySearchForTag ===
             // we don't have results yet, we haven't typed anything, and we're searching for a tag
-            var emptySearchForTag = _results == null &&
+            bool emptySearchForTag = _results == null &&
                 string.IsNullOrEmpty(SearchText) &&
                 HasTag;
 
@@ -70,8 +70,9 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
             if (_results != null && _results.Any())
             {
+                ListItem[] results = _results.Select(PackageToListItem).ToArray();
                 IsLoading = false;
-                return _results.Select(PackageToListItem).ToArray();
+                return results;
             }
         }
 
@@ -111,7 +112,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         _cancellationTokenSource = new CancellationTokenSource();
 
-        var cancellationToken = _cancellationTokenSource.Token;
+        CancellationToken cancellationToken = _cancellationTokenSource.Token;
 
         IsLoading = true;
 
@@ -128,7 +129,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
     {
         try
         {
-            var results = await searchTask;
+            IEnumerable<CatalogPackage> results = await searchTask;
 
             // Ensure this is still the latest task
             if (_currentSearchTask == searchTask)
@@ -174,17 +175,17 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             return [];
         }
 
-        var searchDebugText = $"{query}{(HasTag ? "+" : string.Empty)}{_tag}";
+        string searchDebugText = $"{query}{(HasTag ? "+" : string.Empty)}{_tag}";
         Logger.LogDebug($"Starting search for '{searchDebugText}'");
-        var results = new HashSet<CatalogPackage>(new PackageIdCompare());
+        HashSet<CatalogPackage> results = new(new PackageIdCompare());
 
         // Default selector: this is the way to do a `winget search <query>`
-        var selector = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
+        PackageMatchFilter selector = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
         selector.Field = Microsoft.Management.Deployment.PackageMatchField.CatalogDefault;
         selector.Value = query;
         selector.Option = PackageFieldMatchOption.ContainsCaseInsensitive;
 
-        var opts = WinGetStatics.WinGetFactory.CreateFindPackagesOptions();
+        FindPackagesOptions opts = WinGetStatics.WinGetFactory.CreateFindPackagesOptions();
         opts.Selectors.Add(selector);
 
         // testing
@@ -193,7 +194,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         // Selectors is "OR", Filters is "AND"
         if (HasTag)
         {
-            var tagFilter = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
+            PackageMatchFilter tagFilter = WinGetStatics.WinGetFactory.CreatePackageMatchFilter();
             tagFilter.Field = Microsoft.Management.Deployment.PackageMatchField.Tag;
             tagFilter.Value = _tag;
             tagFilter.Option = PackageFieldMatchOption.ContainsCaseInsensitive;
@@ -204,11 +205,11 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
         // Clean up here, then...
         ct.ThrowIfCancellationRequested();
 
-        var catalogTask = HasTag ? WinGetStatics.CompositeWingetCatalog : WinGetStatics.CompositeAllCatalog;
+        Lazy<Task<PackageCatalog>> catalogTask = HasTag ? WinGetStatics.CompositeWingetCatalog : WinGetStatics.CompositeAllCatalog;
 
         // Both these catalogs should have been instantiated by the
         // WinGetStatics static ctor when we were created.
-        var catalog = await catalogTask.Value;
+        PackageCatalog catalog = await catalogTask.Value;
 
         if (catalog == null)
         {
@@ -224,8 +225,8 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
             // BODGY, re: microsoft/winget-cli#5151
             // FindPackagesAsync isn't actually async.
-            var internalSearchTask = Task.Run(() => catalog.FindPackages(opts), ct);
-            var searchResults = await internalSearchTask;
+            Task<FindPackagesResult> internalSearchTask = Task.Run(() => catalog.FindPackages(opts), ct);
+            FindPackagesResult searchResults = await internalSearchTask;
 
             // TODO more error handling like this:
             if (searchResults.Status != FindPackagesResultStatus.Ok)
@@ -236,12 +237,12 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
             }
 
             Logger.LogDebug($"    got results for ({query})", memberName: nameof(DoSearchAsync));
-            foreach (var match in searchResults.Matches.ToArray())
+            foreach (Management.Deployment.MatchResult? match in searchResults.Matches.ToArray())
             {
                 ct.ThrowIfCancellationRequested();
 
                 // Print the packages
-                var package = match.CatalogPackage;
+                CatalogPackage package = match.CatalogPackage;
 
                 results.Add(package);
             }

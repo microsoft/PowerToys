@@ -7,17 +7,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="Images\**" />
-    <Content Remove="Images\**" />
-    <EmbeddedResource Remove="Images\**" />
-    <None Remove="Images\**" />
-    <Page Remove="Images\**" />
-    <PRIResource Remove="Images\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Assets\WebSearch.svg" />
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
   </ItemGroup>
@@ -39,10 +29,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Assets\WebSearch.svg" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Update="Assets\WebSearch.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\WebSearch.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -50,8 +47,5 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Update="Assets\WebSearch.svg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 </Project>

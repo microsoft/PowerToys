@@ -9,9 +9,6 @@
     <ProjectPriFileName>Microsoft.CmdPal.Ext.Registry.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Assets\Registry.svg" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
   <ItemGroup>
@@ -24,12 +21,16 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
+  
+  <ItemGroup>
+    <None Remove="Assets\Registry.svg" />
+  </ItemGroup>
   <ItemGroup>
     <Content Update="Assets\Registry.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Assets\Registry.svg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 

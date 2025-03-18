@@ -10,12 +10,6 @@
     <ProjectPriFileName>Microsoft.CmdPal.Ext.WindowsTerminal.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
-    <Content Remove="Assets\WindowsTerminal.dark.png" />
-    <Content Remove="Assets\WindowsTerminal.dark.png" />
-    <Content Remove="Assets\WindowsTerminal.light.png" />
-    <Content Remove="Assets\WindowsTerminal.light.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="Assets\WindowsTerminal.svg" />
   </ItemGroup>
   <ItemGroup>
@@ -28,14 +22,22 @@
       <AutoGen>True</AutoGen>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Assets\WindowsTerminal.dark.png" />
+    <Content Remove="Assets\WindowsTerminal.dark.png" />
+    <Content Remove="Assets\WindowsTerminal.light.png" />
+    <Content Remove="Assets\WindowsTerminal.light.png" />
+  </ItemGroup>
   <ItemGroup>
     <Content Update="Assets\WindowsTerminal.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Assets\WindowsTerminal.svg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

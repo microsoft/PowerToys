@@ -335,7 +335,6 @@
                             Grid.Row="2"
                             Margin="0,12,0,24"
                             Background="Transparent"
-                            FontSize="10"
                             Header3FontSize="12"
                             Header3FontWeight="Normal"
                             Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"

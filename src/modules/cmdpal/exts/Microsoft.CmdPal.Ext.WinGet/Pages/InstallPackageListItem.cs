@@ -18,6 +18,12 @@ namespace Microsoft.CmdPal.Ext.WinGet.Pages;
 public partial class InstallPackageListItem : ListItem
 {
     private readonly CatalogPackage _package;
+
+    // Lazy-init the details
+    private readonly Lazy<Details?> _details;
+
+    public override IDetails? Details { get => _details.Value; set => base.Details = value; }
+
     private InstallPackageCommand? _installCommand;
 
     public InstallPackageListItem(CatalogPackage package)
@@ -25,24 +31,31 @@ public partial class InstallPackageListItem : ListItem
     {
         _package = package;
 
-        var version = _package.DefaultInstallVersion;
-        var versionText = version.Version;
-        var versionTagText = versionText == "Unknown" && version.PackageCatalog.Info.Id == "StoreEdgeFD" ? "msstore" : versionText;
+        PackageVersionInfo version = _package.DefaultInstallVersion;
+        string versionText = version.Version;
+        string versionTagText = versionText == "Unknown" && version.PackageCatalog.Info.Id == "StoreEdgeFD" ? "msstore" : versionText;
 
         Title = _package.Name;
         Subtitle = _package.Id;
         Tags = [new Tag() { Text = versionTagText }];
 
-        var metadata = version.GetCatalogPackageMetadata();
+        _details = new Lazy<Details?>(() => BuildDetails(version));
+
+        _ = Task.Run(UpdatedInstalledStatus);
+    }
+
+    private Details? BuildDetails(PackageVersionInfo? version)
+    {
+        CatalogPackageMetadata? metadata = version?.GetCatalogPackageMetadata();
         if (metadata != null)
         {
-            var description = string.IsNullOrEmpty(metadata.Description) ? metadata.ShortDescription : metadata.Description;
-            var detailsBody = $"""
+            string description = string.IsNullOrEmpty(metadata.Description) ? metadata.ShortDescription : metadata.Description;
+            string detailsBody = $"""
 
 {description}
 """;
-            var heroIcon = new IconInfo(string.Empty);
-            var icons = metadata.Icons;
+            IconInfo heroIcon = new(string.Empty);
+            IReadOnlyList<Icon> icons = metadata.Icons;
             if (icons.Count > 0)
             {
                 // There's also a .Theme property we could probably use to
@@ -50,7 +63,7 @@ public partial class InstallPackageListItem : ListItem
                 heroIcon = new IconInfo(icons[0].Url);
             }
 
-            Details = new Details()
+            return new Details()
             {
                 Body = detailsBody,
                 Title = metadata.PackageName,
@@ -59,7 +72,7 @@ public partial class InstallPackageListItem : ListItem
             };
         }
 
-        _ = Task.Run(UpdatedInstalledStatus);
+        return null;
     }
 
     private List<IDetailsElement> GetDetailsMetadata(CatalogPackageMetadata metadata)
@@ -80,23 +93,23 @@ public partial class InstallPackageListItem : ListItem
             { Properties.Resources.winget_view_release_notes, (string.IsNullOrEmpty(metadata.ReleaseNotesUrl) ? string.Empty : Properties.Resources.winget_view_online, metadata.ReleaseNotesUrl) },
             { Properties.Resources.winget_publisher_support, (string.Empty, metadata.PublisherSupportUrl) },
         };
-        var docs = metadata.Documentations.ToArray();
-        foreach (var item in docs)
+        Documentation[] docs = metadata.Documentations.ToArray();
+        foreach (Documentation? item in docs)
         {
             simpleData.Add(item.DocumentLabel, (string.Empty, item.DocumentUrl));
         }
 
-        var options = default(UriCreationOptions);
-        foreach (var kv in simpleData)
+        UriCreationOptions options = default;
+        foreach (KeyValuePair<string, (string, string)> kv in simpleData)
         {
-            var text = string.IsNullOrEmpty(kv.Value.Item1) ? kv.Value.Item2 : kv.Value.Item1;
-            var target = kv.Value.Item2;
+            string text = string.IsNullOrEmpty(kv.Value.Item1) ? kv.Value.Item2 : kv.Value.Item1;
+            string target = kv.Value.Item2;
             if (!string.IsNullOrEmpty(text))
             {
                 Uri? uri = null;
                 Uri.TryCreate(target, options, out uri);
 
-                var pair = new DetailsElement()
+                DetailsElement pair = new()
                 {
                     Key = kv.Key,
                     Data = new DetailsLink() { Link = uri, Text = text },
@@ -107,7 +120,7 @@ public partial class InstallPackageListItem : ListItem
 
         if (metadata.Tags.Any())
         {
-            var pair = new DetailsElement()
+            DetailsElement pair = new()
             {
                 Key = "Tags",
                 Data = new DetailsTags() { Tags = metadata.Tags.Select(t => new Tag(t)).ToArray() },
@@ -120,18 +133,18 @@ public partial class InstallPackageListItem : ListItem
 
     private async void UpdatedInstalledStatus()
     {
-        var status = await _package.CheckInstalledStatusAsync();
-        var isInstalled = _package.InstalledVersion != null;
+        CheckInstalledStatusResult status = await _package.CheckInstalledStatusAsync();
+        bool isInstalled = _package.InstalledVersion != null;
 
         // might be an uninstall command
-        var installCommand = new InstallPackageCommand(_package, isInstalled);
+        InstallPackageCommand installCommand = new(_package, isInstalled);
 
         if (isInstalled)
         {
             this.Icon = InstallPackageCommand.CompletedIcon;
             this.Command = new NoOpCommand();
             List<IContextItem> contextMenu = [];
-            var uninstallContextItem = new CommandContextItem(installCommand)
+            CommandContextItem uninstallContextItem = new(installCommand)
             {
                 IsCritical = true,
                 Icon = InstallPackageCommand.DeleteIcon,
@@ -139,8 +152,8 @@ public partial class InstallPackageListItem : ListItem
 
             if (WinGetStatics.AppSearchCallback != null)
             {
-                var callback = WinGetStatics.AppSearchCallback;
-                var installedApp = callback(_package.DefaultInstallVersion.DisplayName);
+                Func<string, ICommandItem?> callback = WinGetStatics.AppSearchCallback;
+                ICommandItem? installedApp = callback(_package.DefaultInstallVersion.DisplayName);
                 if (installedApp != null)
                 {
                     this.Command = installedApp.Command;
@@ -177,11 +190,11 @@ public partial class InstallPackageListItem : ListItem
             Stopwatch s = new();
             Logger.LogDebug($"Starting RefreshPackageCatalogAsync");
             s.Start();
-            var refs = WinGetStatics.AvailableCatalogs.ToArray();
+            PackageCatalogReference[] refs = WinGetStatics.AvailableCatalogs.ToArray();
 
-            foreach (var catalog in refs)
+            foreach (PackageCatalogReference? catalog in refs)
             {
-                var operation = catalog.RefreshPackageCatalogAsync();
+                global::Windows.Foundation.IAsyncOperationWithProgress<RefreshPackageCatalogResult, double> operation = catalog.RefreshPackageCatalogAsync();
                 operation.Wait();
             }
 

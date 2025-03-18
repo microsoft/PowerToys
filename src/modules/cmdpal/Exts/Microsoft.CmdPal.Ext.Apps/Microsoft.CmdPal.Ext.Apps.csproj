@@ -7,10 +7,6 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
-  <ItemGroup>
-	<None Remove="Assets\AllApps.png" />
-    <None Remove="Assets\AllApps.svg" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.IO.Abstractions" />
@@ -35,11 +31,15 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <None Remove="Assets\AllApps.png" />
+    <None Remove="Assets\AllApps.svg" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Update="Assets\AllApps.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Assets\AllApps.svg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 

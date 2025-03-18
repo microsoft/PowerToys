@@ -9,9 +9,6 @@
     <ProjectPriFileName>Microsoft.CmdPal.Ext.Calc.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Assets\Calculator.svg" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
   </ItemGroup>
 
@@ -24,11 +21,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Calculator.svg" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Update="Assets\Calculator.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Update="Assets\Calculator.svg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
