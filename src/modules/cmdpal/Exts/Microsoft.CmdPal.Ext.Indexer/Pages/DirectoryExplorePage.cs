@@ -117,13 +117,20 @@ public sealed partial class DirectoryExplorePage : DynamicListPage
             foreach (var item in _directoryContents)
             {
                 IconInfo? icon = null;
-                var stream = ThumbnailHelper.GetThumbnail(item.FilePath).Result;
-                if (stream != null)
+                try
                 {
-                    var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
-                    icon = new IconInfo(data, data);
-                    item.Icon = icon;
+                    var stream = ThumbnailHelper.GetThumbnail(item.FilePath).Result;
+                    if (stream != null)
+                    {
+                        var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+                        icon = new IconInfo(data, data);
+                    }
                 }
+                catch
+                {
+                }
+
+                item.Icon = icon;
             }
         });
 

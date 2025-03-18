@@ -11,7 +11,7 @@ internal sealed class NativeMethods
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
     internal static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     internal struct SHFILEINFO
     {
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
@@ -24,4 +24,7 @@ internal sealed class NativeMethods
         public string szTypeName;
 #pragma warning restore SA1307 // Accessible fields should begin with upper-case letter
     }
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    internal static extern bool DestroyIcon(IntPtr hIcon);
 }

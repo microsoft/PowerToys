@@ -90,11 +90,18 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
                 while (!_searchQuery.SearchResults.IsEmpty && _searchQuery.SearchResults.TryDequeue(out result) && ++index <= limit)
                 {
                     IconInfo icon = null;
-                    var stream = ThumbnailHelper.GetThumbnail(result.LaunchUri).Result;
-                    if (stream != null)
+                    try
                     {
-                        var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
-                        icon = new IconInfo(data, data);
+                        var stream = ThumbnailHelper.GetThumbnail(result.LaunchUri).Result;
+                        if (stream != null)
+                        {
+                            var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+                            icon = new IconInfo(data, data);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Failed to get the icon.", ex);
                     }
 
                     _indexerListItems.Add(new IndexerListItem(new IndexerItem
