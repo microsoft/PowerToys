@@ -101,7 +101,7 @@ steps:
 
     - template: steps-esrp-signing.yml
       parameters:
-        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign MSI
+        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign VNext MSI
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
           FolderPath: 'installer/PowerToysSetupVNext/$(InstallerRelativePath)'
