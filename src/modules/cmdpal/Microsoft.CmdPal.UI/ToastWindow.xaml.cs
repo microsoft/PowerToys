@@ -30,9 +30,6 @@ public sealed partial class ToastWindow : Window,
 
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
 
-    private DesktopAcrylicController? _acrylicController;
-    private SystemBackdropConfiguration? _configurationSource;
-
     public ToastWindow()
     {
         this.InitializeComponent();
@@ -48,9 +45,6 @@ public sealed partial class ToastWindow : Window,
         PInvoke.EnableWindow(_hwnd, false);
 
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
-
-        SetAcrylic();
-        ToastText.ActualThemeChanged += (s, e) => UpdateAcrylic();
     }
 
     private void PositionCentered()
@@ -101,76 +95,5 @@ public sealed partial class ToastWindow : Window,
     {
         // This might come in on a background thread
         DispatcherQueue.TryEnqueue(() => Close());
-    }
-
-    ////// Literally everything below here is for acrylic //////
-
-    internal void OnClosed(object sender, WindowEventArgs args) => DisposeAcrylic();
-
-    // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
-    // other Shell surfaces are using, this cannot be set in XAML however.
-    private void SetAcrylic()
-    {
-        if (DesktopAcrylicController.IsSupported())
-        {
-            // Hooking up the policy object.
-            _configurationSource = new SystemBackdropConfiguration
-            {
-                // Initial configuration state.
-                IsInputActive = true,
-            };
-            UpdateAcrylic();
-        }
-    }
-
-    private void UpdateAcrylic()
-    {
-        _acrylicController = GetAcrylicConfig(Content);
-
-        // Enable the system backdrop.
-        // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
-        _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
-        _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
-    }
-
-    private static DesktopAcrylicController GetAcrylicConfig(UIElement content)
-    {
-        var feContent = content as FrameworkElement;
-
-        return feContent?.ActualTheme == ElementTheme.Light
-            ? new DesktopAcrylicController()
-            {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = Color.FromArgb(255, 243, 243, 243),
-                LuminosityOpacity = 0.90f,
-                TintOpacity = 0.0f,
-                FallbackColor = Color.FromArgb(255, 238, 238, 238),
-            }
-            : new DesktopAcrylicController()
-            {
-                Kind = DesktopAcrylicKind.Thin,
-                TintColor = Color.FromArgb(255, 32, 32, 32),
-                LuminosityOpacity = 0.96f,
-                TintOpacity = 0.5f,
-                FallbackColor = Color.FromArgb(255, 28, 28, 28),
-            };
-    }
-
-    private void DisposeAcrylic()
-    {
-        if (_acrylicController != null)
-        {
-            _acrylicController.Dispose();
-            _acrylicController = null!;
-            _configurationSource = null!;
-        }
-    }
-
-    internal void OnActivated(object sender, WindowActivatedEventArgs args)
-    {
-        if (_configurationSource != null)
-        {
-            _configurationSource.IsInputActive = args.WindowActivationState != WindowActivationState.Deactivated;
-        }
     }
 }
