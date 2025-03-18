@@ -79,7 +79,8 @@
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
-<?ifdef env.IsPipeline?>
+
+<?ifdef $(var.CIBuild)?>
       <ComponentGroupRef Id="CmdPalComponentGroup" />
 <?endif?>
     </Feature>
