@@ -91,7 +91,7 @@ namespace Microsoft.Plugin.Program.Storage
             }
         }
 
-        private async Task DoOnAppRenamed(object sender, RenamedEventArgs e)
+        private async Task DoOnAppRenamedAsync(object sender, RenamedEventArgs e)
         {
             string oldPath = e.OldFullPath;
             string newPath = e.FullPath;
@@ -124,7 +124,7 @@ namespace Microsoft.Plugin.Program.Storage
             }
             catch (Exception ex)
             {
-                Log.Exception($"OnAppRenamed-{extension} Program|{e.OldName}|Unable to create program from {oldPath}", ex, GetType());
+                Log.Exception($"DoOnAppRenamedAsync-{extension} Program|{e.OldName}|Unable to create program from {oldPath}", ex, GetType());
             }
 
             // To remove the old app which has been renamed and to add the new application.
@@ -150,7 +150,14 @@ namespace Microsoft.Plugin.Program.Storage
         {
             Task.Run(async () =>
             {
-                await DoOnAppRenamed(sender, e).ConfigureAwait(false);
+                try
+                {
+                    await DoOnAppRenamedAsync(sender, e).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    Log.Exception($"OnAppRenamed throw exception.", e, e.GetType());
+                }
             }).ConfigureAwait(false);
         }
 
