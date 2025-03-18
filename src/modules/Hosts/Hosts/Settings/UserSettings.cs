@@ -43,7 +43,18 @@ namespace Hosts.Settings
         public HostsAdditionalLinesPosition AdditionalLinesPosition { get; private set; }
 
         // Moved from Settings.UI.Library
-        public HostsEncoding Encoding { get; set; }
+        public HostsEncoding Encoding { get; private set; }
+
+        public bool BackupHosts { get; private set; }
+
+        public string BackupPath { get; private set; }
+
+        // Moved from Settings.UI.Library
+        public HostsDeleteBackupMode DeleteBackupsMode { get; private set; }
+
+        public int DeleteBackupsDays { get; private set; }
+
+        public int DeleteBackupsCount { get; private set; }
 
         public event EventHandler LoopbackDuplicatesChanged;
 
@@ -54,6 +65,11 @@ namespace Hosts.Settings
             LoopbackDuplicates = false;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;
+            BackupHosts = true;
+            BackupPath = @"C:\Windows\system32\drivers\etc";
+            DeleteBackupsMode = HostsDeleteBackupMode.Age;
+            DeleteBackupsDays = 15;
+            DeleteBackupsCount = 5;
 
             LoadSettingsFromJson();
 
@@ -88,6 +104,11 @@ namespace Hosts.Settings
                             AdditionalLinesPosition = (HostsAdditionalLinesPosition)settings.Properties.AdditionalLinesPosition;
                             Encoding = (HostsEncoding)settings.Properties.Encoding;
                             LoopbackDuplicates = settings.Properties.LoopbackDuplicates;
+                            BackupHosts = settings.Properties.BackupHosts;
+                            BackupPath = settings.Properties.BackupPath;
+                            DeleteBackupsMode = (HostsDeleteBackupMode)settings.Properties.DeleteBackupsMode;
+                            DeleteBackupsDays = settings.Properties.DeleteBackupsDays;
+                            DeleteBackupsCount = settings.Properties.DeleteBackupsCount;
                         }
 
                         retry = false;
