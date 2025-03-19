@@ -36,7 +36,7 @@ public partial class MainListPage : DynamicListPage,
 
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
-        var allApps = AllAppsCommandProvider.Page;
+        AllAppsPage allApps = AllAppsCommandProvider.Page;
         allApps.PropChanged += (s, p) =>
         {
             if (p.PropertyName == nameof(allApps.IsLoading))
@@ -48,7 +48,7 @@ public partial class MainListPage : DynamicListPage,
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
 
-        var settings = _serviceProvider.GetService<SettingsModel>()!;
+        SettingsModel settings = _serviceProvider.GetService<SettingsModel>()!;
         settings.SettingsChanged += SettingsChangedHandler;
         HotReloadSettings(settings);
 
@@ -73,7 +73,6 @@ public partial class MainListPage : DynamicListPage,
             {
                 return _tlcManager
                     .TopLevelCommands
-                    .Select(tlc => tlc)
                     .Where(tlc => !string.IsNullOrEmpty(tlc.Title))
                     .ToArray();
             }
@@ -92,19 +91,19 @@ public partial class MainListPage : DynamicListPage,
         // Handle changes to the filter text here
         if (!string.IsNullOrEmpty(SearchText))
         {
-            var aliases = _serviceProvider.GetService<AliasManager>()!;
+            AliasManager aliases = _serviceProvider.GetService<AliasManager>()!;
             if (aliases.CheckAlias(newSearch))
             {
                 return;
             }
         }
 
-        var commands = _tlcManager.TopLevelCommands;
+        System.Collections.ObjectModel.ObservableCollection<TopLevelViewModel> commands = _tlcManager.TopLevelCommands;
         lock (commands)
         {
             // This gets called on a background thread, because ListViewModel
             // updates the .SearchText of all extensions on a BG thread.
-            foreach (var command in commands)
+            foreach (TopLevelViewModel command in commands)
             {
                 command.TryUpdateFallbackText(newSearch);
             }
@@ -140,8 +139,8 @@ public partial class MainListPage : DynamicListPage,
 
     private bool ActuallyLoading()
     {
-        var tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
-        var allApps = AllAppsCommandProvider.Page;
+        TopLevelCommandManager tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
+        AllAppsPage allApps = AllAppsCommandProvider.Page;
         return allApps.IsLoading || tlcManager.IsLoading;
     }
 
@@ -155,55 +154,56 @@ public partial class MainListPage : DynamicListPage,
             return 1;
         }
 
-        var title = topLevelOrAppItem.Title;
+        string title = topLevelOrAppItem.Title;
         if (string.IsNullOrEmpty(title))
         {
             return 0;
         }
 
-        var isFallback = false;
-        var isAliasSubstringMatch = false;
-        var isAliasMatch = false;
-        var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
+        bool isFallback = false;
+        bool isAliasSubstringMatch = false;
+        bool isAliasMatch = false;
+        string id = IdForTopLevelOrAppItem(topLevelOrAppItem);
 
-        var extensionDisplayName = string.Empty;
-        if (topLevelOrAppItem is TopLevelCommandItemWrapper toplevel)
+        string extensionDisplayName = string.Empty;
+        if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
-            isFallback = toplevel.IsFallback;
-            if (toplevel.Alias?.Alias is string alias)
+            isFallback = topLevel.IsFallback;
+            if (topLevel.HasAlias)
             {
+                string alias = topLevel.AliasText;
                 isAliasMatch = alias == query;
                 isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query, StringComparison.CurrentCultureIgnoreCase);
             }
 
-            extensionDisplayName = toplevel.ExtensionHost?.Extension?.PackageDisplayName ?? string.Empty;
+            extensionDisplayName = topLevel.ExtensionHost?.Extension?.PackageDisplayName ?? string.Empty;
         }
 
-        var nameMatch = StringMatcher.FuzzySearch(query, title);
-        var descriptionMatch = StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle);
-        var extensionTitleMatch = StringMatcher.FuzzySearch(query, extensionDisplayName);
-        var scores = new[]
+        MatchResult nameMatch = StringMatcher.FuzzySearch(query, title);
+        MatchResult descriptionMatch = StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle);
+        MatchResult extensionTitleMatch = StringMatcher.FuzzySearch(query, extensionDisplayName);
+        double[] scores = new[]
         {
              nameMatch.Score,
              (descriptionMatch.Score - 4) / 2.0,
              isFallback ? 1 : 0, // Always give fallbacks a chance...
         };
-        var max = scores.Max();
+        double max = scores.Max();
         max = max + (extensionTitleMatch.Score / 1.5);
 
         // ... but downweight them
-        var matchSomething = (max / (isFallback ? 3 : 1))
+        double matchSomething = (max / (isFallback ? 3 : 1))
             + (isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0));
 
         // If we matched title, subtitle, or alias (something real), then
         // here we add the recent command weight boost
         //
         // Otherwise something like `x` will still match everything you've run before
-        var finalScore = matchSomething;
+        double finalScore = matchSomething;
         if (matchSomething > 0)
         {
-            var history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands;
-            var recentWeightBoost = history.GetCommandHistoryWeight(id);
+            RecentCommandsManager history = _serviceProvider.GetService<AppStateModel>()!.RecentCommands;
+            int recentWeightBoost = history.GetCommandHistoryWeight(id);
             finalScore += recentWeightBoost;
         }
 
@@ -212,18 +212,18 @@ public partial class MainListPage : DynamicListPage,
 
     public void UpdateHistory(IListItem topLevelOrAppItem)
     {
-        var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
-        var state = _serviceProvider.GetService<AppStateModel>()!;
-        var history = state.RecentCommands;
+        string id = IdForTopLevelOrAppItem(topLevelOrAppItem);
+        AppStateModel state = _serviceProvider.GetService<AppStateModel>()!;
+        RecentCommandsManager history = state.RecentCommands;
         history.AddHistoryItem(id);
         AppStateModel.SaveState(state);
     }
 
     private string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
     {
-        if (topLevelOrAppItem is TopLevelCommandItemWrapper toplevel)
+        if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
-            return toplevel.Id;
+            return topLevel.Id;
         }
         else
         {

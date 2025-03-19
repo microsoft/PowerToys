@@ -4,8 +4,8 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -15,7 +15,8 @@ using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 namespace Microsoft.CmdPal.UI.Settings;
 
 public sealed partial class SettingsWindow : Window,
-    IRecipient<NavigateToExtensionSettingsMessage>
+    IRecipient<NavigateToExtensionSettingsMessage>,
+    IRecipient<QuitMessage>
 {
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
@@ -27,7 +28,9 @@ public sealed partial class SettingsWindow : Window,
         this.AppWindow.Title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         PositionCentered();
+
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
+        WeakReferenceMessenger.Default.Register<QuitMessage>(this);
     }
 
     private void NavView_Loaded(object sender, RoutedEventArgs e)
@@ -100,6 +103,12 @@ public sealed partial class SettingsWindow : Window,
     private void Window_Activated(object sender, WindowActivatedEventArgs args)
     {
         WeakReferenceMessenger.Default.Send<WindowActivatedEventArgs>(args);
+    }
+
+    public void Receive(QuitMessage message)
+    {
+        // This might come in on a background thread
+        DispatcherQueue.TryEnqueue(() => Close());
     }
 }
 

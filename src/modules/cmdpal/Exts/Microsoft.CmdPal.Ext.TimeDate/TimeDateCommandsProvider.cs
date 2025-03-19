@@ -22,7 +22,7 @@ public partial class TimeDateCommandsProvider : CommandProvider
     public TimeDateCommandsProvider()
     {
         DisplayName = Resources.Microsoft_plugin_timedate_plugin_name;
-
+        Id = "DateTime";
         _command = new CommandItem(_timeDateExtensionPage)
         {
             Icon = _timeDateExtensionPage.Icon,
