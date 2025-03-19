@@ -149,6 +149,11 @@ jobs:
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
+      version: '6.0' # .NET 6.0 is required in CI for ESRP code signing tasks. Please do not remove.
+
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
       version: '8.0'
 
   - template: steps-ensure-dotnet-version.yml
