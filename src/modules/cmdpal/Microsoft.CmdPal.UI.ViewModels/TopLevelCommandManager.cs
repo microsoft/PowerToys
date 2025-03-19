@@ -66,13 +66,11 @@ public partial class TopLevelCommandManager : ObservableObject,
         await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
         var settings = _serviceProvider.GetService<SettingsModel>()!;
-        Action<ICommandItem?, bool> makeAndAdd = (ICommandItem? i, bool fallback) =>
+        var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
-            CommandItemViewModel commandItemViewModel = new(new(i), weakSelf);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, commandProvider.ExtensionHost, settings, _serviceProvider);
+            var commandItemViewModel = new CommandItemViewModel(new(i), weakSelf);
+            var topLevelViewModel = new TopLevelViewModel(commandItemViewModel, fallback, commandProvider.ExtensionHost, settings, _serviceProvider);
 
-            // TopLevelCommandItemWrapper wrapper = new(
-            //    new(i), fallback, commandProvider.ExtensionHost, commandProvider.ProviderId, _serviceProvider);
             lock (TopLevelCommands)
             {
                 TopLevelCommands.Add(topLevelViewModel);
@@ -161,15 +159,11 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         foreach (var i in sender.TopLevelItems)
         {
-            // CommandItemViewModel commandItemViewModel = new(new(i), weakSelf);
-            // TopLevelViewModel topLevelViewModel = new(commandItemViewModel, false, sender.ExtensionHost, settings, _serviceProvider);
             newItems.Add(i);
         }
 
         foreach (var i in sender.FallbackItems)
         {
-            // CommandItemViewModel commandItemViewModel = new(new(i), weakSelf);
-            // TopLevelViewModel topLevelViewModel = new(commandItemViewModel, true, sender.ExtensionHost, settings, _serviceProvider);
             newItems.Add(i);
         }
 

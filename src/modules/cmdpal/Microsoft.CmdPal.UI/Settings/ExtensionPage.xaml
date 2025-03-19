@@ -48,9 +48,7 @@
                     HorizontalAlignment="Stretch"
                     Spacing="{StaticResource SettingsCardSpacing}">
 
-                    <controls:SettingsCard
-                        x:Uid="ExtensionEnableCard"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEA86;}">
+                    <controls:SettingsCard x:Uid="ExtensionEnableCard" HeaderIcon="{ui:FontIcon Glyph=&#xEA86;}">
 
 
                         <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -127,7 +125,9 @@
                                     <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
                                 </Frame>
 
-                                <TextBlock x:Uid="ExtensionAboutHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                                <TextBlock
+                                    x:Uid="ExtensionAboutHeader"
+                                    Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                                     Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay}" />
 
                                 <controls:SettingsCard
@@ -151,7 +151,9 @@
                         </controls:Case>
                     </controls:SwitchPresenter>
 
-                    <TextBlock x:Uid="ExtensionAboutHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                    <TextBlock
+                        x:Uid="ExtensionAboutHeader"
+                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
                         Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                     <controls:SettingsCard
                         Description="These commands are built-in to the Windows Command Palette"
