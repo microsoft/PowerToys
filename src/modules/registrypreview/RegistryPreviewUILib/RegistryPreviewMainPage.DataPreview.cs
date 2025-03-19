@@ -19,10 +19,11 @@ namespace RegistryPreviewUILib
     {
         private static bool _isDataPreviewHexBoxLoaded;
 
-        private static AccessibilitySettings accessibilitySettings = new AccessibilitySettings();
-
         internal void ShowEnhancedDataPreview(string name, string type, string value)
         {
+            // Get resources
+            var xamlPageResources = this.Resources;
+
             // Create dialog
             _isDataPreviewHexBoxLoaded = false;
             var panel = new StackPanel()
@@ -73,7 +74,7 @@ namespace RegistryPreviewUILib
                     }
 
                     // Add controls
-                    AddBinaryView(ref panel, ref resourceLoader, ref binaryData, binaryDataText);
+                    AddBinaryView(ref panel, ref resourceLoader, ref binaryData, binaryDataText, ref xamlPageResources);
                     break;
                 case "REG_MULTI_SZ":
                     var multiLineBox = new TextBox()
@@ -139,7 +140,7 @@ namespace RegistryPreviewUILib
             panel.Children.Add(decimalBox);
         }
 
-        private static void AddBinaryView(ref StackPanel panel, ref ResourceLoader resourceLoader, ref BinaryReader data, string dataText)
+        private static void AddBinaryView(ref StackPanel panel, ref ResourceLoader resourceLoader, ref BinaryReader data, string dataText, ref ResourceDictionary xamlPageResources)
         {
             // Create SelectorBar
             var navBar = new SelectorBar()
@@ -176,10 +177,10 @@ namespace RegistryPreviewUILib
                 Columns = 8,
                 FontSize = 13,
                 RequestedTheme = panel.ActualTheme,
-                AddressBrush = (SolidColorBrush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"],
-                AlternatingDataColumnTextBrush = (SolidColorBrush)Application.Current.Resources["TextFillColorSecondaryBrush"],
-                SelectionTextBrush = accessibilitySettings.HighContrast ? new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemColorHighlightTextColor"]) : (SolidColorBrush)Application.Current.Resources["TextOnAccentFillColorSelectedTextBrush"],
-                SelectionBrush = accessibilitySettings.HighContrast ? new SolidColorBrush((Windows.UI.Color)Application.Current.Resources["SystemColorHighlightColor"]) : (SolidColorBrush)Application.Current.Resources["AccentFillColorSelectedTextBackgroundBrush"],
+                AddressBrush = (Brush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"],
+                AlternatingDataColumnTextBrush = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                SelectionTextBrush = (Brush)xamlPageResources["HexBox_SelectionTextBrush"],
+                SelectionBrush = (Brush)xamlPageResources["HexBox_SelectionBackgroundBrush"],
                 DataFormat = HB.DataFormat.Hexadecimal,
                 DataSignedness = HB.DataSignedness.Unsigned,
                 DataType = HB.DataType.Int_1,

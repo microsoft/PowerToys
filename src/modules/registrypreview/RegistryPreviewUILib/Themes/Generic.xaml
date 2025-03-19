@@ -7,5 +7,4 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/PowerToys.RegistryPreviewUILib/Controls/HexBox/Themes/Generic.xaml" />
     </ResourceDictionary.MergedDictionaries>
-
 </ResourceDictionary>
