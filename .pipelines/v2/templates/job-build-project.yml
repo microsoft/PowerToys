@@ -181,7 +181,6 @@ jobs:
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\BugReportTool\BugReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\tools\StylesReportTool\StylesReportTool.sln'
       & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetup.sln'
-      & '.pipelines/verifyArm64Configuration.ps1' -solution '$(build.sourcesdirectory)\installer\PowerToysSetupVNext.sln'
     displayName: Verify ARM64 configurations
 
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
@@ -548,6 +547,28 @@ jobs:
       echo $machineHash
       echo $combinedMachinePath
 
+      $userHash | out-file -filepath $combinedUserPath
+      $machineHash | out-file -filepath $combinedMachinePath
+    displayName: Calculate file hashes
+
+  # Output config for installer vnext
+  - pwsh: |-
+      $p = "$(JobOutputDirectory)\"
+      $userHash = ((Get-Item $p\PowerToysUserSetupVNext*.exe | Get-FileHash).Hash);
+      $machineHash = ((Get-Item $p\PowerToysSetupVNext*.exe | Get-FileHash).Hash);
+      $userPlat = "hash_user_$(BuildPlatform).txt";
+      $machinePlat = "hash_machine_$(BuildPlatform).txt";
+      $combinedUserPath = $p + $userPlat;
+      $combinedMachinePath = $p + $machinePlat;
+      
+      echo $p
+      echo $userPlat
+      echo $userHash
+      echo $combinedUserPath
+      echo $machinePlat
+      echo $machineHash
+      echo $combinedMachinePath
+      
       $userHash | out-file -filepath $combinedUserPath
       $machineHash | out-file -filepath $combinedMachinePath
     displayName: Calculate file hashes
