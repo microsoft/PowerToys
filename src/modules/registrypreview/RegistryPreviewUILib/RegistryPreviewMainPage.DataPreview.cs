@@ -250,6 +250,9 @@ namespace RegistryPreviewUILib
                 {
                     progressRing.Visibility = Visibility.Collapsed;
                     hexBox.Visibility = Visibility.Visible;
+
+                    // Clear selection aligned to TextBox
+                    hexBox.ClearSelection();
                 }
                 else
                 {
