@@ -246,6 +246,65 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    private void HandleGoToPageArgs(IGoToPageArgs args)
+    {
+        GoToPageArgsViewModel vm = new(args, new(ViewModel.CurrentPage));
+        var initializeDialogTask = Task.Run(() => { InitializeGoToPage(vm); });
+        initializeDialogTask.Wait();
+
+        var pageID = vm.PageId;
+        var navigationMode = vm.NavigationMode;
+
+        if (string.IsNullOrEmpty(pageID) && navigationMode != NavigationMode.GoBack)
+        {
+            // TODO: Consider to show a toast?
+            return;
+        }
+
+        switch (navigationMode)
+        {
+            case NavigationMode.Push:
+                // TODO: Implement push
+                break;
+
+            case NavigationMode.GoHome:
+                var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+                var toplevelCommand = tlcManager.LookupCommand(pageID);
+
+                if (toplevelCommand == null)
+                {
+                    break;
+                }
+
+                /* Stack looks like this:
+                 * 0: Main page
+                 * 1: Top level command page (your extensions first page)
+                 * 2: One of your extension pages listed in the top level command page results
+                 * 3: ...
+                 * ...
+                 */
+
+                // So, we need to clean up existing stack frame. And push to the next top level page.
+                while (RootFrame.CanGoBack)
+                {
+                    GoBack(false, false);
+                }
+
+                RootFrame.ForwardStack.Clear();
+
+                var msg = new PerformCommandMessage(toplevelCommand) { WithAnimation = true };
+                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(msg);
+
+                break;
+
+            case NavigationMode.GoBack:
+                GoBack();
+                break;
+        }
+
+        return;
+    }
+
     // This gets called from the UI thread
     private void HandleConfirmArgs(IConfirmationArgs args)
     {
@@ -298,6 +357,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     }
 
     private void InitializeConfirmationDialog(ConfirmResultViewModel vm)
+    {
+        vm.SafeInitializePropertiesSynchronous();
+    }
+
+    private void InitializeGoToPage(GoToPageArgsViewModel vm)
     {
         vm.SafeInitializePropertiesSynchronous();
     }
@@ -363,6 +427,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                             {
                                 _toast.ShowToast(a.Message);
                                 HandleCommandResultOnUiThread(a.Result);
+                            }
+
+                            break;
+                        }
+
+                    case CommandResultKind.GoToPage:
+                        {
+                            if (result.Args is IGoToPageArgs a)
+                            {
+                                HandleGoToPageArgs(a);
                             }
 
                             break;
