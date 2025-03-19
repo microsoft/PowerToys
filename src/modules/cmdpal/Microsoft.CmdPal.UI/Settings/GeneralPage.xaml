@@ -40,9 +40,7 @@
                         <ptControls:ShortcutControl HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}" />
 
                         <controls:SettingsExpander.Items>
-                            <controls:SettingsCard
-                                x:Uid="Settings_GeneralPage_GoHome_SettingsCard"
-                                HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_GoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
                                 <ToggleSwitch IsOn="{x:Bind viewModel.HotkeyGoesHome, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard
@@ -63,30 +61,22 @@
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
 
-                    <controls:SettingsCard
-                        x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowAppDetails, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard
-                        x:Uid="Settings_GeneralPage_BackspaceGoesBack_SettingsCard"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_BackspaceGoesBack_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.BackspaceGoesBack, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard
-                        x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.SingleClickActivates, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <!--  Example 'About' section  -->
                     <TextBlock x:Uid="AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                    <controls:SettingsExpander
-                        x:Uid="Settings_GeneralPage_About_SettingsExpander"
-                        HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.png}">
+                    <controls:SettingsExpander x:Uid="Settings_GeneralPage_About_SettingsExpander" HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.png}">
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             IsTextSelectionEnabled="True"
@@ -101,8 +91,8 @@
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
                     <HyperlinkButton
-                        Margin="0,8,0,0"
                         x:Uid="Settings_GeneralPage_SendFeedback_Hyperlink"
+                        Margin="0,8,0,0"
                         NavigateUri="https://github.com/zadjii-msft/PowerToys/issues/new" />
                 </StackPanel>
             </Grid>

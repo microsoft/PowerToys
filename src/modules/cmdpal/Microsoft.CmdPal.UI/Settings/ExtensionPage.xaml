@@ -73,15 +73,11 @@
                                     <!--  Content goes here  -->
 
                                     <controls:SettingsExpander.Items>
-                                        <controls:SettingsCard
-                                            x:Uid="Settings_ExtensionPage_GlobalHotkey_SettingsCard"
-                                            HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                                        <controls:SettingsCard x:Uid="Settings_ExtensionPage_GlobalHotkey_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                                             <cpcontrols:ShortcutControl HotkeySettings="{x:Bind Hotkey, Mode=TwoWay}" />
                                         </controls:SettingsCard>
 
-                                        <controls:SettingsCard
-                                            x:Uid="Settings_ExtensionPage_Alias_SettingsCard"
-                                            HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}">
+                                        <controls:SettingsCard x:Uid="Settings_ExtensionPage_Alias_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}">
                                             <StackPanel Orientation="Vertical">
                                                 <TextBox Text="{x:Bind AliasText, Mode=TwoWay}" />
                                                 <ToggleSwitch
@@ -119,9 +115,7 @@
                             Text="{x:Bind ViewModel.ExtensionVersion}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard
-                        x:Uid="Settings_ExtensionPage_Builtin_SettingsCard"
-                        Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                    <controls:SettingsCard x:Uid="Settings_ExtensionPage_Builtin_SettingsCard" Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
 
                 </StackPanel>
             </Grid>
