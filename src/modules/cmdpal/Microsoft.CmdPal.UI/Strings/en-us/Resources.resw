@@ -241,6 +241,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Commands</value>
     <comment>A section header for information about the app</comment>
   </data>
+  <data name="ExtensionDisabledHeader.Text" xml:space="preserve">
+    <value>This extension is disabled</value>
+    <comment>A header to inform the user that an extension is not currently active</comment>
+  </data>
+  <data name="ExtensionDisabledDetails.Text" xml:space="preserve">
+    <value>Enable this extension to view commands and settings</value>
+    <comment>Additional details for when an extension is disabled. Displayed under ExtensionDisabledHeader.Text</comment>
+  </data>
   <data name="SettingsWindowTitle" xml:space="preserve">
     <value>Command Palette Settings</value>
     <comment>The title of the settings window for the app</comment>

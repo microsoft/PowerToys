@@ -44,6 +44,7 @@ public partial class ProviderSettingsViewModel(
                 _providerSettings.IsEnabled = value;
                 Save();
                 WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+                OnPropertyChanged(nameof(IsEnabled));
             }
         }
     }
