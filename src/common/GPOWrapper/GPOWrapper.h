@@ -65,6 +65,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredNewPlusHideTemplateFilenameExtensionValue();
         static GpoRuleConfigured GetAllowDataDiagnosticsValue();
         static GpoRuleConfigured GetConfiguredRunAtStartupValue();
+        static GpoRuleConfigured GetConfiguredNewPlusReplaceVariablesValue();
     };
 }
 

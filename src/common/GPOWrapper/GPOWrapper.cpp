@@ -236,6 +236,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowDataDiagnosticsValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusReplaceVariablesValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusReplaceVariablesValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredRunAtStartupValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredRunAtStartupValue());

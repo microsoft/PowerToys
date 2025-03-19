@@ -48,6 +48,9 @@ namespace Peek.FilePreviewer
                 new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnScalingFactorPropertyChanged()));
 
         [ObservableProperty]
+        private int numberOfFiles;
+
+        [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(ImagePreviewer))]
         [NotifyPropertyChangedFor(nameof(VideoPreviewer))]
         [NotifyPropertyChangedFor(nameof(AudioPreviewer))]
@@ -61,6 +64,9 @@ namespace Peek.FilePreviewer
 
         [ObservableProperty]
         private string infoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
+
+        [ObservableProperty]
+        private string noMoreFilesText = ResourceLoaderInstance.ResourceLoader.GetString("NoMoreFiles");
 
         private CancellationTokenSource _cancellationTokenSource = new();
 
@@ -157,6 +163,8 @@ namespace Peek.FilePreviewer
 
             // Clear up any unmanaged resources before creating a new previewer instance.
             (Previewer as IDisposable)?.Dispose();
+
+            NoMoreFiles.Visibility = NumberOfFiles == 0 ? Visibility.Visible : Visibility.Collapsed;
 
             if (Item == null)
             {
