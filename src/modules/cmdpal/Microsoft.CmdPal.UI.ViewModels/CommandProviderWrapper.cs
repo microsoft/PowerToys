@@ -6,6 +6,8 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -20,9 +22,12 @@ public sealed class CommandProviderWrapper
 
     private readonly TaskScheduler _taskScheduler;
 
-    public ICommandItem[] TopLevelItems { get; private set; } = [];
+    // public ICommandItem[] TopLevelItems { get; private set; } = [];
 
-    public IFallbackCommandItem[] FallbackItems { get; private set; } = [];
+    // public IFallbackCommandItem[] FallbackItems { get; private set; } = [];
+    public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
+
+    public TopLevelViewModel[] FallbackItems { get; private set; } = [];
 
     public string DisplayName { get; private set; } = string.Empty;
 
@@ -74,8 +79,8 @@ public sealed class CommandProviderWrapper
             throw new ArgumentException("You forgot to start the extension. This is a CmdPal error - we need to make sure to call StartExtensionAsync");
         }
 
-        var extensionImpl = extension.GetExtensionObject();
-        var providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
+        IExtension? extensionImpl = extension.GetExtensionObject();
+        object? providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
         if (providerObject is not ICommandProvider provider)
         {
             throw new ArgumentException("extension didn't actually implement ICommandProvider");
@@ -85,7 +90,7 @@ public sealed class CommandProviderWrapper
 
         try
         {
-            var model = _commandProvider.Unsafe!;
+            ICommandProvider model = _commandProvider.Unsafe!;
 
             // Hook the extension back into us
             model.InitializeWithHost(ExtensionHost);
@@ -105,7 +110,7 @@ public sealed class CommandProviderWrapper
         isValid = true;
     }
 
-    public async Task LoadTopLevelCommands()
+    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
         if (!isValid)
         {
@@ -117,9 +122,9 @@ public sealed class CommandProviderWrapper
 
         try
         {
-            var model = _commandProvider.Unsafe!;
+            ICommandProvider model = _commandProvider.Unsafe!;
 
-            var t = new Task<ICommandItem[]>(model.TopLevelCommands);
+            Task<ICommandItem[]> t = new(model.TopLevelCommands);
             t.Start();
             commands = await t.ConfigureAwait(false);
 
@@ -134,6 +139,8 @@ public sealed class CommandProviderWrapper
             Settings = new(model.Settings, this, _taskScheduler);
             Settings.InitializeProperties();
 
+            InitializeCommands(commands, fallbacks, serviceProvider, pageContext);
+
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
         catch (Exception e)
@@ -143,14 +150,42 @@ public sealed class CommandProviderWrapper
             Logger.LogError(e.ToString());
         }
 
+        // if (commands != null)
+        // {
+        //    TopLevelItems = (TopLevelViewModel[])commands;
+        // }
+
+        // if (fallbacks != null)
+        // {
+        //    FallbackItems = fallbacks;
+        // }
+    }
+
+    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    {
+        SettingsModel settings = serviceProvider.GetService<SettingsModel>()!;
+
+        Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
+        {
+            CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, settings, serviceProvider);
+
+            topLevelViewModel.ItemViewModel.SlowInitializeProperties();
+
+            return topLevelViewModel;
+        };
         if (commands != null)
         {
-            TopLevelItems = commands;
+            TopLevelItems = commands
+                .Select(c => makeAndAdd(c, false))
+                .ToArray();
         }
 
         if (fallbacks != null)
         {
-            FallbackItems = fallbacks;
+            FallbackItems = fallbacks
+                .Select(c => makeAndAdd(c, false))
+                .ToArray();
         }
     }
 

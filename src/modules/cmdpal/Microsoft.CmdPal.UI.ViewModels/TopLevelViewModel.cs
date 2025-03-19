@@ -42,9 +42,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     ////// ICommandItem
     public string Title => _commandItemViewModel.Title;
 
-    string ICommandItem.Subtitle => _commandItemViewModel.Subtitle;
+    public string Subtitle => _commandItemViewModel.Subtitle;
 
-    IIconInfo ICommandItem.Icon => _commandItemViewModel.Icon;
+    public IIconInfo Icon => _commandItemViewModel.Icon;
 
     ICommand? ICommandItem.Command => _commandItemViewModel.Command.Model.Unsafe;
 
@@ -168,8 +168,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private void UpdateHotkey()
     {
-        SettingsModel settings = _serviceProvider.GetService<SettingsModel>()!;
-        TopLevelHotkey? hotkey = settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
+        TopLevelHotkey? hotkey = _settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
         if (hotkey != null)
         {
             _hotkey = hotkey.Hotkey;

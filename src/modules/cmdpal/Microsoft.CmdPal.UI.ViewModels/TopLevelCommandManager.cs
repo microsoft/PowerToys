@@ -61,10 +61,11 @@ public partial class TopLevelCommandManager : ObservableObject,
     // May be called from a background thread
     private async Task LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
-        await commandProvider.LoadTopLevelCommands();
+        WeakReference<IPageContext> weakSelf = new(this);
+
+        await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
         SettingsModel settings = _serviceProvider.GetService<SettingsModel>()!;
-        WeakReference<IPageContext> weakSelf = new(this);
         Action<ICommandItem?, bool> makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), weakSelf);
@@ -81,14 +82,26 @@ public partial class TopLevelCommandManager : ObservableObject,
         await Task.Factory.StartNew(
             () =>
             {
-                foreach (ICommandItem i in commandProvider.TopLevelItems)
-                {
-                    makeAndAdd(i, false);
-                }
+                // foreach (ICommandItem i in commandProvider.TopLevelItems)
+                // {
+                //    makeAndAdd(i, false);
+                // }
 
-                foreach (IFallbackCommandItem i in commandProvider.FallbackItems)
+                // foreach (IFallbackCommandItem i in commandProvider.FallbackItems)
+                // {
+                //    makeAndAdd(i, true);
+                // }
+                lock (TopLevelCommands)
                 {
-                    makeAndAdd(i, true);
+                    foreach (TopLevelViewModel item in commandProvider.TopLevelItems)
+                    {
+                        TopLevelCommands.Add(item);
+                    }
+
+                    foreach (TopLevelViewModel item in commandProvider.FallbackItems)
+                    {
+                        TopLevelCommands.Add(item);
+                    }
                 }
             },
             CancellationToken.None,
@@ -119,7 +132,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         List<TopLevelViewModel> clone = [.. TopLevelCommands];
         List<TopLevelViewModel> newItems = [];
         int startIndex = -1;
-        ICommandItem firstCommand = sender.TopLevelItems[0];
+        TopLevelViewModel firstCommand = sender.TopLevelItems[0];
         int commandsToRemove = sender.TopLevelItems.Length + sender.FallbackItems.Length;
 
         // Tricky: all Commands from a single provider get added to the
@@ -130,6 +143,7 @@ public partial class TopLevelCommandManager : ObservableObject,
             TopLevelViewModel wrapper = clone[i];
             try
             {
+                // TODO! this can be safer, we're not directly exposing ICommandItem's out of CPW anymore
                 ICommandItem? thisCommand = wrapper.ItemViewModel.Model.Unsafe;
                 if (thisCommand != null)
                 {
@@ -146,25 +160,25 @@ public partial class TopLevelCommandManager : ObservableObject,
             }
         }
 
+        WeakReference<IPageContext> weakSelf = new(this);
+
         // Fetch the new items
-        await sender.LoadTopLevelCommands();
+        await sender.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
         SettingsModel settings = _serviceProvider.GetService<SettingsModel>()!;
 
-        WeakReference<IPageContext> weakSelf = new(this);
-
-        foreach (ICommandItem i in sender.TopLevelItems)
+        foreach (TopLevelViewModel i in sender.TopLevelItems)
         {
-            CommandItemViewModel commandItemViewModel = new(new(i), weakSelf);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, false, sender.ExtensionHost, settings, _serviceProvider);
-
-            newItems.Add(topLevelViewModel);
+            // CommandItemViewModel commandItemViewModel = new(new(i), weakSelf);
+            // TopLevelViewModel topLevelViewModel = new(commandItemViewModel, false, sender.ExtensionHost, settings, _serviceProvider);
+            newItems.Add(i);
         }
 
-        foreach (IFallbackCommandItem i in sender.FallbackItems)
+        foreach (TopLevelViewModel i in sender.FallbackItems)
         {
-            CommandItemViewModel commandItemViewModel = new(new(i), weakSelf);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, true, sender.ExtensionHost, settings, _serviceProvider);
+            // CommandItemViewModel commandItemViewModel = new(new(i), weakSelf);
+            // TopLevelViewModel topLevelViewModel = new(commandItemViewModel, true, sender.ExtensionHost, settings, _serviceProvider);
+            newItems.Add(i);
         }
 
         // Slice out the old commands

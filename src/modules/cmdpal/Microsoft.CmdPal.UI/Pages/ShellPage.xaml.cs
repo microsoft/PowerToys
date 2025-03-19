@@ -75,7 +75,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(NavigateBackMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        SettingsModel settings = App.Current.Services.GetService<SettingsModel>()!;
 
         if (RootFrame.CanGoBack)
         {
@@ -102,7 +102,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void PerformCommand(PerformCommandMessage message)
     {
-        var command = message.Command.Unsafe;
+        ICommand? command = message.Command.Unsafe;
         if (command == null)
         {
             return;
@@ -123,11 +123,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // Or the command may be a stub. Future us problem.
         try
         {
-            var host = ViewModel.CurrentPage?.ExtensionHost ?? CommandPaletteHost.Instance;
+            CommandPaletteHost host = ViewModel.CurrentPage?.ExtensionHost ?? CommandPaletteHost.Instance;
 
             if (command is TopLevelCommandWrapper wrapper)
             {
-                var tlc = wrapper;
+                TopLevelCommandWrapper tlc = wrapper;
                 command = wrapper.Command;
                 host = tlc.ExtensionHost != null ? tlc.ExtensionHost! : host;
                 extension = tlc.ExtensionHost?.Extension;
@@ -151,7 +151,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
                     WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
 
-                    var isMainPage = command is MainListPage;
+                    bool isMainPage = command is MainListPage;
 
                     // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
                     PageViewModel pageViewModel = page switch
@@ -220,7 +220,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 {
                     try
                     {
-                        var result = invokable.Invoke(message.Context);
+                        ICommandResult result = invokable.Invoke(message.Context);
                         DispatcherQueue.TryEnqueue(() =>
                         {
                             try
@@ -250,14 +250,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private void HandleConfirmArgs(IConfirmationArgs args)
     {
         ConfirmResultViewModel vm = new(args, new(ViewModel.CurrentPage));
-        var initializeDialogTask = Task.Run(() => { InitializeConfirmationDialog(vm); });
+        Task initializeDialogTask = Task.Run(() => { InitializeConfirmationDialog(vm); });
         initializeDialogTask.Wait();
 
-        var resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
-        var confirmText = resourceLoader.GetString("ConfirmationDialog_ConfirmButtonText");
-        var cancelText = resourceLoader.GetString("ConfirmationDialog_CancelButtonText");
+        Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
+        string confirmText = resourceLoader.GetString("ConfirmationDialog_ConfirmButtonText");
+        string cancelText = resourceLoader.GetString("ConfirmationDialog_CancelButtonText");
 
-        var name = string.IsNullOrEmpty(vm.PrimaryCommand.Name) ? confirmText : vm.PrimaryCommand.Name;
+        string name = string.IsNullOrEmpty(vm.PrimaryCommand.Name) ? confirmText : vm.PrimaryCommand.Name;
         ContentDialog dialog = new()
         {
             Title = vm.Title,
@@ -284,10 +284,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         DispatcherQueue.TryEnqueue(async () =>
         {
-            var result = await dialog.ShowAsync();
+            ContentDialogResult result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                var performMessage = new PerformCommandMessage(vm);
+                PerformCommandMessage performMessage = new(vm);
                 PerformCommand(performMessage);
             }
             else
@@ -308,7 +308,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             if (result != null)
             {
-                var kind = result.Kind;
+                CommandResultKind kind = result.Kind;
                 Logger.LogDebug($"handling {kind.ToString()}");
                 switch (kind)
                 {
@@ -382,7 +382,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // Also hide our details pane about here, if we had one
             HideDetails();
 
-            var settingsWindow = new SettingsWindow();
+            SettingsWindow settingsWindow = new();
             settingsWindow.Activate();
 
             WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
@@ -446,9 +446,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void SummonOnUiThread(HotkeySummonMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
-        var commandId = message.CommandId;
-        var isRoot = string.IsNullOrEmpty(commandId);
+        SettingsModel settings = App.Current.Services.GetService<SettingsModel>()!;
+        string commandId = message.CommandId;
+        bool isRoot = string.IsNullOrEmpty(commandId);
         if (isRoot)
         {
             // If this is the hotkey for the root level, then always show us
@@ -472,12 +472,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             {
                 // For a hotkey bound to a command, first lookup the
                 // command from our list of toplevel commands.
-                var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-                var topLevelCommand = tlcManager.LookupCommand(commandId);
+                TopLevelCommandManager tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+                TopLevelViewModel? topLevelCommand = tlcManager.LookupCommand(commandId);
                 if (topLevelCommand != null)
                 {
-                    var command = topLevelCommand.Command;
-                    var isPage = command is TopLevelCommandWrapper wrapper && wrapper.Command is not IInvokableCommand;
+                    ICommand? command = topLevelCommand.CommandViewModel.Model.Unsafe;
+                    bool isPage = command is not IInvokableCommand;
 
                     // If the bound command is an invokable command, then
                     // we don't want to open the window at all - we want to
@@ -491,7 +491,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(message.Hwnd));
                     }
 
-                    var msg = new PerformCommandMessage(topLevelCommand) { WithAnimation = false };
+                    PerformCommandMessage msg = new(topLevelCommand) { WithAnimation = false };
                     WeakReferenceMessenger.Default.Send<PerformCommandMessage>(msg);
 
                     // we can't necessarily SelectSearch() here, because when the page is loaded,
@@ -579,8 +579,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         get
         {
-            var requestedTheme = ActualTheme;
-            var iconInfoVM = ViewModel.Details?.HeroImage;
+            Microsoft.UI.Xaml.ElementTheme requestedTheme = ActualTheme;
+            IconInfoViewModel? iconInfoVM = ViewModel.Details?.HeroImage;
             return iconInfoVM?.HasIcon(requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light) ?? false;
         }
     }

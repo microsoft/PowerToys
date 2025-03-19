@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.Common.Services;
@@ -58,24 +59,25 @@ public partial class ProviderSettingsViewModel(
 
     private List<TopLevelViewModel> BuildTopLevelViewModels()
     {
-        var topLevelCommands = _tlcManager.TopLevelCommands;
-        var thisProvider = _provider;
-        var providersCommands = thisProvider.TopLevelItems;
+        ObservableCollection<TopLevelViewModel> topLevelCommands = _tlcManager.TopLevelCommands;
+        CommandProviderWrapper thisProvider = _provider;
+        TopLevelViewModel[] providersCommands = thisProvider.TopLevelItems;
         List<TopLevelViewModel> results = [];
 
         // Remember! This comes in on the UI thread!
         // TODO: GH #426
         // Probably just do a background InitializeProperties
         // Or better yet, merge TopLevelCommandWrapper and TopLevelViewModel
-        foreach (var command in providersCommands)
-        {
-            var match = topLevelCommands.Where(tlc => tlc.Model.Unsafe == command).FirstOrDefault();
-            if (match != null)
-            {
-                results.Add(new(match, _settings, _serviceProvider));
-            }
-        }
+        // foreach (var command in providersCommands)
+        // {
+        //    var match = topLevelCommands.Where(tlc => tlc.Model.Unsafe == command).FirstOrDefault();
+        //    if (match != null)
+        //    {
+        //        results.Add(new(match, _settings, _serviceProvider));
+        //    }
+        // }
+        return [.. providersCommands];
 
-        return results;
+        // return topLevelCommands.ToList();
     }
 }
