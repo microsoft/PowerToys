@@ -22,9 +22,6 @@ public sealed class CommandProviderWrapper
 
     private readonly TaskScheduler _taskScheduler;
 
-    // public ICommandItem[] TopLevelItems { get; private set; } = [];
-
-    // public IFallbackCommandItem[] FallbackItems { get; private set; } = [];
     public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
     public TopLevelViewModel[] FallbackItems { get; private set; } = [];
@@ -43,7 +40,6 @@ public sealed class CommandProviderWrapper
 
     public CommandSettingsViewModel? Settings { get; private set; }
 
-    // $"{Extension?.PackageFamilyName ?? string.Empty}/{Id}";
     public string ProviderId
     {
         get
