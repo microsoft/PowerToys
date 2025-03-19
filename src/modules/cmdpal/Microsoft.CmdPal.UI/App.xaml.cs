@@ -64,6 +64,23 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         AppWindow = new MainWindow();
+
+        var cmdArgs = Environment.GetCommandLineArgs();
+
+        bool runFromPT = false;
+        foreach (var arg in cmdArgs)
+        {
+            if (arg == "RunFromPT")
+            {
+                runFromPT = true;
+                break;
+            }
+        }
+
+        if (!runFromPT)
+        {
+            AppWindow.Activate();
+        }
     }
 
     /// <summary>

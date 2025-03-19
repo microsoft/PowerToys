@@ -12,6 +12,7 @@
 #include <common/utils/process_path.h>
 #include <Psapi.h>
 #include <TlHelp32.h>
+#include <common/utils/winapi_error.h>
 
 HINSTANCE g_hInst_cmdPal = 0;
 
@@ -42,28 +43,24 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    void LaunchApp()
+    void LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
     {
-        auto package = package::GetRegisteredPackage(L"Microsoft.CommandPalette", false);
+        std::wstring dir = std::filesystem::path(appPath).parent_path();
 
-        if (package.has_value())
-        {
-            auto getAppListEntriesOperation = package->GetAppListEntriesAsync();
-            auto appEntries = getAppListEntriesOperation.get();
+        SHELLEXECUTEINFO sei = { 0 };
+        sei.cbSize = sizeof(SHELLEXECUTEINFO);
+        sei.hwnd = nullptr;
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE;
+        sei.lpVerb = elevated ? L"runas" : L"open";
+        sei.lpFile = appPath.c_str();
+        sei.lpParameters = commandLineArgs.c_str();
+        sei.lpDirectory = dir.c_str();
+        sei.nShow = SW_SHOWNORMAL;
 
-            if (appEntries.Size() > 0)
-            {
-                winrt::Windows::Foundation::IAsyncOperation<bool> launchOperation = appEntries.GetAt(0).LaunchAsync();
-                launchOperation.get();
-            }
-            else
-            {
-                Logger::error(L"No app entries found for the package.");
-            }
-        }
-        else
+        if (!ShellExecuteEx(&sei))
         {
-            Logger::error(L"CmdPal package is not registered.");
+            std::wstring error = get_last_error_or_default(GetLastError());
+            Logger::error(L"Failed to launch process. {}", error);
         }
     }
 
@@ -235,7 +232,11 @@ public:
             Logger::error(errorMessage);
         }
 
-        LaunchApp();
+#if _DEBUG
+        LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App", L"RunFromPT", false);
+#else
+        LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette_8wekyb3d8bbwe!App", L"RunFromPT", false);
+#endif
     }
 
     virtual void disable()
