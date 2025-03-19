@@ -4,6 +4,8 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -24,17 +26,31 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private CommandAlias? Alias { get; set; }
 
+    public bool IsFallback { get; private set; }
+
     [ObservableProperty]
     public partial ObservableCollection<Tag> Tags { get; set; } = [];
 
     public string Id => string.IsNullOrEmpty(_idFromModel) ? _generatedId : _idFromModel;
 
-    string ICommandItem.Title => _commandItemViewModel.Title;
+    public CommandPaletteHost ExtensionHost { get; private set; }
+
+    public CommandViewModel CommandViewModel => _commandItemViewModel.Command;
+
+    public CommandItemViewModel ItemViewModel => _commandItemViewModel;
+
+    ////// ICommandItem
+    public string Title => _commandItemViewModel.Title;
 
     string ICommandItem.Subtitle => _commandItemViewModel.Subtitle;
 
     IIconInfo ICommandItem.Icon => _commandItemViewModel.Icon;
 
+    ICommand? ICommandItem.Command => _commandItemViewModel.Command.Model.Unsafe;
+
+    IContextItem?[] ICommandItem.MoreCommands => _commandItemViewModel.MoreCommands.Select(i => i.Model.Unsafe).ToArray();
+
+    ////// IListItem
     ITag[] IListItem.Tags => Tags.ToArray();
 
     IDetails? IListItem.Details => null;
@@ -43,10 +59,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     string IListItem.TextToSuggest => string.Empty;
 
-    ICommand? ICommandItem.Command => _commandItemViewModel.Command.Model.Unsafe;
-
-    IContextItem?[] ICommandItem.MoreCommands => _commandItemViewModel.MoreCommands.Select(i => i.Model.Unsafe).ToArray()
-
+    ////// INotifyPropChanged
     public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
 
     public HotkeySettings? Hotkey
@@ -102,6 +115,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     public TopLevelViewModel(
         CommandItemViewModel item,
+        bool isFallback,
+        CommandPaletteHost extensionHost,
         SettingsModel settings,
         IServiceProvider serviceProvider)
     {
@@ -109,6 +124,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         _settings = settings;
 
         _commandItemViewModel = item;
+
+        IsFallback = isFallback;
+        ExtensionHost = extensionHost;
 
         item.PropertyChanged += Item_PropertyChanged;
 
@@ -141,7 +159,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     private void UpdateAlias()
     {
         // Add tags for the alias, if we have one.
-        var aliases = _serviceProvider.GetService<AliasManager>();
+        AliasManager? aliases = _serviceProvider.GetService<AliasManager>();
         if (aliases != null)
         {
             Alias = aliases.AliasFromId(Id);
@@ -150,8 +168,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private void UpdateHotkey()
     {
-        var settings = _serviceProvider.GetService<SettingsModel>()!;
-        var hotkey = settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
+        SettingsModel settings = _serviceProvider.GetService<SettingsModel>()!;
+        TopLevelHotkey? hotkey = settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
         if (hotkey != null)
         {
             _hotkey = hotkey.Hotkey;
@@ -160,7 +178,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private void UpdateTags()
     {
-        var tags = new List<Tag>();
+        List<Tag> tags = new();
 
         if (Hotkey != null)
         {
@@ -172,13 +190,51 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             tags.Add(new Tag() { Text = Alias.SearchPrefix });
         }
 
-        Task.Factory.StartNew(
+        DoOnUiThread(
             () =>
             {
                 ListHelpers.InPlaceUpdateList(Tags, tags);
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            _commandItemViewModel.PageContext.Scheduler);
+            });
+    }
+
+    private void DoOnUiThread(Action action)
+    {
+        if (_commandItemViewModel.PageContext.TryGetTarget(out IPageContext? pageContext))
+        {
+            Task.Factory.StartNew(
+                action,
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                pageContext.Scheduler);
+        }
+    }
+
+    public void TryUpdateFallbackText(string newQuery)
+    {
+        if (!IsFallback)
+        {
+            return;
+        }
+
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                ICommandItem? model = _commandItemViewModel.Model.Unsafe;
+                if (model is IFallbackCommandItem fallback)
+                {
+                    bool wasEmpty = string.IsNullOrEmpty(Title);
+                    fallback.FallbackHandler.UpdateQuery(newQuery);
+                    bool isEmpty = string.IsNullOrEmpty(Title);
+                    if (wasEmpty != isEmpty)
+                    {
+                        WeakReferenceMessenger.Default.Send<UpdateFallbackItemsMessage>();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+        });
     }
 }

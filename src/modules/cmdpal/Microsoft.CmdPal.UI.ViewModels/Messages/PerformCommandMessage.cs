@@ -24,9 +24,9 @@ public record PerformCommandMessage
         Context = null;
     }
 
-    public PerformCommandMessage(TopLevelCommandItemWrapper topLevelCommand)
+    public PerformCommandMessage(TopLevelViewModel topLevelCommand)
     {
-        Command = new(topLevelCommand.Command);
+        Command = topLevelCommand.CommandViewModel.Model;
         Context = null;
     }
 
