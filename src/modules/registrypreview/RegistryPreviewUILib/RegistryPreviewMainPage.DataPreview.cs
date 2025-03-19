@@ -178,7 +178,7 @@ namespace RegistryPreviewUILib
                 FontSize = 13,
                 RequestedTheme = panel.ActualTheme,
                 AddressBrush = (Brush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"],
-                AlternatingDataColumnTextBrush = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                AlternatingDataColumnTextBrush = (Brush)xamlPageResources["HexBox_AlternatingDataColumnTextBrush"],
                 SelectionTextBrush = (Brush)xamlPageResources["HexBox_SelectionTextBrush"],
                 SelectionBrush = (Brush)xamlPageResources["HexBox_SelectionBackgroundBrush"],
                 DataFormat = HB.DataFormat.Hexadecimal,
