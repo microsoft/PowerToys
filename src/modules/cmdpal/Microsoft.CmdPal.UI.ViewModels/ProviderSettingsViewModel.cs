@@ -42,6 +42,7 @@ public partial class ProviderSettingsViewModel(
             if (value != _providerSettings.IsEnabled)
             {
                 _providerSettings.IsEnabled = value;
+                Save();
                 WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
             }
         }
@@ -67,10 +68,12 @@ public partial class ProviderSettingsViewModel(
 
     private List<TopLevelViewModel> BuildTopLevelViewModels()
     {
-        CommandProviderWrapper thisProvider = _provider;
-        TopLevelViewModel[] providersCommands = thisProvider.TopLevelItems;
+        var thisProvider = _provider;
+        var providersCommands = thisProvider.TopLevelItems;
 
         // Remember! This comes in on the UI thread!
         return [.. providersCommands];
     }
+
+    private void Save() => SettingsModel.SaveSettings(_settings);
 }
