@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.CommandBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:StringVisibilityConverter
+                x:Key="StringNotEmptyToVisibilityConverter"
+                EmptyValue="Collapsed"
+                NotEmptyValue="Visible" />
+            <converters:BoolToVisibilityConverter
+                x:Key="BoolToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                TrueValue="Collapsed" />
+
+            <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
+            <cmdpalUI:KeyChordToStringConverter x:Key="KeyChordToStringConverter" />
+
+            <StackLayout
+                x:Name="VerticalStackLayout"
+                Orientation="Vertical"
+                Spacing="4" />
+
+            <!--  Template for actions in the mode actions dropdown button  -->
+            <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <cpcontrols:IconBox
+                        Width="16"
+                        Height="16"
+                        Margin="4,0,0,0"
+                        HorizontalAlignment="Left"
+                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Title, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Margin="16,0,0,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                </Grid>
+            </DataTemplate>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid
+        MinHeight="40"
+        Padding="4"
+        ColumnSpacing="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid
+            x:Name="IconRoot"
+            Margin="8,0,0,0"
+            Tapped="PageIcon_Tapped"
+            Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}">
+
+            <cpcontrols:IconBox
+                x:Name="IconBorder"
+                Width="16"
+                Height="16"
+                x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                CornerRadius="{StaticResource ControlCornerRadius}"
+                SourceKey="{x:Bind CurrentPageViewModel.Icon, Mode=OneWay}"
+                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+            <InfoBadge Visibility="{x:Bind CurrentPageViewModel.HasStatusMessage, Mode=OneWay}" Value="{x:Bind CurrentPageViewModel.StatusMessages.Count, Mode=OneWay}" />
+            <Grid.ContextFlyout>
+                <Flyout x:Name="StatusMessagesFlyout" Placement="TopEdgeAlignedLeft">
+                    <ItemsRepeater
+                        x:Name="MessagesDropdown"
+                        Margin="-8"
+                        ItemsSource="{x:Bind CurrentPageViewModel.StatusMessages, Mode=OneWay}"
+                        Layout="{StaticResource VerticalStackLayout}">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:StatusMessageViewModel">
+                                <StackPanel
+                                    Grid.Row="0"
+                                    Margin="0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Bottom"
+                                    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                                    CornerRadius="0">
+                                    <InfoBar
+                                        CornerRadius="{ThemeResource ControlCornerRadius}"
+                                        IsClosable="False"
+                                        IsOpen="True"
+                                        Message="{x:Bind Message, Mode=OneWay}"
+                                        Severity="{x:Bind State, Mode=OneWay, Converter={StaticResource MessageStateToSeverityConverter}}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </Flyout>
+            </Grid.ContextFlyout>
+        </Grid>
+        <Button
+            x:Name="SettingsIconButton"
+            Margin="0,0,0,0"
+            Style="{StaticResource SubtleButtonStyle}"
+            Tapped="SettingsIcon_Tapped"
+            Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <FontIcon
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    Glyph="&#xE713;" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="Settings" />
+            </StackPanel>
+        </Button>
+
+        <TextBlock
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            FontSize="12"
+            Text="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}"
+            Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}" />
+
+        <StackPanel
+            Grid.Column="2"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Spacing="4">
+            <Button
+                x:Name="PrimaryButton"
+                Padding="6,4,4,4"
+                x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                Background="Transparent"
+                Style="{StaticResource SubtleButtonStyle}"
+                Tapped="PrimaryButton_Tapped"
+                Visibility="{x:Bind ViewModel.HasPrimaryCommand, Mode=OneWay}">
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}" />
+                    <Border
+                        Padding="4"
+                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <FontIcon
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            FontSize="10"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xE751;" />
+                    </Border>
+                </StackPanel>
+            </Button>
+            <Button
+                x:Name="SecondaryButton"
+                Padding="6,4,4,4"
+                x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                Style="{StaticResource SubtleButtonStyle}"
+                Tapped="SecondaryButton_Tapped"
+                Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}" />
+                    <StackPanel Orientation="Horizontal" Spacing="2">
+                        <Border
+                            Padding="4,2,4,2"
+                            VerticalAlignment="Center"
+                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <TextBlock
+                                CharacterSpacing="4"
+                                FontSize="10"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="Ctrl" />
+                        </Border>
+                        <Border
+                            Padding="4"
+                            VerticalAlignment="Center"
+                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4">
+                            <FontIcon
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                FontSize="10"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Glyph="&#xE751;" />
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+            </Button>
+            <Button
+                x:Name="MoreCommandsButton"
+                Padding="4"
+                Content="{ui:FontIcon Glyph=&#xE712;,
+                                      FontSize=16}"
+                Style="{StaticResource SubtleButtonStyle}"
+                ToolTipService.ToolTip="Ctrl+k"
+                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
+                <Button.Flyout>
+                    <Flyout Placement="TopEdgeAlignedRight">
+                        <ListView
+                            x:Name="CommandsDropdown"
+                            MinWidth="248"
+                            Margin="-16,-12,-16,-12"
+                            IsItemClickEnabled="True"
+                            ItemClick="CommandsDropdown_ItemClick"
+                            ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
+                            ItemsSource="{x:Bind ViewModel.ContextCommands, Mode=OneWay}"
+                            SelectionMode="None">
+                            <ListView.ItemContainerStyle>
+                                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                    <Setter Property="MinHeight" Value="0" />
+                                    <Setter Property="Padding" Value="12,7,12,7" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemContainerTransitions>
+                                <TransitionCollection />
+                            </ListView.ItemContainerTransitions>
+                        </ListView>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.CmdPal.UI.ListPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:local="using:Microsoft.CmdPal.UI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <!--  TODO: Figure out what we want to do here for filtering/grouping and where  -->
+        <!--  https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.data.collectionviewsource  -->
+        <!--<CollectionViewSource
+            x:Name="ItemsCVS"
+            IsSourceGrouped="True"
+            Source="{x:Bind ViewModel.Items, Mode=OneWay}" />-->
+
+        <converters:StringVisibilityConverter
+            x:Key="StringVisibilityConverter"
+            EmptyValue="Collapsed"
+            NotEmptyValue="Visible" />
+
+        <StackLayout
+            x:Name="HorizontalStackLayout"
+            Orientation="Horizontal"
+            Spacing="8" />
+
+        <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
+            <ItemContainer>
+                <cpcontrols:Tag
+                    BackgroundColor="{x:Bind Background, Mode=OneWay}"
+                    FontSize="12"
+                    ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
+                    Icon="{x:Bind Icon, Mode=OneWay}"
+                    Text="{x:Bind Text, Mode=OneWay}"
+                    ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
+            </ItemContainer>
+        </DataTemplate>
+
+        <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
+        <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
+
+            <Grid Padding="0,12,0,12" ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="28" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <cpcontrols:IconBox
+                    x:Name="IconBorder"
+                    Grid.Column="0"
+                    Width="20"
+                    Height="20"
+                    Margin="4,0,4,0"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+
+                <StackPanel
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Orientation="Vertical"
+                    Spacing="1">
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        CharacterSpacing="12"
+                        FontSize="14"
+                        Text="{x:Bind Title, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap" />
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind Subtitle, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap"
+                        Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
+                </StackPanel>
+
+                <ItemsView
+                    Grid.RowSpan="2"
+                    Grid.Column="2"
+                    VerticalAlignment="Center"
+                    IsHitTestVisible="False"
+                    IsItemInvokedEnabled="False"
+                    IsTabStop="False"
+                    ItemTemplate="{StaticResource TagTemplate}"
+                    ItemsSource="{x:Bind Tags, Mode=OneWay}"
+                    Layout="{StaticResource HorizontalStackLayout}"
+                    SelectionMode="None"
+                    Visibility="{x:Bind HasTags, Mode=OneWay}" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid>
+
+        <controls:SwitchPresenter
+            HorizontalAlignment="Stretch"
+            TargetType="x:Boolean"
+            Value="{x:Bind ViewModel.ShowEmptyContent, Mode=OneWay}">
+            <controls:Case Value="False">
+                <ListView
+                    x:Name="ItemsList"
+                    DoubleTapped="ItemsList_DoubleTapped"
+                    IsDoubleTapEnabled="True"
+                    IsItemClickEnabled="True"
+                    ItemClick="ItemsList_ItemClick"
+                    ItemTemplate="{StaticResource ListItemViewModelTemplate}"
+                    ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+                    SelectionChanged="ItemsList_SelectionChanged">
+                    <ListView.ItemContainerTransitions>
+                        <TransitionCollection />
+                    </ListView.ItemContainerTransitions>
+                    <!--<ListView.GroupStyle>
+                    <GroupStyle HidesIfEmpty="True">
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock
+                                    Margin="0,16,0,0"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{Binding Key, Mode=OneWay}" />
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+                    </GroupStyle>
+                </ListView.GroupStyle>-->
+                </ListView>
+            </controls:Case>
+            <controls:Case Value="True">
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Vertical"
+                    Spacing="4">
+                    <cpcontrols:IconBox
+                        x:Name="IconBorder"
+                        Width="56"
+                        Height="56"
+                        Margin="8"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        SourceKey="{x:Bind ViewModel.EmptyContent.Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        HorizontalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Text="{x:Bind ViewModel.EmptyContent.Title, Mode=OneWay}" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind ViewModel.EmptyContent.Subtitle, Mode=OneWay}" />
+                </StackPanel>
+            </controls:Case>
+        </controls:SwitchPresenter>
+
+    </Grid>
+</Page>

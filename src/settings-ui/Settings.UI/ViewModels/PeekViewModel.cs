@@ -4,61 +4,103 @@
 
 using System;
 using System.Globalization;
+using System.IO;
+using System.IO.Abstractions;
 using System.Text.Json;
 
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
+using Microsoft.UI.Dispatching;
 using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public partial class PeekViewModel : Observable
+    public class PeekViewModel : Observable, IDisposable
     {
         private bool _isEnabled;
 
+        private bool _settingsUpdating;
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        private readonly DispatcherQueue _dispatcherQueue;
+
         private readonly ISettingsUtils _settingsUtils;
-        private readonly PeekSettings _peekSettings;
         private readonly PeekPreviewSettings _peekPreviewSettings;
+        private PeekSettings _peekSettings;
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PeekViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        private IFileSystemWatcher _watcher;
+
+        public PeekViewModel(
+            ISettingsUtils settingsUtils,
+            ISettingsRepository<GeneralSettings> settingsRepository,
+            Func<string, int> ipcMSGCallBackFunc,
+            DispatcherQueue dispatcherQueue)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
-            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
-            if (_settingsUtils.SettingsExists(PeekSettings.ModuleName))
-            {
-                _peekSettings = _settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekSettings.ModuleName);
-            }
-            else
-            {
-                _peekSettings = new PeekSettings();
-            }
+            _dispatcherQueue = dispatcherQueue ?? throw new ArgumentNullException(nameof(dispatcherQueue));
 
-            if (_settingsUtils.SettingsExists(PeekSettings.ModuleName, PeekPreviewSettings.FileName))
-            {
-                _peekPreviewSettings = _settingsUtils.GetSettingsOrDefault<PeekPreviewSettings>(PeekSettings.ModuleName, PeekPreviewSettings.FileName);
-            }
-            else
-            {
-                _peekPreviewSettings = new PeekPreviewSettings();
-            }
+            _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
+
+            // Load the application-specific settings, including preview items.
+            _peekSettings = _settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekSettings.ModuleName);
+            _peekPreviewSettings = _settingsUtils.GetSettingsOrDefault<PeekPreviewSettings>(PeekSettings.ModuleName, PeekPreviewSettings.FileName);
+            SetupSettingsFileWatcher();
 
             InitializeEnabledValue();
 
             SendConfigMSG = ipcMSGCallBackFunc;
+        }
+
+        /// <summary>
+        /// Set up the file watcher for the settings file. Used to respond to updates to the
+        /// ConfirmFileDelete setting by the user within the Peek application itself.
+        /// </summary>
+        private void SetupSettingsFileWatcher()
+        {
+            string settingsPath = _settingsUtils.GetSettingsFilePath(PeekSettings.ModuleName);
+
+            _watcher = Helper.GetFileWatcher(PeekSettings.ModuleName, SettingsUtils.DefaultFileName, () =>
+            {
+                try
+                {
+                    _settingsUpdating = true;
+                    var newSettings = _settingsUtils.GetSettings<PeekSettings>(PeekSettings.ModuleName);
+
+                    _dispatcherQueue.TryEnqueue(() =>
+                    {
+                        try
+                        {
+                            ConfirmFileDelete = newSettings.Properties.ConfirmFileDelete.Value;
+                            _peekSettings = newSettings;
+                        }
+                        finally
+                        {
+                            // Only clear the flag once the UI update is complete.
+                            _settingsUpdating = false;
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to load Peek settings: {ex.Message}", ex);
+                    _settingsUpdating = false;
+                }
+            });
         }
 
         private void InitializeEnabledValue()
@@ -147,6 +189,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ConfirmFileDelete
+        {
+            get => _peekSettings.Properties.ConfirmFileDelete.Value;
+            set
+            {
+                if (_peekSettings.Properties.ConfirmFileDelete.Value != value)
+                {
+                    _peekSettings.Properties.ConfirmFileDelete.Value = value;
+                    OnPropertyChanged(nameof(ConfirmFileDelete));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool SourceCodeWrapText
         {
             get => _peekPreviewSettings.SourceCodeWrapText.Value;
@@ -219,7 +275,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void NotifySettingsChanged()
         {
-            // Using InvariantCulture as this is an IPC message
+            // Do not send IPC message if the settings file has been updated by Peek itself.
+            if (_settingsUpdating)
+            {
+                return;
+            }
+
+            // This message will be intercepted by the runner, which passes the serialized JSON to
+            // Peek.set_config() in the C++ Peek project, which then saves it to file.
             SendConfigMSG(
                 string.Format(
                     CultureInfo.InvariantCulture,
@@ -237,6 +300,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
+        }
+
+        public void Dispose()
+        {
+            _watcher?.Dispose();
+
+            GC.SuppressFinalize(this);
         }
     }
 }
