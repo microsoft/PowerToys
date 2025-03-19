@@ -110,9 +110,21 @@ public sealed class CommandProviderWrapper
         isValid = true;
     }
 
+    private ProviderSettings GetProviderSettings(SettingsModel settings)
+    {
+        return settings.GetProviderSettings(this);
+    }
+
     public async Task LoadTopLevelCommands(IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
         if (!isValid)
+        {
+            return;
+        }
+
+        SettingsModel settings = serviceProvider.GetService<SettingsModel>()!;
+
+        if (!GetProviderSettings(settings).IsEnabled)
         {
             return;
         }

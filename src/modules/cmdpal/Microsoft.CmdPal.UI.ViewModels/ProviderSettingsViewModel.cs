@@ -2,10 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -36,7 +37,14 @@ public partial class ProviderSettingsViewModel(
     public bool IsEnabled
     {
         get => _providerSettings.IsEnabled;
-        set => _providerSettings.IsEnabled = value;
+        set
+        {
+            if (value != _providerSettings.IsEnabled)
+            {
+                _providerSettings.IsEnabled = value;
+                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+            }
+        }
     }
 
     public bool HasSettings => _provider.Settings != null && _provider.Settings.SettingsPage != null;
@@ -59,25 +67,10 @@ public partial class ProviderSettingsViewModel(
 
     private List<TopLevelViewModel> BuildTopLevelViewModels()
     {
-        ObservableCollection<TopLevelViewModel> topLevelCommands = _tlcManager.TopLevelCommands;
         CommandProviderWrapper thisProvider = _provider;
         TopLevelViewModel[] providersCommands = thisProvider.TopLevelItems;
-        List<TopLevelViewModel> results = [];
 
         // Remember! This comes in on the UI thread!
-        // TODO: GH #426
-        // Probably just do a background InitializeProperties
-        // Or better yet, merge TopLevelCommandWrapper and TopLevelViewModel
-        // foreach (var command in providersCommands)
-        // {
-        //    var match = topLevelCommands.Where(tlc => tlc.Model.Unsafe == command).FirstOrDefault();
-        //    if (match != null)
-        //    {
-        //        results.Add(new(match, _settings, _serviceProvider));
-        //    }
-        // }
         return [.. providersCommands];
-
-        // return topLevelCommands.ToList();
     }
 }

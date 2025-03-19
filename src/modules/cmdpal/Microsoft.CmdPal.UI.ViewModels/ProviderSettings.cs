@@ -11,7 +11,7 @@ public class ProviderSettings
     public bool IsEnabled { get; set; } = true;
 
     [JsonIgnore]
-    public string PackageFamilyName { get; set; } = string.Empty;
+    public string ExtensionUniqueId { get; set; } = string.Empty;
 
     [JsonIgnore]
     public string Id { get; set; } = string.Empty;
@@ -23,10 +23,10 @@ public class ProviderSettings
     //    public string ProviderId => $"{PackageFamilyName}/{ProviderDisplayName}";
     // but I think that's actually a bad idea, because the Display Name can be localized.
     [JsonIgnore]
-    public string ProviderId => $"{PackageFamilyName}/{Id}";
+    public string ProviderId => $"{ExtensionUniqueId}/{Id}";
 
     [JsonIgnore]
-    public bool IsBuiltin => string.IsNullOrEmpty(PackageFamilyName);
+    public bool IsBuiltin => string.IsNullOrEmpty(ExtensionUniqueId);
 
     public ProviderSettings(CommandProviderWrapper wrapper)
     {
@@ -41,8 +41,9 @@ public class ProviderSettings
 
     public void Connect(CommandProviderWrapper wrapper)
     {
-        PackageFamilyName = wrapper.Extension?.PackageFamilyName ?? string.Empty;
-        Id = wrapper.DisplayName;
+        ExtensionUniqueId = wrapper.Extension?.ExtensionUniqueId ?? string.Empty;
+
+        Id = wrapper.Id;
         ProviderDisplayName = wrapper.DisplayName;
         if (ProviderId == "/")
         {

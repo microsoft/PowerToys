@@ -108,6 +108,7 @@ public partial class TopLevelCommandManager : ObservableObject,
             TaskCreationOptions.None,
             _taskScheduler);
 
+        commandProvider.CommandsChanged -= CommandProvider_CommandsChanged;
         commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
     }
 

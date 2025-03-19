@@ -50,6 +50,15 @@ public partial class SettingsModel : ObservableObject
         FilePath = SettingsJsonPath();
     }
 
+    public ProviderSettings GetProviderSettings(CommandProviderWrapper provider)
+    {
+        ProviderSettings providerSettings = ProviderSettings.TryGetValue(provider.ProviderId, out ProviderSettings? value) ?
+            value :
+            new ProviderSettings(provider);
+        providerSettings.Connect(provider);
+        return providerSettings;
+    }
+
     public static SettingsModel LoadSettings()
     {
         if (string.IsNullOrEmpty(FilePath))
@@ -66,9 +75,9 @@ public partial class SettingsModel : ObservableObject
         try
         {
             // Read the JSON content from the file
-            var jsonContent = File.ReadAllText(FilePath);
+            string jsonContent = File.ReadAllText(FilePath);
 
-            var loaded = JsonSerializer.Deserialize<SettingsModel>(jsonContent, _deserializerOptions);
+            SettingsModel? loaded = JsonSerializer.Deserialize<SettingsModel>(jsonContent, _deserializerOptions);
 
             Debug.WriteLine(loaded != null ? "Loaded settings file" : "Failed to parse");
 
@@ -92,23 +101,23 @@ public partial class SettingsModel : ObservableObject
         try
         {
             // Serialize the main dictionary to JSON and save it to the file
-            var settingsJson = JsonSerializer.Serialize(model, _serializerOptions);
+            string settingsJson = JsonSerializer.Serialize(model, _serializerOptions);
 
             // Is it valid JSON?
             if (JsonNode.Parse(settingsJson) is JsonObject newSettings)
             {
                 // Now, read the existing content from the file
-                var oldContent = File.Exists(FilePath) ? File.ReadAllText(FilePath) : "{}";
+                string oldContent = File.Exists(FilePath) ? File.ReadAllText(FilePath) : "{}";
 
                 // Is it valid JSON?
                 if (JsonNode.Parse(oldContent) is JsonObject savedSettings)
                 {
-                    foreach (var item in newSettings)
+                    foreach (KeyValuePair<string, JsonNode?> item in newSettings)
                     {
                         savedSettings[item.Key] = item.Value != null ? item.Value.DeepClone() : null;
                     }
 
-                    var serialized = savedSettings.ToJsonString(_serializerOptions);
+                    string serialized = savedSettings.ToJsonString(_serializerOptions);
                     File.WriteAllText(FilePath, serialized);
 
                     // TODO: Instead of just raising the event here, we should
@@ -134,7 +143,7 @@ public partial class SettingsModel : ObservableObject
 
     internal static string SettingsJsonPath()
     {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+        string directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
         // now, the settings is just next to the exe
