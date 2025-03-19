@@ -43,10 +43,7 @@
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_GoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
                                 <ToggleSwitch IsOn="{x:Bind viewModel.HotkeyGoesHome, Mode=TwoWay}" />
                             </controls:SettingsCard>
-                            <controls:SettingsCard
-                                x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard"
-                                Description=""
-                                Header="">
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard">
                                 <ToggleSwitch IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
