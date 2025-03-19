@@ -56,6 +56,9 @@ parameters:
   - name: versionNumber
     type: string
     default: '0.0.1'
+  - name: cmdPalVersionNumber
+    type: string
+    default: '0.0.1'
   - name: useLatestWinAppSDK
     type: boolean
     default: false
@@ -96,6 +99,7 @@ jobs:
             ${{ else }}:
               OutputBuildPlatform: ${{ platform }}
   variables:
+    MakeAppxPath: 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x86\MakeAppx.exe'
     # Azure DevOps abhors a vacuum
     # If these are blank, expansion will fail later on... which will result in direct substitution of the variable *names*
     # later on. We'll just... set them to a single space and if we need to, check IsNullOrWhiteSpace.
@@ -237,6 +241,32 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
+  - task: CopyFiles@2
+    displayName: Stage SDK/build
+    inputs:
+      contents: |-
+        "**/cmdpal/extensionsdk/nuget/Microsoft.CommandPalette.Extensions.SDK.props"
+        "**/cmdpal/extensionsdk/nuget/Microsoft.CommandPalette.Extensions.SDK.targets"
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)/sdk/build
+
+  - task: CopyFiles@2
+    displayName: Stage SDK/lib
+    inputs:
+      contents: |-
+        "**/Microsoft.CommandPalette.Extensions.Toolkit/$(BuildPlatform)/release/WinUI3Apps/CmdPal/Microsoft.CommandPalette.Extensions.Toolkit.dll"
+        "**/Microsoft.CommandPalette.Extensions.Toolkit/$(BuildPlatform)/release/WinUI3Apps/CmdPal/Microsoft.CommandPalette.Extensions.Toolkit.deps.json"
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)/sdk/lib/net8.0-windows10.0.19041.0
+
+  - task: CopyFiles@2
+    displayName: Stage SDK/winmd
+    inputs:
+      contents: |-
+        "**/Microsoft.CommandPalette.Extensions/$(BuildPlatform)/release/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.winmd"
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)/sdk/winmd
+
   - task: VSBuild@1
     displayName: Build BugReportTool
     inputs:
@@ -304,7 +334,7 @@ jobs:
     displayName: HACK Copy core WebView2 ARM64 dll to output directory
     condition: eq(variables['BuildPlatform'],'arm64')
     inputs:
-      contents: packages/Microsoft.Web.WebView2.1.0.2739.15/runtimes/win-ARM64/native_uap/Microsoft.Web.WebView2.Core.dll
+      contents: packages/Microsoft.Web.WebView2.1.0.2903.40/runtimes/win-ARM64/native_uap/Microsoft.Web.WebView2.Core.dll
       targetFolder: $(Build.SourcesDirectory)/ARM64/Release/WinUI3Apps/
       flattenFolders: True
       OverWrite: True
@@ -355,6 +385,33 @@ jobs:
           !**\obj\**
 
   - ${{ if eq(parameters.codeSign, true) }}:
+    - pwsh: |-
+        $Package = (Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix" | Select -First 1)
+        $PackageFilename = $Package.FullName
+        Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
+      displayName: Locate the MSIX
+
+    - pwsh: |-
+        & "$(MakeAppxPath)" unpack /p "$(CmdPalPackagePath)" /d "$(JobOutputDirectory)/CmdPalPackageContents"
+      displayName: Unpack the MSIX for signing
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign CmdPal MSIX content
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: '$(JobOutputDirectory)/CmdPalPackageContents'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_cmdpal_msix_content.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+    - pwsh: |-
+        $outDir = New-Item -Type Directory "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
+        $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(CmdPalPackagePath)")
+        & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(JobOutputDirectory)/CmdPalPackageContents"
+        Copy-Item -Force $PackageFilename "$(CmdPalPackagePath)"
+      displayName: Re-pack the new CmdPal package after signing
+
     - template: steps-esrp-signing.yml
       parameters:
         displayName: Sign Core PowerToys
@@ -430,7 +487,7 @@ jobs:
       $machinePlat = "hash_machine_$(BuildPlatform).txt";
       $combinedUserPath = $p + $userPlat;
       $combinedMachinePath = $p + $machinePlat;
-      
+
       echo $p
 
       echo $userPlat
@@ -440,7 +497,7 @@ jobs:
       echo $machinePlat
       echo $machineHash
       echo $combinedMachinePath
-      
+
       $userHash | out-file -filepath $combinedUserPath
       $machineHash | out-file -filepath $combinedMachinePath
     displayName: Calculate file hashes

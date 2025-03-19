@@ -79,6 +79,10 @@
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
+
+      <?if $(var.CIBuild) = "true" ?>
+        <ComponentGroupRef Id="CmdPalComponentGroup" />
+      <?endif?>
     </Feature>
 
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
@@ -135,6 +139,7 @@
     <InstallExecuteSequence>
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
       <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
+      <Custom Action="SetInstallCmdPalPackageParam" Before="InstallCmdPalPackage" />
       <Custom Action="SetUninstallCommandNotFoundParam" Before="UninstallCommandNotFound" />
       <Custom Action="SetUpgradeCommandNotFoundParam" Before="UpgradeCommandNotFound" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
@@ -148,6 +153,9 @@
         NOT Installed
       </Custom>
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles">
+        NOT Installed
+      </Custom>
+      <Custom Action="InstallCmdPalPackage" After="InstallFiles">
         NOT Installed
       </Custom>
       <Custom Action="WixCloseApplications" Before="RemoveFiles" />
@@ -202,6 +210,10 @@
 
     <CustomAction Id="SetLaunchPowerToysParam"
                     Property="LaunchPowerToys"
+                    Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetInstallCmdPalPackageParam"
+                    Property="InstallCmdPalPackage"
                     Value="[INSTALLFOLDER]" />
 
     <CustomAction
@@ -432,6 +444,14 @@
                   Impersonate="yes"
                   BinaryKey="PTCustomActions"
                   DllEntry="CheckGPOCA"
+                  />
+
+    <CustomAction Id="InstallCmdPalPackage"
+                  Return="ignore"
+                  Impersonate="yes"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="InstallCmdPalPackageCA"
                   />
 
     <!-- Close 'PowerToys.exe' before uninstall-->
