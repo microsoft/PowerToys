@@ -490,6 +490,7 @@ flac
 flyouts
 FMask
 FOF
+WANTNUKEWARNING
 FOFX
 FOLDERID
 folderpath
@@ -546,6 +547,7 @@ GUITHREADINFO
 GValue
 gwl
 GWLP
+GWLSTYLE
 hangeul
 Hanzi
 Hardlines
@@ -1417,6 +1419,7 @@ SHCNE
 SHCNF
 SHCONTF
 Shcore
+shellapi
 SHELLDETAILS
 SHELLDLL
 shellex
@@ -1631,6 +1634,8 @@ tkconverters
 TLayout
 tlb
 tlbimp
+TPMLEFTALIGN
+TPMRETURNCMD
 TMPVAR
 TNP
 Toolhelp
@@ -1809,6 +1814,7 @@ windowssearch
 windowssettings
 WINDOWSTYLES
 WINDOWSTYLESICON
+winerror
 WINEVENT
 winget
 wingetcreate
@@ -1838,6 +1844,7 @@ WMI
 WMICIM
 wmimgmt
 wmp
+WMSYSCOMMAND
 wnd
 WNDCLASS
 WNDCLASSEX

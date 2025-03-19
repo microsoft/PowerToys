@@ -235,6 +235,9 @@ SWAPBUTTON
 SYSTEMDOCKED
 TABLETPC
 
+# Units
+nmi
+
 # MATH
 
 artanh

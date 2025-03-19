@@ -1,0 +1,90 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+{
+  "configVersion": 3,
+  "entries": [
+    {
+      "fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "dll": "RegistryPreview.FuzzTests.dll",
+        "class": "RegistryPreview.FuzzTests.FuzzTests",
+        "method": "FuzzCheckKeyLineForBrackets",
+        "FuzzingTargetBinaries": [
+          "PowerToys.RegistryPreview.dll"
+        ]
+      },
+      "adoTemplate": {
+        // supply the values appropriate to your
+        // project, where bugs will be filed 
+        "org": "microsoft",
+        "project": "OS",
+        "AssignedTo": "mengyuanchen@microsoft.com",
+        "AreaPath": "OS\\Windows Client and Services\\WinPD\\DEEP-Developer Experience, Ecosystem and Partnerships\\SHINE\\PowerToys",
+        "IterationPath": "OS\\Future"
+      },
+      "jobNotificationEmail": "mengyuanchen@microsoft.com",
+      "skip": false,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [
+        // at least one job is required
+        {
+          "projectName": "RegistryPreview",
+          "targetName": "RegistryPreview-dotnet-CheckKeyLineForBrackets-fuzzer"
+        }
+      ],
+      "jobDependencies": [
+        // this should contain, at minimum,
+        // the DLL and PDB files
+        // you will need to add any other files required
+        // (globs are supported)
+        "RegistryPreview.FuzzTests.dll",
+        "RegistryPreview.FuzzTests.pdb",
+        "Microsoft.Windows.SDK.NET.dll",
+        "WinRT.Runtime.dll"
+      ],
+      "SdlWorkItemId": 49911822
+    },
+    {
+      "fuzzer": {
+        "$type": "libfuzzerDotNet",
+        "dll": "RegistryPreview.FuzzTests.dll",
+        "class": "RegistryPreview.FuzzTests.FuzzTests",
+        "method": "FuzzStripFirstAndLast",
+        "FuzzingTargetBinaries": [
+          "PowerToys.RegistryPreview.dll"
+        ]
+      },
+      "adoTemplate": {
+        // supply the values appropriate to your
+        // project, where bugs will be filed 
+        "org": "microsoft",
+        "project": "OS",
+        "AssignedTo": "mengyuanchen@microsoft.com",
+        "AreaPath": "OS\\Windows Client and Services\\WinPD\\DEEP-Developer Experience, Ecosystem and Partnerships\\SHINE\\PowerToys",
+        "IterationPath": "OS\\Future"
+      },
+      "jobNotificationEmail": "mengyuanchen@microsoft.com",
+      "skip": false,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [
+        // at least one job is required
+        {
+          "projectName": "RegistryPreview",
+          "targetName": "RegistryPreview-dotnet-StripFirstAndLasts-fuzzer"
+        }
+      ],
+      "jobDependencies": [
+        // this should contain, at minimum,
+        // the DLL and PDB files
+        // you will need to add any other files required
+        // (globs are supported)
+        "RegistryPreview.FuzzTests.dll",
+        "RegistryPreview.FuzzTests.pdb",
+        "Microsoft.Windows.SDK.NET.dll",
+        "WinRT.Runtime.dll"
+      ],
+      "SdlWorkItemId": 49911822
+    }
+  ]
+}
