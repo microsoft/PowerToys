@@ -34,20 +34,16 @@
                   <RepositionThemeTransition IsStaggeringEnabled="False" />
               </StackPanel.ChildrenTransitions>-->
                     <controls:SettingsExpander
-                        Description="This key will open the Command Palette"
-                        Header="Activation key"
+                        x:Uid="Settings_GeneralPage_ActivationKey_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <ptControls:ShortcutControl HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}" />
 
                         <controls:SettingsExpander.Items>
-                            <controls:SettingsCard
-                                Description="If enabled, the Command Palette will return to the home page when activated"
-                                Header="Go home when activated"
-                                HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_GoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
                                 <ToggleSwitch IsOn="{x:Bind viewModel.HotkeyGoesHome, Mode=TwoWay}" />
                             </controls:SettingsCard>
-                            <controls:SettingsCard Description="When enabled, the previous search text will be selected when the app is opened" Header="Highlight search on activate">
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard">
                                 <ToggleSwitch IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
@@ -62,34 +58,22 @@
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
 
-                    <controls:SettingsCard
-                        Description="Controls if app details are automatically expanded or not"
-                        Header="Show app details"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowAppDetails, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard
-                        Description="When enabled, pressing backspace when the search text is empty will take you back"
-                        Header="Backspace goes back"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_BackspaceGoesBack_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.BackspaceGoesBack, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard
-                        Description="When enabled, single click activates list items. When disabled, single click selects and double click activates."
-                        Header="Single-click activates"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.SingleClickActivates, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <!--  Example 'About' section  -->
                     <TextBlock x:Uid="AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                    <controls:SettingsExpander
-                        Description="© 2025. All rights reserved."
-                        Header="Windows Command Palette"
-                        HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.png}">
+                    <controls:SettingsExpander x:Uid="Settings_GeneralPage_About_SettingsExpander" HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.png}">
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             IsTextSelectionEnabled="True"
@@ -97,15 +81,15 @@
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
                                 <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
-                                    <HyperlinkButton Content="View GitHub Repo" NavigateUri="https://github.com/zadjii-msft/PowerToys" />
-                                    <HyperlinkButton Content="Extension SDK docs" NavigateUri="https://github.com/zadjii-msft/PowerToys/blob/main/src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md" />
+                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_GithubLink_Hyperlink" NavigateUri="https://github.com/zadjii-msft/PowerToys" />
+                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_SDKDocs_Hyperlink" NavigateUri="https://github.com/zadjii-msft/PowerToys/blob/main/src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md" />
                                 </StackPanel>
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
                     <HyperlinkButton
+                        x:Uid="Settings_GeneralPage_SendFeedback_Hyperlink"
                         Margin="0,8,0,0"
-                        Content="Send feedback"
                         NavigateUri="https://github.com/zadjii-msft/PowerToys/issues/new" />
                 </StackPanel>
             </Grid>

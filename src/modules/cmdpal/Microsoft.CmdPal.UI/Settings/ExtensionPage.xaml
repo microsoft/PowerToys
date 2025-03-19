@@ -73,17 +73,11 @@
                                     <!--  Content goes here  -->
 
                                     <controls:SettingsExpander.Items>
-                                        <controls:SettingsCard
-                                            Description="Directly open Command Palette to this command"
-                                            Header="Global hotkey"
-                                            HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                                        <controls:SettingsCard x:Uid="Settings_ExtensionPage_GlobalHotkey_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                                             <cpcontrols:ShortcutControl HotkeySettings="{x:Bind Hotkey, Mode=TwoWay}" />
                                         </controls:SettingsCard>
 
-                                        <controls:SettingsCard
-                                            Description="Typing this alias will navigate to this command. Direct aliases navigate as soon as you type the alias. Indirect aliases navigate after typing a trailing space"
-                                            Header="Alias"
-                                            HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}">
+                                        <controls:SettingsCard x:Uid="Settings_ExtensionPage_Alias_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}">
                                             <StackPanel Orientation="Vertical">
                                                 <TextBox Text="{x:Bind AliasText, Mode=TwoWay}" />
                                                 <ToggleSwitch
@@ -121,10 +115,7 @@
                             Text="{x:Bind ViewModel.ExtensionVersion}" />
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard
-                        Description="These commands are built-in to the Windows Command Palette"
-                        Header="Built-in"
-                        Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                    <controls:SettingsCard x:Uid="Settings_ExtensionPage_Builtin_SettingsCard" Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
 
                 </StackPanel>
             </Grid>
