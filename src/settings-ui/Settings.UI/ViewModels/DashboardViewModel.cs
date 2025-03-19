@@ -77,6 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
+                IsNew = moduleType == ModuleType.CmdPal,
                 EnabledChangedCallback = EnabledChangedOnUI,
                 DashboardModuleItems = GetModuleItems(moduleType),
             });
