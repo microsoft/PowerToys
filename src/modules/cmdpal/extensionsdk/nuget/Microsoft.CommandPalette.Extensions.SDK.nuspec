@@ -16,7 +16,7 @@
     <readme>docs\README.md</readme>
     <dependencies>
       <group targetFramework="net8.0-windows10.0.19041.0">
-        <dependency id="Microsoft.Windows.CsWinRT" version="2.1.1" />
+        <dependency id="Microsoft.Windows.CsWinRT" version="2.2.0" />
       </group>
     </dependencies>
   </metadata>

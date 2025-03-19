@@ -15,7 +15,7 @@
 #define BLOCK_TIL
 
 ///////////////////////////////////////////////////////////////////////////////////
-// libraryincludes.h
+// Below is the contents of Terminal's LibraryIncludes.h
 
 // C
 #include <climits>

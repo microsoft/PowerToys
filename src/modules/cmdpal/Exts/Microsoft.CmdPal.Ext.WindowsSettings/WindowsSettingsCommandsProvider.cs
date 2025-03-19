@@ -20,7 +20,7 @@ public partial class WindowsSettingsCommandsProvider : CommandProvider
     {
         Id = "Windows.Settings";
         DisplayName = $"Windows Settings";
-        Icon = new IconInfo("\uE713"); // Settings
+        Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg");
 
         _windowsSettings = JsonSettingsListHelper.ReadAllPossibleSettings();
         _searchSettingsListItem = new CommandItem(new WindowsSettingsListPage(_windowsSettings))

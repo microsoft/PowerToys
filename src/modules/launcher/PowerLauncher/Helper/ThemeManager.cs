@@ -79,6 +79,7 @@ namespace PowerLauncher.Helper
                 {
                     Source = new Uri(styleThemeString, UriKind.Relative),
                 });
+
                 if (OSVersionHelper.IsWindows11())
                 {
                     // Apply background only on Windows 11 to keep the same style as WPFUI

@@ -31,11 +31,17 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem
             Title = item.FullPath;
             Icon = listItemForUs.Icon;
 
-            var stream = ThumbnailHelper.GetThumbnail(item.FullPath).Result;
-            if (stream != null)
+            try
             {
-                var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
-                Icon = new IconInfo(data, data);
+                var stream = ThumbnailHelper.GetThumbnail(item.FullPath).Result;
+                if (stream != null)
+                {
+                    var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+                    Icon = new IconInfo(data, data);
+                }
+            }
+            catch
+            {
             }
         }
         else

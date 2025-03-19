@@ -42,6 +42,9 @@
                     <tkcontrols:SettingsCard x:Uid="Peek_CloseAfterLosingFocus" HeaderIcon="{ui:FontIcon Glyph=&#xED1A;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="Peek_ConfirmFileDelete" HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ConfirmFileDelete, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Peek_Preview_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

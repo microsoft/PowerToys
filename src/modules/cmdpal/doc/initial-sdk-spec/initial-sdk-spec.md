@@ -1290,7 +1290,7 @@ The following are additional type definitions that are used throughout the SDK.
 #### `ContextItem`s
 
 This represents a collection of items that might appear in the `MoreCommands`
-flyout. Mostly, these are just commands and seperators.
+flyout. Mostly, these are just commands and separators.
 
 If an `ICommandContextItem` has `MoreCommands`, then when it's invoked, we'll
 create a sub-menu with those items in it.

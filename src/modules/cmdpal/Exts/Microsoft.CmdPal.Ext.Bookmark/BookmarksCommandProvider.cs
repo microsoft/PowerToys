@@ -100,6 +100,11 @@ public partial class BookmarksCommandProvider : CommandProvider
             // debug log error
             Debug.WriteLine($"Error loading commands: {ex.Message}");
         }
+
+        if (_bookmarks == null)
+        {
+            _bookmarks = new();
+        }
     }
 
     private CommandItem BookmarkToCommandItem(BookmarkData bookmark)

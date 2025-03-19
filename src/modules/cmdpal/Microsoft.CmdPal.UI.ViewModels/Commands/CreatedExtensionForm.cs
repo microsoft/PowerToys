@@ -28,13 +28,13 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
 
     public override ICommandResult SubmitForm(string inputs, string data)
     {
-        var dataInput = JsonNode.Parse(data)?.AsObject();
+        JsonObject? dataInput = JsonNode.Parse(data)?.AsObject();
         if (dataInput == null)
         {
             return CommandResult.KeepOpen();
         }
 
-        var verb = dataInput["x"]?.AsValue()?.ToString() ?? string.Empty;
+        string verb = dataInput["x"]?.AsValue()?.ToString() ?? string.Empty;
         return verb switch
         {
             "sln" => OpenSolution(),
@@ -47,17 +47,17 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
     private ICommandResult OpenSolution()
     {
         string[] parts = [_path, _name, $"{_name}.sln"];
-        var pathToSolution = Path.Combine(parts);
+        string pathToSolution = Path.Combine(parts);
         ShellHelpers.OpenInShell(pathToSolution);
-        return CommandResult.GoHome();
+        return CommandResult.Hide();
     }
 
     private ICommandResult OpenDirectory()
     {
         string[] parts = [_path, _name];
-        var pathToDir = Path.Combine(parts);
+        string pathToDir = Path.Combine(parts);
         ShellHelpers.OpenInShell(pathToDir);
-        return CommandResult.GoHome();
+        return CommandResult.Hide();
     }
 
     private ICommandResult CreateNew()

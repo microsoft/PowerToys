@@ -15,20 +15,23 @@ namespace Microsoft.CmdPal.Ext.TimeDate;
 public partial class TimeDateCommandsProvider : CommandProvider
 {
     private readonly CommandItem _command;
-    private readonly SettingsManager _settingsManager = new();
+    private static readonly SettingsManager _settingsManager = new();
     private static readonly CompositeFormat MicrosoftPluginTimedatePluginDescription = System.Text.CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_plugin_description);
+    private static readonly TimeDateExtensionPage _timeDateExtensionPage = new(_settingsManager);
 
     public TimeDateCommandsProvider()
     {
         DisplayName = Resources.Microsoft_plugin_timedate_plugin_name;
 
-        _command = new CommandItem(new TimeDateExtensionPage(_settingsManager))
+        _command = new CommandItem(_timeDateExtensionPage)
         {
-            Icon = new IconInfo("\uEC92"), // DateTime icon
+            Icon = _timeDateExtensionPage.Icon,
             Title = Resources.Microsoft_plugin_timedate_plugin_name,
             Subtitle = GetTranslatedPluginDescription(),
             MoreCommands = [new CommandContextItem(_settingsManager.Settings.SettingsPage)],
         };
+
+        Icon = _timeDateExtensionPage.Icon;
     }
 
     private string GetTranslatedPluginDescription()

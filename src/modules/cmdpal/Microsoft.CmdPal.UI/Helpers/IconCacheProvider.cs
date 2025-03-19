@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.Controls;
-using Microsoft.CmdPal.UI.ExtViews;
 using Microsoft.CmdPal.UI.ViewModels;
 
 namespace Microsoft.CmdPal.UI.Helpers;

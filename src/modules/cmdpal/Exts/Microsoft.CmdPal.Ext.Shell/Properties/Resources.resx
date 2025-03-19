@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="cmd_plugin_name" xml:space="preserve">
-    <value>Shell</value>
+    <value>Run commands</value>
   </data>
   <data name="cmd_plugin_description" xml:space="preserve">
     <value>Executes commands (e.g. 'ping', 'cmd')</value>

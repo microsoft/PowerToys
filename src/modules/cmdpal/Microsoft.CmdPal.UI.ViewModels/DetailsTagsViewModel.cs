@@ -9,7 +9,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class DetailsTagsViewModel(
     IDetailsElement _detailsElement,
-    IPageContext context) : DetailsElementViewModel(_detailsElement, context)
+    WeakReference<IPageContext> context) : DetailsElementViewModel(_detailsElement, context)
 {
     public List<TagViewModel> Tags { get; private set; } = [];
 

@@ -9,6 +9,5 @@
     Activated="MainWindow_Activated"
     Closed="MainWindow_Closed"
     mc:Ignorable="d">
-
     <pages:ShellPage x:Name="RootShellPage" />
 </Window>

@@ -5,12 +5,16 @@
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using ManagedCommon;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
@@ -93,6 +97,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(PerformCommandMessage message)
     {
+        PerformCommand(message);
+    }
+
+    private void PerformCommand(PerformCommandMessage message)
+    {
         var command = message.Command.Unsafe;
         if (command == null)
         {
@@ -104,6 +113,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // on the main page here
             ViewModel.PerformTopLevelCommand(message);
         }
+
+        IExtensionWrapper? extension = null;
 
         // TODO: Actually loading up the page, or invoking the command -
         // that might belong in the model, not the view?
@@ -119,14 +130,19 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 var tlc = wrapper;
                 command = wrapper.Command;
                 host = tlc.ExtensionHost != null ? tlc.ExtensionHost! : host;
-                if (tlc.ExtensionHost?.Extension != null)
+                extension = tlc.ExtensionHost?.Extension;
+                if (extension != null)
                 {
-                    host.DebugLog($"Activated top-level command from {tlc.ExtensionHost.Extension.ExtensionDisplayName}");
+                    Logger.LogDebug($"Activated top-level command from {extension.ExtensionDisplayName}");
                 }
             }
 
+            ViewModel.SetActiveExtension(extension);
+
             if (command is IPage page)
             {
+                Logger.LogDebug($"Navigating to page");
+
                 // TODO GH #526 This needs more better locking too
                 _ = _queue.TryEnqueue(() =>
                 {
@@ -167,7 +183,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
                     if (isMainPage)
                     {
-                        // todo bodgy
+                        // todo BODGY
                         RootFrame.BackStack.Clear();
                     }
 
@@ -177,6 +193,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             }
             else if (command is IInvokableCommand invokable)
             {
+                Logger.LogDebug($"Invoking command");
                 HandleInvokeCommand(message, invokable);
             }
         }
@@ -229,6 +246,62 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    // This gets called from the UI thread
+    private void HandleConfirmArgs(IConfirmationArgs args)
+    {
+        ConfirmResultViewModel vm = new(args, new(ViewModel.CurrentPage));
+        var initializeDialogTask = Task.Run(() => { InitializeConfirmationDialog(vm); });
+        initializeDialogTask.Wait();
+
+        var resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
+        var confirmText = resourceLoader.GetString("ConfirmationDialog_ConfirmButtonText");
+        var cancelText = resourceLoader.GetString("ConfirmationDialog_CancelButtonText");
+
+        var name = string.IsNullOrEmpty(vm.PrimaryCommand.Name) ? confirmText : vm.PrimaryCommand.Name;
+        ContentDialog dialog = new()
+        {
+            Title = vm.Title,
+            Content = vm.Description,
+            PrimaryButtonText = name,
+            CloseButtonText = cancelText,
+            XamlRoot = this.XamlRoot,
+        };
+
+        if (vm.IsPrimaryCommandCritical)
+        {
+            dialog.DefaultButton = ContentDialogButton.Close;
+
+            // TODO: Maybe we need to style the primary button to be red?
+            // dialog.PrimaryButtonStyle = new Style(typeof(Button))
+            // {
+            //     Setters =
+            //     {
+            //         new Setter(Button.ForegroundProperty, new SolidColorBrush(Colors.Red)),
+            //         new Setter(Button.BackgroundProperty, new SolidColorBrush(Colors.Red)),
+            //     },
+            // };
+        }
+
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                var performMessage = new PerformCommandMessage(vm);
+                PerformCommand(performMessage);
+            }
+            else
+            {
+                // cancel
+            }
+        });
+    }
+
+    private void InitializeConfirmationDialog(ConfirmResultViewModel vm)
+    {
+        vm.SafeInitializePropertiesSynchronous();
+    }
+
     private void HandleCommandResultOnUiThread(ICommandResult? result)
     {
         try
@@ -236,6 +309,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             if (result != null)
             {
                 var kind = result.Kind;
+                Logger.LogDebug($"handling {kind.ToString()}");
                 switch (kind)
                 {
                     case CommandResultKind.Dismiss:
@@ -270,6 +344,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     case CommandResultKind.KeepOpen:
                         {
                             // Do nothing.
+                            break;
+                        }
+
+                    case CommandResultKind.Confirm:
+                        {
+                            if (result.Args is IConfirmationArgs a)
+                            {
+                                HandleConfirmArgs(a);
+                            }
+
                             break;
                         }
 
@@ -407,7 +491,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(message.Hwnd));
                     }
 
-                    var msg = new PerformCommandMessage(new(topLevelCommand.Command)) { WithAnimation = false };
+                    var msg = new PerformCommandMessage(topLevelCommand) { WithAnimation = false };
                     WeakReferenceMessenger.Default.Send<PerformCommandMessage>(msg);
 
                     // we can't necessarily SelectSearch() here, because when the page is loaded,
@@ -448,6 +532,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // back to a recent page they visited (like the Pokedex) so we don't have to reload it from  scratch.
         // That'd be retrieved as we re-navigate in the PerformCommandMessage logic above
         RootFrame.ForwardStack.Clear();
+
+        if (!RootFrame.CanGoBack)
+        {
+            ViewModel.GoHome();
+        }
 
         if (focusSearch)
         {

@@ -48,6 +48,7 @@
     <None Remove="SettingsWindow.xaml" />
     <None Remove="ShellPage.xaml" />
     <None Remove="Styles\Button.xaml" />
+    <None Remove="Styles\Colors.xaml" />
     <None Remove="Styles\Settings.xaml" />
     <None Remove="Styles\TextBox.xaml" />
   </ItemGroup>
@@ -70,12 +71,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
 
-    <!-- The following hardcoded package versions are to work around security vulnerabilities in 4.3.0 -->
-    <PackageReference Include="System.Net.Http" />
-    <PackageReference Include="System.Private.Uri" />
-    <PackageReference Include="System.Text.RegularExpressions" />
-    <PackageReference Include="System.IO.Abstractions" />
-
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="System.Text.Json" />
 
@@ -83,8 +78,6 @@
     <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
     <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" />
     <PackageReference Include="AdaptiveCards.Templating" />
-
-    <PackageReference Include="HtmlAgilityPack" />
   </ItemGroup>
 
   <!--
@@ -97,6 +90,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj" />
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.WebSearch\Microsoft.CmdPal.Ext.WebSearch.csproj" />
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.Indexer\Microsoft.CmdPal.Ext.Indexer.csproj" />
     <ProjectReference Include="..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
@@ -172,6 +166,11 @@
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Styles\Colors.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\Settings.xaml">

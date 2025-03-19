@@ -10,6 +10,7 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <!--  Other merged dictionaries here  -->
                 <ResourceDictionary Source="Styles/Button.xaml" />
+                <ResourceDictionary Source="Styles/Colors.xaml" />
                 <ResourceDictionary Source="Styles/TextBox.xaml" />
                 <ResourceDictionary Source="Styles/Settings.xaml" />
                 <ResourceDictionary Source="Controls/Tag.xaml" />

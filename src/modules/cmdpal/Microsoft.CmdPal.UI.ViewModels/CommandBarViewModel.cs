@@ -18,6 +18,11 @@ public partial class CommandBarViewModel : ObservableObject,
         get => field;
         set
         {
+            if (field != null)
+            {
+                field.PropertyChanged -= SelectedItemPropertyChanged;
+            }
+
             field = value;
             SetSelectedItem(value);
         }

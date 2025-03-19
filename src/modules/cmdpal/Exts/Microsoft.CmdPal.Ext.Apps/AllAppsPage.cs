@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -21,7 +23,7 @@ public sealed partial class AllAppsPage : ListPage
     public AllAppsPage()
     {
         this.Name = Resources.all_apps;
-        this.Icon = new IconInfo("\ue71d");
+        this.Icon = IconHelpers.FromRelativePath("Assets\\AllApps.svg");
         this.ShowDetails = true;
         this.IsLoading = true;
         this.PlaceholderText = Resources.search_installed_apps_placeholder;
@@ -52,39 +54,26 @@ public sealed partial class AllAppsPage : ListPage
     {
         this.IsLoading = true;
 
-        var apps = GetPrograms();
+        Stopwatch stopwatch = new();
+        stopwatch.Start();
+
+        List<AppItem> apps = GetPrograms();
+
         this.allAppsSection = apps
-                        .Select((app) => new AppListItem(app))
+                        .Select((app) => new AppListItem(app, true))
                         .ToArray();
 
         this.IsLoading = false;
 
         AppCache.Instance.Value.ResetReloadFlag();
-        var useThumbnails = AllAppsSettings.Instance.UseThumbnails;
 
-        // if (useThumbnails)
-        // {
-        Task.Run(async () =>
-            {
-                foreach (var appListItem in this.allAppsSection)
-                {
-                    await appListItem.FetchIcon(useThumbnails);
-                }
-            });
-
-        // }
-        // else
-        // {
-        //    foreach (var appListItem in this.allAppsSection)
-        //    {
-        //        appListItem.FetchIcon(useThumbnails).ConfigureAwait(false);
-        //    }
-        // }
+        stopwatch.Stop();
+        Logger.LogTrace($"{nameof(AllAppsPage)}.{nameof(BuildListItems)} took: {stopwatch.ElapsedMilliseconds} ms");
     }
 
     internal List<AppItem> GetPrograms()
     {
-        var uwpResults = AppCache.Instance.Value.UWPs
+        IEnumerable<AppItem> uwpResults = AppCache.Instance.Value.UWPs
             .Where((application) => application.Enabled)
             .Select(app =>
                 new AppItem()
@@ -99,11 +88,11 @@ public sealed partial class AllAppsPage : ListPage
                     Commands = app.GetCommands(),
                 });
 
-        var win32Results = AppCache.Instance.Value.Win32s
+        IEnumerable<AppItem> win32Results = AppCache.Instance.Value.Win32s
             .Where((application) => application.Enabled && application.Valid)
             .Select(app =>
             {
-                var icoPath = string.IsNullOrEmpty(app.IcoPath) ?
+                string icoPath = string.IsNullOrEmpty(app.IcoPath) ?
                     (app.AppType == Win32Program.ApplicationType.InternetShortcutApplication ?
                         app.IcoPath :
                         app.FullPath) :

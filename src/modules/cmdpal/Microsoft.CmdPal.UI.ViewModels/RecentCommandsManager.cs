@@ -68,7 +68,7 @@ public partial class RecentCommandsManager : ObservableObject
 
         if (History.Count > 50)
         {
-            History.RemoveRange(50, History.Count);
+            History.RemoveRange(50, History.Count - 50);
         }
     }
 }

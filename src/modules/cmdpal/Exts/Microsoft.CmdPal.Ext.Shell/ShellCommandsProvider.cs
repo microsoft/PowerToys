@@ -20,14 +20,14 @@ public partial class ShellCommandsProvider : CommandProvider
     {
         Id = "Run";
         DisplayName = Resources.cmd_plugin_name;
-        Icon = new IconInfo("\uE756");
+        Icon = Icons.RunV2;
         Settings = _settingsManager.Settings;
 
         _fallbackItem = new FallbackExecuteItem(_settingsManager);
 
         _shellPageItem = new CommandItem(new ShellListPage(_settingsManager))
         {
-            Icon = new IconInfo("\uE756"),
+            Icon = Icons.RunV2,
             Title = Resources.shell_command_name,
             Subtitle = Resources.cmd_plugin_description,
             MoreCommands = [

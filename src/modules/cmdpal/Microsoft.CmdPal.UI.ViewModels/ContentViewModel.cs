@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public abstract partial class ContentViewModel(IPageContext context) :
+public abstract partial class ContentViewModel(WeakReference<IPageContext> context) :
     ExtensionObjectViewModel(context)
 {
 }

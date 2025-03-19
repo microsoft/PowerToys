@@ -31,7 +31,7 @@ public interface IApplicationActivationManager
     IntPtr ActivateForProtocol([In] string appUserModelId, [In] IntPtr /* IShellItemArray* */itemArray, [Out] out uint processId);
 }
 
-    // Application Activation Manager Class
+// Application Activation Manager Class
 [ComImport]
 [Guid("45BA127D-10A8-46EA-8AB7-56EA9078943C")]
 public class ApplicationActivationManager : IApplicationActivationManager

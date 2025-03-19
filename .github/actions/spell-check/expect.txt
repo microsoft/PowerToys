@@ -132,7 +132,6 @@ bms
 BNDBk
 BNumber
 BODGY
-bodgy
 BOOTSTRAPPERINSTALLFOLDER
 bostrot
 BOTTOMALIGN
@@ -155,7 +154,6 @@ builttoroam
 BVal
 BValue
 byapp
-BYEXENAME
 BYPOSITION
 CALCRECT
 CALG
@@ -182,7 +180,6 @@ certmgr
 cfp
 CHANGECBCHAIN
 changecursor
-channelurl
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
@@ -346,7 +343,6 @@ DEMOTYPE
 DENORMAL
 depersist
 deprioritized
-Depsx
 DESELECTOTHERS
 DESIGNINFO
 DESKTOPABSOLUTEEDITING
@@ -359,7 +355,6 @@ DEVMODE
 DEVMODEW
 devpal
 DIALOGEX
-dic
 dimm
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -450,7 +445,6 @@ ERRORIMAGE
 ERRORTITLE
 erwrite
 ESettings
-ESPN
 esrp
 ETDT
 etl
@@ -519,11 +513,11 @@ flyouts
 FMask
 fmtid
 FOF
+WANTNUKEWARNING
 FOFX
 FOLDERID
 folderpath
 FONTTYPE
-footgunning
 FORCEFILESYSTEM
 FORCEMINIMIZE
 FORMATDLGORD
@@ -532,8 +526,6 @@ FORPARSING
 fpvm
 Fqc
 FRAMECHANGED
-FRIENDLYAPPNAME
-FRIENDLYDOCNAME
 frm
 Froml
 FROMTOUCH
@@ -582,6 +574,7 @@ GUITHREADINFO
 GValue
 gwl
 GWLP
+GWLSTYLE
 hangeul
 Hanzi
 Hardlines
@@ -791,7 +784,6 @@ keyremaps
 keyvault
 KILLFOCUS
 killrunner
-kinda
 kmph
 Kybd
 lastcodeanalysissucceeded
@@ -1341,7 +1333,6 @@ RCZOOMIT
 RDW
 READMODE
 READOBJECTS
-reblogs
 recents
 RECTDESTINATION
 rectp
@@ -1450,7 +1441,6 @@ SEEMASKINVOKEIDLIST
 SELCHANGE
 SENDCHANGE
 sendvirtualinput
-seperators
 serverside
 SETBUDDYINT
 SETCONTEXT
@@ -1485,6 +1475,7 @@ SHCNE
 SHCNF
 SHCONTF
 Shcore
+shellapi
 SHELLDETAILS
 SHELLDLL
 shellex
@@ -1705,6 +1696,9 @@ TLayout
 tlb
 tlbimp
 tlc
+TPMLEFTALIGN
+TPMRETURNCMD
+TMPVAR
 TNP
 Toolhelp
 toolkitconverters
@@ -1888,6 +1882,7 @@ windowssearch
 windowssettings
 WINDOWSTYLES
 WINDOWSTYLESICON
+winerror
 WINEVENT
 winget
 wingetcreate
@@ -1916,6 +1911,7 @@ WMI
 WMICIM
 wmimgmt
 wmp
+WMSYSCOMMAND
 wnd
 WNDCLASS
 WNDCLASSEX

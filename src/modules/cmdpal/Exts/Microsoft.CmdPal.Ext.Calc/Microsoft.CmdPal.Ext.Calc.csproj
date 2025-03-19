@@ -19,6 +19,18 @@
       <AutoGen>True</AutoGen>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\Calculator.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\Calculator.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Calculator.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

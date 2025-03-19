@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,10 +19,10 @@ namespace Microsoft.CmdPal.UI;
 public sealed partial class ListPage : Page,
     IRecipient<NavigateNextCommand>,
     IRecipient<NavigatePreviousCommand>,
-     IRecipient<ActivateSelectedListItemMessage>,
-     IRecipient<ActivateSecondaryCommandMessage>
+    IRecipient<ActivateSelectedListItemMessage>,
+    IRecipient<ActivateSecondaryCommandMessage>
 {
-    public ListViewModel? ViewModel
+    private ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
         set => SetValue(ViewModelProperty, value);
@@ -34,7 +35,7 @@ public sealed partial class ListPage : Page,
     public ListPage()
     {
         this.InitializeComponent();
-
+        this.NavigationCacheMode = NavigationCacheMode.Disabled;
         this.ItemsList.Loaded += ItemsList_Loaded;
     }
 
@@ -56,9 +57,9 @@ public sealed partial class ListPage : Page,
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
         WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
-
         WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
+
         base.OnNavigatedTo(e);
     }
 
@@ -71,8 +72,23 @@ public sealed partial class ListPage : Page,
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
 
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            ViewModel.ItemsUpdated -= Page_ItemsUpdated;
+        }
+
+        if (e.NavigationMode != NavigationMode.New)
+        {
+            ViewModel?.SafeCleanup();
+            CleanupHelper.Cleanup(this);
+            Bindings.StopTracking();
+        }
+
         // Clean-up event listeners
         ViewModel = null;
+
+        GC.Collect();
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
@@ -108,9 +124,6 @@ public sealed partial class ListPage : Page,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Debug.WriteLine("ItemsList_SelectionChanged");
-        // Debug.WriteLine($"  +{e.AddedItems.Count} / -{e.RemovedItems.Count}");
-        // Debug.WriteLine($"  selected='{ItemsList.SelectedItem}'");
         if (ItemsList.SelectedItem is ListItemViewModel item)
         {
             var vm = ViewModel;
@@ -128,13 +141,7 @@ public sealed partial class ListPage : Page,
         // Might be able to fix in the future by stashing the removed item
         // here, then in Page_ItemsUpdated trying to select that cached item if
         // it's in the list (otherwise, clear the cache), but that seems
-        // aggressively bodgy for something that mostly just works today.
-
-        // When the selection changes, _smooth_ scroll to it.
-        // If you use ListView.ScrollIntoView() by itself, then this will
-        // intermittently _crash_ if an item has tags. The WCT extension
-        // though, to smooth scroll instead, slows things down just enough to
-        // prevent the crash.
+        // aggressively BODGY for something that mostly just works today.
         if (ItemsList.SelectedItem != null)
         {
             ItemsList.ScrollIntoView(ItemsList.SelectedItem);
@@ -228,6 +235,10 @@ public sealed partial class ListPage : Page,
             {
                 page.PropertyChanged += @this.ViewModel_PropertyChanged;
                 page.ItemsUpdated += @this.Page_ItemsUpdated;
+            }
+            else if (e.NewValue == null)
+            {
+                Logger.LogDebug("cleared viewmodel");
             }
         }
     }

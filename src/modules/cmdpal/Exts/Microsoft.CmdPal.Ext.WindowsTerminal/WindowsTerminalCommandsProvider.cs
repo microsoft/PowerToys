@@ -14,8 +14,7 @@ public partial class WindowsTerminalCommandsProvider : CommandProvider
     private readonly TerminalTopLevelCommandItem _terminalCommand;
     private readonly SettingsManager _settingsManager = new();
 
-    public static IconInfo TerminalIcon { get; } =
-        IconHelpers.FromRelativePaths("Assets\\WindowsTerminal.light.png", "Assets\\WindowsTerminal.dark.png");
+    public static IconInfo TerminalIcon { get; } = IconHelpers.FromRelativePath("Assets\\WindowsTerminal.svg");
 
     public WindowsTerminalCommandsProvider()
     {

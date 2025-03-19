@@ -81,7 +81,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         _errorIcon.InitializeProperties();
     }
 
-    public CommandItemViewModel(ExtensionObject<ICommandItem> item, IPageContext errorContext)
+    public CommandItemViewModel(ExtensionObject<ICommandItem> item, WeakReference<IPageContext> errorContext)
         : base(errorContext)
     {
         _commandItemModel = item;
@@ -271,7 +271,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
         catch (Exception ex)
         {
-            PageContext.ShowException(ex, _commandItemModel?.Unsafe?.Title);
+            ShowException(ex, _commandItemModel?.Unsafe?.Title);
         }
     }
 
@@ -325,14 +325,17 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                         ListHelpers.InPlaceUpdateList(MoreCommands, newContextMenu);
                     }
 
-                    MoreCommands.ForEach(contextItem =>
+                    newContextMenu.ForEach(contextItem =>
                     {
                         contextItem.InitializeProperties();
                     });
                 }
                 else
                 {
-                    MoreCommands.Clear();
+                    lock (MoreCommands)
+                    {
+                        MoreCommands.Clear();
+                    }
                 }
 
                 UpdateProperty(nameof(SecondaryCommand));
@@ -359,6 +362,38 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 break;
         }
     }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+
+        lock (MoreCommands)
+        {
+            MoreCommands.ForEach(c => c.SafeCleanup());
+            MoreCommands.Clear();
+        }
+
+        // _listItemIcon.SafeCleanup();
+        _listItemIcon = new(null); // necessary?
+
+        _defaultCommandContextItem?.SafeCleanup();
+        _defaultCommandContextItem = null;
+
+        Command.PropertyChanged -= Command_PropertyChanged;
+        Command.SafeCleanup();
+
+        var model = _commandItemModel.Unsafe;
+        if (model != null)
+        {
+            model.PropChanged -= Model_PropChanged;
+        }
+    }
+
+    public override void SafeCleanup()
+    {
+        base.SafeCleanup();
+        Initialized |= InitializedState.CleanedUp;
+    }
 }
 
 [Flags]
@@ -369,4 +404,5 @@ internal enum InitializedState
     Initialized = 2,
     SelectionInitialized = 4,
     Error = 8,
+    CleanedUp = 16,
 }

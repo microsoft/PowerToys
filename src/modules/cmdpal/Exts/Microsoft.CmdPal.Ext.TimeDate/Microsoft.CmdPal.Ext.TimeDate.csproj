@@ -28,4 +28,16 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Assets\TimeDate.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\TimeDate.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\TimeDate.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

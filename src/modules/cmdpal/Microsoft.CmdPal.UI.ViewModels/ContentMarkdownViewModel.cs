@@ -2,15 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
-using AdaptiveCards.ObjectModel.WinUI3;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, IPageContext context) :
+public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakReference<IPageContext> context) :
     ContentViewModel(context)
 {
     public ExtensionObject<IMarkdownContent> Model { get; } = new(_markdown);
@@ -18,8 +15,6 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, IPageC
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
     public string Body { get; protected set; } = string.Empty;
-
-    public AdaptiveCardParseResult? Card { get; private set; }
 
     public override void InitializeProperties()
     {
@@ -44,7 +39,7 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, IPageC
         }
         catch (Exception ex)
         {
-            PageContext.ShowException(ex);
+            ShowException(ex);
         }
     }
 
@@ -64,5 +59,15 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, IPageC
         }
 
         UpdateProperty(propertyName);
+    }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+        var model = Model.Unsafe;
+        if (model != null)
+        {
+            model.PropChanged -= Model_PropChanged;
+        }
     }
 }

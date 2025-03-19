@@ -24,7 +24,7 @@ public sealed partial class DirectoryPage : ListPage
     public DirectoryPage(string path)
     {
         _path = path;
-        Icon = Icons.FileExplorerSegoe;
+        Icon = Icons.FileExplorer;
         Name = Resources.Indexer_Command_Browse;
         Title = path;
     }
@@ -83,13 +83,20 @@ public sealed partial class DirectoryPage : ListPage
             foreach (var item in _directoryContents)
             {
                 IconInfo? icon = null;
-                var stream = ThumbnailHelper.GetThumbnail(item.FilePath).Result;
-                if (stream != null)
+                try
                 {
-                    var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
-                    icon = new IconInfo(data, data);
-                    item.Icon = icon;
+                    var stream = ThumbnailHelper.GetThumbnail(item.FilePath).Result;
+                    if (stream != null)
+                    {
+                        var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+                        icon = new IconInfo(data, data);
+                    }
                 }
+                catch
+                {
+                }
+
+                item.Icon = icon;
             }
         });
 

@@ -187,7 +187,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Indexer file search commands.
+        ///   Looks up a localized string similar to File search.
         /// </summary>
         internal static string IndexerCommandsProvider_DisplayName {
             get {

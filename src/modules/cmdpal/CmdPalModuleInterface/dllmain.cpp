@@ -44,7 +44,7 @@ private:
 
     void LaunchApp()
     {
-        auto package = package::GetRegisteredPackage(L"Microsoft.CommandPalette");
+        auto package = package::GetRegisteredPackage(L"Microsoft.CommandPalette", false);
 
         if (package.has_value())
         {
@@ -200,7 +200,7 @@ public:
 
         try
         {
-            if (!package::GetRegisteredPackage(L"Microsoft.CommandPalette").has_value())
+            if (!package::GetRegisteredPackage(L"Microsoft.CommandPalette", false).has_value())
             {
                 Logger::info(L"CmdPal not installed. Installing...");
 

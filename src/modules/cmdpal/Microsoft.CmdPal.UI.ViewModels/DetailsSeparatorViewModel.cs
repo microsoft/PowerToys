@@ -9,7 +9,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class DetailsSeparatorViewModel(
     IDetailsElement _detailsElement,
-    IPageContext context) : DetailsElementViewModel(_detailsElement, context)
+    WeakReference<IPageContext> context) : DetailsElementViewModel(_detailsElement, context)
 {
     private readonly ExtensionObject<IDetailsSeparator> _dataModel =
         new(_detailsElement.Data as IDetailsSeparator);

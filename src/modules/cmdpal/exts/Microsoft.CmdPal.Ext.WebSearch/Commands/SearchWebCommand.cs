@@ -21,7 +21,7 @@ internal sealed partial class SearchWebCommand : InvokableCommand
     {
         Arguments = arguments;
         BrowserInfo.UpdateIfTimePassed();
-        Icon = new IconInfo(BrowserInfo.IconPath);
+        Icon = IconHelpers.FromRelativePath("Assets\\WebSearch.png");
         Name = Properties.Resources.open_in_default_browser;
         _settingsManager = settingsManager;
     }

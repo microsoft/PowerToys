@@ -80,17 +80,14 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         }
 
         // Now, back to a UI thread to update the observable collection
-        Task.Factory.StartNew(
+        DoOnUiThread(
         () =>
         {
             ListHelpers.InPlaceUpdateList(Content, newContent);
-        },
-        CancellationToken.None,
-        TaskCreationOptions.None,
-        PageContext.Scheduler);
+        });
     }
 
-    public static ContentViewModel? ViewModelFromContent(IContent content, IPageContext context)
+    public static ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
     {
         ContentViewModel? viewModel = content switch
         {
@@ -134,14 +131,11 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         FetchContent();
         model.ItemsChanged += Model_ItemsChanged;
 
-        Task.Factory.StartNew(
+        DoOnUiThread(
         () =>
         {
             WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(this));
-        },
-        CancellationToken.None,
-        TaskCreationOptions.None,
-        PageContext.Scheduler);
+        });
     }
 
     protected override void FetchProperty(string propertyName)
@@ -187,14 +181,11 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 UpdateProperty(nameof(HasCommands));
                 UpdateProperty(nameof(HasMoreCommands));
                 UpdateProperty(nameof(AllCommands));
-                Task.Factory.StartNew(
+                DoOnUiThread(
                 () =>
                 {
                     WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(this));
-                },
-                CancellationToken.None,
-                TaskCreationOptions.None,
-                PageContext.Scheduler);
+                });
 
                 break;
             case nameof(Details):
@@ -212,7 +203,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         UpdateProperty(nameof(Details));
         UpdateProperty(nameof(HasDetails));
 
-        Task.Factory.StartNew(
+        DoOnUiThread(
             () =>
             {
                 if (HasDetails)
@@ -223,10 +214,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 {
                     WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
                 }
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            PageContext.Scheduler);
+            });
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
@@ -247,6 +235,32 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         if (SecondaryCommand != null)
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(SecondaryCommand.Command.Model, SecondaryCommand.Model));
+        }
+    }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+
+        Details?.SafeCleanup();
+        foreach (var item in Commands)
+        {
+            item.SafeCleanup();
+        }
+
+        Commands.Clear();
+
+        foreach (var item in Content)
+        {
+            item.SafeCleanup();
+        }
+
+        Content.Clear();
+
+        var model = _model.Unsafe;
+        if (model != null)
+        {
+            model.ItemsChanged -= Model_ItemsChanged;
         }
     }
 }

@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -60,6 +60,8 @@ public sealed class CommandProviderWrapper
         Icon.InitializeProperties();
         Settings = new(provider.Settings, this, _taskScheduler);
         Settings.InitializeProperties();
+
+        Logger.LogDebug($"Initialized command provider {ProviderId}");
     }
 
     public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread)
@@ -69,7 +71,7 @@ public sealed class CommandProviderWrapper
         ExtensionHost = new CommandPaletteHost(extension);
         if (!Extension.IsRunning())
         {
-            throw new ArgumentException("You forgot to start the extension. This is a coding error - make sure to call StartExtensionAsync");
+            throw new ArgumentException("You forgot to start the extension. This is a CmdPal error - we need to make sure to call StartExtensionAsync");
         }
 
         var extensionImpl = extension.GetExtensionObject();
@@ -90,12 +92,14 @@ public sealed class CommandProviderWrapper
             model.ItemsChanged += CommandProvider_ItemsChanged;
 
             isValid = true;
+
+            Logger.LogDebug($"Initialized extension command provider {Extension.PackageFamilyName}:{Extension.ExtensionUniqueId}");
         }
         catch (Exception e)
         {
-            Debug.WriteLine("Failed to initialize CommandProvider for extension.");
-            Debug.WriteLine($"Extension was {Extension!.PackageFamilyName}");
-            Debug.WriteLine(e);
+            Logger.LogError("Failed to initialize CommandProvider for extension.");
+            Logger.LogError($"Extension was {Extension!.PackageFamilyName}");
+            Logger.LogError(e.ToString());
         }
 
         isValid = true;
@@ -129,12 +133,14 @@ public sealed class CommandProviderWrapper
 
             Settings = new(model.Settings, this, _taskScheduler);
             Settings.InitializeProperties();
+
+            Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
         catch (Exception e)
         {
-            Debug.WriteLine("Failed to load commands from extension");
-            Debug.WriteLine($"Extension was {Extension!.PackageFamilyName}");
-            Debug.WriteLine(e);
+            Logger.LogError("Failed to load commands from extension");
+            Logger.LogError($"Extension was {Extension!.PackageFamilyName}");
+            Logger.LogError(e.ToString());
         }
 
         if (commands != null)

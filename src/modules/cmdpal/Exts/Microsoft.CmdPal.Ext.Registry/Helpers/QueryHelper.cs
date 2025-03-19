@@ -14,7 +14,7 @@ namespace Microsoft.CmdPal.Ext.Registry.Helpers;
 /// <summary>
 /// Helper class to easier work with queries
 /// </summary>
-internal static class QueryHelper
+internal static partial class QueryHelper
 {
     /// <summary>
     /// The character to distinguish if the search query contain multiple parts (typically "\\")
@@ -34,6 +34,9 @@ internal static class QueryHelper
         { Win32.Registry.Users.Name, KeyName.UsersShort },
     };
 
+    [GeneratedRegex(@"/(?<=^(?:[^""]*""[^""]*"")*[^""]*)(?<!//.+)", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex FrontToBackSlashRegex();
+
     /// <summary>
     /// Sanitize the query to avoid issues with the regex
     /// </summary>
@@ -41,7 +44,7 @@ internal static class QueryHelper
     /// <returns>A string replacing all the front-slashes with back-slashes</returns>
     private static string SanitizeQuery(in string query)
     {
-        var sanitizedQuery = Regex.Replace(query, @"/(?<=^(?:[^""]*""[^""]*"")*[^""]*)(?<!//.+)", "\\");
+        var sanitizedQuery = FrontToBackSlashRegex().Replace(query, "\\");
 
         return sanitizedQuery.Replace("\"", string.Empty);
     }

@@ -28,6 +28,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Assets\FileExplorer.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\FileExplorer.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\FileExplorer.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

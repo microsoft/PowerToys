@@ -43,6 +43,12 @@ public partial class Tag : Control
         set => SetValue(TextProperty, value);
     }
 
+    private static Brush? OriginalBg => Application.Current.Resources["TagBackground"] as Brush;
+
+    private static Brush? OriginalFg => Application.Current.Resources["TagForeground"] as Brush;
+
+    private static Brush? OriginalBorder => Application.Current.Resources["TagBorderBrush"] as Brush;
+
     public static readonly DependencyProperty ForegroundColorProperty =
         DependencyProperty.Register(nameof(ForegroundColor), typeof(OptionalColor), typeof(Tag), new PropertyMetadata(null, OnForegroundColorPropertyChanged));
 
@@ -73,28 +79,75 @@ public partial class Tag : Control
 
     private static void OnForegroundColorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is not Tag tag || tag.ForegroundColor is null || !tag.ForegroundColor.HasValue)
+        if (d is not Tag tag)
         {
             return;
         }
 
-        if (OptionalColorBrushCacheProvider.Convert(tag.ForegroundColor.Value) is SolidColorBrush brush)
+        if (tag.ForegroundColor != null &&
+            OptionalColorBrushCacheProvider.Convert(tag.ForegroundColor.Value) is SolidColorBrush brush)
         {
             tag.Foreground = brush;
-            tag.BorderBrush = brush;
+
+            // If we have a BG color, then don't apply a border.
+            if (tag.BackgroundColor is OptionalColor bg && bg.HasValue)
+            {
+                tag.BorderBrush = OriginalBorder;
+            }
+            else
+            {
+                // Otherwise (no background), use the FG as the border
+                tag.BorderBrush = brush;
+            }
+        }
+        else
+        {
+            tag.Foreground = OriginalFg;
+            tag.BorderBrush = OriginalBorder;
         }
     }
 
     private static void OnBackgroundColorPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is not Tag tag || tag.BackgroundColor is null || !tag.BackgroundColor.HasValue)
+        if (d is not Tag tag)
         {
             return;
         }
 
-        if (OptionalColorBrushCacheProvider.Convert(tag.BackgroundColor.Value) is SolidColorBrush brush)
+        if (tag.BackgroundColor != null &&
+            OptionalColorBrushCacheProvider.Convert(tag.BackgroundColor.Value) is SolidColorBrush brush)
         {
             tag.Background = brush;
+
+            // Since we have a BG here, we never want a border.
+            tag.BorderBrush = OriginalBorder;
+
+            // If we have a FG color, then don't apply a border.
+            if (tag.ForegroundColor is OptionalColor fg && fg.HasValue)
+            {
+                tag.BorderBrush = OriginalBorder;
+            }
+            else
+            {
+                // Otherwise (no foreground), use the FG as the border
+                tag.BorderBrush = brush;
+            }
+        }
+        else
+        {
+            // No BG color here.
+            tag.Background = OriginalBg;
+
+            // If we have a FG color, then don't apply a border.
+            if (tag.ForegroundColor is OptionalColor fg && fg.HasValue)
+            {
+                tag.BorderBrush = tag.Foreground;
+            }
+            else
+            {
+                // Otherwise (no foreground), use the FG as the border
+                tag.BorderBrush = OriginalBorder;
+            }
         }
     }
 }

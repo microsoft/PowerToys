@@ -2,26 +2,23 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ListItemViewModel(IListItem model, IPageContext context)
+public partial class ListItemViewModel(IListItem model, WeakReference<IPageContext> context)
     : CommandItemViewModel(new(model), context)
 {
     public new ExtensionObject<IListItem> Model { get; } = new(model);
 
-    [ObservableProperty]
-    public partial ObservableCollection<TagViewModel> Tags { get; set; } = [];
+    public List<TagViewModel>? Tags { get; set; }
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
-    public bool HasTags => Tags.Count > 0;
+    public bool HasTags => (Tags?.Count ?? 0) > 0;
 
     public string TextToSuggest { get; private set; } = string.Empty;
 
@@ -61,7 +58,6 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
             UpdateProperty(nameof(HasDetails));
         }
 
-        UpdateProperty(nameof(Tags));
         UpdateProperty(nameof(TextToSuggest));
         UpdateProperty(nameof(Section));
     }
@@ -111,26 +107,40 @@ public partial class ListItemViewModel(IListItem model, IPageContext context)
 
     private void UpdateTags(ITag[]? newTagsFromModel)
     {
-        var newTags = newTagsFromModel?.Select(t =>
-        {
-            var vm = new TagViewModel(t, PageContext);
-            vm.InitializeProperties();
-            return vm;
-        })
-            .ToList() ?? [];
-
-        Task.Factory.StartNew(
+        DoOnUiThread(
             () =>
             {
-                lock (Tags)
+                var newTags = newTagsFromModel?.Select(t =>
                 {
-                    ListHelpers.InPlaceUpdateList(Tags, newTags);
-                }
+                    var vm = new TagViewModel(t, PageContext);
+                    vm.InitializeProperties();
+                    return vm;
+                })
+                    .ToList() ?? [];
 
+                // Tags being an ObservableCollection instead of a List lead to
+                // many COM exception issues.
+                Tags = new(newTags);
+
+                UpdateProperty(nameof(Tags));
                 UpdateProperty(nameof(HasTags));
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            PageContext.Scheduler);
+            });
+    }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+
+        // Tags don't have event handlers or anything to cleanup
+        Tags?.ForEach(t => t.SafeCleanup());
+        Details?.SafeCleanup();
+
+        var model = Model.Unsafe;
+        if (model != null)
+        {
+            // We don't need to revoke the PropChanged event handler here,
+            // because we are just overriding CommandItem's FetchProperty and
+            // piggy-backing off their PropChanged
+        }
     }
 }

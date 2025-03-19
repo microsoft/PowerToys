@@ -93,7 +93,7 @@ namespace MouseWithoutBorders
 
         internal static void Init()
         {
-            _ = Common.GetUserName();
+            _ = Helper.GetUserName();
             Common.GeneratedKey = true;
 
             try
@@ -148,7 +148,7 @@ namespace MouseWithoutBorders
 
         private static void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
         {
-            Common.WndProcCounter++;
+            Helper.WndProcCounter++;
 
             if (e.Mode is PowerModes.Resume or PowerModes.Suspend)
             {
@@ -167,21 +167,21 @@ namespace MouseWithoutBorders
             watchDogThread.Start();
             */
 
-            helper = new Thread(new ThreadStart(HelperThread), "Helper Thread");
+            helper = new Thread(new ThreadStart(Helper.HelperThread), "Helper Thread");
             helper.SetApartmentState(ApartmentState.STA);
             helper.Start();
         }
 
         private static void AskHelperThreadsToExit(int waitTime)
         {
-            signalHelperToExit = true;
-            signalWatchDogToExit = true;
+            Helper.signalHelperToExit = true;
+            Helper.signalWatchDogToExit = true;
             _ = EvSwitch.Set();
 
             int c = 0;
             if (helper != null && c < waitTime)
             {
-                while (signalHelperToExit)
+                while (Helper.signalHelperToExit)
                 {
                     Thread.Sleep(1);
                 }
@@ -251,7 +251,7 @@ namespace MouseWithoutBorders
         private static void NetworkChange_NetworkAvailabilityChanged(object sender, NetworkAvailabilityEventArgs e)
         {
             Logger.LogDebug("NetworkAvailabilityEventArgs.IsAvailable: " + e.IsAvailable.ToString(CultureInfo.InvariantCulture));
-            Common.WndProcCounter++;
+            Helper.WndProcCounter++;
             ScheduleReopenSocketsDueToNetworkChanges(!e.IsAvailable);
         }
 

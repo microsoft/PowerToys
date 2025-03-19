@@ -93,6 +93,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "CmdNotFound",
                 IsNew = false,
             });
+            Modules.Insert((int)PowerToysModules.CmdPal, new OobePowerToysModule()
+            {
+                ModuleName = "CmdPal",
+                IsNew = true,
+            });
             Modules.Insert((int)PowerToysModules.ColorPicker, new OobePowerToysModule()
             {
                 ModuleName = "ColorPicker",

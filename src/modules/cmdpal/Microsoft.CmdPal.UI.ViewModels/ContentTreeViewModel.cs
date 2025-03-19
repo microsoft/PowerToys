@@ -9,7 +9,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContentTreeViewModel(ITreeContent _tree, IPageContext context) :
+public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPageContext> context) :
     ContentViewModel(context)
 {
     public ExtensionObject<ITreeContent> Model { get; } = new(_tree);
@@ -22,7 +22,9 @@ public partial class ContentTreeViewModel(ITreeContent _tree, IPageContext conte
 
     public bool HasChildren => Children.Count > 0;
 
-    public ObservableCollection<ContentViewModel> StupidGames => [RootContent];
+    // This is the content that's actually bound in XAML. We needed a
+    // collection, even if the collection is just a single item.
+    public ObservableCollection<ContentViewModel> Root => [RootContent];
 
     public override void InitializeProperties()
     {
@@ -38,7 +40,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, IPageContext conte
             RootContent = ContentPageViewModel.ViewModelFromContent(root, PageContext);
             RootContent?.InitializeProperties();
             UpdateProperty(nameof(RootContent));
-            UpdateProperty(nameof(StupidGames));
+            UpdateProperty(nameof(Root));
         }
 
         FetchContent();
@@ -58,7 +60,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, IPageContext conte
         }
         catch (Exception ex)
         {
-            PageContext.ShowException(ex);
+            ShowException(ex);
         }
     }
 
@@ -83,7 +85,7 @@ public partial class ContentTreeViewModel(ITreeContent _tree, IPageContext conte
                     root = null;
                 }
 
-                UpdateProperty(nameof(StupidGames));
+                UpdateProperty(nameof(Root));
 
                 break;
         }
@@ -111,20 +113,35 @@ public partial class ContentTreeViewModel(ITreeContent _tree, IPageContext conte
         }
         catch (Exception ex)
         {
-            PageContext.ShowException(ex);
+            ShowException(ex);
             throw;
         }
 
         // Now, back to a UI thread to update the observable collection
-        Task.Factory.StartNew(
+        DoOnUiThread(
         () =>
         {
             ListHelpers.InPlaceUpdateList(Children, newContent);
-        },
-        CancellationToken.None,
-        TaskCreationOptions.None,
-        PageContext.Scheduler);
+        });
 
         UpdateProperty(nameof(HasChildren));
+    }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+        RootContent?.SafeCleanup();
+        foreach (var item in Children)
+        {
+            item.SafeCleanup();
+        }
+
+        Children.Clear();
+        var model = Model.Unsafe;
+        if (model != null)
+        {
+            model.PropChanged -= Model_PropChanged;
+            model.ItemsChanged -= Model_ItemsChanged;
+        }
     }
 }

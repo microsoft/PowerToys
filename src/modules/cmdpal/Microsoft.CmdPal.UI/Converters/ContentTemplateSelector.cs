@@ -20,18 +20,14 @@ public partial class ContentTemplateSelector : DataTemplateSelector
 
     protected override DataTemplate? SelectTemplateCore(object item)
     {
-        if (item is ContentViewModel element)
-        {
-            var data = element;
-            return data switch
+        return item is ContentViewModel element
+            ? element switch
             {
                 ContentFormViewModel => FormTemplate,
                 ContentMarkdownViewModel => MarkdownTemplate,
                 ContentTreeViewModel => TreeTemplate,
                 _ => null,
-            };
-        }
-
-        return null;
+            }
+            : null;
     }
 }

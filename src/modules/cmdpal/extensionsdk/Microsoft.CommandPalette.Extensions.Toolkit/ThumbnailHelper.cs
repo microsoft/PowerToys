@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -48,6 +48,23 @@ public class ThumbnailHelper
     private const uint SHGFIICON = 0x000000100;
     private const uint SHGFILARGEICON = 0x000000000;
 
+    private static MemoryStream GetMemoryStreamFromIcon(IntPtr hIcon)
+    {
+        var memoryStream = new MemoryStream();
+
+        // Ensure disposing the icon before freeing the handle
+        using (var icon = Icon.FromHandle(hIcon))
+        {
+            icon.ToBitmap().Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
+        }
+
+        // Clean up the unmanaged handle without risking a use-after-free.
+        NativeMethods.DestroyIcon(hIcon);
+
+        memoryStream.Position = 0;
+        return memoryStream;
+    }
+
     private static async Task<IRandomAccessStream?> GetFileIconStream(string filePath)
     {
         var shinfo = default(NativeMethods.SHFILEINFO);
@@ -58,18 +75,13 @@ public class ThumbnailHelper
             return null;
         }
 
-        using var icon = Icon.FromHandle(shinfo.hIcon);
         var stream = new InMemoryRandomAccessStream();
-        using (var memoryStream = new MemoryStream())
+
+        using var memoryStream = GetMemoryStreamFromIcon(shinfo.hIcon);
+        using var outputStream = stream.GetOutputStreamAt(0);
+        using (var dataWriter = new DataWriter(outputStream))
         {
-            icon.ToBitmap().Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
-            memoryStream.Position = 0;
-
-            using var outputStream = stream.GetOutputStreamAt(0);
-            using var dataWriter = new DataWriter(outputStream);
             dataWriter.WriteBytes(memoryStream.ToArray());
-
-            // dataWriter.StoreAsync().GetAwaiter().GetResult();
             await dataWriter.StoreAsync();
             await dataWriter.FlushAsync();
         }

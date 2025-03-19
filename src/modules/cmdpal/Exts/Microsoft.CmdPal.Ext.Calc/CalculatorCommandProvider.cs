@@ -23,7 +23,7 @@ public partial class CalculatorCommandProvider : CommandProvider
     {
         Id = "Calculator";
         DisplayName = Resources.calculator_display_name;
-        Icon = new IconInfo("\ue8ef"); // Calculator
+        Icon = IconHelpers.FromRelativePath("Assets\\Calculator.svg");
     }
 
     public override ICommandItem[] TopLevelCommands() => [_listItem];
@@ -51,7 +51,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
 
     public CalculatorListPage()
     {
-        Icon = new IconInfo("\ue8ef"); // Calculator
+        Icon = IconHelpers.FromRelativePath("Assets\\Calculator.svg");
         Name = Resources.calculator_title;
         PlaceholderText = Resources.calculator_placeholder_text;
         Id = "com.microsoft.cmdpal.calculator";

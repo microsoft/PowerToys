@@ -21,7 +21,7 @@ internal sealed class IndexerItem
 
         var attr = File.GetAttributes(FullPath);
 
-        // detect whether its a directory or file
+        // detect whether it is a directory or file
         return (attr & FileAttributes.Directory) == FileAttributes.Directory;
     }
 }

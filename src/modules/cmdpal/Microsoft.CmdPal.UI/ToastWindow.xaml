@@ -8,19 +8,16 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     Title="Command Palette Toast"
-    Activated="OnActivated"
-    Closed="OnClosed"
     mc:Ignorable="d">
-    <!--<Window.SystemBackdrop>
-        <MicaBackdrop />
-    </Window.SystemBackdrop>-->
-    <StackPanel x:Name="ToastGrid">
+    <Window.SystemBackdrop>
+        <DesktopAcrylicBackdrop />
+    </Window.SystemBackdrop>
+    <Grid x:Name="ToastGrid">
+        <!--  This padding is used to calculate the dimensions of the ToastWindow  -->
         <TextBlock
             x:Name="ToastText"
-            Padding="8,8,28,20"
-            FontSize="16"
-            Foreground="{ThemeResource SystemControlForegroundBaseHighBrush}"
+            Padding="16,16,36,24"
             Text="{x:Bind ViewModel.ToastMessage, Mode=OneWay}"
-            TextAlignment="Left" />
-    </StackPanel>
+            TextAlignment="Center" />
+    </Grid>
 </Window>
