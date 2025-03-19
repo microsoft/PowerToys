@@ -16,7 +16,6 @@ public partial class ProviderSettingsViewModel(
     ProviderSettings _providerSettings,
     IServiceProvider _serviceProvider) : ObservableObject
 {
-    private readonly TopLevelCommandManager _tlcManager = _serviceProvider.GetService<TopLevelCommandManager>()!;
     private readonly SettingsModel _settings = _serviceProvider.GetService<SettingsModel>()!;
 
     public string DisplayName => _provider.DisplayName;
@@ -46,7 +45,18 @@ public partial class ProviderSettingsViewModel(
                 WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
                 OnPropertyChanged(nameof(IsEnabled));
             }
+
+            if (value == true)
+            {
+                _provider.CommandsChanged -= Provider_CommandsChanged;
+                _provider.CommandsChanged += Provider_CommandsChanged;
+            }
         }
+    }
+
+    private void Provider_CommandsChanged(CommandProviderWrapper sender, CommandPalette.Extensions.IItemsChangedEventArgs args)
+    {
+        OnPropertyChanged(nameof(TopLevelCommands));
     }
 
     public bool HasSettings => _provider.Settings != null && _provider.Settings.SettingsPage != null;

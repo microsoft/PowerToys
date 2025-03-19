@@ -49,7 +49,7 @@
                     Spacing="{StaticResource SettingsCardSpacing}">
 
                     <controls:SettingsCard
-                        Header="{x:Bind ViewModel.DisplayName, Mode=OneWay}"
+                        x:Uid="ExtensionEnableCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA86;}">
 
 
