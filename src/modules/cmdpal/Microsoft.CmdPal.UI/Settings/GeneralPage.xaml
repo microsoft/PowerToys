@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.CmdPal.UI.Settings.GeneralPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.CmdPal.UI.Settings"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptControls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    mc:Ignorable="d">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="1" Padding="0,0,8,0">
+            <Grid Padding="8,16,8,8">
+                <StackPanel
+                    MaxWidth="1000"
+                    HorizontalAlignment="Stretch"
+                    Spacing="{StaticResource SettingsCardSpacing}">
+
+                    <!--
+                        I got these from the samples, but they break XAML hot-reloading,
+                        so I commented them out.
+                    -->
+
+                    <!--<StackPanel.ChildrenTransitions>
+                  <EntranceThemeTransition FromVerticalOffset="50" />
+                  <RepositionThemeTransition IsStaggeringEnabled="False" />
+              </StackPanel.ChildrenTransitions>-->
+                    <controls:SettingsExpander
+                        Description="This key will open the Command Palette"
+                        Header="Activation key"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsExpanded="True">
+                        <ptControls:ShortcutControl HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}" />
+
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard
+                                Description="If enabled, the Command Palette will return to the home page when activated"
+                                Header="Go home when activated"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
+                                <ToggleSwitch IsOn="{x:Bind viewModel.HotkeyGoesHome, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard Description="When enabled, the previous search text will be selected when the app is opened" Header="Highlight search on activate">
+                                <ToggleSwitch IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind viewModel.MonitorPositionIndex, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
+                                    <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
+                                    <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
+                                    <ComboBoxItem x:Uid="Run_Radio_Position_In_Place" />
+                                </ComboBox>
+                            </controls:SettingsCard>
+
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+
+                    <controls:SettingsCard
+                        Description="Controls if app details are automatically expanded or not"
+                        Header="Show app details"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.ShowAppDetails, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard
+                        Description="When enabled, pressing backspace when the search text is empty will take you back"
+                        Header="Backspace goes back"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.BackspaceGoesBack, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard
+                        Description="When enabled, single click activates list items. When disabled, single click selects and double click activates."
+                        Header="Single-click activates"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.SingleClickActivates, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <!--  Example 'About' section  -->
+                    <TextBlock x:Uid="AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsExpander
+                        Description="© 2025. All rights reserved."
+                        Header="Windows Command Palette"
+                        HeaderIcon="{ui:BitmapIcon Source=ms-appx:///Assets/StoreLogo.png}">
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            IsTextSelectionEnabled="True"
+                            Text="{x:Bind ApplicationVersion}" />
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
+                                <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
+                                    <HyperlinkButton Content="View GitHub Repo" NavigateUri="https://github.com/zadjii-msft/PowerToys" />
+                                    <HyperlinkButton Content="Extension SDK docs" NavigateUri="https://github.com/zadjii-msft/PowerToys/blob/main/src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md" />
+                                </StackPanel>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+                    <HyperlinkButton
+                        Margin="0,8,0,0"
+                        Content="Send feedback"
+                        NavigateUri="https://github.com/zadjii-msft/PowerToys/issues/new" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>

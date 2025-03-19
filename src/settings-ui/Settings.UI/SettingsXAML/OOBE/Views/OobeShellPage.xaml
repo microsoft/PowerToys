@@ -78,6 +78,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}"
                     Tag="ColorPicker" />
                 <NavigationViewItem
+                    x:Uid="Shell_CmdPal"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}"
+                    Tag="CmdPal" />
+                <NavigationViewItem
                     x:Uid="Shell_CmdNotFound"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CommandNotFound.png}"
                     Tag="CmdNotFound" />

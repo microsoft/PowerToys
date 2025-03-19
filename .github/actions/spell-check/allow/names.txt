@@ -79,6 +79,7 @@ Gershaft
 Giordani
 Gokce
 gordon
+Griese
 grzhan
 Guo
 hanselman
@@ -199,6 +200,7 @@ cortana
 dlnilsson
 fancymouse
 firefox
+fudan
 gpt
 Inkscape
 Markdig
@@ -215,6 +217,7 @@ roslyn
 Skia
 Spotify
 Vanara
+wangyi
 WEX
 windowwalker
 winui
@@ -222,7 +225,9 @@ winuiex
 wix
 wordpad
 WWL
+wyhash
 xamlstyler
 Xavalon
 Xbox
 Youdao
+zadjii

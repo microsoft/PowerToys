@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "ProcessMonitorExtension (Package)": {
+      "commandName": "MsixPackage",
+      "doNotLaunchApp": true
+    },
+    "ProcessMonitorExtension (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

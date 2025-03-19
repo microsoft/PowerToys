@@ -16,7 +16,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public PeekPage()
         {
             var settingsUtils = new SettingsUtils();
-            ViewModel = new PeekViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage);
+            ViewModel = new PeekViewModel(
+                settingsUtils,
+                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
+                ShellPage.SendDefaultIPCMessage,
+                DispatcherQueue);
             DataContext = ViewModel;
             InitializeComponent();
         }

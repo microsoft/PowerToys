@@ -25,6 +25,7 @@ enum class ESettingsWindowNames
     EnvironmentVariables,
     AdvancedPaste,
     NewPlus,
+    CmdPal,
     ZoomIt,
 };
 
