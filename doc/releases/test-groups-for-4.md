@@ -5,7 +5,6 @@ All:
 - Localization
 - General
 - Color Picker
-- Awake
 - FZ Editor
 - FZ
 - File Explorer Add-ons
@@ -16,7 +15,7 @@ All:
 - Shortcut Guide
 - OOBE
 - Mouse Utils
-- VCM
+- Awake
 - AlwaysOnTop
 - Screen Ruler
 - Quick Accent
@@ -24,89 +23,99 @@ All:
 - Hosts File Editor
 - File Locksmith
 - GPO
-- Paste as plain text
 - Registry Preview
 - Peek
 - MWB
 - Crop And Lock
 - Environment Variables
 - Command Not Found
+- DSC
+- Advanced Paste
+- Workspaces
+- New+
+- ZoomIt
 ```
 
 ```
 Group 1:
-- Install
-- Functional
-- Localization
-- General
+- Color Picker
+- Keyboard Manager
 - PowerRename
 - PowerToys Run
+- Shortcut Guide
+- OOBE
 - Mouse Utils
-- VCM
 - AlwaysOnTop
 - Screen Ruler
+- Text Extractor
 - Hosts File Editor
 - File Locksmith
+- GPO
 - Registry Preview
 - Peek
-- MWB
-- Crop And Lock
-- Command Not Found
+- Environment Variables
+- DSC
+- Workspaces
+- ZoomIt
 ```
 
 ```
 Group 2:
-- Functional
 - Localization
 - Color Picker
 - File Explorer Add-ons
 - Image Resizer
 - Keyboard Manager
-- Shortcut Guide
-- OOBE
-- AlwaysOnTop
-- Screen Ruler
-- Quick Accent
-- Text Extractor
-- GPO
-- Registry Preview
-- Peek
-- Environment Variables
-- Command Not Found
-```
-
-```
-Group 3:
-- General
-- FZ Editor
-- FZ
-- Image Resizer
 - PowerRename
 - PowerToys Run
+- Shortcut Guide
 - OOBE
 - Mouse Utils
 - Awake
 - Text Extractor
 - File Locksmith
-- Paste as plain text
+- GPO
 - MWB
 - Crop And Lock
+- Environment Variables
+- Advanced Paste
+- New+
+```
+
+```
+Group 3:
+- Install
+- Functional
+- Localization
+- General
+- FZ Editor
+- FZ
+- Image Resizer
+- AlwaysOnTop
+- Screen Ruler
+- Quick Accent
+- Hosts File Editor
+- MWB
+- Command Not Found
+- Workspaces
+- ZoomIt
 ```
 
 ```
 Group 4:
 - Install
-- Color Picker
+- Functional
+- General
 - FZ Editor
 - FZ
 - File Explorer Add-ons
-- Keyboard Manager
-- Shortcut Guide
-- VCM
 - Awake
 - Quick Accent
-- Hosts File Editor
-- GPO
-- Paste as plain text
-- Environment Variables
+- Registry Preview
+- Peek
+- Crop And Lock
+- Command Not Found
+- DSC
+- Advanced Paste
+- New+
 ```
