@@ -146,6 +146,10 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         UpdateProperty(nameof(Title));
         UpdateProperty(nameof(Subtitle));
         UpdateProperty(nameof(Icon));
+
+        // Load-bearing: if you don't raise a IsInitialized here, then
+        // TopLevelViewModel will never know what the command's ID is, so it
+        // will never be able to load Hotkeys & aliases
         UpdateProperty(nameof(IsInitialized));
 
         Initialized |= InitializedState.Initialized;

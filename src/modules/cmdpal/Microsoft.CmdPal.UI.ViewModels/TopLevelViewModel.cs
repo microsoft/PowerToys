@@ -11,6 +11,7 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Windows.Foundation;
+using WyHash;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -19,9 +20,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     private readonly SettingsModel _settings;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
-    private readonly string _idFromModel = string.Empty;
 
-    private readonly string _generatedId = string.Empty;
+    private readonly string _commandProviderId;
+
+    private string IdFromModel => _commandItemViewModel.Command.Id;
+
+    private string _generatedId = string.Empty;
+
     private HotkeySettings? _hotkey;
 
     private CommandAlias? Alias { get; set; }
@@ -31,7 +36,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     [ObservableProperty]
     public partial ObservableCollection<Tag> Tags { get; set; } = [];
 
-    public string Id => string.IsNullOrEmpty(_idFromModel) ? _generatedId : _idFromModel;
+    public string Id => string.IsNullOrEmpty(IdFromModel) ? _generatedId : IdFromModel;
 
     public CommandPaletteHost ExtensionHost { get; private set; }
 
@@ -119,12 +124,13 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         CommandItemViewModel item,
         bool isFallback,
         CommandPaletteHost extensionHost,
+        string commandProviderId,
         SettingsModel settings,
         IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
         _settings = settings;
-
+        _commandProviderId = commandProviderId;
         _commandItemViewModel = item;
 
         IsFallback = isFallback;
@@ -132,7 +138,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
         item.PropertyChanged += Item_PropertyChanged;
 
-        UpdateAlias();
+        // UpdateAlias();
+        // UpdateHotkey();
+        // UpdateTags();
     }
 
     private void Item_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -140,6 +148,15 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         if (!string.IsNullOrEmpty(e.PropertyName))
         {
             PropChanged?.Invoke(this, new PropChangedEventArgs(e.PropertyName));
+
+            if (e.PropertyName == "IsInitialized")
+            {
+                GenerateId();
+
+                UpdateAlias();
+                UpdateHotkey();
+                UpdateTags();
+            }
         }
     }
 
@@ -191,11 +208,21 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             tags.Add(new Tag() { Text = Alias.SearchPrefix });
         }
 
+        PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(Tags)));
+
         DoOnUiThread(
             () =>
             {
                 ListHelpers.InPlaceUpdateList(Tags, tags);
             });
+    }
+
+    private void GenerateId()
+    {
+        // Use WyHash64 to generate stable ID hashes.
+        // manually seeding with 0, so that the hash is stable across launches
+        var result = WyHash64.ComputeHash64(_commandProviderId + Title + Subtitle, seed: 0);
+        _generatedId = $"{_commandProviderId}{result}";
     }
 
     private void DoOnUiThread(Action action)

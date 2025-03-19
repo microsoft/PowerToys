@@ -69,7 +69,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             var commandItemViewModel = new CommandItemViewModel(new(i), weakSelf);
-            var topLevelViewModel = new TopLevelViewModel(commandItemViewModel, fallback, commandProvider.ExtensionHost, settings, _serviceProvider);
+            var topLevelViewModel = new TopLevelViewModel(commandItemViewModel, fallback, commandProvider.ExtensionHost, commandProvider.ProviderId, settings, _serviceProvider);
 
             lock (TopLevelCommands)
             {
