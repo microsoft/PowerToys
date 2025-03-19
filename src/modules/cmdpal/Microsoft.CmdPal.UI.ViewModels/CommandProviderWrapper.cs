@@ -43,7 +43,14 @@ public sealed class CommandProviderWrapper
 
     public CommandSettingsViewModel? Settings { get; private set; }
 
-    public string ProviderId => $"{Extension?.PackageFamilyName ?? string.Empty}/{Id}";
+    // $"{Extension?.PackageFamilyName ?? string.Empty}/{Id}";
+    public string ProviderId
+    {
+        get
+        {
+            return string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
+        }
+    }
 
     public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
@@ -79,8 +86,8 @@ public sealed class CommandProviderWrapper
             throw new ArgumentException("You forgot to start the extension. This is a CmdPal error - we need to make sure to call StartExtensionAsync");
         }
 
-        IExtension? extensionImpl = extension.GetExtensionObject();
-        object? providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
+        var extensionImpl = extension.GetExtensionObject();
+        var providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
         if (providerObject is not ICommandProvider provider)
         {
             throw new ArgumentException("extension didn't actually implement ICommandProvider");
@@ -90,7 +97,7 @@ public sealed class CommandProviderWrapper
 
         try
         {
-            ICommandProvider model = _commandProvider.Unsafe!;
+            var model = _commandProvider.Unsafe!;
 
             // Hook the extension back into us
             model.InitializeWithHost(ExtensionHost);
@@ -122,7 +129,7 @@ public sealed class CommandProviderWrapper
             return;
         }
 
-        SettingsModel settings = serviceProvider.GetService<SettingsModel>()!;
+        var settings = serviceProvider.GetService<SettingsModel>()!;
 
         if (!GetProviderSettings(settings).IsEnabled)
         {
@@ -134,7 +141,7 @@ public sealed class CommandProviderWrapper
 
         try
         {
-            ICommandProvider model = _commandProvider.Unsafe!;
+            var model = _commandProvider.Unsafe!;
 
             Task<ICommandItem[]> t = new(model.TopLevelCommands);
             t.Start();
@@ -175,7 +182,7 @@ public sealed class CommandProviderWrapper
 
     private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
-        SettingsModel settings = serviceProvider.GetService<SettingsModel>()!;
+        var settings = serviceProvider.GetService<SettingsModel>()!;
 
         Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
         {

@@ -106,14 +106,14 @@ public class ExtensionWrapper : IExtensionWrapper
                 {
                     Logger.LogDebug($"Starting {ExtensionDisplayName} ({ExtensionClassId})");
 
-                    nint extensionPtr = nint.Zero;
+                    var extensionPtr = nint.Zero;
                     try
                     {
                         // -2147024809: E_INVALIDARG
                         // -2147467262: E_NOINTERFACE
                         // -2147024893: E_PATH_NOT_FOUND
-                        Guid guid = typeof(IExtension).GUID;
-                        global::Windows.Win32.Foundation.HRESULT hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out object? extensionObj);
+                        var guid = typeof(IExtension).GUID;
+                        var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out var extensionObj);
 
                         if (hr.Value == -2147024893)
                         {
@@ -179,7 +179,7 @@ public class ExtensionWrapper : IExtensionWrapper
     {
         await StartExtensionAsync();
 
-        object? supportedProviders = GetExtensionObject()?.GetProvider(_providerTypeMap[typeof(T)]);
+        var supportedProviders = GetExtensionObject()?.GetProvider(_providerTypeMap[typeof(T)]);
         if (supportedProviders is IEnumerable<T> multipleProvidersSupported)
         {
             return multipleProvidersSupported;
@@ -196,3 +196,57 @@ public class ExtensionWrapper : IExtensionWrapper
 
     public bool HasProviderType(ProviderType providerType) => _providerTypes.Contains(providerType);
 }
+
+// public class BuiltinProviderExtensionWrapper : IExtensionWrapper
+// {
+//    private readonly CommandProviderWrapper _builtInProvider;
+
+// public string PackageDisplayName => "Microsoft.CommandPalette";
+
+// public string ExtensionDisplayName => _builtInProvider.DisplayName;
+
+// public string PackageFullName => throw new NotImplementedException();
+
+// public string PackageFamilyName => "Microsoft.CommandPalette.Builtin";
+
+// public string Publisher => "Microsoft";
+
+// public string ExtensionClassId => string.Empty;
+
+// public DateTimeOffset InstalledDate => throw new NotImplementedException();
+
+// public PackageVersion Version => Package.Current.Id.Version;
+
+// public string ExtensionUniqueId => $"{PackageFamilyName}!{_builtInProvider.Id}";
+
+// // I don't think this is used in CmdPal anywhere?
+//    public void AddProviderType(ProviderType providerType) => throw new NotImplementedException();
+
+// public IExtension? GetExtensionObject() => throw new NotImplementedException();
+
+// public Task<IEnumerable<T>> GetListOfProvidersAsync<T>()
+//        where T : class
+//        => throw new NotImplementedException();
+
+// public Task<T?> GetProviderAsync<T>()
+//        where T : class
+//        => Task.FromResult<T?>(_builtInProvider as T);
+
+// public bool HasProviderType(ProviderType providerType) => providerType == ProviderType.Commands;
+
+// public bool IsRunning() => true;
+
+// public void SignalDispose()
+//    {
+//    }
+
+// public Task StartExtensionAsync()
+//    {
+//        return Task.CompletedTask;
+//    }
+
+// public BuiltinProviderExtensionWrapper(CommandProviderWrapper builtIn)
+//    {
+//        _builtInProvider = builtIn;
+//    }
+// }
