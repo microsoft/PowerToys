@@ -45,11 +45,11 @@
             </NavigationView.Resources>
             <NavigationView.MenuItems>
                 <NavigationViewItem
-                    Content="General"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_General"
                     Icon="{ui:FontIcon Glyph=&#xE80F;}"
                     Tag="General" />
                 <NavigationViewItem
-                    Content="Extensions"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"
                     Icon="{ui:FontIcon Glyph=&#xEA86;}"
                     Tag="Extensions" />
             </NavigationView.MenuItems>
