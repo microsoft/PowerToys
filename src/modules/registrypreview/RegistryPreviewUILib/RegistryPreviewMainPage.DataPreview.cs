@@ -162,6 +162,7 @@ namespace RegistryPreviewUILib
                 FontSize = 14,
                 RequestedTheme = panel.ActualTheme,
                 IsSelected = false,
+                IsEnabled = !string.IsNullOrWhiteSpace(dataText),
             });
 
             // Create HexBox

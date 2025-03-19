@@ -323,7 +323,7 @@
     <value>Expanded value</value>
   </data>
   <data name="DataPreviewVisibleText" xml:space="preserve">
-    <value>Visible text</value>
+    <value>Readable text</value>
     <comment>Means text that is visible and not only control characters.</comment>
   </data>
   <data name="DataPreviewDataView" xml:space="preserve">
@@ -340,7 +340,7 @@
     <value>Binary data preview</value>
   </data>
   <data name="DataPreview_AutomationPropertiesName_VisibleTextPreview" xml:space="preserve">
-    <value>Visible text preview</value>
+    <value>Preview of readable text</value>
   </data>
   <data name="HexBox_CopyCommand.Text" xml:space="preserve">
     <value>Copy</value>
