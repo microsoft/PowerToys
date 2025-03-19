@@ -168,16 +168,6 @@ public sealed class CommandProviderWrapper
             Logger.LogError($"Extension was {Extension!.PackageFamilyName}");
             Logger.LogError(e.ToString());
         }
-
-        // if (commands != null)
-        // {
-        //    TopLevelItems = (TopLevelViewModel[])commands;
-        // }
-
-        // if (fallbacks != null)
-        // {
-        //    FallbackItems = fallbacks;
-        // }
     }
 
     private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
@@ -203,7 +193,7 @@ public sealed class CommandProviderWrapper
         if (fallbacks != null)
         {
             FallbackItems = fallbacks
-                .Select(c => makeAndAdd(c, false))
+                .Select(c => makeAndAdd(c, true))
                 .ToArray();
         }
     }

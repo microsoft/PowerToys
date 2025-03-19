@@ -161,7 +161,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     private void UpdateAlias()
     {
         // Add tags for the alias, if we have one.
-        AliasManager? aliases = _serviceProvider.GetService<AliasManager>();
+        var aliases = _serviceProvider.GetService<AliasManager>();
         if (aliases != null)
         {
             Alias = aliases.AliasFromId(Id);
@@ -170,7 +170,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private void UpdateHotkey()
     {
-        TopLevelHotkey? hotkey = _settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
+        var hotkey = _settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
         if (hotkey != null)
         {
             _hotkey = hotkey.Hotkey;
@@ -200,7 +200,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private void DoOnUiThread(Action action)
     {
-        if (_commandItemViewModel.PageContext.TryGetTarget(out IPageContext? pageContext))
+        if (_commandItemViewModel.PageContext.TryGetTarget(out var pageContext))
         {
             Task.Factory.StartNew(
                 action,
@@ -221,12 +221,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         {
             try
             {
-                ICommandItem? model = _commandItemViewModel.Model.Unsafe;
+                var model = _commandItemViewModel.Model.Unsafe;
                 if (model is IFallbackCommandItem fallback)
                 {
-                    bool wasEmpty = string.IsNullOrEmpty(Title);
+                    var wasEmpty = string.IsNullOrEmpty(Title);
                     fallback.FallbackHandler.UpdateQuery(newQuery);
-                    bool isEmpty = string.IsNullOrEmpty(Title);
+                    var isEmpty = string.IsNullOrEmpty(Title);
                     if (wasEmpty != isEmpty)
                     {
                         WeakReferenceMessenger.Default.Send<UpdateFallbackItemsMessage>();
