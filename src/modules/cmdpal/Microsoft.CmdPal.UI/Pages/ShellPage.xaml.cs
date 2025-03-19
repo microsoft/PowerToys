@@ -7,12 +7,14 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -91,6 +93,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             {
                 // If we can't go back then we must be at the top and thus escape again should quit.
                 WeakReferenceMessenger.Default.Send<DismissMessage>();
+
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnEsc());
             }
         }
     }
