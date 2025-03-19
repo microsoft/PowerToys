@@ -22,10 +22,10 @@ steps:
 
   - pwsh: |-
       $IsPerUser = $${{ parameters.buildUserInstaller }}
-      $InstallerBuildSlug = "MachineSetupVNext"
+      $InstallerBuildSlug = "MachineSetup"
       $InstallerBasename = "PowerToysSetupVNext"
       If($IsPerUser) {
-        $InstallerBuildSlug = "UserSetupVNext"
+        $InstallerBuildSlug = "UserSetup"
         $InstallerBasename = "PowerToysUserSetupVNext"
       }
       $InstallerBasename += "-${{ parameters.versionNumber }}-$(BuildPlatform)"
@@ -38,7 +38,7 @@ steps:
   - task: VSBuild@1
     displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build PowerToysSetupCustomActions
     inputs:
-      solution: "**/installer/PowerToysSetupVNext.sln"
+      solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
       msbuildArgs: >-
         /t:PowerToysSetupCustomActions
@@ -66,13 +66,13 @@ steps:
   ## INSTALLER START
   #### MSI BUILDING AND SIGNING
   - task: VSBuild@1
-    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build MSI
+    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build VNext MSI
     inputs:
-      solution: "**/installer/PowerToysSetupVNext.sln"
+      solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
       msbuildArgs: >-
         -restore
-        /t:PowerToysInstaller
+        /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=${{parameters.buildUserInstaller}};BuildProjectReferences=false;CIBuild=true
         /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-msi.binlog
         ${{ parameters.additionalBuildOptions }}
@@ -101,7 +101,7 @@ steps:
 
     - template: steps-esrp-signing.yml
       parameters:
-        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign MSI
+        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign VNext MSI
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
           FolderPath: 'installer/PowerToysSetupVNext/$(InstallerRelativePath)'
@@ -113,12 +113,12 @@ steps:
   #### BOOTSTRAP BUILDING AND SIGNING
 
   - task: VSBuild@1
-    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build Bootstrapper
+    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build VNext Bootstrapper
     inputs:
-      solution: "**/installer/PowerToysSetupVNext.sln"
+      solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
       msbuildArgs: >-
-        /t:PowerToysBootstrapper
+        /t:PowerToysBootstrapperVNext
         /p:PerUser=${{parameters.buildUserInstaller}};CIBuild=true
         /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-bootstrapper.binlog
         -restore -graph
