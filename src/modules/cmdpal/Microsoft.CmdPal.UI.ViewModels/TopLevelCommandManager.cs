@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -11,7 +12,6 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
-using System.Collections.ObjectModel;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -47,8 +47,8 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         // Load built-In commands first. These are all in-proc, and
         // owned by our ServiceProvider.
-        IEnumerable<ICommandProvider> builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
-        foreach (ICommandProvider provider in builtInCommands)
+        var builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
+        foreach (var provider in builtInCommands)
         {
             CommandProviderWrapper wrapper = new(provider, _taskScheduler);
             _builtInCommands.Add(wrapper);
@@ -65,7 +65,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
-        SettingsModel settings = _serviceProvider.GetService<SettingsModel>()!;
+        var settings = _serviceProvider.GetService<SettingsModel>()!;
         Action<ICommandItem?, bool> makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), weakSelf);
@@ -84,12 +84,12 @@ public partial class TopLevelCommandManager : ObservableObject,
             {
                 lock (TopLevelCommands)
                 {
-                    foreach (TopLevelViewModel item in commandProvider.TopLevelItems)
+                    foreach (var item in commandProvider.TopLevelItems)
                     {
                         TopLevelCommands.Add(item);
                     }
 
-                    foreach (TopLevelViewModel item in commandProvider.FallbackItems)
+                    foreach (var item in commandProvider.FallbackItems)
                     {
                         TopLevelCommands.Add(item);
                     }
@@ -123,23 +123,23 @@ public partial class TopLevelCommandManager : ObservableObject,
         // update to the actual observable list at the end
         List<TopLevelViewModel> clone = [.. TopLevelCommands];
         List<TopLevelViewModel> newItems = [];
-        int startIndex = -1;
-        TopLevelViewModel firstCommand = sender.TopLevelItems[0];
-        int commandsToRemove = sender.TopLevelItems.Length + sender.FallbackItems.Length;
+        var startIndex = -1;
+        var firstCommand = sender.TopLevelItems[0];
+        var commandsToRemove = sender.TopLevelItems.Length + sender.FallbackItems.Length;
 
         // Tricky: all Commands from a single provider get added to the
         // top-level list all together, in a row. So if we find just the first
         // one, we can slice it out and insert the new ones there.
-        for (int i = 0; i < clone.Count; i++)
+        for (var i = 0; i < clone.Count; i++)
         {
-            TopLevelViewModel wrapper = clone[i];
+            var wrapper = clone[i];
             try
             {
                 // TODO! this can be safer, we're not directly exposing ICommandItem's out of CPW anymore
-                ICommandItem? thisCommand = wrapper.ItemViewModel.Model.Unsafe;
+                var thisCommand = wrapper.ItemViewModel.Model.Unsafe;
                 if (thisCommand != null)
                 {
-                    bool isTheSame = thisCommand == firstCommand;
+                    var isTheSame = thisCommand == firstCommand;
                     if (isTheSame)
                     {
                         startIndex = i;
@@ -157,16 +157,16 @@ public partial class TopLevelCommandManager : ObservableObject,
         // Fetch the new items
         await sender.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
-        SettingsModel settings = _serviceProvider.GetService<SettingsModel>()!;
+        var settings = _serviceProvider.GetService<SettingsModel>()!;
 
-        foreach (TopLevelViewModel i in sender.TopLevelItems)
+        foreach (var i in sender.TopLevelItems)
         {
             // CommandItemViewModel commandItemViewModel = new(new(i), weakSelf);
             // TopLevelViewModel topLevelViewModel = new(commandItemViewModel, false, sender.ExtensionHost, settings, _serviceProvider);
             newItems.Add(i);
         }
 
-        foreach (TopLevelViewModel i in sender.FallbackItems)
+        foreach (var i in sender.FallbackItems)
         {
             // CommandItemViewModel commandItemViewModel = new(new(i), weakSelf);
             // TopLevelViewModel topLevelViewModel = new(commandItemViewModel, true, sender.ExtensionHost, settings, _serviceProvider);
@@ -194,7 +194,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     public async Task ReloadAllCommandsAsync()
     {
         IsLoading = true;
-        IExtensionService extensionService = _serviceProvider.GetService<IExtensionService>()!;
+        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
         await extensionService.SignalStopExtensionsAsync();
         lock (TopLevelCommands)
         {
@@ -215,12 +215,12 @@ public partial class TopLevelCommandManager : ObservableObject,
     [RelayCommand]
     public async Task<bool> LoadExtensionsAsync()
     {
-        IExtensionService extensionService = _serviceProvider.GetService<IExtensionService>()!;
+        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
 
         extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
         extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
 
-        IEnumerable<IExtensionWrapper> extensions = await extensionService.GetInstalledExtensionsAsync();
+        var extensions = await extensionService.GetInstalledExtensionsAsync();
         _extensionCommandProviders.Clear();
         if (extensions != null)
         {
@@ -250,7 +250,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions)
     {
         // TODO This most definitely needs a lock
-        foreach (IExtensionWrapper extension in extensions)
+        foreach (var extension in extensions)
         {
             try
             {
@@ -279,11 +279,11 @@ public partial class TopLevelCommandManager : ObservableObject,
                 List<TopLevelViewModel> commandsToRemove = [];
                 lock (TopLevelCommands)
                 {
-                    foreach (IExtensionWrapper extension in extensions)
+                    foreach (var extension in extensions)
                     {
-                        foreach (TopLevelViewModel command in TopLevelCommands)
+                        foreach (var command in TopLevelCommands)
                         {
-                            CommandPaletteHost host = command.ExtensionHost;
+                            var host = command.ExtensionHost;
                             if (host?.Extension == extension)
                             {
                                 commandsToRemove.Add(command);
@@ -302,7 +302,7 @@ public partial class TopLevelCommandManager : ObservableObject,
                     {
                         if (commandsToRemove.Count != 0)
                         {
-                            foreach (TopLevelViewModel deleted in commandsToRemove)
+                            foreach (var deleted in commandsToRemove)
                             {
                                 TopLevelCommands.Remove(deleted);
                             }
@@ -319,7 +319,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         lock (TopLevelCommands)
         {
-            foreach (TopLevelViewModel command in TopLevelCommands)
+            foreach (var command in TopLevelCommands)
             {
                 if (command.Id == id)
                 {
@@ -336,7 +336,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     void IPageContext.ShowException(Exception ex, string? extensionHint)
     {
-        string errorMessage = $"A bug occurred in {$"the \"{extensionHint}\"" ?? "an unknown's"} extension's code:\n{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n\n";
+        var errorMessage = $"A bug occurred in {$"the \"{extensionHint}\"" ?? "an unknown's"} extension's code:\n{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n\n";
         CommandPaletteHost.Instance.Log(errorMessage);
     }
 }
