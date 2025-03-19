@@ -203,10 +203,6 @@ dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
 dotnet_style_prefer_compound_assignment = true:warning
 dotnet_style_prefer_simplified_interpolation = true:suggestion
 
-# Spelling
-
-spelling_exclusion_path = .\exclusion.dic
-
 # Diagnostic configuration
 
 # CS8305: Type is for evaluation purposes only and is subject to change or removal in future updates.
