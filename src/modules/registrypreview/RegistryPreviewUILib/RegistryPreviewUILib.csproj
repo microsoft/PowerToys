@@ -42,6 +42,7 @@
   <ItemGroup>
     <None Remove="Controls\MonacoEditor\MonacoEditorControl.xaml" />
     <None Remove="Controls\HexBox\Themes\Generic.xaml" />
+    <None Remove="Themes\Generic.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -66,9 +67,12 @@
     <Page Update="Controls\MonacoEditor\MonacoEditorControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="Controls\HexBox\Themes\Generic.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
+	<Page Update="Controls\HexBox\Themes\Generic.xaml">
+		<Generator>MSBuild:Compile</Generator>
+	</Page>
+	<Page Update="Themes\Generic.xaml">
+		<Generator>MSBuild:Compile</Generator>
+	</Page>
   </ItemGroup>
 
   <ItemGroup>
