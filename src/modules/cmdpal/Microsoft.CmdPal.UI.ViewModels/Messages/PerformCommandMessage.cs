@@ -18,6 +18,8 @@ public record PerformCommandMessage
 
     public bool WithAnimation { get; set; } = true;
 
+    public CommandPaletteHost? ExtensionHost { get; private set; }
+
     public PerformCommandMessage(ExtensionObject<ICommand> command)
     {
         Command = command;
@@ -28,6 +30,7 @@ public record PerformCommandMessage
     {
         Command = topLevelCommand.CommandViewModel.Model;
         Context = null;
+        ExtensionHost = topLevelCommand.ExtensionHost;
     }
 
     public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<IListItem> context)

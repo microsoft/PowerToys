@@ -74,6 +74,8 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         }
     }
 
+    public bool HasAlias => !string.IsNullOrEmpty(AliasText);
+
     public string AliasText
     {
         get => Alias?.Alias ?? string.Empty;

@@ -123,17 +123,29 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // Or the command may be a stub. Future us problem.
         try
         {
-            CommandPaletteHost host = ViewModel.CurrentPage?.ExtensionHost ?? CommandPaletteHost.Instance;
+            CommandPaletteHost? pageHost = ViewModel.CurrentPage?.ExtensionHost;
+            CommandPaletteHost? messageHost = message.ExtensionHost;
+            CommandPaletteHost host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
+            extension = pageHost?.Extension ?? messageHost?.Extension ?? null;
 
-            if (command is TopLevelCommandWrapper wrapper)
+            // if (messageHost != null)
+
+            //// if (command is TopLevelCommandWrapper wrapper)
+            // {
+            //    // TopLevelCommandWrapper tlc = wrapper;
+            //    // command = wrapper.Command;
+            //    // host = tlc.ExtensionHost != null ? tlc.ExtensionHost! : host;
+            //    // extension = messageHost.Extension;
+            // }
+            if (extension != null)
             {
-                TopLevelCommandWrapper tlc = wrapper;
-                command = wrapper.Command;
-                host = tlc.ExtensionHost != null ? tlc.ExtensionHost! : host;
-                extension = tlc.ExtensionHost?.Extension;
-                if (extension != null)
+                if (messageHost != null)
                 {
                     Logger.LogDebug($"Activated top-level command from {extension.ExtensionDisplayName}");
+                }
+                else
+                {
+                    Logger.LogDebug($"Activated command from {extension.ExtensionDisplayName}");
                 }
             }
 
