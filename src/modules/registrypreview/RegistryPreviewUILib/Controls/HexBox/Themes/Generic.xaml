@@ -28,7 +28,7 @@
                             <MenuFlyout x:Key="DataMenuFlyout">
                                 <!--  New code for PowerToys implementation  -->
                                 <MenuFlyoutItem
-                                    x:Uid="HexBox_CopyCommand"
+                                    x:Uid="/PowerToys.RegistryPreviewUILib/Resources/HexBox_CopyCommand"
                                     Command="{Binding CopyCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}"
                                     Icon="Copy">
                                     <MenuFlyoutItem.KeyboardAccelerators>
@@ -36,7 +36,7 @@
                                     </MenuFlyoutItem.KeyboardAccelerators>
                                 </MenuFlyoutItem>
                                 <MenuFlyoutItem
-                                    x:Uid="HexBox_CopyTextCommand"
+                                    x:Uid="/PowerToys.RegistryPreviewUILib/Resources/HexBox_CopyTextCommand"
                                     Command="{Binding CopyTextCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}"
                                     Icon="Font">
                                     <MenuFlyoutItem.KeyboardAccelerators>
@@ -44,7 +44,7 @@
                                     </MenuFlyoutItem.KeyboardAccelerators>
                                 </MenuFlyoutItem>
                                 <MenuFlyoutItem
-                                    x:Uid="HexBox_SelectAllCommand"
+                                    x:Uid="/PowerToys.RegistryPreviewUILib/Resources/HexBox_SelectAllCommand"
                                     Command="{Binding SelectAllCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}"
                                     Icon="SelectAll">
                                     <MenuFlyoutItem.KeyboardAccelerators>
