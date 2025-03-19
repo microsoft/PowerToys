@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -22,7 +23,7 @@ public partial class ProviderSettingsViewModel(
 
     public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? "Built-in";
 
-    public string ExtensionSubtext => $"{ExtensionName}, {TopLevelCommands.Count} commands";
+    public string ExtensionSubtext => IsEnabled ? $"{ExtensionName}, {TopLevelCommands.Count} commands" : Resources.builtin_disabled_extension;
 
     [MemberNotNullWhen(true, nameof(Extension))]
     public bool IsFromExtension => _provider.Extension != null;
@@ -44,6 +45,7 @@ public partial class ProviderSettingsViewModel(
                 Save();
                 WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
                 OnPropertyChanged(nameof(IsEnabled));
+                OnPropertyChanged(nameof(ExtensionSubtext));
             }
 
             if (value == true)
@@ -56,6 +58,7 @@ public partial class ProviderSettingsViewModel(
 
     private void Provider_CommandsChanged(CommandProviderWrapper sender, CommandPalette.Extensions.IItemsChangedEventArgs args)
     {
+        OnPropertyChanged(nameof(ExtensionSubtext));
         OnPropertyChanged(nameof(TopLevelCommands));
     }
 
