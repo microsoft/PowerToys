@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -12,6 +11,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.ObjectModel;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -82,15 +82,6 @@ public partial class TopLevelCommandManager : ObservableObject,
         await Task.Factory.StartNew(
             () =>
             {
-                // foreach (ICommandItem i in commandProvider.TopLevelItems)
-                // {
-                //    makeAndAdd(i, false);
-                // }
-
-                // foreach (IFallbackCommandItem i in commandProvider.FallbackItems)
-                // {
-                //    makeAndAdd(i, true);
-                // }
                 lock (TopLevelCommands)
                 {
                     foreach (TopLevelViewModel item in commandProvider.TopLevelItems)

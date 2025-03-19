@@ -14,16 +14,13 @@ public class ProviderSettings
     public string ExtensionUniqueId { get; set; } = string.Empty;
 
     [JsonIgnore]
-    public string Id { get; set; } = string.Empty;
-
-    [JsonIgnore]
     public string ProviderDisplayName { get; set; } = string.Empty;
 
     // Originally, I wanted to do:
     //    public string ProviderId => $"{PackageFamilyName}/{ProviderDisplayName}";
     // but I think that's actually a bad idea, because the Display Name can be localized.
     [JsonIgnore]
-    public string ProviderId => $"{ExtensionUniqueId}/{Id}";
+    public string ProviderId => $"{ExtensionUniqueId}";
 
     [JsonIgnore]
     public bool IsBuiltin => string.IsNullOrEmpty(ExtensionUniqueId);
@@ -43,9 +40,9 @@ public class ProviderSettings
     {
         ExtensionUniqueId = wrapper.Extension?.ExtensionUniqueId ?? string.Empty;
 
-        Id = wrapper.Id;
         ProviderDisplayName = wrapper.DisplayName;
-        if (ProviderId == "/")
+
+        if (string.IsNullOrEmpty(ProviderId))
         {
             throw new InvalidDataException("Did you add a built-in command and forget to set the Id? Make sure you do that!");
         }
