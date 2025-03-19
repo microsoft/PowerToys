@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap rescap">
+
+  <Identity
+    Name="d5366922-b1a6-4135-84b5-c74dea4c23fd"
+    Publisher="CN=amelbawa"
+    Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>runner-cli-package</DisplayName>
+    <PublisherDisplayName>amelbawa</PublisherDisplayName>
+    <Logo>Images\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.14393.0" MaxVersionTested="10.0.14393.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="x-generate"/>
+  </Resources>
+
+  <Applications>
+    <Application Id="RunnerCLI" Executable="runner-cli.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="PowerToys Client" Square150x150Logo="Images\MedTile.png" Square44x44Logo="Images\AppList.png" Description="The PowerToys client." BackgroundColor="#0078d7" AppListEntry="none" >
+        <uap:DefaultTile/>
+      </uap:VisualElements >
+      <Extensions>
+        <uap3:Extension Category="windows.appExtensionHost">
+          <uap3:AppExtensionHost>
+            <uap3:Name>com.microsoft.winget.source</uap3:Name>
+          </uap3:AppExtensionHost>
+        </uap3:Extension>
+        <uap5:Extension Category="windows.appExecutionAlias">
+          <uap5:AppExecutionAlias>
+            <uap5:ExecutionAlias Alias="runner-cli.exe" />
+          </uap5:AppExecutionAlias>
+        </uap5:Extension>
+        <uap3:Extension Category="windows.fileTypeAssociation">
+          <uap3:FileTypeAssociation Name="configuration" Parameters="configure &quot;%1&quot; --wait">
+            <uap:SupportedFileTypes>
+              <uap:FileType>.wingetdev</uap:FileType>
+            </uap:SupportedFileTypes>
+            <uap:DisplayName>PowerToys Client</uap:DisplayName>
+          </uap3:FileTypeAssociation>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <Capability Name="internetClient" />
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

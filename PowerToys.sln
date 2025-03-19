@@ -646,6 +646,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hosts.FuzzTests", "src\modu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hosts.UITests", "src\modules\Hosts\Hosts.UITests\Hosts.UITests.csproj", "{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "runner-cli", "src\runner-cli\runner-cli.csproj", "{5EB90637-4744-4687-8CFA-8625916A5685}"
+EndProject
+Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "runner-cli-package", "src\runner-cli-package\runner-cli-package.wapproj", "{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -2294,6 +2298,26 @@ Global
 		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}.Release|ARM64.Build.0 = Release|ARM64
 		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}.Release|x64.ActiveCfg = Release|x64
 		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A0}.Release|x64.Build.0 = Release|x64
+		{5EB90637-4744-4687-8CFA-8625916A5685}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{5EB90637-4744-4687-8CFA-8625916A5685}.Debug|ARM64.Build.0 = Debug|ARM64
+		{5EB90637-4744-4687-8CFA-8625916A5685}.Debug|x64.ActiveCfg = Debug|x64
+		{5EB90637-4744-4687-8CFA-8625916A5685}.Debug|x64.Build.0 = Debug|x64
+		{5EB90637-4744-4687-8CFA-8625916A5685}.Release|ARM64.ActiveCfg = Release|ARM64
+		{5EB90637-4744-4687-8CFA-8625916A5685}.Release|ARM64.Build.0 = Release|ARM64
+		{5EB90637-4744-4687-8CFA-8625916A5685}.Release|x64.ActiveCfg = Release|x64
+		{5EB90637-4744-4687-8CFA-8625916A5685}.Release|x64.Build.0 = Release|x64
+		{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}.Debug|ARM64.Build.0 = Debug|ARM64
+		{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}.Debug|x64.ActiveCfg = Debug|x64
+		{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}.Debug|x64.Build.0 = Debug|x64
+		{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}.Debug|x64.Deploy.0 = Debug|x64
+		{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}.Release|ARM64.ActiveCfg = Release|ARM64
+		{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}.Release|ARM64.Build.0 = Release|ARM64
+		{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}.Release|ARM64.Deploy.0 = Release|ARM64
+		{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}.Release|x64.ActiveCfg = Release|x64
+		{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}.Release|x64.Build.0 = Release|x64
+		{84554840-C37C-4DA7-AD08-E8ABF9BF1B81}.Release|x64.Deploy.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

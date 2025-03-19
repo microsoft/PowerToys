@@ -29,7 +29,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.2" />
     <!-- Including Microsoft.Bcl.AsyncInterfaces to force version, since it's used by Microsoft.SemanticKernel. -->
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces"  Version="9.0.2" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.2" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.16" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.2" />
@@ -60,6 +60,7 @@
     <PackageVersion Include="NLog" Version="5.0.4" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
+    <PackageVersion Include="NuGet.CommandLine" Version="6.13.2" />
     <PackageVersion Include="OpenAI" Version="2.0.0" />
     <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
