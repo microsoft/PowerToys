@@ -64,7 +64,6 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         AppWindow = new MainWindow();
-        AppWindow.Activate();
     }
 
     /// <summary>
