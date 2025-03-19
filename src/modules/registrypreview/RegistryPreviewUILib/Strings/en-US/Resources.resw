@@ -324,7 +324,7 @@
   </data>
   <data name="DataPreviewVisibleText" xml:space="preserve">
     <value>Readable text</value>
-    <comment>Means text that is visible and not only control characters.</comment>
+    <comment>Means text that is human readable and not only control characters.</comment>
   </data>
   <data name="DataPreviewDataView" xml:space="preserve">
     <value>Data</value>
