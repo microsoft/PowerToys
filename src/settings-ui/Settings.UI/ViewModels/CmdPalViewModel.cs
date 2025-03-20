@@ -28,6 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private HotkeySettings _hotkey;
         private IFileSystemWatcher _watcher;
         private DispatcherQueue _uiDispatcherQueue;
+        private CmdPalProperties _cmdPalProperties;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -43,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
             _uiDispatcherQueue = uiDispatcherQueue;
+            _cmdPalProperties = new CmdPalProperties();
 
             InitializeEnabledValue();
 
@@ -54,11 +56,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var settingsPath = Path.Combine(localAppDataDir, "Packages", "Microsoft.CommandPalette_8wekyb3d8bbwe", "LocalState", "settings.json");
 #endif
 
-            InitializeHotkey(settingsPath);
+            _hotkey = _cmdPalProperties.Hotkey;
 
             _watcher = Helper.GetFileWatcher(settingsPath, () =>
             {
-                InitializeHotkey(settingsPath);
+                _cmdPalProperties.InitializeHotkey();
+                _hotkey = _cmdPalProperties.Hotkey;
 
                 _uiDispatcherQueue.TryEnqueue(() =>
                 {
@@ -82,31 +85,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.CmdPal;
-            }
-        }
-
-        private void InitializeHotkey(string settingsFilePath)
-        {
-            try
-            {
-                string json = File.ReadAllText(settingsFilePath); // Read JSON file
-                using JsonDocument doc = JsonDocument.Parse(json);
-
-                if (doc.RootElement.TryGetProperty(nameof(Hotkey), out JsonElement hotkeyElement))
-                {
-                    _hotkey = JsonSerializer.Deserialize<HotkeySettings>(hotkeyElement.GetRawText());
-
-                    if (_hotkey == null)
-                    {
-                        // Default shortcut - Win + Alt + Space
-                        _hotkey = new HotkeySettings(true, false, true, false, 32);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                // Default shortcut - Win + Alt + Space
-                _hotkey = new HotkeySettings(true, false, true, false, 32);
             }
         }
 
