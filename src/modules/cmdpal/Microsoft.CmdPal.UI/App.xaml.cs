@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
@@ -22,6 +23,7 @@ using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -40,6 +42,8 @@ public partial class App : Application
 
     public Window? AppWindow { get; private set; }
 
+    public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
+
     /// <summary>
     /// Gets the <see cref="IServiceProvider"/> instance to resolve application services.
     /// </summary>
@@ -55,6 +59,13 @@ public partial class App : Application
         Services = ConfigureServices();
 
         this.InitializeComponent();
+
+        NativeEventWaiter.WaitForEventLoop(
+            "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
+            {
+                EtwTrace?.Dispose();
+                Environment.Exit(0);
+            });
     }
 
     /// <summary>
