@@ -4,15 +4,19 @@
 
 using System;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.ViewModels.Commands;
+using Microsoft.UI.Dispatching;
 using Windows.Management.Deployment;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -21,12 +25,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _isEnabled;
+        private HotkeySettings _hotkey;
+        private IFileSystemWatcher _watcher;
+        private DispatcherQueue _uiDispatcherQueue;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public CmdPalViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
+        public CmdPalViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, DispatcherQueue uiDispatcherQueue)
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -35,7 +42,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
+            _uiDispatcherQueue = uiDispatcherQueue;
+
             InitializeEnabledValue();
+
+            var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+#if DEBUG
+            var settingsPath = Path.Combine(localAppDataDir, "Packages", "Microsoft.CommandPalette.Dev_8wekyb3d8bbwe", "LocalState", "settings.json");
+#else
+            var settingsPath = Path.Combine(localAppDataDir, "Packages", "Microsoft.CommandPalette_8wekyb3d8bbwe", "LocalState", "settings.json");
+#endif
+
+            InitializeHotkey(settingsPath);
+
+            _watcher = Helper.GetFileWatcher(settingsPath, () =>
+            {
+                InitializeHotkey(settingsPath);
+
+                _uiDispatcherQueue.TryEnqueue(() =>
+                {
+                    OnPropertyChanged(nameof(Hotkey));
+                });
+            });
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -53,6 +82,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else
             {
                 _isEnabled = GeneralSettingsConfig.Enabled.CmdPal;
+            }
+        }
+
+        private void InitializeHotkey(string settingsFilePath)
+        {
+            try
+            {
+                string json = File.ReadAllText(settingsFilePath); // Read JSON file
+                using JsonDocument doc = JsonDocument.Parse(json);
+
+                if (doc.RootElement.TryGetProperty(nameof(Hotkey), out JsonElement hotkeyElement))
+                {
+                    _hotkey = JsonSerializer.Deserialize<HotkeySettings>(hotkeyElement.GetRawText());
+
+                    if (_hotkey == null)
+                    {
+                        // Default shortcut - Win + Alt + Space
+                        _hotkey = new HotkeySettings(true, false, true, false, 32);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Default shortcut - Win + Alt + Space
+                _hotkey = new HotkeySettings(true, false, true, false, 32);
             }
         }
 
@@ -79,6 +133,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG(snd.ToString());
                     OnPropertyChanged(nameof(IsEnabled));
                 }
+            }
+        }
+
+        public HotkeySettings Hotkey
+        {
+            get => _hotkey;
+
+            private set
+            {
             }
         }
 
