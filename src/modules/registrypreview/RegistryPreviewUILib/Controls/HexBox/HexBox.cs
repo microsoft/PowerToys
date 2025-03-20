@@ -31,7 +31,6 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
-using Windows.UI;
 #pragma warning restore SA1208 // System using directives should be placed before other using directives
 #pragma warning restore SA1210 // Using directives should be ordered alphabetically by namespace
 

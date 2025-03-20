@@ -115,11 +115,6 @@ namespace RegistryPreviewUILib
             _ = contentDialog.ShowAsync();
         }
 
-        private void ContentDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
-        {
-            throw new NotImplementedException();
-        }
-
         private static void AddHexView(ref StackPanel panel, ref ResourceLoader resourceLoader, string value)
         {
             var hexBox = new TextBox()
@@ -173,7 +168,6 @@ namespace RegistryPreviewUILib
             {
                 Height = 300,
                 Width = 495,
-                Padding = new Thickness(4),
                 ShowAddress = true,
                 ShowData = true,
                 ShowText = true,

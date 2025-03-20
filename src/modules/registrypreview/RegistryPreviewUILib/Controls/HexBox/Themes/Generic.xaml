@@ -12,7 +12,7 @@
                     <!--  Added for PowerToys implementation: Grid.CornerRadius and Grid.Padding  -->
                     <Grid
                         Margin="{TemplateBinding Margin}"
-                        Padding="{TemplateBinding Padding}"
+                        Padding="4"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Background="{TemplateBinding Background}"
