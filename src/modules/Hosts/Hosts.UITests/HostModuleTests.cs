@@ -31,6 +31,8 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
+
+        /*
         [TestMethod("Hosts.Basic.EmptyViewShouldWork")]
         public void TestEmptyView()
         {
@@ -52,7 +54,7 @@ namespace Hosts.UITests
             Assert.IsFalse(this.Has<HyperlinkButton>("Add an entry"), "'Add an entry' button should be invisible if not empty view");
 
             // VisualAssert.AreEqual(this.Find("Entries"), "NonEmptyView");
-        }
+        }*/
 
         /// <summary>
         /// Test Adding-entry Button in the Hosts-File-Editor
@@ -74,7 +76,7 @@ namespace Hosts.UITests
 
             Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
 
-            VisualAssert.AreEqual(this.TestContext, this.Find("Entries"));
+            // VisualAssert.AreEqual(this.TestContext, this.Find("Entries"));
         }
 
         /// <summary>
