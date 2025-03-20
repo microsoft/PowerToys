@@ -985,8 +985,8 @@ Mouse Jump:
    - [ ] Bookmarks - Open your bookmarks (in Command Palette).
  - [ ] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
  - [ ] Test tab navigation.
- * Test Plugin Manager
-   - [ ] Enable/disable plugins and verify changes are picked up by Command Palette (Currently not support)
+ * Test Extensions Manager
+   - [ ] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
    - [ ] Change `Global hot key` and verify changes are picked up by Command Palette
    - [ ] Change `Alias` and verify changes picked up by Command Palette
-   - [ ] Disable all plugins and verify the warning message is shown (Currently not support).
+   - [ ] Disable all extensions and verify the warning message is shown (Currently not support).
