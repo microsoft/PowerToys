@@ -236,36 +236,36 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 ## File Explorer Add-ons
  * Running as user:
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane shows the correct content
+   - [x] verify the README.md Preview Pane shows the correct content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane works for the SVG files
-   - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the SVG files
+   - [x] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the PDF file
-   - [ ] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the PDF file
+   - [x] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the gcode file
-   - [ ] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the gcode file
+   - [x] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
+   - [x] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane works for source files (shows syntax highlighting)
+   - [x] verify Preview Pane works for source files (shows syntax highlighting)
  * Running as admin (or user since recently):
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane doesn't show any content
+   - [x] verify the README.md Preview Pane doesn't show any content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane doesn't show the preview for the SVG files
+   - [x] verify Preview Pane doesn't show the preview for the SVG files
    * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
-   - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
+   - [x] copy and paste one of the SVG file and verify the new file show the generic SVG icon
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the PDF file
+   - [x] verify Preview Pane doesn't show the preview for the PDF file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the gcode file
+   - [x] verify Preview Pane doesn't show the preview for the gcode file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
+   - [x] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
    * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
+   - [x] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
 
 ## Awake
  - [x] Try out the features and see if they work, no list at this time.
@@ -287,43 +287,43 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 ## Registry Preview
  * Open Registry Editor, add new registry key with 1 string value and 1 binary value in e.g. HKLM/Software/Classes/PowerToysTest. Right click new registry key->export and export it to file.
  * Launch Registry Preview by right-clicking exported .reg file->'Preview'. Then:
-   - [ ] Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
-   - [ ] Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
-   - [ ] Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
-   - [ ] Try opening different registry file by pressing Open file button.
-   - [ ] Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
+   - [x] Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
+   - [x] Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
+   - [x] Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
+   - [x] Try opening different registry file by pressing Open file button.
+   - [x] Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
    
  * Open Registry Preview Settings. Then:
-   - [ ] Disable Registry Preview and ensure that Preview context menu option for .reg files no longer appears.
-   - [ ] Try to launch Registry Preview from it's OOBE page while Registry Preview is disabled and ensure that it does not start.
-   - [ ] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
-   - [ ] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
-   - [ ] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
-   - [ ] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
+   - [x] Disable Registry Preview and ensure that Preview context menu option for .reg files no longer appears.
+   - [x] Try to launch Registry Preview from it's OOBE page while Registry Preview is disabled and ensure that it does not start.
+   - [x] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
+   - [x] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
+   - [x] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
+   - [x] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
 
 ## Peek
  * Open different files to check that they're shown properly
-   - [ ] Image
-   - [ ] Text or dev file
-   - [ ] Markdown file
-   - [ ] PDF
-   - [ ] HTML
-   - [ ] Archive files (.zip, .tar, .rar)
-   - [ ] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
+   - [x] Image
+   - [x] Text or dev file
+   - [x] Markdown file
+   - [x] PDF
+   - [x] HTML
+   - [x] Archive files (.zip, .tar, .rar)
+   - [x] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
    
  * Pinning/unpinning
-   - [ ] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
-   - [ ] Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
-   - [ ] Unpin the window, switch to a different file, verify the window is moved to the default place.
-   - [ ] Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
+   - [x] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
+   - [x] Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
+   - [x] Unpin the window, switch to a different file, verify the window is moved to the default place.
+   - [x] Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
 
 * Open with a default program
-   - [ ] By clicking a button.
-   - [ ] By pressing enter. 
+   - [x] By clicking a button.
+   - [x] By pressing enter. 
   
- - [ ] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
- - [ ] Open multiple files, verify you can switch only between selected files.
- - [ ] Change the shortcut, verify the new one works.
+ - [x] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
+ - [x] Open multiple files, verify you can switch only between selected files.
+ - [x] Change the shortcut, verify the new one works.
 
 ## Crop And Lock
  * Thumbnail mode
@@ -336,11 +336,11 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 
 ## Command Not Found
  * Go to Command Not Found module settings
- - [ ] If you have PowerShell 7.4 installed, confirm that Install PowerShell 7.4 button is not visible and PowerShell 7.4 is shown as detected. If you don't have PowerShell 7.4, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
- - [ ] If you have Microsoft.WinGet.Client installed, confirm that Install Microsoft.WinGet.Client button is not visible and Microsoft.WinGet.Client is shown as detected. If you don't have Microsoft.WinGet.Client, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
- - [ ] Install the Command Not Found module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is added there. Start new PowerShell 7.4 session and execute "powertoys" (or "atom"). Confirm that suggestion is given to install powertoys (or atom) winget package. (If suggestion is not given, try running the same command few more times, it might take some time for the first time to load the module). Check Installation logs text box bellow and confirm there are no errors.
- - [ ] Uninstall the module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed. Start new PowerShell 7.4 session and confirm no errors are shown on start.
- - [ ] Install module again. Uninstall PowerToys. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed after installer is done.
+ - [x] If you have PowerShell 7.4 installed, confirm that Install PowerShell 7.4 button is not visible and PowerShell 7.4 is shown as detected. If you don't have PowerShell 7.4, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
+ - [x] If you have Microsoft.WinGet.Client installed, confirm that Install Microsoft.WinGet.Client button is not visible and Microsoft.WinGet.Client is shown as detected. If you don't have Microsoft.WinGet.Client, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
+ - [x] Install the Command Not Found module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is added there. Start new PowerShell 7.4 session and execute "powertoys" (or "atom"). Confirm that suggestion is given to install powertoys (or atom) winget package. (If suggestion is not given, try running the same command few more times, it might take some time for the first time to load the module). Check Installation logs text box bellow and confirm there are no errors.
+ - [x] Uninstall the module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed. Start new PowerShell 7.4 session and confirm no errors are shown on start.
+ - [x] Install module again. Uninstall PowerToys. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed after installer is done.
 
 ## DSC
  * You need to have some prerequisites installed:
@@ -348,12 +348,12 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
    - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
    - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
  * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [ ] Run `winget configure .\disableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are disabled.
-   - [ ] Run `winget configure .\enableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are enabled.
-   - [ ] Run `winget configure .\configureLauncherPlugins.dsc.yaml`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
-   - [ ] Run `winget configure .\configuration.dsc.yaml`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+   - [x] Run `winget configure .\disableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are disabled.
+   - [x] Run `winget configure .\enableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are enabled.
+   - [x] Run `winget configure .\configureLauncherPlugins.dsc.yaml`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
+   - [x] Run `winget configure .\configuration.dsc.yaml`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
+   - [x] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [x] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
 
 ## Advanced Paste
   NOTES:
@@ -399,18 +399,18 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 
 ## New+
  * Enable New+ in Settings.
-   - [ ] Verify NewPlus menu is in Explorer context menu. (Windows 11 tier 1 context menu only. May need Explorer restart.)
+   - [x] Verify NewPlus menu is in Explorer context menu. (Windows 11 tier 1 context menu only. May need Explorer restart.)
  * Disable New+ in Settings.
-   - [ ] Verify NewPlus menu is not in Explorer context menu.
+   - [x] Verify NewPlus menu is not in Explorer context menu.
  * Choose a different path for template folder.
-   - [ ] Verify the folder is created and empty.
-   - [ ] Copy a file to the templates folder, verify it's added to the New+ context menu and that if you select it the file is created.
-   - [ ] Copy a folder with files inside to the templates folder, verify it's added to the New+ context menu and that if you select it the folder and files inside are created.
-   - [ ] Delete all files and folders from inside the templates folder. Verify that no templates are available in the context menu.
-   - [ ] Disable and re-Enable New+ while the templates folder is still empty. Verify the default templates were copied over and are available in the context menu.
+   - [x] Verify the folder is created and empty.
+   - [x] Copy a file to the templates folder, verify it's added to the New+ context menu and that if you select it the file is created.
+   - [x] Copy a folder with files inside to the templates folder, verify it's added to the New+ context menu and that if you select it the folder and files inside are created.
+   - [x] Delete all files and folders from inside the templates folder. Verify that no templates are available in the context menu.
+   - [x] Disable and re-Enable New+ while the templates folder is still empty. Verify the default templates were copied over and are available in the context menu.
  * Test some Settings:
-   - [ ] Test the "Hide template filename extension" option in Settings.
-   - [ ] Test the "Hide template filename starting digits, spaces and dots" option in Settings.
+   - [x] Test the "Hide template filename extension" option in Settings.
+   - [x] Test the "Hide template filename starting digits, spaces and dots" option in Settings.
 
 ## Telemetry Epilogue
  * After finishing your tests, go to General settings, press Diagnostic data viewer and check if you have xml files for the utilities you've tested and if it looks like the events in those xml files were generated by the actions you did with the utilities you've tested.
