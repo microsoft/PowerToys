@@ -321,7 +321,7 @@ namespace RegistryPreviewUILib
         /// </summary>
         private static void EnhancedDataPreview_Opened(ContentDialog sender, ContentDialogOpenedEventArgs e)
         {
-            // If <_isDataPreviewHexBoxLoaded == true> then we have the right content on the dialoge.
+            // If <_isDataPreviewHexBoxLoaded == true> then we have the right content on the dialog.
             if (_isDataPreviewHexBoxLoaded)
             {
                 // Child controls: 0 = SelectorBar, 1 = ProgressRing, 2 = HexBox, 3 = TextBox
