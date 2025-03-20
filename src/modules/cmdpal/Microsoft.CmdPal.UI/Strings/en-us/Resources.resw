@@ -278,4 +278,79 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="ConfirmationDialog_CancelButtonText" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="Settings_ExtensionPage_GlobalHotkey_SettingsCard.Header" xml:space="preserve">
+    <value>Global hotkey</value>
+  </data>
+  <data name="Settings_ExtensionPage_GlobalHotkey_SettingsCard.Description" xml:space="preserve">
+    <value>Directly open Command Palette to this command.</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_SettingsCard.Header" xml:space="preserve">
+    <value>Alias</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_SettingsCard.Description" xml:space="preserve">
+    <value>Typing this alias will navigate to this command. Direct aliases navigate as soon as you type the alias. Indirect aliases navigate after typing a trailing space.</value>
+  </data>
+  <data name="Settings_ExtensionPage_Builtin_SettingsCard.Header" xml:space="preserve">
+    <value>Built-in</value>
+  </data>
+  <data name="Settings_ExtensionPage_Builtin_SettingsCard.Description" xml:space="preserve">
+    <value>These commands are built-in to the Windows Command Palette.</value>
+  </data>
+  <data name="Settings_GeneralPage_ActivationKey_SettingsExpander.Header" xml:space="preserve">
+    <value>Activation key</value>
+  </data>
+  <data name="Settings_GeneralPage_ActivationKey_SettingsExpander.Description" xml:space="preserve">
+    <value>This key will open the Command Palette.</value>
+  </data>
+  <data name="Settings_GeneralPage_GoHome_SettingsCard.Header" xml:space="preserve">
+    <value>Go home when activated</value>
+  </data>
+  <data name="Settings_GeneralPage_GoHome_SettingsCard.Description" xml:space="preserve">
+    <value>If enabled, the Command Palette will return to the home page when activated.</value>
+  </data>
+  <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
+    <value>Highlight search on activate</value>
+  </data>
+  <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Description" xml:space="preserve">
+    <value>When enabled, the previous search text will be selected when the app is opened.</value>
+  </data>
+  <data name="Settings_GeneralPage_ShowAppDetails_SettingsCard.Header" xml:space="preserve">
+    <value>Show app details</value>
+  </data>
+  <data name="Settings_GeneralPage_ShowAppDetails_SettingsCard.Description" xml:space="preserve">
+    <value>Controls if app details are automatically expanded or not.</value>
+  </data>
+  <data name="Settings_GeneralPage_BackspaceGoesBack_SettingsCard.Header" xml:space="preserve">
+    <value>Backspace goes back</value>
+  </data>
+  <data name="Settings_GeneralPage_BackspaceGoesBack_SettingsCard.Description" xml:space="preserve">
+    <value>When enabled, pressing backspace when the search text is empty will take you back.</value>
+  </data>
+  <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Header" xml:space="preserve">
+    <value>Single-click activates</value>
+  </data>
+  <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Description" xml:space="preserve">
+    <value>When enabled, single click activates list items. When disabled, single click selects and double click activates.</value>
+  </data>
+  <data name="Settings_GeneralPage_About_SettingsExpander.Header" xml:space="preserve">
+    <value>Windows Command Palette</value>
+  </data>
+  <data name="Settings_GeneralPage_About_SettingsExpander.Description" xml:space="preserve">
+    <value>© 2025. All rights reserved.</value>
+  </data>
+  <data name="Settings_GeneralPage_About_GithubLink_Hyperlink.Content" xml:space="preserve">
+    <value>View GitHub Repo</value>
+  </data>
+  <data name="Settings_GeneralPage_About_SDKDocs_Hyperlink.Content" xml:space="preserve">
+    <value>Extension SDK docs</value>
+  </data>
+  <data name="Settings_GeneralPage_SendFeedback_Hyperlink.Content" xml:space="preserve">
+    <value>Send feedback</value>
+  </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_General.Content" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Extensions.Content" xml:space="preserve">
+    <value>Extensions</value>
+  </data>
 </root>
