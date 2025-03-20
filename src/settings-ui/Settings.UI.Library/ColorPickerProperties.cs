@@ -32,8 +32,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             VisibleColorFormats.Add("HSI", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HSI")));
             VisibleColorFormats.Add("HWB", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HWB")));
             VisibleColorFormats.Add("NCol", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("NCol")));
-            VisibleColorFormats.Add("CIELAB", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CIELAB")));
             VisibleColorFormats.Add("CIEXYZ", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CIEXYZ")));
+            VisibleColorFormats.Add("CIELAB", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CIELAB")));
+            VisibleColorFormats.Add("CIELCh", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CIELCh")));
+            VisibleColorFormats.Add("Oklab", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("Oklab")));
+            VisibleColorFormats.Add("Oklch", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("Oklch")));
             VisibleColorFormats.Add("VEC4", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("VEC4")));
             VisibleColorFormats.Add("Decimal", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("Decimal")));
             VisibleColorFormats.Add("HEX Int", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HEX Int")));
