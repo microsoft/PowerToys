@@ -145,7 +145,7 @@ namespace ManagedCommon
         /// Convert a given <see cref="Color"/> to a CIE LCh color
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
-        /// <returns>The lightness [0..100], the chroma [0..150], and the hue angle [0°..360°]</returns>
+        /// <returns>The lightness [0..100], the chroma [0..230], and the hue angle [0°..360°]</returns>
         public static (double Lightness, double Chroma, double Hue) ConvertToCIELCHColor(Color color)
         {
             var xyz = ConvertToCIEXYZColor(color);
@@ -258,7 +258,7 @@ namespace ManagedCommon
         /// <param name="lightness">The <see cref="lightness"/></param>
         /// <param name="chromaticity_a">The <see cref="chromaticity_a"/></param>
         /// <param name="chromaticity_b">The <see cref="chromaticity_b"/></param>
-        /// <returns>The lightness [0..100], the chroma [0..150], and the hue angle [0°..360°]</returns>C
+        /// <returns>The lightness [0..100], the chroma [0..230], and the hue angle [0°..360°]</returns>C
         private static (double Lightness, double Chroma, double Hue)
             GetCIELCHColorFromCIELAB(double lightness, double chromaticity_a, double chromaticity_b)
         {

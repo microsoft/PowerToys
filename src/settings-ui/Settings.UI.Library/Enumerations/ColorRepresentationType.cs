@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         HexInteger = 13,
 
         /// <summary>
-        /// Color representation as CIELCh color space (L[0..100], C[0..150], h[0°..360°])
+        /// Color representation as CIELCh color space (L[0..100], C[0..230], h[0°..360°])
         /// </summary>
         CIELCh = 14,
 
