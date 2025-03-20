@@ -15,6 +15,10 @@
 
                 <tk7controls:MarkdownTextBlock x:Uid="Oobe_CmdPal_HowToUse" Background="Transparent" />
 
+                <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
+
+                <tk7controls:MarkdownTextBlock x:Uid="Oobe_CmdPal_TipsAndTricks" Background="Transparent" />
+
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <Button x:Uid="OOBE_Settings" Click="SettingsLaunchButton_Click" />
                     <HyperlinkButton NavigateUri="https://aka.ms/PowerToysOverview_CmdPal" Style="{StaticResource TextButtonStyle}">
