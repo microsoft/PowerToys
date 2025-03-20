@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.CmdPal.UI.Controls">
+
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <StaticResource x:Key="TagBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="TagBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+            <StaticResource x:Key="TagForeground" ResourceKey="TextFillColorTertiaryBrush" />
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Light">
+            <StaticResource x:Key="TagBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
+            <StaticResource x:Key="TagBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+            <StaticResource x:Key="TagForeground" ResourceKey="TextFillColorTertiaryBrush" />
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="HighContrast">
+            <StaticResource x:Key="TagBackground" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="TagBorderBrush" ResourceKey="ControlFillColorTransparent" />
+            <StaticResource x:Key="TagForeground" ResourceKey="SystemColorButtonTextColorBrush" />
+        </ResourceDictionary>
+
+    </ResourceDictionary.ThemeDictionaries>
+    <Thickness x:Key="TagPadding">4,2,4,2</Thickness>
+    <Thickness x:Key="TagBorderThickness">1</Thickness>
+
+    <Style BasedOn="{StaticResource DefaultTagStyle}" TargetType="local:Tag" />
+
+    <Style x:Key="DefaultTagStyle" TargetType="local:Tag">
+        <Style.Setters>
+            <Setter Property="Background" Value="{ThemeResource TagBackground}" />
+            <Setter Property="Foreground" Value="{ThemeResource TagForeground}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource TagBorderBrush}" />
+            <Setter Property="BorderThickness" Value="{ThemeResource TagBorderThickness}" />
+            <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
+            <Setter Property="Padding" Value="{ThemeResource TagPadding}" />
+            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="FontSize" Value="{StaticResource CaptionTextBlockFontSize}" />
+            <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+            <Setter Property="FocusVisualMargin" Value="-3" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="local:Tag">
+                        <Grid
+                            x:Name="PART_RootGrid"
+                            MinWidth="{TemplateBinding MinWidth}"
+                            MinHeight="{TemplateBinding MinHeight}"
+                            MaxWidth="{TemplateBinding MaxWidth}"
+                            Padding="{TemplateBinding Padding}"
+                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                            Background="{TemplateBinding Background}"
+                            BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <local:IconBox
+                                x:Name="PART_Icon"
+                                Grid.Column="0"
+                                Height="12"
+                                Margin="0,0,4,0"
+                                SourceKey="{TemplateBinding Icon}" />
+                            <TextBlock
+                                Grid.Column="1"
+                                CharacterSpacing="{TemplateBinding CharacterSpacing}"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontWeight="{TemplateBinding FontWeight}"
+                                Text="{TemplateBinding Text}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style.Setters>
+    </Style>
+</ResourceDictionary>

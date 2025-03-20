@@ -29,7 +29,7 @@
   <ItemGroup>
     <ApplicationDefinition Include="SettingsXAML\App.xaml" />
   </ItemGroup>
-	
+
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>
@@ -71,6 +71,10 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
     <PackageReference Include="System.Text.Json" />
+    <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->
+    <PackageReference Include="CommunityToolkit.Common" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging

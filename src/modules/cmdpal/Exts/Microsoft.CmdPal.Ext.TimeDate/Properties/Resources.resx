@@ -1,0 +1,378 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Microsoft_plugin_timedate_CopyToClipboard" xml:space="preserve">
+    <value>Copy value (Ctrl+C)</value>
+    <comment>'Ctrl+C' is a shortcut</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_copy_failed" xml:space="preserve">
+    <value>Copy failed</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DateAndTime" xml:space="preserve">
+    <value>Date and time</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DateAndTimeUtc" xml:space="preserve">
+    <value>Date and time UTC</value>
+    <comment>'UTC' means here 'Universal Time Convention'</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Day" xml:space="preserve">
+    <value>Day (Week day)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DayMonth" xml:space="preserve">
+    <value>Month and day</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DayOfMonth" xml:space="preserve">
+    <value>Day of the month</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DayOfWeek" xml:space="preserve">
+    <value>Day of the week (Week day)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_DayOfYear" xml:space="preserve">
+    <value>Day of the year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Era" xml:space="preserve">
+    <value>Era</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_EraAbbreviation" xml:space="preserve">
+    <value>Era abbreviation</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_ErrorResultSubTitle" xml:space="preserve">
+    <value>Valid prefixes: 'u' for Unix Timestamp, 'ums' for Unix Timestamp in milliseconds, 'ft' for Windows file time</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_ErrorResultTitle" xml:space="preserve">
+    <value>Error: Invalid number input</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Hour" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Iso8601" xml:space="preserve">
+    <value>ISO 8601</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Iso8601Utc" xml:space="preserve">
+    <value>ISO 8601 UTC</value>
+    <comment>'UTC' means here 'Universal Time Convention'</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Iso8601Zone" xml:space="preserve">
+    <value>ISO 8601 with time zone</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Iso8601ZoneUtc" xml:space="preserve">
+    <value>ISO 8601 UTC with time zone</value>
+    <comment>'UTC' means here 'Universal Time Convention'</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_filename_compatible" xml:space="preserve">
+    <value>Date and time in filename-compatible format</value>
+    <comment>The format allows for embedding in filenames</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Millisecond" xml:space="preserve">
+    <value>Millisecond</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Minute" xml:space="preserve">
+    <value>Minute</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Month" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_MonthOfYear" xml:space="preserve">
+    <value>Month of the year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_MonthYear" xml:space="preserve">
+    <value>Month and year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Now" xml:space="preserve">
+    <value>Now</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_NowUtc" xml:space="preserve">
+    <value>Now UTC</value>
+    <comment>'UTC' means here 'Universal Time Convention'</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_description" xml:space="preserve">
+    <value>Provides time and date values in different formats</value>
+    <comment>Do not translate the placeholders like '{0}' because it will be replaced in code.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_description_example_calendarWeek" xml:space="preserve">
+    <value>Calendar week</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_description_example_day" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_description_example_time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_plugin_name" xml:space="preserve">
+    <value>Time and Date</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Rfc1123" xml:space="preserve">
+    <value>RFC1123</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagDate" xml:space="preserve">
+    <value>Date</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagDateNow" xml:space="preserve">
+    <value>Current date; Now</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagEra" xml:space="preserve">
+    <value>Year; Calendar era; Date</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagEraNow" xml:space="preserve">
+    <value>Current year; Current calendar era; Current date; Now</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagFormat" xml:space="preserve">
+    <value>Date and time; Time and Date</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagFormatNow" xml:space="preserve">
+    <value>Current date and time; Current time and date; Now</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagTime" xml:space="preserve">
+    <value>Time</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagTimeNow" xml:space="preserve">
+    <value>Current Time; Now</value>
+    <comment>Don't change order</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Search_ConjunctionList" xml:space="preserve">
+    <value>for; and; nor; but; or; so</value>
+    <comment>List of conjunctions. We don't add 'yet' because this can be a synonym of 'now' which might be problematic on localized searches.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Second" xml:space="preserve">
+    <value>Second</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingDateWithWeekday" xml:space="preserve">
+    <value>Show date with weekday and name of month</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingDateWithWeekday_Description" xml:space="preserve">
+    <value>This setting applies to the 'Date' and 'Now' result.</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery" xml:space="preserve">
+    <value>Hide 'Invalid number input' error message on global queries</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal" xml:space="preserve">
+    <value>Show only 'Time', 'Date' and 'Now' result for system time on global queries</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description" xml:space="preserve">
+    <value>Regardless of this setting, for global queries the first word of the query has to be a complete match.</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingTimeWithSeconds" xml:space="preserve">
+    <value>Show time with seconds</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingTimeWithSeconds_Description" xml:space="preserve">
+    <value>This setting applies to the 'Time' and 'Now' result.</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SubTitleNote" xml:space="preserve">
+    <value>Select or press Ctrl+C to copy</value>
+    <comment>'Ctrl+C' is a shortcut</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_TimeUtc" xml:space="preserve">
+    <value>Time UTC</value>
+    <comment>'UTC' means here 'Universal Time Convention'</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_ToolTipAlternativeSearchTag" xml:space="preserve">
+    <value>Alternative search tags:</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_UniversalTime" xml:space="preserve">
+    <value>Universal time format: YYYY-MM-DD hh:mm:ss</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Unix" xml:space="preserve">
+    <value>Unix epoch time</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_WeekOfMonth" xml:space="preserve">
+    <value>Week of the month</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_WeekOfYear" xml:space="preserve">
+    <value>Week of the year (Calendar week, Week number)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_WindowsFileTime" xml:space="preserve">
+    <value>Windows file time (Int64 number)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Year" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Unix_Milliseconds" xml:space="preserve">
+    <value>Unix epoch time in milliseconds</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek" xml:space="preserve">
+    <value>First day of the week</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Friday" xml:space="preserve">
+    <value>Friday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Monday" xml:space="preserve">
+    <value>Monday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Saturday" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Sunday" xml:space="preserve">
+    <value>Sunday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Thursday" xml:space="preserve">
+    <value>Thursday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Tuesday" xml:space="preserve">
+    <value>Tuesday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstDayOfWeek_Wednesday" xml:space="preserve">
+    <value>Wednesday</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule" xml:space="preserve">
+    <value>First week of the year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_Description" xml:space="preserve">
+    <value>Configure the calendar rule for the first week of the year.</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay" xml:space="preserve">
+    <value>First day of year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFourDayWeek" xml:space="preserve">
+    <value>First four day week</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek" xml:space="preserve">
+    <value>First full week</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Setting_UseSystemSetting" xml:space="preserve">
+    <value>Use system setting</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_main_page_name" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_placeholder_text" xml:space="preserve">
+    <value>Search values or type a custom time stamp...</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle" xml:space="preserve">
+    <value>Error: Invalid input</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_main_page_title" xml:space="preserve">
+    <value>Time &amp;amp; Date</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidInput_ErrorMessageSubTitle" xml:space="preserve">
+    <value>Valid prefixes: 'u' for Unix Timestamp, 'ums' for Unix Timestamp in milliseconds, 'ft' for Windows file time</value>
+  </data>
+</root>

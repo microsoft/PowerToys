@@ -217,7 +217,10 @@
                 "PowerToys.ZoomItSettingsInterop.dll",
 
                 "WinUI3Apps\\PowerToys.Settings.dll",
-                "WinUI3Apps\\PowerToys.Settings.exe"
+                "WinUI3Apps\\PowerToys.Settings.exe",
+
+                "PowerToys.CmdPalModuleInterface.dll",
+                "*Microsoft.CmdPal.UI_*.msix"
             ],
             "SigningInfo": {
                 "Operations": [

@@ -4930,6 +4930,47 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Shell_TopLevelSystemTools.Content" xml:space="preserve">
     <value>System Tools</value>
   </data>
+  <data name="CmdPal.ModuleTitle" xml:space="preserve">
+    <value>Command Palette</value>
+  </data>
+  <data name="CmdPal_ShortDescription" xml:space="preserve">
+    <value>A better quick launcher</value>
+  </data>
+  <data name="CmdPal_Enable_CmdPal.Header" xml:space="preserve">
+    <value>Enable Command Palette</value>
+    <comment>"Command Palette" is the name of the utility.</comment>
+  </data>
+  <data name="CmdPal.ModuleDescription" xml:space="preserve">
+    <value>A fully extensible quick launcher with a richer display and additional capabilities without sacrificing performance.</value>
+  </data>
+  <data name="LearnMore_CmdPal.Text" xml:space="preserve">
+    <value>Learn more about Command Palette</value>
+    <comment>Command Palette is a product name, do not loc</comment>
+  </data>
+  <data name="Shell_CmdPal.Content" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>Product name: Navigation view item name for Command Palette</comment>
+  </data>
+  <data name="Oobe_CmdPal.Description" xml:space="preserve">
+    <value>A fully extensible quick launcher with a richer display and additional capabilities without sacrificing performance.</value>
+    <comment>"Command Palette" is a product name</comment>
+  </data>
+  <data name="Oobe_CmdPal.Title" xml:space="preserve">
+    <value>Command Palette</value>
+    <comment>"Command Palette" is a product name</comment>
+  </data>
+  <data name="Oobe_CmdPal_HowToUse.Text" xml:space="preserve">
+    <value>Select Win+Alt+Space and start typing!</value>
+  </data>
+  <data name="Oobe_CmdPal_TipsAndTricks.Text" xml:space="preserve">
+    <value>For this utility to work, the Command Palette must be enabled and running in the background. The Command Palette has a ton of extensions to try out to make your launching experience even better. You can search for available extensions within the palette itself!</value>
+  </data>
+  <data name="Run_CheckOutCmdPal.Title" xml:space="preserve">
+    <value>PowerToys Run is getting an upgrade to v2! Check out the Command Palette, PowerToys Run's evolution</value>
+  </data>
+  <data name="Run_NavigateCmdPalSettings.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
   <data name="Enable_Module.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Enable module</value>
   </data>
