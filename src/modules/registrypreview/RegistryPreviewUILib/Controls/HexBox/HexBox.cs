@@ -6,6 +6,7 @@
 //     2020-... created by Filip Jeremic (fjeremic) as "HexView.Wpf".
 //     2024-... republished by @hotkidfamily as "HexBox.WinUI".
 //     2025 Included in PowerToys.
+//     2025 Modified line 877-879 to fix a color bug.
 // </history>
 #pragma warning disable SA1210 // Using directives should be ordered alphabetically by namespace
 #pragma warning disable SA1208 // System using directives should be placed before other using directives
