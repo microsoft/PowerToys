@@ -281,7 +281,7 @@ Mouse Jump:
     - [x] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
 
 ## Awake
- - [ ] Try out the features and see if they work, no list at this time.
+ - [x] Try out the features and see if they work, no list at this time.
 
 ## Text Extractor
  * Enable Text Extractor. Then:
