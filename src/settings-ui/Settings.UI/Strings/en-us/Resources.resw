@@ -4960,7 +4960,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <comment>"Command Palette" is a product name</comment>
   </data>
   <data name="Oobe_CmdPal_HowToUse.Text" xml:space="preserve">
-    <value>Select Win+Alt+Space and start typing!</value>
+    <value>and start typing!</value>
   </data>
   <data name="Oobe_CmdPal_TipsAndTricks.Text" xml:space="preserve">
     <value>For this utility to work, the Command Palette must be enabled and running in the background. The Command Palette has a ton of extensions to try out to make your launching experience even better. You can search for available extensions within the palette itself!</value>

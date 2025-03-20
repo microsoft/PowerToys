@@ -13,7 +13,7 @@
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <tk7controls:MarkdownTextBlock x:Uid="Oobe_CmdPal_HowToUse" Background="Transparent" />
+                <controls:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_CmdPal_HowToUse" />
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 
