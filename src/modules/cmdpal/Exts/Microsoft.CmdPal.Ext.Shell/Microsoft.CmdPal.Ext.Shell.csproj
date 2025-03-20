@@ -24,9 +24,11 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  
   <ItemGroup>
-    <Content Update="Assets\Run@2x.svg">
+      <None Remove="Assets\Run_V2_2x.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\Run_V2_2x.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
