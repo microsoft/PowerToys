@@ -7,9 +7,11 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
@@ -368,6 +370,8 @@ public sealed partial class MainWindow : Window,
             else
             {
                 PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
             }
         }
 
@@ -460,6 +464,7 @@ public sealed partial class MainWindow : Window,
                     {
                         var hotkey = _hotkeys[hotkeyIndex];
                         var isRootHotkey = string.IsNullOrEmpty(hotkey.CommandId);
+                        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
 
                         // Note to future us: the wParam will have the index of the hotkey we registered.
                         // We can use that in the future to differentiate the hotkeys we've pressed

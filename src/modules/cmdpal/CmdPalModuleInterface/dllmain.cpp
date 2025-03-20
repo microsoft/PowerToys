@@ -10,6 +10,7 @@
 #include <common/utils/resources.h>
 #include <common/utils/package.h>
 #include <common/utils/process_path.h>
+#include <common/interop/shared_constants.h>
 #include <Psapi.h>
 #include <TlHelp32.h>
 #include <common/utils/winapi_error.h>
@@ -42,6 +43,8 @@ private:
 
     //contains the non localized key of the powertoy
     std::wstring app_key;
+
+    HANDLE m_hTerminateEvent;
 
     void LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
     {
@@ -107,6 +110,11 @@ private:
 
             if (hProcess != NULL)
             {
+                SetEvent(m_hTerminateEvent);
+
+                // Wait for 1.5 seconds for the process to end correctly and stop etw tracer
+                WaitForSingleObject(hProcess, 1500);
+
                 TerminateProcess(hProcess, 0);
                 CloseHandle(hProcess);
             }
@@ -119,6 +127,8 @@ public:
         app_name = L"CmdPal";
         app_key = L"CmdPal";
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", "CmdPal");
+
+        m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::CMDPAL_EXIT_EVENT);
     }
 
     ~CmdPal()
