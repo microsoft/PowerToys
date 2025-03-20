@@ -9,6 +9,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     Title="SettingsWindow"
     Activated="Window_Activated"
+    Closed="Window_Closed"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
