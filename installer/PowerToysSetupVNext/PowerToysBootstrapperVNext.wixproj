@@ -1,14 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0"
-  DefaultTargets="Build"
-  InitialTargets="EnsureNuGetPackageBuildImports"
-  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
-
+﻿<Project Sdk="WixToolset.Sdk/5.0.2">
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
   <PropertyGroup>
     <DefineConstants>Version=$(Version)</DefineConstants>
     <Name>PowerToysVNextBootstrapper</Name>
-    <ProjectGuid>{da4e9744-80be-424c-b0f5-afd8757db575}</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' == 'true' ">
     <DefineConstants>$(DefineConstants);PerUser=true</DefineConstants>
@@ -16,12 +12,16 @@
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' != 'true' ">
     <DefineConstants>$(DefineConstants);PerUser=false</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' == 'true' ">
+    <DefineConstants>$(DefineConstants);CIBuild=true</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' != 'true' ">
+    <DefineConstants>$(DefineConstants);CIBuild=false</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup>
     <Configuration>Release</Configuration>
     <Platform Condition="'$(Platform)'=='x64'">x64</Platform>
     <Platform Condition="'$(Platform)'!='x64'">arm64</Platform>
-    <ProductVersion>3.10</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <OutputName>PowerToysSetupVNext-$(Version)-$(Platform)</OutputName>
     <OutputType>Bundle</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
@@ -30,60 +30,19 @@
     <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
     <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-    <NuGetPackageImportStamp />
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="PowerToys.wxs" />
   </ItemGroup>
   <ItemGroup>
-    <WixExtension Include="WixUtilExtension">
-      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
-      <Name>WixUtilExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixUIExtension">
-      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
-      <Name>WixUIExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixNetFxExtension">
-      <HintPath>$(WixExtDir)\WixNetFxExtension.dll</HintPath>
-      <Name>WixNetFxExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixNetFxExtension">
-      <HintPath>$(WixExtDir)\WixBalExtension.dll</HintPath>
-      <Name>WixBalExtension</Name>
-    </WixExtension>
+    <PackageReference Include="WixToolset.Util.wixext" />
+    <PackageReference Include="WixToolset.UI.wixext" />
+    <PackageReference Include="WixToolset.NetFx.wixext" />
+    <PackageReference Include="WixToolset.Bal.wixext" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CustomDialogs" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(WixTargetsPath)"
-    Condition=" '$(WixTargetsPath)' != '' " />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets"
-    Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
-  <Target Name="EnsureWixToolsetInstalled"
-    Condition=" '$(WixTargetsImported)' != 'true' ">
-<<<<<<< HEAD
-    <Error Text="The WiX Toolset vnext build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
-=======
-    <Error Text="The WiX Toolset v3 build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
->>>>>>> b9534c126 (fix conflict)
-  </Target>
-  <Target Name="EnsureNuGetPackageBuildImports"
-    BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-<<<<<<< HEAD
-    <Error Condition="!Exists('..\wixVNext.props')"
-=======
-    <Error Condition="!Exists('..\wix.props')"
->>>>>>> b9534c126 (fix conflict)
-      Text="$([System.String]::Format('$(ErrorText)', '..\wixVNext.props'))" />
-  </Target>
-
   <!-- Prevents NU1503 -->
   <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
     <ItemGroup>

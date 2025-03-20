@@ -83,7 +83,7 @@ steps:
       maximumCpuCount: true
 
   - script: |-
-      "C:\Program Files (x86)\WiX Toolset v3.14\bin\dark.exe" -x $(build.sourcesdirectory)\extractedMsi installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).msi
+      "C:\Program Files (x86)\WiX Toolset vnext\bin\dark.exe" -x $(build.sourcesdirectory)\extractedMsi installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).msi
       dir $(build.sourcesdirectory)\extractedMsi
     displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Extract and verify MSI"
 
@@ -133,7 +133,7 @@ steps:
   # The entirety of bundle unpacking/re-packing is unnecessary if we are not code signing it.
   - ${{ if eq(parameters.codeSign, true) }}:
     - script: |-
-        "C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ib installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -o installer\engine.exe
+        "C:\Program Files (x86)\WiX Toolset vnext\bin\insignia.exe" -ib installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -o installer\engine.exe
       displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Insignia: Extract Engine from Bundle"
 
     - template: steps-esrp-signing.yml
@@ -169,7 +169,7 @@ steps:
             ]
 
     - script: |-
-        "C:\Program Files (x86)\WiX Toolset v3.14\bin\insignia.exe" -ab installer\engine.exe installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -o installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe
+        "C:\Program Files (x86)\WiX Toolset vnext\bin\insignia.exe" -ab installer\engine.exe installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe -o installer\PowerToysSetupVNext\$(InstallerRelativePath)\$(InstallerBasename).exe
       displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Insignia: Merge Engine into Bundle"
 
     - template: steps-esrp-signing.yml
