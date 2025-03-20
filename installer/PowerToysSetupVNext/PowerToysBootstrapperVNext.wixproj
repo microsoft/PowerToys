@@ -4,7 +4,7 @@
   InitialTargets="EnsureNuGetPackageBuildImports"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
-  <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
+  <Import Project="..\wixVNext.props" Condition="Exists('..\wixVNext.props')" />
 
   <PropertyGroup>
     <DefineConstants>Version=$(Version)</DefineConstants>
@@ -73,7 +73,7 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\wix.props')"
+    <Error Condition="!Exists('..\wixVNext.props')"
       Text="$([System.String]::Format('$(ErrorText)', '..\wixVNext.props'))" />
   </Target>
 
