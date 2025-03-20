@@ -874,9 +874,9 @@ namespace RegistryPreviewUILib.HexBox
             {
                 _LinePaint = new()
                 {
-                    // (htcfreek:PowerToys implementation: fix for wrong border color on dark themes and dark high contrast themes)
+                    // (htcfreek:PowerToys implementation: fix for wrong line color on dark themes and dark high contrast themes)
                     // Color = SKColors.Black,
-                    Color = ((Color)Application.Current.Resources["SystemColorWindowTextColor"]).ToSKColor(),
+                    Color = ((SolidColorBrush)Application.Current.Resources["HexBox_VerticalLineBrush"]).Color.ToSKColor(),
                     IsStroke = true,
                     IsAntialias = true,
                     StrokeWidth = 1,

@@ -9,15 +9,17 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:HexBox">
+                    <!--  Added for PowerToys implementation: Grid.CornerRadius and Grid.Padding  -->
                     <Grid
                         Margin="{TemplateBinding Margin}"
+                        Padding="{TemplateBinding Padding}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
                         IsTabStop="False">
-
                         <Grid.Resources>
                             <convert:BoolNegationConverter x:Key="BoolNegationConverter" />
                             <local:BigEndianConverter x:Key="BigEndianConverter" />

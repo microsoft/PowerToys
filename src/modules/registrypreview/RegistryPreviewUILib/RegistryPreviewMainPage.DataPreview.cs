@@ -10,7 +10,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Foundation.Metadata;
-using Windows.UI.ViewManagement;
 using HB = RegistryPreviewUILib.HexBox;
 
 namespace RegistryPreviewUILib
@@ -21,9 +20,6 @@ namespace RegistryPreviewUILib
 
         internal void ShowEnhancedDataPreview(string name, string type, string value)
         {
-            // Get resources
-            var xamlPageResources = this.Resources;
-
             // Create dialog
             _isDataPreviewHexBoxLoaded = false;
             var panel = new StackPanel()
@@ -39,6 +35,7 @@ namespace RegistryPreviewUILib
                 DefaultButton = ContentDialogButton.Primary,
                 Padding = new Thickness(0),
             };
+            contentDialog.Opened += EnhancedDataPreview_Opened;
 
             // Add content based on value type
             switch (type)
@@ -74,7 +71,7 @@ namespace RegistryPreviewUILib
                     }
 
                     // Add controls
-                    AddBinaryView(ref panel, ref resourceLoader, ref binaryData, binaryDataText, ref xamlPageResources);
+                    AddBinaryView(ref panel, ref resourceLoader, ref binaryData, binaryDataText);
                     break;
                 case "REG_MULTI_SZ":
                     var multiLineBox = new TextBox()
@@ -118,6 +115,11 @@ namespace RegistryPreviewUILib
             _ = contentDialog.ShowAsync();
         }
 
+        private void ContentDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
+        {
+            throw new NotImplementedException();
+        }
+
         private static void AddHexView(ref StackPanel panel, ref ResourceLoader resourceLoader, string value)
         {
             var hexBox = new TextBox()
@@ -140,7 +142,7 @@ namespace RegistryPreviewUILib
             panel.Children.Add(decimalBox);
         }
 
-        private static void AddBinaryView(ref StackPanel panel, ref ResourceLoader resourceLoader, ref BinaryReader data, string dataText, ref ResourceDictionary xamlPageResources)
+        private static void AddBinaryView(ref StackPanel panel, ref ResourceLoader resourceLoader, ref BinaryReader data, string dataText)
         {
             // Create SelectorBar
             var navBar = new SelectorBar()
@@ -171,6 +173,7 @@ namespace RegistryPreviewUILib
             {
                 Height = 300,
                 Width = 495,
+                Padding = new Thickness(4),
                 ShowAddress = true,
                 ShowData = true,
                 ShowText = true,
@@ -178,9 +181,12 @@ namespace RegistryPreviewUILib
                 FontSize = 13,
                 RequestedTheme = panel.ActualTheme,
                 AddressBrush = (Brush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"],
-                AlternatingDataColumnTextBrush = (Brush)xamlPageResources["HexBox_AlternatingDataColumnTextBrush"],
-                SelectionTextBrush = (Brush)xamlPageResources["HexBox_SelectionTextBrush"],
-                SelectionBrush = (Brush)xamlPageResources["HexBox_SelectionBackgroundBrush"],
+                AlternatingDataColumnTextBrush = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                SelectionTextBrush = (Brush)Application.Current.Resources["HexBox_SelectionTextBrush"],
+                SelectionBrush = (Brush)Application.Current.Resources["HexBox_SelectionBackgroundBrush"],
+                BorderThickness = (Thickness)Application.Current.Resources["HexBox_ControlBorderThickness"],
+                BorderBrush = (LinearGradientBrush)Application.Current.Resources["HexBox_ControlBorderBrush"],
+                CornerRadius = (CornerRadius)Application.Current.Resources["ControlCornerRadius"],
                 DataFormat = HB.DataFormat.Hexadecimal,
                 DataSignedness = HB.DataSignedness.Unsigned,
                 DataType = HB.DataType.Int_1,
@@ -190,6 +196,8 @@ namespace RegistryPreviewUILib
             };
             AutomationProperties.SetName(binaryPreviewBox, resourceLoader.GetString("DataPreview_AutomationPropertiesName_BinaryDataPreview"));
             binaryPreviewBox.Loaded += BinaryPreview_HexBoxLoaded;
+            binaryPreviewBox.GotFocus += BinaryPreview_HexBoxFocused;
+            binaryPreviewBox.LostFocus += BinaryPreview_HexBoxFocusLost;
 
             // Create TextBox
             var visibleText = new TextBox()
@@ -253,11 +261,13 @@ namespace RegistryPreviewUILib
 
                     // Clear selection aligned to TextBox
                     hexBox.ClearSelection();
+                    hexBox.Focus(FocusState.Programmatic);
                 }
                 else
                 {
                     hexBox.Visibility = Visibility.Collapsed;
                     progressRing.Visibility = Visibility.Visible;
+                    progressRing.Focus(FocusState.Programmatic);
                 }
             }
             else
@@ -276,6 +286,8 @@ namespace RegistryPreviewUILib
         private static void BinaryPreview_HexBoxLoaded(object sender, RoutedEventArgs e)
         {
             _isDataPreviewHexBoxLoaded = true;
+
+            // Child controls: 0 = SelectorBar, 1 = ProgressRing, 2 = HexBox, 3 = TextBox
             var hexBox = (HB.HexBox)sender;
             var stackPanel = hexBox.Parent as StackPanel;
             var selectorBar = stackPanel.Children[0] as SelectorBar;
@@ -285,6 +297,41 @@ namespace RegistryPreviewUILib
             {
                 progressRing.Visibility = Visibility.Collapsed;
                 hexBox.Visibility = Visibility.Visible;
+            }
+        }
+
+        /// <summary>
+        /// Event handler to set correct control border if focused.
+        /// </summary>
+        private static void BinaryPreview_HexBoxFocused(object sender, RoutedEventArgs e)
+        {
+            var hexBox = (HB.HexBox)sender;
+
+            hexBox.BorderThickness = (Thickness)Application.Current.Resources["HexBox_ControlBorderFocusedThickness"];
+            hexBox.BorderBrush = (LinearGradientBrush)Application.Current.Resources["HexBox_ControlBorderFocusedBrush"];
+        }
+
+        /// <summary>
+        /// Event handler to set correct control border if not focused.
+        /// </summary>
+        private static void BinaryPreview_HexBoxFocusLost(object sender, RoutedEventArgs e)
+        {
+            var hexBox = (HB.HexBox)sender;
+
+            hexBox.BorderThickness = (Thickness)Application.Current.Resources["HexBox_ControlBorderThickness"];
+            hexBox.BorderBrush = (LinearGradientBrush)Application.Current.Resources["HexBox_ControlBorderBrush"];
+        }
+
+        /// <summary>
+        /// Make sure that for REG_Binary preview the HexBox control is focused after opening.
+        /// </summary>
+        private static void EnhancedDataPreview_Opened(ContentDialog sender, ContentDialogOpenedEventArgs e)
+        {
+            // If <_isDataPreviewHexBoxLoaded == true> then we have the right content on the dialoge.
+            if (_isDataPreviewHexBoxLoaded)
+            {
+                // Child controls: 0 = SelectorBar, 1 = ProgressRing, 2 = HexBox, 3 = TextBox
+                (sender.Content as StackPanel).Children[2].Focus(FocusState.Programmatic);
             }
         }
     }

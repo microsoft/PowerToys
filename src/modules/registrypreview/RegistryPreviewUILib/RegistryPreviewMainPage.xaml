@@ -14,19 +14,6 @@
     <Page.Resources>
         <ResourceDictionary>
             <converter:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Default">
-                    <SolidColorBrush x:Key="HexBox_SelectionTextBrush" Color="{ThemeResource TextOnAccentFillColorSelectedText}" />
-                    <SolidColorBrush x:Key="HexBox_SelectionBackgroundBrush" Color="{ThemeResource SystemAccentColor}" />
-                    <SolidColorBrush x:Key="HexBox_AlternatingDataColumnTextBrush" Color="{ThemeResource TextFillColorSecondary}" />
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="HighContrast">
-                    <SolidColorBrush x:Key="HexBox_SelectionTextBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-                    <SolidColorBrush x:Key="HexBox_SelectionBackgroundBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-                    <SolidColorBrush x:Key="HexBox_AlternatingDataColumnTextBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Page.Resources>
 
