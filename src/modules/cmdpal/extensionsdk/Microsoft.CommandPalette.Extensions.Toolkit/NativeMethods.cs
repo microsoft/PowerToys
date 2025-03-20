@@ -27,4 +27,18 @@ internal sealed class NativeMethods
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     internal static extern bool DestroyIcon(IntPtr hIcon);
+
+    [DllImport("Shell32.dll", CharSet = CharSet.Unicode)]
+    internal static extern int SHGetImageList(int iImageList, ref Guid riid, out IntPtr ppv);
+
+    [DllImport("comctl32.dll", SetLastError = true)]
+    internal static extern int ImageList_GetIcon(IntPtr himl, int i, int flags);
+
+    // [GeneratedComInterface]
+    // [Guid("46EB5926-582E-4017-9FDF-E8998DAA0950")]
+    // internal partial interface IImageList
+    // {
+    //    [PreserveSig]
+    //    int GetIcon(int i, int flags, out IntPtr phIcon);
+    // }
 }
