@@ -29,14 +29,7 @@ public class ThumbnailHelper
         var extension = Path.GetExtension(path).ToLower(CultureInfo.InvariantCulture);
         try
         {
-            if (ImageExtensions.Contains(extension))
-            {
-                return GetImageThumbnailAsync(path);
-            }
-            else
-            {
-                return GetFileIconStream(path);
-            }
+            return ImageExtensions.Contains(extension) ? GetImageThumbnailAsync(path) : GetFileIconStream(path);
         }
         catch (Exception)
         {
@@ -47,6 +40,11 @@ public class ThumbnailHelper
 
     private const uint SHGFIICON = 0x000000100;
     private const uint SHGFILARGEICON = 0x000000000;
+    private const uint SHGFISHELLICONSIZE = 0x000000004;
+    private const int SHGFISYSICONINDEX = 0x000004000;
+    private const int SHILEXTRALARGE = 2;
+    private const int SHILJUMBO = 4;
+    private const int ILDTRANSPARENT = 1;
 
     private static MemoryStream GetMemoryStreamFromIcon(IntPtr hIcon)
     {
@@ -67,17 +65,22 @@ public class ThumbnailHelper
 
     private static async Task<IRandomAccessStream?> GetFileIconStream(string filePath)
     {
-        var shinfo = default(NativeMethods.SHFILEINFO);
-        var hr = NativeMethods.SHGetFileInfo(filePath, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFIICON | SHGFILARGEICON);
+        // var shinfo = default(NativeMethods.SHFILEINFO);
+        // var hr = NativeMethods.SHGetFileInfo(filePath, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFIICON | SHGFISHELLICONSIZE);
 
-        if (hr == 0 || shinfo.hIcon == 0)
+        // if (hr == 0 || shinfo.hIcon == 0)
+        // {
+        //    return null;
+        // }
+        var hIcon = GetLargestIcon(filePath);
+        if (hIcon == 0)
         {
             return null;
         }
 
         var stream = new InMemoryRandomAccessStream();
 
-        using var memoryStream = GetMemoryStreamFromIcon(shinfo.hIcon);
+        using var memoryStream = GetMemoryStreamFromIcon(hIcon);
         using var outputStream = stream.GetOutputStreamAt(0);
         using (var dataWriter = new DataWriter(outputStream))
         {
@@ -95,4 +98,30 @@ public class ThumbnailHelper
         var thumbnail = await file.GetThumbnailAsync(ThumbnailMode.PicturesView);
         return thumbnail;
     }
+
+    public static nint GetLargestIcon(string path)
+    {
+        var shinfo = default(NativeMethods.SHFILEINFO);
+        NativeMethods.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFIICON | SHGFISYSICONINDEX);
+
+        var hIcon = IntPtr.Zero;
+        var iID_IImageList = new Guid("46EB5926-582E-4017-9FDF-E8998DAA0950");
+        IntPtr imageListPtr;
+
+        if (NativeMethods.SHGetImageList(SHILJUMBO, ref iID_IImageList, out imageListPtr) == 0 && imageListPtr != IntPtr.Zero)
+        {
+            hIcon = NativeMethods.ImageList_GetIcon(imageListPtr, shinfo.iIcon, ILDTRANSPARENT);
+        }
+
+        return hIcon;
+    }
+
+    // [ComImport]
+    // [Guid("46EB5926-582E-4017-9FDF-E8998DAA0950")]
+    // [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    // private interface IImageList
+    // {
+    //    [PreserveSig]
+    //    int GetIcon(int i, int flags, out IntPtr phIcon);
+    // }
 }
