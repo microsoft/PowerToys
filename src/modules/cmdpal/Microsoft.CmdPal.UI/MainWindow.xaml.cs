@@ -471,6 +471,8 @@ public sealed partial class MainWindow : Window,
                         // so that we can bind hotkeys to individual commands
                         if (!this.Visible || !isRootHotkey)
                         {
+                            Activate();
+
                             Summon(hotkey.CommandId);
                         }
                         else if (isRootHotkey)
