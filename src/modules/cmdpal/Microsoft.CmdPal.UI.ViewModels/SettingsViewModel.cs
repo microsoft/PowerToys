@@ -95,18 +95,7 @@ public partial class SettingsViewModel
 
         foreach (var item in activeProviders)
         {
-            if (!allProviderSettings.TryGetValue(item.ProviderId, out var value))
-            {
-                allProviderSettings[item.ProviderId] = new ProviderSettings(item);
-            }
-            else
-            {
-                value.Connect(item);
-            }
-
-            var providerSettings = allProviderSettings.TryGetValue(item.ProviderId, out var value2) ?
-                value2 :
-                new ProviderSettings(item);
+            var providerSettings = settings.GetProviderSettings(item);
 
             var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _serviceProvider);
             CommandProviders.Add(settingsModel);

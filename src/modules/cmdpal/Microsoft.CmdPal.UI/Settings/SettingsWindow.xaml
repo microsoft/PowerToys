@@ -42,7 +42,31 @@
             <NavigationView.Resources>
                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+                <Thickness x:Key="NavigationViewHeaderMargin">15,0,0,0</Thickness>
             </NavigationView.Resources>
+
+            <NavigationView.Header>
+                <BreadcrumbBar
+                    x:Name="NavigationBreadcrumbBar"
+                    MaxWidth="1000"
+                    ItemClicked="NavigationBreadcrumbBar_ItemClicked"
+                    ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
+                    <BreadcrumbBar.ItemTemplate>
+                        <DataTemplate x:DataType="local:Crumb">
+                            <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
+                        </DataTemplate>
+                    </BreadcrumbBar.ItemTemplate>
+                    <BreadcrumbBar.Resources>
+                        <ResourceDictionary>
+                            <x:Double x:Key="BreadcrumbBarItemThemeFontSize">28</x:Double>
+                            <Thickness x:Key="BreadcrumbBarChevronPadding">7,4,8,0</Thickness>
+                            <FontWeight x:Key="BreadcrumbBarItemFontWeight">SemiBold</FontWeight>
+                            <x:Double x:Key="BreadcrumbBarChevronFontSize">16</x:Double>
+                        </ResourceDictionary>
+                    </BreadcrumbBar.Resources>
+                </BreadcrumbBar>
+
+            </NavigationView.Header>
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Uid="Settings_GeneralPage_NavigationViewItem_General"
@@ -60,17 +84,6 @@
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
-                <BreadcrumbBar
-                    x:Name="NavigationBreadcrumbBar"
-                    MaxWidth="1000"
-                    ItemClicked="NavigationBreadcrumbBar_ItemClicked"
-                    ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
-                    <BreadcrumbBar.ItemTemplate>
-                        <DataTemplate x:DataType="local:Crumb">
-                            <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="{x:Bind Label, Mode=OneWay}" />
-                        </DataTemplate>
-                    </BreadcrumbBar.ItemTemplate>
-                </BreadcrumbBar>
                 <Frame x:Name="NavFrame" Grid.Row="1" />
             </Grid>
         </NavigationView>

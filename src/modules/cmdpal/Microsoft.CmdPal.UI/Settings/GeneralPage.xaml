@@ -81,8 +81,8 @@
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
                                 <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
-                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_GithubLink_Hyperlink" NavigateUri="https://github.com/zadjii-msft/PowerToys" />
-                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_SDKDocs_Hyperlink" NavigateUri="https://github.com/zadjii-msft/PowerToys/blob/main/src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md" />
+                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_GithubLink_Hyperlink" NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310837" />
+                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_SDKDocs_Hyperlink" NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310639" />
                                 </StackPanel>
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
@@ -90,7 +90,7 @@
                     <HyperlinkButton
                         x:Uid="Settings_GeneralPage_SendFeedback_Hyperlink"
                         Margin="0,8,0,0"
-                        NavigateUri="https://github.com/zadjii-msft/PowerToys/issues/new" />
+                        NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310638" />
                 </StackPanel>
             </Grid>
         </ScrollViewer>

@@ -8,5 +8,5 @@ namespace Microsoft.CmdPal.Ext.Shell;
 
 internal sealed class Icons
 {
-    internal static IconInfo RunV2 { get; } = IconHelpers.FromRelativePath("Assets\\Run@2x.svg");
+    internal static IconInfo RunV2 { get; } = IconHelpers.FromRelativePath("Assets\\Run_V2_2x.svg");
 }

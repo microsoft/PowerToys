@@ -8,7 +8,7 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class IconInfoViewModel : ObservableObject
+public partial class IconInfoViewModel : ObservableObject, IIconInfo
 {
     private readonly ExtensionObject<IIconInfo> _model = new(null);
 
@@ -27,6 +27,10 @@ public partial class IconInfoViewModel : ObservableObject
     public bool HasIcon(bool light) => IconForTheme(light).HasIcon;
 
     public bool IsSet => _model.Unsafe != null;
+
+    IIconData? IIconInfo.Dark => Dark;
+
+    IIconData? IIconInfo.Light => Light;
 
     public IconInfoViewModel(IIconInfo? icon)
     {
