@@ -19,5 +19,5 @@ public class CmdPalHotkeySummoned : EventBase, IEvent
         Global = global;
     }
 
-    public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServicePerformance;
+    public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
 }

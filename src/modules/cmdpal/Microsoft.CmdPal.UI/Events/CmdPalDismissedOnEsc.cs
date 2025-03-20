@@ -12,5 +12,5 @@ namespace Microsoft.CmdPal.UI.Events;
 [EventData]
 public class CmdPalDismissedOnEsc : EventBase, IEvent
 {
-    public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServicePerformance;
+    public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
 }

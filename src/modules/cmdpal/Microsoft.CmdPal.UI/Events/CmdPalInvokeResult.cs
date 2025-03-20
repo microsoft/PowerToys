@@ -19,5 +19,5 @@ public class CmdPalInvokeResult : EventBase, IEvent
         ResultKind = resultKind.ToString();
     }
 
-    public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServicePerformance;
+    public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
 }

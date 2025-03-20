@@ -19,5 +19,5 @@ public class OpenPage : EventBase, IEvent
         PageDepth = pageDepth;
     }
 
-    public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServicePerformance;
+    public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
 }
