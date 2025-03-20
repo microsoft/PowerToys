@@ -146,10 +146,10 @@ In this release, we focused on new features, stability, and automation.
 
 ### PowerToys Run
 
- - Fixed an issue where duplicated applications were shown by ensuring the shelllink helper opens .ink files non-exclusively and correctly retrieves the "FullPath". Thanks [@htcfreek](https://github.com/htcfreek) and [@davidegiacometti](https://github.com/davidegiacometti) for review!
+ - Fixed an issue where duplicated applications were shown by ensuring the shell link helper opens .ink files non-exclusively and correctly retrieves the "FullPath". Thanks [@htcfreek](https://github.com/htcfreek) and [@davidegiacometti](https://github.com/davidegiacometti) for review!
  - Fixed an issue where applying round corners on Windows 11 build 22000 caused crashes.
  - Async the OnRename method to unblock the thread. Thanks [@davidegiacometti](https://github.com/davidegiacometti) for review!
- - Added support for using `sq` instead of `^2` in the Unit Converter, allowing inputs like `sqcm` instead of `cm^2`. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Added support for using `sq` instead of `^2` in the Unit Converter. Thanks [@PesBandi](https://github.com/PesBandi)!
 
 ### Settings
 
@@ -169,7 +169,7 @@ In this release, we focused on new features, stability, and automation.
 ### Development
 
  - Upgraded WindowsAppSDK to 1.6.250205002 and CsWinRT to 2.2.0. Thanks [@htcfreek](https://github.com/htcfreek) for review!
- - Upgraded XamlStyler and dotnet-consolidate to remove .NET6 CI dependency. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Upgraded XamlStyler to 3.2501.8 and dotnet-consolidate to 4.2.0. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
  - Updated .NET Packages from 9.0.2 to 9.0.3.
  - Optimized the UI Test Automation Framework and added UI test cases for the Hosts File Editor module.
  - Added fuzz testing for RegistryPreview.
