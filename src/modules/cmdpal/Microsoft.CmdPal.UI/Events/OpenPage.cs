@@ -10,7 +10,14 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace Microsoft.CmdPal.UI.Events;
 
 [EventData]
-public class CmdPalDismissedOnLostFocus : EventBase, IEvent
+public class OpenPage : EventBase, IEvent
 {
+    public int PageDepth { get; set; }
+
+    public OpenPage(int pageDepth)
+    {
+        PageDepth = pageDepth;
+    }
+
     public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServicePerformance;
 }

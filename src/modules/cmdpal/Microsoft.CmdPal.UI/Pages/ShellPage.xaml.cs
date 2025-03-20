@@ -182,6 +182,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         pageViewModel,
                         message.WithAnimation ? _slideRightTransition : _noAnimation);
 
+                    PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
+
                     // Refocus on the Search for continual typing on the next search request
                     SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 
@@ -198,6 +200,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             else if (command is IInvokableCommand invokable)
             {
                 Logger.LogDebug($"Invoking command");
+                PowerToysTelemetry.Log.WriteEvent(new BeginInvoke());
                 HandleInvokeCommand(message, invokable);
             }
         }
@@ -314,6 +317,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             {
                 var kind = result.Kind;
                 Logger.LogDebug($"handling {kind.ToString()}");
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalInvokeResult(kind));
                 switch (kind)
                 {
                     case CommandResultKind.Dismiss:
@@ -341,7 +345,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         {
                             // Keep this page open, but hide the palette.
                             WeakReferenceMessenger.Default.Send<DismissMessage>();
-
                             break;
                         }
 

@@ -10,7 +10,7 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace Microsoft.CmdPal.UI.Events;
 
 [EventData]
-public class CmdPalDismissedOnLostFocus : EventBase, IEvent
+public class ColdLaunch : EventBase, IEvent
 {
     public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServicePerformance;
 }

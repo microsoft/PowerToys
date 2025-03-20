@@ -4,7 +4,6 @@
 
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
@@ -465,6 +464,7 @@ public sealed partial class MainWindow : Window,
                     {
                         var hotkey = _hotkeys[hotkeyIndex];
                         var isRootHotkey = string.IsNullOrEmpty(hotkey.CommandId);
+                        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
 
                         // Note to future us: the wParam will have the index of the hotkey we registered.
                         // We can use that in the future to differentiate the hotkeys we've pressed

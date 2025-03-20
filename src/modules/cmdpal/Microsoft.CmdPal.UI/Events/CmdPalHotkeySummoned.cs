@@ -10,7 +10,14 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace Microsoft.CmdPal.UI.Events;
 
 [EventData]
-public class CmdPalDismissedOnLostFocus : EventBase, IEvent
+public class CmdPalHotkeySummoned : EventBase, IEvent
 {
+    public bool Global { get; set; }
+
+    public CmdPalHotkeySummoned(bool global)
+    {
+        Global = global;
+    }
+
     public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServicePerformance;
 }
