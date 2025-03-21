@@ -142,7 +142,7 @@
                         HorizontalAlignment="Center"
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                         AutomationProperties.AccessibilityView="Raw"
-                        Source="ms-appx:///Assets/icon.ico"
+                        Source="ms-appx:///Assets/icon.svg"
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
