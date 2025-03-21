@@ -130,14 +130,36 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // Or the command may be a stub. Future us problem.
         try
         {
+            // In the case that we're coming from a top-level command, the
+            // current page's host is the global instance. We only really want
+            // to use that as the host of last resort.
             var pageHost = ViewModel.CurrentPage?.ExtensionHost;
+            if (pageHost == CommandPaletteHost.Instance)
+            {
+                pageHost = null;
+            }
+
             var messageHost = message.ExtensionHost;
 
             // Use the host from the current page if it has one, else use the
             // one specified in the PerformMessage for a top-level command,
             // else just use the global one.
-            var host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
+            CommandPaletteHost host;
+
+            // Top level items can come through without a Extension set on the
+            // message. In that case, the `Context` is actually the
+            // TopLevelViewModel itself, and we can use that to get at the
+            // extension object.
             extension = pageHost?.Extension ?? messageHost?.Extension ?? null;
+            if (extension == null && message.Context is TopLevelViewModel topLevelViewModel)
+            {
+                extension = topLevelViewModel.ExtensionHost?.Extension;
+                host = pageHost ?? messageHost ?? topLevelViewModel?.ExtensionHost ?? CommandPaletteHost.Instance;
+            }
+            else
+            {
+                host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
+            }
 
             if (extension != null)
             {
