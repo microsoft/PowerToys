@@ -123,10 +123,6 @@ In this release, we focused on new features, stability, and automation.
  - Fixed a bug where layout hotkeys were displayed incorrectly, ensuring the hotkey list does not include invalid entries.
  - Fixed an issue where the "None" option was missing in the editor layout.
 
- ### File Explorer Add-ons
-
- - Fixed an issue where SVG thumbnails failed to render correctly due to the default "fill-rule" attribute in styles. Thanks [@gokcekantarci](https://github.com/gokcekantarci)!
-
 ### Image Resizer
 
  - Fixed warnings in ImageResizer regarding the use of variables "shellItem" and "itemName" without being initialized.
