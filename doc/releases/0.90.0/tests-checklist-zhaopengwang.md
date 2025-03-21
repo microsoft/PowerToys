@@ -7,29 +7,32 @@
 ## Functional tests
 
  Regressions:
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
+ - [x] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
 
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] FancyZones Editor
- - [ ] Image Resizer
- - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
+ - [x] FancyZones Editor
+ - [x] Image Resizer
+ - [x] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
 
 ## FancyZones Editor
 
-- [ ] Open editor from the settings
-- [ ] Open editor with a shortcut
-- [ ] Create a new layout (grid and canvas)
-- [ ] Duplicate a template and a custom layout
-- [ ] Delete layout
-- [ ] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
-- [ ] Edit canvas layout: zones size and position, create or delete zones.
-- [ ] Edit grid layout: split, merge, resize zones.
-- [ ] Check `Save and apply` and `Cancel` buttons behavior after editing.
-- [ ] Assign a layout to each monitor.
-- [ ] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
-- [ ] Assign horizontal and vertical default layouts
-- [ ] Test duplicate layout focus
+- [x] Open editor from the settings
+- [x] Open editor with a shortcut
+
+**Test in pipeline:**
+
+- [x] Create a new layout (grid and canvas)
+- [x] Duplicate a template and a custom layout
+- [x] Delete layout
+- [x] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
+- [x] Edit canvas layout: zones size and position, create or delete zones.
+- [x] Edit grid layout: split, merge, resize zones.
+- [x] Check `Save and apply` and `Cancel` buttons behavior after editing.
+- [x] Assign a layout to each monitor.
+- [x] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
+- [x] Assign horizontal and vertical default layouts
+- [x] Test duplicate layout focus
    * Select any layout X in 'Templates' or 'Custom' section by click left mouse button
    * Mouse right button click on any layout Y in 'Templates' or 'Custom' sections
    * Duplicate it by clicking 'Create custom layout' (Templates section) or 'Duplicate' in 'Custom' section
@@ -38,41 +41,42 @@
 ## FancyZones
 
 ### Appearance
-- [ ] Change colors, opacity and `Show zone number` options. Verify they're applied.
+- [x] Change colors, opacity and `Show zone number` options. Verify they're applied.
 
 ### Excluded apps
-- [ ] Exclude some apps, verify that they're not applicable to a zone.
+- [x] Exclude some apps, verify that they're not applicable to a zone.
 
 ### Dragging
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Start dragging a window, then press shift. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [ ]  `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` on. Zones are shown immediately when dragging a window and hidden when you click a non-primary mouse button or press shift.
-- [ ] `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` off. Zones are shown immediately when dragging a window, hidden when you press shift.
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
-- [ ] `Show zones on all monitor whilw dragging a window` - turn on,off, verify behavior.
-- [ ] Create a canvas layout with overlapping zones, check zone activation behavior with all `When multiple zones overlap` options
-- [ ] `Make dragged window transparent` - turn on, off, verify behavior
+- [x] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Start dragging a window, then press shift. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
+- [x] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
+- [x]  `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` on. Zones are shown immediately when dragging a window and hidden when you click a non-primary mouse button or press shift.
+- [x] `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` off. Zones are shown immediately when dragging a window, hidden when you press shift.
+- [x] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
+- [x] `Show zones on all monitor whilw dragging a window` - turn on,off, verify behavior.
+- [x] Create a canvas layout with overlapping zones, check zone activation behavior with all `When multiple zones overlap` options
+- [x] `Make dragged window transparent` - turn on, off, verify behavior
 
 ### Snapping
+
 Disable FZ and clear `app-zone-history.json` before starting. FancyZones should be disabled, otherwise, it'll save cashed values back to the file.
 
-- [ ] Snap a window to a zone by dragging, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
-- [ ] Snap a window to a zone by a keyboard shortcut, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
-- [ ] Snap a window to another monitor, verify `app-zone-history.json` contains positions about zones on both monitors.
-- [ ] Snap a window to several zones, verify zone numbers in the json file are correct.
-- [ ] Snap a window to a zone, unsnap it, verify this app was removed from the json file.
-- [ ] Snap the same window to a zone on two different monitors or virtual desktops. Then unsnap from one of them, verify that info about unsnapped zone was removed from `app-zone-history.json`. Verify info about the second monitor/virtual desktop is kept.  
-- [ ] Enable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify the window changed its size to original.
-- [ ] Disable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify window size wasn't changed.
-- [ ] Disable `Restore the original size of windows when unsnapping`, snap window, enable `Restore the original size of windows when unsnapping`, unsnap window, verify window size wasn't changed. 
-- [ ] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
-- [ ] Launch PT in administrator mode, assign a window with administrator privileges.
+- [x] Snap a window to a zone by dragging, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
+- [x] Snap a window to a zone by a keyboard shortcut, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
+- [x] Snap a window to another monitor, verify `app-zone-history.json` contains positions about zones on both monitors.
+- [x] Snap a window to several zones, verify zone numbers in the json file are correct.
+- [x] Snap a window to a zone, unsnap it, verify this app was removed from the json file.
+- [x] Snap the same window to a zone on two different monitors or virtual desktops. Then unsnap from one of them, verify that info about unsnapped zone was removed from `app-zone-history.json`. Verify info about the second monitor/virtual desktop is kept.  
+- [x] Enable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify the window changed its size to original.
+- [x] Disable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify window size wasn't changed.
+- [x] Disable `Restore the original size of windows when unsnapping`, snap window, enable `Restore the original size of windows when unsnapping`, unsnap window, verify window size wasn't changed. 
+- [x] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
+- [x] Launch PT in administrator mode, assign a window with administrator privileges.
 * Open `Task view` , right-click on the window, check the `Show this window on all desktops` or the `Show windows from this app on all desktops` option to turn it on.
-    - [ ] Turn Show this window on all desktops on, verify you can snap this window to a zone.
-    - [ ] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
+    - [x] Turn Show this window on all desktops on, verify you can snap this window to a zone.
+    - [x] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
 
 ### Snapped window behavior
-- [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
+- [x] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
 - [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone on the secondary monitor. Disconnect the secondary monitor (the window will be moved to the primary monitor). Reconnect the secondary monitor. Verify the window returned to its zone. 
 - [ ] `Keep windows in their zones when the screen resolution changes` off, snap a window to a zone, change the screen resolution or scaling, verify window didn't change its size and position.
 
@@ -159,7 +163,7 @@ Enable `Enable quick layout switch`, assign numbers to custom layouts.
 
 ### Layout reset
 * Test layout resetting.
-Before testing 
+  Before testing 
    * Remove all virtual desktops 
    * Remove `CurrentVirtualDesktop` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\VirtualDesktops` 
    * Remove `VirtualDesktopIDs` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops`
@@ -318,7 +322,7 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 * Open with a default program
    - [ ] By clicking a button.
    - [ ] By pressing enter. 
-  
+
  - [ ] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
  - [ ] Open multiple files, verify you can switch only between selected files.
  - [ ] Change the shortcut, verify the new one works.
