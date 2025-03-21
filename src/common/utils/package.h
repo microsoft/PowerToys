@@ -129,7 +129,7 @@ namespace package {
         try
         {
             PackageManager packageManager;
-            const static auto packages = packageManager.FindPackages();
+            const static auto packages = packageManager.FindPackagesForUser({});
 
             for (auto const& package : packages)
             {
