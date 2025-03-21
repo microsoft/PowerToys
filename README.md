@@ -98,7 +98,7 @@ In this release, we focused on new features, stability, and automation.
 
 **✨Highlights**
 
- - New module: Command Palette ("CmdPal") -  the next iteration of PowerToys Run, with extensibility at its core, allowing users to start anything with the shortcut `Win+Alt+Space`!
+ - New module: Command Palette ("CmdPal") -  A fully extensible quick launcher with a richer display and additional capabilities without sacrificing performance, allowing you to start anything with the shortcut `Win+Alt+Space`! Thanks [@zadjii-msft](https://github.com/zadjii-msft), [@niels9001](https://github.com/niels9001), [@joadoumie](https://github.com/joadoumie), [@ethanfangg](https://github.com/ethanfangg) and [@krschau](https://github.com/krschau)!
  - Enhanced the Color Picker by switching from WPFUI to .NET WPF, resulting in improved themes and visual consistency across different modes. Thanks [@Jay-o-Way](https://github.com/Jay-o-Way) and [@niels9001](https://github.com/niels9001) for helping with the review!
  - Added the ability to delete files directly from Peek, enhancing file management efficiency. Thanks [@daverayment](https://github.com/daverayment) and thanks [@htcfreek](https://github.com/htcfreek) for the review!
  - Added support for variables in template filenames, enabling dynamic elements like date components and environment variables for enhanced customization in New+. Thanks [@cgaarden](https://github.com/cgaarden)!
@@ -115,7 +115,7 @@ In this release, we focused on new features, stability, and automation.
 
 ### Command Palette
 
-- Introduced the Windows Command Palette ("CmdPal"), the next iteration of PowerToys Run, designed with extensibility at its core. CmdPal includes features such as searching for installed apps, shell commands, file search, Windows Terminal Profiles, and winget package installation. This update aims to provide a more powerful and flexible launcher experience.
+- Introduced the Windows Command Palette ("CmdPal"), the next iteration of PowerToys Run, designed with extensibility at its core. CmdPal includes features such as searching for installed apps, shell commands, files and winget package installation. This module aims to provide a more powerful and flexible launcher experience. Thanks [@zadjii-msft](https://github.com/zadjii-msft), [@niels9001](https://github.com/niels9001), [@joadoumie](https://github.com/joadoumie), [@ethanfangg](https://github.com/ethanfangg) and [@krschau](https://github.com/krschau)!
 
 ### FancyZones
 
