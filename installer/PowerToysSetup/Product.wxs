@@ -179,6 +179,9 @@
       <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
+      <Custom Action="UnRegisterCmdPalPackage" Before="RemoveFiles">
+        Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
+      </Custom>
       <Custom Action="UnsetAdvancedPasteAPIKey" Before="RemoveFiles">
         Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
@@ -437,6 +440,14 @@
                 Execute="deferred"
                 BinaryKey="PTCustomActions"
                 DllEntry="UnRegisterContextMenuPackagesCA"
+                  />
+
+    <CustomAction Id="UnRegisterCmdPalPackage"
+                  Return="ignore"
+                  Impersonate="yes"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="UnRegisterCmdPalPackageCA"
                   />
 
     <CustomAction Id="CheckGPO"
