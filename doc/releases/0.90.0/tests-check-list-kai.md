@@ -118,7 +118,7 @@
    - [x] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
    - [x] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
  - [x] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
- - [x] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
+ - [ ] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
 
 ## Awake
  - [x] Try out the features and see if they work, no list at this time.
