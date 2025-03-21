@@ -130,7 +130,7 @@ In this release, we focused on new features, stability, and automation.
 ### Mouse Without Borders
 
  - Enhanced the logger to properly track the file path for easier debugging.
- - Refactored the "Common" class into individual classes, updating references and unit tests. Thanks [@mikeclayton](https://github.com/mikeclayton) for this!
+ - Refactored the "Common" class into distinct individual classes to enhance maintainability, and updated all references and unit tests to reflect these changes. Thanks [@mikeclayton](https://github.com/mikeclayton) for this!
 
 ### New+
 
