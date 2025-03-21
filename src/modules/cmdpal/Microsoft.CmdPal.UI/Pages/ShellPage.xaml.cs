@@ -7,12 +7,14 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
@@ -91,6 +93,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             {
                 // If we can't go back then we must be at the top and thus escape again should quit.
                 WeakReferenceMessenger.Default.Send<DismissMessage>();
+
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnEsc());
             }
         }
     }
@@ -123,17 +127,24 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // Or the command may be a stub. Future us problem.
         try
         {
-            var host = ViewModel.CurrentPage?.ExtensionHost ?? CommandPaletteHost.Instance;
+            var pageHost = ViewModel.CurrentPage?.ExtensionHost;
+            var messageHost = message.ExtensionHost;
 
-            if (command is TopLevelCommandWrapper wrapper)
+            // Use the host from the current page if it has one, else use the
+            // one specified in the PerformMessage for a top-level command,
+            // else just use the global one.
+            var host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
+            extension = pageHost?.Extension ?? messageHost?.Extension ?? null;
+
+            if (extension != null)
             {
-                var tlc = wrapper;
-                command = wrapper.Command;
-                host = tlc.ExtensionHost != null ? tlc.ExtensionHost! : host;
-                extension = tlc.ExtensionHost?.Extension;
-                if (extension != null)
+                if (messageHost != null)
                 {
                     Logger.LogDebug($"Activated top-level command from {extension.ExtensionDisplayName}");
+                }
+                else
+                {
+                    Logger.LogDebug($"Activated command from {extension.ExtensionDisplayName}");
                 }
             }
 
@@ -178,6 +189,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         pageViewModel,
                         message.WithAnimation ? _slideRightTransition : _noAnimation);
 
+                    PowerToysTelemetry.Log.WriteEvent(new OpenPage(RootFrame.BackStackDepth));
+
                     // Refocus on the Search for continual typing on the next search request
                     SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 
@@ -194,6 +207,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             else if (command is IInvokableCommand invokable)
             {
                 Logger.LogDebug($"Invoking command");
+                PowerToysTelemetry.Log.WriteEvent(new BeginInvoke());
                 HandleInvokeCommand(message, invokable);
             }
         }
@@ -310,6 +324,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             {
                 var kind = result.Kind;
                 Logger.LogDebug($"handling {kind.ToString()}");
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalInvokeResult(kind));
                 switch (kind)
                 {
                     case CommandResultKind.Dismiss:
@@ -337,7 +352,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                         {
                             // Keep this page open, but hide the palette.
                             WeakReferenceMessenger.Default.Send<DismissMessage>();
-
                             break;
                         }
 
@@ -476,8 +490,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 var topLevelCommand = tlcManager.LookupCommand(commandId);
                 if (topLevelCommand != null)
                 {
-                    var command = topLevelCommand.Command;
-                    var isPage = command is TopLevelCommandWrapper wrapper && wrapper.Command is not IInvokableCommand;
+                    var command = topLevelCommand.CommandViewModel.Model.Unsafe;
+                    var isPage = command is not IInvokableCommand;
 
                     // If the bound command is an invokable command, then
                     // we don't want to open the window at all - we want to

@@ -50,6 +50,23 @@ public partial class SettingsModel : ObservableObject
         FilePath = SettingsJsonPath();
     }
 
+    public ProviderSettings GetProviderSettings(CommandProviderWrapper provider)
+    {
+        ProviderSettings? settings;
+        if (!ProviderSettings.TryGetValue(provider.ProviderId, out settings))
+        {
+            settings = new ProviderSettings(provider);
+            settings.Connect(provider);
+            ProviderSettings[provider.ProviderId] = settings;
+        }
+        else
+        {
+            settings.Connect(provider);
+        }
+
+        return settings;
+    }
+
     public static SettingsModel LoadSettings()
     {
         if (string.IsNullOrEmpty(FilePath))

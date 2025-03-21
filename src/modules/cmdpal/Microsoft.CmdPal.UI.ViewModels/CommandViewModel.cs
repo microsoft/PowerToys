@@ -49,6 +49,7 @@ public partial class CommandViewModel : ExtensionObjectViewModel
             return;
         }
 
+        Id = model.Id ?? string.Empty;
         Name = model.Name ?? string.Empty;
         IsFastInitialized = true;
     }

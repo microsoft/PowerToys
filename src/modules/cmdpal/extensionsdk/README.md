@@ -7,10 +7,7 @@ Palette, and use the "Create a new extension" command. That will set up a
 project for you, with the packaging, dependencies, and basic program structure
 ready to go.
 
-To view the full docs, you can head over to [our docs site](TODO! docs link here when we have it)
-
-You can also add extensions to your existing packages. For detailed docs on how,
-refer to [this docs page](TODO! add docs link)
+To view the full docs, you can head over to [our docs site](https://go.microsoft.com/fwlink/?linkid=2310639)
 
 There are samples of just about everything you can do in [the samples project].
 Head over there to see basic usage of the APIs.
