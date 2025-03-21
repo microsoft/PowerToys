@@ -91,7 +91,7 @@ namespace LoggerHelpers
         currentFolder.append(get_product_version());
 
         auto logsPath = currentFolder;
-        logsPath.append(L"log.txt");
+        logsPath.append(L"log.log");
         Logger::init(loggerName, logsPath.wstring(), PTSettingsHelper::get_log_settings_file_location());
 
         delete_other_versions_log_folders(rootFolder.wstring(), currentFolder); 
