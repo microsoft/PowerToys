@@ -14,8 +14,8 @@
     * create a virtual desktop and apply the custom grid layout
     * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
  * install the new version (it will uninstall the old version and install the new version)
- - [ ] verify the settings are preserved and FancyZones configuration is still the same
- - [ ] test installing as SYSTEM (LocalSystem account)
+ - [x] verify the settings are preserved and FancyZones configuration is still the same
+ - [x] test installing as SYSTEM (LocalSystem account)
    * Download PsTools from https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
    * Run PowerToys installer with psexec tool `psexec.exe -sid <path_to_installer_exe`
    * Brief check if all modules are working
@@ -26,33 +26,13 @@
    * Remove PowerToys and install per-user version. Ensure that it is installed in <APPDATA>/Local/PowerToys and that registry entries are under **HKCU**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
    * Create a new user and install per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
 
-## Functional tests
-
- Regressions:
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [ ] https://github.com/microsoft/PowerToys/issues/1524
-
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] System tray menu items
- - [ ] Settings
- - [ ] OOBE (What's new)
- - [ ] Keyboard Manager Editor
- - [ ] Color Picker (check the tooltips)
- - [ ] FancyZones Editor
- - [ ] Power Rename (new WinUI 3 may not be localized)
- - [ ] PowerToys Run ("Start typing" string is localized, for example)
- - [ ] Image Resizer
- - [ ] Shortcut Guide (Windows controls are localized)
- - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
- - [ ] Hosts File Editor
- - [ ] File Locksmith
- - [ ] Registry Preview
- - [ ] Environment Variables
-
-
-### Appearance
-- [ ] Change colors, opacity and `Show zone number` options. Verify they're applied.
+ - [x] Settings
+ - [x] OOBE (What's new)
+ - [x] Power Rename (new WinUI 3 may not be localized)
+ - [x] PowerToys Run ("Start typing" string is localized, for example)
+ - [!] Command Palette
 
 ## PowerRename
 - [x] Check if disable and enable of the module works. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
@@ -113,26 +93,26 @@
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [x] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled.
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is not enabled.
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is enabled.
-   - [ ] Open settings and verify the module is enabled and you can't disable it.
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is enabled.
+   - [x] Open settings and verify the module is enabled and you can't disable it.
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [x] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (No context menu entry)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module is not enabled. (No context menu entry)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
 ## Command Not Found
@@ -149,51 +129,51 @@
    - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
    - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
  * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [ ] Run `winget configure .\disableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are disabled.
-   - [ ] Run `winget configure .\enableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are enabled.
-   - [ ] Run `winget configure .\configureLauncherPlugins.dsc.yaml`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
-   - [ ] Run `winget configure .\configuration.dsc.yaml`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+   - [!] Run `winget configure .\disableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are disabled.
+   - [!] Run `winget configure .\enableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are enabled.
+   - [x] Run `winget configure .\configureLauncherPlugins.dsc.yaml`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
+   - [x] Run `winget configure .\configuration.dsc.yaml`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
+   - [x] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [x] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
 
 ## Command Palette
  * Check if Command Palette successfully install/uninstall with PowerToys.
-   - [ ] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
-   - [ ] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+   - [x] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
+   - [!] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
  * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
-   - [ ] when PowerToys is running unelevated on start-up
-   - [ ] when PowerToys is running as admin on start-up
-   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+   - [x] when PowerToys is running unelevated on start-up
+   - [x] when PowerToys is running as admin on start-up
+   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
-   - [ ] Installed Apps - launch a Win32 application
-   - [ ] Installed Apps - launch a Win32 application as admin
-   - [ ] Installed Apps - launch a packaged application
-   - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] File Search - open a file on the disk.
-   - [ ] File Search - find a file and copy file path.
-   - [ ] File Search - find a file and open containing folder.
-   - [ ] Run Commands - execute a command. (e.g. `ping google.com`).
-   - [ ] Windows Walker - Switch to another opening window.
-   - [ ] Windows Walker - Switch to another opening window when powertoys run as admin.
-   - [ ] WinGet - Search and install application through WinGet. (eg. `vscode`)
-   - [ ] Web Search - Search anything by this extension.
-   - [ ] Windows Terminal Profiles - Open profile.
-   - [ ] Windows Terminal Profiles - Open profile as Admin.
-   - [ ] Windows Settings - Open settings from extension.
-   - [ ] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
-   - [ ] Registry - navigate through the registry tree and copy key path.
-   - [ ] Windows Service - start, stop, restart windows service.
-   - [ ] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
-   - [ ] Windows System Command - test `lock`.
-   - [ ] Windows System Command - test `empty recycle bin`.
-   - [ ] Windows System Command - test `shutdown`.
-   - [ ] Windows System Command - Click your network adapter item and paste the result at notepad.
-   - [ ] Bookmarks - Add bookmarks to command palette.
-   - [ ] Bookmarks - Open your bookmarks (in Command Palette).
- - [ ] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
- - [ ] Test tab navigation.
+   - [x] Installed Apps - launch a Win32 application
+   - [x] Installed Apps - launch a Win32 application as admin
+   - [x] Installed Apps - launch a packaged application
+   - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [x] File Search - open a file on the disk.
+   - [!] File Search - find a file and copy file path.
+   - [x] File Search - find a file and open containing folder.
+   - [x] Run Commands - execute a command. (e.g. `ping google.com`).
+   - [x] Windows Walker - Switch to another opening window.
+   - [x] Windows Walker - Switch to another opening window when powertoys run as admin.
+   - [!] WinGet - Search and install application through WinGet. (eg. `vscode`)
+   - [x] Web Search - Search anything by this extension.
+   - [x] Windows Terminal Profiles - Open profile.
+   - [x] Windows Terminal Profiles - Open profile as Admin.
+   - [x] Windows Settings - Open settings from extension.
+   - [x] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [x] Registry - navigate through the registry tree and copy key path.
+   - [!] Windows Service - start, stop, restart windows service.
+   - [x] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
+   - [x] Windows System Command - test `lock`.
+   - [x] Windows System Command - test `empty recycle bin`.
+   - [x] Windows System Command - test `shutdown`.
+   - [x] Windows System Command - Click your network adapter item and paste the result at notepad.
+   - [x] Bookmarks - Add bookmarks to command palette.
+   - [x] Bookmarks - Open your bookmarks (in Command Palette).
+ - [x] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
+ - [x] Test tab navigation.
  * Test Extensions Manager
-   - [ ] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
-   - [ ] Change `Global hot key` and verify changes are picked up by Command Palette
-   - [ ] Change `Alias` and verify changes picked up by Command Palette
+   - [x] Enable/disable extensions and verify changes are picked up by Command Palette
+   - [x] Change `Global hot key` and verify changes are picked up by Command Palette
+   - [x] Change `Alias` and verify changes picked up by Command Palette
    - [ ] Disable all extensions and verify the warning message is shown (Currently not support).
