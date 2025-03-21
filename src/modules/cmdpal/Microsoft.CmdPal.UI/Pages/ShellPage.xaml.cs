@@ -35,6 +35,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ClearSearchMessage>,
     IRecipient<HandleCommandResultMessage>,
     IRecipient<LaunchUriMessage>,
+    IRecipient<SettingsWindowClosedMessage>,
     INotifyPropertyChanged
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -50,6 +51,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private readonly Lock _invokeLock = new();
     private Task? _handleInvokeTask;
+    private SettingsWindow? _settingsWindow;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
@@ -65,6 +67,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
         WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<HotkeySummonMessage>(this);
+        WeakReferenceMessenger.Default.Register<SettingsWindowClosedMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ShowDetailsMessage>(this);
         WeakReferenceMessenger.Default.Register<HideDetailsMessage>(this);
@@ -396,8 +399,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // Also hide our details pane about here, if we had one
             HideDetails();
 
-            var settingsWindow = new SettingsWindow();
-            settingsWindow.Activate();
+            if (_settingsWindow == null)
+            {
+                _settingsWindow = new SettingsWindow();
+            }
+
+            _settingsWindow.Activate();
 
             WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
         });
@@ -457,6 +464,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         _ = DispatcherQueue.TryEnqueue(() => SummonOnUiThread(message));
     }
+
+    public void Receive(SettingsWindowClosedMessage message) => _settingsWindow = null;
 
     private void SummonOnUiThread(HotkeySummonMessage message)
     {
