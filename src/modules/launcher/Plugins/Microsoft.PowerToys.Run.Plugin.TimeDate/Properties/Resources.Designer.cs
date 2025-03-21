@@ -169,7 +169,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Valid prefixes: &apos;u&apos; for Unix Timestamp, &apos;ums&apos; for Unix Timestamp in milliseconds, &apos;ft&apos; for Windows file time.
+        ///   Looks up a localized string similar to Valid prefixes: &apos;u&apos; for Unix Timestamp, &apos;ums&apos; for Unix Timestamp in milliseconds, &apos;ft&apos; for Windows file time, &apos;oa&apos; for OLE Automation date, &apos;exc&apos; for Excel&apos;s 1900 date value, &apos;exf&apos; for Excel&apos;s 1904 date value.
         /// </summary>
         internal static string Microsoft_plugin_timedate_ErrorResultSubTitle {
             get {
@@ -201,6 +201,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_Hour {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_Hour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid custom format:.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_InvalidCustomFormat {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidCustomFormat", resourceCulture);
             }
         }
         
@@ -367,6 +376,42 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Date and time; Time and Date; Custom format.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SearchTagCustom {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagCustom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current date and time; Current time and date; Now; Custom format.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SearchTagCustomNow {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagCustomNow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date and time UTC; Time UTC and Date; Custom UTC format.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SearchTagCustomUtc {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagCustomUtc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current date and time UTC; Current time UTC and date; Now UTC; Custom UTC format.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_SearchTagCustomUtcNow {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagCustomUtcNow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Date.
         /// </summary>
         internal static string Microsoft_plugin_timedate_SearchTagDate {
@@ -444,6 +489,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_Second {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_Second", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom formats.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Setting_CustomFormats {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Setting_CustomFormats", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use date and time string format syntax and {0} (Day of Week), {1} (Week of Month), {2} (Week of the year), {3} (Era abbreviation), {4} (Windows File Time), {5} (Unix Time), {6} (Unix Time in milliseconds), {7} (OLE Automation date), {8} (Excel&apos;s 1900 based date value), {9} (Excel&apos;s 1904 based date value). If the format starts with {10}, then Universal Time (UTC) is used. (Use a backslash to escape format sequences and the backslash character as text.).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Setting_CustomFormatsDescription {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Setting_CustomFormatsDescription", resourceCulture);
             }
         }
         
