@@ -103,7 +103,6 @@
     </Page.Resources>
 
     <Grid>
-
         <controls:SwitchPresenter
             HorizontalAlignment="Stretch"
             TargetType="x:Boolean"
@@ -111,6 +110,7 @@
             <controls:Case Value="False">
                 <ListView
                     x:Name="ItemsList"
+                    Padding="0,2,0,0"
                     DoubleTapped="ItemsList_DoubleTapped"
                     IsDoubleTapEnabled="True"
                     IsItemClickEnabled="True"

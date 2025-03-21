@@ -300,11 +300,34 @@
                 <ScrollViewer
                     x:Name="DetailsContent"
                     Grid.Column="1"
+                    Margin="4"
                     HorizontalAlignment="Stretch"
+                    ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                    BorderThickness="1,0,0,0"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
                     Visibility="Collapsed">
+                    <animations:Implicit.ShowAnimations>
+                        <animations:OpacityAnimation
+                            From="0"
+                            To="1.0"
+                            Duration="0:0:0.270" />
+                        <animations:ScaleAnimation
+                            From="0.95"
+                            To="1"
+                            Duration="0:0:0.280" />
+                    </animations:Implicit.ShowAnimations>
+                    <animations:Implicit.HideAnimations>
+                        <animations:OpacityAnimation
+                            From="1.0"
+                            To="0"
+                            Duration="0:0:0.180" />
+                        <animations:ScaleAnimation
+                            From="1"
+                            To="0.95"
+                            Duration="0:0:0.280" />
+                    </animations:Implicit.HideAnimations>
                     <Grid Margin="12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />

@@ -63,6 +63,28 @@
                         Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
                 </Grid>
             </DataTemplate>
+
+
+            <animations:ImplicitAnimationSet x:Name="ShowAnimations">
+                <animations:OpacityAnimation
+                    From="0"
+                    To="1.0"
+                    Duration="0:0:0.340" />
+                <animations:ScaleAnimation
+                    From="0.85"
+                    To="1"
+                    Duration="0:0:0.350" />
+            </animations:ImplicitAnimationSet>
+            <animations:ImplicitAnimationSet x:Name="HideAnimations">
+                <animations:OpacityAnimation
+                    From="1.0"
+                    To="0"
+                    Duration="0:0:0.240" />
+                <animations:ScaleAnimation
+                    From="1"
+                    To="0.85"
+                    Duration="0:0:0.350" />
+            </animations:ImplicitAnimationSet>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -112,6 +134,8 @@
         </Grid>
         <Button
             x:Name="SettingsIconButton"
+            animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
+            animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
             ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
             AutomationProperties.Name="Open Command Palette settings"
             Style="{StaticResource SubtleButtonStyle}"
@@ -120,7 +144,6 @@
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <FontIcon
-                    HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     FontSize="16"
                     Glyph="&#xE713;" />
@@ -129,42 +152,25 @@
                     Style="{StaticResource CaptionTextBlockStyle}"
                     Text="Settings" />
             </StackPanel>
-            <animations:Implicit.ShowAnimations>
-                <animations:OpacityAnimation
-                    From="0"
-                    To="1.0"
-                    Duration="0:0:0.340" />
-                <animations:ScaleAnimation
-                    From="0.5"
-                    To="1"
-                    Duration="0:0:0.350" />
-            </animations:Implicit.ShowAnimations>
-            <animations:Implicit.HideAnimations>
-                <animations:OpacityAnimation
-                    From="1.0"
-                    To="0"
-                    Duration="0:0:0.240" />
-                <animations:ScaleAnimation
-                    From="1"
-                    To="0.5"
-                    Duration="0:0:0.350" />
-            </animations:Implicit.HideAnimations>
         </Button>
 
         <StackPanel
             Grid.Column="1"
+            Padding="0,0,4,0"
             HorizontalAlignment="Right"
             Orientation="Horizontal"
             Spacing="4">
             <Button
                 x:Name="PrimaryButton"
                 Padding="6,4,4,4"
+                animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
+                animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
+                ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                 Background="Transparent"
                 Style="{StaticResource SubtleButtonStyle}"
                 Tapped="PrimaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.HasPrimaryCommand, Mode=OneWay}">
-
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
                         VerticalAlignment="Center"
@@ -188,11 +194,13 @@
             <Button
                 x:Name="SecondaryButton"
                 Padding="6,4,4,4"
+                animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
+                animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
+                ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                 Style="{StaticResource SubtleButtonStyle}"
                 Tapped="SecondaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
-
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
                         VerticalAlignment="Center"
@@ -232,6 +240,9 @@
             <Button
                 x:Name="MoreCommandsButton"
                 Padding="4"
+                animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
+                animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
+                ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                 Content="{ui:FontIcon Glyph=&#xE712;,
                                       FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}"
