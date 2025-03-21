@@ -23,4 +23,4 @@ Start-Process -Wait -FilePath "$($ENV:Temp)\wix314.exe" -ArgumentList "/install 
 
 # Extract WiX binaries and copy wix.targets to the installed dir
 Expand-Archive -Path "$($ENV:Temp)\wix314-binaries.zip" -Force -DestinationPath "$($ENV:Temp)"
-Copy-Item -Path "$($ENV:Temp)\wix.targets" -Destination "C:\Program Files (x86)\WiX Toolset vnext\"
+Copy-Item -Path "$($ENV:Temp)\wix.targets" -Destination "C:\Program Files (x86)\WiX Toolset v3.14\"
