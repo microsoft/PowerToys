@@ -2082,4 +2082,7 @@
   <data name="OpenSettings" xml:space="preserve">
     <value>Open Settings</value>
   </data>
+  <data name="WindowsSettingsProvider_DisplayName" xml:space="preserve">
+    <value>Windows Settings</value>
+  </data>
 </root>

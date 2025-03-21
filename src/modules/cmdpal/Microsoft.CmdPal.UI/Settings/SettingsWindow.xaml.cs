@@ -105,6 +105,11 @@ public sealed partial class SettingsWindow : Window,
         WeakReferenceMessenger.Default.Send<WindowActivatedEventArgs>(args);
     }
 
+    private void Window_Closed(object sender, WindowEventArgs args)
+    {
+        WeakReferenceMessenger.Default.Send<SettingsWindowClosedMessage>();
+    }
+
     public void Receive(QuitMessage message)
     {
         // This might come in on a background thread
