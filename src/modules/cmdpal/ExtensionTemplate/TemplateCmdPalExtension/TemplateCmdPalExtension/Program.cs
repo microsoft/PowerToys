@@ -24,7 +24,7 @@ public class Program
             // This makes sure that only one instance of SampleExtension is alive, which is returned every time the host asks for the IExtension object.
             // If you want to instantiate a new instance each time the host asks, create the new instance inside the delegate.
             TemplateCmdPalExtension extensionInstance = new(extensionDisposedEvent);
-            server.RegisterClass<DocsSample, IExtension>(() => extensionInstance);
+            server.RegisterClass<TemplateCmdPalExtension, IExtension>(() => extensionInstance);
             server.Start();
             
             // This will make the main thread wait until the event is signalled by the extension class.
