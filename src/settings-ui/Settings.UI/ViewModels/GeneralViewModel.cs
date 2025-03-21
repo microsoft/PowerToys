@@ -9,14 +9,21 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
+using System.Windows;
+using CommunityToolkit.Common;
+using CommunityToolkit.Mvvm.Input;
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -25,11 +32,18 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.Win32;
+using Windows.Globalization;
+using Windows.System.Profile;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class GeneralViewModel : Observable
     {
+        private static readonly object LockObject = new object();
+        private static bool isBugReportThreadRunning;
+
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private UpdatingSettings UpdatingSettingsConfig { get; set; }
@@ -64,6 +78,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string RunningAsAdminDefaultText { get; set; }
 
+        public AsyncRelayCommand InitializeReportBugLinkCommand { get; }
+
         private string _settingsConfigFileFolder = string.Empty;
 
         private IFileSystemWatcher _fileWatcher;
@@ -81,6 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SelectSettingBackupDirEventHandler = new ButtonClickCommand(SelectSettingBackupDir);
             RestoreConfigsEventHandler = new ButtonClickCommand(RestoreConfigsClick);
             RefreshBackupStatusEventHandler = new ButtonClickCommand(RefreshBackupStatusEventHandlerClick);
+            InitializeReportBugLinkCommand = new AsyncRelayCommand(InitializeReportBugLinkAsync);
             HideBackupAndRestoreMessageAreaAction = hideBackupAndRestoreMessageAreaAction;
             DoBackupAndRestoreDryRun = doBackupAndRestoreDryRun;
             PickSingleFolderDialog = pickSingleFolderDialog;
@@ -256,7 +273,318 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _initLanguagesIndex;
         private bool _languageChanged;
 
+        private string reportBugLink = "https://aka.ms/powerToysReportBug";
+
+        public enum InstallScope
+        {
+            PerMachine = 0,
+            PerUser,
+        }
+
+        private const string InstallScopeRegKey = @"Software\Classes\powertoys\";
+
         // Gets or sets a value indicating whether run powertoys on start-up.
+        public string ReportBugLink
+        {
+            get => reportBugLink;
+            set
+            {
+                reportBugLink = value;
+                OnPropertyChanged(nameof(ReportBugLink));
+            }
+        }
+
+        public async Task InitializeReportBugLinkAsync()
+        {
+            string gitHubURL = string.Empty;
+            var version = HttpUtility.UrlEncode(Helper.GetProductVersion().TrimStart('v'));
+
+            var otherSoftwareText = "OS Build Version: " + GetOSVersion() + "\n.NET Version: " + GetDotNetVersion() + "\n\n";
+            var additionalInfo = HttpUtility.UrlEncode(otherSoftwareText);
+            var isElevatedRun = IsElevated ? "Running as admin: Yes" : "Running as admin: No";
+            var windowsSettings = ReportWindowsSettings();
+
+            var current_install_scope = GetCurrentInstallScope();
+
+            var installScope = current_install_scope == InstallScope.PerUser ? "Installation : User" : "Installation : System";
+
+            additionalInfo += windowsSettings + "%0a" + installScope + "%0a" + isElevatedRun;
+
+            var loadingMessage = new LoadingMessage();
+            loadingMessage.XamlRoot = App.GetSettingsWindow().Content.XamlRoot;
+
+            var cts = new CancellationTokenSource();
+
+            try
+            {
+                var showDialogTask = loadingMessage.ShowAsync().AsTask();
+                var bugReportTask = Task.Run(() => LaunchBugReport(cts.Token), cts.Token);
+
+                // Wait for either the dialog to be closed or the bug report to be generated
+                var completedTask = await Task.WhenAny(showDialogTask, bugReportTask);
+
+                if (completedTask == showDialogTask && showDialogTask.GetResultOrDefault() == ContentDialogResult.Primary)
+                {
+                    Logger.LogInfo("Bug report generation has been cancelled.");
+
+                    // Cancel the bug report task if the dialog was closed with Cancel
+                    await cts.CancelAsync();
+                }
+                else if (completedTask == bugReportTask)
+                {
+                    loadingMessage.Hide();
+
+                    // Bug report task completed
+                    string reportResult = await bugReportTask;
+
+                    if (string.IsNullOrEmpty(reportResult))
+                    {
+                        Logger.LogError("Failed to generate bug report. reportResult is empty.");
+                    }
+                    else
+                    {
+                        Logger.LogInfo("Bug report successfully generated.");
+                        gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?assignees=&labels=Issue-Bug%2CNeeds-Triage&template=bug_report.yml" +
+                        "&version=" + version +
+                        "&additionalInfo=" + additionalInfo;
+                    }
+
+                    var dialog = new ContentDialog
+                    {
+                        Title = string.IsNullOrEmpty(reportResult) ? string.Empty : reportResult,
+                        Content = string.IsNullOrEmpty(reportResult) ? "Failed to generate bug report." : "Bug report generated on your desktop. Please attach the file to the GitHub issue.",
+                        CloseButtonText = "OK",
+                        XamlRoot = loadingMessage.XamlRoot,
+                    };
+
+                    await dialog.ShowAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to generate bug report. {ex.Message}");
+                await cts.CancelAsync();
+                loadingMessage.Hide();
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Error",
+                    Content = $"An error occurred: {ex.Message}",
+                    CloseButtonText = "OK",
+                    XamlRoot = loadingMessage.XamlRoot,
+                };
+                await errorDialog.ShowAsync();
+            }
+            finally
+            {
+                ReportBugLink = !string.IsNullOrEmpty(gitHubURL) ? gitHubURL : "https://aka.ms/powerToysReportBug";
+            }
+        }
+
+        // Updated LaunchBugReport method to support cancellation
+        public string LaunchBugReport(CancellationToken token)
+        {
+            string bugReportPath = GetModuleFolderPath() + "\\..\\Tools\\PowerToys.BugReportTool.exe";
+            string bugReportFileName = string.Empty;
+
+            lock (LockObject)
+            {
+                if (!isBugReportThreadRunning)
+                {
+                    isBugReportThreadRunning = true;
+                    Thread bugReportThread = new Thread(() =>
+                    {
+                        ProcessStartInfo startInfo = new ProcessStartInfo
+                        {
+                            FileName = bugReportPath,
+                            CreateNoWindow = true,
+                            UseShellExecute = false,
+                            WindowStyle = ProcessWindowStyle.Hidden,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                        };
+
+                        try
+                        {
+                            using (Process process = Process.Start(startInfo))
+                            {
+                                while (!process.HasExited)
+                                {
+                                    if (token.IsCancellationRequested)
+                                    {
+                                        process.Kill();
+                                        return;
+                                    }
+
+                                    Thread.Sleep(100);
+                                }
+                            }
+
+                            // Find the newest bug report file on the desktop
+                            bugReportFileName = FindNewestBugReportFile();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError($"Failed to start bug report tool: {ex.Message}");
+                            MessageBox.Show("Failed to start bug report tool: " + ex.Message, "Error");
+                        }
+                        finally
+                        {
+                            isBugReportThreadRunning = false;
+                        }
+                    });
+                    bugReportThread.IsBackground = true;
+                    bugReportThread.Start();
+                    bugReportThread.Join();
+                }
+            }
+
+            return bugReportFileName;
+        }
+
+        private static string GetModuleFolderPath()
+        {
+            // You would implement this method to get the path to your module folder in C#
+            return Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        }
+
+        private string FindNewestBugReportFile()
+        {
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            DirectoryInfo directoryInfo = new DirectoryInfo(desktopPath);
+
+            // Get all files starting with "PowerToysReport_"
+            FileInfo[] files = directoryInfo.GetFiles("PowerToysReport_*");
+
+            if (files.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            // Find the newest file
+            FileInfo newestFile = files.OrderByDescending(f => f.LastWriteTime).FirstOrDefault();
+            return newestFile?.Name;
+        }
+
+        public static string GetDotNetVersion()
+        {
+            var output = ExecuteCommand("dotnet --list-runtimes");
+            if (string.IsNullOrEmpty(output))
+            {
+                return "Unknown .NET Version";
+            }
+
+            var versions = output
+                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                .Select(line =>
+                {
+                    var versionString = line.Split(' ')[1];
+                    if (Version.TryParse(versionString, out var version))
+                    {
+                        return version;
+                    }
+
+                    return new Version(0, 0, 0);
+                })
+                .Where(version => version > new Version(0, 0, 0))
+                .ToList();
+
+            var latestVersion = versions.Max();
+            return $".NET {latestVersion}";
+        }
+
+        private static string ExecuteCommand(string command)
+        {
+            try
+            {
+                var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = $"/C {command}",
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    },
+                };
+
+                process.Start();
+                using var reader = process.StandardOutput;
+                return reader.ReadToEnd();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to execute command: {ex.Message}");
+                return $"Failed to execute command: {ex.Message}";
+            }
+        }
+
+        private string GetOSVersion()
+        {
+            var attrNames = new List<string> { "OSVersionFull" };
+            var attrData = AnalyticsInfo.GetSystemPropertiesAsync(attrNames).AsTask().GetAwaiter().GetResult();
+            var osVersion = string.Empty;
+            if (attrData.ContainsKey("OSVersionFull"))
+            {
+                osVersion = attrData["OSVersionFull"];
+                var versionParts = osVersion.Split('.');
+                if (versionParts.Length >= 3)
+                {
+                    osVersion = $"{versionParts[0]}.{versionParts[1]}.{versionParts[2]}";
+                }
+            }
+
+            return osVersion.ToString();
+        }
+
+        public static string ReportWindowsSettings()
+        {
+            string userLanguage;
+            string userLocale;
+            string result;
+
+            try
+            {
+                var languages = ApplicationLanguages.Languages;
+                userLanguage = new Language(languages[0]).DisplayName;
+
+                userLocale = CultureInfo.CurrentCulture.Name;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to get windows settings: {ex.Message}");
+                return "Failed to get windows settings\n";
+            }
+
+            result = "System Language: " + userLanguage + "%0a";
+            result += "User Locale: " + userLocale + "%0a";
+
+            return result;
+        }
+
+        public static InstallScope GetCurrentInstallScope()
+        {
+            // Check HKLM first
+            if (Registry.LocalMachine.OpenSubKey(InstallScopeRegKey) != null)
+            {
+                return InstallScope.PerMachine;
+            }
+
+            // If not found, check HKCU
+            var userKey = Registry.CurrentUser.OpenSubKey(InstallScopeRegKey);
+            if (userKey != null)
+            {
+                var installScope = userKey.GetValue("InstallScope") as string;
+                userKey.Close();
+                if (!string.IsNullOrEmpty(installScope) && installScope.Contains("perUser"))
+                {
+                    return InstallScope.PerUser;
+                }
+            }
+
+            return InstallScope.PerMachine; // Default if no specific registry key found
+        }
+
         public bool Startup
         {
             get

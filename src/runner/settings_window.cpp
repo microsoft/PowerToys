@@ -225,7 +225,7 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         }
         else if (name == L"bugreport")
         {
-            launch_bug_report();
+            InitializeReportBugLinkAsync();
         }
         else if (name == L"killrunner")
         {

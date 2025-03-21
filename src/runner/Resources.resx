@@ -134,4 +134,10 @@
   <data name="TRAY_ICON_ADMIN_TOOLTIP" xml:space="preserve">
     <value>Administrator</value>
   </data>
+  <data name="BUGREPORT_TITLE" xml:space="preserve">
+    <value>Bug Report</value>
+  </data>
+  <data name="BUGREPORT_TEXT" xml:space="preserve">
+    <value>Bug report is being generated</value>
+  </data>
 </root>
