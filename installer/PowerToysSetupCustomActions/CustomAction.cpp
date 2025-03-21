@@ -1104,7 +1104,7 @@ UINT __stdcall UnRegisterCmdPalPackageCA(MSIHANDLE hInstall)
     }
     catch (std::exception &e)
     {
-        std::string errorMessage{"Exception thrown while trying to unregister packages: "};
+        std::string errorMessage{"Exception thrown while trying to unregister the CmdPal package: "};
         errorMessage += e.what();
         Logger::error(errorMessage);
 
