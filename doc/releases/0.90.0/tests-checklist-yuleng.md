@@ -163,7 +163,7 @@
    - [x] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
    - [x] Registry - navigate through the registry tree and copy key path.
    - [!] Windows Service - start, stop, restart windows service.
-   - [!] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
+   - [x] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
    - [x] Windows System Command - test `lock`.
    - [x] Windows System Command - test `empty recycle bin`.
    - [x] Windows System Command - test `shutdown`.
@@ -173,7 +173,7 @@
  - [x] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
  - [x] Test tab navigation.
  * Test Extensions Manager
-   - [x] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
+   - [x] Enable/disable extensions and verify changes are picked up by Command Palette
    - [x] Change `Global hot key` and verify changes are picked up by Command Palette
    - [x] Change `Alias` and verify changes picked up by Command Palette
    - [ ] Disable all extensions and verify the warning message is shown (Currently not support).
