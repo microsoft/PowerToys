@@ -9,7 +9,6 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:HexBox">
-                    <!--  Added for PowerToys implementation: Grid.CornerRadius and Grid.Padding  -->
                     <Grid
                         Margin="{TemplateBinding Margin}"
                         Padding="4"
