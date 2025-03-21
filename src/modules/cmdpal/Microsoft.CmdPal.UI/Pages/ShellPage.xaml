@@ -42,6 +42,7 @@
                 <cpcontrols:Tag
                     HorizontalAlignment="Left"
                     BackgroundColor="{x:Bind Background, Mode=OneWay}"
+                    FontSize="12"
                     ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
                     Icon="{x:Bind Icon, Mode=OneWay}"
                     Text="{x:Bind Text, Mode=OneWay}"
@@ -100,9 +101,9 @@
                                     x:Name="TagsWrapPanel"
                                     MinWidth="0"
                                     Padding="0"
-                                    HorizontalSpacing="8"
+                                    HorizontalSpacing="4"
                                     Orientation="Horizontal"
-                                    VerticalSpacing="8" />
+                                    VerticalSpacing="4" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
@@ -369,7 +370,7 @@
                             ItemTemplate="{StaticResource DetailsDataTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.Details.Metadata, Mode=OneWay}">
                             <ItemsRepeater.Layout>
-                                <StackLayout Spacing="8" />
+                                <StackLayout Spacing="12" />
                             </ItemsRepeater.Layout>
                         </ItemsRepeater>
                     </Grid>
