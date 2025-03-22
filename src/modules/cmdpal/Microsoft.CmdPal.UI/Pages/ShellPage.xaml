@@ -314,9 +314,9 @@
                             From="0"
                             To="1.0"
                             Duration="0:0:0.270" />
-                        <animations:ScaleAnimation
-                            From="0.95"
-                            To="1"
+                        <animations:TranslationAnimation
+                            From="24,0,0"
+                            To="0,0,0"
                             Duration="0:0:0.280" />
                     </animations:Implicit.ShowAnimations>
                     <animations:Implicit.HideAnimations>
@@ -324,10 +324,10 @@
                             From="1.0"
                             To="0"
                             Duration="0:0:0.180" />
-                        <animations:ScaleAnimation
-                            From="1"
-                            To="0.95"
-                            Duration="0:0:0.280" />
+                        <animations:TranslationAnimation
+                            From="0,0,0"
+                            To="24,0,0"
+                            Duration="0:0:0.220" />
                     </animations:Implicit.HideAnimations>
                     <Grid Margin="12">
                         <Grid.RowDefinitions>
