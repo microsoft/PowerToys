@@ -358,8 +358,20 @@ namespace RegistryPreviewUILib
             });
         }
 
-        // Command to show data preview
-        public async void ButtonEnhancePreview_Click(object sender, RoutedEventArgs e)
+        // Commands to show data preview
+        public void ButtonExtendedPreview_Click(object sender, RoutedEventArgs e)
+        {
+            var data = ((Button)sender).DataContext as RegistryValue;
+            InvokeExtendedDataPreview(data);
+        }
+
+        public void MenuExtendedPreview_Click(object sender, RoutedEventArgs e)
+        {
+            var data = ((MenuFlyoutItem)sender).DataContext as RegistryValue;
+            InvokeExtendedDataPreview(data);
+        }
+
+        private async void InvokeExtendedDataPreview(RegistryValue valueData)
         {
             // Only one content dialog can be opene at the same time and multiple instances of data preview can crash the app.
             if (_dialogSemaphore.CurrentCount == 0)
@@ -373,8 +385,7 @@ namespace RegistryPreviewUILib
                 _dialogSemaphore.Wait();
                 ChangeCursor(gridPreview, true);
 
-                RegistryValue data = ((Button)sender).DataContext as RegistryValue;
-                await ShowExtendedDataPreview(data.Name, data.Type, data.Value);
+                await ShowExtendedDataPreview(valueData.Name, valueData.Type, valueData.Value);
             }
             catch
             {

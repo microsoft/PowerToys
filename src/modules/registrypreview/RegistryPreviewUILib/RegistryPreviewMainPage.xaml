@@ -176,7 +176,7 @@
                             Spacing="8">
                             <StackPanel.ContextFlyout>
                                 <MenuFlyout>
-                                    <MenuFlyoutItem x:Uid="ContextMenu_CopyName" Command="{Binding Content.CopyToClipboardName_Click}" />
+                                    <MenuFlyoutItem x:Uid="ContextMenu_CopyKeyName" Command="{Binding Content.CopyToClipboardName_Click}" />
                                     <MenuFlyoutItem x:Uid="ContextMenu_CopyKeyPath" Command="{Binding Content.CopyToClipboardKeyPath_Click}" />
                                 </MenuFlyout>
                             </StackPanel.ContextFlyout>
@@ -223,10 +223,18 @@
                                     Spacing="8">
                                     <StackPanel.ContextFlyout>
                                         <MenuFlyout>
-                                            <MenuFlyoutItem x:Uid="ContextMenu_CopyName" Command="{Binding CopyToClipboardName_Click}" />
-                                            <MenuFlyoutSeparator />
+                                            <MenuFlyoutItem
+                                                x:Uid="ContextMenu_CopyName"
+                                                Command="{Binding CopyToClipboardName_Click}"
+                                                Icon="Copy" />
                                             <MenuFlyoutItem x:Uid="ContextMenu_CopyValue" Command="{Binding CopyToClipboardEntry_Click}" />
                                             <MenuFlyoutItem x:Uid="ContextMenu_CopyValueWithPath" Command="{Binding CopyToClipboardWithPath_Click}" />
+                                            <MenuFlyoutSeparator />
+                                            <MenuFlyoutItem
+                                                x:Uid="ContextMenu_DataPreview"
+                                                Click="MenuExtendedPreview_Click"
+                                                Icon="Zoom"
+                                                IsEnabled="{Binding ShowPreviewButton}" />
                                         </MenuFlyout>
                                     </StackPanel.ContextFlyout>
                                     <Image
@@ -253,10 +261,18 @@
                                 <Setter Property="ContextFlyout">
                                     <Setter.Value>
                                         <MenuFlyout>
-                                            <MenuFlyoutItem x:Uid="ContextMenu_CopyType" Command="{Binding CopyToClipboardType_Click}" />
-                                            <MenuFlyoutSeparator />
+                                            <MenuFlyoutItem
+                                                x:Uid="ContextMenu_CopyType"
+                                                Command="{Binding CopyToClipboardType_Click}"
+                                                Icon="Copy" />
                                             <MenuFlyoutItem x:Uid="ContextMenu_CopyValue" Command="{Binding CopyToClipboardEntry_Click}" />
                                             <MenuFlyoutItem x:Uid="ContextMenu_CopyValueWithPath" Command="{Binding CopyToClipboardWithPath_Click}" />
+                                            <MenuFlyoutSeparator />
+                                            <MenuFlyoutItem
+                                                x:Uid="ContextMenu_DataPreview"
+                                                Click="MenuExtendedPreview_Click"
+                                                Icon="Zoom"
+                                                IsEnabled="{Binding ShowPreviewButton}" />
                                         </MenuFlyout>
                                     </Setter.Value>
                                 </Setter>
@@ -276,16 +292,24 @@
                                     Spacing="6">
                                     <StackPanel.ContextFlyout>
                                         <MenuFlyout>
-                                            <MenuFlyoutItem x:Uid="ContextMenu_CopyData" Command="{Binding CopyToClipboardData_Click}" />
-                                            <MenuFlyoutSeparator />
+                                            <MenuFlyoutItem
+                                                x:Uid="ContextMenu_CopyData"
+                                                Command="{Binding CopyToClipboardData_Click}"
+                                                Icon="Copy" />
                                             <MenuFlyoutItem x:Uid="ContextMenu_CopyValue" Command="{Binding CopyToClipboardEntry_Click}" />
                                             <MenuFlyoutItem x:Uid="ContextMenu_CopyValueWithPath" Command="{Binding CopyToClipboardWithPath_Click}" />
+                                            <MenuFlyoutSeparator />
+                                            <MenuFlyoutItem
+                                                x:Uid="ContextMenu_DataPreview"
+                                                Click="MenuExtendedPreview_Click"
+                                                Icon="Zoom"
+                                                IsEnabled="{Binding ShowPreviewButton}" />
                                         </MenuFlyout>
                                     </StackPanel.ContextFlyout>
                                     <Button
                                         x:Uid="ShowDataPreviewButton"
                                         Padding="2"
-                                        Click="ButtonEnhancePreview_Click"
+                                        Click="ButtonExtendedPreview_Click"
                                         Content="&#xe71e;"
                                         FontFamily="{StaticResource SymbolThemeFontFamily}"
                                         Visibility="{Binding ShowPreviewButton, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />

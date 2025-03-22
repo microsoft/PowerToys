@@ -114,6 +114,7 @@ namespace RegistryPreviewUILib
             }
 
             // Show dialog and wait.
+            ChangeCursor(gridPreview, false);
             _ = await contentDialog.ShowAsync();
         }
 

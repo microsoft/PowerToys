@@ -277,16 +277,20 @@
     <value>Copy path</value>
     <comment>Like "Copy item"</comment>
   </data>
-  <data name="ContextMenu_CopyName.Text" xml:space="preserve">
+  <data name="ContextMenu_CopyKeyName.Text" xml:space="preserve">
     <value>Copy name</value>
     <comment>Like "Copy item"</comment>
   </data>
+  <data name="ContextMenu_CopyName.Text" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Like "Copy item"</comment>
+  </data>
   <data name="ContextMenu_CopyType.Text" xml:space="preserve">
-    <value>Copy type</value>
+    <value>Copy</value>
     <comment>Like "Copy item"</comment>
   </data>
   <data name="ContextMenu_CopyData.Text" xml:space="preserve">
-    <value>Copy data</value>
+    <value>Copy</value>
     <comment>Like "Copy item"</comment>
   </data>
   <data name="ContextMenu_CopyValue.Text" xml:space="preserve">
@@ -352,5 +356,8 @@
   </data>
   <data name="HexBox_SelectAllCommand.Text" xml:space="preserve">
     <value>Select all</value>
+  </data>
+  <data name="ContextMenu_DataPreview.Text" xml:space="preserve">
+    <value>Extended data preview</value>
   </data>
 </root>
