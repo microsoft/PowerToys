@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-
+using System.Threading;
 using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -359,10 +359,32 @@ namespace RegistryPreviewUILib
         }
 
         // Command to show data preview
-        public void ButtonEnhancePreview_Click(object sender, RoutedEventArgs e)
+        public async void ButtonEnhancePreview_Click(object sender, RoutedEventArgs e)
         {
-            RegistryValue data = ((Button)sender).DataContext as RegistryValue;
-            ShowExtendedDataPreview(data.Name, data.Type, data.Value);
+            // Only one content dialog can be opene at the same time and multiple instances of data preview can crash the app.
+            if (_dialogSemaphore.CurrentCount == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                // Lock ui and request dialog lock
+                _dialogSemaphore.Wait();
+                ChangeCursor(gridPreview, true);
+
+                RegistryValue data = ((Button)sender).DataContext as RegistryValue;
+                await ShowExtendedDataPreview(data.Name, data.Type, data.Value);
+            }
+            catch
+            {
+            }
+            finally
+            {
+                // Unblock ui and release dialog lock
+                ChangeCursor(gridPreview, false);
+                _dialogSemaphore.Release();
+            }
         }
     }
 }

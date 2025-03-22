@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -18,7 +19,7 @@ namespace RegistryPreviewUILib
     {
         private static bool _isDataPreviewHexBoxLoaded;
 
-        internal void ShowExtendedDataPreview(string name, string type, string value)
+        internal async Task ShowExtendedDataPreview(string name, string type, string value)
         {
             // Create dialog
             _isDataPreviewHexBoxLoaded = false;
@@ -112,7 +113,8 @@ namespace RegistryPreviewUILib
                 contentDialog.XamlRoot = this.Content.XamlRoot;
             }
 
-            _ = contentDialog.ShowAsync();
+            // Show dialog and wait.
+            _ = await contentDialog.ShowAsync();
         }
 
         private static void AddHexView(ref StackPanel panel, ref ResourceLoader resourceLoader, string value)
