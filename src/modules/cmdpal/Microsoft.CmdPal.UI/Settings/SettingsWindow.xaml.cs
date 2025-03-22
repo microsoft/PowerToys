@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Windowing;
@@ -24,7 +25,7 @@ public sealed partial class SettingsWindow : Window,
     {
         this.InitializeComponent();
         this.ExtendsContentIntoTitleBar = true;
-        this.AppWindow.SetIcon("ms-appx:///Assets/Icons/StoreLogo.png");
+        this.SetIcon();
         this.AppWindow.Title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         PositionCentered();
