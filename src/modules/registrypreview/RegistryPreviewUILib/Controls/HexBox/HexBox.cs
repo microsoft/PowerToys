@@ -6,7 +6,7 @@
 //     2020-... created by Filip Jeremic (fjeremic) as "HexView.Wpf".
 //     2024-... republished by @hotkidfamily as "HexBox.WinUI".
 //     2025 Included in PowerToys.
-//     2025 Modified line 877-879 to fix a color bug.
+//     2025 Modified line 877-879 to fix a color bug.; Added support for opening context menu by key press
 // </history>
 #pragma warning disable SA1210 // Using directives should be ordered alphabetically by namespace
 #pragma warning disable SA1208 // System using directives should be placed before other using directives
@@ -1360,6 +1360,24 @@ namespace RegistryPreviewUILib.HexBox
             {
                 switch (e.Key)
                 {
+                    case VirtualKey.Application:
+                    {
+                        ShowContextMenu();
+                        e.Handled = true;
+                        break;
+                    }
+
+                    case VirtualKey.F10:
+                    {
+                        if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
+                        {
+                            ShowContextMenu();
+                        }
+
+                        e.Handled = true;
+                        break;
+                    }
+
                     case VirtualKey.A:
                     {
                         if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
@@ -2825,6 +2843,37 @@ namespace RegistryPreviewUILib.HexBox
             long maxBytesDisplayed = _BytesPerRow * MaxVisibleRows;
 
             return Offset <= offset && Offset + maxBytesDisplayed >= offset;
+        }
+
+        /// <summary>
+        /// Show the context menu programatical.
+        /// Invoked if Application key or SCHIFT+F10 is pressed.
+        /// </summary>
+        private void ShowContextMenu()
+        {
+            // Get position for context menu
+            var lastVisibleOffset = Offset + (_BytesPerRow * MaxVisibleRows);
+            var offset = Math.Min(Math.Max(SelectionStart, SelectionEnd), lastVisibleOffset);
+            Point point;
+            if (ShowData && IsSelectionActive)
+            {
+                point = ConvertOffsetToPosition(offset, SelectionArea.Data);
+            }
+            else if (ShowText && IsSelectionActive)
+            {
+                point = ConvertOffsetToPosition(offset, SelectionArea.Text);
+            }
+            else
+            {
+                // Data area and text area hidden. => Show nothing.
+                return;
+            }
+
+            // Scroll to position and show menu
+            _Canvas.ContextFlyout.ShowAt(_Canvas, new FlyoutShowOptions
+            {
+                Position = point,
+            });
         }
 
         /// <summary>
