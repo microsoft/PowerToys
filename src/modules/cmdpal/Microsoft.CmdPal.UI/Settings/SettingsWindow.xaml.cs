@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Windowing;
@@ -24,7 +25,7 @@ public sealed partial class SettingsWindow : Window,
     {
         this.InitializeComponent();
         this.ExtendsContentIntoTitleBar = true;
-        this.AppWindow.SetIcon("ms-appx:///Assets/Icons/StoreLogo.png");
+        this.SetIcon();
         this.AppWindow.Title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         PositionCentered();
@@ -108,6 +109,27 @@ public sealed partial class SettingsWindow : Window,
     private void Window_Closed(object sender, WindowEventArgs args)
     {
         WeakReferenceMessenger.Default.Send<SettingsWindowClosedMessage>();
+    }
+
+    private void PaneToggleBtn_Click(object sender, RoutedEventArgs e)
+    {
+        NavView.IsPaneOpen = !NavView.IsPaneOpen;
+    }
+
+    private void NavView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
+    {
+        if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
+        {
+            PaneToggleBtn.Visibility = Visibility.Visible;
+            NavView.IsPaneToggleButtonVisible = false;
+            AppTitleBar.Margin = new Thickness(48, 0, 0, 0);
+        }
+        else
+        {
+            PaneToggleBtn.Visibility = Visibility.Collapsed;
+            NavView.IsPaneToggleButtonVisible = true;
+            AppTitleBar.Margin = new Thickness(16, 0, 0, 0);
+        }
     }
 
     public void Receive(QuitMessage message)

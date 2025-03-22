@@ -4,19 +4,16 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.UI.Composition;
-using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
-using Windows.UI;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
-using WinRT;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
@@ -37,7 +34,7 @@ public sealed partial class ToastWindow : Window,
         AppWindow.IsShownInSwitchers = false;
         ExtendsContentIntoTitleBar = true;
         AppWindow.SetPresenter(AppWindowPresenterKind.CompactOverlay);
-        AppWindow.SetIcon("ms-appx:///Assets/Icons/StoreLogo.png");
+        this.SetIcon();
         AppWindow.Title = RS_.GetString("ToastWindowTitle");
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
 

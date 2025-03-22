@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Events;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
@@ -71,6 +72,7 @@ public sealed partial class MainWindow : Window,
         // notification area icon back
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
+        this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
         AppWindow.Resize(new SizeInt32 { Width = 1000, Height = 620 });
         PositionCentered();
