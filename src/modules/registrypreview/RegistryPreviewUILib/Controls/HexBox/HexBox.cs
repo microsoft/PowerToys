@@ -2851,29 +2851,31 @@ namespace RegistryPreviewUILib.HexBox
         /// </summary>
         private void ShowContextMenu()
         {
-            // Get position for context menu
+            // Get offset for context menu
             var lastVisibleOffset = Offset + (_BytesPerRow * MaxVisibleRows);
-            var offset = Math.Min(Math.Max(SelectionStart, SelectionEnd), lastVisibleOffset);
-            Point point;
-            if (ShowData && IsSelectionActive)
+            var offset = Math.Max(Math.Max(SelectionStart, SelectionEnd), Offset);
+            var palcementOffset = Math.Min(offset, lastVisibleOffset);
+
+            // Show menu
+            if (ShowData)
             {
-                point = ConvertOffsetToPosition(offset, SelectionArea.Data);
+                _Canvas.ContextFlyout.ShowAt(_Canvas, new FlyoutShowOptions
+                {
+                    Position = ConvertOffsetToPosition(palcementOffset, SelectionArea.Data),
+                });
             }
-            else if (ShowText && IsSelectionActive)
+            else if (ShowText)
             {
-                point = ConvertOffsetToPosition(offset, SelectionArea.Text);
+                _Canvas.ContextFlyout.ShowAt(_Canvas, new FlyoutShowOptions
+                {
+                    Position = ConvertOffsetToPosition(palcementOffset, SelectionArea.Data),
+                });
             }
             else
             {
                 // Data area and text area hidden. => Show nothing.
                 return;
             }
-
-            // Scroll to position and show menu
-            _Canvas.ContextFlyout.ShowAt(_Canvas, new FlyoutShowOptions
-            {
-                Position = point,
-            });
         }
 
         /// <summary>
