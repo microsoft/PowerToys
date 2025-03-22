@@ -373,7 +373,7 @@ namespace RegistryPreviewUILib
 
         private async void InvokeExtendedDataPreview(RegistryValue valueData)
         {
-            // Only one content dialog can be opene at the same time and multiple instances of data preview can crash the app.
+            // Only one content dialog can be open at the same time and multiple instances of data preview can crash the app.
             if (_dialogSemaphore.CurrentCount == 0)
             {
                 return;
