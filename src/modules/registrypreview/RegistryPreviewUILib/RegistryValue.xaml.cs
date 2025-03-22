@@ -6,7 +6,6 @@ using System;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace RegistryPreviewUILib
 {
@@ -28,6 +27,8 @@ namespace RegistryPreviewUILib
         public string Type { get; set; }
 
         public string Value { get; set; }
+
+        public bool IsEmptyBinary { private get; set; }
 
         public string ValueOneLine => Value.Replace('\r', ' ');
 
@@ -53,6 +54,10 @@ namespace RegistryPreviewUILib
                 return uriBinaryValue;
             }
         }
+
+        public bool ShowPreviewButton =>
+            Type != "ERROR" && Type != string.Empty &&
+            Value != string.Empty && IsEmptyBinary != true;
 
         public RegistryValue(string name, string type, string value, string key)
         {
