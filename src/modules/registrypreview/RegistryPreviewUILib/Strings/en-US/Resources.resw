@@ -298,10 +298,10 @@
     <comment>Like "Copy item"</comment>
   </data>
   <data name="ShowDataPreviewButton.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Show enhanced preview</value>
+    <value>Show extended preview</value>
   </data>
   <data name="ShowDataPreviewButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Show enhanced preview</value>
+    <value>Show extended preview</value>
   </data>
   <data name="DataPreviewTitle" xml:space="preserve">
     <value>View data</value>

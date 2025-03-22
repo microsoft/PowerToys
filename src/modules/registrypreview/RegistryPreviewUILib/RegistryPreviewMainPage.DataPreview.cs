@@ -18,7 +18,7 @@ namespace RegistryPreviewUILib
     {
         private static bool _isDataPreviewHexBoxLoaded;
 
-        internal void ShowEnhancedDataPreview(string name, string type, string value)
+        internal void ShowExtendedDataPreview(string name, string type, string value)
         {
             // Create dialog
             _isDataPreviewHexBoxLoaded = false;
@@ -35,7 +35,7 @@ namespace RegistryPreviewUILib
                 DefaultButton = ContentDialogButton.Primary,
                 Padding = new Thickness(0),
             };
-            contentDialog.Opened += EnhancedDataPreview_Opened;
+            contentDialog.Opened += ExtendedDataPreview_Opened;
 
             // Add content based on value type
             switch (type)
@@ -319,7 +319,7 @@ namespace RegistryPreviewUILib
         /// <summary>
         /// Make sure that for REG_Binary preview the HexBox control is focused after opening.
         /// </summary>
-        private static void EnhancedDataPreview_Opened(ContentDialog sender, ContentDialogOpenedEventArgs e)
+        private static void ExtendedDataPreview_Opened(ContentDialog sender, ContentDialogOpenedEventArgs e)
         {
             // If <_isDataPreviewHexBoxLoaded == true> then we have the right content on the dialog.
             if (_isDataPreviewHexBoxLoaded)
