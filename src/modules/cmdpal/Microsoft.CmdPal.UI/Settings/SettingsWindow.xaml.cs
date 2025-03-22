@@ -110,6 +110,27 @@ public sealed partial class SettingsWindow : Window,
         WeakReferenceMessenger.Default.Send<SettingsWindowClosedMessage>();
     }
 
+    private void PaneToggleBtn_Click(object sender, RoutedEventArgs e)
+    {
+        NavView.IsPaneOpen = !NavView.IsPaneOpen;
+    }
+
+    private void NavView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
+    {
+        if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
+        {
+            PaneToggleBtn.Visibility = Visibility.Visible;
+            NavView.IsPaneToggleButtonVisible = false;
+            AppTitleBar.Margin = new Thickness(48, 0, 0, 0);
+        }
+        else
+        {
+            PaneToggleBtn.Visibility = Visibility.Collapsed;
+            NavView.IsPaneToggleButtonVisible = true;
+            AppTitleBar.Margin = new Thickness(16, 0, 0, 0);
+        }
+    }
+
     public void Receive(QuitMessage message)
     {
         // This might come in on a background thread
