@@ -3,6 +3,7 @@
     x:Class="Microsoft.CmdPal.UI.Controls.CommandBar"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
@@ -62,6 +63,27 @@
                         Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
                 </Grid>
             </DataTemplate>
+
+            <animations:ImplicitAnimationSet x:Name="ShowAnimations">
+                <animations:OpacityAnimation
+                    From="0"
+                    To="1.0"
+                    Duration="0:0:0.340" />
+                <animations:ScaleAnimation
+                    From="0.85"
+                    To="1"
+                    Duration="0:0:0.350" />
+            </animations:ImplicitAnimationSet>
+            <animations:ImplicitAnimationSet x:Name="HideAnimations">
+                <animations:OpacityAnimation
+                    From="1.0"
+                    To="0"
+                    Duration="0:0:0.240" />
+                <animations:ScaleAnimation
+                    From="1"
+                    To="0.85"
+                    Duration="0:0:0.350" />
+            </animations:ImplicitAnimationSet>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -80,15 +102,6 @@
             Margin="8,0,0,0"
             Tapped="PageIcon_Tapped"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}">
-
-            <cpcontrols:IconBox
-                x:Name="IconBorder"
-                Width="16"
-                Height="16"
-                x:Load="{x:Bind IsLoaded, Mode=OneWay}"
-                CornerRadius="{StaticResource ControlCornerRadius}"
-                SourceKey="{x:Bind CurrentPageViewModel.Icon, Mode=OneWay}"
-                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
             <InfoBadge Visibility="{x:Bind CurrentPageViewModel.HasStatusMessage, Mode=OneWay}" Value="{x:Bind CurrentPageViewModel.StatusMessages.Count, Mode=OneWay}" />
             <Grid.ContextFlyout>
                 <Flyout x:Name="StatusMessagesFlyout" Placement="TopEdgeAlignedLeft">
@@ -121,14 +134,15 @@
         </Grid>
         <Button
             x:Name="SettingsIconButton"
-            Margin="0,0,0,0"
+            x:Uid="SettingsButton"
+            animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
+            animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
+            ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
             Style="{StaticResource SubtleButtonStyle}"
             Tapped="SettingsIcon_Tapped"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
-
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <FontIcon
-                    HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     FontSize="16"
                     Glyph="&#xE713;" />
@@ -138,28 +152,29 @@
                     Text="Settings" />
             </StackPanel>
         </Button>
-
         <TextBlock
             Grid.Column="1"
             VerticalAlignment="Center"
-            FontSize="12"
+            Style="{StaticResource CaptionTextBlockStyle}"
             Text="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}" />
-
         <StackPanel
             Grid.Column="2"
+            Padding="0,0,4,0"
             HorizontalAlignment="Right"
             Orientation="Horizontal"
             Spacing="4">
             <Button
                 x:Name="PrimaryButton"
                 Padding="6,4,4,4"
+                animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
+                animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
+                ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                 Background="Transparent"
                 Style="{StaticResource SubtleButtonStyle}"
                 Tapped="PrimaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.HasPrimaryCommand, Mode=OneWay}">
-
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
                         VerticalAlignment="Center"
@@ -183,11 +198,13 @@
             <Button
                 x:Name="SecondaryButton"
                 Padding="6,4,4,4"
+                animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
+                animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
+                ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
                 Style="{StaticResource SubtleButtonStyle}"
                 Tapped="SecondaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
-
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock
                         VerticalAlignment="Center"
@@ -226,7 +243,11 @@
             </Button>
             <Button
                 x:Name="MoreCommandsButton"
+                x:Uid="MoreCommandsButton"
                 Padding="4"
+                animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
+                animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
+                ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                 Content="{ui:FontIcon Glyph=&#xE712;,
                                       FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}"

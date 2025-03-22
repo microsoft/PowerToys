@@ -30,7 +30,7 @@
         <StackLayout
             x:Name="HorizontalStackLayout"
             Orientation="Horizontal"
-            Spacing="8" />
+            Spacing="4" />
 
         <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
             <ItemContainer>
@@ -89,6 +89,7 @@
                 <ItemsView
                     Grid.RowSpan="2"
                     Grid.Column="2"
+                    Margin="0,0,8,0"
                     VerticalAlignment="Center"
                     IsHitTestVisible="False"
                     IsItemInvokedEnabled="False"
@@ -103,7 +104,6 @@
     </Page.Resources>
 
     <Grid>
-
         <controls:SwitchPresenter
             HorizontalAlignment="Stretch"
             TargetType="x:Boolean"
@@ -111,6 +111,7 @@
             <controls:Case Value="False">
                 <ListView
                     x:Name="ItemsList"
+                    Padding="0,2,0,0"
                     DoubleTapped="ItemsList_DoubleTapped"
                     IsDoubleTapEnabled="True"
                     IsItemClickEnabled="True"
