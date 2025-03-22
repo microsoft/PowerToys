@@ -137,7 +137,7 @@ public partial class TopLevelCommandManager : ObservableObject,
                 var thisCommand = wrapper.ItemViewModel.Model.Unsafe;
                 if (thisCommand != null)
                 {
-                    var isTheSame = thisCommand == firstCommand;
+                    var isTheSame = wrapper == firstCommand;
                     if (isTheSame)
                     {
                         startIndex = i;
