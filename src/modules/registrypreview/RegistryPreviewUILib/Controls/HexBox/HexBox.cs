@@ -1356,18 +1356,18 @@ namespace RegistryPreviewUILib.HexBox
         {
             base.OnKeyDown(e);
 
-            if (Columns > 0 && MaxVisibleRows > 0)
+            // Context Menu
+            // (htcfreek:PowerToys implementation)
+            switch (e.Key)
             {
-                switch (e.Key)
-                {
-                    case VirtualKey.Application:
+                case VirtualKey.Application:
                     {
                         ShowContextMenu();
                         e.Handled = true;
-                        break;
+                        return;
                     }
 
-                    case VirtualKey.F10:
+                case VirtualKey.F10:
                     {
                         if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
                         {
@@ -1375,9 +1375,15 @@ namespace RegistryPreviewUILib.HexBox
                         }
 
                         e.Handled = true;
-                        break;
+                        return;
                     }
+            }
 
+            // Other keys
+            if (Columns > 0 && MaxVisibleRows > 0)
+            {
+                switch (e.Key)
+                {
                     case VirtualKey.A:
                     {
                         if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
@@ -2849,10 +2855,13 @@ namespace RegistryPreviewUILib.HexBox
         /// Show the context menu programatical.
         /// Invoked if Application key or SCHIFT+F10 is pressed.
         /// </summary>
+        /// <remarks>
+        /// (htcfreek:PowerToys implementation)
+        /// </remarks>
         private void ShowContextMenu()
         {
             // Get offset for context menu
-            var lastVisibleOffset = Offset + (_BytesPerRow * MaxVisibleRows);
+            var lastVisibleOffset = Offset + (_BytesPerRow * MaxVisibleRows) - 1;
             var offset = Math.Max(Math.Max(SelectionStart, SelectionEnd), Offset);
             var palcementOffset = Math.Min(offset, lastVisibleOffset);
 
@@ -2868,13 +2877,15 @@ namespace RegistryPreviewUILib.HexBox
             {
                 _Canvas.ContextFlyout.ShowAt(_Canvas, new FlyoutShowOptions
                 {
-                    Position = ConvertOffsetToPosition(palcementOffset, SelectionArea.Data),
+                    Position = ConvertOffsetToPosition(palcementOffset, SelectionArea.Text),
                 });
             }
             else
             {
-                // Data area and text area hidden. => Show nothing.
-                return;
+                _Canvas.ContextFlyout.ShowAt(_Canvas, new FlyoutShowOptions
+                {
+                    Position = new Point(0, 0),
+                });
             }
         }
 
