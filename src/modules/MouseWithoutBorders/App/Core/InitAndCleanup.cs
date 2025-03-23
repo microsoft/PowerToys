@@ -30,7 +30,7 @@ internal partial class InitAndCleanup
     internal static int PleaseReopenSocket;
     internal static bool ReopenSocketDueToReadError;
 
-    internal static DateTime LastResumeSuspendTime { get; set; } = DateTime.UtcNow;
+    private static DateTime LastResumeSuspendTime { get; set; } = DateTime.UtcNow;
 
     internal static bool InitDone
     {
@@ -64,7 +64,7 @@ internal partial class InitAndCleanup
         }
     }
 
-    internal static void SetupMachineNameAndID()
+    private static void SetupMachineNameAndID()
     {
         try
         {
