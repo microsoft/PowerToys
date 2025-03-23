@@ -8,7 +8,7 @@ namespace Microsoft.CmdPal.Ext.System.Helpers;
 
 public static partial class Icons
 {
-    public static IconInfo FirmwareSettingsIcon { get; } = new IconInfo("\uEBC4");
+    public static IconInfo FirmwareSettingsIcon { get; } = new IconInfo("\uE950");
 
     public static IconInfo LockIcon { get; } = new IconInfo("\uE72E");
 
