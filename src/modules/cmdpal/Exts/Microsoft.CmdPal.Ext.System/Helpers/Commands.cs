@@ -142,6 +142,7 @@ internal static class Commands
         }
 
         CompositeFormat sysIpv4DescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_ip4_description);
+        CompositeFormat sysIpv6DescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_ip6_description);
         CompositeFormat sysMacDescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_mac_description);
         var hideDisconnectedNetworkInfo = manager.HideDisconnectedNetworkInfo;
 
@@ -171,7 +172,7 @@ internal static class Commands
                 results.Add(new ListItem(new CopyTextCommand(intInfo.GetConnectionDetails()))
                 {
                     Title = intInfo.IPv6Primary,
-                    Subtitle = string.Format(CultureInfo.InvariantCulture, sysIpv4DescriptionCompositeFormate, intInfo.ConnectionName),
+                    Subtitle = string.Format(CultureInfo.InvariantCulture, sysIpv6DescriptionCompositeFormate, intInfo.ConnectionName),
                     Icon = Icons.NetworkAdapterIcon,
                     Details = new Details() { Title = Resources.Microsoft_plugin_ext_connection_details, Body = intInfo.GetConnectionDetails() },
                 });
@@ -184,7 +185,7 @@ internal static class Commands
                     Title = intInfo.PhysicalAddress,
                     Subtitle = string.Format(CultureInfo.InvariantCulture, sysMacDescriptionCompositeFormate, intInfo.Adapter, intInfo.ConnectionName),
                     Icon = Icons.NetworkAdapterIcon,
-                    Details = new Details() { Title = Resources.Microsoft_plugin_ext_connection_details, Body = intInfo.GetConnectionDetails() },
+                    Details = new Details() { Title = Resources.Microsoft_plugin_ext_connection_details, Body = intInfo.GetAdapterDetails() },
                 });
             }
         }
