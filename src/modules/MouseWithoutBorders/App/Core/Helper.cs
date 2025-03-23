@@ -317,7 +317,7 @@ internal static class Helper
                 Common.GetInputDesktop(),
                 0);
 
-            Common.HasSwitchedMachineSinceLastCopy = true;
+            Clipboard.HasSwitchedMachineSinceLastCopy = true;
 
             // Common.CreateLowIntegrityProcess("\"" + Path.GetDirectoryName(Application.ExecutablePath) + "\\MouseWithoutBordersHelper.exe\"", string.Empty, 0, false, 0);
             var processes = Process.GetProcessesByName(HelperProcessName);

@@ -29,6 +29,7 @@ using MouseWithoutBorders.Core;
 // </history>
 using MouseWithoutBorders.Exceptions;
 
+using Clipboard = MouseWithoutBorders.Core.Clipboard;
 using Thread = MouseWithoutBorders.Core.Thread;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.SocketStuff.#SendData(System.Byte[])", Justification = "Dotnet port with style preservation")]
@@ -1641,7 +1642,7 @@ namespace MouseWithoutBorders.Class
 
                 bool clientPushData = true;
                 ClipboardPostAction postAction = ClipboardPostAction.Other;
-                bool handShaken = Common.ShakeHand(ref remoteEndPoint, s, out Stream enStream, out Stream deStream, ref clientPushData, ref postAction);
+                bool handShaken = Clipboard.ShakeHand(ref remoteEndPoint, s, out Stream enStream, out Stream deStream, ref clientPushData, ref postAction);
 
                 if (!handShaken)
                 {
@@ -1656,7 +1657,7 @@ namespace MouseWithoutBorders.Class
 
                 if (clientPushData)
                 {
-                    Common.ReceiveAndProcessClipboardData(remoteEndPoint, s, enStream, deStream, $"{postAction}");
+                    Clipboard.ReceiveAndProcessClipboardData(remoteEndPoint, s, enStream, deStream, $"{postAction}");
                 }
                 else
                 {
@@ -1680,23 +1681,23 @@ namespace MouseWithoutBorders.Class
             const int CLOSE_TIMEOUT = 10;
             byte[] header = new byte[1024];
             string headerString = string.Empty;
-            if (Common.LastDragDropFile != null)
+            if (Clipboard.LastDragDropFile != null)
             {
                 string fileName = null;
 
                 if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                 {
-                    if (!File.Exists(Common.LastDragDropFile))
+                    if (!File.Exists(Clipboard.LastDragDropFile))
                     {
-                        headerString = Directory.Exists(Common.LastDragDropFile)
-                            ? $"{0}*{Common.LastDragDropFile} - Folder is not supported, zip it first!"
-                            : Common.LastDragDropFile.Contains("- File too big")
-                                ? $"{0}*{Common.LastDragDropFile}"
-                                : $"{0}*{Common.LastDragDropFile} not found!";
+                        headerString = Directory.Exists(Clipboard.LastDragDropFile)
+                            ? $"{0}*{Clipboard.LastDragDropFile} - Folder is not supported, zip it first!"
+                            : Clipboard.LastDragDropFile.Contains("- File too big")
+                                ? $"{0}*{Clipboard.LastDragDropFile}"
+                                : $"{0}*{Clipboard.LastDragDropFile} not found!";
                     }
                     else
                     {
-                        fileName = Common.LastDragDropFile;
+                        fileName = Clipboard.LastDragDropFile;
                         headerString = $"{new FileInfo(fileName).Length}*{fileName}";
                     }
                 }))
@@ -1739,11 +1740,11 @@ namespace MouseWithoutBorders.Class
                     Logger.Log(log);
                 }
             }
-            else if (!Common.IsClipboardDataImage && Common.LastClipboardData != null)
+            else if (!Clipboard.IsClipboardDataImage && Clipboard.LastClipboardData != null)
             {
                 try
                 {
-                    byte[] data = Common.LastClipboardData;
+                    byte[] data = Clipboard.LastClipboardData;
 
                     headerString = $"{data.Length}*{"text"}";
                     Common.GetBytesU(headerString).CopyTo(header, 0);
@@ -1773,9 +1774,9 @@ namespace MouseWithoutBorders.Class
                     Logger.Log(log);
                 }
             }
-            else if (Common.LastClipboardData != null && Common.LastClipboardData.Length > 0)
+            else if (Clipboard.LastClipboardData != null && Clipboard.LastClipboardData.Length > 0)
             {
-                byte[] data = Common.LastClipboardData;
+                byte[] data = Clipboard.LastClipboardData;
 
                 headerString = $"{data.Length}*{"image"}";
                 Common.GetBytesU(headerString).CopyTo(header, 0);

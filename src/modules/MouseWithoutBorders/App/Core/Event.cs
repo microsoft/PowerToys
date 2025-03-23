@@ -74,7 +74,7 @@ internal static class Event
 
                 if (!p.IsEmpty)
                 {
-                    Common.HasSwitchedMachineSinceLastCopy = true;
+                    Clipboard.HasSwitchedMachineSinceLastCopy = true;
 
                     Logger.LogDebug(string.Format(
                         CultureInfo.CurrentCulture,
@@ -213,10 +213,10 @@ internal static class Event
 
                 if (MachineStuff.desMachineID == Common.MachineID)
                 {
-                    if (Common.GetTick() - Common.clipboardCopiedTime < Common.BIG_CLIPBOARD_DATA_TIMEOUT)
+                    if (Common.GetTick() - Clipboard.clipboardCopiedTime < Clipboard.BIG_CLIPBOARD_DATA_TIMEOUT)
                     {
-                        Common.clipboardCopiedTime = 0;
-                        Common.GetRemoteClipboard("PrepareToSwitchToMachine");
+                        Clipboard.clipboardCopiedTime = 0;
+                        Clipboard.GetRemoteClipboard("PrepareToSwitchToMachine");
                     }
                 }
                 else

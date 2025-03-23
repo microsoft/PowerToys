@@ -32,6 +32,7 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Exceptions;
 
+using Clipboard = MouseWithoutBorders.Core.Clipboard;
 using Thread = MouseWithoutBorders.Core.Thread;
 
 // Log is enough
@@ -724,7 +725,7 @@ namespace MouseWithoutBorders
 
         internal static void SendImage(string machine, string file)
         {
-            LastDragDropFile = file;
+            Clipboard.LastDragDropFile = file;
 
             // Send ClipboardCapture
             if (machine.Equals("All", StringComparison.OrdinalIgnoreCase))
@@ -743,7 +744,7 @@ namespace MouseWithoutBorders
 
         internal static void SendImage(ID src, string file)
         {
-            LastDragDropFile = file;
+            Clipboard.LastDragDropFile = file;
 
             // Send ClipboardCapture
             SendPackage(src, PackageType.ClipboardCapture);
@@ -1290,7 +1291,7 @@ namespace MouseWithoutBorders
             });
         }
 
-        private static string GetMyStorageDir()
+        internal static string GetMyStorageDir()
         {
             string st = string.Empty;
 
