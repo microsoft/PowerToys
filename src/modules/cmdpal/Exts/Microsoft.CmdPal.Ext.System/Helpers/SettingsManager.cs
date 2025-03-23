@@ -35,7 +35,7 @@ public class SettingsManager : JsonSettingsManager
         Namespaced(nameof(HideDisconnectedNetworkInfo)),
         Resources.Microsoft_plugin_ext_settings_hideDisconnectedNetworkInfo,
         Resources.Microsoft_plugin_ext_settings_hideDisconnectedNetworkInfo,
-        true); // TODO -- double check default value
+        false);
 
     public bool ShowDialogToConfirmCommand => _showDialogToConfirmCommand.Value;
 
