@@ -33,11 +33,11 @@ internal static class Commands
     /// Returns a list with all system command results
     /// </summary>
     /// <param name="isUefi">Value indicating if the system is booted in uefi mode</param>
-    /// <param name="splitRecycleBinResults">Value indicating if we should show two results for Recycle Bin.</param>
+    /// <param name="hideEmptyRecycleBin">Value indicating if we should hide the Empty Recycle Bin command.</param>
     /// <param name="confirmCommands">A value indicating if the user should confirm the system commands</param>
     /// <param name="emptyRBSuccessMessage">Show a success message after empty Recycle Bin.</param>
     /// <returns>A list of all results</returns>
-    public static List<IListItem> GetSystemCommands(bool isUefi, bool splitRecycleBinResults, bool confirmCommands, bool emptyRBSuccessMessage)
+    public static List<IListItem> GetSystemCommands(bool isUefi, bool hideEmptyRecycleBin, bool confirmCommands, bool emptyRBSuccessMessage)
     {
         var results = new List<IListItem>();
         results.AddRange(new[]
@@ -81,7 +81,7 @@ internal static class Commands
         });
 
         // Show Recycle Bin results based on setting.
-        if (splitRecycleBinResults)
+        if (!hideEmptyRecycleBin)
         {
             results.AddRange(new[]
             {
@@ -204,12 +204,12 @@ internal static class Commands
 
         var isBootedInUefiMode = Win32Helpers.GetSystemFirmwareType() == FirmwareType.Uefi;
 
-        var separateEmptyRB = manager.ShowSeparateResultForEmptyRecycleBin;
+        var hideEmptyRB = manager.HideEmptyRecycleBin;
         var confirmSystemCommands = manager.ShowDialogToConfirmCommand;
         var showSuccessOnEmptyRB = manager.ShowSuccessMessageAfterEmptyingRecycleBin;
 
         // normal system commands are fast and can be returned immediately
-        var systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, separateEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
+        var systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, hideEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
         list.AddRange(systemCommands);
         list.AddRange(networkConnectionResults);
 

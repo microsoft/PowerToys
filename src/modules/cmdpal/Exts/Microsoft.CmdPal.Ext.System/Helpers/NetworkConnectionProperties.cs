@@ -162,8 +162,6 @@ internal sealed class NetworkConnectionProperties
     internal string GetAdapterDetails()
     {
         return $"**{Resources.Microsoft_plugin_sys_AdapterName}:** {Adapter}" +
-
-            // 🟢 = green circle.
             $"\n\n**{Resources.Microsoft_plugin_sys_State}:** " + (State == OperationalStatus.Up ? char.ConvertFromUtf32(128994) + " " + Resources.Microsoft_plugin_sys_Connected : ":red_circle: " + Resources.Microsoft_plugin_sys_Disconnected) +
             $"\n\n**{Resources.Microsoft_plugin_sys_PhysicalAddress}:** {PhysicalAddress}" +
             $"\n\n**{Resources.Microsoft_plugin_sys_Speed}:** {GetFormattedSpeedValue(Speed)}" +

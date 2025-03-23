@@ -25,11 +25,11 @@ public class SettingsManager : JsonSettingsManager
         Resources.Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage,
         false); // TODO -- double check default value
 
-    private readonly ToggleSetting _showSeparateResultForEmptyRecycleBin = new(
-        Namespaced(nameof(ShowSeparateResultForEmptyRecycleBin)),
-        Resources.Microsoft_plugin_sys_RecycleBin_ShowEmptySeparate,
-        Resources.Microsoft_plugin_sys_RecycleBin_ShowEmptySeparate,
-        true); // TODO -- double check default value
+    private readonly ToggleSetting _hideEmptyRecycleBin = new(
+        Namespaced(nameof(HideEmptyRecycleBin)),
+        Resources.Microsoft_plugin_sys_RecycleBin_HideEmpty,
+        Resources.Microsoft_plugin_sys_RecycleBin_HideEmpty,
+        false);
 
     private readonly ToggleSetting _hideDisconnectedNetworkInfo = new(
         Namespaced(nameof(HideDisconnectedNetworkInfo)),
@@ -41,7 +41,7 @@ public class SettingsManager : JsonSettingsManager
 
     public bool ShowSuccessMessageAfterEmptyingRecycleBin => _showSuccessMessageAfterEmptyingRecycleBin.Value;
 
-    public bool ShowSeparateResultForEmptyRecycleBin => _showSeparateResultForEmptyRecycleBin.Value;
+    public bool HideEmptyRecycleBin => _hideEmptyRecycleBin.Value;
 
     public bool HideDisconnectedNetworkInfo => _hideDisconnectedNetworkInfo.Value;
 
@@ -60,7 +60,7 @@ public class SettingsManager : JsonSettingsManager
 
         Settings.Add(_showDialogToConfirmCommand);
         Settings.Add(_showSuccessMessageAfterEmptyingRecycleBin);
-        Settings.Add(_showSeparateResultForEmptyRecycleBin);
+        Settings.Add(_hideEmptyRecycleBin);
         Settings.Add(_hideDisconnectedNetworkInfo);
 
         // Load settings from file upon initialization

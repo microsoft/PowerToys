@@ -529,6 +529,15 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Hide the Empty Recycle Bin command.
+        /// </summary>
+        public static string Microsoft_plugin_sys_RecycleBin_HideEmpty {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_HideEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Recycle Bin is empty..
         /// </summary>
         public static string Microsoft_plugin_sys_RecycleBin_IsEmpty {
@@ -543,15 +552,6 @@ namespace Microsoft.CmdPal.Ext.System {
         public static string Microsoft_plugin_sys_RecycleBin_searchTag {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_searchTag", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Show separate result for Empty Recycle Bin command.
-        /// </summary>
-        public static string Microsoft_plugin_sys_RecycleBin_ShowEmptySeparate {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_sys_RecycleBin_ShowEmptySeparate", resourceCulture);
             }
         }
         
