@@ -579,7 +579,7 @@ namespace MouseWithoutBorders.Class
             {
                 Common.ShowToolTip("Reconnecting...", 2000);
                 Common.LastReconnectByHotKeyTime = Common.GetTick();
-                Common.PleaseReopenSocket = Common.REOPEN_WHEN_HOTKEY;
+                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_HOTKEY;
                 return false;
             }
 
@@ -632,7 +632,7 @@ namespace MouseWithoutBorders.Class
                 {
                     // Common.DoSomethingInUIThread(delegate()
                     {
-                        Common.ReleaseAllKeys();
+                        InitAndCleanup.ReleaseAllKeys();
                     }
 
                     // );

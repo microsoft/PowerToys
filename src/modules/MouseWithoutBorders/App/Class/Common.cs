@@ -90,8 +90,8 @@ namespace MouseWithoutBorders
         private static FrmMatrix matrixForm;
         private static FrmInputCallback inputCallbackForm;
         private static FrmAbout aboutForm;
-        private static Thread helper;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static Thread helper;
         internal static int screenWidth;
         internal static int screenHeight;
 #pragma warning restore SA1307
@@ -121,7 +121,9 @@ namespace MouseWithoutBorders
         internal static int switchCount;
 #pragma warning restore SA1307
         private static long lastReconnectByHotKeyTime;
-        private static int tcpPort;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
+        internal static int tcpPort;
+#pragma warning restore SA1307
         private static bool secondOpenSocketTry;
         private static string binaryName;
 
@@ -210,7 +212,7 @@ namespace MouseWithoutBorders
 
         internal static bool Is64bitOS
         {
-            get; private set;
+            get; set;
 
             // set { Common.is64bitOS = value; }
         }
@@ -611,7 +613,7 @@ namespace MouseWithoutBorders
         }
          * */
 
-        private static void SendByeBye()
+        internal static void SendByeBye()
         {
             Logger.LogDebug($"{nameof(SendByeBye)}");
             SendPackage(ID.ALL, PackageType.ByeBye);

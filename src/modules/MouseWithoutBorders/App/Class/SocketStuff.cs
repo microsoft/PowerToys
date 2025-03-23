@@ -282,7 +282,7 @@ namespace MouseWithoutBorders.Class
              * */
 
             Common.GetMachineName(); // IPs might have been changed
-            Common.UpdateMachineTimeAndID();
+            InitAndCleanup.UpdateMachineTimeAndID();
 
             Logger.LogDebug("Creating sockets...");
 
@@ -309,7 +309,7 @@ namespace MouseWithoutBorders.Class
                             {
                                 Logger.TelemetryLogTrace("Restarting the service dues to WSAEADDRINUSE.", SeverityLevel.Warning);
                                 Program.StartService();
-                                Common.PleaseReopenSocket = Common.REOPEN_WHEN_WSAECONNRESET;
+                                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_WSAECONNRESET;
                             }
 
                             break;
@@ -1249,7 +1249,7 @@ namespace MouseWithoutBorders.Class
             // WSAECONNRESET
             if (e is ExpectedSocketException se && se.ShouldReconnect)
             {
-                Common.PleaseReopenSocket = Common.REOPEN_WHEN_WSAECONNRESET;
+                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_WSAECONNRESET;
                 Logger.Log($"MainTCPRoutine: {nameof(FlagReopenSocketIfNeeded)}");
             }
         }
@@ -1307,7 +1307,7 @@ namespace MouseWithoutBorders.Class
             }
             catch (ObjectDisposedException e)
             {
-                Common.PleaseReopenSocket = Common.REOPEN_WHEN_WSAECONNRESET;
+                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_WSAECONNRESET;
                 UpdateTcpSockets(currentTcp, SocketStatus.ForceClosed);
                 currentSocket.Close();
                 Logger.Log($"{nameof(MainTCPRoutine)}: The socket could have been closed/disposed by other threads: {e.Message}");
@@ -1354,10 +1354,10 @@ namespace MouseWithoutBorders.Class
                              * In this case, we should give ONE try to reconnect.
                              */
 
-                            if (Common.ReopenSocketDueToReadError)
+                            if (InitAndCleanup.ReopenSocketDueToReadError)
                             {
-                                Common.PleaseReopenSocket = Common.REOPEN_WHEN_WSAECONNRESET;
-                                Common.ReopenSocketDueToReadError = false;
+                                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_WSAECONNRESET;
+                                InitAndCleanup.ReopenSocketDueToReadError = false;
                             }
 
                             break;
@@ -1985,8 +1985,8 @@ namespace MouseWithoutBorders.Class
                             {
                                 tcp = null;
                                 Setting.Values.MachineId = Common.Ran.Next();
-                                Common.UpdateMachineTimeAndID();
-                                Common.PleaseReopenSocket = Common.REOPEN_WHEN_HOTKEY;
+                                InitAndCleanup.UpdateMachineTimeAndID();
+                                InitAndCleanup.PleaseReopenSocket = InitAndCleanup.REOPEN_WHEN_HOTKEY;
 
                                 Logger.TelemetryLogTrace("MachineID conflict.", SeverityLevel.Information);
                             }

@@ -112,7 +112,7 @@ namespace MouseWithoutBorders
             {
                 SocketStuff.InvalidKeyFound = false;
                 showInvalidKeyMessage = false;
-                Common.ReopenSocketDueToReadError = true;
+                InitAndCleanup.ReopenSocketDueToReadError = true;
                 Common.ReopenSockets(true);
 
                 for (int i = 0; i < 10; i++)

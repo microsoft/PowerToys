@@ -119,7 +119,7 @@ internal static class Helper
 
                 if (MachineStuff.NewDesMachineID == Common.MachineID)
                 {
-                    Common.ReleaseAllKeys();
+                    InitAndCleanup.ReleaseAllKeys();
                 }
             }
         }

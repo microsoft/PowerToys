@@ -384,7 +384,7 @@ internal static class Receiver
                 Clipboard.HasSwitchedMachineSinceLastCopy = true;
                 Common.HideMouseCursor(true);
                 Helper.MainFormDotEx(false);
-                Common.ReleaseAllKeys();
+                InitAndCleanup.ReleaseAllKeys();
                 break;
 
             default:
