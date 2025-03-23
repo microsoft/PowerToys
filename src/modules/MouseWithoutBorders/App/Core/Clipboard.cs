@@ -35,9 +35,9 @@ namespace MouseWithoutBorders.Core;
 
 internal static class Clipboard
 {
-    internal static readonly char[] Comma = new char[] { ',' };
-    internal static readonly char[] Star = new char[] { '*' };
-    internal static readonly char[] NullSeparator = new char[] { '\0' };
+    private static readonly char[] Comma = new char[] { ',' };
+    private static readonly char[] Star = new char[] { '*' };
+    private static readonly char[] NullSeparator = new char[] { '\0' };
 
     internal const uint BIG_CLIPBOARD_DATA_TIMEOUT = 30000;
     private const uint MAX_CLIPBOARD_DATA_SIZE_CAN_BE_SENT_INSTANTLY_TCP = 1024 * 1024; // 1MB
@@ -66,13 +66,13 @@ internal static class Clipboard
         set => Clipboard.lastMachineWithClipboardData = value;
     }
 
-    internal static long LastClipboardEventTime
+    private static long LastClipboardEventTime
     {
         get => Clipboard.lastClipboardEventTime;
         set => Clipboard.lastClipboardEventTime = value;
     }
 
-    internal static IntPtr NextClipboardViewer { get; set; }
+    private static IntPtr NextClipboardViewer { get; set; }
 
     internal static bool IsClipboardDataImage { get; private set; }
 
@@ -935,7 +935,7 @@ internal static class Clipboard
         }
     }
 
-    internal static void SetClipboardData(byte[] data)
+    private static void SetClipboardData(byte[] data)
     {
         if (data == null || data.Length <= 0)
         {
@@ -1030,7 +1030,7 @@ internal static class Clipboard
         }
     }
 
-    public static void SetFileDropList(StringCollection filePaths)
+    private static void SetFileDropList(StringCollection filePaths)
     {
         Common.DoSomethingInUIThread(() =>
         {
@@ -1067,7 +1067,7 @@ internal static class Clipboard
         });
     }
 
-    public static void SetImage(Image image)
+    private static void SetImage(Image image)
     {
         Common.DoSomethingInUIThread(() =>
         {
@@ -1098,7 +1098,7 @@ internal static class Clipboard
         });
     }
 
-    public static void SetText(string text)
+    internal static void SetText(string text)
     {
         Common.DoSomethingInUIThread(() =>
         {
@@ -1129,7 +1129,7 @@ internal static class Clipboard
         });
     }
 
-    public static void SetDataObject(DataObject dataObject)
+    private static void SetDataObject(DataObject dataObject)
     {
         Common.DoSomethingInUIThread(() =>
         {
