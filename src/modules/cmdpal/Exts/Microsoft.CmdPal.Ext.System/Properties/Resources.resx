@@ -151,6 +151,9 @@
   <data name="Microsoft_plugin_ext_connection_details" xml:space="preserve">
     <value>Connection Details</value>
   </data>
+  <data name="Microsoft_plugin_ext_adapter_details" xml:space="preserve">
+    <value>Adapter Details</value>
+  </data>
   <data name="Microsoft_plugin_ext_copy" xml:space="preserve">
     <value>Copy to clipboard</value>
   </data>

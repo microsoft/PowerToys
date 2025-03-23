@@ -185,7 +185,7 @@ internal static class Commands
                     Title = intInfo.PhysicalAddress,
                     Subtitle = string.Format(CultureInfo.InvariantCulture, sysMacDescriptionCompositeFormate, intInfo.Adapter, intInfo.ConnectionName),
                     Icon = Icons.NetworkAdapterIcon,
-                    Details = new Details() { Title = Resources.Microsoft_plugin_ext_connection_details, Body = intInfo.GetAdapterDetails() },
+                    Details = new Details() { Title = Resources.Microsoft_plugin_ext_adapter_details, Body = intInfo.GetAdapterDetails() },
                 });
             }
         }
