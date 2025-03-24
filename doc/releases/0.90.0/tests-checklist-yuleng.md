@@ -150,12 +150,12 @@
    - [x] Installed Apps - launch a packaged application
    - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
    - [x] File Search - open a file on the disk.
-   - [!] File Search - find a file and copy file path.
+   - [x] File Search - find a file and copy file path.
    - [x] File Search - find a file and open containing folder.
    - [x] Run Commands - execute a command. (e.g. `ping google.com`).
    - [x] Windows Walker - Switch to another opening window.
    - [x] Windows Walker - Switch to another opening window when powertoys run as admin.
-   - [!] WinGet - Search and install application through WinGet. (eg. `vscode`)
+   - [x] WinGet - Search and install application through WinGet. (eg. `vscode`)
    - [x] Web Search - Search anything by this extension.
    - [x] Windows Terminal Profiles - Open profile.
    - [x] Windows Terminal Profiles - Open profile as Admin.
@@ -177,3 +177,42 @@
    - [x] Change `Global hot key` and verify changes are picked up by Command Palette
    - [x] Change `Alias` and verify changes picked up by Command Palette
    - [ ] Disable all extensions and verify the warning message is shown (Currently not support).
+
+## Screen Ruler
+ * Enable Screen Ruler. Then:
+   - [x] Press the activation shortcut and verify the toolbar appears.
+   - [x] Press the activation shortcut again and verify the toolbar disappears.
+   - [x] Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
+   - [x] Enable Screen Ruler and press the activation shortcut and verify the toolbar appears.
+   - [x] Select the close button in the toolbar and verify it closes the utility.
+ * With Screen Ruler enabled and activated:
+   - [x] Use the Bounds utility to measure a zone by dragging with left-click. Verify right click dismisses the utility and that the measurement was copied into the clipboard.
+   - [x] Use the Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [x] Use the Horizontal Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [x] Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
+   - [x] While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
+   - [x] Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
+ * In a multi-monitor setup with different dpis on each monitor:
+   - [x] Verify that the utilities work well on each monitor, with continuous mode on and off.
+   - [x] Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
+   - [x] Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
+   
+ * Test the different settings and verify they are applied:
+   - [x] Activation shortcut
+   - [x] Continous mode
+   - [x] Per color channel edge detection
+   - [x] Pixel tolerance for edge detection
+   - [x] Draw feet on cross
+   - [x] Line color
+
+   ## Shortcut Guide
+ * Run PowerToys as user:
+   - [x] Verify `Win + Shift + /` opens the guide
+   - [x] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
+   - [x] Set Shortcut Guide to start with a Windows key press and verify it works.
+ * Restore the `Win + Shift + /` hotkey.
+   - [x] Open the guide and close it pressing `Esc`
+   - [x] Open the guide and close it pressing and releasing the `Win` key
+ * With PowerToys running as a user, open an elevated app and keep it on foreground:
+   - [x] Verify `Win + Shift + /` opens the guide
+   - [x] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
