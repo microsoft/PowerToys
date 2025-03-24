@@ -4732,6 +4732,15 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Windows Settings.
+        /// </summary>
+        internal static string WindowsSettingsProvider_DisplayName {
+            get {
+                return ResourceManager.GetString("WindowsSettingsProvider_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Windows Update.
         /// </summary>
         internal static string WindowsUpdate {

@@ -304,6 +304,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disabled.
+        /// </summary>
+        public static string builtin_disabled_extension {
+            get {
+                return ResourceManager.GetString("builtin_disabled_extension", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Built-in commands.
         /// </summary>
         public static string builtin_display_name {

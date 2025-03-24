@@ -48,8 +48,7 @@
                                         </cpcontrols:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>
 
-                                    <!--  In the near future: add a toggle to actually expose if a extension is enabled  -->
-                                    <!-- <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" /> -->
+                                    <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
 
                                 </controls:SettingsCard>
                             </DataTemplate>

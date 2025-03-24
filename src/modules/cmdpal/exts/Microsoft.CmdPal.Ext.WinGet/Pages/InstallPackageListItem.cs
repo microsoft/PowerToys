@@ -32,8 +32,11 @@ public partial class InstallPackageListItem : ListItem
         _package = package;
 
         PackageVersionInfo version = _package.DefaultInstallVersion;
-        string versionText = version.Version;
-        string versionTagText = versionText == "Unknown" && version.PackageCatalog.Info.Id == "StoreEdgeFD" ? "msstore" : versionText;
+        var versionTagText = "Unknown";
+        if (version != null)
+        {
+            versionTagText = version.Version == "Unknown" && version.PackageCatalog.Info.Id == "StoreEdgeFD" ? "msstore" : version.Version;
+        }
 
         Title = _package.Name;
         Subtitle = _package.Id;
@@ -49,8 +52,8 @@ public partial class InstallPackageListItem : ListItem
         CatalogPackageMetadata? metadata = version?.GetCatalogPackageMetadata();
         if (metadata != null)
         {
-            string description = string.IsNullOrEmpty(metadata.Description) ? metadata.ShortDescription : metadata.Description;
-            string detailsBody = $"""
+            var description = string.IsNullOrEmpty(metadata.Description) ? metadata.ShortDescription : metadata.Description;
+            var detailsBody = $"""
 
 {description}
 """;
@@ -102,8 +105,8 @@ public partial class InstallPackageListItem : ListItem
         UriCreationOptions options = default;
         foreach (KeyValuePair<string, (string, string)> kv in simpleData)
         {
-            string text = string.IsNullOrEmpty(kv.Value.Item1) ? kv.Value.Item2 : kv.Value.Item1;
-            string target = kv.Value.Item2;
+            var text = string.IsNullOrEmpty(kv.Value.Item1) ? kv.Value.Item2 : kv.Value.Item1;
+            var target = kv.Value.Item2;
             if (!string.IsNullOrEmpty(text))
             {
                 Uri? uri = null;
@@ -153,7 +156,7 @@ public partial class InstallPackageListItem : ListItem
             if (WinGetStatics.AppSearchCallback != null)
             {
                 Func<string, ICommandItem?> callback = WinGetStatics.AppSearchCallback;
-                ICommandItem? installedApp = callback(_package.DefaultInstallVersion.DisplayName);
+                ICommandItem? installedApp = callback(_package.DefaultInstallVersion == null ? _package.Name : _package.DefaultInstallVersion.DisplayName);
                 if (installedApp != null)
                 {
                     this.Command = installedApp.Command;

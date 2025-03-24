@@ -73,7 +73,6 @@ public partial class MainListPage : DynamicListPage,
             {
                 return _tlcManager
                     .TopLevelCommands
-                    .Select(tlc => tlc)
                     .Where(tlc => !string.IsNullOrEmpty(tlc.Title))
                     .ToArray();
             }
@@ -167,16 +166,17 @@ public partial class MainListPage : DynamicListPage,
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
 
         var extensionDisplayName = string.Empty;
-        if (topLevelOrAppItem is TopLevelCommandItemWrapper toplevel)
+        if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
-            isFallback = toplevel.IsFallback;
-            if (toplevel.Alias?.Alias is string alias)
+            isFallback = topLevel.IsFallback;
+            if (topLevel.HasAlias)
             {
+                var alias = topLevel.AliasText;
                 isAliasMatch = alias == query;
                 isAliasSubstringMatch = isAliasMatch || alias.StartsWith(query, StringComparison.CurrentCultureIgnoreCase);
             }
 
-            extensionDisplayName = toplevel.ExtensionHost?.Extension?.PackageDisplayName ?? string.Empty;
+            extensionDisplayName = topLevel.ExtensionHost?.Extension?.PackageDisplayName ?? string.Empty;
         }
 
         var nameMatch = StringMatcher.FuzzySearch(query, title);
@@ -221,9 +221,9 @@ public partial class MainListPage : DynamicListPage,
 
     private string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
     {
-        if (topLevelOrAppItem is TopLevelCommandItemWrapper toplevel)
+        if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
-            return toplevel.Id;
+            return topLevel.Id;
         }
         else
         {

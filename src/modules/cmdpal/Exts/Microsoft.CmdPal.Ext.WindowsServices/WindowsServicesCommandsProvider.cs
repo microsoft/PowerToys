@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Ext.WindowsServices.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -15,7 +16,7 @@ public partial class WindowsServicesCommandsProvider : CommandProvider
     public WindowsServicesCommandsProvider()
     {
         Id = "Windows.Services";
-        DisplayName = $"Windows Services";
+        DisplayName = Resources.WindowsServicesProvider_DisplayName;
         Icon = ServicesIcon;
     }
 
