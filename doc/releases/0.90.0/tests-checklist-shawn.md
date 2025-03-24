@@ -168,7 +168,7 @@
 ## Command Palette
  * Check if Command Palette successfully install/uninstall with PowerToys.
    - [x] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
-   - [x] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+   - [ ] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
  * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
    - [x] when PowerToys is running unelevated on start-up
    - [x] when PowerToys is running as admin on start-up
@@ -178,7 +178,7 @@
    - [x] Installed Apps - launch a Win32 application as admin
    - [x] Installed Apps - launch a packaged application
    - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [x] File Search - open a file on the disk.
+   - [] File Search - open a file on the disk.
    - [x] File Search - find a file and copy file path.
    - [x] File Search - find a file and open containing folder.
    - [x] Run Commands - execute a command. (e.g. `ping google.com`).
@@ -202,7 +202,121 @@
  - [x] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
  - [x] Test tab navigation.
  * Test Extensions Manager
-   - [x] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
+   - [ ] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
    - [x] Change `Global hot key` and verify changes are picked up by Command Palette
    - [x] Change `Alias` and verify changes picked up by Command Palette
-   - [x] Disable all extensions and verify the warning message is shown (Currently not support).
+   - [ ] Disable all extensions and verify the warning message is shown (Currently not support).
+
+## New+
+ * Enable New+ in Settings.
+   - [x] Verify NewPlus menu is in Explorer context menu. (Windows 11 tier 1 context menu only. May need Explorer restart.)
+ * Disable New+ in Settings.
+   - [x] Verify NewPlus menu is not in Explorer context menu.
+ * Choose a different path for template folder.
+   - [x] Verify the folder is created and empty.
+   - [x] Copy a file to the templates folder, verify it's added to the New+ context menu and that if you select it the file is created.
+   - [x] Copy a folder with files inside to the templates folder, verify it's added to the New+ context menu and that if you select it the folder and files inside are created.
+   - [x] Delete all files and folders from inside the templates folder. Verify that no templates are available in the context menu.
+   - [x] Disable and re-Enable New+ while the templates folder is still empty. Verify the default templates were copied over and are available in the context menu.
+ * Test some Settings:
+   - [x] Test the "Hide template filename extension" option in Settings.
+   - [x] Test the "Hide template filename starting digits, spaces and dots" option in Settings.
+
+## ZoomIt
+
+* Enable ZoomIt in Settings.
+  - [x] Verify ZoomIt tray icon appears in the tray icons, and that when you left-click or right-click, it just shows the 4 action entries: "Break Timer", "Draw", "Zoom" and "Record".
+  - [x] Turn the "Show tray icon" option off and verify the tray icon is gone.
+  - [x] Turn the "Show tray icon" option on and verify the tray icon is back.
+* Test the base modes through a shortcuts:
+  - [x] Press the Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse. You can exit Zoom by pressing Escape or the Hotkey again.
+  - [x] Press the Live Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse, while the screen still updates instead of showing a still image. You can exit Live Zoom by pressing the Hotkey again.
+  - [x] Press the Draw without Zoom Hotkey and verify you can draw. You can leave this mode by pressing the Escape.
+  - [x] Select a text file as the Input file for Demo Type, focus notepad and press the Demo Type hotkey. It should start typing the text file. You can exit Demo Type by pressing Escape.
+  - [x] Press the Start Break Timer Hotkey and verify it starts the Timer. You can exit by pressing Escape.
+  - [x] Press the Record Toggle Hotkey to start recording a screen. Press the Record Toggle Hotkey again to exit the mode and save the recording to a file.
+  - [x] Press the Snip Toggle Hotkey to take a snip of the screen. Paste it to Paint to verify a snip was taken.
+* Test some Settings to verify the types are being passed correctly to ZoomIt:
+  - [x] Change the "Animate zoom in and zoom out" setting and activate Zoom mode to verify it applies.
+  - [x] Change the "Specify the initial level of magnification when zooming in" and activate Zoom mode to verify it applies.
+  - [x] Change the Type Font to another font. Enter Break mode to quickly verify the font changed.
+  - [x] Change the Demo Type typing speed and verify the change applies.
+  - [x] Change the timer Opacity for Break mode and verify that the change applies.
+  - [x] Change the timer Position for Break mode and verify that the change applies.
+  - [x] Select a Background Image file as background for Break mode and verify that the change applies.
+  - [x] Turn on "Play Sound on Expiration", select a sound file, aset the timer to 1 minute, activate the Break Mode and verify the sound plays after 1 minute. (Alarm1.wav from "C:\Windows\Media" should be long enough to notice)
+  - [x] Open the Microphone combo box in the Record section and verify it lists your microphones.
+* Test the tray icon actions:
+  - [x] Verify pressing "Break Timer" enters Break mode.
+  - [x] Verify pressing "Draw" enters Draw mode.
+  - [x] Verify pressing "Zoom" enters Zoom mode.
+  - [x] Verify pressing "Record" enters Record mode.
+
+## Mouse Utils
+
+Find My Mouse:
+
+* Enable FindMyMouse. Then, without moving your mouse:
+  - [x] Press Left Ctrl twice and verify the overlay appears.
+  - [x] Press any other key and verify the overlay disappears.
+  - [x] Press Left Ctrl twice and verify the overlay appears.
+  - [x] Press a mouse button and verify the overlay disappears.
+* Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice.
+* Enable FindMyMouse. Then, without moving your mouse:
+  - [x] Press Left Ctrl twice and verify the overlay appears.
+* Enable the "Do not activate on game mode" option. Start playing a game that uses CG native full screen.
+  - [ ] Verify the overlay no longer appears when you press Left Ctrl twice.
+* Disable the "Do not activate on game mode" option. Start playing the same game.
+  - [ ] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
+* Test the different settings and verify they apply:
+  - [x] Overlay opacity
+  - [x] Background color
+  - [x] Spotlight color
+  - [x] Spotlight radius
+  - [x] Spotlight initial zoom (1x vs 9x will show the difference)
+  - [x] Animation duration
+  - [x] Change activation method to shake and activate by shaking your mouse pointer
+  - [x] Excluded apps
+
+Mouse Highlighter:
+
+* Enable Mouse Highlighter. Then:
+  - [x] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
+  - [x] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+  - [x] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+  - [x] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
+  - [x] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
+* Test the different settings and verify they apply:
+  - [x] Change activation shortcut and test it
+  - [x] Left button highlight color
+  - [x] Right button highlight color
+  - [x] Opacity
+  - [x] Radius
+  - [x] Fade delay
+  - [x] Fade duration
+
+Mouse Pointer Crosshairs:
+
+* Enable Mouse Pointer Crosshairs. Then:
+  - [x] Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
+  - [x] Press the activation shortcut again and verify the crosshairs disappear.
+  - [x] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
+* Test the different settings and verify they apply:
+  - [x] Change activation shortcut and test it
+  - [x] Crosshairs color
+  - [x] Crosshairs opacity
+  - [x] Crosshairs center radius
+  - [x] Crosshairs thickness
+  - [x] Crosshairs border color
+  - [x] Crosshairs border size
+
+Mouse Jump:
+
+* Enable Mouse Jump. Then:
+  - [x] Press the activation shortcut and verify the screens preview appears.
+  - [x] Change activation shortcut and verify that new shorctut triggers Mouse Jump.
+  - [x] Click around the screen preview and ensure that mouse cursor jumped to clicked location.
+  - [x] Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
+  - [x] Change scaling of screens and confirm that Mouse Jump still works correctly.
+  - [x] Unplug additional monitors and confirm that Mouse Jump still works correctly.
+  - [x] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
