@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Foundation.Metadata;
@@ -315,8 +316,12 @@ namespace RegistryPreviewUILib
         {
             var hexBox = (HB.HexBox)sender;
 
-            hexBox.BorderThickness = (Thickness)Application.Current.Resources["HexBox_ControlBorderThickness"];
-            hexBox.BorderBrush = (LinearGradientBrush)Application.Current.Resources["HexBox_ControlBorderBrush"];
+            // Workaround: Verify that the newly focused control isn't the context menu of the HexBox control
+            if (FocusManager.GetFocusedElement(hexBox.XamlRoot).GetType() != typeof(MenuFlyoutPresenter))
+            {
+                hexBox.BorderThickness = (Thickness)Application.Current.Resources["HexBox_ControlBorderThickness"];
+                hexBox.BorderBrush = (LinearGradientBrush)Application.Current.Resources["HexBox_ControlBorderBrush"];
+            }
         }
 
         /// <summary>
