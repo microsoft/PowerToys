@@ -133,16 +133,11 @@ public partial class TopLevelCommandManager : ObservableObject,
             var wrapper = clone[i];
             try
             {
-                // TODO! this can be safer, we're not directly exposing ICommandItem's out of CPW anymore
-                var thisCommand = wrapper.ItemViewModel.Model.Unsafe;
-                if (thisCommand != null)
+                var isTheSame = wrapper == firstCommand;
+                if (isTheSame)
                 {
-                    var isTheSame = thisCommand == firstCommand;
-                    if (isTheSame)
-                    {
-                        startIndex = i;
-                        break;
-                    }
+                    startIndex = i;
+                    break;
                 }
             }
             catch
