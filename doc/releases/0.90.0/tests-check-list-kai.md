@@ -98,7 +98,7 @@
    - [X] Enable and disable lines and verify they are applied to the file.
    - [X] Add a new entry and verify it's applied.
    - [ ] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
-   - [ ] Try to filter for lines and verify you can find them.
+   - [X] Try to filter for lines and verify you can find them.
    - [X] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
  * Test the different settings and verify they are applied:
    - [X] Launch as Administrator.
@@ -126,20 +126,20 @@
 
 ## Mouse Without Borders
  * Install PowerToys on two PCs in the same local network:
-   - [ ] Verify that PowerToys is properly installed on both PCs.
+   - [X] Verify that PowerToys is properly installed on both PCs.
    
  * Setup Connection:
-   - [ ] Open MWB's settings on the first PC and click the "New Key" button. Verify that a new security key is generated.
-   - [ ] Copy the generated security key and paste it in the corresponding input field in the settings of MWB on the second PC. Also enter the name of the first PC in the required field.
-   - [ ] Press "Connect" and verify that the machine layout now includes two PC tiles, each displaying their respective PC names.
+   - [X] Open MWB's settings on the first PC and click the "New Key" button. Verify that a new security key is generated.
+   - [X] Copy the generated security key and paste it in the corresponding input field in the settings of MWB on the second PC. Also enter the name of the first PC in the required field.
+   - [X] Press "Connect" and verify that the machine layout now includes two PC tiles, each displaying their respective PC names.
    
- * Verify Connection Status:
-   - [ ] Ensure that the border of the remote PC turns green, indicating a successful connection.
-   - [ ] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
+ <span style="background-color: yellow;"> Verify Connection Status:</span>
+   - [] Ensure that the border of the remote PC turns green, indicating a successful connection.
+   - [] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
    
  * Test Remote Mouse/Keyboard Control:
-   - [ ] With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
-   - [ ] Test remote mouse/keyboard control across all four PCs, if available. Verify that inputs are correctly registered on each connected PC when the mouse is active there.
+   - [X] With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
+   - [X] Test remote mouse/keyboard control across all four PCs, if available. Verify that inputs are correctly registered on each connected PC when the mouse is active there.
 
 
 ## Workspaces
