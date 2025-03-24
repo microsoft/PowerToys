@@ -7,7 +7,7 @@
 ## Functional tests
 
  Regressions:
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
+ - [x] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
 
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
@@ -52,8 +52,8 @@ Disable FZ and clear `app-zone-history.json` before starting. FancyZones should 
 - [x] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
 - [x] Launch PT in administrator mode, assign a window with administrator privileges.
 * Open `Task view` , right-click on the window, check the `Show this window on all desktops` or the `Show windows from this app on all desktops` option to turn it on.
-    - [ ] Turn Show this window on all desktops on, verify you can snap this window to a zone.
-    - [ ] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
+    - [x] Turn Show this window on all desktops on, verify you can snap this window to a zone.
+    - [x] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
 
 ### Snapped window behavior
 - [x] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
@@ -81,65 +81,65 @@ Enable `Move newly created windows to the current active monitor`.
 - [x] Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
 - [x] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
 
-- [ ] Enable `Allow zones to span across monitors` and `Allow child windows snapping`, try to snap Notepad++ search window. Verify it can be snapped.
-- [ ] Enable `Allow zones to span across monitors`, snap Teams, verify a popup window appears in its usual position.
-- [ ] Enable `Allow zones to span across monitors`, snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
-- [ ] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can be snapped to a zone.
-- [ ] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can't be snapped to a zone.
+- [x] Enable `Allow zones to span across monitors` and `Allow child windows snapping`, try to snap Notepad++ search window. Verify it can be snapped.
+- [x] Enable `Allow zones to span across monitors`, snap Teams, verify a popup window appears in its usual position.
+- [x] Enable `Allow zones to span across monitors`, snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
+- [x] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can be snapped to a zone.
+- [x] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can't be snapped to a zone.
 
 ### Switch between windows in the current zone
 Enable `Switch between windows in the current zone` (default shortcut is `Win + PgUp/PgDown`)
-- [ ] Snap several windows to one zone, verify switching works.
-- [ ] Snap several windows to one zone, switch virtual desktop, return back, verify window switching works.
-- [ ] Disable `Switch between windows in the current zone`, verify switching doesn't work.
+- [x] Snap several windows to one zone, verify switching works.
+- [x] Snap several windows to one zone, switch virtual desktop, return back, verify window switching works.
+- [x] Disable `Switch between windows in the current zone`, verify switching doesn't work.
   
 ### Override Windows Snap
-- [ ] Disable `Override Windows Snap`, verify it's disabled.
+- [x] Disable `Override Windows Snap`, verify it's disabled.
 
 Enable `Override Windows Snap`.
 Select Move windows based on `Zone index`.
-- [ ] Open the previously not snapped window, press `Win`+`LeftArrow` / `Win`+`RightArrow`, verify it's snapped to a first/last zone.
-- [ ] Verify `Win`+`LeftArrow` moves the window to a zone with the previous index.
-- [ ] Verify `Win`+`RightArrow` moves the window to a zone with the next index.
-- [ ] Verify `Win`+`ArrowUp` and `Win`+`ArrowDown` work as usual.
+- [x] Open the previously not snapped window, press `Win`+`LeftArrow` / `Win`+`RightArrow`, verify it's snapped to a first/last zone.
+- [x] Verify `Win`+`LeftArrow` moves the window to a zone with the previous index.
+- [x] Verify `Win`+`RightArrow` moves the window to a zone with the next index.
+- [x] Verify `Win`+`ArrowUp` and `Win`+`ArrowDown` work as usual.
 
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
+- [x] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
+- [x] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
 
 One monitor:
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
 
 Two and more monitors:
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles window position moving it from the first zone on the current monitor to the last zone of the left (or rightmost, if the current monitor is leftmost) monitor.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles window position moving it from the last zone on the current monitor to the first zone of the right (or leftmost, if the current monitor is rightmost) monitor.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles window position moving it from the first zone on the current monitor to the last zone of the left (or rightmost, if the current monitor is leftmost) monitor.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles window position moving it from the last zone on the current monitor to the first zone of the right (or leftmost, if the current monitor is rightmost) monitor.
 
 Select Move windows based on `Relative position`.
-- [ ] Open the previously not snapped window, press `Win`+`Arrow`, verify it's snapped.
-- [ ] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow`. Verify the window is snapped to all zones.
-- [ ] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow` and return it back using the opposite arrow. Verify it could be reverted while you hold `Ctrl`+`Alt`+`Win`.
+- [x] Open the previously not snapped window, press `Win`+`Arrow`, verify it's snapped.
+- [x] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow`. Verify the window is snapped to all zones.
+- [x] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow` and return it back using the opposite arrow. Verify it could be reverted while you hold `Ctrl`+`Alt`+`Win`.
 
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within one monitor.
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` cycles the window position to the right within one monitor.
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`UpArrow` cycles the window position up within one monitor.
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`DownArrow` cycles the window position down within one monitor.
+- [x] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within one monitor.
+- [x] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` cycles the window position to the right within one monitor.
+- [x] `Move windows between zones across all monitors` disabled. Verify `Win`+`UpArrow` cycles the window position up within one monitor.
+- [x] `Move windows between zones across all monitors` disabled. Verify `Win`+`DownArrow` cycles the window position down within one monitor.
 
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within all monitors.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles the window position to the right within all monitors.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`UpArrow` cycles the window position up within all monitors.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`DownArrow` cycles the window position down within all monitors.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within all monitors.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles the window position to the right within all monitors.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`UpArrow` cycles the window position up within all monitors.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`DownArrow` cycles the window position down within all monitors.
 
 ### Layout apply
 Enable `Enable quick layout switch`, assign numbers to custom layouts.
-- [ ] Switch with `Win` + `Ctrl` + `Alt` + `key`.
-- [ ] Switch with just a key while dragging a window.
-- [ ] Turn `Flash zones when switching layout` on/off, verify it's flashing/not flashing after pressing the shortcut.
-- [ ] Disable `Enable quick layout switch`, verify shortcuts don't work.
-- [ ] Disable spacing on any grid layout, verify that there is no space between zones while dragging a window.
-- [ ] Create a new virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
-- [ ] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
-- [ ] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
-- [ ] Apply a grid layout, change the screen resolution or scaling, verify that the assigned layout fits the screen. NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
+- [x] Switch with `Win` + `Ctrl` + `Alt` + `key`.
+- [x] Switch with just a key while dragging a window.
+- [x] Turn `Flash zones when switching layout` on/off, verify it's flashing/not flashing after pressing the shortcut.
+- [x] Disable `Enable quick layout switch`, verify shortcuts don't work.
+- [x] Disable spacing on any grid layout, verify that there is no space between zones while dragging a window.
+- [x] Create a new virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
+- [x] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
+- [x] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
+- [x] Apply a grid layout, change the screen resolution or scaling, verify that the assigned layout fits the screen. NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
 
 ### Layout reset
 * Test layout resetting.
@@ -148,32 +148,32 @@ Before testing
    * Remove `CurrentVirtualDesktop` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\VirtualDesktops` 
    * Remove `VirtualDesktopIDs` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops`
 
-- [ ] Test screen locking
+- [x] Test screen locking
    * Set custom layouts on each monitor
    * Lock screen / unplug monitor / plug monitor
    * Verify that layouts weren't reset to defaults
    
-- [ ] Test restart
+- [x] Test restart
    * Set custom layouts on each monitor
    * Restart the computer
    * Verify that layouts weren't reset to defaults
 
-- [ ] Test applying default layouts on reset
+- [x] Test applying default layouts on reset
    * Set default horizontal and vertical layouts
    * Delete `applied-layouts.json`
    * Verify that selected default layout is applied according to configuration
 
 ### Span zones across monitors
-- [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
+- [x] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
 
 Repeat the previous subsections steps after enabling `Allow zones to span across monitors`
-- [ ] Dragging
-- [ ] Snapping
-- [ ] Snapped window behavior
-- [ ] Switch between windows in the current zone
-- [ ] Override Windows Snap
-- [ ] Layout apply
-- [ ] Layout reset
+- [x] Dragging
+- [x] Snapping
+- [x] Snapped window behavior
+- [x] Switch between windows in the current zone
+- [x] Override Windows Snap
+- [x] Layout apply
+- [x] Layout reset
 
 ## File Explorer Add-ons
  * Running as user:
@@ -309,12 +309,12 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 
 ## Crop And Lock
  * Thumbnail mode
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [x] Test with win32 app
+   - [x] Test with packaged app
    
  * Reparent mode (there are known issues where reparent mode doesn't work for some apps)
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [x] Test with win32 app
+   - [x] Test with packaged app
 
 ## DSC
  * You need to have some prerequisites installed:
