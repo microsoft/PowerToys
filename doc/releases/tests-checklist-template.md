@@ -201,8 +201,8 @@ Select Move windows based on `Zone index`.
 - [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
 
 One monitor:
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
+- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` and `Win`+`RightArrow` cycles the window between zones.
+- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` and `Win`+`RightArrow` cycles the window between zones.
 
 Two and more monitors:
 - [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles window position moving it from the first zone on the current monitor to the last zone of the left (or rightmost, if the current monitor is leftmost) monitor.
