@@ -147,6 +147,8 @@ Disable FZ and clear `app-zone-history.json` before starting. FancyZones should 
 - [ ] Disable `Restore the original size of windows when unsnapping`, snap window, enable `Restore the original size of windows when unsnapping`, unsnap window, verify window size wasn't changed. 
 - [ ] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
 - [ ] Launch PT in administrator mode, assign a window with administrator privileges.
+- [ ] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer, Notepad++ search window), verify it can be snapped to a zone.
+- [ ] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer, Notepad++ search window), verify it can't be snapped to a zone.
 * Open `Task view` , right-click on the window, check the `Show this window on all desktops` or the `Show windows from this app on all desktops` option to turn it on.
     - [ ] Turn Show this window on all desktops on, verify you can snap this window to a zone.
     - [ ] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
@@ -170,18 +172,14 @@ Enable `Move newly created windows to their last known zone`.
 - [ ] Snap a window, turn off FancyZones, move that window, turn FZ on. Verify window returned to its zone.
 - [ ] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
 - [ ] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
+- [ ] Snap a popup window (e.g. Teams), close and reopen it, verify the window appears in its zone.
+- [ ] Snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
 
 Enable `Move newly created windows to the current active monitor`.
 - [ ] Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
 - [ ] Open a window that was snapped on the current virtual desktop and current monitor, verify it's opened in its zone.
 - [ ] Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
 - [ ] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
-
-- [ ] Enable `Allow popup windows snapping` and `Allow child windows snapping`, try to snap Notepad++ search window. Verify it can be snapped.
-- [ ] Enable `Allow popup windows snapping`, snap Teams, verify a popup window appears in its usual position.
-- [ ] Enable `Allow popup windows snapping`, snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
-- [ ] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can be snapped to a zone.
-- [ ] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can't be snapped to a zone.
 
 ### Switch between windows in the current zone
 Enable `Switch between windows in the current zone` (default shortcut is `Win + PgUp/PgDown`)
