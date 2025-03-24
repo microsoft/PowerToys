@@ -20,7 +20,7 @@ public sealed partial class SystemCommandsCache
         {
             var isBootedInUefiMode = Win32Helpers.GetSystemFirmwareType() == FirmwareType.Uefi;
 
-            var separateEmptyRB = manager.ShowSeparateResultForEmptyRecycleBin;
+            var separateEmptyRB = manager.HideEmptyRecycleBin;
             var confirmSystemCommands = manager.ShowDialogToConfirmCommand;
             var showSuccessOnEmptyRB = manager.ShowSuccessMessageAfterEmptyingRecycleBin;
 
