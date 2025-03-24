@@ -22,7 +22,7 @@ using Windows.UI.Input.Preview.Injection;
 // </history>
 namespace MouseWithoutBorders.Core;
 
-internal partial class InitAndCleanup
+internal static class InitAndCleanup
 {
     private static bool initDone;
     internal static int REOPEN_WHEN_WSAECONNRESET = -10054;
