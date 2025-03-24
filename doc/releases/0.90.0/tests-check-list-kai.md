@@ -133,9 +133,9 @@
    - [X] Copy the generated security key and paste it in the corresponding input field in the settings of MWB on the second PC. Also enter the name of the first PC in the required field.
    - [X] Press "Connect" and verify that the machine layout now includes two PC tiles, each displaying their respective PC names.
    
- <span style="background-color: yellow;"> Verify Connection Status:</span>
-   - [] Ensure that the border of the remote PC turns green, indicating a successful connection.
-   - [] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
+  * Verify Connection Status:
+   - [X] Ensure that the border of the remote PC turns green, indicating a successful connection.
+   - [X] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
    
  * Test Remote Mouse/Keyboard Control:
    - [X] With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
