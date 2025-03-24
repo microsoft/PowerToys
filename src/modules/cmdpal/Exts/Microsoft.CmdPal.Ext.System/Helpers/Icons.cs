@@ -8,7 +8,7 @@ namespace Microsoft.CmdPal.Ext.System.Helpers;
 
 public static partial class Icons
 {
-    public static IconInfo FirmwareSettingsIcon { get; } = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.System\\Assets\\firmwareSettings.light.png", "Microsoft.CmdPal.Ext.System\\Assets\\firmwareSettings.dark.png");
+    public static IconInfo FirmwareSettingsIcon { get; } = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.System\\Assets\\logoff.light.png", "Microsoft.CmdPal.Ext.System\\Assets\\logoff.dark.png");
 
     public static IconInfo LockIcon { get; } = new IconInfo("\uE72E");
 
