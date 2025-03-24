@@ -326,13 +326,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Go home when activated</value>
   </data>
   <data name="Settings_GeneralPage_GoHome_SettingsCard.Description" xml:space="preserve">
-    <value>If enabled, the Command Palette will return to the home page when activated.</value>
+    <value>Automatically opens the home page upon activation</value>
   </data>
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Header" xml:space="preserve">
     <value>Highlight search on activate</value>
   </data>
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Description" xml:space="preserve">
-    <value>When enabled, the previous search text will be selected when the app is opened.</value>
+    <value>Selects the previous search text at launch</value>
   </data>
   <data name="Settings_GeneralPage_ShowAppDetails_SettingsCard.Header" xml:space="preserve">
     <value>Show app details</value>
@@ -344,13 +344,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Backspace goes back</value>
   </data>
   <data name="Settings_GeneralPage_BackspaceGoesBack_SettingsCard.Description" xml:space="preserve">
-    <value>When enabled, pressing backspace when the search text is empty will take you back.</value>
+    <value>If the search field is empty, backspace returns to the previous page</value>
   </data>
   <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Header" xml:space="preserve">
-    <value>Single-click activates</value>
+    <value>Single-click activation</value>
   </data>
   <data name="Settings_GeneralPage_SingleClickActivation_SettingsCard.Description" xml:space="preserve">
-    <value>When enabled, single click activates list items. When disabled, single click selects and double click activates.</value>
+    <value>Choose how to interact with list items: single-click to activate, or single-click to select and double-click to activate</value>
   </data>
   <data name="Settings_GeneralPage_About_SettingsExpander.Header" xml:space="preserve">
     <value>Windows Command Palette</value>
@@ -359,7 +359,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>© 2025. All rights reserved.</value>
   </data>
   <data name="Settings_GeneralPage_About_GithubLink_Hyperlink.Content" xml:space="preserve">
-    <value>View GitHub Repo</value>
+    <value>View GitHub repository</value>
   </data>
   <data name="Settings_GeneralPage_About_SDKDocs_Hyperlink.Content" xml:space="preserve">
     <value>Extension SDK docs</value>
@@ -378,5 +378,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Command Palette settings</value>
+  </data>
+  <data name="ActivationSettingsHeader.Text" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="BehaviorSettingsHeader.Text" xml:space="preserve">
+    <value>Behavior</value>
   </data>
 </root>
