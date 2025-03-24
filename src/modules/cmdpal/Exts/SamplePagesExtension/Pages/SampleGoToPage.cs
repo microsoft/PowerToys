@@ -22,25 +22,19 @@ public sealed partial class SampleGoToPage : ListPage
     {
         var goBackArgs = new GoToPageArgs
         {
-            PageId = string.Empty,
+            PageId = "com.microsoft.SamplePages.LandingPage",
             NavigationMode = NavigationMode.GoBack,
         };
 
         var goHomeArgs = new GoToPageArgs
         {
-            PageId = "com.microsoft.SamplePages",
+            PageId = "com.microsoft.SamplePages.LandingPage",
             NavigationMode = NavigationMode.GoHome,
         };
 
-        var goToCalculatorHomeArgs = new GoToPageArgs
+        var pushLandingPageArgs = new GoToPageArgs
         {
-            PageId = "com.microsoft.cmdpal.calculator",
-            NavigationMode = NavigationMode.GoHome,
-        };
-
-        var pushArgs = new GoToPageArgs
-        {
-            PageId = "com.microsoft.SamplePages",
+            PageId = "com.microsoft.SamplePages.LandingPage",
             NavigationMode = NavigationMode.Push,
         };
 
@@ -52,7 +46,7 @@ public sealed partial class SampleGoToPage : ListPage
                     Result = CommandResult.GoToPage(goBackArgs),
                 })
             {
-                Title = "Go to back page.",
+                Title = "Go back and then go to landing page.",
                 Icon = new IconInfo("\uEA37"),
             },
             new ListItem(
@@ -61,27 +55,18 @@ public sealed partial class SampleGoToPage : ListPage
                     Result = CommandResult.GoToPage(goHomeArgs),
                 })
             {
-                Title = "Go to Home page.",
+                Title = "Go back to home page and then go to landing page.",
                 Icon = new IconInfo("\uEA37"),
             },
             new ListItem(
                 new AnonymousCommand(() => { })
                 {
-                    Result = CommandResult.GoToPage(goToCalculatorHomeArgs),
+                    Result = CommandResult.GoToPage(pushLandingPageArgs),
                 })
             {
-                Title = "Go to Calculator Home page.",
+                Title = "Push landing page.",
                 Icon = new IconInfo("\uEA37"),
             },
-            new ListItem(
-                new AnonymousCommand(() => { })
-                {
-                    Result = CommandResult.GoToPage(pushArgs),
-                })
-            {
-                Title = "Push current page.",
-                Icon = new IconInfo("\uEA37"),
-            }
         ];
     }
 }

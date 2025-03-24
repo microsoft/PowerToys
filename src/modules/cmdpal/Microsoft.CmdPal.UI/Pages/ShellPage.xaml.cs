@@ -272,52 +272,44 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var pageID = vm.PageId;
         var navigationMode = vm.NavigationMode;
 
-        if (string.IsNullOrEmpty(pageID) && navigationMode != NavigationMode.GoBack)
+        if (string.IsNullOrEmpty(pageID))
         {
-            // TODO: Consider to show a toast?
+            _toast.ShowToast("Invalid page id");
+            return;
+        }
+
+        var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+        var toplevelCommand = tlcManager.LookupCommand(pageID);
+
+        if (toplevelCommand == null)
+        {
             return;
         }
 
         switch (navigationMode)
         {
             case NavigationMode.Push:
-                // TODO: Implement push
                 break;
 
             case NavigationMode.GoHome:
-                var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-                var toplevelCommand = tlcManager.LookupCommand(pageID);
-
-                if (toplevelCommand == null)
-                {
-                    break;
-                }
-
-                /* Stack looks like this:
-                 * 0: Main page
-                 * 1: Top level command page (your extensions first page)
-                 * 2: One of your extension pages listed in the top level command page results
-                 * 3: ...
-                 * ...
-                 */
-
-                // So, we need to clean up existing stack frame. And push to the next top level page.
                 while (RootFrame.CanGoBack)
                 {
                     GoBack(false, false);
                 }
 
-                RootFrame.ForwardStack.Clear();
-
-                var msg = new PerformCommandMessage(toplevelCommand) { WithAnimation = true };
-                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(msg);
-
                 break;
 
             case NavigationMode.GoBack:
-                GoBack();
+                if (RootFrame.CanGoBack)
+                {
+                    GoBack(false, false);
+                }
+
                 break;
         }
+
+        var msg = new PerformCommandMessage(toplevelCommand) { WithAnimation = true };
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(msg);
 
         return;
     }
