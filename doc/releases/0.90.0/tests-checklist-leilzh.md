@@ -17,74 +17,73 @@
 
 ## FancyZones Editor
 
-- [ ] Open editor from the settings
-- [ ] Open editor with a shortcut
+- [x] Open editor from the settings
+- [x] Open editor with a shortcut
 
 ## FancyZones
 
 ### Appearance
-- [ ] Change colors, opacity and `Show zone number` options. Verify they're applied.
+- [x] Change colors, opacity and `Show zone number` options. Verify they're applied.
 
 ### Excluded apps
-- [ ] Exclude some apps, verify that they're not applicable to a zone.
+- [x] Exclude some apps, verify that they're not applicable to a zone.
 
 ### Dragging
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Start dragging a window, then press shift. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [ ]  `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` on. Zones are shown immediately when dragging a window and hidden when you click a non-primary mouse button or press shift.
-- [ ] `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` off. Zones are shown immediately when dragging a window, hidden when you press shift.
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
-- [ ] `Show zones on all monitor whilw dragging a window` - turn on,off, verify behavior.
-- [ ] Create a canvas layout with overlapping zones, check zone activation behavior with all `When multiple zones overlap` options
-- [ ] `Make dragged window transparent` - turn on, off, verify behavior
+- [x] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
+- [x]  `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` on. Zones are shown immediately when dragging a window and hidden when you click a non-primary mouse button or press shift.
+- [x] `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` off. Zones are shown immediately when dragging a window, hidden when you press shift.
+- [x] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
+- [x] `Show zones on all monitor while dragging a window` - turn on,off, verify behavior.
+- [x] Create a canvas layout with overlapping zones, check zone activation behavior with all `When multiple zones overlap` options
+- [x] `Make dragged window transparent` - turn on, off, verify behavior
 
 ### Snapping
 Disable FZ and clear `app-zone-history.json` before starting. FancyZones should be disabled, otherwise, it'll save cashed values back to the file.
 
-- [ ] Snap a window to a zone by dragging, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
-- [ ] Snap a window to a zone by a keyboard shortcut, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
-- [ ] Snap a window to another monitor, verify `app-zone-history.json` contains positions about zones on both monitors.
-- [ ] Snap a window to several zones, verify zone numbers in the json file are correct.
-- [ ] Snap a window to a zone, unsnap it, verify this app was removed from the json file.
-- [ ] Snap the same window to a zone on two different monitors or virtual desktops. Then unsnap from one of them, verify that info about unsnapped zone was removed from `app-zone-history.json`. Verify info about the second monitor/virtual desktop is kept.  
-- [ ] Enable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify the window changed its size to original.
-- [ ] Disable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify window size wasn't changed.
-- [ ] Disable `Restore the original size of windows when unsnapping`, snap window, enable `Restore the original size of windows when unsnapping`, unsnap window, verify window size wasn't changed. 
-- [ ] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
-- [ ] Launch PT in administrator mode, assign a window with administrator privileges.
+- [x] Snap a window to a zone by dragging, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
+- [x] Snap a window to a zone by a keyboard shortcut, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
+- [x] Snap a window to another monitor, verify `app-zone-history.json` contains positions about zones on both monitors.
+- [x] Snap a window to several zones, verify zone numbers in the json file are correct.
+- [x] Snap a window to a zone, unsnap it, verify this app was removed from the json file.
+- [x] Snap the same window to a zone on two different monitors or virtual desktops. Then unsnap from one of them, verify that info about unsnapped zone was removed from `app-zone-history.json`. Verify info about the second monitor/virtual desktop is kept.  
+- [x] Enable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify the window changed its size to original.
+- [x] Disable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify window size wasn't changed.
+- [x] Disable `Restore the original size of windows when unsnapping`, snap window, enable `Restore the original size of windows when unsnapping`, unsnap window, verify window size wasn't changed. 
+- [x] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
+- [x] Launch PT in administrator mode, assign a window with administrator privileges.
 * Open `Task view` , right-click on the window, check the `Show this window on all desktops` or the `Show windows from this app on all desktops` option to turn it on.
     - [ ] Turn Show this window on all desktops on, verify you can snap this window to a zone.
     - [ ] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
 
 ### Snapped window behavior
-- [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
-- [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone on the secondary monitor. Disconnect the secondary monitor (the window will be moved to the primary monitor). Reconnect the secondary monitor. Verify the window returned to its zone. 
-- [ ] `Keep windows in their zones when the screen resolution changes` off, snap a window to a zone, change the screen resolution or scaling, verify window didn't change its size and position.
+- [x] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
+- [x] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone on the secondary monitor. Disconnect the secondary monitor (the window will be moved to the primary monitor). Reconnect the secondary monitor. Verify the window returned to its zone. 
+- [x] `Keep windows in their zones when the screen resolution changes` off, snap a window to a zone, change the screen resolution or scaling, verify window didn't change its size and position.
 
 Enable `During zone layout changes, windows assigned to a zone will match new size/positions` and prepare layouts with 1 and 3 zones where zone size/positions are different.
-- [ ] Snap a window to zone 1, change the layout, verify window changed its size/position.
-- [ ] Snap a window to zone 3, change the layout, verify window didn't change its size/position because another layout doesn't have a zone with this zone number.
-- [ ] Snap a window to zones 1-2, change the layout, verify window changed its size/position to fit zone 1.
-- [ ] Snap a window to zones 1-2, change the layout (the window will be snapped to zone 1), then return back to the previous layout, verify the window snapped to 1-2 zones.
-- [ ] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
+- [x] Snap a window to zone 1, change the layout, verify window changed its size/position.
+- [x] Snap a window to zone 3, change the layout, verify window didn't change its size/position because another layout doesn't have a zone with this zone number.
+- [x] Snap a window to zones 1-2, change the layout, verify window changed its size/position to fit zone 1.
+- [x] Snap a window to zones 1-2, change the layout (the window will be snapped to zone 1), then return back to the previous layout, verify the window snapped to 1-2 zones.
+- [x] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
 
 Enable `Move newly created windows to their last known zone`.
-- [ ] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
-- [ ] Snap a window to zones on the primary and secondary monitors. Close and reopen the app. Verify it's snapped to the zone on the active monitor.
-- [ ] Snap a window to the secondary monitor (use a different app or unsnap the window from the zone on the primary monitor), close and reopen the window. Verify it's snapped to its zone. 
-- [ ] Snap a window, turn off FancyZones, move that window, turn FZ on. Verify window returned to its zone.
-- [ ] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
-- [ ] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
+- [x] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
+- [x] Snap a window to zones on the primary and secondary monitors. Close and reopen the app. Verify it's snapped to the zone on the active monitor.
+- [x] Snap a window to the secondary monitor (use a different app or unsnap the window from the zone on the primary monitor), close and reopen the window. Verify it's snapped to its zone. 
+- [x] Snap a window, turn off FancyZones, move that window, turn FZ on. Verify window returned to its zone.
+- [x] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
+- [x] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
 
 Enable `Move newly created windows to the current active monitor`.
-- [ ] Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
-- [ ] Open a window that was snapped on the current virtual desktop and current monitor, verify it's opened in its zone.
-- [ ] Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
-- [ ] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
+- [x] Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
+- [x] Open a window that was snapped on the current virtual desktop and current monitor, verify it's opened in its zone.
+- [x] Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
+- [x] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
 
-- [ ] Enable `Allow popup windows snapping` and `Allow child windows snapping`, try to snap Notepad++ search window. Verify it can be snapped.
-- [ ] Enable `Allow popup windows snapping`, snap Teams, verify a popup window appears in its usual position.
-- [ ] Enable `Allow popup windows snapping`, snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
+- [ ] Enable `Allow zones to span across monitors` and `Allow child windows snapping`, try to snap Notepad++ search window. Verify it can be snapped.
+- [ ] Enable `Allow zones to span across monitors`, snap Teams, verify a popup window appears in its usual position.
+- [ ] Enable `Allow zones to span across monitors`, snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
 - [ ] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can be snapped to a zone.
 - [ ] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can't be snapped to a zone.
 
