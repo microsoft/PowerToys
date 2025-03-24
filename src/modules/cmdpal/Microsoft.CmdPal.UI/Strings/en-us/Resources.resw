@@ -373,4 +373,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_NavigationViewItem_Extensions.Content" xml:space="preserve">
     <value>Extensions</value>
   </data>
+  <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More commands</value>
+  </data>
+  <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Open Command Palette settings</value>
+  </data>
 </root>

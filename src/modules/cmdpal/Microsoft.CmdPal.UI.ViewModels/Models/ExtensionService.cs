@@ -131,6 +131,7 @@ public class ExtensionService : IExtensionService, IDisposable
             try
             {
                 _installedExtensions.RemoveAll(i => removedExtensions.Contains(i));
+                _enabledExtensions.RemoveAll(i => removedExtensions.Contains(i));
 
                 OnExtensionRemoved?.Invoke(this, removedExtensions);
             }

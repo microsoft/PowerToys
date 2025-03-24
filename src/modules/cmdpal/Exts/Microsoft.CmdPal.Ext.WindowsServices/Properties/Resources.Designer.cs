@@ -61,11 +61,11 @@ namespace Microsoft.CmdPal.Ext.WindowsServices.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Windows Services.
         /// </summary>
-        internal static string test_value {
+        internal static string WindowsServicesProvider_DisplayName {
             get {
-                return ResourceManager.GetString("test_value", resourceCulture);
+                return ResourceManager.GetString("WindowsServicesProvider_DisplayName", resourceCulture);
             }
         }
         

@@ -35,6 +35,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<ClearSearchMessage>,
     IRecipient<HandleCommandResultMessage>,
     IRecipient<LaunchUriMessage>,
+    IRecipient<SettingsWindowClosedMessage>,
     INotifyPropertyChanged
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -50,6 +51,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private readonly Lock _invokeLock = new();
     private Task? _handleInvokeTask;
+    private SettingsWindow? _settingsWindow;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
@@ -65,6 +67,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
         WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<HotkeySummonMessage>(this);
+        WeakReferenceMessenger.Default.Register<SettingsWindowClosedMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ShowDetailsMessage>(this);
         WeakReferenceMessenger.Default.Register<HideDetailsMessage>(this);
@@ -127,14 +130,36 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // Or the command may be a stub. Future us problem.
         try
         {
+            // In the case that we're coming from a top-level command, the
+            // current page's host is the global instance. We only really want
+            // to use that as the host of last resort.
             var pageHost = ViewModel.CurrentPage?.ExtensionHost;
+            if (pageHost == CommandPaletteHost.Instance)
+            {
+                pageHost = null;
+            }
+
             var messageHost = message.ExtensionHost;
 
             // Use the host from the current page if it has one, else use the
             // one specified in the PerformMessage for a top-level command,
             // else just use the global one.
-            var host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
+            CommandPaletteHost host;
+
+            // Top level items can come through without a Extension set on the
+            // message. In that case, the `Context` is actually the
+            // TopLevelViewModel itself, and we can use that to get at the
+            // extension object.
             extension = pageHost?.Extension ?? messageHost?.Extension ?? null;
+            if (extension == null && message.Context is TopLevelViewModel topLevelViewModel)
+            {
+                extension = topLevelViewModel.ExtensionHost?.Extension;
+                host = pageHost ?? messageHost ?? topLevelViewModel?.ExtensionHost ?? CommandPaletteHost.Instance;
+            }
+            else
+            {
+                host = pageHost ?? messageHost ?? CommandPaletteHost.Instance;
+            }
 
             if (extension != null)
             {
@@ -396,8 +421,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // Also hide our details pane about here, if we had one
             HideDetails();
 
-            var settingsWindow = new SettingsWindow();
-            settingsWindow.Activate();
+            if (_settingsWindow == null)
+            {
+                _settingsWindow = new SettingsWindow();
+            }
+
+            _settingsWindow.Activate();
 
             WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
         });
@@ -457,6 +486,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         _ = DispatcherQueue.TryEnqueue(() => SummonOnUiThread(message));
     }
+
+    public void Receive(SettingsWindowClosedMessage message) => _settingsWindow = null;
 
     private void SummonOnUiThread(HotkeySummonMessage message)
     {
