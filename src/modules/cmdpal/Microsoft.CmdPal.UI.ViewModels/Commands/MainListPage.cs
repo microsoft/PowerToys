@@ -197,7 +197,7 @@ public partial class MainListPage : DynamicListPage,
             (topLevelOrAppItem.Subtitle.Contains(query) ? .5 : 0) :
             (StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle).Score - 4) / 2.0;
 
-        // Extension title: despite not beinb visible, give the extension name itself some weight
+        // Extension title: despite not being visible, give the extension name itself some weight
         // * whitespace query: 0 points
         // * otherwise more weight than a subtitle, but not much
         var extensionTitleMatch = isWhiteSpace ? 0 : StringMatcher.FuzzySearch(query, extensionDisplayName).Score / 1.5;
@@ -211,9 +211,9 @@ public partial class MainListPage : DynamicListPage,
         var max = scores.Max();
 
         // _Add_ the extension name. This will bubble items that match both
-        // title and extension name up higher than ones that just match title.
-        // e.g. "git" will upweight "GitHub searches" from the GitHub extension
-        // higher than "git" from "whatever"
+        // title and extension name up above ones that just match title.
+        // e.g. "git" will up-weight "GitHub searches" from the GitHub extension
+        // above "git" from "whatever"
         max = max + extensionTitleMatch;
 
         // ... but downweight them
