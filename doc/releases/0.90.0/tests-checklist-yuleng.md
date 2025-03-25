@@ -32,7 +32,7 @@
  - [x] OOBE (What's new)
  - [x] Power Rename (new WinUI 3 may not be localized)
  - [x] PowerToys Run ("Start typing" string is localized, for example)
- - [!] Command Palette
+ - [X] Command Palette
 
 ## PowerRename
 - [x] Check if disable and enable of the module works. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
@@ -139,7 +139,7 @@
 ## Command Palette
  * Check if Command Palette successfully install/uninstall with PowerToys.
    - [x] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
-   - [!] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+   - [X] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
  * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
    - [x] when PowerToys is running unelevated on start-up
    - [x] when PowerToys is running as admin on start-up
