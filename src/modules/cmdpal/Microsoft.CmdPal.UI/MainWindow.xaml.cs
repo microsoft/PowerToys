@@ -7,9 +7,12 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.Events;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
@@ -69,6 +72,7 @@ public sealed partial class MainWindow : Window,
         // notification area icon back
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
+        this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
         AppWindow.Resize(new SizeInt32 { Width = 1000, Height = 620 });
         PositionCentered();
@@ -368,6 +372,8 @@ public sealed partial class MainWindow : Window,
             else
             {
                 PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
             }
         }
 
@@ -460,12 +466,15 @@ public sealed partial class MainWindow : Window,
                     {
                         var hotkey = _hotkeys[hotkeyIndex];
                         var isRootHotkey = string.IsNullOrEmpty(hotkey.CommandId);
+                        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
 
                         // Note to future us: the wParam will have the index of the hotkey we registered.
                         // We can use that in the future to differentiate the hotkeys we've pressed
                         // so that we can bind hotkeys to individual commands
                         if (!this.Visible || !isRootHotkey)
                         {
+                            Activate();
+
                             Summon(hotkey.CommandId);
                         }
                         else if (isRootHotkey)

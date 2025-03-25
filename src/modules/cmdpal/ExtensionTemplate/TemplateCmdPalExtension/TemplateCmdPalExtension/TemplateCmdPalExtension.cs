@@ -9,9 +9,7 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace TemplateCmdPalExtension;
 
-[ComVisible(true)]
 [Guid("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")]
-[ComDefaultInterface(typeof(IExtension))]
 public sealed partial class TemplateCmdPalExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;

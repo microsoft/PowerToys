@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="WindowsServicesProvider_DisplayName" xml:space="preserve">
+    <value>Windows Services</value>
+  </data>
   <data name="wox_plugin_service_continue_pending" xml:space="preserve">
     <value>Continue</value>
   </data>
@@ -203,8 +206,5 @@
   </data>
   <data name="wox_plugin_service_stop_pending" xml:space="preserve">
     <value>Stopping</value>
-  </data>
-  <data name="test_value" xml:space="preserve">
-    <value />
   </data>
 </root>

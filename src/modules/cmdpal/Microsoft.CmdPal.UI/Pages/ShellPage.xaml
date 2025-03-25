@@ -42,6 +42,7 @@
                 <cpcontrols:Tag
                     HorizontalAlignment="Left"
                     BackgroundColor="{x:Bind Background, Mode=OneWay}"
+                    FontSize="12"
                     ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
                     Icon="{x:Bind Icon, Mode=OneWay}"
                     Text="{x:Bind Text, Mode=OneWay}"
@@ -100,9 +101,9 @@
                                     x:Name="TagsWrapPanel"
                                     MinWidth="0"
                                     Padding="0"
-                                    HorizontalSpacing="8"
+                                    HorizontalSpacing="4"
                                     Orientation="Horizontal"
-                                    VerticalSpacing="8" />
+                                    VerticalSpacing="4" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
@@ -300,11 +301,34 @@
                 <ScrollViewer
                     x:Name="DetailsContent"
                     Grid.Column="1"
+                    Margin="4"
                     HorizontalAlignment="Stretch"
+                    ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                     Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                    BorderThickness="1,0,0,0"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource ControlCornerRadius}"
                     Visibility="Collapsed">
+                    <animations:Implicit.ShowAnimations>
+                        <animations:OpacityAnimation
+                            From="0"
+                            To="1.0"
+                            Duration="0:0:0.270" />
+                        <animations:TranslationAnimation
+                            From="24,0,0"
+                            To="0,0,0"
+                            Duration="0:0:0.280" />
+                    </animations:Implicit.ShowAnimations>
+                    <animations:Implicit.HideAnimations>
+                        <animations:OpacityAnimation
+                            From="1.0"
+                            To="0"
+                            Duration="0:0:0.180" />
+                        <animations:TranslationAnimation
+                            From="0,0,0"
+                            To="24,0,0"
+                            Duration="0:0:0.220" />
+                    </animations:Implicit.HideAnimations>
                     <Grid Margin="12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -346,7 +370,7 @@
                             ItemTemplate="{StaticResource DetailsDataTemplateSelector}"
                             ItemsSource="{x:Bind ViewModel.Details.Metadata, Mode=OneWay}">
                             <ItemsRepeater.Layout>
-                                <StackLayout Spacing="8" />
+                                <StackLayout Spacing="12" />
                             </ItemsRepeater.Layout>
                         </ItemsRepeater>
                     </Grid>

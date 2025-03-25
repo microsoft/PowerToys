@@ -77,6 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                 IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                 Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
+                IsNew = moduleType == ModuleType.CmdPal,
                 EnabledChangedCallback = EnabledChangedOnUI,
                 DashboardModuleItems = GetModuleItems(moduleType),
             });
@@ -222,9 +223,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private ObservableCollection<DashboardModuleItem> GetModuleItemsCmdPal()
         {
+            var hotkey = new CmdPalProperties().Hotkey;
+
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleTextItem() { Label = resourceLoader.GetString("CmdPal_ShortDescription") },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("CmdPal_ShortDescription"), Shortcut = hotkey.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }

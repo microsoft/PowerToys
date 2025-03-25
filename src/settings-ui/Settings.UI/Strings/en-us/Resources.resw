@@ -4952,7 +4952,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <comment>Product name: Navigation view item name for Command Palette</comment>
   </data>
   <data name="Oobe_CmdPal.Description" xml:space="preserve">
-    <value>Command Palette description is TBD.</value>
+    <value>A fully extensible quick launcher with a richer display and additional capabilities without sacrificing performance.</value>
     <comment>"Command Palette" is a product name</comment>
   </data>
   <data name="Oobe_CmdPal.Title" xml:space="preserve">
@@ -4960,7 +4960,10 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <comment>"Command Palette" is a product name</comment>
   </data>
   <data name="Oobe_CmdPal_HowToUse.Text" xml:space="preserve">
-    <value>Command Palette how to use text is TBD.</value>
+    <value>and start typing!</value>
+  </data>
+  <data name="Oobe_CmdPal_TipsAndTricks.Text" xml:space="preserve">
+    <value>For this utility to work, the Command Palette must be enabled and running in the background. The Command Palette has a ton of extensions to try out to make your launching experience even better. You can search for available extensions within the palette itself!</value>
   </data>
   <data name="Run_CheckOutCmdPal.Title" xml:space="preserve">
     <value>PowerToys Run is getting an upgrade to v2! Check out the Command Palette, PowerToys Run's evolution</value>
@@ -4986,5 +4989,14 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="RetryLabel.Text" xml:space="preserve">
     <value>Retry</value>
+  </data>
+  <data name="CmdPal_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="CmdPal_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="CmdPal_ActivationShortcut.Description" xml:space="preserve">
+    <value>Go to Command Palette settings to customize the activation shortcut.</value>
   </data>
 </root>

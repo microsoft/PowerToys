@@ -9,6 +9,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     Title="SettingsWindow"
     Activated="Window_Activated"
+    Closed="Window_Closed"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
@@ -19,11 +20,21 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <!--  TO DO: Replace this with WinUI TitleBar once that ships.  -->
-        <StackPanel Height="48" Orientation="Horizontal">
+        <Button
+            x:Name="PaneToggleBtn"
+            Width="48"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Click="PaneToggleBtn_Click"
+            Style="{StaticResource PaneToggleButtonStyle}" />
+        <StackPanel
+            x:Name="AppTitleBar"
+            Grid.Row="0"
+            Height="48"
+            Orientation="Horizontal">
             <Image
                 Width="16"
                 Height="16"
-                Margin="16,0,0,0"
                 Source="ms-appx:///Assets/StoreLogo.png" />
             <TextBlock
                 Margin="12,0,0,0"
@@ -34,6 +45,7 @@
         <NavigationView
             x:Name="NavView"
             Grid.Row="1"
+            DisplayModeChanged="NavView_DisplayModeChanged"
             IsBackButtonVisible="Collapsed"
             IsSettingsVisible="False"
             ItemInvoked="NavView_ItemInvoked"
@@ -42,14 +54,16 @@
             <NavigationView.Resources>
                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+                <Thickness x:Key="NavigationViewHeaderMargin">15,0,0,0</Thickness>
             </NavigationView.Resources>
+
             <NavigationView.MenuItems>
                 <NavigationViewItem
-                    Content="General"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_General"
                     Icon="{ui:FontIcon Glyph=&#xE80F;}"
                     Tag="General" />
                 <NavigationViewItem
-                    Content="Extensions"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"
                     Icon="{ui:FontIcon Glyph=&#xEA86;}"
                     Tag="Extensions" />
             </NavigationView.MenuItems>
@@ -62,15 +76,26 @@
 
                 <BreadcrumbBar
                     x:Name="NavigationBreadcrumbBar"
+                    Grid.Row="0"
                     MaxWidth="1000"
+                    Margin="16,0,0,0"
                     ItemClicked="NavigationBreadcrumbBar_ItemClicked"
                     ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
                     <BreadcrumbBar.ItemTemplate>
                         <DataTemplate x:DataType="local:Crumb">
-                            <TextBlock Style="{StaticResource TitleTextBlockStyle}" Text="{x:Bind Label, Mode=OneWay}" />
+                            <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
                         </DataTemplate>
                     </BreadcrumbBar.ItemTemplate>
+                    <BreadcrumbBar.Resources>
+                        <ResourceDictionary>
+                            <x:Double x:Key="BreadcrumbBarItemThemeFontSize">28</x:Double>
+                            <Thickness x:Key="BreadcrumbBarChevronPadding">7,4,8,0</Thickness>
+                            <FontWeight x:Key="BreadcrumbBarItemFontWeight">SemiBold</FontWeight>
+                            <x:Double x:Key="BreadcrumbBarChevronFontSize">16</x:Double>
+                        </ResourceDictionary>
+                    </BreadcrumbBar.Resources>
                 </BreadcrumbBar>
+
                 <Frame x:Name="NavFrame" Grid.Row="1" />
             </Grid>
         </NavigationView>
