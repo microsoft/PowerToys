@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
@@ -264,5 +265,42 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             {
             }
         });
+    }
+
+    internal bool SafeUpdateFallbackTextSynchronous(string newQuery)
+    {
+        if (!IsFallback)
+        {
+            return false;
+        }
+
+        try
+        {
+            return UnsafeUpdateFallbackSynchronous(newQuery);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.ToString());
+        }
+
+        return false;
+    }
+
+    private bool UnsafeUpdateFallbackSynchronous(string newQuery)
+    {
+        var model = _commandItemViewModel.Model.Unsafe;
+
+        // RPC to check type
+        if (model is IFallbackCommandItem fallback)
+        {
+            var wasEmpty = string.IsNullOrEmpty(Title);
+
+            // RPC for method
+            fallback.FallbackHandler.UpdateQuery(newQuery);
+            var isEmpty = string.IsNullOrEmpty(Title);
+            return wasEmpty != isEmpty;
+        }
+
+        return false;
     }
 }
