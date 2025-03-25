@@ -104,13 +104,6 @@ public partial class MainListPage : DynamicListPage,
         {
             UpdateFallbacks(newSearch, commands.ToImmutableArray());
 
-            // This gets called on a background thread, because ListViewModel
-            // updates the .SearchText of all extensions on a BG thread.
-            foreach (var command in commands)
-            {
-                command.TryUpdateFallbackText(newSearch);
-            }
-
             // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
             if (string.IsNullOrEmpty(newSearch))
             {
