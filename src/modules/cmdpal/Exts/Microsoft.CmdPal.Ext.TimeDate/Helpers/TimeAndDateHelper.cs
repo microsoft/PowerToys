@@ -23,7 +23,7 @@ internal static class TimeAndDateHelper
     private static readonly Regex _regexCustomDateTimeExc = new Regex(@"(?<!\\)EXC");
     private static readonly Regex _regexCustomDateTimeExf = new Regex(@"(?<!\\)EXF");
 
-    internal static string LastInpurParsingErrorReason { get; private set; } = string.Empty;
+    internal static string LastInputParsingErrorReason { get; private set; } = string.Empty;
 
     /// <summary>
     /// Get the format for the time string
@@ -127,7 +127,7 @@ internal static class TimeAndDateHelper
     /// <returns>True on success, otherwise false</returns>
     internal static bool ParseStringAsDateTime(in string input, out DateTime timestamp)
     {
-        LastInpurParsingErrorReason = string.Empty;
+        LastInputParsingErrorReason = string.Empty;
 
         if (DateTime.TryParse(input, out timestamp))
         {
@@ -163,7 +163,7 @@ internal static class TimeAndDateHelper
             if (oADate < -657434.99999999 || oADate > 2958465.99999999)
             {
                 // Log.Error($"Input for OLE Automation date does not fall within the range from -657434.99999999 to 2958465.99999999: {oADate}", typeof(TimeAndDateHelper));
-                LastInpurParsingErrorReason = $"Input for OLE Automation date does not fall within the range from -657434.99999999 to 2958465.99999999: {oADate}";
+                LastInputParsingErrorReason = $"Input for OLE Automation date does not fall within the range from -657434.99999999 to 2958465.99999999: {oADate}";
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -180,7 +180,7 @@ internal static class TimeAndDateHelper
             if (excDate < 0 || excDate > 2958465.99998843)
             {
                 // Log.Error($"Input for Excel's 1900 date value does not fall within the range from 0 to 2958465.99998843: {excDate}", typeof(TimeAndDateHelper));
-                LastInpurParsingErrorReason = $"Input for Excel's 1900 date value does not fall within the range from 0 to 2958465.99998843: {excDate}";
+                LastInputParsingErrorReason = $"Input for Excel's 1900 date value does not fall within the range from 0 to 2958465.99998843: {excDate}";
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -188,7 +188,7 @@ internal static class TimeAndDateHelper
             if (Math.Truncate(excDate) == 0 || Math.Truncate(excDate) == 60)
             {
                 // Log.Error($"Cannot parse {excDate} as Excel's 1900 date value because it is a fake date. (In Excel 0 stands for 0/1/1900 and this date doesn't exist. And 60 stands for 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123.)", typeof(TimeAndDateHelper));
-                LastInpurParsingErrorReason = $"Cannot parse {excDate} as Excel's 1900 date value because it is a fake date. (In Excel 0 stands for 0/1/1900 and this date doesn't exist. And 60 stands for 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123.)";
+                LastInputParsingErrorReason = $"Cannot parse {excDate} as Excel's 1900 date value because it is a fake date. (In Excel 0 stands for 0/1/1900 and this date doesn't exist. And 60 stands for 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123.)";
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -206,7 +206,7 @@ internal static class TimeAndDateHelper
             if (exfDate < 0 || exfDate > 2957003.99998843)
             {
                 // Log.Error($"Input for Excel's 1904 date value does not fall within the range from 0 to 2957003.99998843: {exfDate}", typeof(TimeAndDateHelper));
-                LastInpurParsingErrorReason = $"Input for Excel's 1904 date value does not fall within the range from 0 to 2957003.99998843: {exfDate}";
+                LastInputParsingErrorReason = $"Input for Excel's 1904 date value does not fall within the range from 0 to 2957003.99998843: {exfDate}";
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }

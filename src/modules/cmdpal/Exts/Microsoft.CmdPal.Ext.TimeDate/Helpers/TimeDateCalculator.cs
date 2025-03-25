@@ -95,9 +95,9 @@ public sealed partial class TimeDateCalculator
             if (!settings.HideNumberMessageOnGlobalQuery)
             {
                 var er = ResultHelper.CreateNumberErrorResult();
-                if (!string.IsNullOrEmpty(TimeAndDateHelper.LastInpurParsingErrorReason))
+                if (!string.IsNullOrEmpty(TimeAndDateHelper.LastInputParsingErrorReason))
                 {
-                    er.Details = new Details() { Body = TimeAndDateHelper.LastInpurParsingErrorReason };
+                    er.Details = new Details() { Body = TimeAndDateHelper.LastInputParsingErrorReason };
                     er.Title += " - " + Resources.Microsoft_plugin_timedate_show_details;
                 }
 
