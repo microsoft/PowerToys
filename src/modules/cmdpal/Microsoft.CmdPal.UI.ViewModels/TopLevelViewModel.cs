@@ -4,8 +4,7 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -237,32 +236,46 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         }
     }
 
-    public void TryUpdateFallbackText(string newQuery)
+    internal bool SafeUpdateFallbackTextSynchronous(string newQuery)
     {
         if (!IsFallback)
         {
-            return;
+            return false;
         }
 
-        _ = Task.Run(() =>
+        try
         {
-            try
-            {
-                var model = _commandItemViewModel.Model.Unsafe;
-                if (model is IFallbackCommandItem fallback)
-                {
-                    var wasEmpty = string.IsNullOrEmpty(Title);
-                    fallback.FallbackHandler.UpdateQuery(newQuery);
-                    var isEmpty = string.IsNullOrEmpty(Title);
-                    if (wasEmpty != isEmpty)
-                    {
-                        WeakReferenceMessenger.Default.Send<UpdateFallbackItemsMessage>();
-                    }
-                }
-            }
-            catch (Exception)
-            {
-            }
-        });
+            return UnsafeUpdateFallbackSynchronous(newQuery);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.ToString());
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Calls UpdateQuery on our command, if we're a fallback item. This does
+    /// RPC work, so make sure you're calling it on a BG thread.
+    /// </summary>
+    /// <param name="newQuery">The new search text to pass to the extension</param>
+    /// <returns>true if our Title changed across this call</returns>
+    private bool UnsafeUpdateFallbackSynchronous(string newQuery)
+    {
+        var model = _commandItemViewModel.Model.Unsafe;
+
+        // RPC to check type
+        if (model is IFallbackCommandItem fallback)
+        {
+            var wasEmpty = string.IsNullOrEmpty(Title);
+
+            // RPC for method
+            fallback.FallbackHandler.UpdateQuery(newQuery);
+            var isEmpty = string.IsNullOrEmpty(Title);
+            return wasEmpty != isEmpty;
+        }
+
+        return false;
     }
 }
