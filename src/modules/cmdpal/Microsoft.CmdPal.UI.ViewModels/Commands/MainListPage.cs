@@ -109,7 +109,7 @@ public partial class MainListPage : DynamicListPage,
             }
 
             // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
-            if (string.IsNullOrEmpty(newSearch))
+            if (string.IsNullOrWhiteSpace(newSearch))
             {
                 _filteredItems = null;
                 RaiseItemsChanged(commands.Count);
@@ -133,8 +133,9 @@ public partial class MainListPage : DynamicListPage,
 
             // Produce a list of everything that matches the current filter.
             _filteredItems = ListHelpers.FilterList<IListItem>(_filteredItems, SearchText, ScoreTopLevelItem);
-            RaiseItemsChanged(_filteredItems.Count());
         }
+
+        RaiseItemsChanged(_filteredItems.Count());
     }
 
     private bool ActuallyLoading()
@@ -149,13 +150,13 @@ public partial class MainListPage : DynamicListPage,
     // _always_ show up first.
     private int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem)
     {
-        if (string.IsNullOrWhiteSpace(query))
+        if (string.IsNullOrEmpty(query))
         {
             return 1;
         }
 
         var title = topLevelOrAppItem.Title;
-        if (string.IsNullOrEmpty(title))
+        if (string.IsNullOrWhiteSpace(title))
         {
             return 0;
         }
