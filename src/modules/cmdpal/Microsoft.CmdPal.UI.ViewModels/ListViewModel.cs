@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -23,7 +24,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // Observable from MVVM Toolkit will auto create public properties that use INotifyPropertyChange change
     // https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/observablegroupedcollections for grouping support
     [ObservableProperty]
-    public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
+    public partial ObservableCollectionEx<ListItemViewModel> FilteredItems { get; set; } = [];
 
     private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
 
@@ -128,7 +129,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         try
         {
-            IListItem[] newItems = _model.Unsafe!.GetItems();
+            var newItems = _model.Unsafe!.GetItems();
 
             // Collect all the items into new viewmodels
             Collection<ListItemViewModel> newViewModels = [];
@@ -136,7 +137,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // TODO we can probably further optimize this by also keeping a
             // HashSet of every ExtensionObject we currently have, and only
             // building new viewmodels for the ones we haven't already built.
-            foreach (IListItem? item in newItems)
+            foreach (var item in newItems)
             {
                 ListItemViewModel viewModel = new(item, new(this));
 
@@ -147,8 +148,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 }
             }
 
-            IEnumerable<ListItemViewModel> firstTwenty = newViewModels.Take(20);
-            foreach (ListItemViewModel? item in firstTwenty)
+            var firstTwenty = newViewModels.Take(20);
+            foreach (var item in firstTwenty)
             {
                 item?.SafeInitializeProperties();
             }
@@ -211,7 +212,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     {
                         // A dynamic list? Even better! Just stick everything into
                         // FilteredItems. The extension already did any filtering it cared about.
+                        FilteredItems.SupressNotification = true;
                         ListHelpers.InPlaceUpdateList(FilteredItems, Items.Where(i => !i.IsInErrorState));
+                        FilteredItems.SupressNotification = false;
                     }
 
                     UpdateEmptyContent();
@@ -233,7 +236,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             iterable = Items.ToArray();
         }
 
-        foreach (ListItemViewModel item in iterable)
+        foreach (var item in iterable)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -266,8 +269,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return 1;
         }
 
-        MatchResult nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
-        MatchResult descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
+        var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
+        var descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
         return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max();
     }
 
@@ -280,7 +283,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // Similarly stolen from ListHelpers.FilterList
     public static IEnumerable<ListItemViewModel> FilterList(IEnumerable<ListItemViewModel> items, string query)
     {
-        IOrderedEnumerable<ScoredListItemViewModel> scores = items
+        var scores = items
             .Where(i => !i.IsInErrorState)
             .Select(li => new ScoredListItemViewModel() { ViewModel = li, Score = ScoreListItem(query, li) })
             .Where(score => score.Score > 0)
@@ -359,7 +362,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         base.InitializeProperties();
 
-        IListPage? model = _model.Unsafe;
+        var model = _model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -385,7 +388,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public void LoadMoreIfNeeded()
     {
-        IListPage? model = this._model.Unsafe;
+        var model = this._model.Unsafe;
         if (model == null)
         {
             return;
@@ -412,7 +415,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         base.FetchProperty(propertyName);
 
-        IListPage? model = this._model.Unsafe;
+        var model = this._model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -475,13 +478,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         lock (_listLock)
         {
-            foreach (ListItemViewModel item in Items)
+            foreach (var item in Items)
             {
                 item.SafeCleanup();
             }
 
             Items.Clear();
-            foreach (ListItemViewModel item in FilteredItems)
+            foreach (var item in FilteredItems)
             {
                 item.SafeCleanup();
             }
@@ -489,10 +492,46 @@ public partial class ListViewModel : PageViewModel, IDisposable
             FilteredItems.Clear();
         }
 
-        IListPage? model = _model.Unsafe;
+        var model = _model.Unsafe;
         if (model != null)
         {
             model.ItemsChanged -= Model_ItemsChanged;
         }
+    }
+}
+
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "testing")]
+public sealed class ObservableCollectionEx<T> : ObservableCollection<T>
+{
+    private bool _notificationSupressed;
+    private bool _supressNotification;
+
+    public bool SupressNotification
+    {
+        get
+        {
+            return _supressNotification;
+        }
+
+        set
+        {
+            _supressNotification = value;
+            if (_supressNotification == false && _notificationSupressed)
+            {
+                this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                _notificationSupressed = false;
+            }
+        }
+    }
+
+    protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+    {
+        if (SupressNotification)
+        {
+            _notificationSupressed = true;
+            return;
+        }
+
+        base.OnCollectionChanged(e);
     }
 }
