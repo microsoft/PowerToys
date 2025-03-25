@@ -53,7 +53,11 @@ internal static class RegistryHelper
         }
 
         var baseKey = query.Split('\\').FirstOrDefault() ?? string.Empty;
-        var subKey = query.Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase).TrimStart('\\');
+        var subKey = string.Empty;
+        if (!string.IsNullOrEmpty(baseKey))
+        {
+            subKey = query.Replace(baseKey, string.Empty, StringComparison.InvariantCultureIgnoreCase).TrimStart('\\');
+        }
 
         var baseKeyResult = _baseKeys
             .Where(found => found.Key.StartsWith(baseKey, StringComparison.InvariantCultureIgnoreCase))
