@@ -89,7 +89,7 @@
         <AutoSuggestBox
           x:Name="SearchBox"
           QueryIcon="Find"
-          PlaceholderText="Search"
+          PlaceholderText="Search for modules"
           Margin="12,8"
           Padding="4"
           HorizontalAlignment="Stretch"

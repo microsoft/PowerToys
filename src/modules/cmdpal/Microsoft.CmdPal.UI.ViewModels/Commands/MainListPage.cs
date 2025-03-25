@@ -4,6 +4,7 @@
 
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon.Search;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
