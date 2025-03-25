@@ -13,6 +13,7 @@ using Microsoft.CmdPal.Ext.WindowsServices.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
+using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.WindowsServices.Helpers;
 
@@ -53,7 +54,10 @@ public static class ServiceHelper
                 serviceCommand = new ServiceCommand(serviceResult, Action.Stop);
                 moreCommands = [
                     new CommandContextItem(new RestartServiceCommand(serviceResult)),
-                    new CommandContextItem(new OpenServicesCommand(serviceResult)),
+                    new CommandContextItem(new OpenServicesCommand(serviceResult))
+                    {
+                        RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.O, 0),
+                    },
                 ];
             }
             else
