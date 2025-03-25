@@ -343,30 +343,30 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
    - [x] Installed Apps - launch a packaged application
    - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
    - [x] File Search - open a file on the disk.
-   - [ ] File Search - find a file and copy file path.
+   - [x] File Search - find a file and copy file path.
    - [x] File Search - find a file and open containing folder.
    - [x] Run Commands - execute a command. (e.g. `ping google.com`).
    - [x] Windows Walker - Switch to another opening window.
    - [x] Windows Walker - Switch to another opening window when powertoys run as admin.
-   - [ ] WinGet - Search and install application through WinGet. (eg. `vscode`)
-   - [ ] Web Search - Search anything by this extension.
-   - [ ] Windows Terminal Profiles - Open profile.
-   - [ ] Windows Terminal Profiles - Open profile as Admin.
-   - [ ] Windows Settings - Open settings from extension.
-   - [ ] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
-   - [ ] Registry - navigate through the registry tree and copy key path.
-   - [ ] Windows Service - start, stop, restart windows service.
-   - [ ] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
-   - [ ] Windows System Command - test `lock`.
-   - [ ] Windows System Command - test `empty recycle bin`.
-   - [ ] Windows System Command - test `shutdown`.
-   - [ ] Windows System Command - Click your network adapter item and paste the result at notepad.
-   - [ ] Bookmarks - Add bookmarks to command palette.
-   - [ ] Bookmarks - Open your bookmarks (in Command Palette).
- - [ ] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
- - [ ] Test tab navigation.
+   - [x] WinGet - Search and install application through WinGet. (eg. `vscode`)
+   - [x] Web Search - Search anything by this extension.
+   - [x] Windows Terminal Profiles - Open profile.
+   - [x] Windows Terminal Profiles - Open profile as Admin.
+   - [x] Windows Settings - Open settings from extension.
+   - [x] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [x] Registry - navigate through the registry tree and copy key path.
+   - [x] Windows Service - start, stop, restart windows service.
+   - [x] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
+   - [x] Windows System Command - test `lock`.
+   - [x] Windows System Command - test `empty recycle bin`.
+   - [x] Windows System Command - test `shutdown`.
+   - [x] Windows System Command - Click your network adapter item and paste the result at notepad.
+   - [x] Bookmarks - Add bookmarks to command palette.
+   - [x] Bookmarks - Open your bookmarks (in Command Palette).
+ - [x] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
+ - [x] Test tab navigation.
  * Test Extensions Manager
-   - [ ] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
-   - [ ] Change `Global hot key` and verify changes are picked up by Command Palette
-   - [ ] Change `Alias` and verify changes picked up by Command Palette
-   - [ ] Disable all extensions and verify the warning message is shown (Currently not support).
+   - [x] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
+   - [x] Change `Global hot key` and verify changes are picked up by Command Palette
+   - [x] Change `Alias` and verify changes picked up by Command Palette
+   - [x] Disable all extensions and verify the warning message is shown (Currently not support).
