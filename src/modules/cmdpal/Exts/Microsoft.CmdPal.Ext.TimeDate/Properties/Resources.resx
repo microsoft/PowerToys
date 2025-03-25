@@ -155,8 +155,8 @@
   <data name="Microsoft_plugin_timedate_EraAbbreviation" xml:space="preserve">
     <value>Era abbreviation</value>
   </data>
-  <data name="Microsoft_plugin_timedate_ErrorResultSubTitle" xml:space="preserve">
-    <value>Valid prefixes: 'u' for Unix Timestamp, 'ums' for Unix Timestamp in milliseconds, 'ft' for Windows file time, 'oa' for OLE Automation date, 'exc' for Excel's 1900 date value, 'exf' for Excel's 1904 date value</value>
+  <data name="Microsoft_plugin_timedate_InvalidInput_DetailsHeader" xml:space="preserve">
+    <value>Valid prefixes</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultTitle" xml:space="preserve">
     <value>Error: Invalid number input</value>
@@ -372,8 +372,8 @@
   <data name="Microsoft_plugin_timedate_main_page_title" xml:space="preserve">
     <value>Time and Date</value>
   </data>
-  <data name="Microsoft_plugin_timedate_InvalidInput_ErrorMessageSubTitle" xml:space="preserve">
-    <value>Valid prefixes: 'u' for Unix Timestamp, 'ums' for Unix Timestamp in milliseconds, 'ft' for Windows file time, 'oa' for OLE Automation date, 'exc' for Excel's 1900 date value, 'exf' for Excel's 1904 date value</value>
+  <data name="Microsoft_plugin_timedate_InvalidInput_SupportedPrefixes" xml:space="preserve">
+    <value>'u' for Unix Timestamp, 'ums' for Unix Timestamp in milliseconds, 'ft' for Windows file time, 'oa' for OLE Automation date, 'exc' for Excel's 1900 date value, 'exf' for Excel's 1904 date value</value>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagCustom" xml:space="preserve">
     <value>Date and time; Time and Date; Custom format</value>

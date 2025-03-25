@@ -169,15 +169,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Valid prefixes: &apos;u&apos; for Unix Timestamp, &apos;ums&apos; for Unix Timestamp in milliseconds, &apos;ft&apos; for Windows file time, &apos;oa&apos; for OLE Automation date, &apos;exc&apos; for Excel&apos;s 1900 date value, &apos;exf&apos; for Excel&apos;s 1904 date value.
-        /// </summary>
-        public static string Microsoft_plugin_timedate_ErrorResultSubTitle {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorResultSubTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Error: Invalid number input.
         /// </summary>
         public static string Microsoft_plugin_timedate_ErrorResultTitle {
@@ -214,11 +205,11 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Valid prefixes: &apos;u&apos; for Unix Timestamp, &apos;ums&apos; for Unix Timestamp in milliseconds, &apos;ft&apos; for Windows file time, &apos;oa&apos; for OLE Automation date, &apos;exc&apos; for Excel&apos;s 1900 date value, &apos;exf&apos; for Excel&apos;s 1904 date value.
+        ///   Looks up a localized string similar to Valid prefixes.
         /// </summary>
-        public static string Microsoft_plugin_timedate_InvalidInput_ErrorMessageSubTitle {
+        public static string Microsoft_plugin_timedate_InvalidInput_DetailsHeader {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_ErrorMessageSubTitle", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_DetailsHeader", resourceCulture);
             }
         }
         
@@ -228,6 +219,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;u&apos; for Unix Timestamp, &apos;ums&apos; for Unix Timestamp in milliseconds, &apos;ft&apos; for Windows file time, &apos;oa&apos; for OLE Automation date, &apos;exc&apos; for Excel&apos;s 1900 date value, &apos;exf&apos; for Excel&apos;s 1904 date value.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_InvalidInput_SupportedPrefixes {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_SupportedPrefixes", resourceCulture);
             }
         }
         

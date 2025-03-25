@@ -124,9 +124,19 @@ internal static class AvailableResultsList
                             IconType = ResultIconType.DateTime,
                         });
                     }
+                    catch (ArgumentOutOfRangeException e)
+                    {
+                        results.Add(new AvailableResult()
+                        {
+                            Value = "Can't convert input into custom format.",
+                            Label = formatParts[0] + " - " + Resources.Microsoft_plugin_timedate_show_details,
+                            AlternativeSearchTag = searchTags,
+                            IconType = ResultIconType.Error,
+                            ErrorDetails = e.Message,
+                        });
+                    }
                     catch (Exception e)
                     {
-                        // Wox.Plugin.Logger.Log.Exception($"Failed to convert into custom format {formatParts[0]}: {formatSyntax}", e, typeof(AvailableResultsList));
                         results.Add(new AvailableResult()
                         {
                             Value = Resources.Microsoft_plugin_timedate_InvalidCustomFormat + " " + formatSyntax,
@@ -289,13 +299,31 @@ internal static class AvailableResultsList
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                     IconType = ResultIconType.Date,
                 },
-                new AvailableResult()
+            });
+
+            try
+            {
+                results.Add(new AvailableResult()
                 {
                     Value = dateTimeNow.ToFileTime().ToString(CultureInfo.CurrentCulture),
                     Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                     IconType = ResultIconType.DateTime,
-                },
+                });
+            }
+            catch
+            {
+                results.Add(new AvailableResult()
+                {
+                    Value = "Can't convert into Windows file time.",
+                    Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
+                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
+                    IconType = ResultIconType.Error,
+                });
+            }
+
+            results.AddRange(new[]
+            {
                 new AvailableResult()
                 {
                     Value = dateTimeNowUtc.ToString("u"),

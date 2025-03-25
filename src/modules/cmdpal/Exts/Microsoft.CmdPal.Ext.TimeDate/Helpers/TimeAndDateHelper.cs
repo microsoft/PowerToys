@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Microsoft.VisualBasic;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
@@ -71,15 +72,15 @@ internal static class TimeAndDateHelper
     /// <returns>Number of week in the month</returns>
     internal static int GetWeekOfMonth(DateTime date, DayOfWeek formatSettingFirstDayOfWeek)
     {
-        var beginningOfMonth = new DateTime(date.Year, date.Month, 1);
-        var adjustment = 1; // We count from 1 to 7 and not from 0 to 6
+        var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
 
-        while (date.Date.AddDays(1).DayOfWeek != formatSettingFirstDayOfWeek)
-        {
-            date = date.AddDays(1);
-        }
+        // Calculate first day of first calendar week
+        var firstWeekDayAdjustment = (7 + (firstDayOfMonth.DayOfWeek - formatSettingFirstDayOfWeek)) % 7;
+        var firstWeekDayOfMonth = firstDayOfMonth.AddDays(-firstWeekDayAdjustment);
 
-        return (int)Math.Truncate((double)date.Subtract(beginningOfMonth).TotalDays / 7f) + adjustment;
+        // Calculate week of month for current date
+        var weekdaysOfMonth = (date - firstWeekDayOfMonth).Days;
+        return (weekdaysOfMonth / 7) + 1;
     }
 
     /// <summary>
@@ -134,36 +135,67 @@ internal static class TimeAndDateHelper
             // Known date/time format
             return true;
         }
-        else if (Regex.IsMatch(input, @"^u[\+-]?\d{1,10}$") && long.TryParse(input.TrimStart('u'), out var secondsU))
+        else if (Regex.IsMatch(input, @"^u[\+-]?\d+$"))
         {
             // Unix time stamp
             // We use long instead of int, because int is too small after 03:14:07 UTC 2038-01-19
+            var canParse = long.TryParse(input.TrimStart('u'), out var secondsU);
+
+            // Value has to be in the range from -2147483648 (13 December 1901 at 20:45:52 UTC) to 2147483647 (19 January 2038 at 03:14:07 UTC)
+            if (!canParse || secondsU < -2147483648 || secondsU > 2147483647)
+            {
+                LastInputParsingErrorReason = $"Input for Unix time stamp value does not fall within the range from -2147483648000 (13 December 1901 at 20:45:52 UTC) to 2147483647 (19 January 2038 at 03:14:07 UTC).";
+                timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                return false;
+            }
+
             timestamp = DateTimeOffset.FromUnixTimeSeconds(secondsU).LocalDateTime;
             return true;
         }
-        else if (Regex.IsMatch(input, @"^ums[\+-]?\d{1,13}$") && long.TryParse(input.TrimStart("ums".ToCharArray()), out var millisecondsUms))
+        else if (Regex.IsMatch(input, @"^ums[\+-]?\d+$"))
         {
             // Unix time stamp in milliseconds
             // We use long instead of int because int is too small after 03:14:07 UTC 2038-01-19
+            var canParse = long.TryParse(input.TrimStart("ums".ToCharArray()), out var millisecondsUms);
+
+            // Value has to be in the range from -2147483648000 (13 December 1901 at 20:45:52 UTC) to 2147483647000 (19 January 2038 at 03:14:07 UTC)
+            if (!canParse || millisecondsUms < -2147483648000 || millisecondsUms > 2147483647000)
+            {
+                LastInputParsingErrorReason = $"Input for Unix time stamp in milliseconds value does not fall within the range from -2147483648000 (13 December 1901 at 20:45:52 UTC) to 2147483647000 (19 January 2038 at 03:14:07 UTC).";
+                timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                return false;
+            }
+
             timestamp = DateTimeOffset.FromUnixTimeMilliseconds(millisecondsUms).LocalDateTime;
             return true;
         }
-        else if (Regex.IsMatch(input, @"^ft\d+$") && long.TryParse(input.TrimStart("ft".ToCharArray()), out var secondsFt))
+        else if (Regex.IsMatch(input, @"^ft\d+$"))
         {
+            var canParse = long.TryParse(input.TrimStart("ft".ToCharArray()), out var secondsFt);
+
             // Windows file time
+            // Value has to be in the range from 0 to 2650467707991000000
+            if (!canParse || secondsFt < 0 || secondsFt > 2650467707991000000)
+            {
+                LastInputParsingErrorReason = $"Input for Windows file time value does not fall within the range from 0 to 2650467707991000000.";
+                timestamp = new DateTime(1, 1, 1, 1, 1, 1);
+                return false;
+            }
+
             // DateTime.FromFileTime returns as local time.
             timestamp = DateTime.FromFileTime(secondsFt);
             return true;
         }
-        else if (Regex.IsMatch(input, @"^oa-?\d+[,.0-9]*$") && double.TryParse(input.TrimStart("oa".ToCharArray()), out var oADate))
+        else if (Regex.IsMatch(input, @"^oa[+-]?\d+[,.0-9]*$"))
         {
+            var canParse = double.TryParse(input.TrimStart("oa".ToCharArray()), out var oADate);
+
             // OLE Automation date
             // Input has to be in the range from -657434.99999999 to 2958465.99999999
             // DateTime.FromOADate returns as local time.
-            if (oADate < -657434.99999999 || oADate > 2958465.99999999)
+            if (!canParse || oADate < -657434.99999999 || oADate > 2958465.99999999)
             {
-                // Log.Error($"Input for OLE Automation date does not fall within the range from -657434.99999999 to 2958465.99999999: {oADate}", typeof(TimeAndDateHelper));
-                LastInputParsingErrorReason = $"Input for OLE Automation date does not fall within the range from -657434.99999999 to 2958465.99999999: {oADate}";
+                LastInputParsingErrorReason = $"Input for OLE Automation date does not fall within the range from -657434.99999999 to 2958465.99999999.";
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -171,23 +203,23 @@ internal static class TimeAndDateHelper
             timestamp = DateTime.FromOADate(oADate);
             return true;
         }
-        else if (Regex.IsMatch(input, @"^exc\d+[,.0-9]*$") && double.TryParse(input.TrimStart("exc".ToCharArray()), out var excDate))
+        else if (Regex.IsMatch(input, @"^exc[+-]?\d+[,.0-9]*$"))
         {
+            var canParse = double.TryParse(input.TrimStart("exc".ToCharArray()), out var excDate);
+
             // Excel's 1900 date value
             // Input has to be in the range from 1 to 2958465.99998843 and not 60 whole number
             // Because of a bug in Excel and the way it behaves before 3/1/1900 we have to adjust all inputs lower than 61 for +1
             // DateTime.FromOADate returns as local time.
-            if (excDate < 0 || excDate > 2958465.99998843)
+            if (!canParse || excDate < 0 || excDate > 2958465.99998843)
             {
-                // Log.Error($"Input for Excel's 1900 date value does not fall within the range from 0 to 2958465.99998843: {excDate}", typeof(TimeAndDateHelper));
-                LastInputParsingErrorReason = $"Input for Excel's 1900 date value does not fall within the range from 0 to 2958465.99998843: {excDate}";
+                LastInputParsingErrorReason = $"Input for Excel's 1900 date value does not fall within the range from 0 to 2958465.99998843.";
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
 
             if (Math.Truncate(excDate) == 0 || Math.Truncate(excDate) == 60)
             {
-                // Log.Error($"Cannot parse {excDate} as Excel's 1900 date value because it is a fake date. (In Excel 0 stands for 0/1/1900 and this date doesn't exist. And 60 stands for 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123.)", typeof(TimeAndDateHelper));
                 LastInputParsingErrorReason = $"Cannot parse {excDate} as Excel's 1900 date value because it is a fake date. (In Excel 0 stands for 0/1/1900 and this date doesn't exist. And 60 stands for 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123.)";
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
@@ -197,16 +229,17 @@ internal static class TimeAndDateHelper
             timestamp = DateTime.FromOADate(excDate);
             return true;
         }
-        else if (Regex.IsMatch(input, @"^exf\d+[,.0-9]*$") && double.TryParse(input.TrimStart("exf".ToCharArray()), out var exfDate))
+        else if (Regex.IsMatch(input, @"^exf[+-]?\d+[,.0-9]*$"))
         {
+            var canParse = double.TryParse(input.TrimStart("exf".ToCharArray()), out var exfDate);
+
             // Excel's 1904 date value
             // Input has to be in the range from 0 to 2957003.99998843
             // Because Excel uses 01/01/1904 as base we need to adjust for +1462
             // DateTime.FromOADate returns as local time.
-            if (exfDate < 0 || exfDate > 2957003.99998843)
+            if (!canParse || exfDate < 0 || exfDate > 2957003.99998843)
             {
-                // Log.Error($"Input for Excel's 1904 date value does not fall within the range from 0 to 2957003.99998843: {exfDate}", typeof(TimeAndDateHelper));
-                LastInputParsingErrorReason = $"Input for Excel's 1904 date value does not fall within the range from 0 to 2957003.99998843: {exfDate}";
+                LastInputParsingErrorReason = $"Input for Excel's 1904 date value does not fall within the range from 0 to 2957003.99998843.";
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -258,7 +291,11 @@ internal static class TimeAndDateHelper
         result = _regexCustomDateTimeEab.Replace(result, eraShortFormat);
 
         // WFT: Week of Month
-        result = _regexCustomDateTimeWft.Replace(result, date.ToFileTime().ToString(CultureInfo.CurrentCulture));
+        if (_regexCustomDateTimeWft.IsMatch(result))
+        {
+            // Speacial handling as some Excel and OA date values can't convert.
+            result = _regexCustomDateTimeWft.Replace(result, date.ToFileTime().ToString(CultureInfo.CurrentCulture));
+        }
 
         // UXT: Unix time stamp
         result = _regexCustomDateTimeUxt.Replace(result, unix.ToString(CultureInfo.CurrentCulture));

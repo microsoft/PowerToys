@@ -41,16 +41,22 @@ internal static class ResultHelper
     internal static ListItem CreateNumberErrorResult() => new ListItem(new NoOpCommand())
     {
         Title = Resources.Microsoft_plugin_timedate_ErrorResultTitle,
-        Subtitle = Resources.Microsoft_plugin_timedate_show_details,
         Icon = ErrorIcon,
-        Details = new Details() { Body = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle },
+        Details = new Details()
+        {
+            Title = Resources.Microsoft_plugin_timedate_InvalidInput_DetailsHeader,
+            Body = "* " + Resources.Microsoft_plugin_timedate_InvalidInput_SupportedPrefixes.Replace(",", "\n\n*"),
+        },
     };
 
     internal static ListItem CreateInvalidInputErrorResult() => new ListItem(new NoOpCommand())
     {
         Title = Resources.Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle,
-        Subtitle = Resources.Microsoft_plugin_timedate_show_details,
         Icon = ErrorIcon,
-        Details = new Details() { Body = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle },
+        Details = new Details()
+        {
+            Title = Resources.Microsoft_plugin_timedate_InvalidInput_DetailsHeader,
+            Body = "* " + Resources.Microsoft_plugin_timedate_InvalidInput_SupportedPrefixes.Replace(",", "\n\n*"),
+        },
     };
 }

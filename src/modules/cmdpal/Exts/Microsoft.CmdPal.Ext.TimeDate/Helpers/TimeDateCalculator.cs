@@ -37,8 +37,11 @@ public sealed partial class TimeDateCalculator
         var isKeywordSearch = true;
 
         // Switch search type
-        if (isEmptySearchInput || (!isKeywordSearch && settings.OnlyDateTimeNowGlobal))
+        if (isEmptySearchInput || (!isKeywordSearch && settings.OnlyDateTimeNowGlobal) || query == "-")
         {
+            // Ensure query is not -
+            query = string.Empty;
+
             // Return all results for system time/date on empty keyword search
             // or only time, date and now results for system time on global queries if the corresponding setting is enabled
             availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings));
@@ -88,6 +91,7 @@ public sealed partial class TimeDateCalculator
             }
         }
 
+        /* htcreek:Code obselete with current CmdPal behavior.
         // If search term is only a number that can't be parsed return an error message
         if (!isEmptySearchInput && results.Count == 0 && Regex.IsMatch(query, @"\w+\d+.*$") && !query.Any(char.IsWhiteSpace) && (TimeAndDateHelper.IsSpecialInputParsing(query) || !Regex.IsMatch(query, @"\d+[\.:/]\d+")))
         {
@@ -98,16 +102,21 @@ public sealed partial class TimeDateCalculator
                 if (!string.IsNullOrEmpty(TimeAndDateHelper.LastInputParsingErrorReason))
                 {
                     er.Details = new Details() { Body = TimeAndDateHelper.LastInputParsingErrorReason };
-                    er.Title += " - " + Resources.Microsoft_plugin_timedate_show_details;
                 }
 
                 results.Add(er);
             }
-        }
+        } */
 
         if (results.Count == 0)
         {
-            results.Add(ResultHelper.CreateInvalidInputErrorResult());
+            var er = ResultHelper.CreateInvalidInputErrorResult();
+            if (!string.IsNullOrEmpty(TimeAndDateHelper.LastInputParsingErrorReason))
+            {
+                er.Details = new Details() { Body = TimeAndDateHelper.LastInputParsingErrorReason };
+            }
+
+            results.Add(er);
         }
 
         return results;
