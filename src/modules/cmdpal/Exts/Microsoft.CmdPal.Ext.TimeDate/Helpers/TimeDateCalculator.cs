@@ -94,7 +94,14 @@ public sealed partial class TimeDateCalculator
             // Without plugin key word show only if message is not hidden by setting
             if (!settings.HideNumberMessageOnGlobalQuery)
             {
-                results.Add(ResultHelper.CreateNumberErrorResult());
+                var er = ResultHelper.CreateNumberErrorResult();
+                if (!string.IsNullOrEmpty(TimeAndDateHelper.LastInpurParsingErrorReason))
+                {
+                    er.Details = new Details() { Body = TimeAndDateHelper.LastInpurParsingErrorReason };
+                    er.Title += " - " + Resources.Microsoft_plugin_timedate_show_details;
+                }
+
+                results.Add(er);
             }
         }
 

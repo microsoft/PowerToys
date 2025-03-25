@@ -2,9 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Globalization;
-using System.IO;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
@@ -33,6 +31,8 @@ internal static class ResultHelper
 
     public static IconInfo TimeDateIcon { get; } = new IconInfo("\uEC92");
 
+    public static IconInfo ErrorIcon { get; } = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.light.png", "Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.dark.png");
+
     /// <summary>
     /// Gets a result with an error message that only numbers can't be parsed
     /// </summary>
@@ -40,14 +40,16 @@ internal static class ResultHelper
     internal static ListItem CreateNumberErrorResult() => new ListItem(new NoOpCommand())
     {
         Title = Resources.Microsoft_plugin_timedate_ErrorResultTitle,
-        Subtitle = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle,
-        Icon = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.light.png", "Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.dark.png"),
+        Subtitle = Resources.Microsoft_plugin_timedate_show_details,
+        Icon = ErrorIcon,
+        Details = new() { Body = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle },
     };
 
     internal static ListItem CreateInvalidInputErrorResult() => new ListItem(new NoOpCommand())
     {
         Title = Resources.Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle,
-        Subtitle = Resources.Microsoft_plugin_timedate_InvalidInput_ErrorMessageSubTitle,
-        Icon = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.light.png", "Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.dark.png"),
+        Subtitle = Resources.Microsoft_plugin_timedate_show_details,
+        Icon = ErrorIcon,
+        Details = new() { Body = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle },
     };
 }

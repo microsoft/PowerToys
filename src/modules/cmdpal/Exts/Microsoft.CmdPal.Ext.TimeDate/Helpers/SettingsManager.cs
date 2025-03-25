@@ -94,6 +94,12 @@ public class SettingsManager : JsonSettingsManager
         Resources.Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery,
         true); // TODO -- double check default value
 
+    private readonly TextSetting _customFormats = new(
+        Namespaced(nameof(CustomFormats)),
+        Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
+        Resources.Microsoft_plugin_timedate_Setting_CustomFormats + "\r" + string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "WOM", "WOY", "EAB", "WFT", "UXT", "UMS", "OAD", "EXC", "EXF", "UTC:"),
+        string.Empty);
+
     public int FirstWeekOfYear
     {
         get
@@ -142,6 +148,8 @@ public class SettingsManager : JsonSettingsManager
 
     public bool HideNumberMessageOnGlobalQuery => _hideNumberMessageOnGlobalQuery.Value;
 
+    public List<string> CustomFormats => _customFormats.Value.Split("\r").ToList();
+
     internal static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
@@ -155,12 +163,16 @@ public class SettingsManager : JsonSettingsManager
     {
         FilePath = SettingsJsonPath();
 
-        Settings.Add(_firstWeekOfYear);
-        Settings.Add(_firstDayOfWeek);
         Settings.Add(_onlyDateTimeNowGlobal);
         Settings.Add(_timeWithSeconds);
         Settings.Add(_dateWithWeekday);
         Settings.Add(_hideNumberMessageOnGlobalQuery);
+        Settings.Add(_firstWeekOfYear);
+        Settings.Add(_firstDayOfWeek);
+
+        _customFormats.Multiline = true;
+        _customFormats.Placeholder = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)\rMyUtcFormat=UTC:hh:mm:ss";
+        Settings.Add(_customFormats);
 
         // Load settings from file upon initialization
         LoadSettings();
