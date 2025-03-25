@@ -12,18 +12,21 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Foundation.Metadata;
+using Windows.UI.ViewManagement;
 using HB = RegistryPreviewUILib.HexBox;
 
 namespace RegistryPreviewUILib
 {
     public sealed partial class RegistryPreviewMainPage : Page
     {
+        private static bool _isDataPreviewHexBoxFocused;
         private static bool _isDataPreviewHexBoxLoaded;
 
         internal async Task ShowExtendedDataPreview(string name, string type, string value)
         {
             // Create dialog
             _isDataPreviewHexBoxLoaded = false;
+            _isDataPreviewHexBoxFocused = false;
             var panel = new StackPanel()
             {
                 Spacing = 16,
@@ -178,12 +181,13 @@ namespace RegistryPreviewUILib
                 Columns = 8,
                 FontSize = 13,
                 RequestedTheme = panel.ActualTheme,
-                AddressBrush = (Brush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"],
-                AlternatingDataColumnTextBrush = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
-                SelectionTextBrush = (Brush)Application.Current.Resources["HexBox_SelectionTextBrush"],
-                SelectionBrush = (Brush)Application.Current.Resources["HexBox_SelectionBackgroundBrush"],
-                BorderThickness = (Thickness)Application.Current.Resources["HexBox_ControlBorderThickness"],
+                AddressBrush = (SolidColorBrush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"],
+                AlternatingDataColumnTextBrush = (SolidColorBrush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                SelectionTextBrush = (SolidColorBrush)Application.Current.Resources["HexBox_SelectionTextBrush"],
+                SelectionBrush = (SolidColorBrush)Application.Current.Resources["HexBox_SelectionBackgroundBrush"],
+                VerticalSeparatorLineBrush = (SolidColorBrush)Application.Current.Resources["HexBox_VerticalLineBrush"],
                 BorderBrush = (LinearGradientBrush)Application.Current.Resources["HexBox_ControlBorderBrush"],
+                BorderThickness = (Thickness)Application.Current.Resources["HexBox_ControlBorderThickness"],
                 CornerRadius = (CornerRadius)Application.Current.Resources["ControlCornerRadius"],
                 DataFormat = HB.DataFormat.Hexadecimal,
                 DataSignedness = HB.DataSignedness.Unsigned,
@@ -305,6 +309,7 @@ namespace RegistryPreviewUILib
         {
             var hexBox = (HB.HexBox)sender;
 
+            // _isDataPreviewHexBoxFocused = true;
             hexBox.BorderThickness = (Thickness)Application.Current.Resources["HexBox_ControlBorderFocusedThickness"];
             hexBox.BorderBrush = (LinearGradientBrush)Application.Current.Resources["HexBox_ControlBorderFocusedBrush"];
         }
@@ -319,6 +324,7 @@ namespace RegistryPreviewUILib
             // Workaround: Verify that the newly focused control isn't the context menu of the HexBox control
             if (FocusManager.GetFocusedElement(hexBox.XamlRoot).GetType() != typeof(MenuFlyoutPresenter))
             {
+                // _isDataPreviewHexBoxFocused = false;
                 hexBox.BorderThickness = (Thickness)Application.Current.Resources["HexBox_ControlBorderThickness"];
                 hexBox.BorderBrush = (LinearGradientBrush)Application.Current.Resources["HexBox_ControlBorderBrush"];
             }

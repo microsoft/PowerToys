@@ -5,7 +5,7 @@
 // <history>
 //     2020-... created by Filip Jeremic (fjeremic) as "HexView.Wpf".
 //     2024-... republished by @hotkidfamily as "HexBox.WinUI".
-//     2025 Included in PowerToys.
+//     2025 Included in PowerToys. (Branch master; commit 72dcf64dc858c693a7a16887004c8ddbab61fce7.)
 // </history>
 
 namespace RegistryPreviewUILib.HexBox

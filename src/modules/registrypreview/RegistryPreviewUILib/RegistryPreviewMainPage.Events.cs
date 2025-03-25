@@ -389,6 +389,9 @@ namespace RegistryPreviewUILib
             }
             catch
             {
+#if DEBUG
+                throw;
+#endif
             }
             finally
             {
