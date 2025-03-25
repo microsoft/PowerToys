@@ -979,8 +979,8 @@ Mouse Jump:
    - [ ] Windows System Command - test `empty recycle bin`.
    - [ ] Windows System Command - test `shutdown`.
    - [ ] Windows System Command - Click your network adapter item and paste the result at notepad.
-   - [ ] Bookmarks - Add bookmarks to command palette.
-   - [ ] Bookmarks - Open your bookmarks (in Command Palette).
+   - [ ] Bookmark - Add bookmarks to command palette.
+   - [ ] Bookmark - Open your bookmarks (in Command Palette).
  - [ ] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
  * Test Extensions Manager
    - [ ] Enable/disable extensions and verify changes are picked up by Command Palette

@@ -17,7 +17,7 @@
  - [x] verify the settings are preserved and FancyZones configuration is still the same
  - [ ] test installing as SYSTEM (LocalSystem account)
    * Download PsTools from https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
-   * Run PowerToys installer with psexec tool `psexec.exe -sid <path_to_installer_exe` <mark> _Encouter some errors_</mark>
+   * Run PowerToys installer with psexec tool `psexec.exe -sid <path_to_installer_exe` <mark> _Encouter some errors--Wix3 known issue_</mark>
    * Brief check if all modules are working
 
  * PER-USER and PER-MACHINE TESTS:
