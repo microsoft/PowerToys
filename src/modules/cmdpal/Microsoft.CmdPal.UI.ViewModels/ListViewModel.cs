@@ -128,7 +128,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         try
         {
-            var newItems = _model.Unsafe!.GetItems();
+            IListItem[] newItems = _model.Unsafe!.GetItems();
 
             // Collect all the items into new viewmodels
             Collection<ListItemViewModel> newViewModels = [];
@@ -136,7 +136,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // TODO we can probably further optimize this by also keeping a
             // HashSet of every ExtensionObject we currently have, and only
             // building new viewmodels for the ones we haven't already built.
-            foreach (var item in newItems)
+            foreach (IListItem? item in newItems)
             {
                 ListItemViewModel viewModel = new(item, new(this));
 
@@ -145,6 +145,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     newViewModels.Add(viewModel);
                 }
+            }
+
+            IEnumerable<ListItemViewModel> firstTwenty = newViewModels.Take(20);
+            foreach (ListItemViewModel? item in firstTwenty)
+            {
+                item?.SafeInitializeProperties();
             }
 
             // Cancel any ongoing search
@@ -158,17 +164,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 // Now that we have new ViewModels for everything from the
                 // extension, smartly update our list of VMs
                 ListHelpers.InPlaceUpdateList(Items, newViewModels);
-            }
-
-            foreach (var item in newViewModels)
-            {
-                item.SafeFastInit();
-            }
-
-            var firstTwenty = newViewModels.Take(20);
-            foreach (var item in firstTwenty)
-            {
-                item?.SafeInitializeProperties();
             }
 
             // TODO: Iterate over everything in Items, and prune items from the
@@ -238,7 +233,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             iterable = Items.ToArray();
         }
 
-        foreach (var item in iterable)
+        foreach (ListItemViewModel item in iterable)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -271,8 +266,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return 1;
         }
 
-        var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
-        var descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
+        MatchResult nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
+        MatchResult descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
         return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max();
     }
 
@@ -285,7 +280,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // Similarly stolen from ListHelpers.FilterList
     public static IEnumerable<ListItemViewModel> FilterList(IEnumerable<ListItemViewModel> items, string query)
     {
-        var scores = items
+        IOrderedEnumerable<ScoredListItemViewModel> scores = items
             .Where(i => !i.IsInErrorState)
             .Select(li => new ScoredListItemViewModel() { ViewModel = li, Score = ScoreListItem(query, li) })
             .Where(score => score.Score > 0)
@@ -364,7 +359,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         base.InitializeProperties();
 
-        var model = _model.Unsafe;
+        IListPage? model = _model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -390,7 +385,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public void LoadMoreIfNeeded()
     {
-        var model = this._model.Unsafe;
+        IListPage? model = this._model.Unsafe;
         if (model == null)
         {
             return;
@@ -417,7 +412,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         base.FetchProperty(propertyName);
 
-        var model = this._model.Unsafe;
+        IListPage? model = this._model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -480,13 +475,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         lock (_listLock)
         {
-            foreach (var item in Items)
+            foreach (ListItemViewModel item in Items)
             {
                 item.SafeCleanup();
             }
 
             Items.Clear();
-            foreach (var item in FilteredItems)
+            foreach (ListItemViewModel item in FilteredItems)
             {
                 item.SafeCleanup();
             }
@@ -494,7 +489,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             FilteredItems.Clear();
         }
 
-        var model = _model.Unsafe;
+        IListPage? model = _model.Unsafe;
         if (model != null)
         {
             model.ItemsChanged -= Model_ItemsChanged;
