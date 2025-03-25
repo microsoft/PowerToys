@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Pages;
