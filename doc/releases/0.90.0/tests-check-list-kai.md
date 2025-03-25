@@ -52,7 +52,7 @@
 ## Command Palette
  * Check if Command Palette successfully install/uninstall with PowerToys.
    - [X] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
-   - [ ] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+   - [X] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
  * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
    - [X] when PowerToys is running unelevated on start-up
    - [X] when PowerToys is running as admin on start-up
