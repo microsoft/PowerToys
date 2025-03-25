@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="element">Element object</param>
         /// <param name="scenarioSubname">additional scenario name if two or more scenarios in one test</param>
         [RequiresUnreferencedCode("This method uses reflection which may not be compatible with trimming.")]
-        public static void AreEqual(TestContext? testContext, Element element, string scenarioSubname = "")
+        public static void AreEqual(TestContext? testContext, Element element, System.Reflection.Assembly callerAssembly, string scenarioSubname = "")
         {
             if (element == null)
             {
@@ -48,8 +48,7 @@ namespace Microsoft.PowerToys.UITest
                 scenarioSubname = string.Join("_", callerClassName, callerName, scenarioSubname.Trim());
             }
 
-            var callerAssembly = callerMethod!.DeclaringType!.Assembly;
-            var baselineImageResourceName = callerAssembly.GetManifestResourceNames().Where(name => name.Contains(scenarioSubname)).FirstOrDefault();
+            var baselineImageResourceName = callerMethod!.DeclaringType!.Assembly.GetManifestResourceNames().Where(name => name.Contains(scenarioSubname)).FirstOrDefault();
 
             var tempTestImagePath = GetTempFilePath(scenarioSubname, "test", ".png");
 
@@ -66,7 +65,8 @@ namespace Microsoft.PowerToys.UITest
 
             bool isSame = false;
 
-            using (var baselineImage = new Bitmap(callerAssembly.GetManifestResourceStream(baselineImageResourceName)))
+#pragma warning disable CS8604 // Possible null reference argument.
+            using (var baselineImage = new Bitmap(callerMethod!.DeclaringType!.Assembly.GetManifestResourceStream(baselineImageResourceName)))
             {
                 using (var testImage = new Bitmap(tempTestImagePath))
                 {
@@ -79,6 +79,7 @@ namespace Microsoft.PowerToys.UITest
                     }
                 }
             }
+#pragma warning restore CS8604 // Possible null reference argument.
 
             if (!isSame)
             {

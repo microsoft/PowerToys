@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.UITest
     /// Base class that should be inherited by all Test Classes.
     /// </summary>
     [TestClass]
-    public class UITestBase
+    public class UITestBase : IDisposable
     {
         public required TestContext TestContext { get; set; }
 
@@ -26,12 +26,11 @@ namespace Microsoft.PowerToys.UITest
         private readonly PowerToysModule scope;
         private readonly WindowSize size;
         private SessionHelper? sessionHelper;
+        private System.Threading.Timer? screenshotTimer;
+        private string? screenshotDirectory;
 
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
         {
-            // Wait for 30s after env setup
-            Task.Delay(30000).Wait();
-
             this.scope = scope;
             this.size = size;
         }
@@ -42,6 +41,14 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
+            // Create tmp path for screenshots
+            string tempPath = Path.GetTempPath();
+            screenshotDirectory = Path.Combine(tempPath, "UITestScreenshots_" + Guid.NewGuid().ToString());
+            Directory.CreateDirectory(screenshotDirectory);
+
+            // Take screenshot every 1 second
+            screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
+
             this.sessionHelper = new SessionHelper(scope).Init();
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
 
@@ -62,15 +69,29 @@ namespace Microsoft.PowerToys.UITest
         [TestCleanup]
         public void TestCleanup()
         {
+            screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+            Dispose();
+
             if (TestContext.CurrentTestOutcome is UnitTestOutcome.Failed
                 or UnitTestOutcome.Error
                 or UnitTestOutcome.Unknown)
             {
-                this.CaptureLastScreenshot();
+                // this.CaptureLastScreenshot();
+                MoveScreenShotsToTestResultsDirectory();
+            }
+            else
+            {
+                Directory.Delete(screenshotDirectory!, true);
             }
 
             this.Session.Cleanup();
             this.sessionHelper!.Cleanup();
+        }
+
+        public void Dispose()
+        {
+            screenshotTimer?.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -283,6 +304,21 @@ namespace Microsoft.PowerToys.UITest
 
             // Save screenshot to screenshotPath & upload to test attachment
             this.TestContext.AddResultFile(screenshotPath);
+        }
+
+        protected void MoveScreenShotsToTestResultsDirectory()
+        {
+            if (screenshotDirectory != null)
+            {
+                Console.WriteLine($"screenshotDirectory: {screenshotDirectory}");
+                Console.WriteLine($"testResultDirectory: {this.TestContext.TestResultsDirectory ?? string.Empty}");
+
+                foreach (string file in Directory.GetFiles(screenshotDirectory))
+                {
+                    string destFile = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, Path.GetFileName(file));
+                    File.Move(file, destFile);
+                }
+            }
         }
     }
 }
