@@ -42,12 +42,8 @@ public sealed partial class SettingsWindow : Window,
 
     private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
-        var selectedItem = args.InvokedItem;
-
-        if (selectedItem is not null)
-        {
-            Navigate(selectedItem.ToString()!);
-        }
+        var selectedItem = args.InvokedItemContainer;
+        Navigate((selectedItem.Tag as string)!);
     }
 
     private void Navigate(string page)
