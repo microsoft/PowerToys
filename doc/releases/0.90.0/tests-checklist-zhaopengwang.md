@@ -77,89 +77,86 @@ Disable FZ and clear `app-zone-history.json` before starting. FancyZones should 
 
 ### Snapped window behavior
 - [x] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
-- [ ] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone on the secondary monitor. Disconnect the secondary monitor (the window will be moved to the primary monitor). Reconnect the secondary monitor. Verify the window returned to its zone. 
-- [ ] `Keep windows in their zones when the screen resolution changes` off, snap a window to a zone, change the screen resolution or scaling, verify window didn't change its size and position.
+- [x] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone on the secondary monitor. Disconnect the secondary monitor (the window will be moved to the primary monitor). Reconnect the secondary monitor. Verify the window returned to its zone. 
+- [x] `Keep windows in their zones when the screen resolution changes` off, snap a window to a zone, change the screen resolution or scaling, verify window didn't change its size and position.
 
 Enable `During zone layout changes, windows assigned to a zone will match new size/positions` and prepare layouts with 1 and 3 zones where zone size/positions are different.
-- [ ] Snap a window to zone 1, change the layout, verify window changed its size/position.
-- [ ] Snap a window to zone 3, change the layout, verify window didn't change its size/position because another layout doesn't have a zone with this zone number.
-- [ ] Snap a window to zones 1-2, change the layout, verify window changed its size/position to fit zone 1.
-- [ ] Snap a window to zones 1-2, change the layout (the window will be snapped to zone 1), then return back to the previous layout, verify the window snapped to 1-2 zones.
-- [ ] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
+- [x] Snap a window to zone 1, change the layout, verify window changed its size/position.
+- [x] Snap a window to zone 3, change the layout, verify window didn't change its size/position because another layout doesn't have a zone with this zone number.
+- [x] Snap a window to zones 1-2, change the layout, verify window changed its size/position to fit zone 1.
+- [x] Snap a window to zones 1-2, change the layout (the window will be snapped to zone 1), then return back to the previous layout, verify the window snapped to 1-2 zones.
+- [x] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
 
 Enable `Move newly created windows to their last known zone`.
-- [ ] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
-- [ ] Snap a window to zones on the primary and secondary monitors. Close and reopen the app. Verify it's snapped to the zone on the active monitor.
-- [ ] Snap a window to the secondary monitor (use a different app or unsnap the window from the zone on the primary monitor), close and reopen the window. Verify it's snapped to its zone. 
-- [ ] Snap a window, turn off FancyZones, move that window, turn FZ on. Verify window returned to its zone.
-- [ ] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
-- [ ] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
+- [x] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
+- [x] Snap a window to zones on the primary and secondary monitors. Close and reopen the app. Verify it's snapped to the zone on the active monitor.
+- [x] Snap a window to the secondary monitor (use a different app or unsnap the window from the zone on the primary monitor), close and reopen the window. Verify it's snapped to its zone. 
+- [x] Snap a window, turn off FancyZones, move that window, turn FZ on. Verify window returned to its zone.
+- [x] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
+- [x] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
 
 Enable `Move newly created windows to the current active monitor`.
-- [ ] Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
-- [ ] Open a window that was snapped on the current virtual desktop and current monitor, verify it's opened in its zone.
-- [ ] Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
-- [ ] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
+- [x] Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
+- [x] Open a window that was snapped on the current virtual desktop and current monitor, verify it's opened in its zone.
+- [x] Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
+- [x] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
 
-- [ ] Enable `Allow popup windows snapping` and `Allow child windows snapping`, try to snap Notepad++ search window. Verify it can be snapped.
-- [ ] Enable `Allow popup windows snapping`, snap Teams, verify a popup window appears in its usual position.
-- [ ] Enable `Allow popup windows snapping`, snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
-- [ ] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can be snapped to a zone.
-- [ ] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can't be snapped to a zone.
+- [x] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can be snapped to a zone.
+- [x] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer), verify it can't be snapped to a zone.
 
 ### Switch between windows in the current zone
 Enable `Switch between windows in the current zone` (default shortcut is `Win + PgUp/PgDown`)
-- [ ] Snap several windows to one zone, verify switching works.
-- [ ] Snap several windows to one zone, switch virtual desktop, return back, verify window switching works.
-- [ ] Disable `Switch between windows in the current zone`, verify switching doesn't work.
+- [x] Snap several windows to one zone, verify switching works.
+- [x] Snap several windows to one zone, switch virtual desktop, return back, verify window switching works.
+- [x] Disable `Switch between windows in the current zone`, verify switching doesn't work.
   
 ### Override Windows Snap
-- [ ] Disable `Override Windows Snap`, verify it's disabled.
+- [x] Disable `Override Windows Snap`, verify it's disabled.
 
 Enable `Override Windows Snap`.
 Select Move windows based on `Zone index`.
-- [ ] Open the previously not snapped window, press `Win`+`LeftArrow` / `Win`+`RightArrow`, verify it's snapped to a first/last zone.
-- [ ] Verify `Win`+`LeftArrow` moves the window to a zone with the previous index.
-- [ ] Verify `Win`+`RightArrow` moves the window to a zone with the next index.
-- [ ] Verify `Win`+`ArrowUp` and `Win`+`ArrowDown` work as usual.
+- [x] Open the previously not snapped window, press `Win`+`LeftArrow` / `Win`+`RightArrow`, verify it's snapped to a first/last zone.
+- [x] Verify `Win`+`LeftArrow` moves the window to a zone with the previous index.
+- [x] Verify `Win`+`RightArrow` moves the window to a zone with the next index.
+- [x] Verify `Win`+`ArrowUp` and `Win`+`ArrowDown` work as usual.
 
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
+- [x] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
+- [x] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
 
 One monitor:
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
 
 Two and more monitors:
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles window position moving it from the first zone on the current monitor to the last zone of the left (or rightmost, if the current monitor is leftmost) monitor.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles window position moving it from the last zone on the current monitor to the first zone of the right (or leftmost, if the current monitor is rightmost) monitor.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles window position moving it from the first zone on the current monitor to the last zone of the left (or rightmost, if the current monitor is leftmost) monitor.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles window position moving it from the last zone on the current monitor to the first zone of the right (or leftmost, if the current monitor is rightmost) monitor.
 
 Select Move windows based on `Relative position`.
-- [ ] Open the previously not snapped window, press `Win`+`Arrow`, verify it's snapped.
-- [ ] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow`. Verify the window is snapped to all zones.
-- [ ] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow` and return it back using the opposite arrow. Verify it could be reverted while you hold `Ctrl`+`Alt`+`Win`.
+- [x] Open the previously not snapped window, press `Win`+`Arrow`, verify it's snapped.
+- [x] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow`. Verify the window is snapped to all zones.
+- [x] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow` and return it back using the opposite arrow. Verify it could be reverted while you hold `Ctrl`+`Alt`+`Win`.
 
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within one monitor.
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` cycles the window position to the right within one monitor.
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`UpArrow` cycles the window position up within one monitor.
-- [ ] `Move windows between zones across all monitors` disabled. Verify `Win`+`DownArrow` cycles the window position down within one monitor.
+- [x] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within one monitor.
+- [x] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` cycles the window position to the right within one monitor.
+- [x] `Move windows between zones across all monitors` disabled. Verify `Win`+`UpArrow` cycles the window position up within one monitor.
+- [x] `Move windows between zones across all monitors` disabled. Verify `Win`+`DownArrow` cycles the window position down within one monitor.
 
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within all monitors.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles the window position to the right within all monitors.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`UpArrow` cycles the window position up within all monitors.
-- [ ] `Move windows between zones across all monitors` enabled. Verify `Win`+`DownArrow` cycles the window position down within all monitors.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within all monitors.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles the window position to the right within all monitors.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`UpArrow` cycles the window position up within all monitors.
+- [x] `Move windows between zones across all monitors` enabled. Verify `Win`+`DownArrow` cycles the window position down within all monitors.
 
 ### Layout apply
 Enable `Enable quick layout switch`, assign numbers to custom layouts.
-- [ ] Switch with `Win` + `Ctrl` + `Alt` + `key`.
-- [ ] Switch with just a key while dragging a window.
-- [ ] Turn `Flash zones when switching layout` on/off, verify it's flashing/not flashing after pressing the shortcut.
-- [ ] Disable `Enable quick layout switch`, verify shortcuts don't work.
-- [ ] Disable spacing on any grid layout, verify that there is no space between zones while dragging a window.
-- [ ] Create a new virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
-- [ ] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
-- [ ] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
-- [ ] Apply a grid layout, change the screen resolution or scaling, verify that the assigned layout fits the screen. NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
+- [x] Switch with `Win` + `Ctrl` + `Alt` + `key`.
+- [x] Switch with just a key while dragging a window.
+- [x] Turn `Flash zones when switching layout` on/off, verify it's flashing/not flashing after pressing the shortcut.
+- [x] Disable `Enable quick layout switch`, verify shortcuts don't work.
+- [x] Disable spacing on any grid layout, verify that there is no space between zones while dragging a window.
+- [x] Create a new virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
+- [x] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
+- [x] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
+- [x] Apply a grid layout, change the screen resolution or scaling, verify that the assigned layout fits the screen. NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
 
 ### Layout reset
 * Test layout resetting.
@@ -168,173 +165,157 @@ Enable `Enable quick layout switch`, assign numbers to custom layouts.
    * Remove `CurrentVirtualDesktop` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\VirtualDesktops` 
    * Remove `VirtualDesktopIDs` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops`
 
-- [ ] Test screen locking
+- [x] Test screen locking
    * Set custom layouts on each monitor
    * Lock screen / unplug monitor / plug monitor
    * Verify that layouts weren't reset to defaults
    
-- [ ] Test restart
+- [x] Test restart
    * Set custom layouts on each monitor
    * Restart the computer
    * Verify that layouts weren't reset to defaults
 
-- [ ] Test applying default layouts on reset
+- [x] Test applying default layouts on reset
    * Set default horizontal and vertical layouts
    * Delete `applied-layouts.json`
    * Verify that selected default layout is applied according to configuration
 
 ### Span zones across monitors
-- [ ] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
+- [x] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
 
 Repeat the previous subsections steps after enabling `Allow zones to span across monitors`
-- [ ] Dragging
-- [ ] Snapping
-- [ ] Snapped window behavior
-- [ ] Switch between windows in the current zone
-- [ ] Override Windows Snap
-- [ ] Layout apply
-- [ ] Layout reset
-
-## File Explorer Add-ons
- * Running as user:
-   * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane shows the correct content
-   * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane works for the SVG files
-   - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
-   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the PDF file
-   - [ ] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
-   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the gcode file
-   - [ ] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
-   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
-   * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane works for source files (shows syntax highlighting)
- * Running as admin (or user since recently):
-   * open the Settings and turn off the Preview Pane and Icon Previous toggles
-   * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane doesn't show any content
-   * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane doesn't show the preview for the SVG files
-   * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
-   - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
-   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the PDF file
-   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the gcode file
-   * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
-   * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
+- [x] Dragging
+- [x] Snapping
+- [x] Snapped window behavior
+- [x] Switch between windows in the current zone
+- [x] Override Windows Snap
+- [x] Layout apply
+- [x] Layout reset
 
 ## Image Resizer
-- [ ] Disable the Image Resizer and check that `Resize images` is absent in the context menu
-- [ ] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
-- [ ] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
-- [ ] Resize one image
-- [ ] Resize multiple images
-- [ ] Open the image resizer to resize a `.gif` file and verify the "Gif files with animations may not be correctly resized." warning appears.
+- [x] Disable the Image Resizer and check that `Resize images` is absent in the context menu
+- [x] Enable the Image Resizer and check that `Resize images` is present in the context menu. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
+- [x] Remove one image size and add a custom image size. Open the Image Resize window from the context menu and verify that changes are populated
+- [x] Resize one image
+- [x] Resize multiple images
+- [x] Open the image resizer to resize a `.gif` file and verify the "Gif files with animations may not be correctly resized." warning appears.
 
-- [ ] Resize images with `Fill` option
-- [ ] Resize images with `Fit` option
-- [ ] Resize images with `Stretch` option
+- [x] Resize images with `Fill` option
+- [x] Resize images with `Fit` option
+- [x] Resize images with `Stretch` option
 
-- [ ] Resize images using dimension: Centimeters
-- [ ] Resize images using dimension: Inches
-- [ ] Resize images using dimension: Percents
-- [ ] Resize images using dimension: Pixels
+- [x] Resize images using dimension: Centimeters
+- [x] Resize images using dimension: Inches
+- [x] Resize images using dimension: Percents
+- [x] Resize images using dimension: Pixels
 
-- [ ] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
-- [ ] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
-- [ ] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
-- [ ] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
-- [ ] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
+- [x] Change `Filename format` to `%1 - %2 - %3 - %4 - %5 - %6` and check if the new format is applied to resized images
+- [x] Check `Use original date modified` and verify that modified date is not changed for resized images. Take into account that `Resize the original pictures(don't create copy)` should be selected
+- [x] Check `Make pictures smaller but not larger` and verify that smaller pictures are not resized
+- [x] Check `Resize the original pictures (don't create copies)` and verify that the original picture is resized and a copy is not created
+- [x] Uncheck `Ignore the orientation of pictures` and verify that swapped width and height will actually resize a picture if the width is not equal to the height
 
 ## Always on Top
- - [ ] Pin/unpin a window, verify it's topmost/not topmost.
- - [ ] Pin/unpin a window, verify the border appeared/disappeared.
- - [ ] Switch virtual desktop, verify border doesn't show up on another desktop.
- - [ ] Minimize and maximize pinned window, verify the border looks as usual.
- - [ ] Change border color and thickness.
- - [ ] Verify if sound is played according to the sound setting.
- - [ ] Exclude app, try to pin it.
- - [ ] Exclude already pinned app, verify it was unpinned.
- - [ ] Try to pin the app in the Game Mode.
+ - [x] Pin/unpin a window, verify it's topmost/not topmost.
+ - [x] Pin/unpin a window, verify the border appeared/disappeared.
+ - [x] Switch virtual desktop, verify border doesn't show up on another desktop.
+ - [x] Minimize and maximize pinned window, verify the border looks as usual.
+ - [x] Change border color and thickness.
+ - [x] Verify if sound is played according to the sound setting.
+ - [x] Exclude app, try to pin it.
+ - [x] Exclude already pinned app, verify it was unpinned.
+ - [x] Try to pin the app in the Game Mode.
 
 ## Text Extractor
  * Enable Text Extractor. Then:
-   - [ ] Press the activation shortcut and verify the overlay appears.
-   - [ ] Press Escape and verify the overlay disappears.
-   - [ ] Press the activation shortcut and verify the overlay appears.
-   - [ ] Right-click and select Cancel. Verify the overlay disappears.
-   - [ ] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
+   - [x] Press the activation shortcut and verify the overlay appears.
+   - [x] Press Escape and verify the overlay disappears.
+   - [x] Press the activation shortcut and verify the overlay appears.
+   - [x] Right-click and select Cancel. Verify the overlay disappears.
+   - [x] Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
  * With Text Extractor enabled and activated:
-   - [ ] Try to select text and verify it is copied to the clipboard.
-   - [ ] Try to select a different OCR language by right-clicking and verify the change is applied.
+   - [x] Try to select text and verify it is copied to the clipboard.
+   - [x] Try to select a different OCR language by right-clicking and verify the change is applied.
  * In a multi-monitor setup with different dpis on each monitor:
-   - [ ] Verify text is correctly captured on all monitors.
+   - [x] Verify text is correctly captured on all monitors.
  * Test the different settings and verify they are applied:
-   - [ ] Activation shortcut
-   - [ ] OCR Language
+   - [x] Activation shortcut
+   - [x] OCR Language
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [x] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled.
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is not enabled.
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is enabled.
-   - [ ] Open settings and verify the module is enabled and you can't disable it.
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is enabled.
+   - [x] Open settings and verify the module is enabled and you can't disable it.
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [x] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (No context menu entry)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module is not enabled. (No context menu entry)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
 ## Peek
  * Open different files to check that they're shown properly
-   - [ ] Image
-   - [ ] Text or dev file
-   - [ ] Markdown file
-   - [ ] PDF
-   - [ ] HTML
-   - [ ] Archive files (.zip, .tar, .rar)
-   - [ ] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
+   - [x] Image
+   - [x] Text or dev file
+   - [x] Markdown file
+   - [x] PDF
+   - [x] HTML
+   - [x] Archive files (.zip, .tar, .rar)
+   - [x] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
    
  * Pinning/unpinning
-   - [ ] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
-   - [ ] Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
-   - [ ] Unpin the window, switch to a different file, verify the window is moved to the default place.
-   - [ ] Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
+   - [x] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
+   - [x] Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
+   - [x] Unpin the window, switch to a different file, verify the window is moved to the default place.
+   - [x] Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
 
 * Open with a default program
-   - [ ] By clicking a button.
-   - [ ] By pressing enter. 
+   - [x] By clicking a button.
+   - [x] By pressing enter. 
 
- - [ ] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
- - [ ] Open multiple files, verify you can switch only between selected files.
- - [ ] Change the shortcut, verify the new one works.
+ - [x] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
+ - [x] Open multiple files, verify you can switch only between selected files.
+ - [x] Change the shortcut, verify the new one works.
 
 ## Crop And Lock
  * Thumbnail mode
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [x] Test with win32 app
+   - [x] Test with packaged app
    
  * Reparent mode (there are known issues where reparent mode doesn't work for some apps)
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [x] Test with win32 app
+   - [x] Test with packaged app
+
+## Localization
+ Change the Windows language to a language different than English. Then verify if the following screens change their language:
+ - [x] System tray menu items
+ - [x] Settings
+ - [x] OOBE (What's new)
+ - [x] Keyboard Manager Editor
+ - [x] Color Picker (check the tooltips)
+ - [x] FancyZones Editor
+ - [x] Power Rename (new WinUI 3 may not be localized)
+ - [x] PowerToys Run ("Start typing" string is localized, for example)
+ - [x] Image Resizer
+ - [x] Shortcut Guide (Windows controls are localized)
+ - [x] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
+ - [x] Hosts File Editor
+ - [x] File Locksmith
+ - [x] Registry Preview
+ - [x] Environment Variables
 
 ## DSC
  * You need to have some prerequisites installed:
@@ -342,51 +323,51 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
    - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
    - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
  * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [ ] Run `winget configure .\disableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are disabled.
-   - [ ] Run `winget configure .\enableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are enabled.
-   - [ ] Run `winget configure .\configureLauncherPlugins.dsc.yaml`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
-   - [ ] Run `winget configure .\configuration.dsc.yaml`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+   - [x] Run `winget configure .\disableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are disabled.
+   - [x] Run `winget configure .\enableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are enabled.
+   - [x] Run `winget configure .\configureLauncherPlugins.dsc.yaml`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
+   - [x] Run `winget configure .\configuration.dsc.yaml`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
+   - [x] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [x] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
 
 ## Command Palette
  * Check if Command Palette successfully install/uninstall with PowerToys.
-   - [ ] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
-   - [ ] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+   - [x] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
+   - [x] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
  * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
-   - [ ] when PowerToys is running unelevated on start-up
-   - [ ] when PowerToys is running as admin on start-up
-   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+   - [x] when PowerToys is running unelevated on start-up
+   - [x] when PowerToys is running as admin on start-up
+   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
-   - [ ] Installed Apps - launch a Win32 application
-   - [ ] Installed Apps - launch a Win32 application as admin
-   - [ ] Installed Apps - launch a packaged application
-   - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] File Search - open a file on the disk.
-   - [ ] File Search - find a file and copy file path.
-   - [ ] File Search - find a file and open containing folder.
-   - [ ] Run Commands - execute a command. (e.g. `ping google.com`).
-   - [ ] Windows Walker - Switch to another opening window.
-   - [ ] Windows Walker - Switch to another opening window when powertoys run as admin.
-   - [ ] WinGet - Search and install application through WinGet. (eg. `vscode`)
-   - [ ] Web Search - Search anything by this extension.
-   - [ ] Windows Terminal Profiles - Open profile.
-   - [ ] Windows Terminal Profiles - Open profile as Admin.
-   - [ ] Windows Settings - Open settings from extension.
-   - [ ] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
-   - [ ] Registry - navigate through the registry tree and copy key path.
-   - [ ] Windows Service - start, stop, restart windows service.
-   - [ ] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
-   - [ ] Windows System Command - test `lock`.
-   - [ ] Windows System Command - test `empty recycle bin`.
-   - [ ] Windows System Command - test `shutdown`.
-   - [ ] Windows System Command - Click your network adapter item and paste the result at notepad.
-   - [ ] Bookmarks - Add bookmarks to command palette.
-   - [ ] Bookmarks - Open your bookmarks (in Command Palette).
- - [ ] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
- - [ ] Test tab navigation.
+   - [x] Installed Apps - launch a Win32 application
+   - [x] Installed Apps - launch a Win32 application as admin
+   - [x] Installed Apps - launch a packaged application
+   - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [x] File Search - open a file on the disk.
+   - [x] File Search - find a file and copy file path.
+   - [x] File Search - find a file and open containing folder.
+   - [x] Run Commands - execute a command. (e.g. `ping google.com`).
+   - [x] Windows Walker - Switch to another opening window.
+   - [x] Windows Walker - Switch to another opening window when powertoys run as admin.
+   - [x] WinGet - Search and install application through WinGet. (eg. `vscode`)
+   - [x] Web Search - Search anything by this extension.
+   - [x] Windows Terminal Profiles - Open profile.
+   - [x] Windows Terminal Profiles - Open profile as Admin.
+   - [x] Windows Settings - Open settings from extension.
+   - [x] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [x] Registry - navigate through the registry tree and copy key path.
+   - [x] Windows Service - start, stop, restart windows service.
+   - [x] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
+   - [x] Windows System Command - test `lock`.
+   - [x] Windows System Command - test `empty recycle bin`.
+   - [x] Windows System Command - test `shutdown`.
+   - [x] Windows System Command - Click your network adapter item and paste the result at notepad.
+   - [x] Bookmarks - Add bookmarks to command palette.
+   - [x] Bookmarks - Open your bookmarks (in Command Palette).
+ - [x] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
+ - [x] Test tab navigation.
  * Test Extensions Manager
-   - [ ] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
-   - [ ] Change `Global hot key` and verify changes are picked up by Command Palette
-   - [ ] Change `Alias` and verify changes picked up by Command Palette
-   - [ ] Disable all extensions and verify the warning message is shown (Currently not support).
+   - [x] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
+   - [x] Change `Global hot key` and verify changes are picked up by Command Palette
+   - [x] Change `Alias` and verify changes picked up by Command Palette
+   - [x] Disable all extensions and verify the warning message is shown (Currently not support).
