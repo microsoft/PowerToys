@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
@@ -42,7 +43,7 @@ internal static class ResultHelper
         Title = Resources.Microsoft_plugin_timedate_ErrorResultTitle,
         Subtitle = Resources.Microsoft_plugin_timedate_show_details,
         Icon = ErrorIcon,
-        Details = new() { Body = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle },
+        Details = new Details() { Body = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle },
     };
 
     internal static ListItem CreateInvalidInputErrorResult() => new ListItem(new NoOpCommand())
@@ -50,6 +51,6 @@ internal static class ResultHelper
         Title = Resources.Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle,
         Subtitle = Resources.Microsoft_plugin_timedate_show_details,
         Icon = ErrorIcon,
-        Details = new() { Body = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle },
+        Details = new Details() { Body = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle },
     };
 }
