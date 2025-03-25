@@ -29,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private IList<KeyboardAccelerator> keyboardAccelerators;
         private NavigationView navigationView;
         private NavigationViewItem selected;
+        private NavigationViewItem expanding;
         private ICommand loadedCommand;
         private ICommand itemInvokedCommand;
         private NavigationViewItem[] _fullListOfNavViewItems;
@@ -43,6 +44,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             get { return selected; }
             set { Set(ref selected, value); }
+        }
+
+        public NavigationViewItem Expanding
+        {
+            get { return expanding; }
+            set { Set(ref expanding, value); }
         }
 
         public NavigationViewItem[] NavItems

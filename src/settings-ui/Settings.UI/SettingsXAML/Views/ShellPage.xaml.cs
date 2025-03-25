@@ -127,6 +127,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
         private List<string> _searchSuggestions = new();
+        private ISearchService<NavigationViewItem> _searchService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
@@ -160,6 +161,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     _searchSuggestions.Add(child.Content?.ToString());
                 }
             }
+
+            _searchService = new SearchService<NavigationViewItem>(ViewModel.NavItems, new CaseInsensitiveContainsAlgorithm<NavigationViewItem>(), (NavigationViewItem item) => item.Content.ToString());
         }
 
         public static int SendDefaultIPCMessage(string msg)
@@ -467,11 +470,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
                 var query = sender.Text.ToLower(CultureInfo.InvariantCulture);
-                var filtered = _searchSuggestions
-                    .Where(s => s != null && s.ToLower(CultureInfo.InvariantCulture).Contains(query, StringComparison.InvariantCultureIgnoreCase))
-                    .ToList();
-
-                sender.ItemsSource = filtered;
+                var filtered = _searchService.GetSuggestions(query);
+                sender.ItemsSource = filtered.Select(item => item.Content);
             }
         }
 
@@ -498,6 +498,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 if (_navViewParentLookup.TryGetValue(matchedItem.GetValue(NavHelper.NavigateToProperty) as Type, out var parentItem))
                 {
                     parentItem.IsExpanded = true;
+                    if (ViewModel.Expanding != null)
+                    {
+                        ViewModel.Expanding.IsExpanded = false;
+                    }
+
+                    ViewModel.Expanding = parentItem;
                 }
 
                 ViewModel.Selected = matchedItem;
