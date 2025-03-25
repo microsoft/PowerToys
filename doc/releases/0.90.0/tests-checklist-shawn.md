@@ -168,7 +168,7 @@
 ## Command Palette
  * Check if Command Palette successfully install/uninstall with PowerToys.
    - [x] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
-   - [ ] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+   - [x] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
  * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
    - [x] when PowerToys is running unelevated on start-up
    - [x] when PowerToys is running as admin on start-up
@@ -178,7 +178,7 @@
    - [x] Installed Apps - launch a Win32 application as admin
    - [x] Installed Apps - launch a packaged application
    - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [] File Search - open a file on the disk.
+   - [x] File Search - open a file on the disk.
    - [x] File Search - find a file and copy file path.
    - [x] File Search - find a file and open containing folder.
    - [x] Run Commands - execute a command. (e.g. `ping google.com`).
@@ -202,10 +202,10 @@
  - [x] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
  - [x] Test tab navigation.
  * Test Extensions Manager
-   - [ ] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
+   - [x] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
    - [x] Change `Global hot key` and verify changes are picked up by Command Palette
    - [x] Change `Alias` and verify changes picked up by Command Palette
-   - [ ] Disable all extensions and verify the warning message is shown (Currently not support).
+   - [x] Disable all extensions and verify the warning message is shown (Currently not support).
 
 ## New+
  * Enable New+ in Settings.
