@@ -7,36 +7,36 @@
 ## Functional tests
 
  Regressions:
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
+ - [x] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
 
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] FancyZones Editor
- - [ ] Image Resizer
- - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
+ - [x] FancyZones Editor
+ - [x] Image Resizer
+ - [x] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
 
  ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [x] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled.
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is not enabled.
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is enabled.
-   - [ ] Open settings and verify the module is enabled and you can't disable it.
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is enabled.
+   - [x] Open settings and verify the module is enabled and you can't disable it.
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [x] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (No context menu entry)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module is not enabled. (No context menu entry)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
 ## DSC
@@ -45,68 +45,68 @@
    - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
    - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
  * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [ ] Run `winget configure .\disableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are disabled.
-   - [ ] Run `winget configure .\enableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are enabled.
-   - [ ] Run `winget configure .\configureLauncherPlugins.dsc.yaml`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
-   - [ ] Run `winget configure .\configuration.dsc.yaml`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+   - [x] Run `winget configure .\disableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are disabled.
+   - [x] Run `winget configure .\enableAllModules.dsc.yaml`. Open PowerToys Settings and verify all modules are enabled.
+   - [x] Run `winget configure .\configureLauncherPlugins.dsc.yaml`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
+   - [x] Run `winget configure .\configuration.dsc.yaml`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
+   - [x] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [x] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
 
 ## Command Palette
  * Check if Command Palette successfully install/uninstall with PowerToys.
-   - [ ] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
-   - [ ] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+   - [x] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
+   - [x] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
  * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
-   - [ ] when PowerToys is running unelevated on start-up
-   - [ ] when PowerToys is running as admin on start-up
-   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+   - [x] when PowerToys is running unelevated on start-up
+   - [x] when PowerToys is running as admin on start-up
+   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
-   - [ ] Installed Apps - launch a Win32 application
-   - [ ] Installed Apps - launch a Win32 application as admin
-   - [ ] Installed Apps - launch a packaged application
-   - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] File Search - open a file on the disk.
-   - [ ] File Search - find a file and copy file path.
-   - [ ] File Search - find a file and open containing folder.
-   - [ ] Run Commands - execute a command. (e.g. `ping google.com`).
-   - [ ] Windows Walker - Switch to another opening window.
-   - [ ] Windows Walker - Switch to another opening window when powertoys run as admin.
-   - [ ] WinGet - Search and install application through WinGet. (eg. `vscode`)
-   - [ ] Web Search - Search anything by this extension.
-   - [ ] Windows Terminal Profiles - Open profile.
-   - [ ] Windows Terminal Profiles - Open profile as Admin.
-   - [ ] Windows Settings - Open settings from extension.
-   - [ ] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
-   - [ ] Registry - navigate through the registry tree and copy key path.
-   - [ ] Windows Service - start, stop, restart windows service.
-   - [ ] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
-   - [ ] Windows System Command - test `lock`.
-   - [ ] Windows System Command - test `empty recycle bin`.
-   - [ ] Windows System Command - test `shutdown`.
-   - [ ] Windows System Command - Click your network adapter item and paste the result at notepad.
-   - [ ] Bookmarks - Add bookmarks to command palette.
-   - [ ] Bookmarks - Open your bookmarks (in Command Palette).
- - [ ] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
- - [ ] Test tab navigation.
+   - [x] Installed Apps - launch a Win32 application
+   - [x] Installed Apps - launch a Win32 application as admin
+   - [x] Installed Apps - launch a packaged application
+   - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [x] File Search - open a file on the disk.
+   - [x] File Search - find a file and copy file path.
+   - [x] File Search - find a file and open containing folder.
+   - [x] Run Commands - execute a command. (e.g. `ping google.com`).
+   - [x] Windows Walker - Switch to another opening window.
+   - [x] Windows Walker - Switch to another opening window when powertoys run as admin.
+   - [x] WinGet - Search and install application through WinGet. (eg. `vscode`)
+   - [x] Web Search - Search anything by this extension.
+   - [x] Windows Terminal Profiles - Open profile.
+   - [x] Windows Terminal Profiles - Open profile as Admin.
+   - [x] Windows Settings - Open settings from extension.
+   - [x] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [x] Registry - navigate through the registry tree and copy key path.
+   - [x] Windows Service - start, stop, restart windows service.
+   - [x] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
+   - [x] Windows System Command - test `lock`.
+   - [x] Windows System Command - test `empty recycle bin`.
+   - [x] Windows System Command - test `shutdown`.
+   - [x] Windows System Command - Click your network adapter item and paste the result at notepad.
+   - [x] Bookmarks - Add bookmarks to command palette.
+   - [x] Bookmarks - Open your bookmarks (in Command Palette).
+ - [x] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
+ - [x] Test tab navigation.
  * Test Extensions Manager
-   - [ ] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
-   - [ ] Change `Global hot key` and verify changes are picked up by Command Palette
-   - [ ] Change `Alias` and verify changes picked up by Command Palette
-   - [ ] Disable all extensions and verify the warning message is shown (Currently not support).
+   - [x] Enable/disable extensions and verify changes are picked up by Command Palette (Currently not support)
+   - [x] Change `Global hot key` and verify changes are picked up by Command Palette
+   - [x] Change `Alias` and verify changes picked up by Command Palette
+   - [x] Disable all extensions and verify the warning message is shown (Currently not support).
 
 ## Hosts File Editor
  * Launch Host File Editor:
-   - [ ] Verify the application exits if "Quit" is clicked on the initial warning.
-   - [ ] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
-   - [ ] Enable and disable lines and verify they are applied to the file.
-   - [ ] Add a new entry and verify it's applied.
-   - [ ] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
-   - [ ] Try to filter for lines and verify you can find them.
-   - [ ] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
+   - [x] Verify the application exits if "Quit" is clicked on the initial warning.
+   - [x] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
+   - [x] Enable and disable lines and verify they are applied to the file.
+   - [x] Add a new entry and verify it's applied.
+   - [x] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
+   - [x] Try to filter for lines and verify you can find them.
+   - [x] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
  * Test the different settings and verify they are applied:
-   - [ ] Launch as Administrator.
-   - [ ] Show a warning at startup.
-   - [ ] Additional lines position.
+   - [x] Launch as Administrator.
+   - [x] Show a warning at startup.
+   - [x] Additional lines position.
 
 ## File Locksmith
  * Start the PowerToys installer executable and let it stay in the initial screen.
@@ -127,68 +127,30 @@
  - [x] Try out the features and see if they work, no list at this time.
 
 
- 
-## PowerToys Run
-
- * Enable PT Run in settings and ensure that the hotkey brings up PT Run
-   - [X] when PowerToys is running unelevated on start-up
-   - [X] when PowerToys is running as admin on start-up
-   - [X] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
- * Check that each of the plugins is working:
-   - [X] Program - launch a Win32 application
-   - [X] Program - launch a Win32 application as admin
-   - [X] Program - launch a packaged application
-   - [X] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [X] Windows Search - open a file on the disk.
-   - [X] Windows Search - find a file and copy file path.
-   - [X] Windows Search - find a file and open containing folder.
-   - [X] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space (e.g. `> ping localhost`).
-   - [X] Folder - Search and open a sub-folder on entering the path.
-   - [X] Uri - launch a web page on entering the uri.
-   - [X] Window walker - Switch focus to a running window.
-   - [X] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
-   - [X] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
-   - [X] Registry - navigate through the registry tree and copy key path.
-   - [X] System - test `lock`.
-   - [X] System - test `empty recycle bin`.
-   - [X] System - test `shutdown`.
-
- - [X] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
-
- - [ ] Test tab navigation.
-
- * Test Plugin Manager
-   - [X] Enable/disable plugins and verify changes are picked up by PT Run
-   - [ ] Change `Direct activation phrase` and verify changes are picked up by PT Run
-   - [ ] Change `Include in global result` and verify changes picked up by PT Run
-   - [ ] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message is shown.
-   - [ ] Disable all plugins and verify the warning message is shown.
-
-
 ## Mouse Without Borders
  * Install PowerToys on two PCs in the same local network:
-   - [ ] Verify that PowerToys is properly installed on both PCs.
+   - [x] Verify that PowerToys is properly installed on both PCs.
    
  * Setup Connection:
-   - [ ] Open MWB's settings on the first PC and click the "New Key" button. Verify that a new security key is generated.
-   - [ ] Copy the generated security key and paste it in the corresponding input field in the settings of MWB on the second PC. Also enter the name of the first PC in the required field.
-   - [ ] Press "Connect" and verify that the machine layout now includes two PC tiles, each displaying their respective PC names.
+   - [x] Open MWB's settings on the first PC and click the "New Key" button. Verify that a new security key is generated.
+   - [x] Copy the generated security key and paste it in the corresponding input field in the settings of MWB on the second PC. Also enter the name of the first PC in the required field.
+   - [x] Press "Connect" and verify that the machine layout now includes two PC tiles, each displaying their respective PC names.
    
  * Verify Connection Status:
-   - [ ] Ensure that the border of the remote PC turns green, indicating a successful connection.
-   - [ ] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
+   - [x] Ensure that the border of the remote PC turns green, indicating a successful connection.
+   - [x] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
    
  * Test Remote Mouse/Keyboard Control:
-   - [ ] With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
-   - [ ] Test remote mouse/keyboard control across all four PCs, if available. Verify that inputs are correctly registered on each connected PC when the mouse is active there.
+   - [x] With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
+   - [x] Test remote mouse/keyboard control across all four PCs, if available. Verify that inputs are correctly registered on each connected PC when the mouse is active there.
 
 
 ## Workspaces
 * Settings
-   - [ ] Launch the Editor by clicking the button on the settings page.
-   - [ ] Launch the Editor from quick access.
-   - [ ] Launch the Editor by the Activation shortcut.
-   - [ ] Disable the module and and verify it won't launch by the shortcut.
+   - [x] Launch the Editor by clicking the button on the settings page.
+   - [x] Launch the Editor from quick access.
+   - [x] Launch the Editor by the Activation shortcut.
+   - [x] Disable the module and and verify it won't launch by the shortcut.
 
 * Snapshot tool: try with elevated and non-elevated PT
    * Open non-packaged apps, e.g., VisualStudio, VisualStudioCode.
@@ -198,50 +160,50 @@
    * Click `Create Workspace`.
    * Open any other window.
    * Click `Capture`
-   - [ ] Verify Editor shows all opened windows (the elevated window will be captured if PT is also elevated).
-   - [ ] Verify windows are in the correct positions.
-   - [ ] Verify elevated app has the `Admin` box checked (if captured).
+   - [x] Verify Editor shows all opened windows (the elevated window will be captured if PT is also elevated).
+   - [x] Verify windows are in the correct positions.
+   - [x] Verify elevated app has the `Admin` box checked (if captured).
 
 * Editor
-   - [ ] Verify that the new Workspace appears in the list after capturing.
-   - [ ] Verify that the new Workspace doesn't appear after canceling the Capture.
-   - [ ] Verify `Search` filters Workspaces (by workspace name or app name).
-   - [ ] Verify `SortBy` works.
-   - [ ] Verify `SortBy` keeps its value when you close and open the editor again.
-   - [ ] Verify `Remove` removes the Workspace from the list.
-   - [ ] Verify `Edit` opens the Workspace editing page.
-   - [ ] Verify clicking at the Workspace opens the Workspace editing page.
+   - [x] Verify that the new Workspace appears in the list after capturing.
+   - [x] Verify that the new Workspace doesn't appear after canceling the Capture.
+   - [x] Verify `Search` filters Workspaces (by workspace name or app name).
+   - [x] Verify `SortBy` works.
+   - [x] Verify `SortBy` keeps its value when you close and open the editor again.
+   - [x] Verify `Remove` removes the Workspace from the list.
+   - [x] Verify `Edit` opens the Workspace editing page.
+   - [x] Verify clicking at the Workspace opens the Workspace editing page.
    
    * Editing page
-   - [ ] `Remove` an app and verify it disappeared on the preview.
-   - [ ] `Remove` and `Add back` an app, verify it's returned back to the preview.
-   - [ ] Set an app minimized, check the preview.
-   - [ ] Set an app maximized, check the preview.
-   - [ ] Check `Launch as admin` for the app where it's available.
-   - [ ] Add CLI args, e.g. path to the PowerToys.sln file for VisualStudio.
-   - [ ] Manually change the position for the app, check the preview.
-   - [ ] Change the Workspace name.
-   - [ ] Verify `Save` and `Cancel` work as expected. 
-   - [ ] Change anything in the project, click at the `Workspaces` on the top of the page, and verify you returned to the main page without saving any changes.
-   - [ ] Check `Create desktop shortcut`, save the project, verify the shortcut appears on the desktop. 
-   - [ ] Verify that `Create desktop shortcut` is checked when the shortcut is on the desktop and unchecked when there is no shortcut on the desktop. 
-   - [ ] Click `Launch and Edit`, wait for the apps to launch, click `Capture`, verify opened apps are added to the project.
+   - [x] `Remove` an app and verify it disappeared on the preview.
+   - [x] `Remove` and `Add back` an app, verify it's returned back to the preview.
+   - [x] Set an app minimized, check the preview.
+   - [x] Set an app maximized, check the preview.
+   - [x] Check `Launch as admin` for the app where it's available.
+   - [x] Add CLI args, e.g. path to the PowerToys.sln file for VisualStudio.
+   - [x] Manually change the position for the app, check the preview.
+   - [x] Change the Workspace name.
+   - [x] Verify `Save` and `Cancel` work as expected. 
+   - [x] Change anything in the project, click at the `Workspaces` on the top of the page, and verify you returned to the main page without saving any changes.
+   - [x] Check `Create desktop shortcut`, save the project, verify the shortcut appears on the desktop. 
+   - [x] Verify that `Create desktop shortcut` is checked when the shortcut is on the desktop and unchecked when there is no shortcut on the desktop. 
+   - [x] Click `Launch and Edit`, wait for the apps to launch, click `Capture`, verify opened apps are added to the project.
 
 * Launcher
-   - [ ] Click `Launch` in the editor, verify the Workspace apps launching.
-   - [ ] Launch Workspace by a shortcut, verify the Workspace apps launching.
-   - [ ] Verify a window with launching progress is shown while apps are launching and presents the correct launching state (launching, launched, not launched) for every app.
-   - [ ] Click `Cancel launch`, verify launching is stopped at the current state (opened apps will stay opened), and the window is closed.
-   - [ ] Click `Dismiss` and verify apps keep launching, but the LauncherUI window is closed.
+   - [x] Click `Launch` in the editor, verify the Workspace apps launching.
+   - [x] Launch Workspace by a shortcut, verify the Workspace apps launching.
+   - [x] Verify a window with launching progress is shown while apps are launching and presents the correct launching state (launching, launched, not launched) for every app.
+   - [x] Click `Cancel launch`, verify launching is stopped at the current state (opened apps will stay opened), and the window is closed.
+   - [x] Click `Dismiss` and verify apps keep launching, but the LauncherUI window is closed.
    
 * To verify that the launcher works correctly with different apps, try to capture and launch:   
-   - [ ] Non-packaged app, e.g., VisualStudio code
-      - [ ] As admin
-      - [ ] With CLI args 
-    - [ ] Packaged app, e.g. Terminal
-      - [ ] As admin
-      - [ ] With CLI args
+   - [x] Non-packaged app, e.g., VisualStudio code
+      - [x] As admin
+      - [x] With CLI args 
+    - [x] Packaged app, e.g. Terminal
+      - [x] As admin
+      - [x] With CLI args
 
 * Try to launch the Workspace with a different setup
-   - [ ] Create a Workspace with one monitor connected, connect the second monitor, launch the Workspace, verify apps are opened on the first one, as captured.
-   - [ ] Create a Workspace with two monitors connected, disconnect a monitor, verify apps are opened on the remaining one.
+   - [x] Create a Workspace with one monitor connected, connect the second monitor, launch the Workspace, verify apps are opened on the first one, as captured.
+   - [x] Create a Workspace with two monitors connected, disconnect a monitor, verify apps are opened on the remaining one.
