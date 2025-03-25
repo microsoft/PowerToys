@@ -85,7 +85,32 @@
                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
             </NavigationView.Resources>
-            <NavigationView.MenuItems>
+      <NavigationView.PaneCustomContent>
+        <AutoSuggestBox
+          x:Name="SearchBox"
+          QueryIcon="Find"
+          PlaceholderText="Search"
+          Margin="12,8"
+          Padding="4"
+          HorizontalAlignment="Stretch"
+          BorderThickness="1"
+          MinWidth="0"
+          TextChanged="SearchBox_TextChanged"
+          QuerySubmitted="SearchBox_QuerySubmitted" >
+          <AutoSuggestBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding}" Padding="12,6"/>
+            </DataTemplate>
+          </AutoSuggestBox.ItemTemplate>
+          <AutoSuggestBox.KeyboardAccelerators>
+            <KeyboardAccelerator
+                            Key="F"
+                            Invoked="CtrlF_Invoked"
+                            Modifiers="Control" />
+          </AutoSuggestBox.KeyboardAccelerators>
+        </AutoSuggestBox>
+      </NavigationView.PaneCustomContent>
+      <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Uid="Shell_Dashboard"
                     helpers:NavHelper.NavigateTo="views:DashboardPage"

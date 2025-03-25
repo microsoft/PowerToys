@@ -45,6 +45,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set { Set(ref selected, value); }
         }
 
+        public NavigationViewItem[] NavItems
+        {
+            get { return _fullListOfNavViewItems; }
+        }
+
         public ICommand LoadedCommand => loadedCommand ?? (loadedCommand = new RelayCommand(OnLoaded));
 
         public ICommand ItemInvokedCommand => itemInvokedCommand ?? (itemInvokedCommand = new RelayCommand<NavigationViewItemInvokedEventArgs>(OnItemInvoked));

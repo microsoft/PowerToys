@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -12,6 +13,7 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.Data.Json;
 using Windows.System;
 using WinRT.Interop;
@@ -124,6 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static bool IsUserAnAdmin { get; set; }
 
         private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
+        private List<string> _searchSuggestions = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
@@ -154,6 +157,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 foreach (var child in parent.MenuItems.OfType<NavigationViewItem>())
                 {
                     _navViewParentLookup.TryAdd(child.GetValue(NavHelper.NavigateToProperty) as Type, parent);
+                    _searchSuggestions.Add(child.Content?.ToString());
                 }
             }
         }
@@ -456,6 +460,54 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void PaneToggleBtn_Click(object sender, RoutedEventArgs e)
         {
             navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
+        }
+
+        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                var query = sender.Text.ToLower(CultureInfo.InvariantCulture);
+                var filtered = _searchSuggestions
+                    .Where(s => s != null && s.ToLower(CultureInfo.InvariantCulture).Contains(query, StringComparison.InvariantCultureIgnoreCase))
+                    .ToList();
+
+                sender.ItemsSource = filtered;
+            }
+        }
+
+        private void CtrlF_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            SearchBox.Focus(FocusState.Programmatic);
+        }
+
+        private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            var queryText = args.QueryText?.Trim();
+            if (string.IsNullOrWhiteSpace(queryText))
+            {
+                return;
+            }
+
+            var matchedItem = ViewModel.NavItems
+                .FirstOrDefault(item =>
+                    item.Content?.ToString()
+                        .Equals(queryText, StringComparison.OrdinalIgnoreCase) == true);
+
+            if (matchedItem != null)
+            {
+                if (_navViewParentLookup.TryGetValue(matchedItem.GetValue(NavHelper.NavigateToProperty) as Type, out var parentItem))
+                {
+                    parentItem.IsExpanded = true;
+                }
+
+                ViewModel.Selected = matchedItem;
+
+                var pageType = matchedItem.GetValue(NavHelper.NavigateToProperty) as Type;
+                if (pageType != null)
+                {
+                    NavigationService.Navigate(pageType);
+                }
+            }
         }
     }
 }
