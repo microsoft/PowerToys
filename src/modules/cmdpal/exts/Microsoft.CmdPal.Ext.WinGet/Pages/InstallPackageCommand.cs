@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Management.Deployment;
@@ -129,6 +130,9 @@ public partial class InstallPackageCommand : InvokableCommand
                     WinGetExtensionHost.Instance.HideStatus(_installBanner);
                 }
             });
+
+            Logger.LogDebug($"Finished install action for {_package.Name}");
+
             InstallStateChanged?.Invoke(this, this);
         }
         catch (Exception ex)

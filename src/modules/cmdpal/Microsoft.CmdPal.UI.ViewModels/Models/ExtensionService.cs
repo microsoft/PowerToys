@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
@@ -48,6 +49,7 @@ public class ExtensionService : IExtensionService, IDisposable
     {
         if (args.IsComplete)
         {
+            Logger.LogDebug($"{args.Package.DisplayName} completed installing");
             lock (_lock)
             {
                 InstallPackageUnderLock(args.Package);
@@ -59,6 +61,7 @@ public class ExtensionService : IExtensionService, IDisposable
     {
         if (args.IsComplete)
         {
+            Logger.LogDebug($"{args.Package.DisplayName} completed uninstalling");
             lock (_lock)
             {
                 UninstallPackageUnderLock(args.Package);
@@ -70,6 +73,7 @@ public class ExtensionService : IExtensionService, IDisposable
     {
         if (args.IsComplete)
         {
+            Logger.LogDebug($"{args.TargetPackage.DisplayName} completed updating");
             lock (_lock)
             {
                 // Get any extension providers that we previously had from this app
