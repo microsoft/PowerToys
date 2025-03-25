@@ -163,10 +163,12 @@ public class SettingsManager : JsonSettingsManager
     {
         FilePath = SettingsJsonPath();
 
+        /* The following two settings make no sense with current CmdPal behavior.
         Settings.Add(_onlyDateTimeNowGlobal);
+        Settings.Add(_hideNumberMessageOnGlobalQuery); */
+
         Settings.Add(_timeWithSeconds);
         Settings.Add(_dateWithWeekday);
-        Settings.Add(_hideNumberMessageOnGlobalQuery);
         Settings.Add(_firstWeekOfYear);
         Settings.Add(_firstDayOfWeek);
 
