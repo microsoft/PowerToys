@@ -51,14 +51,6 @@
                 </ToggleButton>
             </Grid>
 
-            <Grid Grid.Row="1" Margin="0,8,0,0">
-                <StackPanel
-                    Name="KeyStackPanel"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Orientation="Horizontal" />
-            </Grid>
-
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="1"
@@ -93,17 +85,6 @@
                         </ItemsControl>
                     </ToggleButton.Content>
                 </ToggleButton>
-            </Grid>
-
-            <Grid
-                Grid.Row="1"
-                Grid.Column="2"
-                Margin="0,8,0,0">
-                <StackPanel
-                    Name="NewKeyStackPanel"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Orientation="Horizontal" />
             </Grid>
         </Grid>
 

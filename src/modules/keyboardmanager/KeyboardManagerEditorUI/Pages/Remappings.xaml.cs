@@ -155,10 +155,14 @@ namespace KeyboardManagerEditorUI.Pages
             RemappingControl.SetRemappedKeys(new List<string>());
             RemappingControl.SetApp(false, string.Empty);
 
+            RemappingControl.SetKeyboardHook();
+
             // Show the dialog to add a new remapping
             KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
             await KeyDialog.ShowAsync();
             KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
+
+            RemappingControl.CleanupKeyboardHook();
         }
 
         private void KeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -175,9 +179,13 @@ namespace KeyboardManagerEditorUI.Pages
                 RemappingControl.SetRemappedKeys(selectedRemapping.RemappedKeys);
                 RemappingControl.SetApp(!selectedRemapping.IsAllApps, selectedRemapping.AppName);
 
+                RemappingControl.SetKeyboardHook();
+
                 KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
                 await KeyDialog.ShowAsync();
                 KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
+
+                RemappingControl.CleanupKeyboardHook();
             }
         }
 
