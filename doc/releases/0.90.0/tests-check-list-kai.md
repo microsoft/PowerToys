@@ -62,13 +62,13 @@
    - [X] Installed Apps - launch a Win32 application as admin
    - [X] Installed Apps - launch a packaged application
    - [X] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [] File Search - open a file on the disk.
+   - [X] File Search - open a file on the disk.
    - [X] File Search - find a file and copy file path.
-   - [ ] File Search - find a file and open containing folder.
+   - [X] File Search - find a file and open containing folder.
    - [X] Run Commands - execute a command. (e.g. `ping google.com`).
    - [X] Windows Walker - Switch to another opening window.
    - [X] Windows Walker - Switch to another opening window when powertoys run as admin.
-   - [ ] WinGet - Search and install application through WinGet. (eg. `vscode`)
+   - [X] WinGet - Search and install application through WinGet. (eg. `vscode`)
    - [X] Web Search - Search anything by this extension.
    - [X] Windows Terminal Profiles - Open profile.
    - [X] Windows Terminal Profiles - Open profile as Admin.
@@ -97,13 +97,13 @@
    - [X] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
    - [X] Enable and disable lines and verify they are applied to the file.
    - [X] Add a new entry and verify it's applied.
-   - [ ] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
+   - [X] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
    - [X] Try to filter for lines and verify you can find them.
    - [X] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
  * Test the different settings and verify they are applied:
    - [X] Launch as Administrator.
    - [X] Show a warning at startup.
-   - [ ] Additional lines position.
+   - [X] Additional lines position.
 
 ## File Locksmith
  * Start the PowerToys installer executable and let it stay in the initial screen.
