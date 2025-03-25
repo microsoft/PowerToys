@@ -6,7 +6,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
-internal class AvailableResult
+internal sealed class AvailableResult
 {
     /// <summary>
     /// Gets or sets the time/date value
