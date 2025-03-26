@@ -173,3 +173,43 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [x] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
    - [x] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
 
+## Command Palette
+ * Check if Command Palette successfully install/uninstall with PowerToys.
+   - [x] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
+   - [x] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+ * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
+   - [x] when PowerToys is running unelevated on start-up
+   - [x] when PowerToys is running as admin on start-up
+   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+ * Check that each of the plugins is working:
+   - [x] Installed Apps - launch a Win32 application
+   - [x] Installed Apps - launch a Win32 application as admin
+   - [x] Installed Apps - launch a packaged application
+   - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [x] File Search - open a file on the disk.
+   - [x] File Search - find a file and copy file path.
+   - [x] File Search - find a file and open containing folder.
+   - [x] Run Commands - execute a command. (e.g. `ping google.com`).
+   - [x] Windows Walker - Switch to another opening window.
+   - [x] Windows Walker - Switch to another opening window when powertoys run as admin.
+   - [x] WinGet - Search and install application through WinGet. (eg. `vscode`)
+   - [x] Web Search - Search anything by this extension.
+   - [x] Windows Terminal Profiles - Open profile.
+   - [x] Windows Terminal Profiles - Open profile as Admin.
+   - [x] Windows Settings - Open settings from extension.
+   - [x] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [x] Registry - navigate through the registry tree and copy key path.
+   - [x] Windows Service - start, stop, restart windows service.
+   - [x] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
+   - [x] Windows System Command - test `lock`.
+   - [x] Windows System Command - test `empty recycle bin`.
+   - [x] Windows System Command - test `shutdown`.
+   - [x] Windows System Command - Click your network adapter item and paste the result at notepad.
+   - [x] Bookmark - Add bookmarks to command palette.
+   - [x] Bookmark - Open your bookmarks (in Command Palette).
+ - [x] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
+ * Test Extensions Manager
+   - [x] Enable/disable extensions and verify changes are picked up by Command Palette
+   - [x] Change `Global hot key` and verify changes are picked up by Command Palette
+   - [x] Change `Alias` and verify changes picked up by Command Palette
+   - [x] Disable all extensions and verify the warning message is shown (Currently not support).
