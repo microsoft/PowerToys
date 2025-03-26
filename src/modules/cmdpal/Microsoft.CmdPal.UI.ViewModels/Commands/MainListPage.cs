@@ -149,16 +149,13 @@ public partial class MainListPage : DynamicListPage,
     // _always_ show up first.
     private int ScoreTopLevelItem(string query, IListItem topLevelOrAppItem)
     {
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            return 1;
-        }
-
         var title = topLevelOrAppItem.Title;
-        if (string.IsNullOrEmpty(title))
+        if (string.IsNullOrWhiteSpace(title))
         {
             return 0;
         }
+
+        var isWhiteSpace = string.IsNullOrWhiteSpace(query);
 
         var isFallback = false;
         var isAliasSubstringMatch = false;
@@ -179,17 +176,45 @@ public partial class MainListPage : DynamicListPage,
             extensionDisplayName = topLevel.ExtensionHost?.Extension?.PackageDisplayName ?? string.Empty;
         }
 
-        var nameMatch = StringMatcher.FuzzySearch(query, title);
-        var descriptionMatch = StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle);
-        var extensionTitleMatch = StringMatcher.FuzzySearch(query, extensionDisplayName);
+        // StringMatcher.FuzzySearch will absolutely BEEF IT if you give it a
+        // whitespace-only query.
+        //
+        // in that scenario, we'll just use a simple string contains for the
+        // query. Maybe someone is really looking for things with a space in
+        // them, I don't know.
+
+        // Title:
+        // * whitespace query: 1 point
+        // * otherwise full weight match
+        var nameMatch = isWhiteSpace ?
+            (title.Contains(query) ? 1 : 0) :
+            StringMatcher.FuzzySearch(query, title).Score;
+
+        // Subtitle:
+        // * whitespace query: 1/2 point
+        // * otherwise ~half weight match. Minus a bit, because subtitles tend to be longer
+        var descriptionMatch = isWhiteSpace ?
+            (topLevelOrAppItem.Subtitle.Contains(query) ? .5 : 0) :
+            (StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle).Score - 4) / 2.0;
+
+        // Extension title: despite not being visible, give the extension name itself some weight
+        // * whitespace query: 0 points
+        // * otherwise more weight than a subtitle, but not much
+        var extensionTitleMatch = isWhiteSpace ? 0 : StringMatcher.FuzzySearch(query, extensionDisplayName).Score / 1.5;
+
         var scores = new[]
         {
-             nameMatch.Score,
-             (descriptionMatch.Score - 4) / 2.0,
+             nameMatch,
+             descriptionMatch,
              isFallback ? 1 : 0, // Always give fallbacks a chance...
         };
         var max = scores.Max();
-        max = max + (extensionTitleMatch.Score / 1.5);
+
+        // _Add_ the extension name. This will bubble items that match both
+        // title and extension name up above ones that just match title.
+        // e.g. "git" will up-weight "GitHub searches" from the GitHub extension
+        // above "git" from "whatever"
+        max = max + extensionTitleMatch;
 
         // ... but downweight them
         var matchSomething = (max / (isFallback ? 3 : 1))
