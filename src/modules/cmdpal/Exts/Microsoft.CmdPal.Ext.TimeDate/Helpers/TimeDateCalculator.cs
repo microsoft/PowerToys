@@ -37,11 +37,8 @@ public sealed partial class TimeDateCalculator
         var isKeywordSearch = true;
 
         // Switch search type
-        if (isEmptySearchInput || (!isKeywordSearch && settings.OnlyDateTimeNowGlobal) || query == "-")
+        if (isEmptySearchInput || (!isKeywordSearch && settings.OnlyDateTimeNowGlobal))
         {
-            // Ensure query is not -
-            query = string.Empty;
-
             // Return all results for system time/date on empty keyword search
             // or only time, date and now results for system time on global queries if the corresponding setting is enabled
             availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings));
