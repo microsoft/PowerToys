@@ -96,6 +96,7 @@
           BorderThickness="1"
           MinWidth="0"
           TextChanged="SearchBox_TextChanged"
+          GotFocus="SearchBox_GotFocus"
           QuerySubmitted="SearchBox_QuerySubmitted" >
           <AutoSuggestBox.ItemTemplate>
             <DataTemplate>

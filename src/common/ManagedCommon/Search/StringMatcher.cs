@@ -130,21 +130,21 @@ public class StringMatcher
                 spaceIndices.Add(compareStringIndex);
             }
 
-            bool compareResult;
+            bool mismatch;
             if (opt.IgnoreCase)
             {
                 var fullStringToCompare = fullStringToCompareWithoutCase[compareStringIndex].ToString();
                 var querySubstring = currentQuerySubstring[currentQuerySubstringCharacterIndex].ToString();
 #pragma warning disable CA1309 // Use ordinal string comparison (We are looking for a fuzzy match here)
-                compareResult = string.Compare(fullStringToCompare, querySubstring, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) != 0;
+                mismatch = string.Compare(fullStringToCompare, querySubstring, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) != 0;
 #pragma warning restore CA1309 // Use ordinal string comparison
             }
             else
             {
-                compareResult = fullStringToCompareWithoutCase[compareStringIndex] != currentQuerySubstring[currentQuerySubstringCharacterIndex];
+                mismatch = fullStringToCompareWithoutCase[compareStringIndex] != currentQuerySubstring[currentQuerySubstringCharacterIndex];
             }
 
-            if (compareResult)
+            if (mismatch)
             {
                 matchFoundInPreviousLoop = false;
                 continue;
@@ -152,14 +152,13 @@ public class StringMatcher
 
             if (firstMatchIndex < 0)
             {
-                // first matched char will become the start of the compared string
                 firstMatchIndex = compareStringIndex;
             }
 
             if (currentQuerySubstringCharacterIndex == 0)
             {
-                // first letter of current word
                 matchFoundInPreviousLoop = true;
+
                 firstMatchIndexInWord = compareStringIndex;
             }
             else if (!matchFoundInPreviousLoop)
@@ -172,7 +171,7 @@ public class StringMatcher
                 {
                     matchFoundInPreviousLoop = true;
 
-                    // if it's the beginning character of the first query substring that is matched then we need to update start index
+                    // if it's the first query string, then we need to update the first match index.
                     firstMatchIndex = currentQuerySubstringIndex == 0 ? startIndexToVerify : firstMatchIndex;
 
                     indexList = GetUpdatedIndexList(startIndexToVerify, currentQuerySubstringCharacterIndex, firstMatchIndexInWord, indexList);

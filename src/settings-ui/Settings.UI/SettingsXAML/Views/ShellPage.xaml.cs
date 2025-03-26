@@ -378,6 +378,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 if (_navViewParentLookup.TryGetValue(pageType, out var parentItem) && !parentItem.IsExpanded)
                 {
                     parentItem.IsExpanded = true;
+                    ViewModel.Expanding = parentItem;
                 }
 
                 NavigationService.Navigate(pageType);
@@ -481,6 +482,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             SearchBox.Focus(FocusState.Programmatic);
         }
 
+        private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var sortedItems = ViewModel.NavItems
+                .Select(item => item.Content)
+                .OrderBy(content => content);
+
+            SearchBox.ItemsSource = sortedItems;
+            SearchBox.IsSuggestionListOpen = true;
+        }
+
         private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             var queryText = args.QueryText?.Trim();
@@ -499,7 +510,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 if (_navViewParentLookup.TryGetValue(matchedItem.GetValue(NavHelper.NavigateToProperty) as Type, out var parentItem))
                 {
                     parentItem.IsExpanded = true;
-                    if (ViewModel.Expanding != null)
+                    if (ViewModel.Expanding != null && ViewModel.Expanding != parentItem)
                     {
                         ViewModel.Expanding.IsExpanded = false;
                     }
