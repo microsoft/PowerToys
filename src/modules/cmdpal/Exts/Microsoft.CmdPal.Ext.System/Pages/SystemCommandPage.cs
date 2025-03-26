@@ -15,6 +15,7 @@ public sealed partial class SystemCommandPage : ListPage
     public SystemCommandPage(SettingsManager settingsManager)
     {
         Title = Resources.Microsoft_plugin_ext_system_page_name;
+        Name = Resources.Microsoft_plugin_ext_system_page_name;
         Icon = IconHelpers.FromRelativePath("Assets\\SystemCommand.svg");
         _settingsManager = settingsManager;
         ShowDetails = true;
