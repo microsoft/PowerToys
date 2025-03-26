@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             List<AvailableResult> availableFormats = new List<AvailableResult>();
             List<Result> results = new List<Result>();
             bool isKeywordSearch = !string.IsNullOrEmpty(query.ActionKeyword);
-            bool isEmptySearchInput = string.IsNullOrEmpty(query.Search);
+            bool isEmptySearchInput = string.IsNullOrWhiteSpace(query.Search);
             string searchTerm = query.Search;
 
             // Conjunction search without keyword => return no results
@@ -122,12 +122,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
 
             // If search term is only a number that can't be parsed return an error message
-            if (!isEmptySearchInput && results.Count == 0 && Regex.IsMatch(searchTerm, @"\w+\d+.*$") && !searchTerm.Any(char.IsWhiteSpace) && (TimeAndDateHelper.IsSpecialInputParsing(searchTerm) || !Regex.IsMatch(searchTerm, @"\d+[\.:/]\d+")))
+            if (!isEmptySearchInput && results.Count == 0)
             {
-                // Without plugin key word show only if message is not hidden by setting
-                if (isKeywordSearch || !TimeDateSettings.Instance.HideNumberMessageOnGlobalQuery)
+                string message = !string.IsNullOrEmpty(TimeAndDateHelper.LastInputParsingErrorReason) ? TimeAndDateHelper.LastInputParsingErrorReason : Resources.Microsoft_plugin_timedate_ErrorResultSubTitle;
+
+                // Without plugin key word show only if supported input prefix is used or message is not hidden by setting
+                if (isKeywordSearch || TimeAndDateHelper.IsSpecialInputParsing(searchTerm) || !TimeDateSettings.Instance.HideNumberMessageOnGlobalQuery)
                 {
-                    results.Add(ResultHelper.CreateNumberErrorResult(iconTheme));
+                    results.Add(ResultHelper.CreateNumberErrorResult(iconTheme, message));
                 }
             }
 

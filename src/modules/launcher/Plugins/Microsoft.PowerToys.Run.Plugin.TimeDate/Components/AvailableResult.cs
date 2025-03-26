@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
-    internal class AvailableResult
+    internal sealed class AvailableResult
     {
         /// <summary>
         /// Gets or sets the time/date value

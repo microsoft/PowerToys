@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 
@@ -124,6 +125,17 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                                 Label = formatParts[0],
                                 AlternativeSearchTag = searchTags,
                                 IconType = ResultIconType.DateTime,
+                            });
+                        }
+                        catch (ArgumentOutOfRangeException e)
+                        {
+                            Wox.Plugin.Logger.Log.Exception($"Failed to convert into custom format {formatParts[0]}: {formatSyntax}", e, typeof(AvailableResultsList));
+                            results.Add(new AvailableResult()
+                            {
+                                Value = Resources.Microsoft_plugin_timedate_ErrorConvertCustomFormat + " " + e.Message,
+                                Label = formatParts[0],
+                                AlternativeSearchTag = searchTags,
+                                IconType = ResultIconType.Error,
                             });
                         }
                         catch (Exception e)
@@ -290,13 +302,31 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                         IconType = ResultIconType.Date,
                     },
-                    new AvailableResult()
+                });
+
+                try
+                {
+                    results.Add(new AvailableResult()
                     {
                         Value = dateTimeNow.ToFileTime().ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                         IconType = ResultIconType.DateTime,
-                    },
+                    });
+                }
+                catch
+                {
+                    results.Add(new AvailableResult()
+                    {
+                        Value = Resources.Microsoft_plugin_timedate_ErrorConvertWft,
+                        Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
+                        AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
+                        IconType = ResultIconType.Error,
+                    });
+                }
+
+                results.AddRange(new[]
+                {
                     new AvailableResult()
                     {
                         Value = dateTimeNowUtc.ToString("u"),

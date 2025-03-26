@@ -169,6 +169,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to convert into custom format:.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_ErrorConvertCustomFormat {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorConvertCustomFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not a valid Windows file time.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_ErrorConvertWft {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorConvertWft", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Valid prefixes: &apos;u&apos; for Unix Timestamp, &apos;ums&apos; for Unix Timestamp in milliseconds, &apos;ft&apos; for Windows file time, &apos;oa&apos; for OLE Automation date, &apos;exc&apos; for Excel&apos;s 1900 date value, &apos;exf&apos; for Excel&apos;s 1904 date value.
         /// </summary>
         internal static string Microsoft_plugin_timedate_ErrorResultSubTitle {
@@ -183,6 +201,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_ErrorResultTitle {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorResultTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Excel&apos;s 1900 date value.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Excel1900 {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Excel1900", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Excel&apos;s 1904 date value.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_Excel1904 {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Excel1904", resourceCulture);
             }
         }
         
@@ -210,6 +246,24 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_InvalidCustomFormat {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidCustomFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot parse the input as Excel&apos;s 1900 date value because it is a fake date. (In Excel 0 stands for 0/1/1900 and this date doesn&apos;t exist. And 60 stands for 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123.).
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_InvalidInput_FakeExcel1900 {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_FakeExcel1900", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your input for {0} is outside the range from {1} to {2}..
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_InvalidInput_SupportedRange {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_SupportedRange", resourceCulture);
             }
         }
         
@@ -309,6 +363,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_NowUtc {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_NowUtc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OLE Automation Date.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_OADate {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_OADate", resourceCulture);
             }
         }
         
