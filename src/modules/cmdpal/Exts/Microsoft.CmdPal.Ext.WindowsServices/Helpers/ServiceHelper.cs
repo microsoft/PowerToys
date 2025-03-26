@@ -44,11 +44,6 @@ public static class ServiceHelper
 
         var result = serviceList.Select(s =>
         {
-            if (s.DisplayName.StartsWith("P", StringComparison.CurrentCulture))
-            {
-                Console.WriteLine(s.DisplayName);
-            }
-
             var serviceResult = ServiceResult.FromServiceController(s);
             if (serviceResult == null)
             {
