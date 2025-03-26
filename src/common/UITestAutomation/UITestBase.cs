@@ -41,9 +41,7 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
-            // Create tmp path for screenshots
-            string tempPath = Path.GetTempPath();
-            screenshotDirectory = Path.Combine(tempPath, "UITestScreenshots_" + Guid.NewGuid().ToString());
+            screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
             Directory.CreateDirectory(screenshotDirectory);
 
             // Take screenshot every 1 second
@@ -77,7 +75,7 @@ namespace Microsoft.PowerToys.UITest
                 or UnitTestOutcome.Unknown)
             {
                 // this.CaptureLastScreenshot();
-                MoveScreenShotsToTestResultsDirectory();
+                AddScreenShotsToTestResultsDirectory();
             }
             else
             {
@@ -306,17 +304,13 @@ namespace Microsoft.PowerToys.UITest
             this.TestContext.AddResultFile(screenshotPath);
         }
 
-        protected void MoveScreenShotsToTestResultsDirectory()
+        protected void AddScreenShotsToTestResultsDirectory()
         {
             if (screenshotDirectory != null)
             {
-                Console.WriteLine($"screenshotDirectory: {screenshotDirectory}");
-                Console.WriteLine($"testResultDirectory: {this.TestContext.TestResultsDirectory ?? string.Empty}");
-
                 foreach (string file in Directory.GetFiles(screenshotDirectory))
                 {
-                    string destFile = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, Path.GetFileName(file));
-                    File.Move(file, destFile);
+                    this.TestContext.AddResultFile(file);
                 }
             }
         }
