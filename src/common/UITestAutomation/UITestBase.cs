@@ -47,6 +47,7 @@ namespace Microsoft.PowerToys.UITest
             // Take screenshot every 1 second
             screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
 
+            SendKeys.SendWait("{ESC}");
             this.sessionHelper = new SessionHelper(scope).Init();
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
 
@@ -69,17 +70,20 @@ namespace Microsoft.PowerToys.UITest
         {
             screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
             Dispose();
+            Task.Delay(1000).Wait();
+
+            AddScreenShotsToTestResultsDirectory();
 
             if (TestContext.CurrentTestOutcome is UnitTestOutcome.Failed
                 or UnitTestOutcome.Error
                 or UnitTestOutcome.Unknown)
             {
                 // this.CaptureLastScreenshot();
-                AddScreenShotsToTestResultsDirectory();
+                // AddScreenShotsToTestResultsDirectory();
             }
             else
             {
-                Directory.Delete(screenshotDirectory!, true);
+                // Directory.Delete(screenshotDirectory!, true);
             }
 
             this.Session.Cleanup();
