@@ -42,8 +42,6 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     private readonly StatusMessage _errorMessage = new() { State = MessageState.Error };
 
-    private bool IsExtensionsPage => HasTag && _tag == ExtensionsTag;
-
     public WinGetExtensionPage(string tag = "")
     {
         Icon = tag == ExtensionsTag ? ExtensionsIcon : WinGetIcon;
