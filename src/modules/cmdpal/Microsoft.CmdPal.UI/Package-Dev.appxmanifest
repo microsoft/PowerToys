@@ -66,7 +66,7 @@
         <uap5:Extension Category="windows.startupTask">
           <uap5:StartupTask
             TaskId="CmdPalStartup"
-            Enabled="true"
+            Enabled="false"
             DisplayName="ms-resource:StartupTaskNameDev" />
         </uap5:Extension>
 
