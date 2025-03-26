@@ -171,9 +171,9 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         /// <summary>
         ///   Looks up a localized string similar to Failed to convert into custom format.
         /// </summary>
-        public static string Microsoft_plugin_timedate_ErrorConvertCustomFromat {
+        public static string Microsoft_plugin_timedate_ErrorConvertCustomFormat {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorConvertCustomFromat", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorConvertCustomFormat", resourceCulture);
             }
         }
         

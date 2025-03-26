@@ -237,7 +237,7 @@ internal static class TimeAndDateHelper
             // DateTime.FromOADate returns as local time.
             if (!canParse || excDate < 0 || excDate > Excel1900DateMax)
             {
-                // For the if itself we use 0 as min value that we can show a speccial message if input is 0.
+                // For the if itself we use 0 as min value that we can show a special message if input is 0.
                 LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Excel1900, Excel1900DateMin, Excel1900DateMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
@@ -318,7 +318,7 @@ internal static class TimeAndDateHelper
         // WFT: Week of Month
         if (_regexCustomDateTimeWft.IsMatch(result))
         {
-            // Speacial handling as very early dates can't convert.
+            // Special handling as very early dates can't convert.
             result = _regexCustomDateTimeWft.Replace(result, date.ToFileTime().ToString(CultureInfo.CurrentCulture));
         }
 
@@ -334,14 +334,14 @@ internal static class TimeAndDateHelper
         // EXC: Excel date value with base 1900
         if (_regexCustomDateTimeExc.IsMatch(result))
         {
-            // Speacial handling as very early dates can't convert.
+            // Special handling as very early dates can't convert.
             result = _regexCustomDateTimeExc.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.Excel1900).ToString(CultureInfo.CurrentCulture));
         }
 
         // EXF: Excel date value with base 1904
         if (_regexCustomDateTimeExf.IsMatch(result))
         {
-            // Speacial handling as very early dates can't convert.
+            // Special handling as very early dates can't convert.
             result = _regexCustomDateTimeExf.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.Excel1904).ToString(CultureInfo.CurrentCulture));
         }
 

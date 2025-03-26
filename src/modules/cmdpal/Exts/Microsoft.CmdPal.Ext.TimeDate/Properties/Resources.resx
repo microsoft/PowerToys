@@ -402,7 +402,7 @@
   <data name="Microsoft_plugin_timedate_show_details" xml:space="preserve">
     <value>Select for more details.</value>
   </data>
-  <data name="Microsoft_plugin_timedate_ErrorConvertCustomFromat" xml:space="preserve">
+  <data name="Microsoft_plugin_timedate_ErrorConvertCustomFormat" xml:space="preserve">
     <value>Failed to convert into custom format</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorConvertWft" xml:space="preserve">

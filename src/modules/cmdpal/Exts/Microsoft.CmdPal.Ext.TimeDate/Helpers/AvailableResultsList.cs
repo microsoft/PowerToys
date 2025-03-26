@@ -128,7 +128,7 @@ internal static class AvailableResultsList
                     {
                         results.Add(new AvailableResult()
                         {
-                            Value = Resources.Microsoft_plugin_timedate_ErrorConvertCustomFromat,
+                            Value = Resources.Microsoft_plugin_timedate_ErrorConvertCustomFormat,
                             Label = formatParts[0] + " - " + Resources.Microsoft_plugin_timedate_show_details,
                             AlternativeSearchTag = searchTags,
                             IconType = ResultIconType.Error,
