@@ -503,7 +503,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var matchedItem = ViewModel.NavItems
                 .FirstOrDefault(item =>
                     item.Content?.ToString()
-                        .Equals(queryText, StringComparison.OrdinalIgnoreCase) == true);
+                        .Equals(queryText, StringComparison.CurrentCultureIgnoreCase) == true);
 
             if (matchedItem != null)
             {
