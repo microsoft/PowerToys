@@ -158,9 +158,6 @@
   <data name="Microsoft_plugin_timedate_InvalidInput_DetailsHeader" xml:space="preserve">
     <value>Supported input</value>
   </data>
-  <data name="Microsoft_plugin_timedate_ErrorResultTitle" xml:space="preserve">
-    <value>Error: Invalid number input</value>
-  </data>
   <data name="Microsoft_plugin_timedate_Hour" xml:space="preserve">
     <value>Hour</value>
   </data>
@@ -373,7 +370,8 @@
     <value>Time and Date</value>
   </data>
   <data name="Microsoft_plugin_timedate_InvalidInput_SupportedInput" xml:space="preserve">
-    <value>A {0}format name{0}, a {0}valid date or time value{0}, or a {0}prefixed number{0}.{1}Supported prefixes:{2}'{0}u{0}' for Unix Timestamp{2}'{0}ums{0}' for Unix Timestamp in milliseconds{2}'{0}ft{0}' for Windows file time{2}'{0}oa{0}' for OLE Automation Date{2}'{0}exc{0}' for Excel's 1900 date value{2}'{0}exf{0}' for Excel's 1904 date value</value>
+    <value>A {0}format name{0}, a {0}valid date or time value{0}, or a {0}prefixed number{0}. To search for a format in a specific date/time please use the syntax {0}format::date/time/number{0}.{1}Supported prefixes:{2}'{0}u{0}' for Unix Timestamp{2}'{0}ums{0}' for Unix Timestamp in milliseconds{2}'{0}ft{0}' for Windows file time{2}'{0}oa{0}' for OLE Automation Date{2}'{0}exc{0}' for Excel's 1900 date value{2}'{0}exf{0}' for Excel's 1904 date value</value>
+    <comment>The placed holders are replaced with formatting syntax in code.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagCustom" xml:space="preserve">
     <value>Date and time; Time and Date; Custom format</value>
@@ -411,7 +409,7 @@
     <value>Not a valid Windows file time</value>
   </data>
   <data name="Microsoft_plugin_timedate_InvalidInput_SupportedRange" xml:space="preserve">
-    <value>The {0} input is outside the range from {1} to {2}.</value>
+    <value>Your input for {0} is outside the range **from {1} to {2}**.</value>
     <comment>The placeholder will be replace in code.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_InvalidInput_FakeExcel1900" xml:space="preserve">

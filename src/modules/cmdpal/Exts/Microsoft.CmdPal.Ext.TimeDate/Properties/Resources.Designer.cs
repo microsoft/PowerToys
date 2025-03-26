@@ -187,15 +187,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error: Invalid number input.
-        /// </summary>
-        public static string Microsoft_plugin_timedate_ErrorResultTitle {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorResultTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Excel&apos;s 1900 date value.
         /// </summary>
         public static string Microsoft_plugin_timedate_Excel1900 {
@@ -268,7 +259,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A {0}format name{0}, a {0}valid date or time value{0}, or a {0}prefixed number{0}.{1}Supported prefixes:{2}&apos;{0}u{0}&apos; for Unix Timestamp{2}&apos;{0}ums{0}&apos; for Unix Timestamp in milliseconds{2}&apos;{0}ft{0}&apos; for Windows file time{2}&apos;{0}oa{0}&apos; for OLE Automation Date{2}&apos;{0}exc{0}&apos; for Excel&apos;s 1900 date value{2}&apos;{0}exf{0}&apos; for Excel&apos;s 1904 date value.
+        ///   Looks up a localized string similar to A {0}format name{0}, a {0}valid date or time value{0}, or a {0}prefixed number{0}. To search for a format in a specific date/time please use the syntax {0}format::date/time/number{0}.{1}Supported prefixes:{2}&apos;{0}u{0}&apos; for Unix Timestamp{2}&apos;{0}ums{0}&apos; for Unix Timestamp in milliseconds{2}&apos;{0}ft{0}&apos; for Windows file time{2}&apos;{0}oa{0}&apos; for OLE Automation Date{2}&apos;{0}exc{0}&apos; for Excel&apos;s 1900 date value{2}&apos;{0}exf{0}&apos; for Excel&apos;s 1904 date value.
         /// </summary>
         public static string Microsoft_plugin_timedate_InvalidInput_SupportedInput {
             get {
@@ -277,7 +268,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The {0} input is outside the range from {1} to {2}..
+        ///   Looks up a localized string similar to Your input for {0} is outside the range **from {1} to {2}**..
         /// </summary>
         public static string Microsoft_plugin_timedate_InvalidInput_SupportedRange {
             get {

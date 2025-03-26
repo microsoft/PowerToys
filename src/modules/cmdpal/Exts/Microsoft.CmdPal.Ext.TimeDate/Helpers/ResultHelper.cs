@@ -35,21 +35,10 @@ internal static class ResultHelper
     public static IconInfo ErrorIcon { get; } = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.light.png", "Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.dark.png");
 
     /// <summary>
-    /// Gets a result with an error message that only numbers can't be parsed
+    /// Gets a result with an error message that input can't be parsed
     /// </summary>
     /// <returns>Element of type <see cref="Result"/>.</returns>
 #pragma warning disable CA1863 // Use 'CompositeFormat'
-    internal static ListItem CreateNumberErrorResult() => new ListItem(new NoOpCommand())
-    {
-        Title = Resources.Microsoft_plugin_timedate_ErrorResultTitle,
-        Icon = ErrorIcon,
-        Details = new Details()
-        {
-            Title = Resources.Microsoft_plugin_timedate_InvalidInput_DetailsHeader,
-            Body = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_InvalidInput_SupportedInput, "**", "\n\n", "\n\n* "),
-        },
-    };
-
     internal static ListItem CreateInvalidInputErrorResult() => new ListItem(new NoOpCommand())
     {
         Title = Resources.Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle,
