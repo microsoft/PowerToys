@@ -208,12 +208,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             tags.Add(new Tag() { Text = Alias.SearchPrefix });
         }
 
-        PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(Tags)));
-
         DoOnUiThread(
             () =>
             {
                 ListHelpers.InPlaceUpdateList(Tags, tags);
+                PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(Tags)));
             });
     }
 
