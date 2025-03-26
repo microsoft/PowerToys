@@ -47,7 +47,7 @@ public class ServiceResult
         catch (Exception)
         {
             // try to log the exception in the future
-            // retrive properties from serviceController will thorw exception. Such as PlatformNotSupportedException.
+            // retrieve properties from serviceController will throw exception. Such as PlatformNotSupportedException.
         }
 
         return null;
