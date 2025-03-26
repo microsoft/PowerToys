@@ -10,7 +10,6 @@ using System.Linq;
 using System.ServiceProcess;
 using Microsoft.CmdPal.Ext.WindowsServices.Commands;
 using Microsoft.CmdPal.Ext.WindowsServices.Properties;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
 using Windows.System;
@@ -44,9 +43,14 @@ public static class ServiceHelper
             serviceList = servicesStartsWith.Concat(servicesContains);
         }
 
-        return serviceList.Select(s =>
+        var result = serviceList.Select(s =>
         {
-            var serviceResult = new ServiceResult(s);
+            var serviceResult = ServiceResult.CreateServiceController(s);
+            if (serviceResult == null)
+            {
+                return null;
+            }
+
             ServiceCommand serviceCommand;
             CommandContextItem[] moreCommands;
             if (serviceResult.IsRunning)
@@ -93,7 +97,9 @@ public static class ServiceHelper
                 // ToolTipData = new ToolTipData(serviceResult.DisplayName, serviceResult.ServiceName),
                 // IcoPath = icoPath,
             };
-        });
+        }).Where(s => s != null);
+
+        return result;
     }
 
     // TODO GH #118 IPublicAPI contextAPI isn't used anymore, but we need equivalent ways to show notifications and status
