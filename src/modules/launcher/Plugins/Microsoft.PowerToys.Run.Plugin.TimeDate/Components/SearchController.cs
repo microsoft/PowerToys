@@ -43,6 +43,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             bool isEmptySearchInput = string.IsNullOrWhiteSpace(query.Search);
             string searchTerm = query.Search;
 
+            // Reset last parsing error
+            TimeAndDateHelper.LastInputParsingErrorReason = string.Empty;
+
             // Conjunction search without keyword => return no results
             // (This improves the results on global queries.)
             if (!isKeywordSearch && _conjunctionList.Any(x => x.Equals(searchTerm, StringComparison.CurrentCultureIgnoreCase)))
@@ -122,14 +125,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
 
             // If search term is only a number that can't be parsed return an error message
-            if (!isEmptySearchInput && results.Count == 0 && Regex.IsMatch(searchTerm, @"\w+[+-]?\d+.*$") && (TimeAndDateHelper.IsSpecialInputParsing(searchTerm) || !Regex.IsMatch(searchTerm, @"\d+[\.:/]\d+")))
+            if (!isEmptySearchInput && results.Count == 0 && Regex.IsMatch(searchTerm, @"\w+[+-]?\d+.*$") && !searchTerm.Any(char.IsWhiteSpace) && (TimeAndDateHelper.IsSpecialInputParsing(searchTerm) || !Regex.IsMatch(searchTerm, @"\d+[\.:/]\d+")))
             {
+                string title = !string.IsNullOrEmpty(TimeAndDateHelper.LastInputParsingErrorReason) ? Resources.Microsoft_plugin_timedate_ErrorResultValue : Resources.Microsoft_plugin_timedate_ErrorResultTitle;
                 string message = !string.IsNullOrEmpty(TimeAndDateHelper.LastInputParsingErrorReason) ? TimeAndDateHelper.LastInputParsingErrorReason : Resources.Microsoft_plugin_timedate_ErrorResultSubTitle;
 
-                // Without plugin key word show only if supported input prefix is used or message is not hidden by setting
+                // Without plugin key word show only if not hidden by setting
                 if (isKeywordSearch || !TimeDateSettings.Instance.HideNumberMessageOnGlobalQuery)
                 {
-                    results.Add(ResultHelper.CreateNumberErrorResult(iconTheme, message));
+                    results.Add(ResultHelper.CreateNumberErrorResult(iconTheme, title, message));
                 }
             }
 

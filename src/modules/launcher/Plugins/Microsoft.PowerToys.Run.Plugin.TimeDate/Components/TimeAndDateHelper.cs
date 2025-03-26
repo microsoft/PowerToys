@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         private const double Excel1904DateMin = 0;
         private const double Excel1904DateMax = 2957003.99998843;
 
-        internal static string LastInputParsingErrorReason { get; private set; } = string.Empty;
+        internal static string LastInputParsingErrorReason { get; set; } = string.Empty;
 
         /// <summary>
         /// Get the format for the time string

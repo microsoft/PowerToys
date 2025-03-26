@@ -196,11 +196,20 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error: Invalid number input.
+        ///   Looks up a localized string similar to Error: Invalid input.
         /// </summary>
         internal static string Microsoft_plugin_timedate_ErrorResultTitle {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorResultTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error: Invalid number.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_ErrorResultValue {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorResultValue", resourceCulture);
             }
         }
         
