@@ -157,7 +157,7 @@
 ## Command Palette
  * Check if Command Palette successfully install/uninstall with PowerToys.
    - [√] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
-   - [] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+   - [√] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
  * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
    - [√] when PowerToys is running unelevated on start-up
    - [√] when PowerToys is running as admin on start-up
@@ -184,7 +184,7 @@
    - [√] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
    - [√] Windows System Command - test `lock`.
    - [√] Windows System Command - test `empty recycle bin`.
-   - [] Windows System Command - test `shutdown`.
+   - [√] Windows System Command - test `shutdown`.
    - [√] Windows System Command - Click your network adapter item and paste the result at notepad.
    - [√] Bookmarks - Add bookmarks to command palette.
    - [√] Bookmarks - Open your bookmarks (in Command Palette).
