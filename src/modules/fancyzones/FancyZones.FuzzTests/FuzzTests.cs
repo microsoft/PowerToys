@@ -25,21 +25,21 @@ namespace FancyZones.FuzzTests
                 return;
             }
 
-            int inputdata = BitConverter.ToInt32(input.Slice(0, 4));
+            int inputData = BitConverter.ToInt32(input.Slice(0, 4));
 
             string mockCustomLayouts = $@"{{""custom-layouts"": [{{ 
             ""uuid"": ""{{B8C275E-A7BC-485F-A35C-67B69164F51F}}"",
                 ""name"": ""Custom layout 1"",
                 ""type"": ""grid"",
                 ""info"": {{
-                    ""rows"": {inputdata},
-                    ""columns"": {inputdata},
-                    ""rows-percentage"": [ {inputdata} ],
-                    ""columns-percentage"": [ {inputdata}, {inputdata}, {inputdata} ],
-                    ""cell-child-map"": [ [{inputdata}, {inputdata}, {inputdata}] ],
+                    ""rows"": {inputData},
+                    ""columns"": {inputData},
+                    ""rows-percentage"": [ {inputData} ],
+                    ""columns-percentage"": [ {inputData}, {inputData}, {inputData} ],
+                    ""cell-child-map"": [ [{inputData}, {inputData}, {inputData}] ],
                     ""show-spacing"": true,
-                    ""spacing"": {inputdata},
-                    ""sensitivity-radius"": {inputdata}
+                    ""spacing"": {inputData},
+                    ""sensitivity-radius"": {inputData}
                 }}
             }}]}}";
 
