@@ -9,13 +9,13 @@ namespace Microsoft.CmdPal.Ext.WindowsServices;
 
 public class ServiceResult
 {
-    public string ServiceName { get; }
+    public string ServiceName { get; private set; }
 
-    public string DisplayName { get; }
+    public string DisplayName { get; private set; }
 
-    public ServiceStartMode StartMode { get; }
+    public ServiceStartMode StartMode { get; private set; }
 
-    public bool IsRunning { get; }
+    public bool IsRunning { get; private set; }
 
     public ServiceResult(ServiceController serviceController)
     {
@@ -25,5 +25,31 @@ public class ServiceResult
         DisplayName = serviceController.DisplayName;
         StartMode = serviceController.StartType;
         IsRunning = serviceController.Status != ServiceControllerStatus.Stopped && serviceController.Status != ServiceControllerStatus.StopPending;
+    }
+
+    private ServiceResult()
+    {
+    }
+
+    public static ServiceResult FromServiceController(ServiceController serviceController)
+    {
+        try
+        {
+            ArgumentNullException.ThrowIfNull(serviceController);
+            var result = new ServiceResult();
+            result.ServiceName = serviceController.ServiceName;
+            result.DisplayName = serviceController.DisplayName;
+            result.StartMode = serviceController.StartType;
+            result.IsRunning = serviceController.Status != ServiceControllerStatus.Stopped && serviceController.Status != ServiceControllerStatus.StopPending;
+
+            return result;
+        }
+        catch (Exception)
+        {
+            // try to log the exception in the future
+            // retrive properties from serviceController will thorw exception. Such as PlatformNotSupportedException.
+        }
+
+        return null;
     }
 }
