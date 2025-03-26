@@ -23,9 +23,11 @@ public partial class InstallPackageCommand : InvokableCommand
     private IAsyncOperationWithProgress<UninstallResult, UninstallProgress>? _unInstallAction;
     private Task? _installTask;
 
-    public bool IsInstalled { get; private set; }
+    public PackageInstallCommandState InstallCommandState { get; private set; }
 
     public static IconInfo CompletedIcon { get; } = new("\uE930"); // Completed
+
+    public static IconInfo UpdateIcon { get; } = new("\uE74A"); // Up
 
     public static IconInfo DownloadIcon { get; } = new("\uE896"); // Download
 
@@ -43,23 +45,42 @@ public partial class InstallPackageCommand : InvokableCommand
     private static readonly CompositeFormat UninstallPackageFinishing = System.Text.CompositeFormat.Parse(Properties.Resources.winget_uninstall_package_finishing);
     private static readonly CompositeFormat DownloadProgress = System.Text.CompositeFormat.Parse(Properties.Resources.winget_download_progress);
 
-    public InstallPackageCommand(CatalogPackage package, bool isInstalled)
+    public InstallPackageCommand(CatalogPackage package, PackageInstallCommandState isInstalled)
     {
         _package = package;
-        IsInstalled = isInstalled;
+        InstallCommandState = isInstalled;
         UpdateAppearance();
     }
 
     internal void FakeChangeStatus()
     {
-        IsInstalled = !IsInstalled;
+        InstallCommandState = InstallCommandState switch
+        {
+            PackageInstallCommandState.Install => PackageInstallCommandState.Uninstall,
+            PackageInstallCommandState.Update => PackageInstallCommandState.Uninstall,
+            PackageInstallCommandState.Uninstall => PackageInstallCommandState.Install,
+            _ => throw new NotImplementedException(),
+        };
         UpdateAppearance();
     }
 
     private void UpdateAppearance()
     {
-        Icon = IsInstalled ? CompletedIcon : DownloadIcon;
-        Name = IsInstalled ? Properties.Resources.winget_uninstall_name : Properties.Resources.winget_install_name;
+        // Icon = IsInstalled ? CompletedIcon : DownloadIcon;
+        Icon = InstallCommandState switch
+        {
+            PackageInstallCommandState.Install => DownloadIcon,
+            PackageInstallCommandState.Update => UpdateIcon,
+            PackageInstallCommandState.Uninstall => CompletedIcon,
+            _ => throw new NotImplementedException(),
+        };
+        Name = InstallCommandState switch
+        {
+            PackageInstallCommandState.Install => Properties.Resources.winget_install_name,
+            PackageInstallCommandState.Update => Properties.Resources.winget_install_name,
+            PackageInstallCommandState.Uninstall => Properties.Resources.winget_uninstall_name,
+            _ => throw new NotImplementedException(),
+        };
     }
 
     public override ICommandResult Invoke()
@@ -71,7 +92,7 @@ public partial class InstallPackageCommand : InvokableCommand
             return CommandResult.KeepOpen();
         }
 
-        if (IsInstalled)
+        if (InstallCommandState == PackageInstallCommandState.Uninstall)
         {
             // Uninstall
             _installBanner.State = MessageState.Info;
@@ -87,7 +108,8 @@ public partial class InstallPackageCommand : InvokableCommand
 
             _installTask = Task.Run(() => TryDoInstallOperation(_unInstallAction));
         }
-        else
+        else if (InstallCommandState is PackageInstallCommandState.Install or
+                 PackageInstallCommandState.Update)
         {
             // Install
             _installBanner.State = MessageState.Info;
@@ -96,6 +118,13 @@ public partial class InstallPackageCommand : InvokableCommand
 
             var installOptions = WinGetStatics.WinGetFactory.CreateInstallOptions();
             installOptions.PackageInstallScope = PackageInstallScope.Any;
+
+            // These don't work:
+            // installOptions.AcceptPackageAgreements = true;
+            // installOptions.PackageInstallMode = PackageInstallMode.Silent;
+
+            // But this one does:
+            // installOptions.SkipDependencies = true;
             _installAction = WinGetStatics.Manager.InstallPackageAsync(_package, installOptions);
 
             var handler = new AsyncOperationProgressHandler<InstallResult, InstallProgress>(OnInstallProgress);
@@ -113,7 +142,8 @@ public partial class InstallPackageCommand : InvokableCommand
         try
         {
             await action.AsTask();
-            _installBanner.Message = IsInstalled ?
+
+            _installBanner.Message = InstallCommandState == PackageInstallCommandState.Uninstall ?
                 string.Format(CultureInfo.CurrentCulture, UninstallPackageFinished, _package.Name) :
                 string.Format(CultureInfo.CurrentCulture, InstallPackageFinished, _package.Name);
 
@@ -223,4 +253,11 @@ public partial class InstallPackageCommand : InvokableCommand
                 break;
         }
     }
+}
+
+public enum PackageInstallCommandState
+{
+    Uninstall = 0,
+    Update = 1,
+    Install = 2,
 }
