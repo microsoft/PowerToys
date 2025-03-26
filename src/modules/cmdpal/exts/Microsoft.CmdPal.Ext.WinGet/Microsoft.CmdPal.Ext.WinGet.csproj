@@ -48,21 +48,39 @@
   </ItemGroup>
 
   <ItemGroup>
-    <CsWinRTInputs Include="$(PkgMicrosoft_WindowsPackageManager_ComInterop)\lib\uap10.0\Microsoft.Management.Deployment.winmd" />
+    <!-- <CsWinRTInputs Include="$(PkgMicrosoft_WindowsPackageManager_InProcCom)\lib\uap10.0\Microsoft.Management.Deployment.winmd" /> -->
 
     <!-- Before v1.10 of this package, it wasn't in the uap10.0 dir  -->
-    <Content Include="$(PkgMicrosoft_WindowsPackageManager_ComInterop)\lib\uap10.0\Microsoft.Management.Deployment.winmd" Link="Microsoft.Management.Deployment.winmd" CopyToOutputDirectory="PreserveNewest" />
+    <!-- <Content Include="$(PkgMicrosoft_WindowsPackageManager_InProcCom)\lib\uap10.0\Microsoft.Management.Deployment.winmd" Link="Microsoft.Management.Deployment.winmd" CopyToOutputDirectory="PreserveNewest" /> -->
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.WindowsPackageManager.ComInterop">
+
+    <!-- NU1701: The package targets .NET Framework, but this uses .NET -->
+    <PackageReference Include="Microsoft.WindowsPackageManager.InProcCom">
       <NoWarn>NU1701</NoWarn>
       <GeneratePathProperty>true</GeneratePathProperty>
       <IncludeAssets>none</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <!-- Tell CsWinRT to create the projection for the API -->
+  <PropertyGroup>
+    <CsWinRTWindowsMetadata>10.0.19041.0</CsWinRTWindowsMetadata>
+    <CsWinRTIncludes>Microsoft.Management.Deployment</CsWinRTIncludes>
+  </PropertyGroup>
+  <ItemGroup>
+    <CsWinRTInputs Include="$(PkgMicrosoft_WindowsPackageManager_InProcCom)\lib\Microsoft.Management.Deployment.winmd" />
+  </ItemGroup>
+  <!-- Reference and include necessary binaries -->
+  <ItemGroup>
+    <Content Include="$(PkgMicrosoft_WindowsPackageManager_InProcCom)\runtimes\win-$(Platform)\native\Microsoft.Management.Deployment.InProc.dll" Link="Microsoft.Management.Deployment.dll" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(PkgMicrosoft_WindowsPackageManager_InProcCom)\runtimes\win-$(Platform)\native\Microsoft.Management.Deployment.InProc.dll.manifest" Link="Microsoft.Management.Deployment.dll.manifest" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(PkgMicrosoft_WindowsPackageManager_InProcCom)\runtimes\win-$(Platform)\native\Microsoft.Management.Deployment.winmd" Link="Microsoft.Management.Deployment.winmd" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(PkgMicrosoft_WindowsPackageManager_InProcCom)\runtimes\win-$(Platform)\native\WindowsPackageManager.dll" Link="WindowsPackageManager.dll" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!--
