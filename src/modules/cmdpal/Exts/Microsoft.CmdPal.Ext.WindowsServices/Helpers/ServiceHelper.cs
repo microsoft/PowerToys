@@ -44,7 +44,7 @@ public static class ServiceHelper
 
         var result = serviceList.Select(s =>
         {
-            var serviceResult = ServiceResult.FromServiceController(s);
+            var serviceResult = ServiceResult.CreateServiceController(s);
             if (serviceResult == null)
             {
                 return null;

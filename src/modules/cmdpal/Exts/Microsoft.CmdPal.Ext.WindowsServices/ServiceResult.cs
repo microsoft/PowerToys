@@ -17,7 +17,7 @@ public class ServiceResult
 
     public bool IsRunning { get; private set; }
 
-    public ServiceResult(ServiceController serviceController)
+    private ServiceResult(ServiceController serviceController)
     {
         ArgumentNullException.ThrowIfNull(serviceController);
 
@@ -27,20 +27,11 @@ public class ServiceResult
         IsRunning = serviceController.Status != ServiceControllerStatus.Stopped && serviceController.Status != ServiceControllerStatus.StopPending;
     }
 
-    private ServiceResult()
-    {
-    }
-
-    public static ServiceResult FromServiceController(ServiceController serviceController)
+    public static ServiceResult CreateServiceController(ServiceController serviceController)
     {
         try
         {
-            ArgumentNullException.ThrowIfNull(serviceController);
-            var result = new ServiceResult();
-            result.ServiceName = serviceController.ServiceName;
-            result.DisplayName = serviceController.DisplayName;
-            result.StartMode = serviceController.StartType;
-            result.IsRunning = serviceController.Status != ServiceControllerStatus.Stopped && serviceController.Status != ServiceControllerStatus.StopPending;
+            var result = new ServiceResult(serviceController);
 
             return result;
         }
