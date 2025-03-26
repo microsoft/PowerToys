@@ -122,12 +122,12 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             }
 
             // If search term is only a number that can't be parsed return an error message
-            if (!isEmptySearchInput && results.Count == 0)
+            if (!isEmptySearchInput && results.Count == 0 && Regex.IsMatch(searchTerm, @"\w+[+-]?\d+.*$") && (TimeAndDateHelper.IsSpecialInputParsing(searchTerm) || !Regex.IsMatch(searchTerm, @"\d+[\.:/]\d+")))
             {
                 string message = !string.IsNullOrEmpty(TimeAndDateHelper.LastInputParsingErrorReason) ? TimeAndDateHelper.LastInputParsingErrorReason : Resources.Microsoft_plugin_timedate_ErrorResultSubTitle;
 
                 // Without plugin key word show only if supported input prefix is used or message is not hidden by setting
-                if (isKeywordSearch || TimeAndDateHelper.IsSpecialInputParsing(searchTerm) || !TimeDateSettings.Instance.HideNumberMessageOnGlobalQuery)
+                if (isKeywordSearch || !TimeDateSettings.Instance.HideNumberMessageOnGlobalQuery)
                 {
                     results.Add(ResultHelper.CreateNumberErrorResult(iconTheme, message));
                 }

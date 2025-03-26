@@ -86,10 +86,17 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         {
             // Act
             DateTime dt = DateTime.Parse(date, DateTimeFormatInfo.CurrentInfo);
-            double? result = TimeAndDateHelper.ConvertToOleAutomationFormat(dt, (OADateFormats)type);
 
             // Assert
-            Assert.AreEqual(valueExpected, result);
+            if (valueExpected == null)
+            {
+                Assert.ThrowsException<ArgumentOutOfRangeException>(() => TimeAndDateHelper.ConvertToOleAutomationFormat(dt, (OADateFormats)type));
+            }
+            else
+            {
+                var result = TimeAndDateHelper.ConvertToOleAutomationFormat(dt, (OADateFormats)type);
+                Assert.AreEqual(valueExpected, result);
+            }
         }
 
         [DataTestMethod]
