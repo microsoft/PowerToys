@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Ext.Apps;
@@ -101,12 +102,7 @@ public partial class MainListPage : DynamicListPage,
         var commands = _tlcManager.TopLevelCommands;
         lock (commands)
         {
-            // This gets called on a background thread, because ListViewModel
-            // updates the .SearchText of all extensions on a BG thread.
-            foreach (var command in commands)
-            {
-                command.TryUpdateFallbackText(newSearch);
-            }
+            UpdateFallbacks(newSearch, commands.ToImmutableArray());
 
             // Cleared out the filter text? easy. Reset _filteredItems, and bail out.
             if (string.IsNullOrEmpty(newSearch))
@@ -135,6 +131,26 @@ public partial class MainListPage : DynamicListPage,
             _filteredItems = ListHelpers.FilterList<IListItem>(_filteredItems, SearchText, ScoreTopLevelItem);
             RaiseItemsChanged(_filteredItems.Count());
         }
+    }
+
+    private void UpdateFallbacks(string newSearch, IReadOnlyList<TopLevelViewModel> commands)
+    {
+        // fire and forget
+        _ = Task.Run(() =>
+        {
+            var needsToUpdate = false;
+
+            foreach (var command in commands)
+            {
+                var changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
+                needsToUpdate = needsToUpdate || changedVisibility;
+            }
+
+            if (needsToUpdate)
+            {
+                RaiseItemsChanged();
+            }
+        });
     }
 
     private bool ActuallyLoading()
