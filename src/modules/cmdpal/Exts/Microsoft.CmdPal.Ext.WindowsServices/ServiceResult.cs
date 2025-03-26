@@ -9,13 +9,13 @@ namespace Microsoft.CmdPal.Ext.WindowsServices;
 
 public class ServiceResult
 {
-    public string ServiceName { get; private set; }
+    public string ServiceName { get; }
 
-    public string DisplayName { get; private set; }
+    public string DisplayName { get; }
 
-    public ServiceStartMode StartMode { get; private set; }
+    public ServiceStartMode StartMode { get; }
 
-    public bool IsRunning { get; private set; }
+    public bool IsRunning { get; }
 
     private ServiceResult(ServiceController serviceController)
     {
