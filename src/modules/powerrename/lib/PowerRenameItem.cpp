@@ -70,11 +70,11 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
         HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
         if (hFile != INVALID_HANDLE_VALUE)
         {
-            FILETIME CreationTime;
-            if (GetFileTime(hFile, &CreationTime, NULL, NULL))
+            FILETIME ModificationTime;
+            if (GetFileTime(hFile, NULL, NULL, &ModificationTime))
             {
                 SYSTEMTIME SystemTime, LocalTime;
-                if (FileTimeToSystemTime(&CreationTime, &SystemTime))
+                if (FileTimeToSystemTime(&ModificationTime, &SystemTime))
                 {
                     if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
                     {
