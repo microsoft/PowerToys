@@ -11,7 +11,9 @@ namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
 internal static class TimeAndDateHelper
 {
-    private static readonly Regex _regexSpecialInputFormats = new Regex(@"^.*(u|ums|ft|oa|exc|exf)\d");
+    /* htcfreek:Currently not used.
+     * private static readonly Regex _regexSpecialInputFormats = new Regex(@"^.*(u|ums|ft|oa|exc|exf)\d"); */
+
     private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|WOM|WOY|EAB|WFT|UXT|UMS|OAD|EXC|EXF)");
     private static readonly Regex _regexCustomDateTimeDow = new Regex(@"(?<!\\)DOW");
     private static readonly Regex _regexCustomDateTimeWom = new Regex(@"(?<!\\)WOM");
@@ -279,6 +281,7 @@ internal static class TimeAndDateHelper
         }
     }
 
+    /* htcfreek:Currently not required
     /// <summary>
     /// Test if input is special parsing for Unix time, Unix time in milliseconds, file time, ...
     /// </summary>
@@ -287,7 +290,7 @@ internal static class TimeAndDateHelper
     internal static bool IsSpecialInputParsing(string input)
     {
         return _regexSpecialInputFormats.IsMatch(input);
-    }
+    }*/
 
     /// <summary>
     /// Converts a DateTime object based on the format string
