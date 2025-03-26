@@ -18,6 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             HideFileExtension = new BoolProperty(true);
             HideStartingDigits = new BoolProperty(true);
             TemplateLocation = new StringProperty(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "NewPlus", "Templates"));
+            ReplaceVariables = new BoolProperty(false);
         }
 
         [JsonPropertyName("HideFileExtension")]
@@ -28,6 +29,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("TemplateLocation")]
         public StringProperty TemplateLocation { get; set; }
+
+        [JsonPropertyName("ReplaceVariables")]
+        public BoolProperty ReplaceVariables { get; set; }
 
         public override string ToString() => JsonSerializer.Serialize(this);
     }

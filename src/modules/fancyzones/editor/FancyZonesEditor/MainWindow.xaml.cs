@@ -13,11 +13,12 @@ using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
-
 using Common.UI;
+using FancyZoneEditor.Telemetry;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using ModernWpf.Controls;
 
 namespace FancyZonesEditor
@@ -69,6 +70,8 @@ namespace FancyZonesEditor
 
             // reinit considering work area rect
             _settings.InitModels();
+
+            PowerToysTelemetry.Log.WriteEvent(new FancyZonesEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
         private void BringToFront()

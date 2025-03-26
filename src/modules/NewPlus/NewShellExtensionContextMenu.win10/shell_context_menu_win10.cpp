@@ -32,7 +32,7 @@ IFACEMETHODIMP shell_context_menu_win10::Initialize(PCIDLIST_ABSOLUTE, IDataObje
 IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UINT menu_index, UINT menu_first_cmd_id, UINT, UINT menu_flags)
 {
     if (!NewSettingsInstance().GetEnabled() 
-            || package::IsWin11OrGreater()
+        || package::IsWin11OrGreater()
         )
     {
         return E_FAIL;
@@ -47,7 +47,7 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
     {
         // Create the initial context popup menu containing the list of templates and open templates action
         int menu_id = menu_first_cmd_id;
-        MENUITEMINFO newplus_main_context_menu_item;
+        MENUITEMINFO newplus_main_context_menu_item = { 0 };
         HMENU sub_menu_of_templates = CreatePopupMenu();
         int sub_menu_index = 0;
 
@@ -142,7 +142,7 @@ void shell_context_menu_win10::add_open_templates_to_context_menu(HMENU sub_menu
     wchar_t menu_name_open[256] = { 0 };
     wcscpy_s(menu_name_open, ARRAYSIZE(menu_name_open), localized_context_menu_item_open_templates.c_str());
     const auto open_folder_item = Make<template_folder_context_menu_item>(template_folder_root);
-    MENUITEMINFO newplus_menu_item_open_templates;
+    MENUITEMINFO newplus_menu_item_open_templates = { 0 };
     newplus_menu_item_open_templates.cbSize = sizeof(MENUITEMINFO);
     newplus_menu_item_open_templates.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID;
     newplus_menu_item_open_templates.wID = menu_id;
@@ -174,7 +174,7 @@ void shell_context_menu_win10::add_open_templates_to_context_menu(HMENU sub_menu
 
 void shell_context_menu_win10::add_separator_to_context_menu(HMENU sub_menu_of_templates, int sub_menu_index)
 {
-    MENUITEMINFO menu_item_separator;
+    MENUITEMINFO menu_item_separator = { 0 };
     menu_item_separator.cbSize = sizeof(MENUITEMINFO);
     menu_item_separator.fMask = MIIM_FTYPE;
     menu_item_separator.fType = MFT_SEPARATOR;
@@ -184,8 +184,11 @@ void shell_context_menu_win10::add_separator_to_context_menu(HMENU sub_menu_of_t
 void shell_context_menu_win10::add_template_item_to_context_menu(HMENU sub_menu_of_templates, int sub_menu_index, newplus::template_item* const template_item, int menu_id, int index)
 {
     wchar_t menu_name[256] = { 0 };
-    wcscpy_s(menu_name, ARRAYSIZE(menu_name), template_item->get_menu_title(!utilities::get_newplus_setting_hide_extension(), !utilities::get_newplus_setting_hide_starting_digits()).c_str());
-    MENUITEMINFO newplus_menu_item_template;
+    wcscpy_s(menu_name, ARRAYSIZE(menu_name), template_item->get_menu_title(
+        !utilities::get_newplus_setting_hide_extension(), 
+        !utilities::get_newplus_setting_hide_starting_digits(), 
+        utilities::get_newplus_setting_resolve_variables()).c_str());
+    MENUITEMINFO newplus_menu_item_template = { 0 };
     newplus_menu_item_template.cbSize = sizeof(MENUITEMINFO);
     newplus_menu_item_template.fMask = MIIM_STRING | MIIM_FTYPE | MIIM_ID | MIIM_DATA;
     newplus_menu_item_template.wID = menu_id;

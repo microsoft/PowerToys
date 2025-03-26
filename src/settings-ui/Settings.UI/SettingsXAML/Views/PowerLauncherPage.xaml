@@ -309,6 +309,18 @@
         <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <InfoBar
+                    x:Uid="Run_CheckOutCmdPal"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    IsClosable="False"
+                    IsOpen="True"
+                    IsTabStop="True"
+                    Severity="Informational">
+                    <InfoBar.ActionButton>
+                        <HyperlinkButton x:Uid="Run_NavigateCmdPalSettings" Click="NavigateCmdPalSettings_Click" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
                 <tkcontrols:SettingsCard
                     x:Uid="PowerLauncher_EnablePowerLauncher"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}"

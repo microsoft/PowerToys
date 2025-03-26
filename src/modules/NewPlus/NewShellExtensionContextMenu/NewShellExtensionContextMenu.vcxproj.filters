@@ -34,6 +34,9 @@
     <ClCompile Include="new_utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\powerrename\lib\Helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="template_folder.h">
@@ -73,6 +76,12 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.base.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers_filesystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers_variables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
