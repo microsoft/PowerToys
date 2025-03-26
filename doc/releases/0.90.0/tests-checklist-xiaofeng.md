@@ -168,12 +168,12 @@
    - [√] Installed Apps - launch a packaged application
    - [√] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
    - [√] File Search - open a file on the disk.
-   - [x] File Search - find a file and copy file path.
+   - [√] File Search - find a file and copy file path.
    - [√] File Search - find a file and open containing folder.
    - [√] Run Commands - execute a command. (e.g. `ping google.com`).
    - [√] Windows Walker - Switch to another opening window.
    - [√] Windows Walker - Switch to another opening window when powertoys run as admin.
-   - [x] WinGet - Search and install application through WinGet. (eg. `vscode`)
+   - [√] WinGet - Search and install application through WinGet. (eg. `vscode`)
    - [√] Web Search - Search anything by this extension.
    - [√] Windows Terminal Profiles - Open profile.
    - [√] Windows Terminal Profiles - Open profile as Admin.
