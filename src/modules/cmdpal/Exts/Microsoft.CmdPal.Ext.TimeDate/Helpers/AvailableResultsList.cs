@@ -128,7 +128,7 @@ internal static class AvailableResultsList
                     {
                         results.Add(new AvailableResult()
                         {
-                            Value = "Can't convert input into custom format.",
+                            Value = Resources.Microsoft_plugin_timedate_ErrorConvertCustomFromat,
                             Label = formatParts[0] + " - " + Resources.Microsoft_plugin_timedate_show_details,
                             AlternativeSearchTag = searchTags,
                             IconType = ResultIconType.Error,
@@ -315,7 +315,7 @@ internal static class AvailableResultsList
             {
                 results.Add(new AvailableResult()
                 {
-                    Value = "Can't convert into Windows file time.",
+                    Value = Resources.Microsoft_plugin_timedate_ErrorConvertWft,
                     Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                     IconType = ResultIconType.Error,

@@ -38,6 +38,7 @@ internal static class ResultHelper
     /// Gets a result with an error message that only numbers can't be parsed
     /// </summary>
     /// <returns>Element of type <see cref="Result"/>.</returns>
+#pragma warning disable CA1863 // Use 'CompositeFormat'
     internal static ListItem CreateNumberErrorResult() => new ListItem(new NoOpCommand())
     {
         Title = Resources.Microsoft_plugin_timedate_ErrorResultTitle,
@@ -45,7 +46,7 @@ internal static class ResultHelper
         Details = new Details()
         {
             Title = Resources.Microsoft_plugin_timedate_InvalidInput_DetailsHeader,
-            Body = "* " + Resources.Microsoft_plugin_timedate_InvalidInput_SupportedPrefixes.Replace(",", "\n\n*"),
+            Body = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_InvalidInput_SupportedInput, "**", "\n\n", "\n\n* "),
         },
     };
 
@@ -56,7 +57,8 @@ internal static class ResultHelper
         Details = new Details()
         {
             Title = Resources.Microsoft_plugin_timedate_InvalidInput_DetailsHeader,
-            Body = "* " + Resources.Microsoft_plugin_timedate_InvalidInput_SupportedPrefixes.Replace(",", "\n\n*"),
+            Body = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_InvalidInput_SupportedInput, "**", "\n\n", "\n\n* "),
         },
     };
+#pragma warning restore CA1863 // Use 'CompositeFormat'
 }

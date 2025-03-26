@@ -156,7 +156,7 @@
     <value>Era abbreviation</value>
   </data>
   <data name="Microsoft_plugin_timedate_InvalidInput_DetailsHeader" xml:space="preserve">
-    <value>Valid prefixes</value>
+    <value>Supported input</value>
   </data>
   <data name="Microsoft_plugin_timedate_ErrorResultTitle" xml:space="preserve">
     <value>Error: Invalid number input</value>
@@ -372,8 +372,8 @@
   <data name="Microsoft_plugin_timedate_main_page_title" xml:space="preserve">
     <value>Time and Date</value>
   </data>
-  <data name="Microsoft_plugin_timedate_InvalidInput_SupportedPrefixes" xml:space="preserve">
-    <value>'u' for Unix Timestamp, 'ums' for Unix Timestamp in milliseconds, 'ft' for Windows file time, 'oa' for OLE Automation date, 'exc' for Excel's 1900 date value, 'exf' for Excel's 1904 date value</value>
+  <data name="Microsoft_plugin_timedate_InvalidInput_SupportedInput" xml:space="preserve">
+    <value>A {0}format name{0}, a {0}valid date or time value{0}, or a {0}prefixed number{0}.{1}Supported prefixes:{2}'{0}u{0}' for Unix Timestamp{2}'{0}ums{0}' for Unix Timestamp in milliseconds{2}'{0}ft{0}' for Windows file time{2}'{0}oa{0}' for OLE Automation Date{2}'{0}exc{0}' for Excel's 1900 date value{2}'{0}exf{0}' for Excel's 1904 date value</value>
   </data>
   <data name="Microsoft_plugin_timedate_SearchTagCustom" xml:space="preserve">
     <value>Date and time; Time and Date; Custom format</value>
@@ -403,5 +403,27 @@
   </data>
   <data name="Microsoft_plugin_timedate_show_details" xml:space="preserve">
     <value>Select for more details.</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_ErrorConvertCustomFromat" xml:space="preserve">
+    <value>Failed to convert into custom format</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_ErrorConvertWft" xml:space="preserve">
+    <value>Not a valid Windows file time</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidInput_SupportedRange" xml:space="preserve">
+    <value>The {0} input is outside the range from {1} to {2}.</value>
+    <comment>The placeholder will be replace in code.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_InvalidInput_FakeExcel1900" xml:space="preserve">
+    <value>Cannot parse the input as Excel's 1900 date value because it is a fake date. (In Excel 0 stands for 0/1/1900 and this date doesn't exist. And 60 stands for 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123.)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_OADate" xml:space="preserve">
+    <value>OLE Automation Date</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Excel1900" xml:space="preserve">
+    <value>Excel's 1900 date value</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_Excel1904" xml:space="preserve">
+    <value>Excel's 1904 date value</value>
   </data>
 </root>

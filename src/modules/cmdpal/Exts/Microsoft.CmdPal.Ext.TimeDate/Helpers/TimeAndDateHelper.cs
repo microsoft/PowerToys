@@ -4,8 +4,8 @@
 
 using System;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.VisualBasic;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
@@ -23,6 +23,19 @@ internal static class TimeAndDateHelper
     private static readonly Regex _regexCustomDateTimeOad = new Regex(@"(?<!\\)OAD");
     private static readonly Regex _regexCustomDateTimeExc = new Regex(@"(?<!\\)EXC");
     private static readonly Regex _regexCustomDateTimeExf = new Regex(@"(?<!\\)EXF");
+
+    private const long UnixTimeSecondsMin = -62135596800;
+    private const long UnixTimeSecondsMax = 253402300799;
+    private const long UnixTimeMillisecondsMin = -62135596800000;
+    private const long UnixTimeMillisecondsMax = 253402300799999;
+    private const long WindowsFileTimeMin = 0;
+    private const long WindowsFileTimeMax = 2650467707991000000;
+    private const double OADateMin = -657434.99999999;
+    private const double OADateMax = 2958465.99999999;
+    private const double Excel1900DateMin = 1;
+    private const double Excel1900DateMax = 2958465.99998843;
+    private const double Excel1904DateMin = 0;
+    private const double Excel1904DateMax = 2957003.99998843;
 
     internal static string LastInputParsingErrorReason { get; private set; } = string.Empty;
 
@@ -96,7 +109,7 @@ internal static class TimeAndDateHelper
         return ((date.DayOfWeek + daysInWeek - formatSettingFirstDayOfWeek) % daysInWeek) + adjustment;
     }
 
-    internal static double? ConvertToOleAutomationFormat(DateTime date, OADateFormats type)
+    internal static double ConvertToOleAutomationFormat(DateTime date, OADateFormats type)
     {
         var v = date.ToOADate();
 
@@ -107,13 +120,23 @@ internal static class TimeAndDateHelper
                 v -= 1462;
 
                 // Date starts at 1/1/1904 = 0
-                return Math.Truncate(v) >= 0 ? v : null;
+                if (Math.Truncate(v) < 0)
+                {
+                    throw new ArgumentOutOfRangeException("Not a valid Excel date.", innerException: null);
+                }
+
+                return v;
             case OADateFormats.Excel1900:
                 // Excel with base 1900: Adjust by -1 if v < 61
                 v = v < 61 ? v - 1 : v;
 
                 // Date starts at 1/1/1900 = 1
-                return Math.Truncate(v) >= 1 ? v : null;
+                if (Math.Truncate(v) < 1)
+                {
+                    throw new ArgumentOutOfRangeException("Not a valid Excel date.", innerException: null);
+                }
+
+                return v;
             default:
                 // OLE Automation date: Return as is.
                 return v;
@@ -129,6 +152,7 @@ internal static class TimeAndDateHelper
     internal static bool ParseStringAsDateTime(in string input, out DateTime timestamp)
     {
         LastInputParsingErrorReason = string.Empty;
+        CompositeFormat errorMessage = CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_InvalidInput_SupportedRange);
 
         if (DateTime.TryParse(input, out timestamp))
         {
@@ -142,9 +166,9 @@ internal static class TimeAndDateHelper
             var canParse = long.TryParse(input.TrimStart('u'), out var secondsU);
 
             // Value has to be in the range from -62135596800 to 253402300799
-            if (!canParse || secondsU < -62135596800 || secondsU > 253402300799)
+            if (!canParse || secondsU < UnixTimeSecondsMin || secondsU > UnixTimeSecondsMax)
             {
-                LastInputParsingErrorReason = $"Input for Unix time stamp value does not fall within the range from -62135596800 to 253402300799.";
+                LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Unix, UnixTimeSecondsMin, UnixTimeSecondsMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -159,9 +183,9 @@ internal static class TimeAndDateHelper
             var canParse = long.TryParse(input.TrimStart("ums".ToCharArray()), out var millisecondsUms);
 
             // Value has to be in the range from -62135596800000 to 253402300799999
-            if (!canParse || millisecondsUms < -62135596800000 || millisecondsUms > 253402300799999)
+            if (!canParse || millisecondsUms < UnixTimeMillisecondsMin || millisecondsUms > UnixTimeMillisecondsMax)
             {
-                LastInputParsingErrorReason = $"Input for Unix time stamp in milliseconds value does not fall within the range from -62135596800000 to 253402300799999.";
+                LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Unix_Milliseconds, UnixTimeMillisecondsMin, UnixTimeMillisecondsMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -175,9 +199,9 @@ internal static class TimeAndDateHelper
 
             // Windows file time
             // Value has to be in the range from 0 to 2650467707991000000
-            if (!canParse || secondsFt < 0 || secondsFt > 2650467707991000000)
+            if (!canParse || secondsFt < WindowsFileTimeMin || secondsFt > WindowsFileTimeMax)
             {
-                LastInputParsingErrorReason = $"Input for Windows file time value does not fall within the range from 0 to 2650467707991000000.";
+                LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_WindowsFileTime, WindowsFileTimeMin, WindowsFileTimeMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -193,9 +217,9 @@ internal static class TimeAndDateHelper
             // OLE Automation date
             // Input has to be in the range from -657434.99999999 to 2958465.99999999
             // DateTime.FromOADate returns as local time.
-            if (!canParse || oADate < -657434.99999999 || oADate > 2958465.99999999)
+            if (!canParse || oADate < OADateMin || oADate > OADateMax)
             {
-                LastInputParsingErrorReason = $"Input for OLE Automation date does not fall within the range from -657434.99999999 to 2958465.99999999.";
+                LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_OADate, OADateMin, OADateMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -208,19 +232,20 @@ internal static class TimeAndDateHelper
             var canParse = double.TryParse(input.TrimStart("exc".ToCharArray()), out var excDate);
 
             // Excel's 1900 date value
-            // Input has to be in the range from 1 to 2958465.99998843 and not 60 whole number
+            // Input has to be in the range from 1 (0 = Fake date) to 2958465.99998843 and not 60 whole number
             // Because of a bug in Excel and the way it behaves before 3/1/1900 we have to adjust all inputs lower than 61 for +1
             // DateTime.FromOADate returns as local time.
-            if (!canParse || excDate < 0 || excDate > 2958465.99998843)
+            if (!canParse || excDate < 0 || excDate > Excel1900DateMax)
             {
-                LastInputParsingErrorReason = $"Input for Excel's 1900 date value does not fall within the range from 0 to 2958465.99998843.";
+                // For the if itself we use 0 as min value that we can show a speccial message if input is 0.
+                LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Excel1900, Excel1900DateMin, Excel1900DateMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
 
             if (Math.Truncate(excDate) == 0 || Math.Truncate(excDate) == 60)
             {
-                LastInputParsingErrorReason = $"Cannot parse {excDate} as Excel's 1900 date value because it is a fake date. (In Excel 0 stands for 0/1/1900 and this date doesn't exist. And 60 stands for 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123.)";
+                LastInputParsingErrorReason = Resources.Microsoft_plugin_timedate_InvalidInput_FakeExcel1900;
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -237,9 +262,9 @@ internal static class TimeAndDateHelper
             // Input has to be in the range from 0 to 2957003.99998843
             // Because Excel uses 01/01/1904 as base we need to adjust for +1462
             // DateTime.FromOADate returns as local time.
-            if (!canParse || exfDate < 0 || exfDate > 2957003.99998843)
+            if (!canParse || exfDate < Excel1904DateMin || exfDate > Excel1904DateMax)
             {
-                LastInputParsingErrorReason = $"Input for Excel's 1904 date value does not fall within the range from 0 to 2957003.99998843.";
+                LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Excel1904, Excel1904DateMin, Excel1904DateMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -293,7 +318,7 @@ internal static class TimeAndDateHelper
         // WFT: Week of Month
         if (_regexCustomDateTimeWft.IsMatch(result))
         {
-            // Speacial handling as some Excel and OA date values can't convert.
+            // Speacial handling as very early dates can't convert.
             result = _regexCustomDateTimeWft.Replace(result, date.ToFileTime().ToString(CultureInfo.CurrentCulture));
         }
 
@@ -304,17 +329,21 @@ internal static class TimeAndDateHelper
         result = _regexCustomDateTimeUms.Replace(result, unixMilliseconds.ToString(CultureInfo.CurrentCulture));
 
         // OAD: OLE Automation date
-        result = _regexCustomDateTimeOad.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.OLEAutomation)?.ToString(CultureInfo.CurrentCulture));
+        result = _regexCustomDateTimeOad.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.OLEAutomation).ToString(CultureInfo.CurrentCulture));
 
         // EXC: Excel date value with base 1900
-        var v = ConvertToOleAutomationFormat(date, OADateFormats.Excel1900);
-        var exc = v != null ? v?.ToString(CultureInfo.CurrentCulture) : "####";
-        result = _regexCustomDateTimeExc.Replace(result, exc);
+        if (_regexCustomDateTimeExc.IsMatch(result))
+        {
+            // Speacial handling as very early dates can't convert.
+            result = _regexCustomDateTimeExc.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.Excel1900).ToString(CultureInfo.CurrentCulture));
+        }
 
         // EXF: Excel date value with base 1904
-        var n = ConvertToOleAutomationFormat(date, OADateFormats.Excel1904);
-        var exf = n != null ? n?.ToString(CultureInfo.CurrentCulture) : "####";
-        result = _regexCustomDateTimeExf.Replace(result, exf);
+        if (_regexCustomDateTimeExf.IsMatch(result))
+        {
+            // Speacial handling as very early dates can't convert.
+            result = _regexCustomDateTimeExf.Replace(result, ConvertToOleAutomationFormat(date, OADateFormats.Excel1904).ToString(CultureInfo.CurrentCulture));
+        }
 
         return result;
     }
