@@ -184,7 +184,7 @@
     <value>A counter showing multiple customized properties.</value>
   </data>
   <data name="DateTimeCheatSheet_Title.Text" xml:space="preserve">
-    <value>Replace using file creation date and time</value>
+    <value>Replace using file modification date and time</value>
   </data>
   <data name="DateTimeCheatSheet_FullYear" xml:space="preserve">
     <value>Year represented by a full four or five digits, depending on the calendar used.</value>
