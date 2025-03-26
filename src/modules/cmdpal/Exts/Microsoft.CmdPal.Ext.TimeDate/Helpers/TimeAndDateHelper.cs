@@ -141,10 +141,10 @@ internal static class TimeAndDateHelper
             // We use long instead of int, because int is too small after 03:14:07 UTC 2038-01-19
             var canParse = long.TryParse(input.TrimStart('u'), out var secondsU);
 
-            // Value has to be in the range from -2147483648 (13 December 1901 at 20:45:52 UTC) to 2147483647 (19 January 2038 at 03:14:07 UTC)
-            if (!canParse || secondsU < -2147483648 || secondsU > 2147483647)
+            // Value has to be in the range from -62135596800 to 253402300799
+            if (!canParse || secondsU < -62135596800 || secondsU > 253402300799)
             {
-                LastInputParsingErrorReason = $"Input for Unix time stamp value does not fall within the range from -2147483648000 (13 December 1901 at 20:45:52 UTC) to 2147483647 (19 January 2038 at 03:14:07 UTC).";
+                LastInputParsingErrorReason = $"Input for Unix time stamp value does not fall within the range from -62135596800 to 253402300799.";
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -158,10 +158,10 @@ internal static class TimeAndDateHelper
             // We use long instead of int because int is too small after 03:14:07 UTC 2038-01-19
             var canParse = long.TryParse(input.TrimStart("ums".ToCharArray()), out var millisecondsUms);
 
-            // Value has to be in the range from -2147483648000 (13 December 1901 at 20:45:52 UTC) to 2147483647000 (19 January 2038 at 03:14:07 UTC)
-            if (!canParse || millisecondsUms < -2147483648000 || millisecondsUms > 2147483647000)
+            // Value has to be in the range from -62135596800000 to 253402300799999
+            if (!canParse || millisecondsUms < -62135596800000 || millisecondsUms > 253402300799999)
             {
-                LastInputParsingErrorReason = $"Input for Unix time stamp in milliseconds value does not fall within the range from -2147483648000 (13 December 1901 at 20:45:52 UTC) to 2147483647000 (19 January 2038 at 03:14:07 UTC).";
+                LastInputParsingErrorReason = $"Input for Unix time stamp in milliseconds value does not fall within the range from -62135596800000 to 253402300799999.";
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
