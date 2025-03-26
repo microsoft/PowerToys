@@ -88,7 +88,7 @@ public sealed partial class TimeDateCalculator
             }
         }
 
-        /* htcreek:Code obselete with current CmdPal behavior.
+        /* htcfreek:Code obsolete with current CmdPal behavior.
         // If search term is only a number that can't be parsed return an error message
         if (!isEmptySearchInput && results.Count == 0 && Regex.IsMatch(query, @"\w+\d+.*$") && !query.Any(char.IsWhiteSpace) && (TimeAndDateHelper.IsSpecialInputParsing(query) || !Regex.IsMatch(query, @"\d+[\.:/]\d+")))
         {
