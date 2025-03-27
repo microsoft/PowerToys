@@ -16,8 +16,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
     internal static class TimeAndDateHelper
     {
         private static readonly Regex _regexSpecialInputFormats = new Regex(@"^.*(::)?(u|ums|ft|oa|exc|exf)[+-]\d");
-        private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|WOM|WOY|EAB|WFT|UXT|UMS|OAD|EXC|EXF)");
+        private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|DIM|WOM|WOY|EAB|WFT|UXT|UMS|OAD|EXC|EXF)");
         private static readonly Regex _regexCustomDateTimeDow = new Regex(@"(?<!\\)DOW");
+        private static readonly Regex _regexCustomDateTimeDim = new Regex(@"(?<!\\)DIM");
         private static readonly Regex _regexCustomDateTimeWom = new Regex(@"(?<!\\)WOM");
         private static readonly Regex _regexCustomDateTimeWoy = new Regex(@"(?<!\\)WOY");
         private static readonly Regex _regexCustomDateTimeEab = new Regex(@"(?<!\\)EAB");
@@ -289,13 +290,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         }
 
         /// <summary>
-        /// Test a string for our custom date and time format syntax
+        /// Test if input is special parsing for Unix time, Unix time in milliseconds, file time, ...
         /// </summary>
-        /// <param name="str">String to test.</param>
-        /// <returns>True if yes and otherwise false</returns>
-        internal static bool StringContainsCustomFormatSyntax(string str)
+        /// <param name="input">String with date/time</param>
+        /// <returns>True if yes, otherwise false</returns>
+        internal static bool IsSpecialInputParsing(string input)
         {
-            return _regexCustomDateTimeFormats.IsMatch(str);
+            return _regexSpecialInputFormats.IsMatch(input);
         }
 
         /// <summary>
@@ -314,6 +315,9 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 
             // DOW: Number of day in week
             result = _regexCustomDateTimeDow.Replace(result, GetNumberOfDayInWeek(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));
+
+            // DIM: Days in Month
+            result = _regexCustomDateTimeDim.Replace(result, DateTime.DaysInMonth(date.Year, date.Month).ToString(CultureInfo.CurrentCulture));
 
             // WOM: Week of Month
             result = _regexCustomDateTimeWom.Replace(result, GetWeekOfMonth(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));
@@ -358,13 +362,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         }
 
         /// <summary>
-        /// Test if input is special parsing for Unix time, Unix time in milliseconds, file time, ...
+        /// Test a string for our custom date and time format syntax
         /// </summary>
-        /// <param name="input">String with date/time</param>
-        /// <returns>True if yes, otherwise false</returns>
-        internal static bool IsSpecialInputParsing(string input)
+        /// <param name="str">String to test.</param>
+        /// <returns>True if yes and otherwise false</returns>
+        internal static bool StringContainsCustomFormatSyntax(string str)
         {
-            return _regexSpecialInputFormats.IsMatch(input);
+            return _regexCustomDateTimeFormats.IsMatch(str);
         }
 
         /// <summary>
