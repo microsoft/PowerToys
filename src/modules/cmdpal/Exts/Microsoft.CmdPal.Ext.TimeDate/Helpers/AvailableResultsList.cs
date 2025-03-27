@@ -280,6 +280,13 @@ internal static class AvailableResultsList
                 },
                 new AvailableResult()
                 {
+                    Value = DateTime.IsLeapYear(dateTimeNow.Year) ? Resources.Microsoft_plugin_timedate_LeapYear : Resources.Microsoft_plugin_timedate_NoLeapYear,
+                    Label = Resources.Microsoft_plugin_timedate_LeapYear,
+                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                    IconType = ResultIconType.Date,
+                },
+                new AvailableResult()
+                {
                     Value = era,
                     Label = Resources.Microsoft_plugin_timedate_Era,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagEra"),

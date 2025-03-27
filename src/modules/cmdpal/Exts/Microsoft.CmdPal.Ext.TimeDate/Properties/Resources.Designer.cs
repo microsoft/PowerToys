@@ -313,6 +313,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Leap year.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_LeapYear {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_LeapYear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open.
         /// </summary>
         public static string Microsoft_plugin_timedate_main_page_name {
@@ -372,6 +381,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_MonthYear {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_MonthYear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not a leap year.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_NoLeapYear {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_NoLeapYear", resourceCulture);
             }
         }
         
