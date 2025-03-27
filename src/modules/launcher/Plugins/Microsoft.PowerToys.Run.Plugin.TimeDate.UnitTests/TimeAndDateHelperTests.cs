@@ -132,6 +132,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
         [DataTestMethod]
         [DataRow("DOW")]
+        [DataRow("DIM")]
         [DataRow("WOM")]
         [DataRow("WOY")]
         [DataRow("EAB")]
