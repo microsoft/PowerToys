@@ -297,4 +297,7 @@
     <value>Copy value with key path</value>
     <comment>Like "Copy item"</comment>
   </data>
+  <data name="NewButton.Label" xml:space="preserve">
+    <value>New</value>
+  </data>
 </root>
