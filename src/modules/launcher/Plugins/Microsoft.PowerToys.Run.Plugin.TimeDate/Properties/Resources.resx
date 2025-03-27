@@ -411,4 +411,10 @@
   <data name="Microsoft_plugin_timedate_Excel1904" xml:space="preserve">
     <value>Excel's 1904 date value</value>
   </data>
+  <data name="Microsoft_plugin_timedate_LeapYear" xml:space="preserve">
+    <value>Leap year</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_NoLeapYear" xml:space="preserve">
+    <value>Not a leap year</value>
+  </data>
 </root>

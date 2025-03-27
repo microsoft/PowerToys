@@ -313,6 +313,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Leap year.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_LeapYear {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_LeapYear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Millisecond.
         /// </summary>
         internal static string Microsoft_plugin_timedate_Millisecond {
@@ -354,6 +363,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_MonthYear {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_MonthYear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not a leap year.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_NoLeapYear {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_NoLeapYear", resourceCulture);
             }
         }
         
