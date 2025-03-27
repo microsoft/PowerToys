@@ -127,7 +127,7 @@
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
    - [√] Verify the module is not enabled. (No context menu entry)
    - [√] Open settings and verify the module is not enabled and you can't enable it.
-   - [] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [√] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
    - [√] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
    - [√] Open settings and verify the module is not enabled and you can't enable it.
