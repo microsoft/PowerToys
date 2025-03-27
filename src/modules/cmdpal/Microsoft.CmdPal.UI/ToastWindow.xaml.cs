@@ -51,7 +51,13 @@ public sealed partial class ToastWindow : Window,
             Width = Convert.ToInt32(ToastText.ActualWidth),
             Height = Convert.ToInt32(ToastText.ActualHeight),
         };
-        AppWindow.Resize(intSize);
+        var scaleAdjustment = ToastText.XamlRoot.RasterizationScale;
+        var scaled = new SizeInt32
+        {
+            Width = (int)Math.Round(intSize.Width * scaleAdjustment),
+            Height = (int)Math.Round(intSize.Height * scaleAdjustment),
+        };
+        AppWindow.Resize(scaled);
 
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
