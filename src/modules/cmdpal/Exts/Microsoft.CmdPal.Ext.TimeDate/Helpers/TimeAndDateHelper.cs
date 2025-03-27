@@ -325,7 +325,7 @@ internal static class TimeAndDateHelper
         // WOY: Week of Year
         result = _regexCustomDateTimeWoy.Replace(result, calWeek.ToString(CultureInfo.CurrentCulture));
 
-        // ELF: Era in long format
+        // EAB: Era abbreviation
         result = _regexCustomDateTimeEab.Replace(result, eraShortFormat);
 
         // WFT: Week of Month
