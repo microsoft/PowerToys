@@ -66,7 +66,7 @@
         <uap5:Extension Category="windows.startupTask">
           <uap5:StartupTask
             TaskId="CmdPalStartup"
-            Enabled="true"
+            Enabled="false"
             DisplayName="ms-resource:StartupTaskName" />
         </uap5:Extension>
 
@@ -78,5 +78,6 @@
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
     <rescap:Capability Name="unvirtualizedResources" />
+    <rescap:Capability Name="appLicensing" />
   </Capabilities>
 </Package>

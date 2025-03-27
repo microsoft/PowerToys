@@ -35,7 +35,7 @@
             <Image
                 Width="16"
                 Height="16"
-                Source="ms-appx:///Assets/StoreLogo.png" />
+                Source="ms-appx:///Assets/icon.svg" />
             <TextBlock
                 Margin="12,0,0,0"
                 VerticalAlignment="Center"
