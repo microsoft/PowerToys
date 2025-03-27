@@ -39,8 +39,6 @@ internal static class TimeAndDateHelper
     private const double Excel1904DateMin = 0;
     private const double Excel1904DateMax = 2957003.99998843;
 
-    internal static string LastInputParsingErrorReason { get; private set; } = string.Empty;
-
     /// <summary>
     /// Get the format for the time string
     /// </summary>
@@ -84,18 +82,25 @@ internal static class TimeAndDateHelper
     /// Returns the number week in the month (Used code from 'David Morton' from <see href="https://social.msdn.microsoft.com/Forums/vstudio/bf504bba-85cb-492d-a8f7-4ccabdf882cb/get-week-number-for-month"/>)
     /// </summary>
     /// <param name="date">date</param>
+    /// <param name="formatSettingFirstDayOfWeek">Setting for the first day in the week.</param>
     /// <returns>Number of week in the month</returns>
     internal static int GetWeekOfMonth(DateTime date, DayOfWeek formatSettingFirstDayOfWeek)
     {
-        var firstDayOfMonth = new DateTime(date.Year, date.Month, 1);
+        var weekCount = 1;
 
-        // Calculate first day of first calendar week
-        var firstWeekDayAdjustment = (7 + (firstDayOfMonth.DayOfWeek - formatSettingFirstDayOfWeek)) % 7;
-        var firstWeekDayOfMonth = firstDayOfMonth.AddDays(-firstWeekDayAdjustment);
+        for (var i = 1; i <= date.Day; i++)
+        {
+            DateTime d = new(date.Year, date.Month, i);
 
-        // Calculate week of month for current date
-        var weekdaysOfMonth = (date - firstWeekDayOfMonth).Days;
-        return (weekdaysOfMonth / 7) + 1;
+            // Count week number +1 if day is the first day of a week and not day 1 of the month.
+            // (If we count on day one of a month we would start the month with week number 2.)
+            if (i > 1 && d.DayOfWeek == formatSettingFirstDayOfWeek)
+            {
+                weekCount += 1;
+            }
+        }
+
+        return weekCount;
     }
 
     /// <summary>
@@ -150,10 +155,11 @@ internal static class TimeAndDateHelper
     /// </summary>
     /// <param name="input">String with date/time</param>
     /// <param name="timestamp">The new <see cref="DateTime"/> object</param>
+    /// <param name="inputParsingErrorMsg">Error message shown to the user</param>
     /// <returns>True on success, otherwise false</returns>
-    internal static bool ParseStringAsDateTime(in string input, out DateTime timestamp)
+    internal static bool ParseStringAsDateTime(in string input, out DateTime timestamp, out string inputParsingErrorMsg)
     {
-        LastInputParsingErrorReason = string.Empty;
+        inputParsingErrorMsg = string.Empty;
         CompositeFormat errorMessage = CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_InvalidInput_SupportedRange);
 
         if (DateTime.TryParse(input, out timestamp))
@@ -170,7 +176,7 @@ internal static class TimeAndDateHelper
             // Value has to be in the range from -62135596800 to 253402300799
             if (!canParse || secondsU < UnixTimeSecondsMin || secondsU > UnixTimeSecondsMax)
             {
-                LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Unix, UnixTimeSecondsMin, UnixTimeSecondsMax);
+                inputParsingErrorMsg = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Unix, UnixTimeSecondsMin, UnixTimeSecondsMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -187,7 +193,7 @@ internal static class TimeAndDateHelper
             // Value has to be in the range from -62135596800000 to 253402300799999
             if (!canParse || millisecondsUms < UnixTimeMillisecondsMin || millisecondsUms > UnixTimeMillisecondsMax)
             {
-                LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Unix_Milliseconds, UnixTimeMillisecondsMin, UnixTimeMillisecondsMax);
+                inputParsingErrorMsg = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Unix_Milliseconds, UnixTimeMillisecondsMin, UnixTimeMillisecondsMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -203,7 +209,7 @@ internal static class TimeAndDateHelper
             // Value has to be in the range from 0 to 2650467707991000000
             if (!canParse || secondsFt < WindowsFileTimeMin || secondsFt > WindowsFileTimeMax)
             {
-                LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_WindowsFileTime, WindowsFileTimeMin, WindowsFileTimeMax);
+                inputParsingErrorMsg = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_WindowsFileTime, WindowsFileTimeMin, WindowsFileTimeMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -221,7 +227,7 @@ internal static class TimeAndDateHelper
             // DateTime.FromOADate returns as local time.
             if (!canParse || oADate < OADateMin || oADate > OADateMax)
             {
-                LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_OADate, OADateMin, OADateMax);
+                inputParsingErrorMsg = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_OADate, OADateMin, OADateMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -240,14 +246,14 @@ internal static class TimeAndDateHelper
             if (!canParse || excDate < 0 || excDate > Excel1900DateMax)
             {
                 // For the if itself we use 0 as min value that we can show a special message if input is 0.
-                LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Excel1900, Excel1900DateMin, Excel1900DateMax);
+                inputParsingErrorMsg = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Excel1900, Excel1900DateMin, Excel1900DateMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
 
             if (Math.Truncate(excDate) == 0 || Math.Truncate(excDate) == 60)
             {
-                LastInputParsingErrorReason = Resources.Microsoft_plugin_timedate_InvalidInput_FakeExcel1900;
+                inputParsingErrorMsg = Resources.Microsoft_plugin_timedate_InvalidInput_FakeExcel1900;
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -266,7 +272,7 @@ internal static class TimeAndDateHelper
             // DateTime.FromOADate returns as local time.
             if (!canParse || exfDate < Excel1904DateMin || exfDate > Excel1904DateMax)
             {
-                LastInputParsingErrorReason = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Excel1904, Excel1904DateMin, Excel1904DateMax);
+                inputParsingErrorMsg = string.Format(CultureInfo.CurrentCulture, errorMessage, Resources.Microsoft_plugin_timedate_Excel1904, Excel1904DateMin, Excel1904DateMax);
                 timestamp = new DateTime(1, 1, 1, 1, 1, 1);
                 return false;
             }
@@ -312,7 +318,7 @@ internal static class TimeAndDateHelper
         // WOM: Week of Month
         result = _regexCustomDateTimeWom.Replace(result, GetWeekOfMonth(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));
 
-        // WOY: Week of Month
+        // WOY: Week of Year
         result = _regexCustomDateTimeWoy.Replace(result, calWeek.ToString(CultureInfo.CurrentCulture));
 
         // ELF: Era in long format

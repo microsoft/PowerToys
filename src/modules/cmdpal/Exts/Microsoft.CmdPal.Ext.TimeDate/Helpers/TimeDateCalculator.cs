@@ -29,12 +29,15 @@ public sealed partial class TimeDateCalculator
     /// <returns>List of Wox <see cref="Result"/>s.</returns>
     public static List<ListItem> ExecuteSearch(SettingsManager settings, string query)
     {
-        var isEmptySearchInput = string.IsNullOrEmpty(query);
+        var isEmptySearchInput = string.IsNullOrWhiteSpace(query);
         List<AvailableResult> availableFormats = new List<AvailableResult>();
         List<ListItem> results = new List<ListItem>();
 
         // currently, all of the search in V2 is keyword search.
         var isKeywordSearch = true;
+
+        // Last input parsing error
+        var lastInputParsingErrorReason = string.Empty;
 
         // Switch search type
         if (isEmptySearchInput || (!isKeywordSearch && settings.OnlyDateTimeNowGlobal))
@@ -47,13 +50,13 @@ public sealed partial class TimeDateCalculator
         {
             // Search for specified format with specified time/date value
             var userInput = query.Split(InputDelimiter);
-            if (TimeAndDateHelper.ParseStringAsDateTime(userInput[1], out DateTime timestamp))
+            if (TimeAndDateHelper.ParseStringAsDateTime(userInput[1], out DateTime timestamp, out var inputParsingErrorMsg))
             {
                 availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));
                 query = userInput[0];
             }
         }
-        else if (TimeAndDateHelper.ParseStringAsDateTime(query, out DateTime timestamp))
+        else if (TimeAndDateHelper.ParseStringAsDateTime(query, out DateTime timestamp, out var inputParsingErrorMsg))
         {
             // Return all formats for specified time/date value
             availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));
@@ -108,9 +111,9 @@ public sealed partial class TimeDateCalculator
         if (results.Count == 0)
         {
             var er = ResultHelper.CreateInvalidInputErrorResult();
-            if (!string.IsNullOrEmpty(TimeAndDateHelper.LastInputParsingErrorReason))
+            if (!string.IsNullOrEmpty(lastInputParsingErrorReason))
             {
-                er.Details = new Details() { Body = TimeAndDateHelper.LastInputParsingErrorReason };
+                er.Details = new Details() { Body = lastInputParsingErrorReason };
             }
 
             results.Add(er);
