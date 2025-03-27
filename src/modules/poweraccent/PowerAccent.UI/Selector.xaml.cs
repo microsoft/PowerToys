@@ -6,6 +6,8 @@ using System;
 using System.ComponentModel;
 using System.Windows;
 
+using ManagedCommon;
+
 using Wpf.Ui.Controls;
 
 using Point = PowerAccent.Core.Point;
@@ -57,6 +59,7 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
 
     private void PowerAccent_OnSelectionCharacter(int index, string character)
     {
+        Logger.LogInfo($"Ionut index {index}");
         _selectedIndex = index;
         characters.SelectedIndex = _selectedIndex;
         characterName.Text = _powerAccent.CharacterDescriptions[_selectedIndex];
