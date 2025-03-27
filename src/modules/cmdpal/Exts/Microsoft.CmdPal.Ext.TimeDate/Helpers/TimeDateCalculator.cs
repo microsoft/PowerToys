@@ -37,7 +37,7 @@ public sealed partial class TimeDateCalculator
         var isKeywordSearch = true;
 
         // Last input parsing error
-        var lastInputParsingErrorReason = string.Empty;
+        var lastInputParsingErrorMsg = string.Empty;
 
         // Switch search type
         if (isEmptySearchInput || (!isKeywordSearch && settings.OnlyDateTimeNowGlobal))
@@ -50,13 +50,13 @@ public sealed partial class TimeDateCalculator
         {
             // Search for specified format with specified time/date value
             var userInput = query.Split(InputDelimiter);
-            if (TimeAndDateHelper.ParseStringAsDateTime(userInput[1], out DateTime timestamp, out var inputParsingErrorMsg))
+            if (TimeAndDateHelper.ParseStringAsDateTime(userInput[1], out DateTime timestamp, out lastInputParsingErrorMsg))
             {
                 availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));
                 query = userInput[0];
             }
         }
-        else if (TimeAndDateHelper.ParseStringAsDateTime(query, out DateTime timestamp, out var inputParsingErrorMsg))
+        else if (TimeAndDateHelper.ParseStringAsDateTime(query, out DateTime timestamp, out lastInputParsingErrorMsg))
         {
             // Return all formats for specified time/date value
             availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));
@@ -99,9 +99,9 @@ public sealed partial class TimeDateCalculator
             if (!settings.HideNumberMessageOnGlobalQuery)
             {
                 var er = ResultHelper.CreateInvalidInputErrorResult();
-                if (!string.IsNullOrEmpty(TimeAndDateHelper.LastInputParsingErrorReason))
+                if (!string.IsNullOrEmpty(lastInputParsingErrorMsg))
                 {
-                    er.Details = new Details() { Body = TimeAndDateHelper.LastInputParsingErrorReason };
+                    er.Details = new Details() { Body = lastInputParsingErrorMsg };
                 }
 
                 results.Add(er);
@@ -111,9 +111,9 @@ public sealed partial class TimeDateCalculator
         if (results.Count == 0)
         {
             var er = ResultHelper.CreateInvalidInputErrorResult();
-            if (!string.IsNullOrEmpty(lastInputParsingErrorReason))
+            if (!string.IsNullOrEmpty(lastInputParsingErrorMsg))
             {
-                er.Details = new Details() { Body = lastInputParsingErrorReason };
+                er.Details = new Details() { Body = lastInputParsingErrorMsg };
             }
 
             results.Add(er);
