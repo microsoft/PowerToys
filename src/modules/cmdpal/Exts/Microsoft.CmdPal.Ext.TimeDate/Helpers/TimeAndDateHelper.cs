@@ -14,7 +14,8 @@ internal static class TimeAndDateHelper
     /* htcfreek:Currently not used.
      * private static readonly Regex _regexSpecialInputFormats = new Regex(@"^.*(u|ums|ft|oa|exc|exf)\d"); */
 
-    private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|WOM|WOY|EAB|WFT|UXT|UMS|OAD|EXC|EXF)");
+    private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|DIM|WOM|WOY|EAB|WFT|UXT|UMS|OAD|EXC|EXF)");
+    private static readonly Regex _regexCustomDateTimeDim = new Regex(@"(?<!\\)DIM");
     private static readonly Regex _regexCustomDateTimeDow = new Regex(@"(?<!\\)DOW");
     private static readonly Regex _regexCustomDateTimeWom = new Regex(@"(?<!\\)WOM");
     private static readonly Regex _regexCustomDateTimeWoy = new Regex(@"(?<!\\)WOY");
@@ -314,6 +315,9 @@ internal static class TimeAndDateHelper
 
         // DOW: Number of day in week
         result = _regexCustomDateTimeDow.Replace(result, GetNumberOfDayInWeek(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));
+
+        // DIM: Days in Month
+        result = _regexCustomDateTimeDim.Replace(result, DateTime.DaysInMonth(date.Year, date.Month).ToString(CultureInfo.CurrentCulture));
 
         // WOM: Week of Month
         result = _regexCustomDateTimeWom.Replace(result, GetWeekOfMonth(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));

@@ -151,6 +151,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Days in month.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DaysInMonth {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DaysInMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Era.
         /// </summary>
         public static string Microsoft_plugin_timedate_Era {
@@ -619,7 +628,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use date and time string format syntax and {0} (Day of Week), {1} (Week of Month), {2} (Week of the year), {3} (Era abbreviation), {4} (Windows File Time), {5} (Unix Time), {6} (Unix Time in milliseconds), {7} (OLE Automation date), {8} (Excel&apos;s 1900 based date value), {9} (Excel&apos;s 1904 based date value). If the format starts with {10}, then Universal Time (UTC) is used. (Use a backslash to escape format sequences and the backslash character as text.).
+        ///   Looks up a localized string similar to Use date and time string format syntax and {0} (Day of Week), {1} (Days in Month), {2} (Week of Month), {3} (Week of the year), {4} (Era abbreviation), {5} (Windows File Time), {6} (Unix Time), {7} (Unix Time in milliseconds), {8} (OLE Automation date), {9} (Excel&apos;s 1900 based date value), {10} (Excel&apos;s 1904 based date value). If the format starts with {11}, then Universal Time (UTC) is used. (Use a backslash to escape format sequences and the backslash character as text.).
         /// </summary>
         public static string Microsoft_plugin_timedate_Setting_CustomFormatsDescription {
             get {
