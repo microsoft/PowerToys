@@ -43,8 +43,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             bool isEmptySearchInput = string.IsNullOrWhiteSpace(query.Search);
             string searchTerm = query.Search;
 
-            // Reset last parsing error
-            TimeAndDateHelper.LastInputParsingErrorReason = string.Empty;
+            // Last input parsing error
+            string lastInputParsingErrorReason = string.Empty;
 
             // Conjunction search without keyword => return no results
             // (This improves the results on global queries.)
@@ -64,13 +64,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             {
                 // Search for specified format with specified time/date value
                 var userInput = searchTerm.Split(InputDelimiter);
-                if (TimeAndDateHelper.ParseStringAsDateTime(userInput[1], out DateTime timestamp))
+                if (TimeAndDateHelper.ParseStringAsDateTime(userInput[1], out DateTime timestamp, out lastInputParsingErrorReason))
                 {
                     availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, null, null, timestamp));
                     searchTerm = userInput[0];
                 }
             }
-            else if (TimeAndDateHelper.ParseStringAsDateTime(searchTerm, out DateTime timestamp))
+            else if (TimeAndDateHelper.ParseStringAsDateTime(searchTerm, out DateTime timestamp, out lastInputParsingErrorReason))
             {
                 // Return all formats for specified time/date value
                 availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, null, null, timestamp));
@@ -127,8 +127,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             // If search term is only a number that can't be parsed return an error message
             if (!isEmptySearchInput && results.Count == 0 && Regex.IsMatch(searchTerm, @"\w+[+-]?\d+.*$") && !searchTerm.Any(char.IsWhiteSpace) && (TimeAndDateHelper.IsSpecialInputParsing(searchTerm) || !Regex.IsMatch(searchTerm, @"\d+[\.:/]\d+")))
             {
-                string title = !string.IsNullOrEmpty(TimeAndDateHelper.LastInputParsingErrorReason) ? Resources.Microsoft_plugin_timedate_ErrorResultValue : Resources.Microsoft_plugin_timedate_ErrorResultTitle;
-                string message = !string.IsNullOrEmpty(TimeAndDateHelper.LastInputParsingErrorReason) ? TimeAndDateHelper.LastInputParsingErrorReason : Resources.Microsoft_plugin_timedate_ErrorResultSubTitle;
+                string title = !string.IsNullOrEmpty(lastInputParsingErrorReason) ? Resources.Microsoft_plugin_timedate_ErrorResultValue : Resources.Microsoft_plugin_timedate_ErrorResultTitle;
+                string message = !string.IsNullOrEmpty(lastInputParsingErrorReason) ? lastInputParsingErrorReason : Resources.Microsoft_plugin_timedate_ErrorResultSubTitle;
 
                 // Without plugin key word show only if not hidden by setting
                 if (isKeywordSearch || !TimeDateSettings.Instance.HideNumberMessageOnGlobalQuery)

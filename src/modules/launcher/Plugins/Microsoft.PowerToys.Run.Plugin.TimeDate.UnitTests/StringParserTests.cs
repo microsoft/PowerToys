@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         public void ConvertStringToDateTime(string typedString, bool expectedBool, string stringType, string expectedString)
         {
             // Act
-            bool boolResult = TimeAndDateHelper.ParseStringAsDateTime(in typedString, out DateTime result);
+            bool boolResult = TimeAndDateHelper.ParseStringAsDateTime(in typedString, out DateTime result, out string _);
 
             // Assert
             Assert.AreEqual(expectedBool, boolResult);

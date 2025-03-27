@@ -150,6 +150,21 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.IsFalse(result.Contains(format, StringComparison.CurrentCulture));
         }
 
+        [DataTestMethod]
+        [DataRow("01/01/0001", 1)] // First possible date
+        [DataRow("12/31/9999", 5)] // Last possible date
+        [DataRow("03/20/2025", 4)]
+        [DataRow("09/01/2025", 1)] // First day in month is first day of week
+        [DataRow("03/03/2025", 2)] // First monday is in second week
+        public void GetWeekOfMonth(string date, int week)
+        {
+            // Act
+            int result = TimeAndDateHelper.GetWeekOfMonth(DateTime.Parse(date, CultureInfo.GetCultureInfo("en-us")), DayOfWeek.Monday);
+
+            // Assert
+            Assert.AreEqual(result, week);
+        }
+
         [TestCleanup]
         public void CleanUp()
         {
