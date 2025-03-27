@@ -63,6 +63,10 @@ namespace KeyboardManagerEditorUI.Interop
 
         [DllImport(DllName)]
         [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AddSingleKeyToTextRemap(IntPtr config, int originalKey, [MarshalAs(UnmanagedType.LPWStr)] string text);
+
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AddSingleKeyToShortcutRemap(IntPtr config, int originalKey, [MarshalAs(UnmanagedType.LPWStr)] string targetKeys);
 
         [DllImport(DllName)]
