@@ -158,6 +158,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// </summary>
         /// <param name="input">String with date/time</param>
         /// <param name="timestamp">The new <see cref="DateTime"/> object</param>
+        /// <param name="inputParsingErrorMsg">Error message shown to the user</param>
         /// <returns>True on success, otherwise false</returns>
         internal static bool ParseStringAsDateTime(in string input, out DateTime timestamp, out string inputParsingErrorMsg)
         {
