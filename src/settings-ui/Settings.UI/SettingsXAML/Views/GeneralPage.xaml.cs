@@ -84,6 +84,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             DataContext = ViewModel;
 
+            ViewModel.InitializeReportBugLink();
+
             doRefreshBackupRestoreStatus(100);
         }
 
