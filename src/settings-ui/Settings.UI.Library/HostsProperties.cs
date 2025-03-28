@@ -20,6 +20,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool LoopbackDuplicates { get; set; }
 
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool NoWhiteSpace { get; set; }
+
         public HostsAdditionalLinesPosition AdditionalLinesPosition { get; set; }
 
         public HostsEncoding Encoding { get; set; }
@@ -31,6 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             LoopbackDuplicates = false;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;
+            NoWhiteSpace = false;
         }
     }
 }

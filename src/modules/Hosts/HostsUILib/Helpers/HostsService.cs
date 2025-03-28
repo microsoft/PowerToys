@@ -153,23 +153,33 @@ namespace HostsUILib.Helpers
                     }
                     else
                     {
-                        if (!e.Active)
+                        if (_userSettings.NoWhiteSpace)
                         {
-                            lineBuilder.Append('#').Append(' ');
+                            if (!e.Active)
+                            {
+                                lineBuilder.Append('#');
+                            }
                         }
-                        else if (anyDisabled)
+                        else
                         {
-                            lineBuilder.Append(' ').Append(' ');
+                            if (!e.Active)
+                            {
+                                lineBuilder.Append('#').Append(' ');
+                            }
+                            else if (anyDisabled)
+                            {
+                                lineBuilder.Append(' ').Append(' ');
+                            }
                         }
 
                         lineBuilder.Append(e.Address.PadRight(addressPadding));
                         lineBuilder.Append(string.Join(' ', e.Hosts).PadRight(hostsPadding));
 
                         if (e.Comment != string.Empty)
-                        {
-                            lineBuilder.Append('#').Append(' ');
-                            lineBuilder.Append(e.Comment);
-                        }
+                            {
+                                lineBuilder.Append('#').Append(' ');
+                                lineBuilder.Append(e.Comment);
+                            }
 
                         lines.Add(lineBuilder.ToString().TrimEnd());
                     }

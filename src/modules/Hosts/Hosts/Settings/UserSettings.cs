@@ -24,6 +24,8 @@ namespace Hosts.Settings
 
         public bool ShowStartupWarning { get; private set; }
 
+        public bool NoWhiteSpace { get; private set; }
+
         private bool _loopbackDuplicates;
 
         public bool LoopbackDuplicates
@@ -51,6 +53,7 @@ namespace Hosts.Settings
         {
             _settingsUtils = new SettingsUtils();
             ShowStartupWarning = true;
+            NoWhiteSpace = true;
             LoopbackDuplicates = false;
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;

@@ -10,6 +10,8 @@ namespace HostsUILib.Settings
     {
         public bool ShowStartupWarning { get; }
 
+        public bool NoWhiteSpace { get; }
+
         public bool LoopbackDuplicates { get; }
 
         public HostsAdditionalLinesPosition AdditionalLinesPosition { get; }
