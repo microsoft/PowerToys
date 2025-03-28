@@ -108,7 +108,7 @@ namespace ColorPicker.Mouse
                 {
                     g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
                 }
-                
+
                 return bmp.GetPixel(0, 0);
             }
         }
