@@ -1,4 +1,4 @@
-[Go back](/tests-checklist-template.md#)
+[Go back](tests-checklist-template.md)
 
 ## PowerToys Run
 

@@ -1,4 +1,4 @@
-[Go back tests-checklist-template.md](/tests-checklist-template.md)
+[Go back](tests-checklist-template.md)
 
 ## Install tests
  * install a **previous version** on a clean machine (a clean machine doesn't have the `%localappdata%\Microsoft\PowerToys` folder)
