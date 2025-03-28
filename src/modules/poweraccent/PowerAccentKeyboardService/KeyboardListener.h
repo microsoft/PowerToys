@@ -53,8 +53,9 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
         static inline KeyboardListener* s_instance;
         HHOOK s_llKeyboardHook = nullptr;
-        bool m_toolbarVisible;
+        std::atomic<bool> m_toolbarVisible;
         bool m_activationKeyHold;
+        bool m_bothKeysPressed = false;
         std::unique_ptr<std::thread> toolbarThread;
         std::mutex toolbarMutex;
         std::condition_variable toolbarCV;

@@ -211,6 +211,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             m_triggeredWithLeftArrow = triggerPressed == VK_LEFT;
             m_triggeredWithRightArrow = triggerPressed == VK_RIGHT;
             m_activationKeyHold = true;
+            m_bothKeysPressed = true;
             if (toolbarThread != nullptr)
             {
                 toolbarCV.notify_all();
@@ -263,8 +264,9 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         {
             letterPressed = LetterKey::None;
 
-            if (m_toolbarVisible || m_activationKeyHold)
+            if (m_toolbarVisible || m_bothKeysPressed)
             {
+                m_bothKeysPressed = false;
                 if (m_stopwatch.elapsed() < m_settings.inputTime)
                 {
                     Logger::debug(L"Activation too fast. Do nothing.");
@@ -292,14 +294,13 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                 Logger::debug(L"Hide toolbar event and input char");
 
                 m_hideToolbarCb(InputType::Char);
-
                 m_toolbarVisible = false;
             }
         }
 
         auto triggerPressed = info.vkCode;
 
-        if (letterPressed == LetterKey::None || (triggerPressed == VK_SPACE || triggerPressed == VK_LEFT  || triggerPressed == VK_RIGHT ))
+        if (m_activationKeyHold && (letterPressed == LetterKey::None || (triggerPressed == VK_SPACE || triggerPressed == VK_LEFT || triggerPressed == VK_RIGHT)))
         {
             m_activationKeyHold = false;
             toolbarCV.notify_all();
