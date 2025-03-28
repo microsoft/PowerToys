@@ -199,7 +199,7 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [x] File Search - find a file and copy file path.
    - [x] File Search - find a file and open containing folder.
    - [x] Run Commands - execute a command. (e.g. `ping google.com`).
-   - [ ] Windows Walker - Switch to another opening window. <mark>Cannot open extensions</mark>
+   - [ ] Windows Walker - Switch to another opening window. 
    - [ ] Windows Walker - Switch to another opening window when powertoys run as admin.
    - [x] WinGet - Search and install application through WinGet. (eg. `vscode`)
    - [x] Web Search - Search anything by this extension.
@@ -217,7 +217,7 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [x] Bookmark - Add bookmarks to command palette.
    - [x] Bookmark - Open your bookmarks (in Command Palette).
  - [x] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
- * Test Extensions Manager <mark>Find a issue</mark>
+ * Test Extensions Manager 
    - [ ] Enable/disable extensions and verify changes are picked up by Command Palette
    - [ ] Change `Global hot key` and verify changes are picked up by Command Palette
    - [ ] Change `Alias` and verify changes picked up by Command Palette
