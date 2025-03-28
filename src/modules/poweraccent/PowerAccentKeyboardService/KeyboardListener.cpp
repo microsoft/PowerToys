@@ -154,7 +154,6 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     void KeyboardListener::BeginShowToolbar(std::chrono::milliseconds delay, LetterKey key, TriggerKey trigger)
     {
-        Logger::debug(L"BeginShowToolbar space");
         std::unique_lock<std::mutex> lock(toolbarMutex);
         auto result = toolbarCV.wait_for(lock, delay);
         if (result == std::cv_status::timeout)
@@ -264,7 +263,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         {
             letterPressed = LetterKey::None;
 
-            if (m_toolbarVisible)
+            if (m_toolbarVisible || m_activationKeyHold)
             {
                 if (m_stopwatch.elapsed() < m_settings.inputTime)
                 {
