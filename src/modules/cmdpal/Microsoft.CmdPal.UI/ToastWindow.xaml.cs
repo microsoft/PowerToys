@@ -4,9 +4,11 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -44,6 +46,21 @@ public sealed partial class ToastWindow : Window,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
     }
 
+    private static double GetScaleFactor(HWND hwnd)
+    {
+        try
+        {
+            var monitor = NativeMethods.MonitorFromWindow(hwnd.Value, 2); // MONITOR_DEFAULTTONEAREST
+            _ = NativeMethods.GetDpiForMonitor(monitor, 0, out var dpiX, out _); // MDT_EFFECTIVE_DPI = 0
+            return dpiX / 96.0;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to get scale factor, error: {ex.Message}");
+            return 1.0;
+        }
+    }
+
     private void PositionCentered()
     {
         var intSize = new SizeInt32
@@ -51,7 +68,8 @@ public sealed partial class ToastWindow : Window,
             Width = Convert.ToInt32(ToastText.ActualWidth),
             Height = Convert.ToInt32(ToastText.ActualHeight),
         };
-        var scaleAdjustment = ToastText.XamlRoot.RasterizationScale;
+
+        var scaleAdjustment = GetScaleFactor(_hwnd);
         var scaled = new SizeInt32
         {
             Width = (int)Math.Round(intSize.Width * scaleAdjustment),
