@@ -228,14 +228,17 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         {
             if (triggerPressed == VK_LEFT)
             {
+                Logger::debug(L"Next toolbar position - left");
                 m_nextCharCb(TriggerKey::Left, m_leftShiftPressed || m_rightShiftPressed);
             }
             else if (triggerPressed == VK_RIGHT)
             {
+                Logger::debug(L"Next toolbar position - right");
                 m_nextCharCb(TriggerKey::Right, m_leftShiftPressed || m_rightShiftPressed);
             }
             else if (triggerPressed == VK_SPACE)
             {
+                Logger::debug(L"Next toolbar position - space");
                 m_nextCharCb(TriggerKey::Space, m_leftShiftPressed || m_rightShiftPressed);
             }
 
@@ -270,7 +273,6 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                     // False start, we should output the space if it was the trigger.
                     if (m_triggeredWithSpace)
                     {
-                        Logger::debug(L"m_hideToolbarCb space");
                         m_hideToolbarCb(InputType::Space);
                     }
                     else if (m_triggeredWithLeftArrow)
@@ -300,7 +302,6 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
         if (letterPressed == LetterKey::None || (triggerPressed == VK_SPACE || triggerPressed == VK_LEFT  || triggerPressed == VK_RIGHT ))
         {
-            Logger::debug(L"m_activationKeyHold cancel");
             m_activationKeyHold = false;
             toolbarCV.notify_all();
         }
