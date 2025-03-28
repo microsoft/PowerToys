@@ -7,6 +7,7 @@ using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -44,6 +45,13 @@ public sealed partial class ToastWindow : Window,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
     }
 
+    private static double GetScaleFactor(HWND hwnd)
+    {
+        var monitor = NativeMethods.MonitorFromWindow(hwnd.Value, 2); // MONITOR_DEFAULTTONEAREST
+        _ = NativeMethods.GetDpiForMonitor(monitor, 0, out var dpiX, out _); // MDT_EFFECTIVE_DPI = 0
+        return dpiX / 96.0;
+    }
+
     private void PositionCentered()
     {
         var intSize = new SizeInt32
@@ -51,7 +59,14 @@ public sealed partial class ToastWindow : Window,
             Width = Convert.ToInt32(ToastText.ActualWidth),
             Height = Convert.ToInt32(ToastText.ActualHeight),
         };
-        AppWindow.Resize(intSize);
+
+        var scaleAdjustment = GetScaleFactor(_hwnd);
+        var scaled = new SizeInt32
+        {
+            Width = (int)Math.Round(intSize.Width * scaleAdjustment),
+            Height = (int)Math.Round(intSize.Height * scaleAdjustment),
+        };
+        AppWindow.Resize(scaled);
 
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
