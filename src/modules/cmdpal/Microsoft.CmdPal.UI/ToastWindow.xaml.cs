@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -47,9 +49,17 @@ public sealed partial class ToastWindow : Window,
 
     private static double GetScaleFactor(HWND hwnd)
     {
-        var monitor = NativeMethods.MonitorFromWindow(hwnd.Value, 2); // MONITOR_DEFAULTTONEAREST
-        _ = NativeMethods.GetDpiForMonitor(monitor, 0, out var dpiX, out _); // MDT_EFFECTIVE_DPI = 0
-        return dpiX / 96.0;
+        try
+        {
+            var monitor = NativeMethods.MonitorFromWindow(hwnd.Value, 2); // MONITOR_DEFAULTTONEAREST
+            _ = NativeMethods.GetDpiForMonitor(monitor, 0, out var dpiX, out _); // MDT_EFFECTIVE_DPI = 0
+            return dpiX / 96.0;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to get scale factor, error: {ex.Message}");
+            return 1.0;
+        }
     }
 
     private void PositionCentered()
