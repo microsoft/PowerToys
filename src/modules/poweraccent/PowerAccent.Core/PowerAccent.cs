@@ -62,11 +62,11 @@ public partial class PowerAccent : IDisposable
 
     private void SetEvents()
     {
-        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
+        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey, TriggerKey trigger ) =>
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                ShowToolbar(letterKey);
+                ShowToolbar(letterKey, trigger);
             });
         }));
 
@@ -92,17 +92,15 @@ public partial class PowerAccent : IDisposable
         }));
     }
 
-    private void ShowToolbar(LetterKey letterKey)
+    private void ShowToolbar(LetterKey letterKey, TriggerKey trigger)
     {
         _visible = true;
 
         _characters = GetCharacters(letterKey);
         _characterDescriptions = GetCharacterDescriptions(_characters);
         _showUnicodeDescription = _settingService.ShowUnicodeDescription;
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-        {
-            OnChangeDisplay?.Invoke(true, _characters);
-        });
+        OnChangeDisplay?.Invoke(true, _characters);
+        ProcessNextChar(trigger, false);
     }
 
     private string[] GetCharacters(LetterKey letterKey)
@@ -226,6 +224,8 @@ public partial class PowerAccent : IDisposable
                 }
         }
 
+        Logger.LogInfo("SendInputAndHideToolbar");
+
         OnChangeDisplay?.Invoke(false, null);
         _selectedIndex = -1;
         _visible = false;
@@ -233,6 +233,7 @@ public partial class PowerAccent : IDisposable
 
     private void ProcessNextChar(TriggerKey triggerKey, bool shiftPressed)
     {
+        Logger.LogInfo("ProcessNextChar");
         if (_visible && _selectedIndex == -1)
         {
             if (triggerKey == TriggerKey.Left)

@@ -53,8 +53,8 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     void KeyboardListener::SetShowToolbarEvent(ShowToolbar showToolbarEvent)
     {
-        m_showToolbarCb = [trigger = std::move(showToolbarEvent)](LetterKey key) {
-            trigger(key);
+        m_showToolbarCb = [trigger = std::move(showToolbarEvent)](LetterKey key, TriggerKey triggerKey) {
+            trigger(key, triggerKey);
         };
     }
 
@@ -152,15 +152,15 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         return false;
     }
 
-    void KeyboardListener::BeginShowToolbar(std::chrono::milliseconds delay, LetterKey key)
+    void KeyboardListener::BeginShowToolbar(std::chrono::milliseconds delay, LetterKey key, TriggerKey trigger)
     {
         Logger::debug(L"BeginShowToolbar space");
         std::unique_lock<std::mutex> lock(toolbarMutex);
         auto result = toolbarCV.wait_for(lock, delay);
         if (result == std::cv_status::timeout)
         {
-            m_showToolbarCb(key);
             m_toolbarVisible = true;
+            m_showToolbarCb(key, trigger);
         }
     }
 
@@ -217,7 +217,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                 toolbarCV.notify_all();
                 toolbarThread->join();
             }
-            toolbarThread = std::make_unique<std::thread>(std::bind(&KeyboardListener::BeginShowToolbar, this, m_settings.inputTime, letterPressed));
+            toolbarThread = std::make_unique<std::thread>(std::bind(&KeyboardListener::BeginShowToolbar, this, m_settings.inputTime, letterPressed,static_cast<TriggerKey>(triggerPressed)));
         }
 
         if (m_activationKeyHold && triggerPressed && !m_toolbarVisible)
