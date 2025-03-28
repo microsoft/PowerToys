@@ -55,6 +55,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public delegate void FlyoutOpeningCallback(POINT? point);
 
         /// <summary>
+        /// Declaration for the opening flyout window callback function.
+        /// </summary>
+        public delegate void BugReportOpeningCallback();
+
+        /// <summary>
         /// Declaration for the disabling hide of flyout window callback function.
         /// </summary>
         public delegate void DisablingFlyoutHidingCallback();
@@ -103,6 +108,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets or sets callback function for opening flyout window
         /// </summary>
         public static FlyoutOpeningCallback OpenFlyoutCallback { get; set; }
+
+        /// <summary>
+        /// Gets or sets callback function for opening bugreport window
+        /// </summary>
+        public static BugReportOpeningCallback OpenBugReportCallback { get; set; }
 
         /// <summary>
         /// Gets or sets callback function for disabling hide of flyout window
@@ -250,6 +260,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         }
 
         /// <summary>
+        /// Set BugReport opening callback function
+        /// </summary>
+        /// <param name="implementation">delegate function implementation.</param>
+        public static void SetOpenBugReportCallback(BugReportOpeningCallback implementation)
+        {
+            OpenBugReportCallback = implementation;
+        }
+
+        /// <summary>
         /// Set disable flyout hiding callback function
         /// </summary>
         /// <param name="implementation">delegate function implementation.</param>
@@ -381,7 +400,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (json != null)
             {
                 IJsonValue whatToShowJson;
-                if (json.TryGetValue("ShowYourself", out whatToShowJson))
+                if (json.TryGetValue("ShowBugReportDialog", out whatToShowJson))
+                {
+                    OpenBugReportCallback();
+                }
+                else if (json.TryGetValue("ShowYourself", out whatToShowJson))
                 {
                     if (whatToShowJson.ValueType == JsonValueType.String && whatToShowJson.GetString().Equals("flyout", StringComparison.Ordinal))
                     {
