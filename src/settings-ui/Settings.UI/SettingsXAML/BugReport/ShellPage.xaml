@@ -11,26 +11,26 @@
     <Page.Resources>
         <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <tkconverters:BoolToVisibilityConverter
-                x:Key="BoolToInvertedVisibilityConverter"
-                FalseValue="Visible"
-                TrueValue="Collapsed" />
+            x:Key="BoolToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
     </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
         </Grid.RowDefinitions>
-        <TextBlock 
-            x:Uid="BugReportTitle" 
+        <TextBlock
+            x:Uid="BugReportTitle"
             Margin="8"
-            VerticalAlignment="Center"
             HorizontalAlignment="Center"
+            VerticalAlignment="Center"
             FontSize="16"
-            Text="PowerToys Bug Report"
-            Style="{StaticResource CaptionTextBlockStyle}" />
-        <HyperlinkButton 
+            Style="{StaticResource CaptionTextBlockStyle}"
+            Text="PowerToys Bug Report" />
+        <HyperlinkButton
             x:Uid="NewIssueBtn"
             Grid.Row="1"
             Margin="8"
@@ -38,16 +38,16 @@
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
             FontSize="12"
-            NavigateUri="{x:Bind NewIssueLink}"/>
-        <Button 
+            NavigateUri="{x:Bind NewIssueLink}" />
+        <Button
             x:Uid="BugReportToolBtn"
             Grid.Row="2"
-            Padding="8,4,8,4"
             Margin="8"
+            Padding="8,4,8,4"
             HorizontalAlignment="Left"
             VerticalAlignment="Center"
-            Visibility="{Binding IsBugReportMessageVisible, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
-            Click="BugReportToolClicked">
+            Click="BugReportToolClicked"
+            Visibility="{Binding IsBugReportMessageVisible, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
             <Button.Content>
                 <StackPanel
                     VerticalAlignment="Center"
@@ -61,19 +61,19 @@
                 </StackPanel>
             </Button.Content>
         </Button>
-        <TextBlock 
-            x:Uid="BugReportMessageLabel" 
+        <TextBlock
+            x:Uid="BugReportMessageLabel"
             Grid.Row="2"
             Margin="8"
             VerticalAlignment="Center"
-            Visibility="{Binding IsBugReportMessageVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+            Style="{StaticResource CaptionTextBlockStyle}"
             Text="{Binding BugReportMessage, Mode=OneWay}"
-            Style="{StaticResource CaptionTextBlockStyle}" />
-        <Button 
+            Visibility="{Binding IsBugReportMessageVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+        <Button
             x:Uid="DismissBtn"
             Grid.Row="3"
-            Padding="8,4,8,4"
             Margin="8"
+            Padding="8,4,8,4"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
             Click="CancelClicked">
