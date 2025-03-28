@@ -224,8 +224,6 @@ public partial class PowerAccent : IDisposable
                 }
         }
 
-        Logger.LogInfo("SendInputAndHideToolbar");
-
         OnChangeDisplay?.Invoke(false, null);
         _selectedIndex = -1;
         _visible = false;
@@ -233,7 +231,6 @@ public partial class PowerAccent : IDisposable
 
     private void ProcessNextChar(TriggerKey triggerKey, bool shiftPressed)
     {
-        Logger.LogInfo("ProcessNextChar");
         if (_visible && _selectedIndex == -1)
         {
             if (triggerKey == TriggerKey.Left)
