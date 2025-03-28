@@ -3927,6 +3927,21 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="BackBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
   </data>
+  <data name="NewIssueBtn.Content" xml:space="preserve">
+    <value>Open new issue</value>
+  </data>
+  <data name="BugReportLabel.Text" xml:space="preserve">
+    <value>Create Bug Report Package</value>
+  </data>
+  <data name="DismissBtnLabel.Text" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="BugReportUnderConstruction" xml:space="preserve">
+    <value>Bug report package is being created</value>
+  </data>
+  <data name="BugReportReady" xml:space="preserve">
+    <value>Bug report was successfully created</value>
+  </data>
   <data name="BackLabel.Text" xml:space="preserve">
     <value>Back</value>
   </data>

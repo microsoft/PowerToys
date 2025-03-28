@@ -321,7 +321,7 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 DWORD g_settings_process_id = 0;
 
-void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window, bool show_flyout = false, const std::optional<POINT>& flyout_position = std::nullopt)
+void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window, bool show_flyout = false, const std::optional<POINT>& flyout_position = std::nullopt, bool show_BugReportDialog = false)
 {
     g_isLaunchInProgress = true;
 
@@ -400,13 +400,16 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     // Arg 12: contains if there's flyout coordinates. If true, will add two extra arguments to the call containing the x and y coordinates.
     std::wstring settings_containsFlyoutPosition = flyout_position.has_value() ? L"true" : L"false";
 
-    // Args 13, .... : Optional arguments depending on the options presented before. All by the same value.
+    // Arg 13: should BugReport be shown
+    std::wstring settings_showBugReport = show_BugReportDialog ? L"true" : L"false";
+
+    // Args 14, .... : Optional arguments depending on the options presented before. All by the same value.
 
     // create general settings file to initialize the settings file with installation configurations like :
     // 1. Run on start up.
     PTSettingsHelper::save_general_settings(save_settings.to_json());
 
-    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {} {} {}",
+    std::wstring executable_args = fmt::format(L"\"{}\" {} {} {} {} {} {} {} {} {} {} {} {}",
                                                executable_path,
                                                powertoys_pipe_name,
                                                settings_pipe_name,
@@ -418,7 +421,9 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
                                                settings_showScoobe,
                                                settings_showFlyout,
                                                settings_containsSettingsWindow,
-                                               settings_containsFlyoutPosition);
+                                               settings_containsFlyoutPosition,
+                                               settings_showBugReport
+        );
 
     if (settings_window.has_value())
     {
@@ -573,11 +578,18 @@ void bring_settings_to_front()
     EnumWindows(callback, 0);
 }
 
-void open_settings_window(std::optional<std::wstring> settings_window, bool show_flyout = false, const std::optional<POINT>& flyout_position)
+void open_settings_window(std::optional<std::wstring> settings_window, bool show_flyout = false, const std::optional<POINT>& flyout_position, bool show_BugReportDialog)
 {
     if (g_settings_process_id != 0)
     {
-        if (show_flyout)
+        if (show_BugReportDialog)
+        {
+            if (current_settings_ipc)
+            {
+                current_settings_ipc->send(L"{\"ShowBugReportDialog\":\"0\"}");
+            }
+        }
+        else if (show_flyout)
         {
             if (current_settings_ipc)
             {
@@ -613,8 +625,8 @@ void open_settings_window(std::optional<std::wstring> settings_window, bool show
     {
         if (!g_isLaunchInProgress)
         {
-            std::thread([settings_window, show_flyout, flyout_position]() {
-                run_settings_window(false, false, settings_window, show_flyout, flyout_position);
+            std::thread([settings_window, show_flyout, flyout_position, show_BugReportDialog]() {
+                run_settings_window(false, false, settings_window, show_flyout, flyout_position, show_BugReportDialog);
             }).detach();
         }
     }

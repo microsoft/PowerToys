@@ -148,6 +148,24 @@ namespace Microsoft.PowerToys.Settings.UI
                 });
             });
 
+            ShellPage.SetOpenBugReportCallback(() =>
+            {
+                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                {
+                    if (App.GetBugReportWindow() == null)
+                    {
+                        App.SetBugReportWindow(new BugReportWindow());
+                    }
+
+                    BugReportWindow bugReportWindow = App.GetBugReportWindow();
+                    bugReportWindow.Activate();
+
+                    // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
+                    // Need to call SetForegroundWindow to actually gain focus.
+                    WindowHelpers.BringToForeground(bugReportWindow.GetWindowHandle());
+                });
+            });
+
             // disable flyout hiding
             ShellPage.SetDisableFlyoutHidingCallback(() =>
             {

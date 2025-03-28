@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI
             ShowFlyout,
             ContainsSettingsWindow,
             ContainsFlyoutPosition,
+            ShowBugReport,
         }
 
         private const int RequiredArgumentsSetSettingQty = 4;
@@ -64,6 +65,8 @@ namespace Microsoft.PowerToys.Settings.UI
         public bool ShowOobe { get; set; }
 
         public bool ShowFlyout { get; set; }
+
+        public bool ShowBugReport { get; set; }
 
         public bool ShowScoobe { get; set; }
 
@@ -195,6 +198,7 @@ namespace Microsoft.PowerToys.Settings.UI
             ShowOobe = cmdArgs[(int)Arguments.ShowOobeWindow] == "true";
             ShowScoobe = cmdArgs[(int)Arguments.ShowScoobeWindow] == "true";
             ShowFlyout = cmdArgs[(int)Arguments.ShowFlyout] == "true";
+            ShowBugReport = cmdArgs[(int)Arguments.ShowBugReport] == "true";
             bool containsSettingsWindow = cmdArgs[(int)Arguments.ContainsSettingsWindow] == "true";
             bool containsFlyoutPosition = cmdArgs[(int)Arguments.ContainsFlyoutPosition] == "true";
 
@@ -232,7 +236,7 @@ namespace Microsoft.PowerToys.Settings.UI
             });
             ipcmanager.Start();
 
-            if (!ShowOobe && !ShowScoobe && !ShowFlyout)
+            if (!ShowOobe && !ShowScoobe && !ShowFlyout && !ShowBugReport)
             {
                 settingsWindow = new MainWindow();
                 settingsWindow.Activate();
@@ -281,6 +285,10 @@ namespace Microsoft.PowerToys.Settings.UI
                     }
 
                     ShellPage.OpenFlyoutCallback(p);
+                }
+                else if (ShowBugReport)
+                {
+                    ShellPage.OpenBugReportCallback();
                 }
             }
         }
@@ -377,6 +385,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private static MainWindow settingsWindow;
         private static OobeWindow oobeWindow;
         private static FlyoutWindow flyoutWindow;
+        private static BugReportWindow bugReportWindow;
 
         public static void ClearSettingsWindow()
         {
@@ -398,6 +407,11 @@ namespace Microsoft.PowerToys.Settings.UI
             return flyoutWindow;
         }
 
+        public static BugReportWindow GetBugReportWindow()
+        {
+            return bugReportWindow;
+        }
+
         public static void SetOobeWindow(OobeWindow window)
         {
             oobeWindow = window;
@@ -406,6 +420,11 @@ namespace Microsoft.PowerToys.Settings.UI
         public static void SetFlyoutWindow(FlyoutWindow window)
         {
             flyoutWindow = window;
+        }
+
+        public static void SetBugReportWindow(BugReportWindow window)
+        {
+            bugReportWindow = window;
         }
 
         public static void ClearOobeWindow()

@@ -1,0 +1,94 @@
+﻿<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.BugReport.ShellPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    Loaded="Page_Loaded"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <tkconverters:BoolToVisibilityConverter
+                x:Key="BoolToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                TrueValue="Collapsed" />
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <TextBlock 
+            x:Uid="BugReportTitle" 
+            Margin="8"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Center"
+            FontSize="16"
+            Text="PowerToys Bug Report"
+            Style="{StaticResource CaptionTextBlockStyle}" />
+        <HyperlinkButton 
+            x:Uid="NewIssueBtn"
+            Grid.Row="1"
+            Margin="8"
+            Padding="0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            FontSize="12"
+            NavigateUri="{x:Bind NewIssueLink}"/>
+        <Button 
+            x:Uid="BugReportToolBtn"
+            Grid.Row="2"
+            Padding="8,4,8,4"
+            Margin="8"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Visibility="{Binding IsBugReportMessageVisible, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}"
+            Click="BugReportToolClicked">
+            <Button.Content>
+                <StackPanel
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="12">
+                    <FontIcon
+                        Margin="0,2,0,0"
+                        FontSize="12"
+                        Glyph="&#xebe8;" />
+                    <TextBlock x:Uid="BugReportLabel" Style="{StaticResource CaptionTextBlockStyle}" />
+                </StackPanel>
+            </Button.Content>
+        </Button>
+        <TextBlock 
+            x:Uid="BugReportMessageLabel" 
+            Grid.Row="2"
+            Margin="8"
+            VerticalAlignment="Center"
+            Visibility="{Binding IsBugReportMessageVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+            Text="{Binding BugReportMessage, Mode=OneWay}"
+            Style="{StaticResource CaptionTextBlockStyle}" />
+        <Button 
+            x:Uid="DismissBtn"
+            Grid.Row="3"
+            Padding="8,4,8,4"
+            Margin="8"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Click="CancelClicked">
+            <Button.Content>
+                <StackPanel
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="12">
+                    <FontIcon
+                        Margin="0,2,0,0"
+                        FontSize="12"
+                        Glyph="&#xe711;" />
+                    <TextBlock x:Uid="DismissBtnLabel" Style="{StaticResource CaptionTextBlockStyle}" />
+                </StackPanel>
+            </Button.Content>
+        </Button>
+    </Grid>
+</Page>
