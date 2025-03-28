@@ -52,12 +52,6 @@ public static class NativeMethods
     [DllImport("user32.dll")]
     public static extern int GetDpiForWindow(System.IntPtr hWnd);
 
-    [DllImport("User32.dll")]
-    public static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
-
-    [DllImport("Shcore.dll")]
-    public static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
-
     [DllImport("user32.dll")]
     public static extern bool IsWindowVisible(IntPtr hWnd);
 

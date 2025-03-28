@@ -8,13 +8,14 @@ using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.WindowsAndMessaging;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
@@ -50,8 +51,8 @@ public sealed partial class ToastWindow : Window,
     {
         try
         {
-            var monitor = NativeMethods.MonitorFromWindow(hwnd.Value, 2); // MONITOR_DEFAULTTONEAREST
-            _ = NativeMethods.GetDpiForMonitor(monitor, 0, out var dpiX, out _); // MDT_EFFECTIVE_DPI = 0
+            var monitor = PInvoke.MonitorFromWindow(hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+            _ = PInvoke.GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var dpiX, out _);
             return dpiX / 96.0;
         }
         catch (Exception ex)
