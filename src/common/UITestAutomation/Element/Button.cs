@@ -9,5 +9,14 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     public class Button : Element
     {
+        private static readonly string ExpectedControlType = "ControlType.Button";
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Button"/> class.
+        /// </summary>
+        public Button()
+        {
+            this.TargetControlType = Button.ExpectedControlType;
+        }
     }
 }

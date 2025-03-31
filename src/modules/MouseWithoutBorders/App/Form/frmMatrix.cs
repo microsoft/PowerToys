@@ -132,7 +132,7 @@ namespace MouseWithoutBorders
 
         internal void UpdateKeyTextBox()
         {
-            _ = Common.GetUserName();
+            _ = Helper.GetUserName();
             textBoxEnc.Text = Common.MyKey;
         }
 
@@ -787,7 +787,7 @@ namespace MouseWithoutBorders
         {
             if (!Common.RunWithNoAdminRight)
             {
-                Common.ApplyCADSetting();
+                Helper.ApplyCADSetting();
                 ShowUpdateMessage();
             }
         }
@@ -1163,7 +1163,7 @@ namespace MouseWithoutBorders
 
         private void LinkLabelMiniLog_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            string miniLog = Common.GetMiniLog(new[] { groupBoxOtherOptions.Controls, groupBoxShortcuts.Controls });
+            string miniLog = Helper.GetMiniLog(new[] { groupBoxOtherOptions.Controls, groupBoxShortcuts.Controls });
 
             Clipboard.SetText(miniLog);
             Common.ShowToolTip("Log has been placed in the clipboard.", 30000, ToolTipIcon.Info, false);

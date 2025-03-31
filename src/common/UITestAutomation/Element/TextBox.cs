@@ -7,10 +7,21 @@ using OpenQA.Selenium;
 namespace Microsoft.PowerToys.UITest
 {
     /// <summary>
-    /// Represents a textbox in the UI test environment.
+    /// Represents a TextBox in the UI test environment.
+    /// TextBox represents a control that can be used to display and edit plain text (single or multi-line).
     /// </summary>
     public class TextBox : Element
     {
+        private static readonly string ExpectedControlType = "ControlType.Edit";
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextBox"/> class.
+        /// </summary>
+        public TextBox()
+        {
+            this.TargetControlType = TextBox.ExpectedControlType;
+        }
+
         /// <summary>
         /// Sets the text of the textbox.
         /// </summary>

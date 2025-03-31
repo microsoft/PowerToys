@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
@@ -15,22 +16,46 @@ namespace Microsoft.PowerToys.UITest
     /// <summary>
     /// Base class that should be inherited by all Test Classes.
     /// </summary>
+    [TestClass]
     public class UITestBase
     {
         public Session Session { get; set; }
 
-        private readonly TestInit testInit = new TestInit();
+        private readonly SessionHelper sessionHelper;
+
+        private readonly PowerToysModule scope;
 
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings)
         {
-            this.testInit.SetScope(scope);
-            this.testInit.Init();
-            this.Session = new Session(this.testInit.GetRoot(), this.testInit.GetDriver());
+            this.scope = scope;
+            this.sessionHelper = new SessionHelper(scope).Init();
+            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver());
         }
 
-        ~UITestBase()
+        /// <summary>
+        /// Initializes the test.
+        /// </summary>
+        [TestInitialize]
+        public void TestInit()
         {
-            this.testInit.Cleanup();
+            if (this.scope == PowerToysModule.PowerToysSettings)
+            {
+                // close Debug warning dialog if any
+                // Such debug warning dialog seems only appear in PowerToys Settings
+                if (this.FindAll("DEBUG").Count > 0)
+                {
+                    this.Find("DEBUG").Find<Button>("Close").Click();
+                }
+            }
+        }
+
+        /// <summary>
+        /// UnInitializes the test.
+        /// </summary>
+        [TestCleanup]
+        public void TestClean()
+        {
+            this.sessionHelper.Cleanup();
         }
 
         /// <summary>
@@ -48,6 +73,41 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Shortcut for this.Session.Find<Element>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>The found element.</returns>
+        protected T Find<T>(string name, int timeoutMS = 3000)
+            where T : Element, new()
+        {
+            return this.Session.Find<T>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.Find<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The selector to find the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>The found element.</returns>
+        protected Element Find(By by, int timeoutMS = 3000)
+        {
+            return this.Session.Find(by, timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.Find<Element>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>The found element.</returns>
+        protected Element Find(string name, int timeoutMS = 3000)
+        {
+            return this.Session.Find(name, timeoutMS);
+        }
+
+        /// <summary>
         /// Finds all elements by selector.
         /// Shortcut for this.Session.FindAll<T>(by, timeoutMS)
         /// </summary>
@@ -62,93 +122,60 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Nested class for test initialization.
+        /// Finds all elements by selector.
+        /// Shortcut for this.Session.FindAll<Element>(By.Name(name), timeoutMS)
         /// </summary>
-        private sealed class TestInit
+        /// <typeparam name="T">The class of the elements, should be Element or its derived class.</typeparam>
+        /// <param name="name">The name of the elements.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>A read-only collection of the found elements.</returns>
+        protected ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 3000)
+            where T : Element, new()
         {
-            private WindowsDriver<WindowsElement> Root { get; set; }
+            return this.Session.FindAll<T>(By.Name(name), timeoutMS);
+        }
 
-            private WindowsDriver<WindowsElement>? Driver { get; set; }
+        /// <summary>
+        /// Finds all elements by selector.
+        /// Shortcut for this.Session.FindAll<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The selector to find the elements.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>A read-only collection of the found elements.</returns>
+        protected ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 3000)
+        {
+            return this.Session.FindAll<Element>(by, timeoutMS);
+        }
 
-            private static Process? appDriver;
+        /// <summary>
+        /// Finds all elements by selector.
+        /// Shortcut for this.Session.FindAll<Element>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <param name="name">The name of the elements.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <returns>A read-only collection of the found elements.</returns>
+        protected ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 3000)
+        {
+            return this.Session.FindAll<Element>(By.Name(name), timeoutMS);
+        }
 
-            // Default session path is PowerToys settings dashboard
-            private static string sessionPath = ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings);
+        /// <summary>
+        /// Restart scope exe.
+        /// </summary>
+        public void RestartScopeExe()
+        {
+            this.sessionHelper.RestartScopeExe();
+            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver());
+            return;
+        }
 
-            public TestInit()
-            {
-                appDriver = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe",
-                    Verb = "runas",
-                });
-
-                var desktopCapabilities = new AppiumOptions();
-                desktopCapabilities.AddAdditionalCapability("app", "Root");
-                this.Root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
-
-                // Set default timeout to 5 seconds
-                this.Root.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
-            }
-
-            /// <summary>
-            /// Initializes the test environment.
-            /// </summary>
-            [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
-            public void Init()
-            {
-                string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                this.StartExe(path + sessionPath);
-
-                Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
-
-                // Set default timeout to 5 seconds
-                this.Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
-            }
-
-            /// <summary>
-            /// Cleans up the test environment.
-            /// </summary>
-            public void Cleanup()
-            {
-                try
-                {
-                    appDriver?.Kill();
-                }
-                catch (Exception ex)
-                {
-                    // Handle exceptions if needed
-                    Debug.WriteLine($"Exception during Cleanup: {ex.Message}");
-                }
-            }
-
-            /// <summary>
-            /// Starts a new exe and takes control of it.
-            /// </summary>
-            /// <param name="appPath">The path to the application executable.</param>
-            public void StartExe(string appPath)
-            {
-                var opts = new AppiumOptions();
-                opts.AddAdditionalCapability("app", appPath);
-                this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
-            }
-
-            /// <summary>
-            /// Sets scope to the Test Class.
-            /// </summary>
-            /// <param name="scope">The PowerToys module to start.</param>
-            public void SetScope(PowerToysModule scope)
-            {
-                sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
-            }
-
-            public WindowsDriver<WindowsElement> GetRoot() => this.Root;
-
-            public WindowsDriver<WindowsElement> GetDriver()
-            {
-                Assert.IsNotNull(this.Driver, $"Failed to get driver. Driver is null.");
-                return this.Driver;
-            }
+        /// <summary>
+        /// Restart scope exe.
+        /// </summary>
+        public void ExitScopeExe()
+        {
+            this.sessionHelper.ExitScopeExe();
+            return;
         }
     }
 }

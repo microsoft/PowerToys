@@ -1,0 +1,76 @@
+﻿<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.ShortcutDialogContentControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    x:Name="ShortcutContentControl"
+    mc:Ignorable="d">
+    <Grid MinWidth="498" MinHeight="220">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition MinHeight="110" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" />
+
+        <ItemsControl
+            x:Name="KeysControl"
+            Grid.Row="1"
+            Height="56"
+            Margin="0,64,0,0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            HorizontalContentAlignment="Center"
+            ItemsSource="{x:Bind Keys, Mode=OneWay}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="8" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <controls:KeyVisual
+                        Height="56"
+                        AutomationProperties.AccessibilityView="Raw"
+                        Content="{Binding}"
+                        IsError="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                        IsTabStop="False"
+                        VisualType="Large" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <StackPanel
+            Grid.Row="2"
+            Margin="0,24,0,0"
+            VerticalAlignment="Top"
+            Orientation="Vertical"
+            Spacing="8">
+            <Grid Height="62">
+
+                <InfoBar
+                    x:Uid="InvalidShortcut"
+                    IsClosable="False"
+                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                    Severity="Error" />
+
+                <InfoBar
+                    x:Uid="WarningShortcutAltGr"
+                    IsClosable="False"
+                    IsOpen="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
+                    IsTabStop="{Binding ElementName=ShortcutContentControl, Path=IsWarningAltGr, Mode=OneWay}"
+                    Severity="Warning" />
+            </Grid>
+            <tk7controls:MarkdownTextBlock
+                x:Uid="InvalidShortcutWarningLabel"
+                Background="Transparent"
+                FontSize="12"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

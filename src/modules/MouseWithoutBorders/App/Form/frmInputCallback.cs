@@ -63,8 +63,8 @@ namespace MouseWithoutBorders
             try
             {
                 Common.Hook = new InputHook();
-                Common.Hook.MouseEvent += new InputHook.MouseEvHandler(Common.MouseEvent);
-                Common.Hook.KeyboardEvent += new InputHook.KeybdEvHandler(Common.KeybdEvent);
+                Common.Hook.MouseEvent += new InputHook.MouseEvHandler(Event.MouseEvent);
+                Common.Hook.KeyboardEvent += new InputHook.KeybdEvHandler(Event.KeybdEvent);
 
                 Logger.Log("(((((Keyboard/Mouse hooks installed/reinstalled!)))))");
                 /* The hook is called in the context of the thread that installed it.

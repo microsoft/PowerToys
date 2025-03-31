@@ -61,9 +61,18 @@ jobs:
         reg add "HKLM\Software\Policies\Microsoft\Edge\WebView2\ReleaseChannels" /v PowerToys.exe /t REG_SZ /d "3"
       displayName: "Enable WebView2 Canary Channel"
 
-  - template: steps-download-artifacts-with-azure-cli.yml
-    parameters:
-      artifactName: $(TestArtifactsName)
+  - ${{ if ne(parameters.platform, 'arm64') }}:
+      - download: current
+        displayName: Download artifacts
+        artifact: $(TestArtifactsName)
+        patterns: |-
+          **
+          !**\*.pdb
+          !**\*.lib
+  - ${{ else }}:
+      - template: steps-download-artifacts-with-azure-cli.yml
+        parameters:
+          artifactName: $(TestArtifactsName)
 
   - template: steps-ensure-dotnet-version.yml
     parameters:
