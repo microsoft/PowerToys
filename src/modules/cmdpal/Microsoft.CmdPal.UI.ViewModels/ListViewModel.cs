@@ -268,25 +268,42 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public void UpdateGroupsIfNeeded()
     {
-        Groups.Clear();
         if (HasGrouping)
         {
-            try
+            if (FilteredItems.Count == 0)
             {
-                var groupedItems = FilteredItems
-                    .Where(item => !string.IsNullOrEmpty(item.Section))
-                    .GroupBy(item => item.Section)
-                    .Select(group => new ListGroup
-                    {
-                        Key = group.Key,
-                        Items = new ObservableCollection<ListItemViewModel>(group),
-                    }).ToList();
-
-                Groups = new ObservableCollection<ListGroup>(groupedItems);
+                Groups.Clear();
+                return;
             }
-            catch (Exception ex)
+
+            // get current groups
+            var groups = FilteredItems.GroupBy(item => item.Section).Select(group => group);
+
+            // Remove any groups that no longer exist
+            foreach (var group in Groups)
             {
-                ShowException(ex, _model?.Unsafe?.Name);
+                if (!groups.Any(g => g.Key == group.Key))
+                {
+                    Groups.Remove(group);
+                }
+            }
+
+            // Update lists for each existing group
+            foreach (var group in groups)
+            {
+                var existingGroup = Groups.FirstOrDefault(groupItem => groupItem.Key == group.Key);
+                if (existingGroup == null)
+                {
+                    // Add a new group if it doesn't exist
+                    Groups.Add(new ListGroup { Key = group.Key, Items = new ObservableCollection<ListItemViewModel>(group) });
+                    existingGroup = Groups.FirstOrDefault(groupItem => groupItem.Key == group.Key);
+                }
+
+                if (existingGroup != null)
+                {
+                    // Update the existing group
+                    ListHelpers.InPlaceUpdateList(existingGroup.Items, FilteredItems.Where(item => item.Section == group.Key));
+                }
             }
         }
     }
