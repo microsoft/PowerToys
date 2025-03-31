@@ -89,6 +89,7 @@ onefuzzingestionpreparationtool
 OTP
 Yubi
 Yubico
+svgl
 
 # KEYS
 
@@ -231,6 +232,9 @@ SLOWMACHINE
 SWAPBUTTON
 SYSTEMDOCKED
 TABLETPC
+
+# Units
+nmi
 
 # MATH
 
