@@ -27,20 +27,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
 
-    public bool HasGrouping
-    {
-        get
-        {
-            try
-            {
-                return FilteredItems.Any(i => !string.IsNullOrEmpty(i.Section));
-            }
-            catch
-            {
-                return false;
-            }
-        }
-    }
+    [ObservableProperty]
+    public partial bool HasGrouping { get; private set; } = false;
 
     [ObservableProperty]
     public partial ObservableCollection<ListGroup> Groups { get; set; } = [];
@@ -268,6 +256,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public void UpdateGroupsIfNeeded()
     {
+        HasGrouping = FilteredItems.Any(i => !string.IsNullOrEmpty(i.Section));
+
         if (HasGrouping)
         {
             if (FilteredItems.Count == 0)
