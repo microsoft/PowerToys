@@ -540,6 +540,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             FilteredItems.Clear();
+
+            foreach (ListGroup group in Groups)
+            {
+                foreach (ListItemViewModel item in group.Items)
+                {
+                    item.SafeCleanup();
+                }
+
+                group.Items.Clear();
+            }
+
+            Groups.Clear();
         }
 
         IListPage? model = _model.Unsafe;
