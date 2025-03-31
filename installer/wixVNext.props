@@ -1,14 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<!-- <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <WixInstallPath>C:\Program Files (x86)\WiX Toolset v3.14\bin\</WixInstallPath>
-    <WixExtDir>$(WixInstallPath)\</WixExtDir>
+    <WixInstallPath>C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\FireGiant\HeatWave\Wix5</WixInstallPath>
 
-    <WixTargetsPath>$(WixInstallPath)\..\wix.targets</WixTargetsPath>
-    <LuxTargetsPath>$(WixInstallPath)\..\lux.targets</LuxTargetsPath>
 
-    <WixTasksPath>$(WixInstallPath)\WixTasks.dll</WixTasksPath>
-    <WixSdkPath>$(WixInstallPath)\..\sdk\</WixSdkPath>
     <WixCATargetsPath>$(WixSdkPath)\..\wix.ca.targets</WixCATargetsPath>
   </PropertyGroup>
-</Project>
+</Project> -->

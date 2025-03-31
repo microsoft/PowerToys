@@ -1,90 +1,54 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?define UpgradeCode="6341382d-c0a9-4238-9188-be9607e3fab2"?>
 
-<?define UpgradeCode="6341382d-c0a9-4238-9188-be9607e3fab2"?>
-
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-    xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
-    xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
 
     <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-    <Bundle Name="PowerToys (Preview) $(var.PowerToysPlatform)"
-            Version="$(var.Version)"
-            Manufacturer="Microsoft Corporation"
-            IconSourceFile="$(var.BinDir)svgs\icon.ico"
-            UpgradeCode="$(var.UpgradeCode)">
-        <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
-            <bal:WixStandardBootstrapperApplication 
-              LicenseFile="$(var.RepoDir)\installer\License.rtf"
-              LogoFile="$(var.RepoDir)\installer\PowerToysSetupVNext\Images\logo44.png"
-              SuppressOptionsUI="no"
-              SuppressRepair="yes" />
-        </BootstrapperApplicationRef>
+    <Bundle Name="PowerToys (Preview) $(var.PowerToysPlatform)" Version="$(var.Version)" Manufacturer="Microsoft Corporation" IconSourceFile="$(var.BinDir)svgs\icon.ico" UpgradeCode="$(var.UpgradeCode)">
+        <BootstrapperApplication>
+            <bal:WixStandardBootstrapperApplication LicenseFile="$(var.RepoDir)\installer\License.rtf" LogoFile="$(var.RepoDir)\installer\PowerToysSetupVNext\Images\logo44.png" SuppressOptionsUI="no" SuppressRepair="yes" Theme="rtfLicense" />
+        </BootstrapperApplication>
 
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
         <?if $(var.PerUser) = "true" ?>
-            <Variable Name="InstallFolder" Type="string" Value="[LocalAppDataFolder]PowerToys" bal:Overridable="yes"/>
+            <Variable Name="InstallFolder" Type="formatted" Value="[LocalAppDataFolder]PowerToys" bal:Overridable="yes" />
         <?else?>
-            <Variable Name="InstallFolder" Type="string" Value="$(var.PlatformProgramFiles)PowerToys" bal:Overridable="yes"/>
+            <Variable Name="InstallFolder" Type="formatted" Value="$(var.PlatformProgramFiles)PowerToys" bal:Overridable="yes" />
         <?endif?>
 
-        <Variable Name="MsiLogFolder" Type="string" Value="[LocalAppDataFolder]\Microsoft\PowerToys\" /> 
-        <Log Disable="no" Prefix='powertoys-bootstrapper-msi-$(var.Version)' Extension=".log" />
+        <Variable Name="MsiLogFolder" Type="formatted" Value="[LocalAppDataFolder]\Microsoft\PowerToys\" /> 
+        <Log Disable="no" Prefix="powertoys-bootstrapper-msi-$(var.Version)" Extension=".log" />
 
       <!-- Only install/upgrade if the version is greater or equal than the currently installed version of PowerToys, to handle the case in which PowerToys was installed from old MSI (before WiX bootstrapper was used) -->
       <!-- If the previous installation is a bundle installation, just let WiX run its logic. -->
-      <Variable Name="MinimumVersion" Type="version" Value="0.0.0.0"/>
-      <Variable Name="TargetPowerToysVersion" Type="version" Value="$(var.Version)"/>
-      <Variable  Name="DetectedPowerToysVersion" Type="version" Value="0.0.0.0"/>
-      <Variable  Name="DetectedPowerToysUserVersion" Type="version" Value="0.0.0.0"/>
+      <Variable Name="MinimumVersion" Type="version" Value="0.0.0.0" />
+      <Variable Name="TargetPowerToysVersion" Type="version" Value="$(var.Version)" />
+      <Variable Name="DetectedPowerToysVersion" Type="version" Value="0.0.0.0" />
+      <Variable Name="DetectedPowerToysUserVersion" Type="version" Value="0.0.0.0" />
 
       <util:ProductSearch Id="SearchInstalledPowerToysVersion" Variable="DetectedPowerToysVersion" UpgradeCode="42B84BF7-5FBF-473B-9C8B-049DC16F7708" Result="version" />
       <util:ProductSearch Id="SearchInstalledPowerToysUserVersion" Variable="DetectedPowerToysUserVersion" UpgradeCode="D8B559DB-4C98-487A-A33F-50A8EEE42726" Result="version" />
 
       <?if $(var.PerUser) = "true" ?>
-        <bal:Condition Message="PowerToys is already installed on this system for all users. We recommend first uninstalling that version before installing this one." >MinimumVersion &gt;= DetectedPowerToysVersion</bal:Condition>
-        <bal:Condition Message="The same or later version of PowerToys is already installed." >TargetPowerToysVersion &gt;= DetectedPowerToysUserVersion OR WixBundleInstalled</bal:Condition>
+        <bal:Condition Message="PowerToys is already installed on this system for all users. We recommend first uninstalling that version before installing this one." Condition="MinimumVersion &gt;= DetectedPowerToysVersion" />
+        <bal:Condition Message="The same or later version of PowerToys is already installed." Condition="TargetPowerToysVersion &gt;= DetectedPowerToysUserVersion OR WixBundleInstalled" />
       <?else?>
-        <bal:Condition Message="PowerToys is already installed on this system for current user. We recommend first uninstalling that version before installing this one." >MinimumVersion &gt;= DetectedPowerToysUserVersion</bal:Condition>
-        <bal:Condition Message="A later version of PowerToys is already installed." >TargetPowerToysVersion &gt;= DetectedPowerToysVersion OR WixBundleInstalled</bal:Condition>
+        <bal:Condition Message="PowerToys is already installed on this system for current user. We recommend first uninstalling that version before installing this one." Condition="MinimumVersion &gt;= DetectedPowerToysUserVersion" />
+        <bal:Condition Message="A later version of PowerToys is already installed." Condition="TargetPowerToysVersion &gt;= DetectedPowerToysVersion OR WixBundleInstalled" />
       <?endif?>
 
-      <Variable Name="DetectedWindowsBuildNumber" Type="version" Value="0"/>
+      <Variable Name="DetectedWindowsBuildNumber" Type="version" Value="0" />
       <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Format="raw" Variable="DetectedWindowsBuildNumber" />
-      <bal:Condition Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher.">DetectedWindowsBuildNumber &gt;= 19041 OR WixBundleInstalled</bal:Condition>
+      <bal:Condition Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher." Condition="DetectedWindowsBuildNumber &gt;= 19041 OR WixBundleInstalled" />
     
         <Chain>
-            <ExePackage
-                DisplayName="Closing PowerToys application"
-                Name="terminate_powertoys.cmd"
-                Cache="no"
-                Compressed="yes"
-                Id="TerminatePowerToys"
-                SourceFile="terminate_powertoys.cmd"
-                Permanent="yes"
-                PerMachine="$(var.PerMachineYesNo)"
-                Vital="no">
+            <ExePackage DisplayName="Closing PowerToys application" Name="terminate_powertoys.cmd" Cache="remove" Compressed="yes" Id="TerminatePowerToys" SourceFile="terminate_powertoys.cmd" Permanent="yes" PerMachine="$(var.PerMachineYesNo)" Vital="no">
             </ExePackage>
-            <ExePackage
-                DisplayName="Microsoft Edge WebView2"
-                Name="MicrosoftEdgeWebview2Setup.exe"
-                Compressed="yes"
-                Id="WebView2"
-                DetectCondition="HasWebView2PerMachine OR HasWebView2PerUser"
-                SourceFile="WebView2\MicrosoftEdgeWebview2Setup.exe"
-                InstallCommand="/silent /install"
-                RepairCommand="/repair /passive"
-                Permanent="yes"
-                PerMachine="$(var.PerMachineYesNo)"
-                UninstallCommand="/silent /uninstall">
+            <ExePackage DisplayName="Microsoft Edge WebView2" Name="MicrosoftEdgeWebview2Setup.exe" Compressed="yes" Id="WebView2" DetectCondition="HasWebView2PerMachine OR HasWebView2PerUser" SourceFile="WebView2\MicrosoftEdgeWebview2Setup.exe" Permanent="yes" PerMachine="$(var.PerMachineYesNo)" InstallArguments="/silent /install" RepairArguments="/repair /passive" UninstallArguments="/silent /uninstall">
             </ExePackage>
-            <MsiPackage
-                DisplayName="PowerToys MSI"
-                SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)"
-                Compressed="yes"
-                DisplayInternalUI="no">
+            <MsiPackage DisplayName="PowerToys MSI" SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)" Compressed="yes" DisplayInternalUI="no">
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />
             </MsiPackage>
         </Chain>
