@@ -258,7 +258,7 @@ namespace ManagedCommon
         /// <param name="lightness">The <see cref="lightness"/></param>
         /// <param name="chromaticity_a">The <see cref="chromaticity_a"/></param>
         /// <param name="chromaticity_b">The <see cref="chromaticity_b"/></param>
-        /// <returns>The lightness [0..100], the chroma [0..230], and the hue angle [0°..360°]</returns>C
+        /// <returns>The lightness [0..100], the chroma [0..230], and the hue angle [0°..360°]</returns>
         private static (double Lightness, double Chroma, double Hue)
             GetCIELCHColorFromCIELAB(double lightness, double chromaticity_a, double chromaticity_b)
         {
@@ -598,8 +598,8 @@ namespace ManagedCommon
                     return chromaCIE.ToString(CultureInfo.InvariantCulture);
                 case "Ch":
                     var (_, _, hueCIE) = ConvertToCIELCHColor(color);
-                    hue = Math.Round(hueCIE, 2);
-                    return hue.ToString(CultureInfo.InvariantCulture);
+                    hueCIE = Math.Round(hueCIE, 2);
+                    return hueCIE.ToString(CultureInfo.InvariantCulture);
                 case "Oa":
                     var (_, chromaticityAOklab, _) = ConvertToOklabColor(color);
                     chromaticityAOklab = Math.Round(chromaticityAOklab, 2);
@@ -609,13 +609,13 @@ namespace ManagedCommon
                     chromaticityBOklab = Math.Round(chromaticityBOklab, 2);
                     return chromaticityBOklab.ToString(CultureInfo.InvariantCulture);
                 case "Oc":
-                    var (_, chromaOklab, _) = ConvertToOklchColor(color);
-                    chromaOklab = Math.Round(chromaOklab, 2);
-                    return chromaOklab.ToString(CultureInfo.InvariantCulture);
+                    var (_, chromaOklch, _) = ConvertToOklchColor(color);
+                    chromaOklch = Math.Round(chromaOklch, 2);
+                    return chromaOklch.ToString(CultureInfo.InvariantCulture);
                 case "Oh":
-                    var (_, _, hueOklab) = ConvertToOklchColor(color);
-                    hueOklab = Math.Round(hueOklab, 2);
-                    return hueOklab.ToString(CultureInfo.InvariantCulture);
+                    var (_, _, hueOklch) = ConvertToOklchColor(color);
+                    hueOklch = Math.Round(hueOklch, 2);
+                    return hueOklch.ToString(CultureInfo.InvariantCulture);
                 case "Xv":
                     var (x, _, _) = ConvertToCIEXYZColor(color);
                     x = Math.Round(x * 100, 4);
