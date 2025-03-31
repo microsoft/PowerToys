@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
@@ -18,23 +16,15 @@
          - https://robmensching.com/blog/posts/2003/10/4/windows-installer-components-introduction/
            -->
 
-  <Product Id="*"
-       Name="PowerToys (Preview)"
-       Language="1033"
-       Version="$(var.Version)"
-       Manufacturer="Microsoft Corporation"
-       UpgradeCode="$(var.UpgradeCodeGUID)">
+  <Package Name="PowerToys (Preview)" Language="1033" Version="$(var.Version)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.UpgradeCodeGUID)" Scope="$(var.InstallScope)">
 
 
-      <Package InstallerVersion="500" Compressed="yes" InstallScope="$(var.InstallScope)" InstallPrivileges="$(var.InstallPrivileges)" Platform="$(var.PlatformLK)" />
+      
 
     <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
 
     <Upgrade Id="$(var.UpgradeCodeGUID)">
-      <UpgradeVersion
-         Minimum="0.0.0" Maximum="$(var.Version)"
-         Property="PREVIOUSVERSIONSINSTALLED" 
-         IncludeMinimum="yes" IncludeMaximum="no" />
+      <UpgradeVersion Minimum="0.0.0" Maximum="$(var.Version)" Property="PREVIOUSVERSIONSINSTALLED" IncludeMinimum="yes" IncludeMaximum="no" />
     </Upgrade>
 
     <MediaTemplate EmbedCab="yes" />
@@ -43,16 +33,13 @@
     <Property Id="WINDOWSBUILDNUMBER" Secure="yes">
       <RegistrySearch Id="BuildNumberSearch" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Name="CurrentBuildNumber" Type="raw" />
     </Property>
-    <Condition Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher.">
-      <![CDATA[(WINDOWSBUILDNUMBER >= 19041)]]>
-    </Condition>
+    <Launch Condition="(WINDOWSBUILDNUMBER &gt;= 19041)" Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher." />
 
-    <Icon Id="powertoys.exe" SourceFile="$(var.BinDir)svgs\icon.ico"/>
+    <Icon Id="powertoys.exe" SourceFile="$(var.BinDir)svgs\icon.ico" />
 
     <Property Id="ARPPRODUCTICON" Value="powertoys.exe" />
 
-    <Feature Id="CoreFeature" Title="PowerToys" AllowAdvertise="no" Absent="disallow" TypicalDefault="install"
-             Description="Contains all PowerToys features.">
+    <Feature Id="CoreFeature" Title="PowerToys" AllowAdvertise="no" TypicalDefault="install" Description="Contains all PowerToys features." AllowAbsent="no">
       <ComponentGroupRef Id="CoreComponents" />
       <ComponentGroupRef Id="BaseApplicationsComponentGroup" />
       <ComponentGroupRef Id="WinUI3ApplicationsComponentGroup" />
@@ -86,50 +73,33 @@
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 
     <UI>
-      <UIRef Id="WixUI_InstallDir"/>
-      <Publish Dialog="WelcomeDlg"
-                Control="Next"
-                Event="NewDialog"
-                Value="InstallDirDlg"
-                Order="99">1</Publish>
-      <Publish Dialog="InstallDirDlg"
-                Control="Back"
-                Event="NewDialog"
-                Value="WelcomeDlg"
-                Order="99">1</Publish>
+      <ui:WixUI Id="WixUI_InstallDir" />
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg" Order="99" />
+      <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="99" />
 
-      <Publish Dialog="ExitDialog"
-            Control="Finish"
-            Event="EndDialog"
-            Value="Return">NOT Installed</Publish>
-      <Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Property="_REMOVE_ALL" Value="Yes">1</Publish>
-      <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogInstallCancel">NOT Installed</Publish>
-      <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogInstallFail">NOT Installed</Publish>
-      <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogUninstallCancel">Installed AND _REMOVE_ALL="Yes"</Publish>
-      <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogUninstallFail">Installed AND _REMOVE_ALL="Yes"</Publish>
-      <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogRepairCancel">Installed AND NOT (_REMOVE_ALL="Yes")</Publish>
-      <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogRepairFail">Installed AND NOT (_REMOVE_ALL="Yes")</Publish>
+      <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Condition="NOT Installed" />
+      <Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Property="_REMOVE_ALL" Value="Yes" />
+      <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogInstallCancel" Condition="NOT Installed" />
+      <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogInstallFail" Condition="NOT Installed" />
+      <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogUninstallCancel" Condition="Installed AND _REMOVE_ALL=&quot;Yes&quot;" />
+      <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogUninstallFail" Condition="Installed AND _REMOVE_ALL=&quot;Yes&quot;" />
+      <Publish Dialog="UserExit" Control="Finish" Event="DoAction" Value="TelemetryLogRepairCancel" Condition="Installed AND NOT (_REMOVE_ALL=&quot;Yes&quot;)" />
+      <Publish Dialog="FatalError" Control="Finish" Event="DoAction" Value="TelemetryLogRepairFail" Condition="Installed AND NOT (_REMOVE_ALL=&quot;Yes&quot;)" />
     </UI>
 
     <WixVariable Id="WixUIBannerBmp" Value="$(var.ProjectDir)\Images\banner.png" />
     <WixVariable Id="WixUIDialogBmp" Value="$(var.ProjectDir)\Images\dialog.png" />
     <WixVariable Id="WixUILicenseRtf" Value="$(var.RepoDir)\installer\License.rtf" />
-    <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1"/>
+    <Property Id="INSTALLSTARTMENUSHORTCUT" Value="1" />
     <Property Id="WixShellExecTarget" Value="[#PowerToys_ActionRunner.exe]" />
 
     <SetProperty Action="SetDEFAULTBOOTSTRAPPERINSTALLFOLDER" Id="DEFAULTBOOTSTRAPPERINSTALLFOLDER" Value="[$(var.DefaultInstallDir)]PowerToys" Before="SetBOOTSTRAPPERINSTALLFOLDER" Sequence="execute"></SetProperty>
 
     <!-- In case we didn't receive a value from the bootstrapper. -->
-    <SetProperty Action="SetBOOTSTRAPPERINSTALLFOLDER" Id="BOOTSTRAPPERINSTALLFOLDER" Value="[DEFAULTBOOTSTRAPPERINSTALLFOLDER]" Before="DetectPrevInstallPath" Sequence="execute">
-      <![CDATA[BOOTSTRAPPERINSTALLFOLDER = ""]]>
-    </SetProperty>
+    <SetProperty Action="SetBOOTSTRAPPERINSTALLFOLDER" Id="BOOTSTRAPPERINSTALLFOLDER" Value="[DEFAULTBOOTSTRAPPERINSTALLFOLDER]" Before="DetectPrevInstallPath" Sequence="execute" Condition="BOOTSTRAPPERINSTALLFOLDER = &quot;&quot;" />
     <!-- Have to compare value sent by bootstrapper to default to avoid using it, as a check to verify it's not default. This hack can be removed if it's possible to set the bootstrapper option to the previous install folder--> 
-    <SetProperty Action="SetINSTALLFOLDERTOPREVIOUSINSTALLFOLDER" Id="INSTALLFOLDER" Value="[PREVIOUSINSTALLFOLDER]" After="DetectPrevInstallPath" Sequence="execute">
-      <![CDATA[BOOTSTRAPPERINSTALLFOLDER = DEFAULTBOOTSTRAPPERINSTALLFOLDER AND PREVIOUSINSTALLFOLDER <> ""]]>
-    </SetProperty>
-    <SetProperty Action="SetINSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER" Id="INSTALLFOLDER" Value="[BOOTSTRAPPERINSTALLFOLDER]" After="DetectPrevInstallPath" Sequence="execute">
-      <![CDATA[BOOTSTRAPPERINSTALLFOLDER <> DEFAULTBOOTSTRAPPERINSTALLFOLDER OR PREVIOUSINSTALLFOLDER = ""]]>
-    </SetProperty>
+    <SetProperty Action="SetINSTALLFOLDERTOPREVIOUSINSTALLFOLDER" Id="INSTALLFOLDER" Value="[PREVIOUSINSTALLFOLDER]" After="DetectPrevInstallPath" Sequence="execute" Condition="BOOTSTRAPPERINSTALLFOLDER = DEFAULTBOOTSTRAPPERINSTALLFOLDER AND PREVIOUSINSTALLFOLDER &lt;&gt; &quot;&quot;" />
+    <SetProperty Action="SetINSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER" Id="INSTALLFOLDER" Value="[BOOTSTRAPPERINSTALLFOLDER]" After="DetectPrevInstallPath" Sequence="execute" Condition="BOOTSTRAPPERINSTALLFOLDER &lt;&gt; DEFAULTBOOTSTRAPPERINSTALLFOLDER OR PREVIOUSINSTALLFOLDER = &quot;&quot;" />
 
     <SetProperty Id="InstallScope" Value="$(var.InstallScope)" Before="DetectPrevInstallPath" Sequence="execute"></SetProperty>
     <InstallExecuteSequence>
@@ -144,301 +114,119 @@
       <?endif?>
 
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
-      <Custom Action="CheckGPO" After="InstallInitialize">
-        NOT Installed
-      </Custom>
-      <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles">
-        NOT Installed
-      </Custom>
-      <Custom Action="WixCloseApplications" Before="RemoveFiles" />
+      <Custom Action="CheckGPO" After="InstallInitialize" Condition="NOT Installed" />
+      <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
+      <Custom Action="WixCloseApplications_x64" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
       <!-- TODO: Use to activate embedded MSIX -->
       <!--<Custom Action="InstallEmbeddedMSIXTask" After="InstallFinalize">
         NOT Installed
       </Custom>-->
         <?if $(var.PerUser) = "true" ?>
-        <Custom Action="InstallDSCModule" After="InstallFiles"/>
+        <Custom Action="InstallDSCModule" After="InstallFiles" />
         <?endif?>
-        <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize">
-        NOT Installed
-      </Custom>
-      <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize">
-        Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
-      </Custom>
-      <Custom Action="UnApplyModulesRegistryChangeSets" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
-      </Custom>
-      <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles">
-        Installed AND (REMOVE="ALL")
-      </Custom>
-      <Custom Action="UnsetAdvancedPasteAPIKey" Before="RemoveFiles">
-        Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
-      </Custom>
-      <Custom Action="UninstallCommandNotFound" Before="RemoveFiles">
-        Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
-      </Custom>
-      <Custom Action="UpgradeCommandNotFound" After="InstallFiles">
-        WIX_UPGRADE_DETECTED
-      </Custom>
-      <Custom Action="UninstallServicesTask" After="InstallFinalize">
-          Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
-      </Custom>
+        <Custom Action="TelemetryLogInstallSuccess" After="InstallFinalize" Condition="NOT Installed" />
+      <Custom Action="TelemetryLogUninstallSuccess" After="InstallFinalize" Condition="Installed and (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UnApplyModulesRegistryChangeSets" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UnsetAdvancedPasteAPIKey" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UninstallCommandNotFound" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UpgradeCommandNotFound" After="InstallFiles" Condition="WIX_UPGRADE_DETECTED" />
+      <Custom Action="UninstallServicesTask" After="InstallFinalize" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
         <!-- TODO: Use to activate embedded MSIX -->
       <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">
         Installed AND (REMOVE="ALL")
       </Custom>-->
       <?if $(var.PerUser) = "true" ?>
-      <Custom Action="UninstallDSCModule" After="InstallFinalize">
-          Installed AND (REMOVE="ALL")
-      </Custom>
+      <Custom Action="UninstallDSCModule" After="InstallFinalize" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <?endif?>
       <Custom Action="TerminateProcesses" Before="InstallValidate" />
-      <Custom Action="LaunchPowerToys" Before="InstallFinalize">NOT Installed</Custom>
+      <Custom Action="LaunchPowerToys" Before="InstallFinalize" Condition="NOT Installed" />
 
       <!-- Clean Video Conference Mute registry keys that might be around from previous installations. We've deprecated this utility since then. -->
-      <Custom Action="CleanVideoConferenceRegistry" Before="InstallFinalize">NOT Installed</Custom>
+      <Custom Action="CleanVideoConferenceRegistry" Before="InstallFinalize" Condition="NOT Installed" />
 
     </InstallExecuteSequence>
 
-    <CustomAction Id="SetLaunchPowerToysParam"
-                    Property="LaunchPowerToys"
-                    Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetLaunchPowerToysParam" Property="LaunchPowerToys" Value="[INSTALLFOLDER]" />
 
-    <CustomAction
-      Id="LaunchPowerToys"
-      Return="ignore"
-      Impersonate="yes"
-      Execute="deferred"
-      BinaryKey="PTCustomActions"
-      DllEntry="LaunchPowerToysCA"
-      />
+    <CustomAction Id="LaunchPowerToys" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="LaunchPowerToysCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction
-      Id="TerminateProcesses"
-      Return="ignore"
-      Execute="immediate"
-      BinaryKey="PTCustomActions"
-      DllEntry="TerminateProcessesCA" />
+    <CustomAction Id="TerminateProcesses" Return="ignore" Execute="immediate" DllEntry="TerminateProcessesCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="SetApplyModulesRegistryChangeSetsParam"
-                    Property="ApplyModulesRegistryChangeSets"
-                    Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetApplyModulesRegistryChangeSetsParam" Property="ApplyModulesRegistryChangeSets" Value="[INSTALLFOLDER]" />
 
-    <CustomAction Id="SetUnApplyModulesRegistryChangeSetsParam"
-                    Property="UnApplyModulesRegistryChangeSets"
-                    Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetUnApplyModulesRegistryChangeSetsParam" Property="UnApplyModulesRegistryChangeSets" Value="[INSTALLFOLDER]" />
 
-    <CustomAction Id="SetInstallDSCModuleParam"
-                    Property="InstallDSCModule"
-                    Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetInstallDSCModuleParam" Property="InstallDSCModule" Value="[INSTALLFOLDER]" />
 
-    <CustomAction Id="SetUninstallCommandNotFoundParam"
-                    Property="UninstallCommandNotFound"
-                    Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetUninstallCommandNotFoundParam" Property="UninstallCommandNotFound" Value="[INSTALLFOLDER]" />
 
-    <CustomAction Id="SetUpgradeCommandNotFoundParam"
-                    Property="UpgradeCommandNotFound"
-                    Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetUpgradeCommandNotFoundParam" Property="UpgradeCommandNotFound" Value="[INSTALLFOLDER]" />
 
-    <CustomAction Id="SetCreateWinAppSDKHardlinksParam"
-                    Property="CreateWinAppSDKHardlinks"
-                    Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetCreateWinAppSDKHardlinksParam" Property="CreateWinAppSDKHardlinks" Value="[INSTALLFOLDER]" />
 
-    <CustomAction Id="SetDeleteWinAppSDKHardlinksParam"
-                    Property="DeleteWinAppSDKHardlinks"
-                    Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetDeleteWinAppSDKHardlinksParam" Property="DeleteWinAppSDKHardlinks" Value="[INSTALLFOLDER]" />
 
-    <CustomAction Id="SetCreatePTInteropHardlinksParam"
-                    Property="CreatePTInteropHardlinks"
-                    Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetCreatePTInteropHardlinksParam" Property="CreatePTInteropHardlinks" Value="[INSTALLFOLDER]" />
 
-    <CustomAction Id="SetDeletePTInteropHardlinksParam"
-                    Property="DeletePTInteropHardlinks"
-                    Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetDeletePTInteropHardlinksParam" Property="DeletePTInteropHardlinks" Value="[INSTALLFOLDER]" />
 
-    <CustomAction Id="SetCreateDotnetRuntimeHardlinksParam"
-                    Property="CreateDotnetRuntimeHardlinks"
-                    Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetCreateDotnetRuntimeHardlinksParam" Property="CreateDotnetRuntimeHardlinks" Value="[INSTALLFOLDER]" />
 
-    <CustomAction Id="SetDeleteDotnetRuntimeHardlinksParam"
-                    Property="DeleteDotnetRuntimeHardlinks"
-                    Value="[INSTALLFOLDER]" />
+    <CustomAction Id="SetDeleteDotnetRuntimeHardlinksParam" Property="DeleteDotnetRuntimeHardlinks" Value="[INSTALLFOLDER]" />
 
-    <CustomAction Id="RemovePowerToysSchTasks"
-                  Return="ignore"
-                  Impersonate="no"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="RemoveScheduledTasksCA"
-                   />
+    <CustomAction Id="RemovePowerToysSchTasks" Return="ignore" Impersonate="no" Execute="deferred" DllEntry="RemoveScheduledTasksCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="InstallEmbeddedMSIXTask"
-                  Return="ignore"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="InstallEmbeddedMSIXCA"
-                   />
+    <CustomAction Id="InstallEmbeddedMSIXTask" Return="ignore" Impersonate="yes" DllEntry="InstallEmbeddedMSIXCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="UninstallEmbeddedMSIXTask"
-                  Return="ignore"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="UninstallEmbeddedMSIXCA"
-                   />
+    <CustomAction Id="UninstallEmbeddedMSIXTask" Return="ignore" Impersonate="yes" DllEntry="UninstallEmbeddedMSIXCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="InstallDSCModule"
-                  Return="ignore"
-                  Impersonate="yes"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="InstallDSCModuleCA"
-                   />
+    <CustomAction Id="InstallDSCModule" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallDSCModuleCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="UninstallDSCModule"
-                  Return="ignore"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="UninstallDSCModuleCA"
-                   />
+    <CustomAction Id="UninstallDSCModule" Return="ignore" Impersonate="yes" DllEntry="UninstallDSCModuleCA" BinaryRef="PTCustomActions" />
 
-      <CustomAction Id="UninstallServicesTask"
-                    Return="ignore"
-                    Impersonate="yes"
-                    BinaryKey="PTCustomActions"
-                    DllEntry="UninstallServicesCA"
-                   />
+      <CustomAction Id="UninstallServicesTask" Return="ignore" Impersonate="yes" DllEntry="UninstallServicesCA" BinaryRef="PTCustomActions" />
 
-      <CustomAction Id="UninstallCommandNotFound"
-                    Return="ignore"
-                    Impersonate="yes"
-                    Execute="deferred"
-                    BinaryKey="PTCustomActions"
-                    DllEntry="UninstallCommandNotFoundModuleCA"
-                   />
+      <CustomAction Id="UninstallCommandNotFound" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UninstallCommandNotFoundModuleCA" BinaryRef="PTCustomActions" />
       
-      <CustomAction Id="UpgradeCommandNotFound"
-                    Return="ignore"
-                    Impersonate="yes"
-                    Execute="deferred"
-                    BinaryKey="PTCustomActions"
-                    DllEntry="UpgradeCommandNotFoundModuleCA"
-                   />
+      <CustomAction Id="UpgradeCommandNotFound" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UpgradeCommandNotFoundModuleCA" BinaryRef="PTCustomActions" />
 
-      <CustomAction Id="UnsetAdvancedPasteAPIKey"
-                    Return="ignore"
-                    Impersonate="yes"
-                    Execute="deferred"
-                    BinaryKey="PTCustomActions"
-                    DllEntry="UnsetAdvancedPasteAPIKeyCA"
-                   />
+      <CustomAction Id="UnsetAdvancedPasteAPIKey" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnsetAdvancedPasteAPIKeyCA" BinaryRef="PTCustomActions" />
 
-      <CustomAction Id="TelemetryLogInstallSuccess"
-              Return="ignore"
-              Impersonate="yes"
-              BinaryKey="PTCustomActions"
-              DllEntry="TelemetryLogInstallSuccessCA"
-                   />
+      <CustomAction Id="TelemetryLogInstallSuccess" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogInstallSuccessCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="TelemetryLogInstallCancel"
-                  Return="ignore"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="TelemetryLogInstallCancelCA"
-                   />
+    <CustomAction Id="TelemetryLogInstallCancel" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogInstallCancelCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="TelemetryLogInstallFail"
-                  Return="ignore"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="TelemetryLogInstallFailCA"
-                   />
+    <CustomAction Id="TelemetryLogInstallFail" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogInstallFailCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="TelemetryLogUninstallSuccess"
-                  Return="ignore"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="TelemetryLogUninstallSuccessCA"
-                   />
+    <CustomAction Id="TelemetryLogUninstallSuccess" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogUninstallSuccessCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="TelemetryLogUninstallCancel"
-                  Return="ignore"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="TelemetryLogUninstallCancelCA"
-                   />
+    <CustomAction Id="TelemetryLogUninstallCancel" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogUninstallCancelCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="TelemetryLogUninstallFail"
-                  Return="ignore"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="TelemetryLogUninstallFailCA"
-                   />
+    <CustomAction Id="TelemetryLogUninstallFail" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogUninstallFailCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="TelemetryLogRepairCancel"
-                  Return="ignore"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="TelemetryLogRepairCancelCA"
-                   />
+    <CustomAction Id="TelemetryLogRepairCancel" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogRepairCancelCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="TelemetryLogRepairFail"
-                  Return="ignore"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="TelemetryLogRepairFailCA"
-                   />
+    <CustomAction Id="TelemetryLogRepairFail" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogRepairFailCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="DetectPrevInstallPath"
-                  Return="check"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="DetectPrevInstallPathCA"
-                  />
+    <CustomAction Id="DetectPrevInstallPath" Return="check" Impersonate="yes" DllEntry="DetectPrevInstallPathCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="CleanVideoConferenceRegistry"
-                  Return="ignore"
-                  Impersonate="yes"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="CleanVideoConferenceRegistryCA"
-                  />
+    <CustomAction Id="CleanVideoConferenceRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanVideoConferenceRegistryCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="ApplyModulesRegistryChangeSets"
-                  Return="check"
-                  Impersonate="yes"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="ApplyModulesRegistryChangeSetsCA"
-                  />
+    <CustomAction Id="ApplyModulesRegistryChangeSets" Return="check" Impersonate="yes" Execute="deferred" DllEntry="ApplyModulesRegistryChangeSetsCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="UnApplyModulesRegistryChangeSets"
-                  Return="check"
-                  Impersonate="yes"
-                  Execute="deferred"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="UnApplyModulesRegistryChangeSetsCA"
-                  />
+    <CustomAction Id="UnApplyModulesRegistryChangeSets" Return="check" Impersonate="yes" Execute="deferred" DllEntry="UnApplyModulesRegistryChangeSetsCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="UnRegisterContextMenuPackages"
-                      Return="ignore"
-                Impersonate="yes"
-                Execute="deferred"
-                BinaryKey="PTCustomActions"
-                DllEntry="UnRegisterContextMenuPackagesCA"
-                  />
+    <CustomAction Id="UnRegisterContextMenuPackages" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnRegisterContextMenuPackagesCA" BinaryRef="PTCustomActions" />
 
-    <CustomAction Id="CheckGPO"
-                  Return="check"
-                  Impersonate="yes"
-                  BinaryKey="PTCustomActions"
-                  DllEntry="CheckGPOCA"
-                  />
+    <CustomAction Id="CheckGPO" Return="check" Impersonate="yes" DllEntry="CheckGPOCA" BinaryRef="PTCustomActions" />
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />
     <Property Id="MSIFASTINSTALL" Value="DisableShutdown" />
     <util:CloseApplication CloseMessage="yes" Target="PowerToys.exe" ElevatedCloseMessage="yes" RebootPrompt="no" TerminateProcess="0" />
-  </Product>
+  </Package>
 
   <Fragment>
     <Binary Id="PTCustomActions" SourceFile="$(var.PowerToysSetupCustomActionsVNext.TargetPath)" />
@@ -446,7 +234,6 @@
 
   <!-- Installation directory structure -->
   <Fragment>
-    <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="$(var.DefaultInstallDir)">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="BaseApplicationsAssetsFolder" Name="Assets">
@@ -459,13 +246,12 @@
             <Directory Id="WinUI3AppsAssetsFolder" Name="Assets">
             </Directory>
           </Directory>
-          <Directory Id="ToolsFolder" Name="Tools"/>
+          <Directory Id="ToolsFolder" Name="Tools" />
         </Directory>
       </Directory>
-      <Directory Id="ProgramMenuFolder">
-        <Directory Id="ApplicationProgramsFolder" Name="PowerToys (Preview)"/>
-      </Directory>
-      <Directory Id="DesktopFolder" Name="Desktop" />
-    </Directory>
-  </Fragment>
+      <StandardDirectory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="PowerToys (Preview)" />
+      </StandardDirectory>
+      <StandardDirectory Id="DesktopFolder" />
+    </Fragment>
 </Wix>
