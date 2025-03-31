@@ -39,7 +39,7 @@ jobs:
           echo powerToysInstallerX64Url=$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("x64"))][0].browser_download_url') >> $GITHUB_OUTPUT
           echo powerToysInstallerArm64Url=$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("arm64"))][0].browser_download_url') >> $GITHUB_OUTPUT
 
-      - uses: microsoft/setup-msstore-cli@v1
+      - uses: microsoft/setup-msstore-cli@v1.1
 
       - name: Fetch Store Credential
         uses: azure/cli@v2
@@ -50,10 +50,7 @@ jobs:
             base64 -d < cert.pfx.b64 > cert.pfx
 
       - name: Configure Store Credentials
-        run: |
-          curl -L https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
-          chmod +x ./dotnet-install.sh
-          ./dotnet-install.sh --channel 9.0
+        run: |-
           msstore reconfigure -cfp cert.pfx -c ${{ secrets.AZURE_CLIENT_ID }} -t ${{ secrets.AZURE_TENANT_ID }} -s ${{ secrets.SELLER_ID }}
 
       - name: Update draft submission
