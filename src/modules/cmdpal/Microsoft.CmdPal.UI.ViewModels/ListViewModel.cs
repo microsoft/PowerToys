@@ -260,39 +260,42 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         if (HasGrouping)
         {
-            if (FilteredItems.Count == 0)
+            lock (_listLock)
             {
-                Groups.Clear();
-                return;
-            }
-
-            // get current groups
-            var groups = FilteredItems.GroupBy(item => item.Section).Select(group => group);
-
-            // Remove any groups that no longer exist
-            foreach (var group in Groups)
-            {
-                if (!groups.Any(g => g.Key == group.Key))
+                if (FilteredItems.Count == 0)
                 {
-                    Groups.Remove(group);
-                }
-            }
-
-            // Update lists for each existing group
-            foreach (var group in groups)
-            {
-                var existingGroup = Groups.FirstOrDefault(groupItem => groupItem.Key == group.Key);
-                if (existingGroup == null)
-                {
-                    // Add a new group if it doesn't exist
-                    Groups.Add(new ListGroup { Key = group.Key, Items = new ObservableCollection<ListItemViewModel>(group) });
-                    existingGroup = Groups.FirstOrDefault(groupItem => groupItem.Key == group.Key);
+                    Groups.Clear();
+                    return;
                 }
 
-                if (existingGroup != null)
+                // get current groups
+                var groups = FilteredItems.GroupBy(item => item.Section).Select(group => group);
+
+                // Remove any groups that no longer exist
+                foreach (var group in Groups)
                 {
-                    // Update the existing group
-                    ListHelpers.InPlaceUpdateList(existingGroup.Items, FilteredItems.Where(item => item.Section == group.Key));
+                    if (!groups.Any(g => g.Key == group.Key))
+                    {
+                        Groups.Remove(group);
+                    }
+                }
+
+                // Update lists for each existing group
+                foreach (var group in groups)
+                {
+                    var existingGroup = Groups.FirstOrDefault(groupItem => groupItem.Key == group.Key);
+                    if (existingGroup == null)
+                    {
+                        // Add a new group if it doesn't exist
+                        Groups.Add(new ListGroup { Key = group.Key, Items = new ObservableCollection<ListItemViewModel>(group) });
+                        existingGroup = Groups.FirstOrDefault(groupItem => groupItem.Key == group.Key);
+                    }
+
+                    if (existingGroup != null)
+                    {
+                        // Update the existing group
+                        ListHelpers.InPlaceUpdateList(existingGroup.Items, FilteredItems.Where(item => item.Section == group.Key));
+                    }
                 }
             }
         }
