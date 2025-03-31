@@ -364,9 +364,6 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("8080FF", 59.20, 33.10, -63.46)] // blue
         [DataRow("BF40BF", 50.10, 65.50, -41.48)] // magenta
         [DataRow("BFBF00", 75.04, -17.35, 76.03)] // yellow
-        [DataRow("008000", 46.23, -51.70, 49.90)] // green
-        [DataRow("8080FF", 59.20, 33.10, -63.46)] // blue
-        [DataRow("BF40BF", 50.10, 65.50, -41.48)] // magenta
         [DataRow("0048BA", 34.35, 27.94, -64.80)] // absolute zero
         [DataRow("B0BF1A", 73.91, -23.39, 71.15)] // acid green
         [DataRow("D0FF14", 93.87, -40.20, 88.97)] // arctic lime
@@ -401,13 +398,175 @@ namespace Microsoft.ColorPicker.UnitTests
             var result = ColorFormatHelper.ConvertToCIELABColor(color);
 
             // lightness[0..100]
-            Assert.AreEqual(Math.Round(result.Lightness, 2), lightness);
+            Assert.AreEqual(lightness, Math.Round(result.Lightness, 2));
 
             // chromaticityA[-128..127]
-            Assert.AreEqual(Math.Round(result.ChromaticityA, 2), chromaticityA);
+            Assert.AreEqual(chromaticityA, Math.Round(result.ChromaticityA, 2));
 
             // chromaticityB[-128..127]
-            Assert.AreEqual(Math.Round(result.ChromaticityB, 2), chromaticityB);
+            Assert.AreEqual(chromaticityB, Math.Round(result.ChromaticityB, 2));
+        }
+
+        // Test data calculated using https://lch.oklch.com
+        [TestMethod]
+        [DataRow("FFFFFF", 100.00, 0.00, 0.00)] // white
+        [DataRow("808080", 53.59, 0.00, 0.00)] // gray
+        [DataRow("000000", 0.00, 0.00, 0.00)] // black
+        [DataRow("FF0000", 54.29, 106.84, 40.86)] // red
+        [DataRow("008000", 46.28, 67.98, 134.38)] // green
+        [DataRow("80FFFF", 92.82, 38.7, 197.28)] // cyan
+        [DataRow("8080FF", 58.36, 69.46, 291.79)] // blue
+        [DataRow("BF40BF", 50.01, 74.6, 326.46)] // magenta
+        [DataRow("BFBF00", 75.41, 76.211, 99.57)] // yellow
+        [DataRow("0048BA", 33.18, 69.15, 286.04)] // absolute zero
+        [DataRow("B0BF1A", 74.24, 72.74, 104.92)] // acid green
+        [DataRow("D0FF14", 94.21, 94.01, 111.3)] // arctic lime
+        [DataRow("1B4D3E", 29.05, 21.04, 169.9)] // brunswick green
+        [DataRow("FFEF00", 93.51, 90.98, 95.32)] // canary yellow
+        [DataRow("FFA600", 75.81, 83.73, 71.17)] // cheese
+        [DataRow("1A2421", 13.15, 5.23, 174.68)] // dark jungle green
+        [DataRow("003399", 24.65, 64.23, 289.12)] // dark powder blueC
+        [DataRow("D70A53", 46.79, 74.48, 15.37)] // debian red
+        [DataRow("80FFD5", 91.92, 45.3, 168.89)] // fathom secret green
+        [DataRow("EFDFBB", 89.45, 19.86, 85.57)] // dutch white
+        [DataRow("5218FA", 34.66, 120.25, 303.21)] // han purple
+        [DataRow("FF496C", 59.83, 74.08, 18.43)] // infra red
+        [DataRow("545AA7", 40.65, 45.35, 288.49)] // liberty
+        [DataRow("E6A8D7", 75.94, 32.34, 333.35)] // light orchid
+        [DataRow("ADDFAD", 84.34, 30.63, 141.37)] // light moss green
+        [DataRow("E3F988", 94.52, 54.94, 110.96)] // mindaro
+        public void ColorRGBtoCIELCHTest(string hexValue, double lightness, double chroma, double hue)
+        {
+            if (string.IsNullOrWhiteSpace(hexValue))
+            {
+                Assert.IsNotNull(hexValue);
+            }
+
+            Assert.IsTrue(hexValue.Length >= 6);
+
+            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+
+            var color = Color.FromArgb(255, red, green, blue);
+            var result = ColorFormatHelper.ConvertToCIELCHColor(color);
+
+            // lightness[0..100]
+            Assert.AreEqual(lightness, Math.Round(result.Lightness, 2));
+
+            // chroma[0..230]
+            Assert.AreEqual(chroma, Math.Round(result.Chroma, 2));
+
+            // hue[0°..360°]
+            Assert.AreEqual(hue, Math.Round(result.Hue, 2));
+        }
+
+        // Test data calculated using https://oklch.com
+        [TestMethod]
+        [DataRow("FFFFFF", 1.00, 0.00, 0.00)] // white
+        [DataRow("808080", 0.6, 0.00, 0.00)] // gray
+        [DataRow("000000", 0.00, 0.00, 0.00)] // black
+        [DataRow("FF0000", 0.628, 0.22, 0.13)] // red
+        [DataRow("008000", 0.52, -0.14, 0.11)] // green
+        [DataRow("80FFFF", 0.928, -0.11, -0.03)] // cyan
+        [DataRow("8080FF", 0.661, 0.03, -0.18)] // blue
+        [DataRow("BF40BF", 0.598, 0.18, -0.11)] // magenta
+        [DataRow("BFBF00", 0.779, -0.06, 0.16)] // yellow
+        [DataRow("0048BA", 0.444, -0.03, -0.19)] // absolute zero
+        [DataRow("B0BF1A", 0.767, -0.07, 0.15)] // acid green
+        [DataRow("D0FF14", 0.934, -0.12, 0.19)] // arctic lime
+        [DataRow("1B4D3E", 0.382, -0.06, 0.01)] // brunswick green
+        [DataRow("FFEF00", 0.935, -0.05, 0.19)] // canary yellow
+        [DataRow("FFA600", 0.794, 0.06, 0.16)] // cheese
+        [DataRow("1A2421", 0.25, -0.02, 0)] // dark jungle green
+        [DataRow("003399", 0.371, -0.02, -0.17)] // dark powder blue
+        [DataRow("D70A53", 0.563, 0.22, 0.04)] // debian red
+        [DataRow("80FFD5", 0.916, -0.13, 0.02)] // fathom secret green
+        [DataRow("EFDFBB", 0.907, 0, 0.05)] // dutch white
+        [DataRow("5218FA", 0.489, 0.05, -0.28)] // han purple
+        [DataRow("FF496C", 0.675, 0.21, 0.05)] // infra red
+        [DataRow("545AA7", 0.501, 0.02, -0.12)] // liberty
+        [DataRow("E6A8D7", 0.804, 0.09, -0.04)] // light orchid
+        [DataRow("ADDFAD", 0.856, -0.07, 0.05)] // light moss green
+        [DataRow("E3F988", 0.942, -0.07, 0.12)] // mindaro
+        public void ColorRGBtoOklabTest(string hexValue, double lightness, double chromaticityA, double chromaticityB)
+        {
+            if (string.IsNullOrWhiteSpace(hexValue))
+            {
+                Assert.IsNotNull(hexValue);
+            }
+
+            Assert.IsTrue(hexValue.Length >= 6);
+
+            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+
+            var color = Color.FromArgb(255, red, green, blue);
+            var result = ColorFormatHelper.ConvertToOklabColor(color);
+
+            // lightness[0..1]
+            Assert.AreEqual(lightness, Math.Round(result.Lightness, 3));
+
+            // chromaticityA[-0.5..0.5]
+            Assert.AreEqual(chromaticityA, Math.Round(result.ChromaticityA, 2));
+
+            // chromaticityB[-0.5..0.5]
+            Assert.AreEqual(chromaticityB, Math.Round(result.ChromaticityB, 2));
+        }
+
+        // Test data calculated using https://oklch.com
+        [TestMethod]
+        [DataRow("FFFFFF", 1.00, 0.00, 0.00)] // white
+        [DataRow("808080", 0.6, 0.00, 0.00)] // gray
+        [DataRow("000000", 0.00, 0.00, 0.00)] // black
+        [DataRow("FF0000", 0.628, 0.258, 29.23)] // red
+        [DataRow("008000", 0.52, 0.177, 142.49)] // green
+        [DataRow("80FFFF", 0.928, 0.113, 195.38)] // cyan
+        [DataRow("8080FF", 0.661, 0.184, 280.13)] // blue
+        [DataRow("BF40BF", 0.598, 0.216, 327.86)] // magenta
+        [DataRow("BFBF00", 0.779, 0.17, 109.77)] // yellow
+        [DataRow("0048BA", 0.444, 0.19, 260.86)] // absolute zero
+        [DataRow("B0BF1A", 0.767, 0.169, 115.4)] // acid green
+        [DataRow("D0FF14", 0.934, 0.225, 122.28)] // arctic lime
+        [DataRow("1B4D3E", 0.382, 0.06, 170.28)] // brunswick green
+        [DataRow("FFEF00", 0.935, 0.198, 104.67)] // canary yellow
+        [DataRow("FFA600", 0.794, 0.171, 71.19)] // cheese
+        [DataRow("1A2421", 0.25, 0.015, 174.74)] // dark jungle green
+        [DataRow("003399", 0.371, 0.173, 262.12)] // dark powder blue
+        [DataRow("D70A53", 0.563, 0.222, 11.5)] // debian red
+        [DataRow("80FFD5", 0.916, 0.129, 169.38)] // fathom secret green
+        [DataRow("EFDFBB", 0.907, 0.051, 86.89)] // dutch white
+        [DataRow("5218FA", 0.489, 0.286, 279.13)] // han purple
+        [DataRow("FF496C", 0.675, 0.217, 14.37)] // infra red
+        [DataRow("545AA7", 0.501, 0.121, 277.7)] // liberty
+        [DataRow("E6A8D7", 0.804, 0.0947, 335.4)] // light orchid
+        [DataRow("ADDFAD", 0.856, 0.086, 144.78)] // light moss green
+        [DataRow("E3F988", 0.942, 0.141, 118.24)] // mindaro
+        public void ColorRGBtoOklchTest(string hexValue, double lightness, double chroma, double hue)
+        {
+            if (string.IsNullOrWhiteSpace(hexValue))
+            {
+                Assert.IsNotNull(hexValue);
+            }
+
+            Assert.IsTrue(hexValue.Length >= 6);
+
+            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+
+            var color = Color.FromArgb(255, red, green, blue);
+            var result = ColorFormatHelper.ConvertToOklchColor(color);
+
+            // lightness[0..1]
+            Assert.AreEqual(lightness, Math.Round(result.Lightness, 3));
+
+            // chroma[0..0.5]
+            Assert.AreEqual(chroma, Math.Round(result.Chroma, 3));
+
+            // hue[0°..360°]
+            Assert.AreEqual(hue, Math.Round(result.Hue, 2));
         }
 
         // The following results are computed using LittleCMS2, an open-source color management engine,
@@ -428,9 +587,6 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("8080FF", 34.6688, 27.2469, 98.0434)] // blue
         [DataRow("BF40BF", 32.7217, 18.5062, 51.1405)] // magenta
         [DataRow("BFBF00", 40.1154, 48.3384, 7.2171)] // yellow
-        [DataRow("008000", 7.7188, 15.4377, 2.5729)] // green
-        [DataRow("8080FF", 34.6688, 27.2469, 98.0434)] // blue
-        [DataRow("BF40BF", 32.7217, 18.5062, 51.1405)] // magenta
         [DataRow("0048BA", 11.1792, 8.1793, 47.4455)] // absolute zero
         [DataRow("B0BF1A", 36.7205, 46.5663, 8.0311)] // acid green
         [DataRow("D0FF14", 61.8965, 84.9797, 13.8037)] // arctic lime
