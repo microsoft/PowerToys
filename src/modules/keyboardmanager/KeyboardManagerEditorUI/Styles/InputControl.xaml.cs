@@ -50,6 +50,14 @@ namespace KeyboardManagerEditorUI.Styles
 
             this.OriginalKeys.ItemsSource = _originalKeys;
             this.RemappedKeys.ItemsSource = _remappedKeys;
+
+            this.Unloaded += InputControl_Unloaded;
+        }
+
+        private void InputControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            // Reset the control when it is unloaded
+            Reset();
         }
 
         private void InputControl_KeyDown(int key)
@@ -247,16 +255,34 @@ namespace KeyboardManagerEditorUI.Styles
 
         private void RemappedToggleBtn_Checked(object sender, RoutedEventArgs e)
         {
-            NewMode = true;
-            RemappedToggleBtn.IsChecked = false;
+            // Only set NewMode to true if RemappedToggleBtn is checked
+            if (RemappedToggleBtn.IsChecked == true)
+            {
+                NewMode = true;
+
+                // Make sure OriginalToggleBtn is unchecked
+                if (OriginalToggleBtn.IsChecked == true)
+                {
+                    OriginalToggleBtn.IsChecked = false;
+                }
+            }
 
             this.Focus(FocusState.Programmatic);
         }
 
         private void OriginalToggleBtn_Checked(object sender, RoutedEventArgs e)
         {
-            NewMode = false;
-            OriginalToggleBtn.IsChecked = false;
+            // Only set NewMode to false if OriginalToggleBtn is checked
+            if (OriginalToggleBtn.IsChecked == true)
+            {
+                NewMode = false;
+
+                // Make sure RemappedToggleBtn is unchecked
+                if (RemappedToggleBtn.IsChecked == true)
+                {
+                    RemappedToggleBtn.IsChecked = false;
+                }
+            }
 
             this.Focus(FocusState.Programmatic);
         }
@@ -305,9 +331,47 @@ namespace KeyboardManagerEditorUI.Styles
                 if (disposing)
                 {
                     CleanupKeyboardHook();
+                    Reset();
                 }
 
                 _disposed = true;
+            }
+        }
+
+        public void Reset()
+        {
+            // Reset key status
+            _currentlyPressedKeys.Clear();
+            _keyPressOrder.Clear();
+
+            // Reset displayed keys
+            _originalKeys.Clear();
+            _remappedKeys.Clear();
+
+            // Reset toggle button status
+            if (RemappedToggleBtn != null)
+            {
+                RemappedToggleBtn.IsChecked = false;
+            }
+
+            if (OriginalToggleBtn != null)
+            {
+                OriginalToggleBtn.IsChecked = false;
+            }
+
+            NewMode = false;
+
+            // Reset app name text box
+            if (AppNameTextBox != null)
+            {
+                AppNameTextBox.Text = string.Empty;
+            }
+
+            // Reset the focus status
+            if (this.FocusState != FocusState.Unfocused)
+            {
+                this.IsTabStop = false;
+                this.IsTabStop = true;
             }
         }
     }
