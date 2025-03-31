@@ -274,7 +274,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             try
             {
                 var groupedItems = FilteredItems
-                    .Where(item => !string.IsNullOrEmpty(item.Section))
+
+                    // .Where(item => !string.IsNullOrEmpty(item.Section))
                     .GroupBy(item => item.Section)
                     .Select(group => new ListGroup
                     {

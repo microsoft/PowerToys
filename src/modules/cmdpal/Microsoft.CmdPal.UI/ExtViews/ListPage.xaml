@@ -123,17 +123,37 @@
                         <TransitionCollection />
                     </ListView.ItemContainerTransitions>
                     <ListView.GroupStyle>
-                    <GroupStyle HidesIfEmpty="True">
-                        <GroupStyle.HeaderTemplate>
-                            <DataTemplate>
-                                <TextBlock
-                                    Margin="0,16,0,0"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="{Binding Key, Mode=OneWay}" />
-                            </DataTemplate>
-                        </GroupStyle.HeaderTemplate>
-                    </GroupStyle>
-                </ListView.GroupStyle>
+                        <!--<GroupStyle HeaderContainerStyle="{StaticResource CustomHeaderContainerStyle}" HidesIfEmpty="True">
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock
+                                        Padding="20,12,0,8"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        FontSize="14"
+                                        FontWeight="SemiBold"
+                                        Text="{x:Bind Key}"
+                                        Visibility="{x:Bind Key, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>-->
+
+
+                        <GroupStyle HidesIfEmpty="True" HeaderContainerStyle="{StaticResource CustomHeaderContainerStyle}">
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock
+                                        Padding="20,8,0,4"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        FontSize="14"
+                                        Margin="0,16,0,0"
+                                        FontWeight="SemiBold"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding Key, Mode=OneWay}"
+                                        Visibility="{Binding Key, Converter={StaticResource StringVisibilityConverter}}" />
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ListView.GroupStyle>
                 </ListView>
             </controls:Case>
             <controls:Case Value="True">
