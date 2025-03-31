@@ -262,10 +262,7 @@ namespace ManagedCommon
         private static (double Lightness, double Chroma, double Hue)
             GetCIELCHColorFromCIELAB(double lightness, double chromaticity_a, double chromaticity_b)
         {
-            // Lab to LCh transformation
-            double chroma = Math.Sqrt(Math.Pow(chromaticity_a, 2) + Math.Pow(chromaticity_b, 2));
-            double hue = ((Math.Atan2(chromaticity_b, chromaticity_a) * (180 / Math.PI)) + 360) % 360;
-            return (lightness, chroma, hue);
+            return GetLCHColorFromLAB(lightness, chromaticity_a, chromaticity_b);
         }
 
         /// <summary>
@@ -345,9 +342,22 @@ namespace ManagedCommon
         private static (double Lightness, double Chroma, double Hue)
             GetOklchColorFromOklab(double lightness, double chromaticity_a, double chromaticity_b)
         {
+            return GetLCHColorFromLAB(lightness, chromaticity_a, chromaticity_b);
+        }
+
+        /// <summary>
+        /// Convert a color in Cartesian form (Lab) to its polar form (LCh)
+        /// </summary>
+        /// <param name="lightness">The <see cref="lightness"/></param>
+        /// <param name="chromaticity_a">The <see cref="chromaticity_a"/></param>
+        /// <param name="chromaticity_b">The <see cref="chromaticity_b"/></param>
+        /// <returns>The lightness, chroma, and hue angle</returns>
+        private static (double Lightness, double Chroma, double Hue)
+            GetLCHColorFromLAB(double lightness, double chromaticity_a, double chromaticity_b)
+        {
             // Lab to LCh transformation
             double chroma = Math.Sqrt(Math.Pow(chromaticity_a, 2) + Math.Pow(chromaticity_b, 2));
-            double hue = ((Math.Atan2(chromaticity_b, chromaticity_a) * (180 / Math.PI)) + 360) % 360;
+            double hue = Math.Round(chroma, 3) == 0 ? 0.0 : ((Math.Atan2(chromaticity_b, chromaticity_a) * 180 / Math.PI) + 360) % 360;
             return (lightness, chroma, hue);
         }
 
