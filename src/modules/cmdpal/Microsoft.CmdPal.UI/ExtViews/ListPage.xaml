@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.ListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -20,9 +20,8 @@
         <CollectionViewSource
             x:Name="ItemsCVS"
             IsSourceGrouped="{x:Bind ViewModel.HasGrouping, Mode=OneWay}"
-            Source="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
-            ItemsPath="Items">
-        </CollectionViewSource>
+            ItemsPath="Items"
+            Source="{x:Bind ViewModel.FilteredItems, Mode=OneWay}" />
 
         <converters:StringVisibilityConverter
             x:Key="StringVisibilityConverter"
@@ -123,17 +122,17 @@
                         <TransitionCollection />
                     </ListView.ItemContainerTransitions>
                     <ListView.GroupStyle>
-                    <GroupStyle HidesIfEmpty="True">
-                        <GroupStyle.HeaderTemplate>
-                            <DataTemplate>
-                                <TextBlock
-                                    Margin="0,16,0,0"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="{Binding Key, Mode=OneWay}" />
-                            </DataTemplate>
-                        </GroupStyle.HeaderTemplate>
-                    </GroupStyle>
-                </ListView.GroupStyle>
+                        <GroupStyle HidesIfEmpty="True">
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock
+                                        Margin="0,16,0,0"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding Key, Mode=OneWay}" />
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ListView.GroupStyle>
                 </ListView>
             </controls:Case>
             <controls:Case Value="True">
