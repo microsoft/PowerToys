@@ -250,10 +250,6 @@ public sealed partial class ListPage : Page,
         if (ViewModel != null)
         {
             ViewModel?.UpdateGroupsIfNeeded();
-
-            var grouping = ViewModel?.HasGrouping ?? false;
-            ItemsCVS.IsSourceGrouped = grouping;
-            ItemsCVS.Source = grouping ? ViewModel?.Groups : ViewModel?.FilteredItems;
         }
 
         // If for some reason, we don't have a selected item, fix that.

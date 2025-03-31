@@ -18,9 +18,14 @@
         <!--  TODO: Figure out what we want to do here for filtering/grouping and where  -->
         <!--  https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.data.collectionviewsource  -->
         <CollectionViewSource
-            x:Name="ItemsCVS"
-            IsSourceGrouped="{x:Bind ViewModel.HasGrouping, Mode=OneWay}"
+            x:Name="GroupedItemsCVS"
+            IsSourceGrouped="True"
             ItemsPath="Items"
+            Source="{x:Bind ViewModel.Groups, Mode=OneWay}" />
+
+        <CollectionViewSource
+            x:Name="UngroupedItemsCVS"
+            IsSourceGrouped="False"
             Source="{x:Bind ViewModel.FilteredItems, Mode=OneWay}" />
 
         <converters:StringVisibilityConverter
@@ -108,32 +113,55 @@
             TargetType="x:Boolean"
             Value="{x:Bind ViewModel.ShowEmptyContent, Mode=OneWay}">
             <controls:Case Value="False">
-                <ListView
-                    x:Name="ItemsList"
-                    Padding="0,2,0,0"
-                    DoubleTapped="ItemsList_DoubleTapped"
-                    IsDoubleTapEnabled="True"
-                    IsItemClickEnabled="True"
-                    ItemClick="ItemsList_ItemClick"
-                    ItemTemplate="{StaticResource ListItemViewModelTemplate}"
-                    ItemsSource="{Binding ElementName=ItemsCVS, Path=View}"
-                    SelectionChanged="ItemsList_SelectionChanged">
-                    <ListView.ItemContainerTransitions>
-                        <TransitionCollection />
-                    </ListView.ItemContainerTransitions>
-                    <ListView.GroupStyle>
-                        <GroupStyle HidesIfEmpty="True">
-                            <GroupStyle.HeaderTemplate>
-                                <DataTemplate>
-                                    <TextBlock
-                                        Margin="0,16,0,0"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding Key, Mode=OneWay}" />
-                                </DataTemplate>
-                            </GroupStyle.HeaderTemplate>
-                        </GroupStyle>
-                    </ListView.GroupStyle>
-                </ListView>
+                <controls:SwitchPresenter
+                    HorizontalAlignment="Stretch"
+                    TargetType="x:Boolean"
+                    Value="{x:Bind ViewModel.HasGrouping, Mode=OneWay}">
+                    <controls:Case Value="True">
+                        <ListView
+                            x:Name="GroupedItemsList"
+                            Padding="0,2,0,0"
+                            DoubleTapped="ItemsList_DoubleTapped"
+                            IsDoubleTapEnabled="True"
+                            IsItemClickEnabled="True"
+                            ItemClick="ItemsList_ItemClick"
+                            ItemTemplate="{StaticResource ListItemViewModelTemplate}"
+                            ItemsSource="{Binding ElementName=GroupedItemsCVS, Path=View}"
+                            SelectionChanged="ItemsList_SelectionChanged">
+                            <ListView.ItemContainerTransitions>
+                                <TransitionCollection />
+                            </ListView.ItemContainerTransitions>
+                            <ListView.GroupStyle>
+                                <GroupStyle HidesIfEmpty="True">
+                                    <GroupStyle.HeaderTemplate>
+                                        <DataTemplate>
+                                            <TextBlock
+                                                Margin="0,16,0,0"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{Binding Key, Mode=OneWay}" />
+                                        </DataTemplate>
+                                    </GroupStyle.HeaderTemplate>
+                                </GroupStyle>
+                            </ListView.GroupStyle>
+                        </ListView>
+                    </controls:Case>
+                    <controls:Case Value="False">
+                        <ListView
+                            x:Name="ItemsList"
+                            Padding="0,2,0,0"
+                            DoubleTapped="ItemsList_DoubleTapped"
+                            IsDoubleTapEnabled="True"
+                            IsItemClickEnabled="True"
+                            ItemClick="ItemsList_ItemClick"
+                            ItemTemplate="{StaticResource ListItemViewModelTemplate}"
+                            ItemsSource="{Binding ElementName=UngroupedItemsCVS, Path=View}"
+                            SelectionChanged="ItemsList_SelectionChanged">
+                            <ListView.ItemContainerTransitions>
+                                <TransitionCollection />
+                            </ListView.ItemContainerTransitions>
+                        </ListView>
+                    </controls:Case>
+                </controls:SwitchPresenter>
             </controls:Case>
             <controls:Case Value="True">
                 <StackPanel
