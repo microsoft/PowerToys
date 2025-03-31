@@ -16,21 +16,31 @@ public partial class SamplesListPage : ListPage
         {
             Title = "List Page Sample Command",
             Subtitle = "Display a list of items",
+            Section = "Lists",
         },
         new ListItem(new SampleListPageWithDetails())
         {
             Title = "List Page With Details",
             Subtitle = "A list of items, each with additional details to display",
+            Section = "Lists",
         },
         new ListItem(new SampleUpdatingItemsPage())
         {
             Title = "List page with items that change",
             Subtitle = "The items on the list update themselves in real time",
+            Section = "Lists",
         },
         new ListItem(new SampleDynamicListPage())
         {
             Title = "Dynamic List Page Command",
             Subtitle = "Changes the list of items in response to the typed query",
+            Section = "Lists",
+        },
+        new ListItem(new FizzBuzzListPage())
+        {
+            Title = "Sections sample",
+            Subtitle = "Changing list of items, with sections",
+            Section = "Lists",
         },
 
         // Content pages
@@ -38,32 +48,38 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Sample content page",
             Subtitle = "Display mixed forms, markdown, and other types of content",
+            Section = "Content",
         },
         new ListItem(new SampleTreeContentPage())
         {
             Title = "Sample nested content",
             Subtitle = "Example of nesting a tree of content",
+            Section = "Content",
         },
         new ListItem(new SampleCommentsPage())
         {
             Title = "Sample of nested comments",
             Subtitle = "Demo of using nested trees of content to create a comment thread-like experience",
             Icon = new IconInfo("\uE90A"), // Comment
+            Section = "Content",
         },
         new ListItem(new SampleMarkdownPage())
         {
             Title = "Markdown Page Sample Command",
             Subtitle = "Display a page of rendered markdown",
+            Section = "Content",
         },
             new ListItem(new SampleMarkdownManyBodies())
         {
             Title = "Markdown with multiple blocks",
             Subtitle = "A page with multiple blocks of rendered markdown",
+            Section = "Content",
         },
             new ListItem(new SampleMarkdownDetails())
         {
             Title = "Markdown with details",
             Subtitle = "A page with markdown and details",
+            Section = "Content",
         },
 
         // Settings helpers
@@ -71,6 +87,7 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Sample settings page",
             Subtitle = "A demo of the settings helpers",
+            Section = "Settings",
         },
 
         // Evil edge cases
@@ -79,6 +96,7 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Evil samples",
             Subtitle = "Samples designed to break the palette in many different evil ways",
+            Section = "Debugging",
         }
     ];
 
