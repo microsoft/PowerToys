@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.ListPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -121,13 +121,13 @@
                         <ListView
                             x:Name="GroupedItemsList"
                             Padding="0,2,0,0"
-                            DoubleTapped="ItemsList_DoubleTapped"
+                            DoubleTapped="GroupedItemsList_DoubleTapped"
                             IsDoubleTapEnabled="True"
                             IsItemClickEnabled="True"
                             ItemClick="ItemsList_ItemClick"
                             ItemTemplate="{StaticResource ListItemViewModelTemplate}"
                             ItemsSource="{Binding ElementName=GroupedItemsCVS, Path=View}"
-                            SelectionChanged="ItemsList_SelectionChanged">
+                            SelectionChanged="GroupedItemsList_SelectionChanged">
                             <ListView.ItemContainerTransitions>
                                 <TransitionCollection />
                             </ListView.ItemContainerTransitions>

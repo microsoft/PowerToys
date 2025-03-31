@@ -37,6 +37,7 @@ public sealed partial class ListPage : Page,
         this.InitializeComponent();
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
         this.ItemsList.Loaded += ItemsList_Loaded;
+        this.GroupedItemsList.Loaded += GroupedItemsList_Loaded;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -121,6 +122,18 @@ public sealed partial class ListPage : Page,
         }
     }
 
+    private void GroupedItemsList_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        if (GroupedItemsList.SelectedItem is ListItemViewModel vm)
+        {
+            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            if (!settings.SingleClickActivates)
+            {
+                ViewModel?.InvokeItemCommand.Execute(vm);
+            }
+        }
+    }
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void ItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -148,10 +161,39 @@ public sealed partial class ListPage : Page,
         }
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
+    private void GroupedItemsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (GroupedItemsList.SelectedItem is ListItemViewModel item)
+        {
+            var vm = ViewModel;
+            _ = Task.Run(() =>
+            {
+                vm?.UpdateSelectedItemCommand.Execute(item);
+            });
+        }
+
+        if (GroupedItemsList.SelectedItem != null)
+        {
+            GroupedItemsList.ScrollIntoView(GroupedItemsList.SelectedItem);
+        }
+    }
+
     private void ItemsList_Loaded(object sender, RoutedEventArgs e)
     {
         // Find the ScrollViewer in the ListView
         var listViewScrollViewer = FindScrollViewer(this.ItemsList);
+
+        if (listViewScrollViewer != null)
+        {
+            listViewScrollViewer.ViewChanged += ListViewScrollViewer_ViewChanged;
+        }
+    }
+
+    private void GroupedItemsList_Loaded(object sender, RoutedEventArgs e)
+    {
+        // Find the ScrollViewer in the ListView
+        var listViewScrollViewer = FindScrollViewer(this.GroupedItemsList);
 
         if (listViewScrollViewer != null)
         {
@@ -187,6 +229,11 @@ public sealed partial class ListPage : Page,
         {
             ItemsList.SelectedIndex++;
         }
+
+        if (GroupedItemsList.SelectedIndex < GroupedItemsList.Items.Count - 1)
+        {
+            GroupedItemsList.SelectedIndex++;
+        }
     }
 
     public void Receive(NavigatePreviousCommand message)
@@ -194,6 +241,11 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedIndex > 0)
         {
             ItemsList.SelectedIndex--;
+        }
+
+        if (GroupedItemsList.SelectedIndex > 0)
+        {
+            GroupedItemsList.SelectedIndex--;
         }
     }
 
@@ -207,6 +259,10 @@ public sealed partial class ListPage : Page,
         {
             ViewModel?.InvokeItemCommand.Execute(item);
         }
+        else if (GroupedItemsList.SelectedItem is ListItemViewModel groupedItem)
+        {
+            ViewModel?.InvokeItemCommand.Execute(groupedItem);
+        }
     }
 
     public void Receive(ActivateSecondaryCommandMessage message)
@@ -218,6 +274,10 @@ public sealed partial class ListPage : Page,
         else if (ItemsList.SelectedItem is ListItemViewModel item)
         {
             ViewModel?.InvokeSecondaryCommandCommand.Execute(item);
+        }
+        else if (GroupedItemsList.SelectedItem is ListItemViewModel groupedItem)
+        {
+            ViewModel?.InvokeSecondaryCommandCommand.Execute(groupedItem);
         }
     }
 
@@ -262,6 +322,11 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedItem == null)
         {
             ItemsList.SelectedIndex = 0;
+        }
+
+        if (GroupedItemsList.SelectedItem == null)
+        {
+            GroupedItemsList.SelectedIndex = 0;
         }
     }
 
