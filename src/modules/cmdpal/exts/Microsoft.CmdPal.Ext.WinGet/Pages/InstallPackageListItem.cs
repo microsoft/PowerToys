@@ -31,7 +31,7 @@ public partial class InstallPackageListItem : ListItem
     {
         _package = package;
 
-        PackageVersionInfo version = _package.DefaultInstallVersion;
+        var version = _package.DefaultInstallVersion;
         var versionTagText = "Unknown";
         if (version != null)
         {
@@ -49,16 +49,24 @@ public partial class InstallPackageListItem : ListItem
 
     private Details? BuildDetails(PackageVersionInfo? version)
     {
-        CatalogPackageMetadata? metadata = version?.GetCatalogPackageMetadata();
+        var metadata = version?.GetCatalogPackageMetadata();
         if (metadata != null)
         {
+            if (metadata.Tags.Where(t => t.Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase)).Any())
+            {
+                if (_installCommand != null)
+                {
+                    _installCommand.SkipDependencies = true;
+                }
+            }
+
             var description = string.IsNullOrEmpty(metadata.Description) ? metadata.ShortDescription : metadata.Description;
             var detailsBody = $"""
 
 {description}
 """;
             IconInfo heroIcon = new(string.Empty);
-            IReadOnlyList<Icon> icons = metadata.Icons;
+            var icons = metadata.Icons;
             if (icons.Count > 0)
             {
                 // There's also a .Theme property we could probably use to
@@ -89,21 +97,23 @@ public partial class InstallPackageListItem : ListItem
             { Properties.Resources.winget_publisher, (metadata.Publisher, metadata.PublisherUrl) },
             { Properties.Resources.winget_copyright, (metadata.Copyright, metadata.CopyrightUrl) },
             { Properties.Resources.winget_license, (metadata.License, metadata.LicenseUrl) },
-            { Properties.Resources.winget_release_notes, (metadata.ReleaseNotes, string.Empty) },
+            { Properties.Resources.winget_publisher_support, (string.Empty, metadata.PublisherSupportUrl) },
 
             // The link to the release notes will only show up if there is an
             // actual URL for the release notes
             { Properties.Resources.winget_view_release_notes, (string.IsNullOrEmpty(metadata.ReleaseNotesUrl) ? string.Empty : Properties.Resources.winget_view_online, metadata.ReleaseNotesUrl) },
-            { Properties.Resources.winget_publisher_support, (string.Empty, metadata.PublisherSupportUrl) },
+
+            // These can be l o n g
+            { Properties.Resources.winget_release_notes, (metadata.ReleaseNotes, string.Empty) },
         };
-        Documentation[] docs = metadata.Documentations.ToArray();
-        foreach (Documentation? item in docs)
+        var docs = metadata.Documentations.ToArray();
+        foreach (var item in docs)
         {
             simpleData.Add(item.DocumentLabel, (string.Empty, item.DocumentUrl));
         }
 
         UriCreationOptions options = default;
-        foreach (KeyValuePair<string, (string, string)> kv in simpleData)
+        foreach (var kv in simpleData)
         {
             var text = string.IsNullOrEmpty(kv.Value.Item1) ? kv.Value.Item2 : kv.Value.Item1;
             var target = kv.Value.Item2;
@@ -136,8 +146,8 @@ public partial class InstallPackageListItem : ListItem
 
     private async void UpdatedInstalledStatus()
     {
-        CheckInstalledStatusResult status = await _package.CheckInstalledStatusAsync();
-        bool isInstalled = _package.InstalledVersion != null;
+        var status = await _package.CheckInstalledStatusAsync();
+        var isInstalled = _package.InstalledVersion != null;
 
         // might be an uninstall command
         InstallPackageCommand installCommand = new(_package, isInstalled);
@@ -155,8 +165,8 @@ public partial class InstallPackageListItem : ListItem
 
             if (WinGetStatics.AppSearchCallback != null)
             {
-                Func<string, ICommandItem?> callback = WinGetStatics.AppSearchCallback;
-                ICommandItem? installedApp = callback(_package.DefaultInstallVersion == null ? _package.Name : _package.DefaultInstallVersion.DisplayName);
+                var callback = WinGetStatics.AppSearchCallback;
+                var installedApp = callback(_package.DefaultInstallVersion == null ? _package.Name : _package.DefaultInstallVersion.DisplayName);
                 if (installedApp != null)
                 {
                     this.Command = installedApp.Command;
@@ -193,11 +203,11 @@ public partial class InstallPackageListItem : ListItem
             Stopwatch s = new();
             Logger.LogDebug($"Starting RefreshPackageCatalogAsync");
             s.Start();
-            PackageCatalogReference[] refs = WinGetStatics.AvailableCatalogs.ToArray();
+            var refs = WinGetStatics.AvailableCatalogs.ToArray();
 
-            foreach (PackageCatalogReference? catalog in refs)
+            foreach (var catalog in refs)
             {
-                global::Windows.Foundation.IAsyncOperationWithProgress<RefreshPackageCatalogResult, double> operation = catalog.RefreshPackageCatalogAsync();
+                var operation = catalog.RefreshPackageCatalogAsync();
                 operation.Wait();
             }
 

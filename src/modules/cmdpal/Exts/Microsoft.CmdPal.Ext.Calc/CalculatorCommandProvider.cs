@@ -141,6 +141,7 @@ public sealed partial class SaveCommand : InvokableCommand
 internal sealed partial class FallbackCalculatorItem : FallbackCommandItem
 {
     private readonly CopyTextCommand _copyCommand = new(string.Empty);
+    private static readonly IconInfo _cachedIcon = IconHelpers.FromRelativePath("Assets\\Calculator.svg");
 
     public FallbackCalculatorItem()
         : base(new NoOpCommand(), Resources.calculator_title)
@@ -149,7 +150,7 @@ internal sealed partial class FallbackCalculatorItem : FallbackCommandItem
         _copyCommand.Name = string.Empty;
         Title = string.Empty;
         Subtitle = Resources.calculator_placeholder_text;
-        Icon = new IconInfo("\ue8ef"); // Calculator
+        Icon = _cachedIcon;
     }
 
     public override void UpdateQuery(string query)
