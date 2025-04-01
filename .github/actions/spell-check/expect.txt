@@ -199,8 +199,7 @@ CLIPCHILDREN
 CLIPSIBLINGS
 closesocket
 CLSCTX
-CLSIDs
-Clsids
+clsids
 Clusion
 cmder
 CMDNOTFOUNDMODULEINTERFACE
@@ -1862,7 +1861,6 @@ wekyb
 wgpocpl
 WHEREID
 Wholegrain
-WIC
 wic
 wifi
 wil
