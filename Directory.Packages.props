@@ -119,4 +119,3 @@
      <PackageVersion Include="WixToolset.Bal.wixext" Version="5.0.2" />
    </ItemGroup>
 </Project>
-
