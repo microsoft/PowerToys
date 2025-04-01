@@ -238,7 +238,7 @@ namespace package {
             PackageManager packageManager;
 
             // Declare use of an external location
-            DeploymentOptions options = DeploymentOptions::ForceApplicationShutdown;
+            DeploymentOptions options = DeploymentOptions::ForceTargetApplicationShutdown;
 
             Collections::IVector<Uri> uris = winrt::single_threaded_vector<Uri>();
             if (!dependencies.empty())
