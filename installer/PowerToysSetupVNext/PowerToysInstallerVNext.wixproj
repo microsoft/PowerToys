@@ -1,16 +1,20 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="WixToolset.Sdk" Version="5.0.2" />
+<Project Sdk="WixToolset.Sdk/5.0.2">
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
-  <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
-  <Import Project="..\wixVNext.props" Condition="Exists('..\wixVNext.props')" />
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
     <!-- THIS IS AN INNER LOOP OPTIMIZATION
     The build pipeline builds the Settings and Launcher projects for Publication
     using a specific profile. If you're doing local installer builds, this will
     simulate the build pipeline doing that for you. -->
+    <PreBuildEvent>IF NOT DEFINED IsPipeline (
+call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.19041.0 -vcvars_ver=$(VCToolsVersion)
+SET PTRoot=$(SolutionDir)\..
+call "..\..\..\publish.cmd" x64
+)
+call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs"
+    </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
     <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
@@ -24,6 +28,58 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <PostBuildEvent>
+      call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
+      call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
+      call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
+      call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
+      call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
+      call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs
+      call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
+      call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
+      call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
+      call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
+      call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
+      call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
+      call move /Y ..\..\..\NewPlus.wxs.bk ..\..\..\NewPlus.wxs
+      call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs
+      call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
+      call move /Y ..\..\..\Product.wxs.bk ..\..\..\Product.wxs
+      call move /Y ..\..\..\RegistryPreview.wxs.bk ..\..\..\RegistryPreview.wxs
+      call move /Y ..\..\..\Resources.wxs.bk ..\..\..\Resources.wxs
+      call move /Y ..\..\..\Run.wxs.bk ..\..\..\Run.wxs
+      call move /Y ..\..\..\Settings.wxs.bk ..\..\..\Settings.wxs
+      call move /Y ..\..\..\ShortcutGuide.wxs.bk ..\..\..\ShortcutGuide.wxs
+      call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs
+      call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
+      call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
+      call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\AdvancedPaste.wxs.bk ..\..\..\..\PowerToysSetup\AdvancedPaste.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\Awake.wxs.bk ..\..\..\..\PowerToysSetup\Awake.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\BaseApplications.wxs.bk ..\..\..\..\PowerToysSetup\BaseApplications.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\ColorPicker.wxs.bk ..\..\..\..\PowerToysSetup\ColorPicker.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\Core.wxs.bk ..\..\..\..\PowerToysSetup\Core.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\EnvironmentVariables.wxs.bk ..\..\..\..\PowerToysSetup\EnvironmentVariables.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\FileExplorerPreview.wxs.bk ..\..\..\..\PowerToysSetup\FileExplorerPreview.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\FileLocksmith.wxs.bk ..\..\..\..\PowerToysSetup\FileLocksmith.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\Hosts.wxs.bk ..\..\..\..\PowerToysSetup\Hosts.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\ImageResizer.wxs.bk ..\..\..\..\PowerToysSetup\ImageResizer.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\KeyboardManager.wxs.bk ..\..\..\..\PowerToysSetup\KeyboardManager.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\MouseWithoutBorders.wxs.bk ..\..\..\..\PowerToysSetup\MouseWithoutBorders.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\NewPlus.wxs.bk ..\..\..\..\PowerToysSetup\NewPlus.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\Peek.wxs.bk ..\..\..\..\PowerToysSetup\Peek.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\PowerRename.wxs.bk ..\..\..\..\PowerToysSetup\PowerRename.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\Product.wxs.bk ..\..\..\..\PowerToysSetup\Product.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\RegistryPreview.wxs.bk ..\..\..\..\PowerToysSetup\RegistryPreview.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\Resources.wxs.bk ..\..\..\..\PowerToysSetup\Resources.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\Run.wxs.bk ..\..\..\..\PowerToysSetup\Run.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\Settings.wxs.bk ..\..\..\..\PowerToysSetup\Settings.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\ShortcutGuide.wxs.bk ..\..\..\..\PowerToysSetup\ShortcutGuide.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\Tools.wxs.bk ..\..\..\..\PowerToysSetup\Tools.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\WinAppSDK.wxs.bk ..\..\..\..\PowerToysSetup\WinAppSDK.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\WinUI3Applications.wxs.bk ..\..\..\..\PowerToysSetup\WinUI3Applications.wxs
+      call move /Y ..\..\..\..\PowerToysSetup\Workspaces.wxs.bk ..\..\..\..\PowerToysSetup\Workspaces.wxs
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' == 'true' ">
     <DefineConstants>$(DefineConstants);PerUser=true</DefineConstants>
@@ -36,9 +92,15 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <!-- We do not support debug installer builds -->
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform>$(Platform)</Platform>
+    <ProductVersion>3.10</ProductVersion>
+    <ProjectGuid>{b6e94700-df38-41f6-a3fd-18b69674ab1e}</ProjectGuid>
+    <SchemaVersion>2.0</SchemaVersion>
     <OutputName Condition=" '$(PerUser)' != 'true' ">PowerToysSetupVNext-$(Version)-$(Platform)</OutputName>
     <OutputName Condition=" '$(PerUser)' == 'true' ">PowerToysUserSetupVNext-$(Version)-$(Platform)</OutputName>
+    <OutputType>Package</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <!-- 1076 and ICE91 - warning: using this configuration for perMachine install could cause problems. -->
     <!-- 1026 - warning: file ID is too long -->
     <SuppressIces>ICE91</SuppressIces>
@@ -88,13 +150,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="Workspaces.wxs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WixToolset.Firewall.wixext" Version="5.0.2" />
-    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
-    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
-    <PackageReference Include="WixToolset.NetFx.wixext" Version="5.0.2" />
-    <PackageReference Include="WixToolset.Heat" Version="5.0.2" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="CustomDialogs" />
   </ItemGroup>
   <ItemGroup>
@@ -107,6 +162,17 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
   </ItemGroup>
+    <ItemGroup>
+    <Content Include="packages.config" />
+  </ItemGroup>
+    <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+  </Target>
+  <Target Name="BeforeBuild">
+    <HarvestDirectory Directory="..\..\src\Monaco\monacoSRC" PreprocessorVariable="var.MonacoSRCHarvestPath" OutputFile="MonacoSRC.wxs" ComponentGroupName="MonacoSRCHeatGenerated" DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder" AutogenerateGuids="false" GenerateGuidsNow="true" SuppressFragments="false" SuppressRegistry="false" SuppressRootDirectory="true" />
+  </Target>
   <!-- Prevents NU1503 -->
   <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
     <ItemGroup>
@@ -114,14 +180,4 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     </ItemGroup>
   </Target>
   <Target Name="Restore" />
-  <Import Project="Sdk.targets" Sdk="WixToolset.Sdk" Version="5.0.2" />
-  <Target Name="BeforeBuild">
-    <HeatDirectory Directory="..\..\src\Monaco\monacoSRC" PreprocessorVariable="var.MonacoSRCHarvestPath" OutputFile="MonacoSRC.wxs" ComponentGroupName="MonacoSRCHeatGenerated" DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder" AutogenerateGuids="false" GenerateGuidsNow="true" ToolPath="$(WixToolPath)" SuppressFragments="false" SuppressRegistry="false" SuppressRootDirectory="true" />
-  </Target>
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="IF NOT DEFINED IsPipeline (&#xA;call &quot;$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat&quot; -arch=amd64 -host_arch=amd64 -winsdk=10.0.19041.0 -vcvars_ver=$(VCToolsVersion)&#xA;SET PTRoot=$(SolutionDir)\..&#xA;call &quot;..\..\..\publish.cmd&quot; x64&#xA;)&#xA;call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile &quot;$(MSBuildThisFileDirectory)\MonacoSRC.wxs&quot;&#xA;    " />
-  </Target>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="&#xA;      call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs&#xA;      call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs&#xA;      call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs&#xA;      call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs&#xA;      call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs&#xA;      call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs&#xA;      call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs&#xA;      call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs&#xA;      call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs&#xA;      call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs&#xA;      call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs&#xA;      call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs&#xA;      call move /Y ..\..\..\NewPlus.wxs.bk ..\..\..\NewPlus.wxs&#xA;      call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs&#xA;      call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs&#xA;      call move /Y ..\..\..\Product.wxs.bk ..\..\..\Product.wxs&#xA;      call move /Y ..\..\..\RegistryPreview.wxs.bk ..\..\..\RegistryPreview.wxs&#xA;      call move /Y ..\..\..\Resources.wxs.bk ..\..\..\Resources.wxs&#xA;      call move /Y ..\..\..\Run.wxs.bk ..\..\..\Run.wxs&#xA;      call move /Y ..\..\..\Settings.wxs.bk ..\..\..\Settings.wxs&#xA;      call move /Y ..\..\..\ShortcutGuide.wxs.bk ..\..\..\ShortcutGuide.wxs&#xA;      call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs&#xA;      call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs&#xA;      call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs&#xA;      call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\AdvancedPaste.wxs.bk ..\..\..\..\PowerToysSetup\AdvancedPaste.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\Awake.wxs.bk ..\..\..\..\PowerToysSetup\Awake.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\BaseApplications.wxs.bk ..\..\..\..\PowerToysSetup\BaseApplications.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\ColorPicker.wxs.bk ..\..\..\..\PowerToysSetup\ColorPicker.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\Core.wxs.bk ..\..\..\..\PowerToysSetup\Core.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\EnvironmentVariables.wxs.bk ..\..\..\..\PowerToysSetup\EnvironmentVariables.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\FileExplorerPreview.wxs.bk ..\..\..\..\PowerToysSetup\FileExplorerPreview.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\FileLocksmith.wxs.bk ..\..\..\..\PowerToysSetup\FileLocksmith.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\Hosts.wxs.bk ..\..\..\..\PowerToysSetup\Hosts.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\ImageResizer.wxs.bk ..\..\..\..\PowerToysSetup\ImageResizer.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\KeyboardManager.wxs.bk ..\..\..\..\PowerToysSetup\KeyboardManager.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\MouseWithoutBorders.wxs.bk ..\..\..\..\PowerToysSetup\MouseWithoutBorders.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\NewPlus.wxs.bk ..\..\..\..\PowerToysSetup\NewPlus.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\Peek.wxs.bk ..\..\..\..\PowerToysSetup\Peek.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\PowerRename.wxs.bk ..\..\..\..\PowerToysSetup\PowerRename.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\Product.wxs.bk ..\..\..\..\PowerToysSetup\Product.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\RegistryPreview.wxs.bk ..\..\..\..\PowerToysSetup\RegistryPreview.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\Resources.wxs.bk ..\..\..\..\PowerToysSetup\Resources.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\Run.wxs.bk ..\..\..\..\PowerToysSetup\Run.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\Settings.wxs.bk ..\..\..\..\PowerToysSetup\Settings.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\ShortcutGuide.wxs.bk ..\..\..\..\PowerToysSetup\ShortcutGuide.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\Tools.wxs.bk ..\..\..\..\PowerToysSetup\Tools.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\WinAppSDK.wxs.bk ..\..\..\..\PowerToysSetup\WinAppSDK.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\WinUI3Applications.wxs.bk ..\..\..\..\PowerToysSetup\WinUI3Applications.wxs&#xA;      call move /Y ..\..\..\..\PowerToysSetup\Workspaces.wxs.bk ..\..\..\..\PowerToysSetup\Workspaces.wxs&#xA;    " />
-  </Target>
 </Project>
