@@ -83,7 +83,7 @@ public:
             std::wstring path = get_module_folderpath(globals::instance);
             std::wstring packageUri = path + L"\\FileLocksmithContextMenuPackage.msix";
 
-            if (!package::IsPackageRegistered(constants::nonlocalizable::ContextMenuPackageName))
+            if (!package::IsPackageRegisteredWithPowerToysVersion(constants::nonlocalizable::ContextMenuPackageName))
             {
                 package::RegisterSparsePackage(path, packageUri);
             }

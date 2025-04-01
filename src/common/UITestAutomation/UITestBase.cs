@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -33,6 +34,8 @@ namespace Microsoft.PowerToys.UITest
         {
             this.scope = scope;
             this.size = size;
+            this.sessionHelper = new SessionHelper(scope).Init();
+            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
         }
 
         /// <summary>
@@ -318,5 +321,24 @@ namespace Microsoft.PowerToys.UITest
                 }
             }
         }*/
+
+        /// <summary>
+        /// Restart scope exe.
+        /// </summary>
+        public void RestartScopeExe()
+        {
+            this.sessionHelper!.RestartScopeExe();
+            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), this.scope, this.size);
+            return;
+        }
+
+        /// <summary>
+        /// Restart scope exe.
+        /// </summary>
+        public void ExitScopeExe()
+        {
+            this.sessionHelper!.ExitScopeExe();
+            return;
+        }
     }
 }

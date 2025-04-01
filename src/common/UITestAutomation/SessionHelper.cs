@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -19,15 +20,19 @@ namespace Microsoft.PowerToys.UITest
         // Default session path is PowerToys settings dashboard
         private readonly string sessionPath = ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings);
 
+        private string? locationPath;
+
         private WindowsDriver<WindowsElement> Root { get; set; }
 
         private WindowsDriver<WindowsElement>? Driver { get; set; }
 
         private Process? appDriver;
 
+        [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
         public SessionHelper(PowerToysModule scope)
         {
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
+            this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             var winAppDriverProcessInfo = new ProcessStartInfo
             {
@@ -47,12 +52,10 @@ namespace Microsoft.PowerToys.UITest
         /// Initializes the test environment.
         /// </summary>
         /// <param name="scope">The PowerToys module to start.</param>
-        [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
         public SessionHelper Init()
         {
-            string? path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            this.ExitExe(path + this.sessionPath);
-            this.StartExe(path + this.sessionPath);
+            this.ExitExe(this.locationPath + this.sessionPath);
+            this.StartExe(this.locationPath + this.sessionPath);
 
             Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
 
@@ -64,11 +67,11 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void Cleanup()
         {
-            this.ExitExe(this.sessionPath);
+            ExitScopeExe();
             try
             {
                 appDriver?.Kill();
-                appDriver?.WaitForExit();
+                appDriver?.WaitForExit(); // Optional: Wait for the process to exit
             }
             catch (Exception ex)
             {
@@ -86,16 +89,14 @@ namespace Microsoft.PowerToys.UITest
             // Exit Exe
             string exeName = Path.GetFileNameWithoutExtension(appPath);
 
+            // PowerToys.FancyZonesEditor
             Process[] processes = Process.GetProcessesByName(exeName);
             foreach (Process process in processes)
             {
                 try
                 {
-                    if (!process.HasExited)
-                    {
-                        process.Kill();
-                        process.WaitForExit(); // Optional: Wait for the process to exit
-                    }
+                    process.Kill();
+                    process.WaitForExit(); // Optional: Wait for the process to exit
                 }
                 catch (Exception ex)
                 {
@@ -114,6 +115,26 @@ namespace Microsoft.PowerToys.UITest
             opts.AddAdditionalCapability("app", appPath);
             opts.AddAdditionalCapability("ms:waitForAppLaunch", "5");
             this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
+
+            // Set default timeout to 5 seconds
+            this.Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
+        }
+
+        /// <summary>
+        /// Exit now exe.
+        /// </summary>
+        public void ExitScopeExe()
+        {
+            ExitExe(sessionPath);
+        }
+
+        /// <summary>
+        /// Restarts now exe and takes control of it.
+        /// </summary>
+        public void RestartScopeExe()
+        {
+            ExitExe(sessionPath);
+            StartExe(locationPath + sessionPath);
         }
 
         public WindowsDriver<WindowsElement> GetRoot() => this.Root;

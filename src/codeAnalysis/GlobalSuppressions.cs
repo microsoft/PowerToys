@@ -12,10 +12,10 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1101:PrefixLocalCallsWithThis", Justification = "We follow the C# Core Coding Style which avoids using `this` unless absolutely necessary.")]
 
-[assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "It is not a priority and have hight impact in code changes.")]
-[assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "It is not a priority and have hight impact in code changes.")]
-[assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1203:ConstantsMustAppearBeforeFields", Justification = "It is not a priority and have hight impact in code changes.")]
-[assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1204:StaticElementsMustAppearBeforeInstanceElements", Justification = "It is not a priority and have hight impact in code changes.")]
+[assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "It is not a priority and has high impact in code changes.")]
+[assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "It is not a priority and has high impact in code changes.")]
+[assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1203:ConstantsMustAppearBeforeFields", Justification = "It is not a priority and has high impact in code changes.")]
+[assembly: SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1204:StaticElementsMustAppearBeforeInstanceElements", Justification = "It is not a priority and has high impact in code changes.")]
 
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1309:FieldNamesMustNotBeginWithUnderscore", Justification = "We follow the C# Core Coding Style which uses underscores as prefixes rather than using `this.`.")]
 
@@ -62,3 +62,9 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "<Dotnet port with style preservation>", Scope = "namespaceanddescendants", Target = "MouseWithoutBorders")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "<Dotnet port with style preservation>", Scope = "namespaceanddescendants", Target = "MouseWithoutBorders")]
 [assembly: SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1649:File name should match first type name", Justification = "<Dotnet port with style preservation>", Scope = "namespaceanddescendants", Target = "MouseWithoutBorders")]
+
+// AOT
+[assembly: SuppressMessage("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "MVVMTK0045:Using [ObservableProperty] on fields is not AOT compatible for WinRT", Justification = "Updated MVVM toolkit package introduced this.", Scope = "namespaceanddescendants", Target = "HostsUILib")]
+[assembly: SuppressMessage("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "MVVMTK0045:Using [ObservableProperty] on fields is not AOT compatible for WinRT", Justification = "Updated MVVM toolkit package introduced this.", Scope = "namespaceanddescendants", Target = "Peek.UI")]
+[assembly: SuppressMessage("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "MVVMTK0045:Using [ObservableProperty] on fields is not AOT compatible for WinRT", Justification = "Updated MVVM toolkit package introduced this.", Scope = "namespaceanddescendants", Target = "Peek.UI.Views")]
+[assembly: SuppressMessage("CommunityToolkit.Mvvm.SourceGenerators.INotifyPropertyChangedGenerator", "MVVMTK0049:Using [INotifyPropertyChanged] is not AOT compatible for WinRT", Justification = "Updated MVVM toolkit package introduced this.", Scope = "type", Target = "~T:Peek.UI.Views.TitleBar")]
