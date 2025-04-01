@@ -373,9 +373,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _modelPlaceholderText = model.PlaceholderText;
         UpdateProperty(nameof(PlaceholderText));
 
-        SearchText = model.SearchText;
+        // SearchText = model.SearchText;
+        SearchText = string.Empty;
         UpdateProperty(nameof(SearchText));
-
         EmptyContent = new(new(model.EmptyContent), PageContext);
         EmptyContent.SlowInitializeProperties();
 
