@@ -36,9 +36,7 @@ namespace Utils
             constexpr const wchar_t* EdgeFilename = L"msedge.exe";
             constexpr const wchar_t* ChromeFilename = L"chrome.exe";
 
-            constexpr const wchar_t* SteamWindowExeName = L"steamwebhelper.exe";
             constexpr const wchar_t* SteamUrlProtocol = L"steam:";
-            constexpr const wchar_t* SteamExeName = L"steam.exe";
         }
 
         AppList IterateAppsFolder()
