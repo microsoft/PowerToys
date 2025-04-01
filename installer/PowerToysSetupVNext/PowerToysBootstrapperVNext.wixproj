@@ -2,10 +2,10 @@
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
+  <Import Project="..\wixVNext.props" Condition="Exists('..\wixVNext.props')" />
   <PropertyGroup>
     <DefineConstants>Version=$(Version)</DefineConstants>
     <Name>PowerToysVNextBootstrapper</Name>
-    <ProjectGuid>{da4e9744-80be-424c-b0f5-afd8757db575}</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' == 'true' ">
     <DefineConstants>$(DefineConstants);PerUser=true</DefineConstants>
@@ -17,8 +17,6 @@
     <Configuration>Release</Configuration>
     <Platform Condition="'$(Platform)'=='x64'">x64</Platform>
     <Platform Condition="'$(Platform)'!='x64'">arm64</Platform>
-    <ProductVersion>3.10</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <OutputName>PowerToysSetupVNext-$(Version)-$(Platform)</OutputName>
     <OutputType>Bundle</OutputType>
     <SuppressAclReset>True</SuppressAclReset>
@@ -27,23 +25,19 @@
     <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
     <OutputPath Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup</OutputPath>
     <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-    <NuGetPackageImportStamp />
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="PowerToys.wxs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="CustomDialogs" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
+    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
+    <PackageReference Include="WixToolset.NetFx.wixext" Version="5.0.2" />
+    <PackageReference Include="WixToolset.Bal.wixext" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="packages.config" />
+    <Folder Include="CustomDialogs" />
   </ItemGroup>
-  <Target Name="EnsureNuGetPackageBuildImports"
-    BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-  </Target>
   <!-- Prevents NU1503 -->
   <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
     <ItemGroup>
