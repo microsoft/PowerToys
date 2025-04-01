@@ -44,7 +44,6 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [HttpStatusCodes](https://github.com/grzhan/HttpStatusCodePowerToys) | [grzhan](https://github.com/grzhan) | Search for http status codes |
 | [SVGL](https://github.com/Sameerjs6/powertoys-svgl) | [SameerJS6](https://github.com/SameerJS6) | Search, Browse and copy SVG logos from SVGL. |
 | [QuickNotes](https://github.com/ruslanlap/CommunityPowerToysRunPlugin-QuickNotes) | [ruslanlap](https://github.com/ruslanlap) | Create, manage, and search notes directly from PowerToys Run |
-| [Weather](https://github.com/ruslanlap/PowerToysRun-Weather) | [ruslanlap](https://github.com/ruslanlap) | Get current weather information and forecasts directly from PowerToys Run |
 
 ## Extending software plugins
 
