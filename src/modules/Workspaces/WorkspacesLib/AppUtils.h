@@ -13,6 +13,7 @@ namespace Utils
             std::wstring packageFullName;
             std::wstring appUserModelId;
             std::wstring pwaAppId;
+            std::wstring protocolPath;
             bool canLaunchElevated = false;
 
             bool IsEdge() const;

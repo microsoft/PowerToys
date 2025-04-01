@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "AppUtils.h"
+#include "SteamHelper.h"
 
 #include <atlbase.h>
 #include <propvarutil.h>
@@ -34,6 +35,10 @@ namespace Utils
 
             constexpr const wchar_t* EdgeFilename = L"msedge.exe";
             constexpr const wchar_t* ChromeFilename = L"chrome.exe";
+
+            constexpr const wchar_t* SteamWindowExeName = L"steamwebhelper.exe";
+            constexpr const wchar_t* SteamUrlProtocol = L"steam:";
+            constexpr const wchar_t* SteamExeName = L"steam.exe";
         }
 
         AppList IterateAppsFolder()
@@ -137,7 +142,26 @@ namespace Utils
                                 }
                                 else if (prop == NonLocalizable::PackageInstallPathProp || prop == NonLocalizable::InstallPathProp)
                                 {
-                                    data.installPath = propVariantString.m_pData;
+                                    const std::wstring path = propVariantString.m_pData;
+
+                                    if (!path.empty())
+                                    {
+                                        const bool isSteamProtocol = path.rfind(NonLocalizable::SteamUrlProtocol, 0) == 0;
+
+                                        if (isSteamProtocol)
+                                        {
+                                            Logger::info(L"Found steam game: {}", path);
+                                            data.protocolPath = path;
+
+                                            auto gameId = Steam::GetGameIdFromUrlProtocolPath(path);
+                                            auto gameFolder = Steam::GetSteamGameInfoFromAcfFile(gameId);
+                                            data.installPath = gameFolder->gameInstallationPath;
+                                        }
+                                        else
+                                        {
+                                            data.installPath = path;
+                                        }
+                                    }
                                 }
                             }
 
