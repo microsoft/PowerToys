@@ -79,6 +79,7 @@ Gershaft
 Giordani
 Gokce
 gordon
+Griese
 grzhan
 Guo
 hanselman
@@ -153,6 +154,7 @@ Santossio
 Schoen
 Sekan
 Seraphima
+Shmuelie
 skttl
 somil
 Soref
@@ -184,6 +186,7 @@ zhaopy
 zhaoqpcn
 Zoltan
 Zykova
+Sameerjs
 
 # OTHERS
 
@@ -196,6 +199,7 @@ cortana
 dlnilsson
 fancymouse
 firefox
+fudan
 gpt
 Inkscape
 Markdig
@@ -211,6 +215,7 @@ regedit
 roslyn
 Spotify
 Vanara
+wangyi
 WEX
 windowwalker
 winui
@@ -218,7 +223,9 @@ winuiex
 wix
 wordpad
 WWL
+wyhash
 xamlstyler
 Xavalon
 Xbox
 Youdao
+zadjii

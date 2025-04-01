@@ -1,0 +1,45 @@
+﻿<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.ShortcutWithTextLabelControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
+
+    <Grid ColumnSpacing="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <ItemsControl
+            VerticalAlignment="Center"
+            AutomationProperties.AccessibilityView="Raw"
+            IsTabStop="False"
+            ItemsSource="{x:Bind Keys}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="4" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <controls:KeyVisual
+                        VerticalAlignment="Center"
+                        AutomationProperties.AccessibilityView="Raw"
+                        Content="{Binding}"
+                        IsTabStop="False"
+                        VisualType="SmallOutline" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <tk7controls:MarkdownTextBlock
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Background="Transparent"
+            Text="{x:Bind Text}" />
+    </Grid>
+</UserControl>

@@ -47,6 +47,7 @@ namespace PowerToys
             static String WorkspacesLaunchEditorEvent();
             static String WorkspacesHotkeyEvent();
             static String PowerToysRunnerTerminateSettingsEvent();
+            static String ShowCmdPalEvent();
         }
     }
 }

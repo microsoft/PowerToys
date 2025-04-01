@@ -107,7 +107,7 @@ public:
             std::wstring path = get_module_folderpath(g_hInst_imageResizer);
             std::wstring packageUri = path + L"\\ImageResizerContextMenuPackage.msix";
 
-            if (!package::IsPackageRegistered(ImageResizerConstants::ModulePackageDisplayName))
+            if (!package::IsPackageRegisteredWithPowerToysVersion(ImageResizerConstants::ModulePackageDisplayName))
             {
                 package::RegisterSparsePackage(path, packageUri);
             }

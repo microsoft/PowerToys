@@ -59,7 +59,7 @@
                     x:Name="AppTitle_FileName"
                     Grid.Column="1"
                     Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{x:Bind Item.Name, Mode=OneWay}"
+                    Text="{x:Bind FileName, Mode=OneWay}"
                     TextWrapping="NoWrap" />
             </Grid>
         </Grid>

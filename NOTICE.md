@@ -3,12 +3,14 @@
 This software incorporates material from third parties.
 
 - Color Picker
+- Command Palette
 - File Explorer Add-ins
 - ImageResizer
 - PowerToys Run
 - Installer/Runner
 - Measure tool
 - Peek
+- Registry Preview
 
 ## Utility: Color Picker
 
@@ -37,6 +39,41 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Utility: Command Palette
+
+### wyhash
+
+We use the WyHash NuGet package for calculating stable hashes for strings.
+
+**Source**: [https://github.com/wangyi-fudan/wyhash](https://github.com/wangyi-fudan/wyhash)
+
+```
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>
+```
 
 ## Utility: File Explorer Add-ins
 
@@ -788,6 +825,34 @@ SOFTWARE.
 
 ## Utility: Peek
 
+### Monaco Editor
+
+**Source**: https://github.com/Microsoft/monaco-editor
+
+**Additional third party notifications:** https://github.com/microsoft/monaco-editor/blob/main/ThirdPartyNotices.txt
+
+The MIT License (MIT)
+
+Copyright (c) 2016 - present Microsoft Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 ### The Quite OK Image Format reference decoder
 
 **Source**: https://github.com/phoboslab/qoi
@@ -1294,19 +1359,56 @@ EXHIBIT A -Mozilla Public License.
      Original Code Source Code for Your Modifications.]
 ```
 
+## Utility: Registry Preview
+
+### Monaco Editor
+
+**Source**: https://github.com/Microsoft/monaco-editor
+
+**Additional third party notifications:** https://github.com/microsoft/monaco-editor/blob/main/ThirdPartyNotices.txt
+
+```
+The MIT License (MIT)
+
+Copyright (c) 2016 - present Microsoft Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## NuGet Packages used by PowerToys
 
+
+- AdaptiveCards.ObjectModel.WinUI3 2.0.0-beta
+- AdaptiveCards.Rendering.WinUI3 2.1.0-beta
+- AdaptiveCards.Templating 2.0.2
 - Appium.WebDriver 4.4.5
 - Azure.AI.OpenAI 1.0.0-beta.17
-- CommunityToolkit.Mvvm 8.2.2
-- CommunityToolkit.WinUI.Animations 8.0.240109
-- CommunityToolkit.WinUI.Collections 8.0.240109
-- CommunityToolkit.WinUI.Controls.Primitives 8.0.240109
-- CommunityToolkit.WinUI.Controls.Segmented 8.0.240109
-- CommunityToolkit.WinUI.Controls.SettingsControls 8.0.240109
-- CommunityToolkit.WinUI.Controls.Sizers 8.0.240109
-- CommunityToolkit.WinUI.Converters 8.0.240109
-- CommunityToolkit.WinUI.Extensions 8.0.240109
+- CommunityToolkit.Common 8.4.0
+- CommunityToolkit.Mvvm 8.4.0
+- CommunityToolkit.WinUI.Animations 8.2.250129-preview2
+- CommunityToolkit.WinUI.Collections 8.2.250129-preview2
+- CommunityToolkit.WinUI.Controls.Primitives 8.2.250129-preview2
+- CommunityToolkit.WinUI.Controls.Segmented 8.2.250129-preview2
+- CommunityToolkit.WinUI.Controls.SettingsControls 8.2.250129-preview2
+- CommunityToolkit.WinUI.Controls.Sizers 8.2.250129-preview2
+- CommunityToolkit.WinUI.Converters 8.2.250129-preview2
+- CommunityToolkit.WinUI.Extensions 8.2.250129-preview2
 - CommunityToolkit.WinUI.UI.Controls.DataGrid 7.1.2
 - CommunityToolkit.WinUI.UI.Controls.Markdown 7.1.2
 - ControlzEx 6.0.0
@@ -1318,26 +1420,27 @@ EXHIBIT A -Mozilla Public License.
 - Mages 3.0.0
 - Markdig.Signed 0.34.0
 - MessagePack 2.5.187
-- Microsoft.Bcl.AsyncInterfaces 9.0.2
+- Microsoft.Bcl.AsyncInterfaces 9.0.3
 - Microsoft.CodeAnalysis.NetAnalyzers 9.0.0
-- Microsoft.Data.Sqlite 9.0.2
+- Microsoft.Data.Sqlite 9.0.3
 - Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16
 - Microsoft.DotNet.ILCompiler (A)
-- Microsoft.Extensions.DependencyInjection 9.0.2
-- Microsoft.Extensions.Hosting 9.0.2
-- Microsoft.Extensions.Hosting.WindowsServices 9.0.2
-- Microsoft.Extensions.Logging 9.0.2
-- Microsoft.Extensions.Logging.Abstractions 9.0.2
+- Microsoft.Extensions.DependencyInjection 9.0.3
+- Microsoft.Extensions.Hosting 9.0.3
+- Microsoft.Extensions.Hosting.WindowsServices 9.0.3
+- Microsoft.Extensions.Logging 9.0.3
+- Microsoft.Extensions.Logging.Abstractions 9.0.3
 - Microsoft.NET.ILLink.Tasks (A)
 - Microsoft.SemanticKernel 1.15.0
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
-- Microsoft.Web.WebView2 1.0.2739.15
-- Microsoft.Win32.SystemEvents 9.0.2
-- Microsoft.Windows.Compatibility 9.0.2
+- Microsoft.Web.WebView2 1.0.2903.40
+- Microsoft.Win32.SystemEvents 9.0.3
+- Microsoft.Windows.Compatibility 9.0.3
 - Microsoft.Windows.CsWin32 0.2.46-beta
-- Microsoft.Windows.CsWinRT 2.1.5
+- Microsoft.Windows.CsWinRT 2.2.0
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
-- Microsoft.WindowsAppSDK 1.6.241114003
+- Microsoft.WindowsAppSDK 1.6.250205002
+- Microsoft.WindowsPackageManager.ComInterop 1.10.120-preview
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
@@ -1351,25 +1454,26 @@ EXHIBIT A -Mozilla Public License.
 - SharpCompress 0.37.2
 - StreamJsonRpc 2.19.27
 - StyleCop.Analyzers 1.2.0-beta.556
-- System.CodeDom 9.0.2
+- System.CodeDom 9.0.3
 - System.CommandLine 2.0.0-beta4.22272.1
-- System.ComponentModel.Composition 9.0.2
-- System.Configuration.ConfigurationManager 9.0.2
-- System.Data.OleDb 9.0.2
+- System.ComponentModel.Composition 9.0.3
+- System.Configuration.ConfigurationManager 9.0.3
+- System.Data.OleDb 9.0.3
 - System.Data.SqlClient 4.8.6
-- System.Diagnostics.EventLog 9.0.2
-- System.Diagnostics.PerformanceCounter 9.0.2
-- System.Drawing.Common 9.0.2
+- System.Diagnostics.EventLog 9.0.3
+- System.Diagnostics.PerformanceCounter 9.0.3
+- System.Drawing.Common 9.0.3
 - System.IO.Abstractions 21.0.29
 - System.IO.Abstractions.TestingHelpers 21.0.29
-- System.Management 9.0.2
+- System.Management 9.0.3
 - System.Reactive 6.0.1
-- System.Runtime.Caching 9.0.2
-- System.ServiceProcess.ServiceController 9.0.2
-- System.Text.Encoding.CodePages 9.0.2
-- System.Text.Json 9.0.2
+- System.Runtime.Caching 9.0.3
+- System.ServiceProcess.ServiceController 9.0.3
+- System.Text.Encoding.CodePages 9.0.3
+- System.Text.Json 9.0.3
 - UnicodeInformation 2.6.0
 - UnitsNet 5.56.0
 - UTF.Unknown 2.5.1
 - WinUIEx 2.2.0
 - WPF-UI 3.0.5
+- WyHash 1.0.5
