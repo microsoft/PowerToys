@@ -2,16 +2,16 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <?define SettingsV2AssetsFiles=icon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.pngicon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.pngicon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.pngicon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.pngicon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.pngicon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.pngicon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.pngicon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.pngicon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.pngicon.ico;LockScreenLogo.scale-200.png;logo.png;Logo.scale-200.png;logo150.png;logo44.png;SplashScreen.png;SplashScreen.scale-200.png;Square150x150Logo.scale-200.png;Square44x44Logo.scale-200.png;Square44x44Logo.targetsize-24_altform-unplated.png;StoreLogo.png;StoreLogo.scale-100.png;Wide310x150Logo.scale-200.png?>
+  <?define SettingsV2AssetsFiles=?>
   <?define SettingsV2AssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\?>
 
-  <?define SettingsV2AssetsModulesFiles=AdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.pngAdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.pngAdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.pngAdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.pngAdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.pngAdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.pngAdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.pngAdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.pngAdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.pngAdvancedPaste.png;AlwaysOnTop.png;APDialog.dark.png;APDialog.light.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;HostsFileEditor.png;ImageResizer.png;KBM.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerLauncher.png;PowerRename.png;PT.png;QuickAccent.png;RegistryPreview.png;Run.png;ScreenRuler.png;ShortcutGuide.png;TextExtractor.png;Wallpaper.png;Workspaces.png;ZoomIt.png?>
+  <?define SettingsV2AssetsModulesFiles=?>
   <?define SettingsV2AssetsModulesFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\Modules\?>
 
-  <?define SettingsV2OOBEAssetsModulesFiles=AdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gifAdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gifAdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gifAdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gifAdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gifAdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gifAdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gifAdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gifAdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gifAdvancedPaste.gif;AlwaysOnTop.png;Awake.png;CmdNotFound.png;CmdPal.png;ColorPicker.gif;CropAndLock.gif;EnvironmentVariables.png;FancyZones.gif;FileExplorer.png;FileLocksmith.gif;HostsFileEditor.png;ImageResizer.gif;KBM.gif;MouseUtils.gif;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.gif;PTHero.png;PTHeroShort.png;QuickAccent.gif;RegistryPreview.png;Run.gif;ScreenRuler.gif;ShortcutGuide.png;TextExtractor.gif;Workspaces.png;ZoomIt.gif?>
+  <?define SettingsV2OOBEAssetsModulesFiles=?>
   <?define SettingsV2OOBEAssetsModulesFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\Modules\OOBE\?>
 
-  <?define SettingsV2OOBEAssetsFluentIconsFiles=Advanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;CmdPal.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.pngAdvanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;CmdPal.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.pngAdvanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;CmdPal.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.pngAdvanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;CmdPal.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.pngAdvanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;CmdPal.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.pngAdvanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;CmdPal.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.pngAdvanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;CmdPal.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.pngAdvanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;CmdPal.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.pngAdvanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;CmdPal.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.pngAdvanced.png;AdvancedPaste.png;AlwaysOnTop.png;Awake.png;CmdPal.png;ColorPicker.png;CommandNotFound.png;CropAndLock.png;EnvironmentVariables.png;FancyZones.png;FileExplorerPreview.png;FileLocksmith.png;FileManagement.png;FindMyMouse.png;Hosts.png;ImageResizer.png;InputOutput.png;KeyboardManager.png;MouseCrosshairs.png;MouseHighlighter.png;MouseJump.png;MouseUtils.png;MouseWithoutBorders.png;NewPlus.png;Peek.png;PowerRename.png;PowerToys.png;PowerToysRun.png;QuickAccent.png;RegistryPreview.png;ScreenRuler.png;SemanticKernel.png;ShortcutGuide.png;SystemTools.png;TextExtractor.png;WindowingAndLayouts.png;Workspaces.png;ZoomIt.png?>
+  <?define SettingsV2OOBEAssetsFluentIconsFiles=?>
   <?define SettingsV2OOBEAssetsFluentIconsFilesPath=$(var.BinDir)WinUI3Apps\Assets\Settings\Icons\?>
 
   <Fragment>
@@ -27,159 +27,22 @@
 
     <DirectoryRef Id="SettingsV2AssetsInstallFolder" FileSource="$(var.SettingsV2AssetsFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-
-            <Component Id="SettingsV2AssetsFiles_Component" Win64="yes" Guid="18CE98A9-3D19-46A6-BF0F-E62460D4CB89">
-              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
-                <RegistryValue Type="string" Name="SettingsV2AssetsFiles_Component" Value="" KeyPath="yes"/>
-              </RegistryKey>
-              <File Id="SettingsV2AssetsFiles_File_icon.ico" Source="$(var.SettingsV2AssetsFilesPath)\icon.ico" />
-              <File Id="SettingsV2AssetsFiles_File_LockScreenLogo.scale_200.png" Source="$(var.SettingsV2AssetsFilesPath)\LockScreenLogo.scale-200.png" />
-              <File Id="SettingsV2AssetsFiles_File_logo.png" Source="$(var.SettingsV2AssetsFilesPath)\logo.png" />
-              <File Id="SettingsV2AssetsFiles_File_Logo.scale_200.png" Source="$(var.SettingsV2AssetsFilesPath)\Logo.scale-200.png" />
-              <File Id="SettingsV2AssetsFiles_File_logo150.png" Source="$(var.SettingsV2AssetsFilesPath)\logo150.png" />
-              <File Id="SettingsV2AssetsFiles_File_logo44.png" Source="$(var.SettingsV2AssetsFilesPath)\logo44.png" />
-              <File Id="SettingsV2AssetsFiles_File_SplashScreen.png" Source="$(var.SettingsV2AssetsFilesPath)\SplashScreen.png" />
-              <File Id="SettingsV2AssetsFiles_File_SplashScreen.scale_200.png" Source="$(var.SettingsV2AssetsFilesPath)\SplashScreen.scale-200.png" />
-              <File Id="SettingsV2AssetsFiles_File_Square150x150Logo.scale_200.png" Source="$(var.SettingsV2AssetsFilesPath)\Square150x150Logo.scale-200.png" />
-              <File Id="SettingsV2AssetsFiles_File_Square44x44Logo.scale_200.png" Source="$(var.SettingsV2AssetsFilesPath)\Square44x44Logo.scale-200.png" />
-              <File Id="SettingsV2AssetsFiles_File_Square44x44Logo.targetsize_24_altform_unplated.png" Source="$(var.SettingsV2AssetsFilesPath)\Square44x44Logo.targetsize-24_altform-unplated.png" />
-              <File Id="SettingsV2AssetsFiles_File_StoreLogo.png" Source="$(var.SettingsV2AssetsFilesPath)\StoreLogo.png" />
-              <File Id="SettingsV2AssetsFiles_File_StoreLogo.scale_100.png" Source="$(var.SettingsV2AssetsFilesPath)\StoreLogo.scale-100.png" />
-              <File Id="SettingsV2AssetsFiles_File_Wide310x150Logo.scale_200.png" Source="$(var.SettingsV2AssetsFilesPath)\Wide310x150Logo.scale-200.png" />
-            </Component>
-
+    <!--SettingsV2AssetsFiles_Component_Def-->
     </DirectoryRef>
 
     <DirectoryRef Id="SettingsV2AssetsModulesInstallFolder" FileSource="$(var.SettingsV2AssetsModulesFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-
-            <Component Id="SettingsV2AssetsModulesFiles_Component" Win64="yes" Guid="B5080120-1F09-4EED-B970-7B79673B2145">
-              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
-                <RegistryValue Type="string" Name="SettingsV2AssetsModulesFiles_Component" Value="" KeyPath="yes"/>
-              </RegistryKey>
-              <File Id="SettingsV2AssetsModulesFiles_File_AdvancedPaste.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\AdvancedPaste.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_AlwaysOnTop.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\AlwaysOnTop.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_APDialog.dark.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\APDialog.dark.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_APDialog.light.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\APDialog.light.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_Awake.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\Awake.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_CmdNotFound.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\CmdNotFound.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_CmdPal.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\CmdPal.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_ColorPicker.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\ColorPicker.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_CropAndLock.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\CropAndLock.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_EnvironmentVariables.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\EnvironmentVariables.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_FancyZones.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\FancyZones.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_FileExplorerPreview.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\FileExplorerPreview.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_FileLocksmith.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\FileLocksmith.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_HostsFileEditor.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\HostsFileEditor.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_ImageResizer.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\ImageResizer.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_KBM.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\KBM.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_MouseUtils.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\MouseUtils.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_MouseWithoutBorders.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\MouseWithoutBorders.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_NewPlus.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\NewPlus.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_Peek.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\Peek.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_PowerLauncher.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\PowerLauncher.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_PowerRename.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\PowerRename.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_PT.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\PT.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_QuickAccent.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\QuickAccent.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_RegistryPreview.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\RegistryPreview.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_Run.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\Run.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_ScreenRuler.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\ScreenRuler.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_ShortcutGuide.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\ShortcutGuide.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_TextExtractor.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\TextExtractor.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_Wallpaper.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\Wallpaper.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_Workspaces.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\Workspaces.png" />
-              <File Id="SettingsV2AssetsModulesFiles_File_ZoomIt.png" Source="$(var.SettingsV2AssetsModulesFilesPath)\ZoomIt.png" />
-            </Component>
-
+    <!--SettingsV2AssetsModulesFiles_Component_Def-->
     </DirectoryRef>
 
     <DirectoryRef Id="SettingsV2OOBEAssetsModulesInstallFolder" FileSource="$(var.SettingsV2OOBEAssetsModulesFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-
-            <Component Id="SettingsV2OOBEAssetsModulesFiles_Component" Win64="yes" Guid="7339F9E3-8E3B-4BCB-9248-847DF590228B">
-              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
-                <RegistryValue Type="string" Name="SettingsV2OOBEAssetsModulesFiles_Component" Value="" KeyPath="yes"/>
-              </RegistryKey>
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_AdvancedPaste.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\AdvancedPaste.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_AlwaysOnTop.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\AlwaysOnTop.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_Awake.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\Awake.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_CmdNotFound.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\CmdNotFound.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_CmdPal.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\CmdPal.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_ColorPicker.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\ColorPicker.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_CropAndLock.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\CropAndLock.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_EnvironmentVariables.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\EnvironmentVariables.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_FancyZones.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\FancyZones.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_FileExplorer.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\FileExplorer.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_FileLocksmith.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\FileLocksmith.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_HostsFileEditor.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\HostsFileEditor.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_ImageResizer.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\ImageResizer.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_KBM.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\KBM.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_MouseUtils.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\MouseUtils.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_MouseWithoutBorders.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\MouseWithoutBorders.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_NewPlus.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\NewPlus.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_Peek.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\Peek.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_PowerRename.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\PowerRename.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_PTHero.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\PTHero.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_PTHeroShort.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\PTHeroShort.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_QuickAccent.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\QuickAccent.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_RegistryPreview.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\RegistryPreview.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_Run.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\Run.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_ScreenRuler.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\ScreenRuler.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_ShortcutGuide.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\ShortcutGuide.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_TextExtractor.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\TextExtractor.gif" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_Workspaces.png" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\Workspaces.png" />
-              <File Id="SettingsV2OOBEAssetsModulesFiles_File_ZoomIt.gif" Source="$(var.SettingsV2OOBEAssetsModulesFilesPath)\ZoomIt.gif" />
-            </Component>
-
+    <!--SettingsV2OOBEAssetsModulesFiles_Component_Def-->
     </DirectoryRef>
 
     <DirectoryRef Id="SettingsV2OOBEAssetsFluentIconsInstallFolder" FileSource="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)">
     <!-- Generated by generateFileComponents.ps1 -->
-
-            <Component Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" Win64="yes" Guid="03FA75AB-0FD9-44AA-A94E-4B7E869029D3">
-              <RegistryKey Root="HKLM" Key="Software\Classes\powertoys\components">
-                <RegistryValue Type="string" Name="SettingsV2OOBEAssetsFluentIconsFiles_Component" Value="" KeyPath="yes"/>
-              </RegistryKey>
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_Advanced.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\Advanced.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_AdvancedPaste.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\AdvancedPaste.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_AlwaysOnTop.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\AlwaysOnTop.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_Awake.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\Awake.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_CmdPal.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\CmdPal.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_ColorPicker.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\ColorPicker.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_CommandNotFound.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\CommandNotFound.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_CropAndLock.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\CropAndLock.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_EnvironmentVariables.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\EnvironmentVariables.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_FancyZones.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\FancyZones.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_FileExplorerPreview.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\FileExplorerPreview.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_FileLocksmith.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\FileLocksmith.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_FileManagement.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\FileManagement.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_FindMyMouse.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\FindMyMouse.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_Hosts.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\Hosts.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_ImageResizer.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\ImageResizer.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_InputOutput.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\InputOutput.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_KeyboardManager.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\KeyboardManager.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_MouseCrosshairs.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\MouseCrosshairs.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_MouseHighlighter.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\MouseHighlighter.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_MouseJump.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\MouseJump.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_MouseUtils.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\MouseUtils.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_MouseWithoutBorders.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\MouseWithoutBorders.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_NewPlus.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\NewPlus.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_Peek.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\Peek.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_PowerRename.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\PowerRename.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_PowerToys.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\PowerToys.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_PowerToysRun.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\PowerToysRun.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_QuickAccent.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\QuickAccent.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_RegistryPreview.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\RegistryPreview.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_ScreenRuler.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\ScreenRuler.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_SemanticKernel.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\SemanticKernel.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_ShortcutGuide.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\ShortcutGuide.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_SystemTools.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\SystemTools.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_TextExtractor.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\TextExtractor.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_WindowingAndLayouts.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\WindowingAndLayouts.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_Workspaces.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\Workspaces.png" />
-              <File Id="SettingsV2OOBEAssetsFluentIconsFiles_File_ZoomIt.png" Source="$(var.SettingsV2OOBEAssetsFluentIconsFilesPath)\ZoomIt.png" />
-            </Component>
-
+    <!--SettingsV2OOBEAssetsFluentIconsFiles_Component_Def-->
     </DirectoryRef>
 
     <DirectoryRef Id="SettingsAppAssetsScriptsFolder" FileSource="$(var.SettingsV2AssetsFilesPath)\Scripts\">
@@ -209,46 +72,6 @@
         <RemoveFolder Id="RemoveFolderSettingsAppAssetsScriptsFolder" Directory="SettingsAppAssetsScriptsFolder" On="uninstall" />
       </Component>
       <ComponentRef Id="CommandNotFound_Scripts" />
-            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsFiles_Component" />
-            <ComponentRef Id="SettingsV2AssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsModulesFiles_Component" />
-            <ComponentRef Id="SettingsV2OOBEAssetsFluentIconsFiles_Component" />
     </ComponentGroup>
 
   </Fragment>
