@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class MeasureToolProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, true, false, true, 0x4D);
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, true, false, true, 0x4D, "ActivationShortcut", MeasureToolSettings.ModuleName);
 
         public MeasureToolProperties()
         {

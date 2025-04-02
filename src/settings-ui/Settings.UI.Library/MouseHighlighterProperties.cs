@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class MouseHighlighterProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x48);
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x48, "ActivationShortcut", MouseHighlighterSettings.ModuleName);
 
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut { get; set; }

@@ -45,6 +45,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             Settings = moduleSettingsRepository.SettingsConfig;
 
+            if (string.IsNullOrEmpty(Settings.Properties.OpenShortcutGuide.HotkeyName))
+            {
+                Settings.Properties.OpenShortcutGuide.HotkeyName = Settings.Properties.DefaultOpenShortcutGuide.HotkeyName;
+                Settings.Properties.OpenShortcutGuide.OwnerModuleName = Settings.Properties.DefaultOpenShortcutGuide.OwnerModuleName;
+            }
+
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 

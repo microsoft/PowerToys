@@ -12,6 +12,11 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/utils/EventWaiter.h>
 
+namespace
+{
+    const wchar_t ACTIVATION_SHORTCUT_NAME[] = L"OpenShortcutGuide";
+}
+
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD /*ul_reason_for_call*/, LPVOID /*lpReserved*/)
 {
     return TRUE;
@@ -369,6 +374,11 @@ private:
             Logger::info("Shortcut Guide is going to use default shortcut");
             m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
             m_hotkey.vkCode = VK_OEM_2;
+        }
+
+        if (m_hotkey.name == nullptr)
+        {
+            m_hotkey.name = ACTIVATION_SHORTCUT_NAME;
         }
     }
 };
