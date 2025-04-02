@@ -9,8 +9,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class CropAndLockProperties
     {
-        public static readonly HotkeySettings DefaultReparentHotkeyValue = new HotkeySettings(true, true, false, true, 0x52); // Ctrl+Win+Shift+R
-        public static readonly HotkeySettings DefaultThumbnailHotkeyValue = new HotkeySettings(true, true, false, true, 0x54); // Ctrl+Win+Shift+T
+        public static readonly HotkeySettings DefaultReparentHotkeyValue = new HotkeySettings(true, true, false, true, 0x52, "ReparentHotkey", CropAndLockSettings.ModuleName); // Ctrl+Win+Shift+R
+        public static readonly HotkeySettings DefaultThumbnailHotkeyValue = new HotkeySettings(true, true, false, true, 0x54, "ThumbnailHotkey", CropAndLockSettings.ModuleName); // Ctrl+Win+Shift+T
 
         public CropAndLockProperties()
         {

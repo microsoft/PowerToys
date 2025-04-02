@@ -142,7 +142,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You are going to end the following process:.
+        ///   Looks up a localized string similar to The following process will be ended:.
         /// </summary>
         public static string windowwalker_KillMessage {
             get {

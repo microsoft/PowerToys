@@ -88,8 +88,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _excludedApps = Settings.Properties.FancyzonesExcludedApps.Value;
             _systemTheme = Settings.Properties.FancyzonesSystemTheme.Value;
             _showZoneNumber = Settings.Properties.FancyzonesShowZoneNumber.Value;
-            EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
             _windowSwitching = Settings.Properties.FancyzonesWindowSwitching.Value;
+
+            CheckAndUpdateHotkeyName();
+
+            EditorHotkey = Settings.Properties.FancyzonesEditorHotkey.Value;
             NextTabHotkey = Settings.Properties.FancyzonesNextTabHotkey.Value;
             PrevTabHotkey = Settings.Properties.FancyzonesPrevTabHotkey.Value;
 
@@ -889,6 +892,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(SnapHotkeysCategoryEnabled));
             OnPropertyChanged(nameof(QuickSwitchEnabled));
             OnPropertyChanged(nameof(WindowSwitchingCategoryEnabled));
+        }
+
+        private void CheckAndUpdateHotkeyName()
+        {
+            bool hasChange = false;
+            if (Settings.Properties.FancyzonesEditorHotkey.Value.HotkeyName == string.Empty)
+            {
+                Settings.Properties.FancyzonesEditorHotkey.Value.HotkeyName = "EditorHotkey";
+                Settings.Properties.FancyzonesEditorHotkey.Value.OwnerModuleName = FancyZonesSettings.ModuleName;
+                hasChange = true;
+            }
+
+            if (Settings.Properties.FancyzonesNextTabHotkey.Value.HotkeyName == string.Empty)
+            {
+                Settings.Properties.FancyzonesNextTabHotkey.Value.HotkeyName = "NextTabHotkey";
+                Settings.Properties.FancyzonesNextTabHotkey.Value.OwnerModuleName = FancyZonesSettings.ModuleName;
+                hasChange = true;
+            }
+
+            if (Settings.Properties.FancyzonesPrevTabHotkey.Value.HotkeyName == string.Empty)
+            {
+                Settings.Properties.FancyzonesPrevTabHotkey.Value.HotkeyName = "PrevTabHotkey";
+                Settings.Properties.FancyzonesPrevTabHotkey.Value.OwnerModuleName = FancyZonesSettings.ModuleName;
+                hasChange = true;
+            }
+
+            if (hasChange)
+            {
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), FancyZonesSettings.ModuleName);
+            }
         }
     }
 }

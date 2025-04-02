@@ -79,6 +79,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _highlightFadeDurationMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value;
             _highlighterAutoActivate = MouseHighlighterSettingsConfig.Properties.AutoActivate.Value;
 
+            if (MouseHighlighterSettingsConfig.Properties.ActivationShortcut.HotkeyName == string.Empty)
+            {
+                MouseHighlighterSettingsConfig.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
+                MouseHighlighterSettingsConfig.Properties.ActivationShortcut.OwnerModuleName = MouseHighlighterSettings.ModuleName;
+                SettingsUtils.SaveSettings(MouseHighlighterSettingsConfig.ToJsonString(), MouseHighlighterSettings.ModuleName);
+            }
+
             this.InitializeMouseJumpSettings(mouseJumpSettingsRepository);
 
             ArgumentNullException.ThrowIfNull(mousePointerCrosshairsSettingsRepository);
@@ -99,6 +106,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mousePointerCrosshairsIsFixedLengthEnabled = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsIsFixedLengthEnabled.Value;
             _mousePointerCrosshairsFixedLength = MousePointerCrosshairsSettingsConfig.Properties.CrosshairsFixedLength.Value;
             _mousePointerCrosshairsAutoActivate = MousePointerCrosshairsSettingsConfig.Properties.AutoActivate.Value;
+
+            // Setup the hotkey names
+            if (string.IsNullOrEmpty(MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut.HotkeyName))
+            {
+                MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
+                MousePointerCrosshairsSettingsConfig.Properties.ActivationShortcut.OwnerModuleName = MousePointerCrosshairsSettings.ModuleName;
+            }
+
+            if (string.IsNullOrEmpty(FindMyMouseSettingsConfig.Properties.ActivationShortcut.HotkeyName))
+            {
+                FindMyMouseSettingsConfig.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
+                FindMyMouseSettingsConfig.Properties.ActivationShortcut.OwnerModuleName = FindMyMouseSettings.ModuleName;
+            }
+
+            if (string.IsNullOrEmpty(MouseHighlighterSettingsConfig.Properties.ActivationShortcut.HotkeyName))
+            {
+                MouseHighlighterSettingsConfig.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
+                MouseHighlighterSettingsConfig.Properties.ActivationShortcut.OwnerModuleName = MouseHighlighterSettings.ModuleName;
+            }
 
             int isEnabled = 0;
             NativeMethods.SystemParametersInfo(NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);

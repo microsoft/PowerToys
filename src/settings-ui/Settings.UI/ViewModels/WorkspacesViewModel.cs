@@ -48,6 +48,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _hotkey = Settings.Properties.Hotkey.Value;
 
+            if (string.IsNullOrEmpty(_hotkey.HotkeyName))
+            {
+                _hotkey.HotkeyName = WorkspacesProperties.DefaultHotkeyValue.HotkeyName;
+                _hotkey.OwnerModuleName = WorkspacesProperties.DefaultHotkeyValue.OwnerModuleName;
+            }
+
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 

@@ -78,6 +78,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         JsonSerializer.Serialize(s, SourceGenerationContextContext.Default.PowerLauncherSettings)));
             };
 
+            if (string.IsNullOrEmpty(settings.Properties.OpenPowerLauncher.HotkeyName))
+            {
+                settings.Properties.OpenPowerLauncher.HotkeyName = "OpenPowerLauncher";
+                settings.Properties.OpenPowerLauncher.OwnerModuleName = PowerLauncherSettings.ModuleName;
+            }
+
             switch (settings.Properties.Theme)
             {
                 case Theme.Dark:
@@ -142,6 +148,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             this.settings = settings;
             this.callback = callback;
+
+            CheckAndUpdateHotkeyName();
         }
 
         private void UpdateSettings([CallerMemberName] string propertyName = null)
@@ -689,6 +697,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             OnPropertyChanged(nameof(Plugins));
+        }
+
+        private void CheckAndUpdateHotkeyName()
+        {
+            bool hasChange = false;
+            if (settings.Properties.OpenPowerLauncher.HotkeyName == string.Empty)
+            {
+                settings.Properties.OpenPowerLauncher.HotkeyName = "OpenPowerLauncher";
+                settings.Properties.OpenPowerLauncher.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
+                hasChange = true;
+            }
+
+            if (settings.Properties.OpenFileLocation.HotkeyName == string.Empty)
+            {
+                settings.Properties.OpenFileLocation.HotkeyName = "OpenFileLocation";
+                settings.Properties.OpenFileLocation.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
+                hasChange = true;
+            }
+
+            if (settings.Properties.CopyPathLocation.HotkeyName == string.Empty)
+            {
+                settings.Properties.CopyPathLocation.HotkeyName = "CopyPathLocation";
+                settings.Properties.CopyPathLocation.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
+                hasChange = true;
+            }
+
+            if (hasChange)
+            {
+                UpdateSettings();
+            }
         }
     }
 }

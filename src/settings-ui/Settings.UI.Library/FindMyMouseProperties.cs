@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class FindMyMouseProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x46);
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x46, "ActivationShortcut", FindMyMouseSettings.ModuleName);
 
         [JsonPropertyName("activation_method")]
         public IntProperty ActivationMethod { get; set; }
