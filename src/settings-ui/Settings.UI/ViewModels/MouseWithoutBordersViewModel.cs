@@ -441,6 +441,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             moduleSettings = SettingsUtils.GetSettingsOrDefault<MouseWithoutBordersSettings>("MouseWithoutBorders");
 
             LoadViewModelFromSettings(moduleSettings);
+            CheckAndUpdateHotkeyName();
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -1277,6 +1278,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ShowInfobarRunAsAdminText
         {
             get { return !CanToggleUseService && IsEnabled && !ShowPolicyConfiguredInfoForServiceSettings; }
+        }
+
+        private void CheckAndUpdateHotkeyName()
+        {
+            bool hasChange = false;
+            if (Settings.Properties.ToggleEasyMouseShortcut.HotkeyName == string.Empty)
+            {
+                Settings.Properties.ToggleEasyMouseShortcut.HotkeyName = "HotKeyToggleEasyMouse";
+                Settings.Properties.ToggleEasyMouseShortcut.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
+                hasChange = true;
+            }
+
+            if (Settings.Properties.LockMachineShortcut.HotkeyName == string.Empty)
+            {
+                Settings.Properties.LockMachineShortcut.HotkeyName = "HotKeyLockMachine";
+                Settings.Properties.LockMachineShortcut.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
+                hasChange = true;
+            }
+
+            if (Settings.Properties.ReconnectShortcut.HotkeyName == string.Empty)
+            {
+                Settings.Properties.ReconnectShortcut.HotkeyName = "HotKeyReconnect";
+                Settings.Properties.ReconnectShortcut.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
+                hasChange = true;
+            }
+
+            if (Settings.Properties.Switch2AllPCShortcut.HotkeyName == string.Empty)
+            {
+                Settings.Properties.Switch2AllPCShortcut.HotkeyName = "HotKeySwitch2AllPC";
+                Settings.Properties.Switch2AllPCShortcut.OwnerModuleName = MouseWithoutBordersSettings.ModuleName;
+                hasChange = true;
+            }
+
+            if (hasChange)
+            {
+                SettingsUtils.SaveSettings(Settings.ToJsonString(), MouseWithoutBordersSettings.ModuleName);
+            }
         }
     }
 }

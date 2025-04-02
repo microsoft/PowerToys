@@ -45,14 +45,41 @@ public:
         bool shift = false;
         bool alt = false;
         unsigned char key = 0;
+        const wchar_t* name = nullptr;
 
-        std::strong_ordering operator<=>(const Hotkey&) const = default;
+        std::strong_ordering operator<=>(const Hotkey& other) const
+        {
+            // Compare bool fields first
+            if (auto cmp = (win <=> other.win); cmp != 0)
+                return cmp;
+            if (auto cmp = (ctrl <=> other.ctrl); cmp != 0)
+                return cmp;
+            if (auto cmp = (shift <=> other.shift); cmp != 0)
+                return cmp;
+            if (auto cmp = (alt <=> other.alt); cmp != 0)
+                return cmp;
+
+            // Compare key value only
+            return key <=> other.key;
+
+            // Note: Deliberately NOT comparing 'name' field
+        }
+
+        bool operator==(const Hotkey& other) const
+        {
+            return win == other.win &&
+                   ctrl == other.ctrl &&
+                   shift == other.shift &&
+                   alt == other.alt &&
+                   key == other.key;
+        }
     };
 
     struct HotkeyEx
     {
         WORD modifiersMask = 0;
         WORD vkCode = 0;
+        const wchar_t* name = nullptr;
     };
 
     /* Returns the localized name of the PowerToy*/

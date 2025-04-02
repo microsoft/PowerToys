@@ -17,6 +17,14 @@
 
 HINSTANCE g_hInst_MouseWithoutBorders = 0;
 
+namespace
+{
+    const wchar_t SWITCH2ALLPC_SHORTCUT_NAME[] = L"HotKeySwitch2AllPC";
+    const wchar_t LOCKMACHINE_SHORTCUT_NAME[] = L"HotKeyLockMachine";
+    const wchar_t RECONNECT_SHORTCUT_NAME[] = L"HotKeyReconnect";
+    const wchar_t TOGGLEEASYMOUSE_SHORTCUT_NAME[] = L"HotKeyToggleEasyMouse";
+}
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)

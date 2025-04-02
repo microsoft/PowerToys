@@ -59,6 +59,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Load the application-specific settings, including preview items.
             _peekSettings = _settingsUtils.GetSettingsOrDefault<PeekSettings>(PeekSettings.ModuleName);
             _peekPreviewSettings = _settingsUtils.GetSettingsOrDefault<PeekPreviewSettings>(PeekSettings.ModuleName, PeekPreviewSettings.FileName);
+
+            if (_peekSettings.Properties.ActivationShortcut.HotkeyName == string.Empty)
+            {
+                _peekSettings.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
+                _peekSettings.Properties.ActivationShortcut.OwnerModuleName = PeekSettings.ModuleName;
+                _settingsUtils.SaveSettings(_peekSettings.ToJsonString(), PeekSettings.ModuleName);
+            }
+
             SetupSettingsFileWatcher();
 
             InitializeEnabledValue();

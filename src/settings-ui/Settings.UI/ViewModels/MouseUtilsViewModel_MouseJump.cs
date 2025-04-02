@@ -37,6 +37,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ArgumentNullException.ThrowIfNull(mouseJumpSettingsRepository);
             this.MouseJumpSettingsConfig = mouseJumpSettingsRepository.SettingsConfig;
+
+            if (this.MouseJumpSettingsConfig.Properties.ActivationShortcut.HotkeyName == string.Empty)
+            {
+                this.MouseJumpSettingsConfig.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
+                this.MouseJumpSettingsConfig.Properties.ActivationShortcut.OwnerModuleName = MouseJumpSettings.ModuleName;
+                SettingsUtils.SaveSettings(MouseJumpSettingsConfig.ToJsonString(), MouseJumpSettings.ModuleName);
+            }
+
             this.MouseJumpSettingsConfig.Properties.ThumbnailSize.PropertyChanged += this.MouseJumpThumbnailSizePropertyChanged;
         }
 
