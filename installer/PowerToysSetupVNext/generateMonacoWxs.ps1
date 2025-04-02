@@ -3,7 +3,7 @@ Param(
     [Parameter(Mandatory = $True, Position = 1)]
     [string]$monacoWxsFile
 )
-
+echo here-----------------------------------------------------------------------
 $fileWxs = Get-Content $monacoWxsFile;
 
 $fileWxs = $fileWxs -replace " KeyPath=`"yes`" ", " "
