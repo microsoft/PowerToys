@@ -15,6 +15,7 @@ ACTIVATEAPP
 activationaction
 ACVS
 adaptivecards
+ADate
 ADDSTRING
 ADDUNDORECORD
 ADifferent
@@ -417,6 +418,7 @@ DWORDLONG
 dworigin
 dwrite
 dxgi
+eab
 easeofaccess
 ecount
 Edid
@@ -466,6 +468,7 @@ EXAND
 EXCLUDEFROMCAPTURE
 executionpolicy
 exename
+exf
 EXITSIZEMOVE
 exlist
 EXPCMDFLAGS
@@ -898,6 +901,7 @@ MARKDOWNPREVIEWHANDLERCPP
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
+mber
 MBM
 MBR
 MDICHILD
@@ -1779,6 +1783,8 @@ USRDLL
 UType
 uuidv
 uwp
+ums
+uxt
 uxtheme
 vabdq
 validmodulename
@@ -1859,6 +1865,7 @@ webbrowsers
 webpage
 websites
 wekyb
+wft
 wgpocpl
 WHEREID
 Wholegrain
@@ -1919,6 +1926,7 @@ WNDCLASSEXW
 WNDCLASSW
 WNDPROC
 wnode
+wom
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL

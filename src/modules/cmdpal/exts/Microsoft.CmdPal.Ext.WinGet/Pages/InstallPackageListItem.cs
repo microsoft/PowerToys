@@ -62,6 +62,14 @@ public partial class InstallPackageListItem : ListItem
 
         if (metadata != null)
         {
+            if (metadata.Tags.Where(t => t.Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase)).Any())
+            {
+                if (_installCommand != null)
+                {
+                    _installCommand.SkipDependencies = true;
+                }
+            }
+
             var description = string.IsNullOrEmpty(metadata.Description) ? metadata.ShortDescription : metadata.Description;
             var detailsBody = $"""
 
@@ -99,12 +107,14 @@ public partial class InstallPackageListItem : ListItem
             { Properties.Resources.winget_publisher, (metadata.Publisher, metadata.PublisherUrl) },
             { Properties.Resources.winget_copyright, (metadata.Copyright, metadata.CopyrightUrl) },
             { Properties.Resources.winget_license, (metadata.License, metadata.LicenseUrl) },
-            { Properties.Resources.winget_release_notes, (metadata.ReleaseNotes, string.Empty) },
+            { Properties.Resources.winget_publisher_support, (string.Empty, metadata.PublisherSupportUrl) },
 
             // The link to the release notes will only show up if there is an
             // actual URL for the release notes
             { Properties.Resources.winget_view_release_notes, (string.IsNullOrEmpty(metadata.ReleaseNotesUrl) ? string.Empty : Properties.Resources.winget_view_online, metadata.ReleaseNotesUrl) },
-            { Properties.Resources.winget_publisher_support, (string.Empty, metadata.PublisherSupportUrl) },
+
+            // These can be l o n g
+            { Properties.Resources.winget_release_notes, (metadata.ReleaseNotes, string.Empty) },
         };
         var docs = metadata.Documentations.ToArray();
         foreach (var item in docs)
