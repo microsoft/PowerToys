@@ -20,7 +20,7 @@ public partial class WindowWalkerCommandsProvider : CommandProvider
     {
         Id = "WindowWalker";
         DisplayName = Resources.windowwalker_name;
-        Icon = new IconInfo("\ue8f9"); // SwitchApps
+        Icon = IconHelpers.FromRelativePath("Assets\\WindowWalker.svg");
         Settings = SettingsManager.Instance.Settings;
 
         _windowWalkerPageItem = new CommandItem(new WindowWalkerListPage())

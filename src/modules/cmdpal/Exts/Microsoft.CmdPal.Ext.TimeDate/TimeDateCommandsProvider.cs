@@ -32,6 +32,7 @@ public partial class TimeDateCommandsProvider : CommandProvider
         };
 
         Icon = _timeDateExtensionPage.Icon;
+        Settings = _settingsManager.Settings;
     }
 
     private string GetTranslatedPluginDescription()

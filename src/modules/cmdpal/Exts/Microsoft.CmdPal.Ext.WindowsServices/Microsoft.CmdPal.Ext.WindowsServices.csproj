@@ -9,6 +9,9 @@
     <ProjectPriFileName>Microsoft.CmdPal.Ext.WindowsServices.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Assets\Services.svg" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
   <ItemGroup>
@@ -20,6 +23,14 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\Services.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Services.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">

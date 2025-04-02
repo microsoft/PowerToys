@@ -38,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Assets\CreateExtension.svg" />
     <None Remove="Assets\template.zip" />
   </ItemGroup>
 
@@ -48,11 +49,22 @@
       <AutoGen>True</AutoGen>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Assets\CreateExtension.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\CreateExtension.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

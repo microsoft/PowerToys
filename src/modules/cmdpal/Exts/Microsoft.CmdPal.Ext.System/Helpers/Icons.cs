@@ -8,11 +8,11 @@ namespace Microsoft.CmdPal.Ext.System.Helpers;
 
 public static partial class Icons
 {
-    public static IconInfo FirmwareSettingsIcon { get; } = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.System\\Assets\\logoff.light.png", "Microsoft.CmdPal.Ext.System\\Assets\\logoff.dark.png");
+    public static IconInfo FirmwareSettingsIcon { get; } = new IconInfo("\uE950");
 
     public static IconInfo LockIcon { get; } = new IconInfo("\uE72E");
 
-    public static IconInfo LogoffIcon { get; } = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.System\\Assets\\logoff.light.png", "Microsoft.CmdPal.Ext.System\\Assets\\logoff.dark.png");
+    public static IconInfo LogoffIcon { get; } = new IconInfo("\uF3B1");
 
     public static IconInfo NetworkAdapterIcon { get; } = new IconInfo("\uEDA3");
 
@@ -22,5 +22,5 @@ public static partial class Icons
 
     public static IconInfo ShutdownIcon { get; } = new IconInfo("\uE7E8");
 
-    public static IconInfo SleepIcon { get; } = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.System\\Assets\\sleep.light.png", "Microsoft.CmdPal.Ext.System\\Assets\\sleep.dark.png");
+    public static IconInfo SleepIcon { get; } = new IconInfo("\uE708");
 }

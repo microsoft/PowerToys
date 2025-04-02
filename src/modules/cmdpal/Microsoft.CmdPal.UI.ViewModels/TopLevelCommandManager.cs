@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -133,16 +134,11 @@ public partial class TopLevelCommandManager : ObservableObject,
             var wrapper = clone[i];
             try
             {
-                // TODO! this can be safer, we're not directly exposing ICommandItem's out of CPW anymore
-                var thisCommand = wrapper.ItemViewModel.Model.Unsafe;
-                if (thisCommand != null)
+                var isTheSame = wrapper == firstCommand;
+                if (isTheSame)
                 {
-                    var isTheSame = thisCommand == firstCommand;
-                    if (isTheSame)
-                    {
-                        startIndex = i;
-                        break;
-                    }
+                    startIndex = i;
+                    break;
                 }
             }
             catch
@@ -214,7 +210,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
         extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
 
-        var extensions = await extensionService.GetInstalledExtensionsAsync();
+        var extensions = (await extensionService.GetInstalledExtensionsAsync()).ToImmutableList();
         _extensionCommandProviders.Clear();
         if (extensions != null)
         {
@@ -246,6 +242,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         // TODO This most definitely needs a lock
         foreach (var extension in extensions)
         {
+            Logger.LogDebug($"Starting {extension.PackageFullName}");
             try
             {
                 // start it ...
