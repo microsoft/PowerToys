@@ -65,7 +65,8 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
                 // We null-coalesce here rather than outside this branch as we want to raise PropertyChanged when the setter is called
                 // with null; the ShortcutControl depends on this.
                 _shortcut = value ?? new();
-
+                _shortcut.HotkeyName = $"CustomAction_{this.Id}";
+                _shortcut.OwnerModuleName = AdvancedPasteSettings.ModuleName;
                 OnPropertyChanged();
             }
         }
@@ -128,6 +129,7 @@ public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction
             _ = HotkeySettings.TryParseFromCmd(shortcutString, out shortcut);
         }
 
+        // TODO: How to set hotkey name for custom actions?
         return (shortcut as HotkeySettings) ?? new HotkeySettings();
     }
 

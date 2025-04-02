@@ -13,6 +13,7 @@
 #include "UpdateUtils.h"
 #include "centralized_kb_hook.h"
 #include "Generated files/resource.h"
+#include "hotkey_conflict_detector.h"
 
 #include <common/utils/json.h>
 #include <common/SettingsAPI/settings_helpers.cpp>
@@ -248,6 +249,47 @@ void dispatch_received_json(const std::wstring& json_to_parse)
             constexpr const wchar_t* language_filename = L"\\language.json";
             const std::wstring save_file_location = PTSettingsHelper::get_root_save_folder_location() + language_filename;
             json::to_file(save_file_location, j);
+        }
+        else if (name == L"check_hotkey_conflict")
+        {
+            try
+            {
+                PowertoyModuleIface::Hotkey hotkey;
+                hotkey.win = value.GetObjectW().GetNamedBoolean(L"win", false);
+                hotkey.ctrl = value.GetObjectW().GetNamedBoolean(L"ctrl", false);
+                hotkey.shift = value.GetObjectW().GetNamedBoolean(L"shift", false);
+                hotkey.alt = value.GetObjectW().GetNamedBoolean(L"alt", false);
+                hotkey.key = static_cast<unsigned char>(value.GetObjectW().GetNamedNumber(L"key", 0));
+
+                std::wstring requestId = value.GetObjectW().GetNamedString(L"request_id", L"").c_str();
+                std::wstring moduleName = value.GetObjectW().GetNamedString(L"moduleName", L"").c_str();
+                std::wstring hotkeyName = value.GetObjectW().GetNamedString(L"hotkeyName", L"").c_str();
+
+                auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+                bool hasConflict = hkmng.HasConflict(hotkey, moduleName.c_str(), hotkeyName.c_str());
+
+                json::JsonObject response;
+                response.SetNamedValue(L"response_type", json::JsonValue::CreateStringValue(L"hotkey_conflict_result"));
+                response.SetNamedValue(L"request_id", json::JsonValue::CreateStringValue(requestId));
+                response.SetNamedValue(L"has_conflict", json::JsonValue::CreateBooleanValue(hasConflict));
+
+                if (hasConflict)
+                {
+                    auto conflictInfo = hkmng.GetConflict(hotkey);
+                    response.SetNamedValue(L"conflict_module", json::JsonValue::CreateStringValue(conflictInfo.moduleName));
+                    response.SetNamedValue(L"conflict_hotkey_name", json::JsonValue::CreateStringValue(conflictInfo.hotkeyName));
+                }
+
+                std::unique_lock lock{ ipc_mutex };
+                if (current_settings_ipc)
+                {
+                    current_settings_ipc->send(response.Stringify().c_str());
+                }
+            }
+            catch (...)
+            {
+                Logger::error(L"Failed to process hotkey conflict check request");
+            }
         }
     }
     return;

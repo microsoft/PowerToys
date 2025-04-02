@@ -11,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class MouseJumpProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x44);
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, false, true, 0x44, "ActivationShortcut", MouseJumpSettings.ModuleName);
 
         [JsonPropertyName("activation_shortcut")]
         public HotkeySettings ActivationShortcut

@@ -59,6 +59,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig;
 
+            if (_colorPickerSettings.Properties.ActivationShortcut.HotkeyName == string.Empty)
+            {
+                _colorPickerSettings.Properties.ActivationShortcut.HotkeyName = "ActivationShortcut";
+                _colorPickerSettings.Properties.ActivationShortcut.OwnerModuleName = ColorPickerSettings.ModuleName;
+                _settingsUtils.SaveSettings(_colorPickerSettings.ToJsonString(), ColorPickerSettings.ModuleName);
+            }
+
             InitializeEnabledValue();
 
             // set the callback functions value to handle outgoing IPC message.
