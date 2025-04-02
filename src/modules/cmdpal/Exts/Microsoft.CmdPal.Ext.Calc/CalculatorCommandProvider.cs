@@ -106,8 +106,11 @@ public sealed partial class CalculatorListPage : DynamicListPage
     {
         try
         {
-            var resultNumber = new DataTable().Compute(equation, null);
-            result = resultNumber.ToString() ?? string.Empty;
+            var expr = new NCalc.Expression(equation);
+            Func<double> f = expr.ToLambda<double>();
+            var calculatedResult = f();
+
+            result = calculatedResult.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
             return true;
         }
         catch (Exception e)

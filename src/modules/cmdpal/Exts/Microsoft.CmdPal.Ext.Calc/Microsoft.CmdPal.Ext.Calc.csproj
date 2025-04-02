@@ -21,6 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CoreCLR-NCalc" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Assets\Calculator.svg" />
   </ItemGroup>
   <ItemGroup>
