@@ -106,5 +106,6 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
     public void Dispose()
     {
         _searchEngine.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
