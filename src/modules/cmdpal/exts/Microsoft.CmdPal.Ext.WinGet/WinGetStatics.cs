@@ -52,7 +52,7 @@ internal static class WinGetStatics
             _storeCatalog,
         ];
 
-        if (ApiInformation.IsApiContractPresent("Microsoft.Management.Deployment", 8))
+        if (ApiInformation.IsApiContractPresent("Microsoft.Management.Deployment.WindowsPackageManagerContract", 8))
         {
             foreach (var catalogReference in AvailableCatalogs)
             {
