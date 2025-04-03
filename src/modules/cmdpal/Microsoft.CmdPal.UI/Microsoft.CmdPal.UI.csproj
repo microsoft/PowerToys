@@ -13,7 +13,7 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <Version>$(CmdPalVersion)</Version>
 
     <!-- OutputPath is set in CmdPal.Branding.props  -->
