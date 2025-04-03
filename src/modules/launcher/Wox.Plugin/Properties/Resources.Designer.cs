@@ -79,7 +79,7 @@ namespace Wox.Plugin.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PowerToys Run - Plugin Loading Error.
+        ///   Looks up a localized string similar to PowerToys Run {0} - Plugin Loading Error.
         /// </summary>
         public static string FailedToLoadPluginTitle {
             get {

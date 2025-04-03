@@ -125,7 +125,7 @@
     <comment>"https://aka.ms/powerToysReportBug" is a web uri.</comment>
   </data>
   <data name="FailedToLoadPluginTitle" xml:space="preserve">
-    <value>PowerToys Run - Plugin Loading Error</value>
+    <value>PowerToys Run {0} - Plugin Loading Error</value>
     <comment>Don't translate "PowerToys Run". This is a product name.</comment>
   </data>
   <data name="VirtualDesktopHelper_AllDesktops" xml:space="preserve">
