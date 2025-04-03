@@ -12,6 +12,7 @@
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -winsdk=10.0.19041.0 -vcvars_ver=$(VCToolsVersion)
 SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" x64
+echo here--------------------------------------------------------
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs"
     </PreBuildEvent>
@@ -127,6 +128,13 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="WinAppSDK.wxs" />
     <Compile Include="Workspaces.wxs" />
   </ItemGroup>
+  <ItemGroup>
+     <PackageVersion Include="WixToolset.Heat" />
+     <PackageVersion Include="WixToolset.Firewall.wixext" />
+     <PackageVersion Include="WixToolset.Util.wixext" />
+     <PackageVersion Include="WixToolset.UI.wixext" />
+     <PackageVersion Include="WixToolset.NetFx.wixext" />
+   </ItemGroup>
   <ItemGroup>
     <Folder Include="CustomDialogs" />
   </ItemGroup>
