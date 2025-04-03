@@ -43,6 +43,7 @@ internal sealed partial class AppListItem : ListItem
 
     private Details BuildDetails()
     {
+        // Build metadata, with app type, path, etc.
         var metadata = new List<DetailsElement>();
         metadata.Add(new DetailsElement() { Key = "Type", Data = new DetailsTags() { Tags = [new Tag(_app.Type)] } });
         if (!_app.IsPackaged)
@@ -50,10 +51,34 @@ internal sealed partial class AppListItem : ListItem
             metadata.Add(new DetailsElement() { Key = "Path", Data = new DetailsLink() { Text = _app.ExePath } });
         }
 
+        // Icon
+        IconInfo? heroImage = null;
+        if (_app.IsPackaged)
+        {
+            heroImage = new IconInfo(_app.IcoPath);
+        }
+        else
+        {
+            try
+            {
+                var jumboIconTask = ThumbnailHelper.GetThumbnail(_app.ExePath, true);
+                jumboIconTask.Wait();
+
+                var stream = jumboIconTask.IsCompletedSuccessfully ? jumboIconTask.Result : null;
+                if (stream != null)
+                {
+                    heroImage = IconInfo.FromStream(stream);
+                }
+            }
+            catch
+            {
+            }
+        }
+
         return new Details()
         {
             Title = this.Title,
-            HeroImage = this.Icon ?? new IconInfo(string.Empty),
+            HeroImage = heroImage ?? this.Icon ?? new IconInfo(string.Empty),
             Metadata = metadata.ToArray(),
         };
     }
@@ -64,11 +89,6 @@ internal sealed partial class AppListItem : ListItem
         if (_app.IsPackaged)
         {
             icon = new IconInfo(_app.IcoPath);
-            if (_details.IsValueCreated)
-            {
-                _details.Value.HeroImage = icon;
-            }
-
             return icon;
         }
 
@@ -92,11 +112,6 @@ internal sealed partial class AppListItem : ListItem
         else
         {
             icon = new IconInfo(_app.IcoPath);
-        }
-
-        if (_details.IsValueCreated)
-        {
-            _details.Value.HeroImage = icon;
         }
 
         return icon;
