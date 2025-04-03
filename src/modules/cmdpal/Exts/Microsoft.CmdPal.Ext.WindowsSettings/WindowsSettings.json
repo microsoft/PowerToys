@@ -1008,14 +1008,14 @@
       "AltNames": [ "Crossdevice", "NearbyShareSettings", "ShareAcrossDevices" ],
       "Command": "ms-settings:crossdevice"
     },
-	{
+    {
       "Name": "NearbyShareSettings",
       "Areas": [ "AreaSystem" ],
       "Type": "AppSettingsApp",
       "AltNames": [ "Crossdevice", "ShareAcrossDevices", "SharedExperiences" ],
       "Command": "ms-settings:crossdevice"
     },
-	{
+    {
       "Name": "ShareAcrossDevices",
       "Areas": [ "AreaSystem" ],
       "Type": "AppSettingsApp",
@@ -1374,13 +1374,6 @@
       "Command": "control /name Microsoft.CredentialManager"
     },
     {
-      "Name": "ClientServiceForNetWare",
-      "Areas": [ "AreaPrograms" ],
-      "Type": "AppControlPanel",
-      "AltNames": [ "nwc.cpl" ],
-      "Command": "control nwc.cpl"
-    },
-    {
       "Name": "DateAndTime",
       "Areas": [ "AreaClockAndRegion" ],
       "Type": "AppControlPanel",
@@ -1526,36 +1519,6 @@
       "Areas": [ "AreaSystemAndSecurity", "AreaAdministrativeTools" ],
       "Type": "AppControlPanel",
       "Command": "%windir%/system32/odbcad32.exe"
-    },
-    {
-      "Name": "OfflineFiles",
-      "Areas": [ "AreaNetworkAndInternet" ],
-      "Type": "AppControlPanel",
-      "Command": "control /name Microsoft.OfflineFiles"
-    },
-    {
-      "Name": "ParentalControls",
-      "Areas": [ "AreaUserAccounts" ],
-      "Type": "AppControlPanel",
-      "Command": "control /name Microsoft.ParentalControls"
-    },
-    {
-      "Name": "PenAndInputDevices",
-      "Areas": [ "AreaHardwareAndSound" ],
-      "Type": "AppControlPanel",
-      "Command": "control /name Microsoft.PenAndInputDevices"
-    },
-    {
-      "Name": "PenAndTouch",
-      "Areas": [ "AreaHardwareAndSound" ],
-      "Type": "AppControlPanel",
-      "Command": "control /name Microsoft.PenAndTouch"
-    },
-    {
-      "Name": "PeopleNearMe",
-      "Areas": [ "AreaUserAccounts" ],
-      "Type": "AppControlPanel",
-      "Command": "control /name Microsoft.PeopleNearMe"
     },
     {
       "Name": "PerformanceInformationAndTools",
@@ -1763,39 +1726,11 @@
       "Command": "control Mmsys.cpl"
     },
     {
-      "Name": "NetworkProperties",
-      "Areas": [ "AreaNetworkAndInternet" ],
-      "Type": "AppControlPanel",
-      "AltNames": [ "netcpl.cpl" ],
-      "Command": "control Netcpl.cpl"
-    },
-    {
-      "Name": "PasswordProperties",
-      "Areas": [ "AreaUserAccounts" ],
-      "Type": "AppControlPanel",
-      "AltNames": [ "password.cpl" ],
-      "Command": "control Password.cpl"
-    },
-    {
       "Name": "SystemPropertiesAndAddNewHardwareWizard",
       "Areas": [ "AreaHardwareAndSound" ],
       "Type": "AppControlPanel",
       "AltNames": [ "sysdm.cpl" ],
       "Command": "control Sysdm.cpl"
-    },
-    {
-      "Name": "DesktopThemes",
-      "Areas": [ "AreaAppearanceAndPersonalization" ],
-      "Type": "AppControlPanel",
-      "AltNames": [ "themes.cpl" ],
-      "Command": "control Themes.cpl"
-    },
-    {
-      "Name": "MicrosoftMailPostOffice",
-      "Areas": [ "AreaPrograms" ],
-      "Type": "AppControlPanel",
-      "AltNames": [ "wgpocpl.cpl" ],
-      "Command": "control Wgpocpl.cpl"
     },
     {
       "Name": "ChangeUACSettings",
