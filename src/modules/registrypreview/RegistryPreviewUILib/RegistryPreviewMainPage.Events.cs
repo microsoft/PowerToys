@@ -23,6 +23,10 @@ namespace RegistryPreviewUILib
     {
         private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
+        // Indicator if we loaded/reloaded/saved a file and need to skip TextChanged event one time.
+        // (Solves the problem that enabling the event handler fires it one time.)
+        private static bool editorContentChangedScripted;
+
         /// <summary>
         /// Event that is will prevent the app from closing if the "save file" flag is active
         /// </summary>
@@ -107,11 +111,15 @@ namespace RegistryPreviewUILib
                 {
                     case ContentDialogResult.Primary:
                         // Save, then continue the file open
-                        SaveFile();
+                        if (!AskFileName(string.Empty) ||
+                            !SaveFile())
+                        {
+                            return;
+                        }
+
                         break;
                     case ContentDialogResult.Secondary:
                         // Don't save and continue the file open!
-                        saveButton.IsEnabled = false;
                         break;
                     default:
                         // Don't open the new file!
@@ -138,14 +146,16 @@ namespace RegistryPreviewUILib
             {
                 // mute the TextChanged handler to make for clean UI
                 MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
+
+                // update file name
                 _appFileName = storageFile.Path;
                 UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
 
                 // disable the Save button as it's a new file
-                saveButton.IsEnabled = false;
+                UpdateUnsavedFileState(false);
 
                 // Restore the event handler as we're loaded
-                MonacoEditor.TextChanged += MonacoEditor_TextChanged;
+                ButtonAction_RestoreTextChangedEvent();
             }
         }
 
@@ -154,7 +164,13 @@ namespace RegistryPreviewUILib
         /// </summary>
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            SaveFile();
+            if (!AskFileName(string.Empty))
+            {
+                return;
+            }
+
+            // save and update window title
+            _ = SaveFile();
         }
 
         /// <summary>
@@ -162,23 +178,18 @@ namespace RegistryPreviewUILib
         /// </summary>
         private async void SaveAsButton_Click(object sender, RoutedEventArgs e)
         {
-            // Save out a new REG file and then open it - we have to use the direct Win32 method because FileOpenPicker crashes when it's
-            // called while running as admin
-            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
-            string filename = SaveFilePicker.ShowDialog(
-                windowHandle,
-                resourceLoader.GetString("SuggestFileName"),
-                resourceLoader.GetString("FilterRegistryName") + '\0' + "*.reg" + '\0' + resourceLoader.GetString("FilterAllFiles") + '\0' + "*.*" + '\0' + '\0',
-                resourceLoader.GetString("SaveDialogTitle"));
+            // mute the TextChanged handler to make for clean UI
+            MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
 
-            if (filename == string.Empty)
+            if (!AskFileName(_appFileName) || !SaveFile())
             {
                 return;
             }
 
-            _appFileName = filename;
-            SaveFile();
             UpdateToolBarAndUI(await OpenRegistryFile(_appFileName));
+
+            // restore the TextChanged handler
+            ButtonAction_RestoreTextChangedEvent();
         }
 
         /// <summary>
@@ -192,10 +203,10 @@ namespace RegistryPreviewUILib
             // reload the current Registry file and update the toolbar accordingly.
             UpdateToolBarAndUI(await OpenRegistryFile(_appFileName), true, true);
 
-            saveButton.IsEnabled = false;
+            UpdateUnsavedFileState(false);
 
             // restore the TextChanged handler
-            MonacoEditor.TextChanged += MonacoEditor_TextChanged;
+            ButtonAction_RestoreTextChangedEvent();
         }
 
         /// <summary>
@@ -257,11 +268,16 @@ namespace RegistryPreviewUILib
                 {
                     case ContentDialogResult.Primary:
                         // Save, then continue the file open
-                        SaveFile();
+                        if (!AskFileName(string.Empty) ||
+                            !SaveFile())
+                        {
+                            return;
+                        }
+
                         break;
                     case ContentDialogResult.Secondary:
                         // Don't save and continue the file open!
-                        saveButton.IsEnabled = false;
+                        UpdateUnsavedFileState(false);
                         break;
                     default:
                         // Don't open the new file!
@@ -354,8 +370,27 @@ namespace RegistryPreviewUILib
             _dispatcherQueue.TryEnqueue(() =>
             {
                 RefreshRegistryFile();
-                saveButton.IsEnabled = true;
+                if (!editorContentChangedScripted)
+                {
+                    UpdateUnsavedFileState(true);
+                }
+
+                editorContentChangedScripted = false;
             });
+        }
+
+        /// <summary>
+        /// Sets indicator for programatic text change and adds text changed handler
+        /// </summary>
+        /// <remarks>
+        /// Use this always, if button actions temporary disable the text changed event
+        /// </remarks>
+        private void ButtonAction_RestoreTextChangedEvent()
+        {
+            // Solves the problem that enabling the event handler fires it one time.
+            // These one time fired event would causes wrong unsaved changes state.
+            editorContentChangedScripted = true;
+            MonacoEditor.TextChanged += MonacoEditor_TextChanged;
         }
     }
 }
