@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 
+#include <appxpackaging.h>
 #include <exception>
 #include <filesystem>
 #include <regex>
@@ -14,12 +15,14 @@
 
 #include "../logger/logger.h"
 #include "../version/version.h"
+#include <wrl/client.h>
 
-namespace package {
-
+namespace package
+{
     using namespace winrt::Windows::Foundation;
     using namespace winrt::Windows::ApplicationModel;
     using namespace winrt::Windows::Management::Deployment;
+    using Microsoft::WRL::ComPtr;
 
     inline BOOL IsWin11OrGreater()
     {
@@ -44,6 +47,71 @@ namespace package {
             &osvi,
             VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER,
             dwlConditionMask);
+    }
+
+    struct PACKAGE_VERSION
+    {
+        UINT16 Major;
+        UINT16 Minor;
+        UINT16 Build;
+        UINT16 Revision;
+    };
+
+    inline bool GetPackageNameAndVersionFromAppx(
+        const std::wstring& appxPath,
+        std::wstring& outName,
+        PACKAGE_VERSION& outVersion)
+    {
+        ComPtr<IAppxFactory> factory;
+        ComPtr<IStream> stream;
+        ComPtr<IAppxPackageReader> reader;
+        ComPtr<IAppxManifestReader> manifest;
+        ComPtr<IAppxManifestPackageId> packageId;
+
+        HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+        if (FAILED(hr))
+            return false;
+
+        hr = CoCreateInstance(__uuidof(AppxFactory), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
+        if (FAILED(hr))
+            return false;
+
+        hr = SHCreateStreamOnFileEx(appxPath.c_str(), STGM_READ | STGM_SHARE_DENY_WRITE, FILE_ATTRIBUTE_NORMAL, FALSE, nullptr, &stream);
+        if (FAILED(hr))
+            return false;
+
+        hr = factory->CreatePackageReader(stream.Get(), &reader);
+        if (FAILED(hr))
+            return false;
+
+        hr = reader->GetManifest(&manifest);
+        if (FAILED(hr))
+            return false;
+
+        hr = manifest->GetPackageId(&packageId);
+        if (FAILED(hr))
+            return false;
+
+        LPWSTR name = nullptr;
+        hr = packageId->GetName(&name);
+        if (FAILED(hr))
+            return false;
+
+        UINT64 version = 0;
+        hr = packageId->GetVersion(&version);
+        if (FAILED(hr))
+            return false;
+
+        outName = std::wstring(name);
+        CoTaskMemFree(name);
+
+        outVersion.Major = static_cast<UINT16>((version >> 48) & 0xFFFF);
+        outVersion.Minor = static_cast<UINT16>((version >> 32) & 0xFFFF);
+        outVersion.Build = static_cast<UINT16>((version >> 16) & 0xFFFF);
+        outVersion.Revision = static_cast<UINT16>(version & 0xFFFF);
+
+        CoUninitialize();
+        return true;
     }
 
     inline std::optional<Package> GetRegisteredPackage(std::wstring packageDisplayName, bool checkVersion)
@@ -229,6 +297,38 @@ namespace package {
         return matchedFiles;
     }
 
+    inline bool IsPackageSatisfied(const std::wstring& appxPath)
+    {
+        std::wstring targetName;
+        PACKAGE_VERSION targetVersion{};
+
+        if (!GetPackageNameAndVersionFromAppx(appxPath, targetName, targetVersion))
+        {
+            return false;
+        }
+
+        PackageManager pm;
+
+        for (const auto& package : pm.FindPackagesForUser({}))
+        {
+            const auto& id = package.Id();
+            if (std::wstring(id.Name()) == targetName)
+            {
+                const auto& version = id.Version();
+
+                if (version.Major > targetVersion.Major ||
+                    (version.Major == targetVersion.Major && version.Minor > targetVersion.Minor) ||
+                    (version.Major == targetVersion.Major && version.Minor == targetVersion.Minor && version.Build > targetVersion.Build) ||
+                    (version.Major == targetVersion.Major && version.Minor == targetVersion.Minor && version.Build == targetVersion.Build && version.Revision >= targetVersion.Revision))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     inline bool RegisterPackage(std::wstring pkgPath, std::vector<std::wstring> dependencies)
     {
         try
@@ -247,7 +347,10 @@ namespace package {
                 {
                     try
                     {
-                        uris.Append(Uri(dependency));
+                        if (!IsPackageSatisfied(dependency))
+                        {
+                            uris.Append(Uri(dependency));
+                        }
                     }
                     catch (const winrt::hresult_error& ex)
                     {
@@ -282,7 +385,6 @@ namespace package {
             {
                 Logger::debug(L"Register {} package started.", pkgPath);
             }
-
         }
         catch (std::exception& e)
         {
