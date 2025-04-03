@@ -1,0 +1,831 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <DirectoryRef Id="MonacoPreviewHandlerMonacoSRCFolder">
+            <Directory Id="dirF3D9892E484C03D885D33EEA40EF87C2" Name="min" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <ComponentGroup Id="MonacoSRCHeatGenerated">
+            <Component Id="cmpD794187AC05B0DFB15CD6A20F14A62D1" Directory="dirB6981C7877773C58E1AF6BDA6BA6F65E" Guid="{C569861A-D555-4863-AC55-03E5CFCE8D0D}">
+                <File Id="fil5A195A746DF9F6BFC8AC7BB0FE3F57F1" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\loader.js" />
+            </Component>
+            <Component Id="cmp76F2BAE040BF5B744FC7D6635120D0AC" Directory="dir977D270DC116F38F1B9320DA90FDF824" Guid="{76650347-9E66-4822-90C5-7958D5015AE4}">
+                <File Id="fil230F5EB5567F7124C272D9A08FD8E06E" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\base\browser\ui\codicons\codicon\codicon.ttf" />
+            </Component>
+            <Component Id="cmpB90F6001EE652278DF1F2404C3AC82AD" Directory="dir275B90E50E8463E5A7FE8E4490177655" Guid="{DDEEA731-F1A1-4EAF-B488-9254D6EB2D4F}">
+                <File Id="fil5707E516B7AA4E597526C6CC85AAC6EE" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\base\common\worker\simpleWorker.nls.de.js" />
+            </Component>
+            <Component Id="cmpE89319386933CC41881199D73CE409FE" Directory="dir275B90E50E8463E5A7FE8E4490177655" Guid="{C03A7579-FDCA-4662-9658-F5BDE3788557}">
+                <File Id="fil13BCC8728A5F0D6300F6B85AB00833F2" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\base\common\worker\simpleWorker.nls.es.js" />
+            </Component>
+            <Component Id="cmp65F6AA386EE2A7A90BA893F0E73A7741" Directory="dir275B90E50E8463E5A7FE8E4490177655" Guid="{D07A37B4-87AF-448B-898B-E508C7D40F8E}">
+                <File Id="filB4C8F9513A064E1C00F49494873E55E8" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\base\common\worker\simpleWorker.nls.fr.js" />
+            </Component>
+            <Component Id="cmp77734493650FF4AB58B99C030897C2BD" Directory="dir275B90E50E8463E5A7FE8E4490177655" Guid="{33DD334C-B19D-445E-A8BA-FC6D515CDFF9}">
+                <File Id="fil8663ED2A7E79DAE319E65474E82F45B0" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\base\common\worker\simpleWorker.nls.it.js" />
+            </Component>
+            <Component Id="cmp593C7718F41A091A4A3CFB51CC707FF4" Directory="dir275B90E50E8463E5A7FE8E4490177655" Guid="{DBB02192-7106-4002-9D43-CEB0D7FCED32}">
+                <File Id="fil017A687AD2CCE62C83577F1E93946058" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\base\common\worker\simpleWorker.nls.ja.js" />
+            </Component>
+            <Component Id="cmp320DF96442E69C8E1924351184F91A47" Directory="dir275B90E50E8463E5A7FE8E4490177655" Guid="{9E8C864F-606F-48A7-A82B-EDD5BCC3C084}">
+                <File Id="filD6C9666D67F09118BE523D8A6C46836A" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\base\common\worker\simpleWorker.nls.js" />
+            </Component>
+            <Component Id="cmp0EF426F24661ED7EBFD6B3F50FCD1D17" Directory="dir275B90E50E8463E5A7FE8E4490177655" Guid="{2EB305EB-89B6-4D2C-8C86-C8C1940A293A}">
+                <File Id="filA2712B6FF0D3E1F83C685B022A9907DB" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\base\common\worker\simpleWorker.nls.ko.js" />
+            </Component>
+            <Component Id="cmp1132C8043C3F6D377477B3D486460EF7" Directory="dir275B90E50E8463E5A7FE8E4490177655" Guid="{82986C9B-87F4-4622-8FE0-29D077F7954D}">
+                <File Id="fil479C62EA30789166E5A6D802579027E6" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\base\common\worker\simpleWorker.nls.ru.js" />
+            </Component>
+            <Component Id="cmp1F9372B1F8B7DC8C7CA29E8668582184" Directory="dir275B90E50E8463E5A7FE8E4490177655" Guid="{B749F607-055D-4658-AD7E-6FFEB8D21B1A}">
+                <File Id="filF93A3D1232655CE040B3B4DDB92E88AE" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\base\common\worker\simpleWorker.nls.zh-cn.js" />
+            </Component>
+            <Component Id="cmp4A431A741757A7B0611ECD249745D6DE" Directory="dir275B90E50E8463E5A7FE8E4490177655" Guid="{F1B3FA2A-372E-4B00-940D-623F572BBBA2}">
+                <File Id="filDEFBADDBBAF39DAA5B1636399F17726F" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\base\common\worker\simpleWorker.nls.zh-tw.js" />
+            </Component>
+            <Component Id="cmp27DA4DF6CA1A415A1B093D2AA7DCB7B8" Directory="dir1073A77D6A6F9C3BD868895BC0D2BB43" Guid="{9B06B1C6-2E58-4C2E-8D39-B259E27AD945}">
+                <File Id="filE7A37FC22BFDE273DA141CEC965874BC" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\base\worker\workerMain.js" />
+            </Component>
+            <Component Id="cmp5DD256FF0534FA2EFD897D7096F79776" Directory="dirEEC36D6CE0850FD998425DA64003EF71" Guid="{8590B77F-9631-4CB7-97C6-D52132C263D9}">
+                <File Id="fil4716FFF7F5BE94226FEEF137155B46EF" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\abap\abap.js" />
+            </Component>
+            <Component Id="cmpC257248FA4D690DD5F454AD45894A1D6" Directory="dirA5D6CA3E903645EA55097ED025FDC806" Guid="{4F0521BE-0ED7-4A22-B30A-B7C4BEA0E272}">
+                <File Id="filF7702CDF0F8A4A51E66DAA366AACB368" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\apex\apex.js" />
+            </Component>
+            <Component Id="cmpDF8D96BA15B92D88FFDDD65D85624A47" Directory="dir78E5143BB991015ABB2B126B33DF20F3" Guid="{2E333E6E-4B1E-4792-BD29-31E4F007BCD8}">
+                <File Id="fil77FDE762A29B94578C6A7E50142114F3" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\azcli\azcli.js" />
+            </Component>
+            <Component Id="cmpF7E39F0DA6D41EC6E5ACA196CBD76A4B" Directory="dirBB7633031785DFA55795107B6D149163" Guid="{7A00DB4B-AA5A-4B6C-AA80-FAEB97E869ED}">
+                <File Id="fil5CC8087FCE857D501F36DC47C770C099" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\bat\bat.js" />
+            </Component>
+            <Component Id="cmp123E8D2669169DF370FBC1E638A88B01" Directory="dir3428A3B09088B4D43D3C5D04E265CE5B" Guid="{4521872B-4BAD-4624-8A42-D25530A940DC}">
+                <File Id="fil73D7298F5BC725AB1902960F384D8EE6" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\bicep\bicep.js" />
+            </Component>
+            <Component Id="cmp9D24E640F94C19F22CAA9D8317FCE692" Directory="dir11500149D13F58C29A933FFBCF7AE831" Guid="{4D905923-7116-4E7D-AA4D-BC0AEA30F7F7}">
+                <File Id="filF79C76A71621AD4172E02CE5603CA7FE" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\cameligo\cameligo.js" />
+            </Component>
+            <Component Id="cmp2A2DBAA1966C85200CC39CA3BEFA0290" Directory="dir8F4676CBA9C11989C570D9760FDB6D14" Guid="{FB8633F9-B356-4BDD-BAE9-2DA234BFE1C8}">
+                <File Id="filE68A15A72537EBCF9F123DFB8C5067E4" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\clojure\clojure.js" />
+            </Component>
+            <Component Id="cmp60FC028022733E6C011C5FEDF27B4841" Directory="dir1DC625A0C557A53F30B2B2778AC20EAC" Guid="{257CC2C8-24CA-4F73-8F51-C513BC2EC578}">
+                <File Id="fil68CC461818DCCB3A84A1EF35D0390651" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\coffee\coffee.js" />
+            </Component>
+            <Component Id="cmp61D17782DC575327F8B8C6401A788846" Directory="dir2DADC716DFBEA6EC858374A8DE4A55BF" Guid="{F21B472B-0671-46FC-86B5-3799F72F2434}">
+                <File Id="filAC903246C65CCCCDE52F6B5BF26B25E1" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\cpp\cpp.js" />
+            </Component>
+            <Component Id="cmp066AA35698CEA6719D4C1297E66185D0" Directory="dirE4E212383E30441F1F43B3FCB74DDD2E" Guid="{B2024B41-1F87-4D1E-87D9-C9A922E64C76}">
+                <File Id="fil613CABD1196D2EB0D5AF231E6ACA5F48" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\csharp\csharp.js" />
+            </Component>
+            <Component Id="cmp41D508CED9B63C5935241337A5E65C34" Directory="dir9BDD3DD06D0AE947DFAB4ECE8AED417A" Guid="{50B45116-69DB-434E-8B15-F400B2581A48}">
+                <File Id="fil4D323557640C7B4D1370AE7415167ED4" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\csp\csp.js" />
+            </Component>
+            <Component Id="cmpCE10D34AFB174E2D480A8E5DAD51163D" Directory="dir44B4D4584FD02BDBAD15EAA2FF9C3081" Guid="{233DD007-6CEA-400A-9594-3BD978115D7A}">
+                <File Id="filC4F99435F9C80CF179A573800122002A" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\css\css.js" />
+            </Component>
+            <Component Id="cmp38134B04881A8198F104FDC5958A01E5" Directory="dir5FB0D3CBAA8948CFB2EA580D00694174" Guid="{2CF1CD79-6B89-4BE7-B69D-D40FD0FFE3C6}">
+                <File Id="filF056125DE9BD2B480277AC2558B2BC05" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\cypher\cypher.js" />
+            </Component>
+            <Component Id="cmpD3DCAB67EF8E802516BF17B051F8B54A" Directory="dir98CCF277B8D261E44E72D2436AE03A17" Guid="{E89E92C1-7B1E-4746-B5CF-708CEB8954FD}">
+                <File Id="fil18E4885DCF08C677694AF22C2CC58D77" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\dart\dart.js" />
+            </Component>
+            <Component Id="cmp33A6E9486D8D91F57B7AE33501C45932" Directory="dirEEBBE2EAD2FF3D7241AB0246E0F2EE59" Guid="{5ACE64A7-0F90-42D1-8116-80CF4A7EA92B}">
+                <File Id="fil677130B753F696F5542909678FAFD7EC" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\dockerfile\dockerfile.js" />
+            </Component>
+            <Component Id="cmp8A1AC85DC4199DD7B8D6FF67A97A8C37" Directory="dirE449AC0C719DDD618B136F9380896803" Guid="{43E74420-D6D1-4299-A860-39396508EC1B}">
+                <File Id="filEF2689C0260FCCFF84FAEDDA4D63646F" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\ecl\ecl.js" />
+            </Component>
+            <Component Id="cmp042CDA391CBCB3EFC24858A7E3410029" Directory="dir9913F0276DC804D55443ED170B33897B" Guid="{F1B47900-E392-4C66-89AF-36CACAB71652}">
+                <File Id="filB98B6E1418582A24EC9731DAA62A1E77" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\elixir\elixir.js" />
+            </Component>
+            <Component Id="cmp992D43898063D04A1E6394A98A36F927" Directory="dir4384234FF105D9CE96FF8F90EFD7A008" Guid="{34B2DE9A-6F3C-4DB6-A58B-80CF5E6E9139}">
+                <File Id="fil4553DF98EFAC3BF7ECA12E07ED546C0C" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\flow9\flow9.js" />
+            </Component>
+            <Component Id="cmp5EFA49D606C8C90FB42023FD541FA9CB" Directory="dir4EDA420ECFFAE101E961F38C239F9924" Guid="{3BFD69C6-9422-42D9-91FD-B8C2CF4B6AF8}">
+                <File Id="fil0ABCE560EBAC04418295F0C0BB894508" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\freemarker2\freemarker2.js" />
+            </Component>
+            <Component Id="cmp49F9485793701E195AE9B312C908C977" Directory="dirDC0D8D61976CD9114B598B3D7BC3A75E" Guid="{EC64135E-7905-4E38-9029-9DE922F894BB}">
+                <File Id="fil9F3473182D46B20D72D60B8AD0031246" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\fsharp\fsharp.js" />
+            </Component>
+            <Component Id="cmpB0B29540C5D5446781C1B6FAA1E090D6" Directory="dir09029A378D1F2B1CB5245A0926BB01B5" Guid="{9C47DA19-3CE8-40E6-833E-EB414D6E9C4C}">
+                <File Id="fil1B0F3EF110B1B3619872E641D06BDFB8" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\go\go.js" />
+            </Component>
+            <Component Id="cmp9FBC4EED7959B05C65F8B932DE801C21" Directory="dir7FC34AF4DF60585C05AF245B0976DB1A" Guid="{14ECB605-0603-4756-A918-982715AE8666}">
+                <File Id="fil678F2821AF1941144AA26961A798225E" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\graphql\graphql.js" />
+            </Component>
+            <Component Id="cmp7B7FB30E70C4E173321B3E834AB38153" Directory="dir0D808593278731C2A8A5E3579964B030" Guid="{04B00612-4604-4F64-844D-A63ECA69CDED}">
+                <File Id="fil704686C5BE0D4A68FE121AAD02C2B2BC" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\handlebars\handlebars.js" />
+            </Component>
+            <Component Id="cmp3177C2D5997D023EB737804E90A8219D" Directory="dir08D93211F4F28EB69AAB12C06A0A2717" Guid="{AF7A000D-35D3-4354-AF85-D12B5D89AEBF}">
+                <File Id="fil41B011E3827AEE80EF78527C083141CD" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\hcl\hcl.js" />
+            </Component>
+            <Component Id="cmpC589E0056B907D7CF2CF0B45E8163C01" Directory="dir290B934CDF26049203FDCD68940E9A56" Guid="{9726D8AC-1043-4A4F-9F92-AA450D3C7B3A}">
+                <File Id="fil17392B8121F4FBB6A506FABC2C2E5B4A" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\html\html.js" />
+            </Component>
+            <Component Id="cmp4D5DDE2D9E64DBF9C36214C22F90B6CB" Directory="dir32E14839B1A40DAE7351CDB5201D0D6B" Guid="{5D4FAC2D-DC02-41DB-91E2-49047C6FDA99}">
+                <File Id="fil1DD0BC29C5CFEE770DCBC99543791DE5" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\ini\ini.js" />
+            </Component>
+            <Component Id="cmp8825BFFA58C83EE05C788E9EB696ACDB" Directory="dirD6C83E20CEBD48927A1B999FC29D10D5" Guid="{6FE3E7A6-34B3-4ED6-B1F2-0646F15E5676}">
+                <File Id="filE1A38B5EDCCC63CDAC5C53F6FB704BF8" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\java\java.js" />
+            </Component>
+            <Component Id="cmp4932D9E07C49E2847EDB8EF1CF8F329B" Directory="dir5F323D10C8C8A75A64FA7C89D96680EC" Guid="{287C959A-976B-4CCC-B3FF-A2516C0B7696}">
+                <File Id="fil75D6CB9D9E4BE7CE31A77C2F73E4170B" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\javascript\javascript.js" />
+            </Component>
+            <Component Id="cmp230607F260EA2F70B55769327F052D04" Directory="dir06601F6D5A3F9D7D60424F5E09524DB4" Guid="{61AADA54-38B5-4DD9-B439-86F3D6060C74}">
+                <File Id="fil39BD2FA55AD2B1997E5B0C8E8C3FAB4F" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\julia\julia.js" />
+            </Component>
+            <Component Id="cmp66E703C175502EC3E2709571A70CB232" Directory="dir70381AED3CC1DDCE84DA393FA084DF30" Guid="{E676B015-3D30-49CD-8DA3-4F8D0BF564C0}">
+                <File Id="filAE5313884B78191CBE09A130A8710884" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\kotlin\kotlin.js" />
+            </Component>
+            <Component Id="cmp84DFB427A889509D65D2B421A80B5A63" Directory="dir71C05CEF79E7873797404DB7FA624782" Guid="{06B0218A-AB8C-448D-8AC9-8277B32BC52B}">
+                <File Id="fil9C85B4CD5265DAF76CEE07C4224196A2" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\less\less.js" />
+            </Component>
+            <Component Id="cmp2E3FDB092C4D52C001F8F0E74C309548" Directory="dir827C0A5B3A46EFF9ED86626CA8E09FEB" Guid="{99A5F600-F759-456E-86AA-CBAF7C69D0F7}">
+                <File Id="filFD0890423932307FE25D4C8B53F00BD0" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\lexon\lexon.js" />
+            </Component>
+            <Component Id="cmp8F54BAF95378835755F3A5CD9AFADBDD" Directory="dir97DF6B0B0AC776C7AA8A3B17483E6B88" Guid="{3F46D889-5484-4F4E-A39A-56A8EE69A71D}">
+                <File Id="filEF4F2E0137CAC7A0CB164DBDFAA399B2" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\liquid\liquid.js" />
+            </Component>
+            <Component Id="cmp18388C9F47969C68D1E3502E7274C276" Directory="dirE518C878E428E98585AE9C7E7A5B2742" Guid="{FB745898-6C78-49CA-B87C-C1F0711DC56C}">
+                <File Id="fil97D5759C81D0BD8FE8C89506426A7497" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\lua\lua.js" />
+            </Component>
+            <Component Id="cmp3A23A2A3F0AB9CE881DB1B2E1C72C4EC" Directory="dir1FCD208725F3AED0B959B9B5B5206392" Guid="{890A28DC-A7D6-4F7B-8965-39F0A9CB979F}">
+                <File Id="fil1D6EF5348EF78CF6AB5296A5DB526D17" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\m3\m3.js" />
+            </Component>
+            <Component Id="cmp57E4B0F9116B033EFC658534BE41C3E7" Directory="dir6358A938D9D11E471FFB3DA2ADAD7BCB" Guid="{42356A80-1637-43EA-9E57-D8F8043E0CCB}">
+                <File Id="fil50720EF680C0B80D0A873A006FAF36E4" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\markdown\markdown.js" />
+            </Component>
+            <Component Id="cmp1314326A4518FD22F710126767095CBD" Directory="dir5D94AAB564D15FAF0AD003A873C6E880" Guid="{292D0229-7B08-4B12-A8D1-31398FE43073}">
+                <File Id="fil3F07BC27D9B0043109DC8A031C4F88BA" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\mdx\mdx.js" />
+            </Component>
+            <Component Id="cmpCB6D69B171231CD55C8F2F006E2B6A5B" Directory="dir45D8F9637E749259F3D09F01185CB277" Guid="{CEE9D84B-06ED-49D5-B3C9-C7A3ADA4D734}">
+                <File Id="fil9B69D50CE180BF085AAAAEF02DEE74A0" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\mips\mips.js" />
+            </Component>
+            <Component Id="cmpF740C950DE512A21B1090FAD9AA7F43B" Directory="dirEEBD553161A5477464565F0AA9C66A4E" Guid="{38AD5C72-8974-4DA2-AFAB-40265EBAC968}">
+                <File Id="fil6EEF0E30296A7C5E9E221F559D46C564" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\msdax\msdax.js" />
+            </Component>
+            <Component Id="cmpA691984DF9BAE25738CA0308D59CDBF3" Directory="dirE82FE5B1199EBD2FB6D6CB51A54FDBF1" Guid="{81448B44-CBC8-4B9A-8340-2B6D49280E3A}">
+                <File Id="filE2E2ADB30CFFEE9947D413AC238ED703" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\mysql\mysql.js" />
+            </Component>
+            <Component Id="cmp1C59CF91472616F1C050D9F316A029F6" Directory="dir2757105AED061CB6E7A811A59041E70B" Guid="{06C88359-F142-4D5E-990C-1E64A07FE312}">
+                <File Id="filA05535A421A43C37B4F1DD8ECE1A482B" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\objective-c\objective-c.js" />
+            </Component>
+            <Component Id="cmpFE06C4889E456B912FB3EC264017EA97" Directory="dir2DAF129901E8E61B5F28D8764B2A53EC" Guid="{A7651A0D-A9AC-4825-991D-59C444C572F1}">
+                <File Id="fil8D8757671D2402CAB7991C706DA30383" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\pascal\pascal.js" />
+            </Component>
+            <Component Id="cmp24C41DC272F12153D4A032F8A7F6275D" Directory="dir88BB0F9F45F25EA2B8BD2B169E47C6C3" Guid="{D1CA53B4-D128-47BF-96CB-7AD78744F4AA}">
+                <File Id="fil95AE56597B69A6257AF6BCA3524181CE" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\pascaligo\pascaligo.js" />
+            </Component>
+            <Component Id="cmp6BEEC5E5DE43E67A9CD1C9F5C5A54EF1" Directory="dir4365498E48631EE6110E707C908F23E5" Guid="{F8234951-83BD-428D-9A0C-60EFE0D3E41B}">
+                <File Id="filF1CA56B4A2FD133AC73C3FC142E1DC04" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\perl\perl.js" />
+            </Component>
+            <Component Id="cmp5C77DCEFCB780E509972C581E7A667C6" Directory="dir7BBE99088AD794540115669A678F7B57" Guid="{B7D9F693-E188-4CC6-9266-58DB06FECEAF}">
+                <File Id="filB7C2C8FE9FB72313CBF6C62671819658" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\pgsql\pgsql.js" />
+            </Component>
+            <Component Id="cmpD96FF6E590005311C7D30C197C6A0307" Directory="dir73ABE26EA37698BE7A3BB7464BCC549A" Guid="{DB8262F2-1EE3-456A-8281-9872BF92698C}">
+                <File Id="fil0464BE3C58F01A6B41DF4F477DB30C02" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\php\php.js" />
+            </Component>
+            <Component Id="cmp213104A30886166BA0E11531FDA6DB31" Directory="dir25A1924A74C6AC9A29661F8183830092" Guid="{7C2772E4-858B-4987-A7ED-275348A1C76E}">
+                <File Id="fil32E78E404FE7CCF7D8695DF7D6C74516" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\pla\pla.js" />
+            </Component>
+            <Component Id="cmp16C8627E2AFE920942D74D5BD856F05D" Directory="dirA17168CDD8EEFA01087350F05246840B" Guid="{4587CB97-586B-4DF4-876C-15AD23520AB8}">
+                <File Id="fil04764B685A932E9A4A48EB0310B17703" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\postiats\postiats.js" />
+            </Component>
+            <Component Id="cmp1B47D9C0F19BDDF7480A4CDC9AB9D569" Directory="dirBF1FE658716DC862C9477F47E3EE0E9C" Guid="{A6B8195C-F207-40CB-823E-4CA1EE246A9E}">
+                <File Id="fil8BAF642C32F4C085B9021790BC7F1753" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\powerquery\powerquery.js" />
+            </Component>
+            <Component Id="cmpDB990090AB5BB210E519416AE5C78615" Directory="dirF0808D745B8F1D84EC3E766DED71F25D" Guid="{06520EE4-3AD3-4DD9-AA32-4A0FF2F12824}">
+                <File Id="filF41994C5075B95653F5E0E8CC957BB5F" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\powershell\powershell.js" />
+            </Component>
+            <Component Id="cmp44E47D9A54F88DB52FE8EEF3E627891B" Directory="dirB0AC1BF5C32B8286A676408C25A61765" Guid="{60739CB2-D8D1-47DF-BC44-CA3EC1EC420B}">
+                <File Id="filD2EF2570C2F0A965E303338172EF31E8" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\protobuf\protobuf.js" />
+            </Component>
+            <Component Id="cmp5E8C3A3D73CF271F9F1E0A7C5A0F4799" Directory="dir55FBC962119473511EA55883EE255033" Guid="{0B78FABB-EC88-4E7C-B9FD-F1AB9ACC5B79}">
+                <File Id="fil36EDC81F4162D7F6889C6FAD1EE25274" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\pug\pug.js" />
+            </Component>
+            <Component Id="cmpE1183B34F4303C066B405DC7F580B8B3" Directory="dir76484A3A9306229E678FD42F61E4FB4C" Guid="{74629AE1-88DB-4D81-9FFC-02634D7C5786}">
+                <File Id="filA28101ED2FB28FFEBEF91CA35ABA4181" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\python\python.js" />
+            </Component>
+            <Component Id="cmp510DF3AB1E33810D207A9E5214A45211" Directory="dir3A749E768458D7BDB7E8A3619C9DBF19" Guid="{1A1D322A-52F3-4402-B251-8843EAB7DE9C}">
+                <File Id="fil32F5269E874740765999CAF3A9ED0A8E" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\qsharp\qsharp.js" />
+            </Component>
+            <Component Id="cmp58AAD5FA6383B79AC4A2D0D62A431CB5" Directory="dirBEAA75EFDD04A1C0A9B19D70DD4732C1" Guid="{62929A2C-12AC-494B-9D01-DA481DD76409}">
+                <File Id="filEFE8F8D1345E00064E315D54E43E8F01" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\r\r.js" />
+            </Component>
+            <Component Id="cmp4864DCD32017665F9BB35BEEAADF8A6A" Directory="dir00D56363696DE914F9B5833697CE6982" Guid="{8F2C8B73-71AD-40CE-A430-337087C36B31}">
+                <File Id="filBEF9DDF10A4E2C12691C819DFA6EFE1A" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\razor\razor.js" />
+            </Component>
+            <Component Id="cmp3C639E16956296FE1D0F105407600436" Directory="dirFC530128ACFC59ECC74A19B7BB5EA51E" Guid="{07D84F1C-4CEF-496E-AFA9-3D0B069E33F2}">
+                <File Id="fil34F417302580CFB557A5A2344A27416F" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\redis\redis.js" />
+            </Component>
+            <Component Id="cmp8C10458E0F2A3FF3BE8726181F0C1E36" Directory="dir6731A8985A5C5FB88A9B2E2E504176AB" Guid="{3C380ADD-F7FD-4302-91DC-843F2FFA915E}">
+                <File Id="filA4D4F68D56F445406C84AEAA71EE6CB9" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\redshift\redshift.js" />
+            </Component>
+            <Component Id="cmp70AE16ED3E9D61BFEB26A57D0EE6FE00" Directory="dir9251D6B5581D4133030A9129421E5255" Guid="{E68FBBBD-6217-43AC-92F6-971C235DCA5B}">
+                <File Id="fil72400E6CF9ED96C8FED862DCB5ECAD5C" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\restructuredtext\restructuredtext.js" />
+            </Component>
+            <Component Id="cmpAD9EF7CD070993A40475D546EF92B3FC" Directory="dir59061104B938DAD5AB82F8269BF9A5CC" Guid="{414CE69A-6D66-4E98-989B-D76B3F31C43F}">
+                <File Id="fil297DE4364A0AECC8CA41DF12A648FE70" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\ruby\ruby.js" />
+            </Component>
+            <Component Id="cmp4B7EF474E90F8CFAADB3164A01AFFE37" Directory="dir1670BA97A7F3BB1471DA99A5F0DDF616" Guid="{532E0CA6-29BC-4087-944A-8A2CB95C30B8}">
+                <File Id="fil7457730B29BFF0E111609B4B8B080866" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\rust\rust.js" />
+            </Component>
+            <Component Id="cmp492EFE4E0608D0FC3AC6CA57F8304272" Directory="dirE97385D326929F1063C2ECE2A2291160" Guid="{9AF8AB3E-A4AF-47B4-922C-2B9EA89290CB}">
+                <File Id="fil21FE4117314367DE11CB6B56542D917D" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\sb\sb.js" />
+            </Component>
+            <Component Id="cmpEEC5F6AE0DB2EEDA217EA399A99FAD2D" Directory="dirECE9BA50EABF810E2043B3CAB8D50EFF" Guid="{405B5565-A378-481B-BB30-876FCC2D76F5}">
+                <File Id="filC547F1A9C4461E8F1C5F201F5F8BC45D" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\scala\scala.js" />
+            </Component>
+            <Component Id="cmp7B3A0FBF09671C886AEEB6691CFC5950" Directory="dir2D09B3341172E78CED634088E3A0F0D6" Guid="{763BA230-7DFF-44A7-BAA4-98B22FAA55F1}">
+                <File Id="filB6150653139EA7511F6C62E50A7123E3" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\scheme\scheme.js" />
+            </Component>
+            <Component Id="cmp17AD36D554AFF8C3F803D394A951409A" Directory="dirD421FCD5A3C6885202E25032B144CBC0" Guid="{53C21DDA-D260-4AFE-96EB-5D3086F68774}">
+                <File Id="fil926165C5CB9FE7A40C40B7F7C81ECC4C" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\scss\scss.js" />
+            </Component>
+            <Component Id="cmp3722C5C661FFA62440A61CFB0AA27D02" Directory="dir1EEEE401A815DC23AF03E7CAB9B69E8A" Guid="{ED7AC496-F753-4028-A178-7FD48CC79B0F}">
+                <File Id="fil1655B592BA6AB0437868FE0B4084182C" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\shell\shell.js" />
+            </Component>
+            <Component Id="cmp34F767180B1903E2CB6601CAA8CBD40B" Directory="dir5816A6FCDB97E961BF867F179E019F5C" Guid="{08739DD0-DF63-4DA5-973A-79D69FF586D6}">
+                <File Id="fil5180142482B9251C1131C06B02128123" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\solidity\solidity.js" />
+            </Component>
+            <Component Id="cmp129EC490BB79A4C3043B7C9DF392FAA7" Directory="dir94109FFBE73954C2E3D9560E43A94392" Guid="{F1523FD2-EF7C-4037-8488-B48FD04F15A8}">
+                <File Id="fil1E962378D9BCCE53EDC667BCCEA7F7B7" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\sophia\sophia.js" />
+            </Component>
+            <Component Id="cmp6A907AFCED6CBB9ED4A7B88E9580D653" Directory="dirC315087738325C868107A7E7D0D4CAEF" Guid="{6C05E7B0-5C0D-44A5-9C5E-C7FD52F3358B}">
+                <File Id="fil41B25CF5C0F174C49894D14A52F2DD27" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\sparql\sparql.js" />
+            </Component>
+            <Component Id="cmpC8C679E43528396B9B3F5081608E526D" Directory="dirB5EF435C30BEC37ACFF774928750D156" Guid="{1418B00E-BB82-4EB2-BB38-87A53EE6BDE2}">
+                <File Id="fil798B57A552B95E9D21CD6B3CC4A5F075" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\sql\sql.js" />
+            </Component>
+            <Component Id="cmp7207DBBDA0D4C1DBB41C84603BA09931" Directory="dir52852EA262AF9E52EAAFE3C91C7E5AAB" Guid="{630F496D-745E-4557-9661-BB6A84415DB4}">
+                <File Id="fil5E8B830254A3429CC3322FF5104BA8D7" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\st\st.js" />
+            </Component>
+            <Component Id="cmpC4652086B9880C093BD80EDFAE501B2A" Directory="dirDE2C1CBE313A17238E2151D374450794" Guid="{69607F0D-B4E7-4F35-BE33-2380005C8460}">
+                <File Id="filD7B9818DDCDD592008BC44FDEF877AA5" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\swift\swift.js" />
+            </Component>
+            <Component Id="cmp74D0BCC38FC3B7DBAE59BC6CEBAC893E" Directory="dir36C13CDE80473EDC55B5B2B9A4585964" Guid="{156D0BFE-D767-41B5-AA05-E59CC1C61024}">
+                <File Id="fil0F7BC73CB34B55B7D922C41EC221E206" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\systemverilog\systemverilog.js" />
+            </Component>
+            <Component Id="cmp55E997BF9077CE615EC79EB887495E13" Directory="dir05BEFA701AFF555CBB0C575C4A8042DD" Guid="{A456F60A-2ED2-4E64-8837-D09021FF0CA3}">
+                <File Id="fil5C156694117FB91497790ED575BAC183" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\tcl\tcl.js" />
+            </Component>
+            <Component Id="cmp4D4A1F0935C6DC917BA09F8E579D0FF5" Directory="dir9FBB158AFDA9A66E220286D4F2609E71" Guid="{3FC2A2C1-739B-4600-97B5-01DBE781319B}">
+                <File Id="filFE01063A541012A82A6F8D2045B93263" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\twig\twig.js" />
+            </Component>
+            <Component Id="cmpFF3FCAE616D37EAD14EF983504CC727F" Directory="dirF551ED8D7A1A57AEAD472CE945460F44" Guid="{1BCEE39A-F6E6-4DB1-8E54-13D5F7F2E9B2}">
+                <File Id="fil122D364F60BF040622B818884CA43C98" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\typescript\typescript.js" />
+            </Component>
+            <Component Id="cmpD54D459A7B653EA2E3682BF144AD50E0" Directory="dir6E11C98F7CEAF38791F199EF7D6C5A9C" Guid="{C397F37B-D06B-47B8-8FB7-EB79FF284299}">
+                <File Id="fil9421738766446503692A368999585409" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\vb\vb.js" />
+            </Component>
+            <Component Id="cmp01E1676001EF9447CCE99EF997C3854A" Directory="dir3AA5BCBFC2ED6DF8EE8F6DFED0E130D8" Guid="{F2CE663A-6657-4FD6-83F3-9E033C0B5B05}">
+                <File Id="filA2810D25D0DB89452047A541E92E048A" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\wgsl\wgsl.js" />
+            </Component>
+            <Component Id="cmp5C3D3E69EB6D8936621F6EAF99202894" Directory="dir28FFEB82009147C6884C2EC55E931EF0" Guid="{53F0548E-974A-46E9-B361-342A3BD21586}">
+                <File Id="fil956BD8B00CA18D1568B4C79693EB2A3D" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\xml\xml.js" />
+            </Component>
+            <Component Id="cmp61C476F773F767F6539045AD5ADE758F" Directory="dir23EA2EDA8657328B2431358EE85819C3" Guid="{671B9374-C0E8-425C-ABF1-4FAAC0B719D0}">
+                <File Id="fil98A02DF128F00309F1A943D07AB055C3" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\basic-languages\yaml\yaml.js" />
+            </Component>
+            <Component Id="cmp20A5B542971DE9DA8D644A61420785F9" Directory="dirF07B2D247178B70BDB211F65EFFEFC96" Guid="{5C51558E-A4C9-49D4-A5B0-0CBCAC9BB49C}">
+                <File Id="fil4739DC27D1A7C65663FBDE2445A60560" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\editor\editor.main.css" />
+            </Component>
+            <Component Id="cmpF1CC644B2CA40B09F8FA699359C1771E" Directory="dirF07B2D247178B70BDB211F65EFFEFC96" Guid="{79633893-5E72-4D36-9970-FBBD114D4FC3}">
+                <File Id="fil16DAD4259A7A7AACD322B6C0FB7B9188" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\editor\editor.main.js" />
+            </Component>
+            <Component Id="cmp8FE1FFC5A8CA470AC90BA429584868CD" Directory="dirF07B2D247178B70BDB211F65EFFEFC96" Guid="{9381C18C-50BC-4D9A-BFC5-9D30578FE099}">
+                <File Id="fil5EA84511D355AC43A8D6C5723FAF9A11" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\editor\editor.main.nls.de.js" />
+            </Component>
+            <Component Id="cmp8D6D24BF81A453DC275C6893913D7CAE" Directory="dirF07B2D247178B70BDB211F65EFFEFC96" Guid="{E8C76015-57BD-4D81-BA1C-B8073701A282}">
+                <File Id="filF4B3065C0890DB56CED7793E6A837BA1" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\editor\editor.main.nls.es.js" />
+            </Component>
+            <Component Id="cmp3E42A2ACE7311946156242474BC9E156" Directory="dirF07B2D247178B70BDB211F65EFFEFC96" Guid="{E7E43ADF-B15A-4ECC-98B1-E3B8EC6E7C2C}">
+                <File Id="fil67314B5BC24A48D3440DD4F6CB19A037" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\editor\editor.main.nls.fr.js" />
+            </Component>
+            <Component Id="cmp0F26375C9575FA3423D86623177E0CA5" Directory="dirF07B2D247178B70BDB211F65EFFEFC96" Guid="{E562F334-3D33-47D9-92CD-920408D19FB0}">
+                <File Id="fil34831777C73B6FE2CFFF44AE70DF5BE8" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\editor\editor.main.nls.it.js" />
+            </Component>
+            <Component Id="cmp96CC2FC806BC069747C7CA85FB47A6DA" Directory="dirF07B2D247178B70BDB211F65EFFEFC96" Guid="{D733719D-952F-4936-856E-852D4B53CAA3}">
+                <File Id="filC145FC2C50442F939AD2D4298A82277A" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\editor\editor.main.nls.ja.js" />
+            </Component>
+            <Component Id="cmp70B74230CB60AA5841BB5B1A1EDB5C99" Directory="dirF07B2D247178B70BDB211F65EFFEFC96" Guid="{AE6C9870-F120-4DDF-B32C-0829168E6E21}">
+                <File Id="filCB8B958A25BE666A507F1E2C44B5C8CD" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\editor\editor.main.nls.js" />
+            </Component>
+            <Component Id="cmp1569D2545DA5756B7AF09D6E24571D1A" Directory="dirF07B2D247178B70BDB211F65EFFEFC96" Guid="{828F52A3-BF12-4B42-9667-07A40B42E380}">
+                <File Id="fil44E03FF0B6C591FDB72B6AF9054FA050" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\editor\editor.main.nls.ko.js" />
+            </Component>
+            <Component Id="cmp4BC7AA05FBB35E2D887B52238A974E99" Directory="dirF07B2D247178B70BDB211F65EFFEFC96" Guid="{62EA53FB-0540-4C8D-A18E-0724AA6E2E99}">
+                <File Id="filC86EE71A7791F90B66091FC42E34E279" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\editor\editor.main.nls.ru.js" />
+            </Component>
+            <Component Id="cmp87D284043D62B973564C789AC38E6232" Directory="dirF07B2D247178B70BDB211F65EFFEFC96" Guid="{47906425-7713-4942-8B3B-39FBE04475F1}">
+                <File Id="fil6C7FBC6268BD04DF266FB5E7AE2D3BB1" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\editor\editor.main.nls.zh-cn.js" />
+            </Component>
+            <Component Id="cmp8C7329BF067B79A18D1F270A135AFAE7" Directory="dirF07B2D247178B70BDB211F65EFFEFC96" Guid="{9DC3C565-BC66-4146-A909-8EF1322A4802}">
+                <File Id="fil45B4CFBBF26E182D02106C9D4AB01F60" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\editor\editor.main.nls.zh-tw.js" />
+            </Component>
+            <Component Id="cmp11EBB7AA4D55CD187B31159D117A3AA3" Directory="dir22A893114234A222604F944F124359F2" Guid="{54A32BF3-B2DA-419E-AB87-1881ADFC8567}">
+                <File Id="filE5B71FD2217B247614C6F7E37FD58701" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\language\css\cssMode.js" />
+            </Component>
+            <Component Id="cmpD8D409B0DE3406F70BD754B0C89C9E48" Directory="dir22A893114234A222604F944F124359F2" Guid="{4D12B803-862E-47CF-A4FA-C17CA135817E}">
+                <File Id="fil7CB23C78A8B99F4CBB1E7283F9C4560C" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\language\css\cssWorker.js" />
+            </Component>
+            <Component Id="cmp20B9B5FDC82CF72BE81A885B68083A84" Directory="dir35A51C99DC1F92887D6C6744ED281FD4" Guid="{3FFA5C26-5DF0-4823-9C65-256B3859400E}">
+                <File Id="fil33BC2F92999250551F7CA976EEC0B6ED" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\language\html\htmlMode.js" />
+            </Component>
+            <Component Id="cmp2F3449798999F976A2DD749FB80E707B" Directory="dir35A51C99DC1F92887D6C6744ED281FD4" Guid="{3EC32B6D-D94B-4857-B316-06BBA18080BA}">
+                <File Id="fil465C7EA3B363555AD0233D4868CF4EEB" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\language\html\htmlWorker.js" />
+            </Component>
+            <Component Id="cmp722E7E41526C963DBDE2532CCC5CC536" Directory="dirB72201FCDD6F74DCCB7C3D7363F744FA" Guid="{28451E9B-35C4-468E-90F6-E4E40E710595}">
+                <File Id="fil7F0AD8712803D096A85B1164E1715A28" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\language\json\jsonMode.js" />
+            </Component>
+            <Component Id="cmp53E4833864E8220F264CF746988DAC14" Directory="dirB72201FCDD6F74DCCB7C3D7363F744FA" Guid="{2439E2DB-F10D-43D2-B787-1C1685D80010}">
+                <File Id="filEB1AB67CFA3EF36EF44A0FFA3F8EFE25" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\language\json\jsonWorker.js" />
+            </Component>
+            <Component Id="cmp7AF798BEB756EB97B517CDCE9CF86AE9" Directory="dir03E77505A5D8EF35AB68BDCC15BFA1E9" Guid="{47A7DC93-9624-48AA-953B-57F516F28F61}">
+                <File Id="filCECB815DB64DFE38BB4B90B881852BFC" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\language\typescript\tsMode.js" />
+            </Component>
+            <Component Id="cmp3F09647B702F5ED8BB82F951A49BC992" Directory="dir03E77505A5D8EF35AB68BDCC15BFA1E9" Guid="{7CEC0982-F837-4F3B-A182-BFA4841C6698}">
+                <File Id="filEBE60190891E94F311FA7D42A3986EF0" KeyPath="yes" Source="$(var.MonacoSRCHarvestPath)\min\vs\language\typescript\tsWorker.js" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir00D56363696DE914F9B5833697CE6982" Name="razor" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir70DCD0AEE58916DD3148EADC4C276EFB">
+            <Directory Id="dir03E77505A5D8EF35AB68BDCC15BFA1E9" Name="typescript" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir05BEFA701AFF555CBB0C575C4A8042DD" Name="tcl" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir06601F6D5A3F9D7D60424F5E09524DB4" Name="julia" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir08D93211F4F28EB69AAB12C06A0A2717" Name="hcl" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir09029A378D1F2B1CB5245A0926BB01B5" Name="go" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir0D808593278731C2A8A5E3579964B030" Name="handlebars" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirE1F2A63D54A51EDB0B3C0410B469CB2F">
+            <Directory Id="dir1073A77D6A6F9C3BD868895BC0D2BB43" Name="worker" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir11500149D13F58C29A933FFBCF7AE831" Name="cameligo" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirE1F2A63D54A51EDB0B3C0410B469CB2F">
+            <Directory Id="dir1528D3D2EC9AB2C3DF03F6D6FECF40E4" Name="browser" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir1670BA97A7F3BB1471DA99A5F0DDF616" Name="rust" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir1DC625A0C557A53F30B2B2778AC20EAC" Name="coffee" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir1EEEE401A815DC23AF03E7CAB9B69E8A" Name="shell" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir1FCD208725F3AED0B959B9B5B5206392" Name="m3" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir70DCD0AEE58916DD3148EADC4C276EFB">
+            <Directory Id="dir22A893114234A222604F944F124359F2" Name="css" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir23EA2EDA8657328B2431358EE85819C3" Name="yaml" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir25A1924A74C6AC9A29661F8183830092" Name="pla" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir2757105AED061CB6E7A811A59041E70B" Name="objective-c" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir35CBE4A6B59B8A2A1409DC9DB79DD42A">
+            <Directory Id="dir275B90E50E8463E5A7FE8E4490177655" Name="worker" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir28FFEB82009147C6884C2EC55E931EF0" Name="xml" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir290B934CDF26049203FDCD68940E9A56" Name="html" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir2D09B3341172E78CED634088E3A0F0D6" Name="scheme" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir2DADC716DFBEA6EC858374A8DE4A55BF" Name="cpp" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir2DAF129901E8E61B5F28D8764B2A53EC" Name="pascal" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir32E14839B1A40DAE7351CDB5201D0D6B" Name="ini" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir3428A3B09088B4D43D3C5D04E265CE5B" Name="bicep" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir70DCD0AEE58916DD3148EADC4C276EFB">
+            <Directory Id="dir35A51C99DC1F92887D6C6744ED281FD4" Name="html" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirE1F2A63D54A51EDB0B3C0410B469CB2F">
+            <Directory Id="dir35CBE4A6B59B8A2A1409DC9DB79DD42A" Name="common" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir36C13CDE80473EDC55B5B2B9A4585964" Name="systemverilog" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir3A749E768458D7BDB7E8A3619C9DBF19" Name="qsharp" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir3AA5BCBFC2ED6DF8EE8F6DFED0E130D8" Name="wgsl" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir4365498E48631EE6110E707C908F23E5" Name="perl" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir4384234FF105D9CE96FF8F90EFD7A008" Name="flow9" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir44B4D4584FD02BDBAD15EAA2FF9C3081" Name="css" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir45D8F9637E749259F3D09F01185CB277" Name="mips" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir4EDA420ECFFAE101E961F38C239F9924" Name="freemarker2" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir52852EA262AF9E52EAAFE3C91C7E5AAB" Name="st" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir55FBC962119473511EA55883EE255033" Name="pug" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir5816A6FCDB97E961BF867F179E019F5C" Name="solidity" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir59061104B938DAD5AB82F8269BF9A5CC" Name="ruby" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir5D94AAB564D15FAF0AD003A873C6E880" Name="mdx" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir5F323D10C8C8A75A64FA7C89D96680EC" Name="javascript" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir5FB0D3CBAA8948CFB2EA580D00694174" Name="cypher" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir6358A938D9D11E471FFB3DA2ADAD7BCB" Name="markdown" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir6731A8985A5C5FB88A9B2E2E504176AB" Name="redshift" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir6E11C98F7CEAF38791F199EF7D6C5A9C" Name="vb" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir70381AED3CC1DDCE84DA393FA084DF30" Name="kotlin" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirB6981C7877773C58E1AF6BDA6BA6F65E">
+            <Directory Id="dir70DCD0AEE58916DD3148EADC4C276EFB" Name="language" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir71C05CEF79E7873797404DB7FA624782" Name="less" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir73ABE26EA37698BE7A3BB7464BCC549A" Name="php" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir76484A3A9306229E678FD42F61E4FB4C" Name="python" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir78E5143BB991015ABB2B126B33DF20F3" Name="azcli" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir7BBE99088AD794540115669A678F7B57" Name="pgsql" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir7FC34AF4DF60585C05AF245B0976DB1A" Name="graphql" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir827C0A5B3A46EFF9ED86626CA8E09FEB" Name="lexon" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir88BB0F9F45F25EA2B8BD2B169E47C6C3" Name="pascaligo" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir8F4676CBA9C11989C570D9760FDB6D14" Name="clojure" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir9251D6B5581D4133030A9129421E5255" Name="restructuredtext" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir94109FFBE73954C2E3D9560E43A94392" Name="sophia" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir1528D3D2EC9AB2C3DF03F6D6FECF40E4">
+            <Directory Id="dir94C8AABAD397D84885173B63F0FDC679" Name="ui" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir9DB9B0E8B08A1BA65AFAEFC2FA10E30A">
+            <Directory Id="dir977D270DC116F38F1B9320DA90FDF824" Name="codicon" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir97DF6B0B0AC776C7AA8A3B17483E6B88" Name="liquid" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir98CCF277B8D261E44E72D2436AE03A17" Name="dart" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir9913F0276DC804D55443ED170B33897B" Name="elixir" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir9BDD3DD06D0AE947DFAB4ECE8AED417A" Name="csp" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir94C8AABAD397D84885173B63F0FDC679">
+            <Directory Id="dir9DB9B0E8B08A1BA65AFAEFC2FA10E30A" Name="codicons" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dir9FBB158AFDA9A66E220286D4F2609E71" Name="twig" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirA17168CDD8EEFA01087350F05246840B" Name="postiats" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirA5D6CA3E903645EA55097ED025FDC806" Name="apex" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirB0AC1BF5C32B8286A676408C25A61765" Name="protobuf" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirB5EF435C30BEC37ACFF774928750D156" Name="sql" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirF3D9892E484C03D885D33EEA40EF87C2">
+            <Directory Id="dirB6981C7877773C58E1AF6BDA6BA6F65E" Name="vs" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir70DCD0AEE58916DD3148EADC4C276EFB">
+            <Directory Id="dirB72201FCDD6F74DCCB7C3D7363F744FA" Name="json" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirBB7633031785DFA55795107B6D149163" Name="bat" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirBEAA75EFDD04A1C0A9B19D70DD4732C1" Name="r" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirBF1FE658716DC862C9477F47E3EE0E9C" Name="powerquery" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirC315087738325C868107A7E7D0D4CAEF" Name="sparql" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirD421FCD5A3C6885202E25032B144CBC0" Name="scss" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirD6C83E20CEBD48927A1B999FC29D10D5" Name="java" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirDC0D8D61976CD9114B598B3D7BC3A75E" Name="fsharp" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirDE2C1CBE313A17238E2151D374450794" Name="swift" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirB6981C7877773C58E1AF6BDA6BA6F65E">
+            <Directory Id="dirE1F2A63D54A51EDB0B3C0410B469CB2F" Name="base" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirE449AC0C719DDD618B136F9380896803" Name="ecl" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirE4E212383E30441F1F43B3FCB74DDD2E" Name="csharp" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirE518C878E428E98585AE9C7E7A5B2742" Name="lua" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirE82FE5B1199EBD2FB6D6CB51A54FDBF1" Name="mysql" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirE97385D326929F1063C2ECE2A2291160" Name="sb" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirB6981C7877773C58E1AF6BDA6BA6F65E">
+            <Directory Id="dirEC30CB8F9559AADF029B8A794F7B3C25" Name="basic-languages" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirECE9BA50EABF810E2043B3CAB8D50EFF" Name="scala" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirEEBBE2EAD2FF3D7241AB0246E0F2EE59" Name="dockerfile" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirEEBD553161A5477464565F0AA9C66A4E" Name="msdax" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirEEC36D6CE0850FD998425DA64003EF71" Name="abap" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirB6981C7877773C58E1AF6BDA6BA6F65E">
+            <Directory Id="dirF07B2D247178B70BDB211F65EFFEFC96" Name="editor" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirF0808D745B8F1D84EC3E766DED71F25D" Name="powershell" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirF551ED8D7A1A57AEAD472CE945460F44" Name="typescript" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirEC30CB8F9559AADF029B8A794F7B3C25">
+            <Directory Id="dirFC530128ACFC59ECC74A19B7BB5EA51E" Name="redis" />
+        </DirectoryRef>
+    </Fragment>
+</Wix>
