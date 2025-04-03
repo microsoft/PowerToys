@@ -169,6 +169,42 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Always on.
+        /// </summary>
+        internal static string Indexer_Settings_FallbackCommand_AlwaysOn {
+            get {
+                return ResourceManager.GetString("Indexer_Settings_FallbackCommand_AlwaysOn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only when file path exist.
+        /// </summary>
+        internal static string Indexer_Settings_FallbackCommand_FilePathExist {
+            get {
+                return ResourceManager.GetString("Indexer_Settings_FallbackCommand_FilePathExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shows file search results on the top-level search results when:.
+        /// </summary>
+        internal static string Indexer_Settings_FallbackCommand_Mode {
+            get {
+                return ResourceManager.GetString("Indexer_Settings_FallbackCommand_Mode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Always off.
+        /// </summary>
+        internal static string Indexer_Settings_FallbackCommand_Off {
+            get {
+                return ResourceManager.GetString("Indexer_Settings_FallbackCommand_Off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Search files on this device.
         /// </summary>
         internal static string Indexer_Subtitle {
