@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -26,6 +26,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
     public partial ObservableCollection<ListItemViewModel> FilteredItems { get; set; } = [];
 
     private ObservableCollection<ListItemViewModel> Items { get; set; } = [];
+
+    [ObservableProperty]
+    public partial bool HasGrouping { get; private set; } = false;
+
+    [ObservableProperty]
+    public partial ObservableCollection<ListGroup> Groups { get; set; } = [];
 
     private readonly ExtensionObject<IListPage> _model;
 
@@ -245,6 +251,53 @@ public partial class ListViewModel : PageViewModel, IDisposable
             item.SafeInitializeProperties();
 
             ct.ThrowIfCancellationRequested();
+        }
+    }
+
+    public void UpdateGroupsIfNeeded()
+    {
+        HasGrouping = FilteredItems.Any(i => !string.IsNullOrEmpty(i.Section));
+
+        if (HasGrouping)
+        {
+            lock (_listLock)
+            {
+                if (FilteredItems.Count == 0)
+                {
+                    Groups.Clear();
+                    return;
+                }
+
+                // get current groups
+                var groups = FilteredItems.GroupBy(item => item.Section).Select(group => group);
+
+                // Remove any groups that no longer exist
+                foreach (var group in Groups)
+                {
+                    if (!groups.Any(g => g.Key == group.Key))
+                    {
+                        Groups.Remove(group);
+                    }
+                }
+
+                // Update lists for each existing group
+                foreach (var group in groups)
+                {
+                    var existingGroup = Groups.FirstOrDefault(groupItem => groupItem.Key == group.Key);
+                    if (existingGroup == null)
+                    {
+                        // Add a new group if it doesn't exist
+                        Groups.Add(new ListGroup { Key = group.Key, Items = new ObservableCollection<ListItemViewModel>(group) });
+                        existingGroup = Groups.FirstOrDefault(groupItem => groupItem.Key == group.Key);
+                    }
+
+                    if (existingGroup != null)
+                    {
+                        // Update the existing group
+                        ListHelpers.InPlaceUpdateList(existingGroup.Items, FilteredItems.Where(item => item.Section == group.Key));
+                    }
+                }
+            }
         }
     }
 
@@ -487,6 +540,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             FilteredItems.Clear();
+
+            foreach (ListGroup group in Groups)
+            {
+                foreach (ListItemViewModel item in group.Items)
+                {
+                    item.SafeCleanup();
+                }
+
+                group.Items.Clear();
+            }
+
+            Groups.Clear();
         }
 
         IListPage? model = _model.Unsafe;
