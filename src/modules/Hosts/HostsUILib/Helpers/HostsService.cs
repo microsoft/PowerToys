@@ -41,6 +41,8 @@ namespace HostsUILib.Helpers
 
         public Encoding Encoding => _userSettings.Encoding == HostsEncoding.Utf8 ? new UTF8Encoding(false) : new UTF8Encoding(true);
 
+        private bool AddLeadingWhitespace = _userSettings.AddLeadingWhitespace;
+
         public HostsService(
             IFileSystem fileSystem,
             IUserSettings userSettings,
@@ -157,7 +159,7 @@ namespace HostsUILib.Helpers
                         {
                             lineBuilder.Append('#').Append(' ');
                         }
-                        else if (anyDisabled)
+                        else if (!AddLeadingWhitespace)
                         {
                             lineBuilder.Append(' ').Append(' ');
                         }
