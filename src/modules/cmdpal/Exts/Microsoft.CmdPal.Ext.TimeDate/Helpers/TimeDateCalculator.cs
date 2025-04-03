@@ -29,12 +29,15 @@ public sealed partial class TimeDateCalculator
     /// <returns>List of Wox <see cref="Result"/>s.</returns>
     public static List<ListItem> ExecuteSearch(SettingsManager settings, string query)
     {
-        var isEmptySearchInput = string.IsNullOrEmpty(query);
+        var isEmptySearchInput = string.IsNullOrWhiteSpace(query);
         List<AvailableResult> availableFormats = new List<AvailableResult>();
         List<ListItem> results = new List<ListItem>();
 
         // currently, all of the search in V2 is keyword search.
         var isKeywordSearch = true;
+
+        // Last input parsing error
+        var lastInputParsingErrorMsg = string.Empty;
 
         // Switch search type
         if (isEmptySearchInput || (!isKeywordSearch && settings.OnlyDateTimeNowGlobal))
@@ -47,13 +50,13 @@ public sealed partial class TimeDateCalculator
         {
             // Search for specified format with specified time/date value
             var userInput = query.Split(InputDelimiter);
-            if (TimeAndDateHelper.ParseStringAsDateTime(userInput[1], out DateTime timestamp))
+            if (TimeAndDateHelper.ParseStringAsDateTime(userInput[1], out DateTime timestamp, out lastInputParsingErrorMsg))
             {
                 availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));
                 query = userInput[0];
             }
         }
-        else if (TimeAndDateHelper.ParseStringAsDateTime(query, out DateTime timestamp))
+        else if (TimeAndDateHelper.ParseStringAsDateTime(query, out DateTime timestamp, out lastInputParsingErrorMsg))
         {
             // Return all formats for specified time/date value
             availableFormats.AddRange(AvailableResultsList.GetList(isKeywordSearch, settings, null, null, timestamp));
@@ -88,19 +91,32 @@ public sealed partial class TimeDateCalculator
             }
         }
 
+        /*htcfreek:Code obsolete with current CmdPal behavior.
         // If search term is only a number that can't be parsed return an error message
         if (!isEmptySearchInput && results.Count == 0 && Regex.IsMatch(query, @"\w+\d+.*$") && !query.Any(char.IsWhiteSpace) && (TimeAndDateHelper.IsSpecialInputParsing(query) || !Regex.IsMatch(query, @"\d+[\.:/]\d+")))
         {
             // Without plugin key word show only if message is not hidden by setting
             if (!settings.HideNumberMessageOnGlobalQuery)
             {
-                results.Add(ResultHelper.CreateNumberErrorResult());
+                var er = ResultHelper.CreateInvalidInputErrorResult();
+                if (!string.IsNullOrEmpty(lastInputParsingErrorMsg))
+                {
+                    er.Details = new Details() { Body = lastInputParsingErrorMsg };
+                }
+
+                results.Add(er);
             }
-        }
+        } */
 
         if (results.Count == 0)
         {
-            results.Add(ResultHelper.CreateInvalidInputErrorResult());
+            var er = ResultHelper.CreateInvalidInputErrorResult();
+            if (!string.IsNullOrEmpty(lastInputParsingErrorMsg))
+            {
+                er.Details = new Details() { Body = lastInputParsingErrorMsg };
+            }
+
+            results.Add(er);
         }
 
         return results;
