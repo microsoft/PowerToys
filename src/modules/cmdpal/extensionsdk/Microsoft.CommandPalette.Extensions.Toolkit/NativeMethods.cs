@@ -33,12 +33,4 @@ internal sealed class NativeMethods
 
     [DllImport("comctl32.dll", SetLastError = true)]
     internal static extern int ImageList_GetIcon(IntPtr himl, int i, int flags);
-
-    // [GeneratedComInterface]
-    // [Guid("46EB5926-582E-4017-9FDF-E8998DAA0950")]
-    // internal partial interface IImageList
-    // {
-    //    [PreserveSig]
-    //    int GetIcon(int i, int flags, out IntPtr phIcon);
-    // }
 }
