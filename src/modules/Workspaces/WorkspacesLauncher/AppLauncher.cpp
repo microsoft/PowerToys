@@ -120,7 +120,7 @@ namespace AppLauncher
 
         // packaged apps: try launching first by AppUserModel.ID
         // usage example: elevated Terminal
-        if (!launched && !app.appUserModelId.empty() && !app.packageFullName.empty())
+        if (!launched && !app.appUserModelId.empty())
         {
             Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
             auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
@@ -130,6 +130,7 @@ namespace AppLauncher
             }
             else
             {
+                Logger::error(L"Failed to launch by appUserModelId, {}, {}", app.name, app.appUserModelId);
                 launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
             }
         }
