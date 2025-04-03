@@ -192,10 +192,68 @@ namespace RegistryPreviewUILib
             // reload the current Registry file and update the toolbar accordingly.
             UpdateToolBarAndUI(await OpenRegistryFile(_appFileName), true, true);
 
+            // disable the Save button as it's a new file
             saveButton.IsEnabled = false;
 
             // restore the TextChanged handler
             MonacoEditor.TextChanged += MonacoEditor_TextChanged;
+        }
+
+        /// <summary>
+        /// Resets the editor content
+        /// </summary>
+        private async void NewButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Check to see if the current file has been saved
+            if (saveButton.IsEnabled)
+            {
+                ContentDialog contentDialog = new ContentDialog()
+                {
+                    Title = resourceLoader.GetString("YesNoCancelDialogTitle"),
+                    Content = resourceLoader.GetString("YesNoCancelDialogContent"),
+                    PrimaryButtonText = resourceLoader.GetString("YesNoCancelDialogPrimaryButtonText"),
+                    SecondaryButtonText = resourceLoader.GetString("YesNoCancelDialogSecondaryButtonText"),
+                    CloseButtonText = resourceLoader.GetString("YesNoCancelDialogCloseButtonText"),
+                    DefaultButton = ContentDialogButton.Primary,
+                };
+
+                // Use this code to associate the dialog to the appropriate AppWindow by setting
+                // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
+                if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
+                {
+                    contentDialog.XamlRoot = this.Content.XamlRoot;
+                }
+
+                ContentDialogResult contentDialogResult = await contentDialog.ShowAsync();
+                switch (contentDialogResult)
+                {
+                    case ContentDialogResult.Primary:
+                        // Save, then continue the file open
+                        SaveFile();
+                        break;
+                    case ContentDialogResult.Secondary:
+                        // Don't save and continue the file open!
+                        saveButton.IsEnabled = false;
+                        break;
+                    default:
+                        // Don't open the new file!
+                        return;
+                }
+            }
+
+            // mute the TextChanged handler to make for clean UI
+            MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
+
+            // reset editor, file info and ui.
+            _appFileName = string.Empty;
+            ResetEditorAndFile();
+
+            // restore the TextChanged handler
+            MonacoEditor.TextChanged += MonacoEditor_TextChanged;
+
+            // disable buttons that do not make sense
+            saveButton.IsEnabled = false;
+            refreshButton.IsEnabled = false;
         }
 
         /// <summary>
