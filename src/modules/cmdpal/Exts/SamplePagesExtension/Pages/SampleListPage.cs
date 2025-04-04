@@ -4,6 +4,7 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Win32;
 
 namespace SamplePagesExtension;
 
@@ -91,6 +92,33 @@ internal sealed partial class SampleListPage : ListPage
                 })
             {
                 Title = "Confirm twice before doing something",
+            },
+            new ListItem(
+                new AnonymousCommand(() =>
+                {
+                    var fg = PInvoke.GetForegroundWindow();
+                    var bufferSize = PInvoke.GetWindowTextLength(fg) + 1;
+                    unsafe
+                   {
+                       fixed (char* windowNameChars = new char[bufferSize])
+                       {
+                           if (PInvoke.GetWindowText(fg, windowNameChars, bufferSize) == 0)
+                           {
+                                var emptyToast = new ToastStatusMessage(new StatusMessage() { Message = "FG Window didn't have a title",  State = MessageState.Warning });
+                                emptyToast.Show();
+                           }
+
+                           var windowName = new string(windowNameChars);
+                           var nameToast = new ToastStatusMessage(new StatusMessage() { Message = $"FG Window is {windowName}", State = MessageState.Success });
+                           nameToast.Show();
+                       }
+                   }
+                })
+                {
+                    Result = CommandResult.KeepOpen(),
+                })
+            {
+                Title = "Get the name of the Foreground window",
             }
         ];
     }
