@@ -80,6 +80,7 @@ internal sealed partial class SampleListPage : ListPage
                 })
                 {
                     Result = CommandResult.KeepOpen(),
+                    Icon = new IconInfo("\uE712"),
                 })
             {
                 Title = "You can add context menu items too. Press Ctrl+k",

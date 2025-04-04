@@ -6,4 +6,4 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record UpdateItemKeybindsMessage(Dictionary<KeyChord, CommandContextItemViewModel>? Keys);
+public record UpdateItemKeybindingsMessage(Dictionary<KeyChord, CommandContextItemViewModel>? Keys);

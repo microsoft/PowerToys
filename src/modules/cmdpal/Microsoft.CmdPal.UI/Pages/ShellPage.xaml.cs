@@ -187,7 +187,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
                     WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
 
-                    WeakReferenceMessenger.Default.Send<UpdateItemKeybindsMessage>(new(null));
+                    WeakReferenceMessenger.Default.Send<UpdateItemKeybindingsMessage>(new(null));
 
                     var isMainPage = command is MainListPage;
 

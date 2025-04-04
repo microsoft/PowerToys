@@ -263,6 +263,7 @@
                             ItemClick="CommandsDropdown_ItemClick"
                             ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
                             ItemsSource="{x:Bind ViewModel.ContextCommands, Mode=OneWay}"
+                            KeyDown="CommandsDropdown_KeyDown"
                             SelectionMode="None">
                             <ListView.ItemContainerStyle>
                                 <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">

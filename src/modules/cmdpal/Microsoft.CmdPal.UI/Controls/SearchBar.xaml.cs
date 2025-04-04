@@ -23,7 +23,7 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class SearchBar : UserControl,
     IRecipient<GoHomeMessage>,
     IRecipient<FocusSearchBoxMessage>,
-    IRecipient<UpdateItemKeybindsMessage>,
+    IRecipient<UpdateItemKeybindingsMessage>,
     ICurrentPageAware
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -74,7 +74,7 @@ public sealed partial class SearchBar : UserControl,
         this.InitializeComponent();
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
-        WeakReferenceMessenger.Default.Register<UpdateItemKeybindsMessage>(this);
+        WeakReferenceMessenger.Default.Register<UpdateItemKeybindingsMessage>(this);
     }
 
     public void ClearSearch()
@@ -291,7 +291,7 @@ public sealed partial class SearchBar : UserControl,
 
     public void Receive(FocusSearchBoxMessage message) => this.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 
-    public void Receive(UpdateItemKeybindsMessage message)
+    public void Receive(UpdateItemKeybindingsMessage message)
     {
         _keybinds = message.Keys;
     }
