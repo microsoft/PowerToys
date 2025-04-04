@@ -23,4 +23,15 @@ public partial class KeyChordHelpers
             ;
         return new(modifiers, vkey, scanCode);
     }
+
+    public static KeyChord FromModifiers(
+        bool ctrl = false,
+        bool alt = false,
+        bool shift = false,
+        bool win = false,
+        VirtualKey vkey = VirtualKey.None,
+        int scanCode = 0)
+    {
+        return FromModifiers(ctrl, alt, shift, win, (int)vkey, scanCode);
+    }
 }
