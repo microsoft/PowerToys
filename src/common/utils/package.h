@@ -111,6 +111,13 @@ namespace package
         outVersion.Build = static_cast<UINT16>((version >> 16) & 0xFFFF);
         outVersion.Revision = static_cast<UINT16>(version & 0xFFFF);
 
+        Logger::info(L"Package name: {}, version: {}.{}.{}.{}, appxPath: {}",
+                     outName,
+                     outVersion.Major,
+                     outVersion.Minor,
+                     outVersion.Build,
+                     outVersion.Revision,
+                     appxPath);
         CoUninitialize();
         return true;
     }
@@ -305,6 +312,7 @@ namespace package
 
         if (!GetPackageNameAndVersionFromAppx(appxPath, targetName, targetVersion))
         {
+            Logger::error(L"Failed to get package name and version from appx: " + appxPath);
             return false;
         }
 
@@ -322,11 +330,13 @@ namespace package
                     (version.Major == targetVersion.Major && version.Minor == targetVersion.Minor && version.Build > targetVersion.Build) ||
                     (version.Major == targetVersion.Major && version.Minor == targetVersion.Minor && version.Build == targetVersion.Build && version.Revision >= targetVersion.Revision))
                 {
+                    Logger::info(L"Package {} is already satisfied with version {}.{}.{}, target version {}.{}.{}, {}", id.Name(), version.Major, version.Minor, version.Build, targetVersion.Major, targetVersion.Minor, targetVersion.Build, appxPath);
                     return true;
                 }
             }
         }
 
+        Logger::info(L"Package {} is not satisfied. Current version: {}.{}.{}, target version: {}.{}.{}, {}", targetName, targetVersion.Major, targetVersion.Minor, targetVersion.Build, targetVersion.Major, targetVersion.Minor, targetVersion.Build, appxPath);
         return false;
     }
 
@@ -350,6 +360,7 @@ namespace package
                     {
                         if (!IsPackageSatisfied(dependency))
                         {
+                            Logger::info(L"Dependency already satisfied: %s", dependency);
                             uris.Append(Uri(dependency));
                         }
                     }
