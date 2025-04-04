@@ -8,6 +8,7 @@
 #include <regex>
 #include <string>
 #include <optional>
+#include <Shlwapi.h>
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
