@@ -34,19 +34,39 @@ internal sealed class Program
         Logger.LogDebug($"Starting at {DateTime.UtcNow}");
         PowerToysTelemetry.Log.WriteEvent(new CmdPalProcessStarted());
 
-        WinRT.ComWrappersSupport.InitializeComWrappers();
-        var isRedirect = DecideRedirection();
-        if (!isRedirect)
+        AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
         {
-            Microsoft.UI.Xaml.Application.Start((p) =>
+            if (e.ExceptionObject is Exception ex)
             {
-                Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext context = new(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
-                SynchronizationContext.SetSynchronizationContext(context);
-                app = new App();
-            });
-        }
+                Logger.LogError("UnhandledException: " + ex);
+            }
+            else
+            {
+                Logger.LogError("UnhandledException (non-Exception object): " + e.ExceptionObject);
+            }
+        };
 
-        return 0;
+        try
+        {
+            WinRT.ComWrappersSupport.InitializeComWrappers();
+            var isRedirect = DecideRedirection();
+            if (!isRedirect)
+            {
+                Microsoft.UI.Xaml.Application.Start((p) =>
+                {
+                    Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext context = new(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
+                    SynchronizationContext.SetSynchronizationContext(context);
+                    app = new App();
+                });
+            }
+
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Unhandled exception in Main: " + ex);
+            return 1;
+        }
     }
 
     private static bool DecideRedirection()
