@@ -55,6 +55,7 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredMonacoPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMonacoPreviewEnabledValue()) << std::endl;
     report << "getConfiguredPdfPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPdfPreviewEnabledValue()) << std::endl;
     report << "getConfiguredGcodePreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredGcodePreviewEnabledValue()) << std::endl;
+    report << "getConfiguredBgcodePreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredBgcodePreviewEnabledValue()) << std::endl;
     report << "getConfiguredSvgThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredSvgThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredPdfThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPdfThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredGcodeThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredGcodeThumbnailsEnabledValue()) << std::endl;

@@ -223,6 +223,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool enableBgcodePreview = true;
+
+        [JsonPropertyName("bgcode-previewer-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableBgcodePreview
+        {
+            get => enableBgcodePreview;
+            set
+            {
+                if (value != enableBgcodePreview)
+                {
+                    LogTelemetryEvent(value);
+                    enableBgcodePreview = value;
+                }
+            }
+        }
+
         private bool enableGcodeThumbnail = true;
 
         [JsonPropertyName("gcode-thumbnail-toggle-setting")]

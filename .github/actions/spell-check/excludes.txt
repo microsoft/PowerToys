@@ -18,6 +18,7 @@
 /TestFiles/
 [^/]\.cur$
 [^/]\.gcode$
+[^/]\.bgcode$
 [^/]\.rgs$
 \.a$
 \.ai$

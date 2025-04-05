@@ -125,6 +125,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _gcodeRenderIsEnabled = Settings.Properties.EnableGcodePreview;
             }
 
+            _bgcodeRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredBgcodePreviewEnabledValue();
+            if (_bgcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _bgcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _bgcodeRenderEnabledStateIsGPOConfigured = true;
+                _bgcodeRenderIsEnabled = _bgcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _bgcodeRenderIsGpoEnabled = _bgcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _bgcodeRenderIsGpoDisabled = _bgcodeRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+            }
+            else
+            {
+                _bgcodeRenderIsEnabled = Settings.Properties.EnableBgcodePreview;
+            }
+
             _qoiRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredQoiPreviewEnabledValue();
             if (_qoiRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _qoiRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {

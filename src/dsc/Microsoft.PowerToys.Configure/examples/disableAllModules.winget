@@ -53,6 +53,7 @@ properties:
           EnablePdfPreview: false
           EnablePdfThumbnail: false
           EnableGcodePreview: false
+          EnableBgcodePreview: false
           EnableGcodeThumbnail: false
           EnableStlThumbnail: false
           EnableQoiPreview: false

@@ -29,6 +29,7 @@ RUS
 AYUV
 bak
 Bcl
+bgcode
 exa
 exabyte
 Gbits

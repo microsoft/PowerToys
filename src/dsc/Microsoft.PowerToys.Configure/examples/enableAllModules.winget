@@ -53,6 +53,7 @@ properties:
           EnablePdfPreview: true
           EnablePdfThumbnail: true
           EnableGcodePreview: true
+          EnableBgcodePreview: true
           EnableGcodeThumbnail: true
           EnableStlThumbnail: true
           EnableQoiPreview: true

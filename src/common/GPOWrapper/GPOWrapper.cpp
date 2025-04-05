@@ -56,6 +56,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredGcodePreviewEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredBgcodePreviewEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredBgcodePreviewEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredSvgThumbnailsEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredSvgThumbnailsEnabledValue());

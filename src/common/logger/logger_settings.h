@@ -17,6 +17,8 @@ struct LogSettings
     inline const static std::wstring fileExplorerLogPath = L"Logs\\file-explorer-log.txt";
     inline const static std::string gcodePrevLoggerName = "GcodePrevHandler";
     inline const static std::wstring gcodePrevLogPath = L"logs\\FileExplorer_localLow\\GcodePreviewHandler\\gcode-prev-handler-log.txt";
+    inline const static std::string bgcodePrevLoggerName = "bgcodePrevHandler";
+    inline const static std::wstring bgcodePrevLogPath = L"logs\\FileExplorer_localLow\\BgcodePreviewHandler\\bgcode-prev-handler-log.txt";
     inline const static std::string gcodeThumbLoggerName = "GcodeThumbnailProvider";
     inline const static std::wstring gcodeThumbLogPath = L"logs\\FileExplorer_localLow\\GcodeThumbnailProvider\\gcode-thumbnail-provider-log.txt";
     inline const static std::string mdPrevLoggerName = "MDPrevHandler";

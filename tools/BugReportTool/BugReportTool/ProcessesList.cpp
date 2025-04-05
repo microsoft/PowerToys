@@ -26,6 +26,7 @@ std::vector<std::wstring> processes =
     L"PowerToys.AlwaysOnTop.exe",
     L"PowerToys.Hosts.exe",
     L"PowerToys.GcodePreviewHandler.exe",
+    L"PowerToys.BgcodePreviewHandler.exe",
     L"PowerToys.GcodeThumbnailProvider.exe",
     L"PowerToys.MarkdownPreviewHandler.exe",
     L"PowerToys.MonacoPreviewHandler.exe",

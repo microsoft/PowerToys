@@ -146,6 +146,19 @@ inline registry::ChangeSet getGcodePreviewHandlerChangeSet(const std::wstring in
                                   NonLocalizable::ExtGCode);
 }
 
+inline registry::ChangeSet getBgcodePreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
+{
+    using namespace registry::shellex;
+    return generatePreviewHandler(PreviewHandlerType::preview,
+                                  perUser,
+                                  L"{A0257634-8812-4CE8-AF11-FA69ACAEAFAE}",
+                                  get_std_product_version(),
+                                  (fs::path{ installationDir } / LR"d(PowerToys.BgcodePreviewHandlerCpp.dll)d").wstring(),
+                                  L"BgcodePreviewHandler",
+                                  L"BG-code Preview Handler",
+                                  NonLocalizable::ExtBgCode);
+}
+
 inline registry::ChangeSet getQoiPreviewHandlerChangeSet(const std::wstring installationDir, const bool perUser)
 {
     using namespace registry::shellex;
@@ -275,6 +288,7 @@ inline std::vector<registry::ChangeSet> getAllOnByDefaultModulesChangeSets(const
              getMdPreviewHandlerChangeSet(installationDir, PER_USER),
              getMonacoPreviewHandlerChangeSet(installationDir, PER_USER),
              getGcodePreviewHandlerChangeSet(installationDir, PER_USER),
+             getBgcodePreviewHandlerChangeSet(installationDir, PER_USER),
              getQoiPreviewHandlerChangeSet(installationDir, PER_USER),
              getSvgThumbnailHandlerChangeSet(installationDir, PER_USER),
              getGcodeThumbnailHandlerChangeSet(installationDir, PER_USER),
@@ -291,6 +305,7 @@ inline std::vector<registry::ChangeSet> getAllModulesChangeSets(const std::wstri
              getMonacoPreviewHandlerChangeSet(installationDir, PER_USER),
              getPdfPreviewHandlerChangeSet(installationDir, PER_USER),
              getGcodePreviewHandlerChangeSet(installationDir, PER_USER),
+             getBgcodePreviewHandlerChangeSet(installationDir, PER_USER),
              getQoiPreviewHandlerChangeSet(installationDir, PER_USER),
              getSvgThumbnailHandlerChangeSet(installationDir, PER_USER),
              getPdfThumbnailHandlerChangeSet(installationDir, PER_USER),

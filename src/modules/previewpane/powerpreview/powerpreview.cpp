@@ -50,6 +50,11 @@ PowerPreviewModule::PowerPreviewModule() :
                                       .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredGcodePreviewEnabledValue,
                                       .registryChanges = getGcodePreviewHandlerChangeSet(installationDir, installPerUser) });
 
+    m_fileExplorerModules.push_back({ .settingName = L"bgcode-previewer-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_PREVPANE_BGCODE_SETTINGS_DESCRIPTION),
+                                      .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredBgcodePreviewEnabledValue,
+                                      .registryChanges = getBgcodePreviewHandlerChangeSet(installationDir, installPerUser) });
+
     m_fileExplorerModules.push_back({ .settingName = L"svg-thumbnail-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_SVG_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                                       .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredSvgThumbnailsEnabledValue,

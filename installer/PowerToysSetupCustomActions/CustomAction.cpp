@@ -1192,6 +1192,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.StlThumbnailProvider.exe",
         L"PowerToys.SvgThumbnailProvider.exe",
         L"PowerToys.GcodePreviewHandler.exe",
+        L"PowerToys.BgcodePreviewHandler.exe",
         L"PowerToys.QoiPreviewHandler.exe",
         L"PowerToys.PdfPreviewHandler.exe",
         L"PowerToys.QoiThumbnailProvider.exe",
