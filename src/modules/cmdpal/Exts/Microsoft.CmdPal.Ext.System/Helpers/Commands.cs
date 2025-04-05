@@ -33,11 +33,11 @@ internal static class Commands
     /// Returns a list with all system command results
     /// </summary>
     /// <param name="isUefi">Value indicating if the system is booted in uefi mode</param>
-    /// <param name="splitRecycleBinResults">Value indicating if we should show two results for Recycle Bin.</param>
+    /// <param name="hideEmptyRecycleBin">Value indicating if we should hide the Empty Recycle Bin command.</param>
     /// <param name="confirmCommands">A value indicating if the user should confirm the system commands</param>
     /// <param name="emptyRBSuccessMessage">Show a success message after empty Recycle Bin.</param>
     /// <returns>A list of all results</returns>
-    public static List<IListItem> GetSystemCommands(bool isUefi, bool splitRecycleBinResults, bool confirmCommands, bool emptyRBSuccessMessage)
+    public static List<IListItem> GetSystemCommands(bool isUefi, bool hideEmptyRecycleBin, bool confirmCommands, bool emptyRBSuccessMessage)
     {
         var results = new List<IListItem>();
         results.AddRange(new[]
@@ -81,7 +81,7 @@ internal static class Commands
         });
 
         // Show Recycle Bin results based on setting.
-        if (splitRecycleBinResults)
+        if (!hideEmptyRecycleBin)
         {
             results.AddRange(new[]
             {
@@ -142,6 +142,7 @@ internal static class Commands
         }
 
         CompositeFormat sysIpv4DescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_ip4_description);
+        CompositeFormat sysIpv6DescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_ip6_description);
         CompositeFormat sysMacDescriptionCompositeFormate = CompositeFormat.Parse(Resources.Microsoft_plugin_sys_mac_description);
         var hideDisconnectedNetworkInfo = manager.HideDisconnectedNetworkInfo;
 
@@ -171,7 +172,7 @@ internal static class Commands
                 results.Add(new ListItem(new CopyTextCommand(intInfo.GetConnectionDetails()))
                 {
                     Title = intInfo.IPv6Primary,
-                    Subtitle = string.Format(CultureInfo.InvariantCulture, sysIpv4DescriptionCompositeFormate, intInfo.ConnectionName),
+                    Subtitle = string.Format(CultureInfo.InvariantCulture, sysIpv6DescriptionCompositeFormate, intInfo.ConnectionName),
                     Icon = Icons.NetworkAdapterIcon,
                     Details = new Details() { Title = Resources.Microsoft_plugin_ext_connection_details, Body = intInfo.GetConnectionDetails() },
                 });
@@ -184,7 +185,7 @@ internal static class Commands
                     Title = intInfo.PhysicalAddress,
                     Subtitle = string.Format(CultureInfo.InvariantCulture, sysMacDescriptionCompositeFormate, intInfo.Adapter, intInfo.ConnectionName),
                     Icon = Icons.NetworkAdapterIcon,
-                    Details = new Details() { Title = Resources.Microsoft_plugin_ext_connection_details, Body = intInfo.GetConnectionDetails() },
+                    Details = new Details() { Title = Resources.Microsoft_plugin_ext_adapter_details, Body = intInfo.GetAdapterDetails() },
                 });
             }
         }
@@ -203,12 +204,12 @@ internal static class Commands
 
         var isBootedInUefiMode = Win32Helpers.GetSystemFirmwareType() == FirmwareType.Uefi;
 
-        var separateEmptyRB = manager.ShowSeparateResultForEmptyRecycleBin;
+        var hideEmptyRB = manager.HideEmptyRecycleBin;
         var confirmSystemCommands = manager.ShowDialogToConfirmCommand;
         var showSuccessOnEmptyRB = manager.ShowSuccessMessageAfterEmptyingRecycleBin;
 
         // normal system commands are fast and can be returned immediately
-        var systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, separateEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
+        var systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, hideEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
         list.AddRange(systemCommands);
         list.AddRange(networkConnectionResults);
 

@@ -17,7 +17,7 @@ public class ServiceResult
 
     public bool IsRunning { get; }
 
-    public ServiceResult(ServiceController serviceController)
+    private ServiceResult(ServiceController serviceController)
     {
         ArgumentNullException.ThrowIfNull(serviceController);
 
@@ -25,5 +25,22 @@ public class ServiceResult
         DisplayName = serviceController.DisplayName;
         StartMode = serviceController.StartType;
         IsRunning = serviceController.Status != ServiceControllerStatus.Stopped && serviceController.Status != ServiceControllerStatus.StopPending;
+    }
+
+    public static ServiceResult CreateServiceController(ServiceController serviceController)
+    {
+        try
+        {
+            var result = new ServiceResult(serviceController);
+
+            return result;
+        }
+        catch (Exception)
+        {
+            // try to log the exception in the future
+            // retrieve properties from serviceController will throw exception. Such as PlatformNotSupportedException.
+        }
+
+        return null;
     }
 }

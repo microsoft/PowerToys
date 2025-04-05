@@ -2,13 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices;
 using CommunityToolkit.WinUI;
-using Microsoft.CmdPal.UI.Deferred;
-using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.UI.Dispatching;
+using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
@@ -39,7 +37,14 @@ public partial class ContentIcon : FontIcon
     {
         if (this.FindDescendants().OfType<Grid>().FirstOrDefault() is Grid grid && Content is not null)
         {
-            grid.Children.Add(Content);
+            try
+            {
+                grid.Children.Add(Content);
+            }
+            catch (COMException ex)
+            {
+                Logger.LogError(ex.ToString());
+            }
         }
     }
 }

@@ -6,14 +6,14 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <StaticResource x:Key="TagBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="TagBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+            <StaticResource x:Key="TagBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
+            <StaticResource x:Key="TagBorderBrush" ResourceKey="ControlStrokeColorSecondaryBrush" />
             <StaticResource x:Key="TagForeground" ResourceKey="TextFillColorTertiaryBrush" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <StaticResource x:Key="TagBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
-            <StaticResource x:Key="TagBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+            <StaticResource x:Key="TagBackground" ResourceKey="ControlSolidFillColorDefaultBrush" />
+            <StaticResource x:Key="TagBorderBrush" ResourceKey="ControlStrokeColorSecondaryBrush" />
             <StaticResource x:Key="TagForeground" ResourceKey="TextFillColorTertiaryBrush" />
         </ResourceDictionary>
 
@@ -32,7 +32,6 @@
     <Style x:Key="DefaultTagStyle" TargetType="local:Tag">
         <Style.Setters>
             <Setter Property="Background" Value="{ThemeResource TagBackground}" />
-            <Setter Property="Foreground" Value="{ThemeResource TagForeground}" />
             <Setter Property="BorderBrush" Value="{ThemeResource TagBorderBrush}" />
             <Setter Property="BorderThickness" Value="{ThemeResource TagBorderThickness}" />
             <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
@@ -42,8 +41,8 @@
             <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
             <Setter Property="Padding" Value="{ThemeResource TagPadding}" />
             <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+            <Setter Property="Foreground" Value="{ThemeResource TagForeground}" />
             <Setter Property="FontWeight" Value="Normal" />
-            <Setter Property="FontSize" Value="{StaticResource CaptionTextBlockFontSize}" />
             <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
             <Setter Property="FocusVisualMargin" Value="-3" />
             <Setter Property="Template">
@@ -74,10 +73,11 @@
                                 SourceKey="{TemplateBinding Icon}" />
                             <TextBlock
                                 Grid.Column="1"
+                                Margin="0,-1,0,0"
                                 CharacterSpacing="{TemplateBinding CharacterSpacing}"
                                 FontFamily="{TemplateBinding FontFamily}"
-                                FontSize="{TemplateBinding FontSize}"
                                 FontWeight="{TemplateBinding FontWeight}"
+                                Foreground="{TemplateBinding Foreground}"
                                 Text="{TemplateBinding Text}" />
                         </Grid>
                     </ControlTemplate>

@@ -54,11 +54,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
         [DataTestMethod]
         [DataRow("(time", 18)]
-        [DataRow("(date", 26)]
-        [DataRow("(year", 7)]
-        [DataRow("(now", 32)]
-        [DataRow("(current", 32)]
-        [DataRow("(", 32)]
+        [DataRow("(date", 28)]
+        [DataRow("(year", 8)]
+        [DataRow("(now", 34)]
+        [DataRow("(current", 34)]
+        [DataRow("(", 34)]
         [DataRow("(now::10:10:10", 1)] // Windows file time
         [DataRow("(current::10:10:10", 0)]
         public void CountWithPluginKeyword(string typedString, int expectedResultCount)
@@ -140,6 +140,8 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         [DataRow("(week day", "Day of the week (Week day) -")]
         [DataRow("(cal week", "Week of the year (Calendar week, Week number) -")]
         [DataRow("(week num", "Week of the year (Calendar week, Week number) -")]
+        [DataRow("(days in mo", "Days in month -")]
+        [DataRow("(Leap y", "Leap year -")]
         public void CanFindFormatResult(string typedString, string expectedResult)
         {
             // Setup

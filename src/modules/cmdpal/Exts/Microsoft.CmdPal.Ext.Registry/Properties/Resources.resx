@@ -185,4 +185,7 @@
   <data name="Registry_Key_Not_Found" xml:space="preserve">
     <value>Registry key not found</value>
   </data>
+  <data name="RegistryProvider_DisplayName" xml:space="preserve">
+    <value>Windows Registry</value>
+  </data>
 </root>

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
+using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -19,7 +20,7 @@ public partial class WindowsSettingsCommandsProvider : CommandProvider
     public WindowsSettingsCommandsProvider()
     {
         Id = "Windows.Settings";
-        DisplayName = $"Windows Settings";
+        DisplayName = Resources.WindowsSettingsProvider_DisplayName;
         Icon = IconHelpers.FromRelativePath("Assets\\WindowsSettings.svg");
 
         _windowsSettings = JsonSettingsListHelper.ReadAllPossibleSettings();

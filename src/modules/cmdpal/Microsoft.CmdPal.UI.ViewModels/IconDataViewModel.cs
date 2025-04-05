@@ -9,7 +9,7 @@ using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class IconDataViewModel : ObservableObject
+public partial class IconDataViewModel : ObservableObject, IIconData
 {
     private readonly ExtensionObject<IIconData> _model = new(null);
 
@@ -24,6 +24,8 @@ public partial class IconDataViewModel : ObservableObject
     // Streams are not trivially copy-able, so we can't copy the data locally
     // first. Hence why we're sticking this into an ExtensionObject
     public ExtensionObject<IRandomAccessStreamReference> Data { get; private set; } = new(null);
+
+    IRandomAccessStreamReference? IIconData.Data => Data.Unsafe;
 
     public IconDataViewModel(IIconData? icon)
     {

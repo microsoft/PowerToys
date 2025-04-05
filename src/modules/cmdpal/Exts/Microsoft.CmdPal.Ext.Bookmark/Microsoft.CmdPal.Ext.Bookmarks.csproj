@@ -10,6 +10,9 @@
     <ProjectPriFileName>Microsoft.CmdPal.Ext.Bookmarks.pri</ProjectPriFileName>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Assets\Bookmark.svg" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
     <ProjectReference Include="..\..\Exts\Microsoft.CmdPal.Ext.Indexer\Microsoft.CmdPal.Ext.Indexer.csproj" />
   </ItemGroup>
@@ -20,6 +23,15 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Update="Assets\Bookmark.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Bookmark.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">

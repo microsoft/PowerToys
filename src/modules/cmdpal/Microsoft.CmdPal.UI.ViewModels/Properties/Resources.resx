@@ -236,4 +236,7 @@
   <data name="builtin_reload_display_title" xml:space="preserve">
     <value>Reload Command Palette extensions</value>
   </data>
+  <data name="builtin_disabled_extension" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
 </root>

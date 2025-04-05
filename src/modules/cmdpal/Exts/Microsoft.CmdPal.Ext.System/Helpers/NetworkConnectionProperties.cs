@@ -20,6 +20,14 @@ namespace Microsoft.CmdPal.Ext.System.Helpers;
 internal sealed class NetworkConnectionProperties
 {
     /// <summary>
+    /// Decimal unicode value for green circle emoji.
+    /// We need to generate it in the code because it does not render using Markdown emoji syntax or Unicode character syntax.
+    /// </summary>
+    /// <seealso cref="https://github.com/CommunityToolkit/Labs-Windows/blob/main/components/MarkdownTextBlock/samples/MarkdownTextBlock.md"/>
+    /// <seealso cref="https://github.com/xoofx/markdig/blob/master/src/Markdig/Extensions/Emoji/EmojiMapping.cs"/>
+    private const int GreenCircleCharacter = 128994;
+
+    /// <summary>
     /// Gets the name of the adapter
     /// </summary>
     internal string Adapter { get; private set; }
@@ -161,12 +169,12 @@ internal sealed class NetworkConnectionProperties
     /// <returns>String with the details</returns>
     internal string GetAdapterDetails()
     {
-        return $"{Resources.Microsoft_plugin_sys_AdapterName}: {Adapter}" +
-            $"\n{Resources.Microsoft_plugin_sys_PhysicalAddress}: {PhysicalAddress}" +
-            $"\n{Resources.Microsoft_plugin_sys_Speed}: {GetFormattedSpeedValue(Speed)}" +
-            $"\n{Resources.Microsoft_plugin_sys_Type}: {GetAdapterTypeAsString(Type)}" +
-            $"\n{Resources.Microsoft_plugin_sys_State}: " + (State == OperationalStatus.Up ? Resources.Microsoft_plugin_sys_Connected : Resources.Microsoft_plugin_sys_Disconnected) +
-            $"\n{Resources.Microsoft_plugin_sys_ConnectionName}: {ConnectionName}";
+        return $"**{Resources.Microsoft_plugin_sys_AdapterName}:** {Adapter}" +
+            $"\n\n**{Resources.Microsoft_plugin_sys_State}:** " + (State == OperationalStatus.Up ? char.ConvertFromUtf32(GreenCircleCharacter) + " " + Resources.Microsoft_plugin_sys_Connected : ":red_circle: " + Resources.Microsoft_plugin_sys_Disconnected) +
+            $"\n\n**{Resources.Microsoft_plugin_sys_PhysicalAddress}:** {PhysicalAddress}" +
+            $"\n\n**{Resources.Microsoft_plugin_sys_Speed}:** {GetFormattedSpeedValue(Speed)}" +
+            $"\n\n**{Resources.Microsoft_plugin_sys_Type}:** {GetAdapterTypeAsString(Type)}" +
+            $"\n\n**{Resources.Microsoft_plugin_sys_ConnectionName}:** {ConnectionName}";
     }
 
     /// <summary>
@@ -175,24 +183,24 @@ internal sealed class NetworkConnectionProperties
     /// <returns>String with the details</returns>
     internal string GetConnectionDetails()
     {
-        return $"{Resources.Microsoft_plugin_sys_ConnectionName}: {ConnectionName}" +
-            $"\n{Resources.Microsoft_plugin_sys_State}: " + (State == OperationalStatus.Up ? Resources.Microsoft_plugin_sys_Connected : Resources.Microsoft_plugin_sys_Disconnected) +
-            $"\n{Resources.Microsoft_plugin_sys_Type}: {GetAdapterTypeAsString(Type)}" +
-            $"\n{Resources.Microsoft_plugin_sys_Suffix}: {Suffix}" +
-            CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip4Address}: ", IPv4) +
-            CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip4SubnetMask}: ", IPv4Mask) +
-            CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip6Address}:\n\t", IPv6Global) +
-            CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip6Temp}:\n\t", IPv6Temporary) +
-            CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip6Link}:\n\t", IPv6LinkLocal) +
-            CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip6Site}:\n\t", IPv6SiteLocal) +
-            CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Ip6Unique}:\n\t", IPv6UniqueLocal) +
-            CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Gateways}:\n\t", Gateways) +
-            CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Dhcp}:\n\t", DhcpServers == null ? string.Empty : DhcpServers) +
-            CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Dns}:\n\t", DnsServers == null ? string.Empty : DnsServers) +
-            CreateIpInfoForDetailsText($"{Resources.Microsoft_plugin_sys_Wins}:\n\t", WinsServers == null ? string.Empty : WinsServers) +
-            $"\n\n{Resources.Microsoft_plugin_sys_AdapterName}: {Adapter}" +
-            $"\n{Resources.Microsoft_plugin_sys_PhysicalAddress}: {PhysicalAddress}" +
-            $"\n{Resources.Microsoft_plugin_sys_Speed}: {GetFormattedSpeedValue(Speed)}";
+        return $"**{Resources.Microsoft_plugin_sys_ConnectionName}:** {ConnectionName}" +
+            $"\n\n**{Resources.Microsoft_plugin_sys_State}:** " + (State == OperationalStatus.Up ? char.ConvertFromUtf32(GreenCircleCharacter) + " " + Resources.Microsoft_plugin_sys_Connected : ":red_circle: " + Resources.Microsoft_plugin_sys_Disconnected) +
+            $"\n\n**{Resources.Microsoft_plugin_sys_Type}:** {GetAdapterTypeAsString(Type)}" +
+            $"\n\n**{Resources.Microsoft_plugin_sys_Suffix}:** {Suffix}" +
+            CreateIpInfoForDetailsText($"**{Resources.Microsoft_plugin_sys_Ip4Address}:** ", IPv4) +
+            CreateIpInfoForDetailsText($"**{Resources.Microsoft_plugin_sys_Ip4SubnetMask}:** ", IPv4Mask) +
+            CreateIpInfoForDetailsText($"**{Resources.Microsoft_plugin_sys_Ip6Address}:**\n\n* ", IPv6Global) +
+            CreateIpInfoForDetailsText($"**{Resources.Microsoft_plugin_sys_Ip6Temp}:**\n\n* ", IPv6Temporary) +
+            CreateIpInfoForDetailsText($"**{Resources.Microsoft_plugin_sys_Ip6Link}:**\n\n* ", IPv6LinkLocal) +
+            CreateIpInfoForDetailsText($"**{Resources.Microsoft_plugin_sys_Ip6Site}:**\n\n* ", IPv6SiteLocal) +
+            CreateIpInfoForDetailsText($"**{Resources.Microsoft_plugin_sys_Ip6Unique}:**\n\n* ", IPv6UniqueLocal) +
+            CreateIpInfoForDetailsText($"**{Resources.Microsoft_plugin_sys_Gateways}:**\n\n* ", Gateways) +
+            CreateIpInfoForDetailsText($"**{Resources.Microsoft_plugin_sys_Dhcp}:**\n\n* ", DhcpServers == null ? string.Empty : DhcpServers) +
+            CreateIpInfoForDetailsText($"**{Resources.Microsoft_plugin_sys_Dns}:**\n\n* ", DnsServers == null ? string.Empty : DnsServers) +
+            CreateIpInfoForDetailsText($"**{Resources.Microsoft_plugin_sys_Wins}:**\n\n* ", WinsServers == null ? string.Empty : WinsServers) +
+            $"\n\n**{Resources.Microsoft_plugin_sys_AdapterName}:** {Adapter}" +
+            $"\n\n**{Resources.Microsoft_plugin_sys_PhysicalAddress}:** {PhysicalAddress}" +
+            $"\n\n**{Resources.Microsoft_plugin_sys_Speed}:** {GetFormattedSpeedValue(Speed)}";
     }
 
     /// <summary>
@@ -304,13 +312,13 @@ internal sealed class NetworkConnectionProperties
         switch (property)
         {
             case string:
-                return $"\n{title}{property}";
+                return string.IsNullOrWhiteSpace(property) ? string.Empty : $"\n\n{title}{property}";
             case List<string> listString:
-                return listString.Count == 0 ? string.Empty : $"\n{title}{string.Join("\n\t", property)}";
+                return listString.Count == 0 ? string.Empty : $"\n\n{title}{string.Join("\n\n* ", property)}";
             case List<IPAddress> listIP:
-                return listIP.Count == 0 ? string.Empty : $"\n{title}{string.Join("\n\t", property)}";
+                return listIP.Count == 0 ? string.Empty : $"\n\n{title}{string.Join("\n\n* ", property)}";
             case IPAddressCollection collectionIP:
-                return collectionIP.Count == 0 ? string.Empty : $"\n{title}{string.Join("\n\t", property)}";
+                return collectionIP.Count == 0 ? string.Empty : $"\n\n{title}{string.Join("\n\n* ", property)}";
             case null:
                 return string.Empty;
             default:

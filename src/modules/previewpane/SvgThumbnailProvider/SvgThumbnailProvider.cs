@@ -5,7 +5,8 @@ using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
+using System.Threading;
+
 using Common.Utilities;
 using ManagedCommon;
 using Microsoft.Web.WebView2.Core;
@@ -117,150 +118,91 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
             _browser.Height = (int)cx;
             _browser.NavigationCompleted += async (object sender, CoreWebView2NavigationCompletedEventArgs args) =>
             {
-                try
+                var a = await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].viewBox;");
+                if (a != null)
                 {
-                    // Check if the SVG element is present
-                    var a = await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].viewBox;");
-                    if (a != null)
-                    {
-                        var svgContent = SvgContents.Substring(SvgContents.IndexOf("<svg", StringComparison.OrdinalIgnoreCase), SvgContents.IndexOf("</svg>", StringComparison.OrdinalIgnoreCase) - SvgContents.IndexOf("<svg", StringComparison.OrdinalIgnoreCase) + "</svg>".Length);
-
-                        Dictionary<string, string> styleDict = new Dictionary<string, string>();
-
-                        // Try to parse the SVG content
-                        try
-                        {
-                            // Attempt to parse the svgContent
-                            var svgDocument = XDocument.Parse(svgContent);
-                            var svgElement = svgDocument.Root;
-                            var currentStyle = svgElement?.Attribute("style")?.Value;
-
-                            // If style attribute exists, preserve existing styles
-                            if (!string.IsNullOrEmpty(currentStyle) && currentStyle != "null")
-                            {
-                                styleDict = currentStyle
-                                    .Split(';', StringSplitOptions.RemoveEmptyEntries)
-                                    .Select(stylePart => stylePart.Split(':', 2, StringSplitOptions.TrimEntries))
-                                    .Where(styleKeyValue => styleKeyValue.Length == 2 && !string.IsNullOrEmpty(styleKeyValue[0]))
-                                    .ToDictionary(
-                                        styleKeyValue => styleKeyValue[0],
-                                        styleKeyValue => styleKeyValue[1]);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            // Log the error if the SVG content is not valid or parsing fails
-                            Logger.LogError($"Failed to parse SVG content: {ex.Message}");
-                        }
-
-                        // Add or replace width and height in the existing style
-                        styleDict["width"] = "100%";
-                        styleDict["height"] = "100%";
-
-                        // Construct a single JavaScript string to set all properties
-                        var styleScript = string.Join(";", styleDict.Select(kv => $"document.getElementsByTagName('svg')[0].style.setProperty('{kv.Key}', '{kv.Value}');"));
-
-                        // Apply the new style attributes using the constructed script
-                        await _browser.ExecuteScriptAsync(styleScript);
-                    }
-
-                    // Hide scrollbar - fixes #18286
-                    await _browser.ExecuteScriptAsync("document.querySelector('body').style.overflow='hidden'");
-
-                    MemoryStream ms = new MemoryStream();
-                    await _browser.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, ms);
-                    thumbnail = new Bitmap(ms);
-
-                    if (thumbnail.Width != cx && thumbnail.Height != cx && thumbnail.Width != 0 && thumbnail.Height != 0)
-                    {
-                        // We are not the appropriate size for caller.  Resize now while
-                        // respecting the aspect ratio.
-                        float scale = Math.Min((float)cx / thumbnail.Width, (float)cx / thumbnail.Height);
-                        int scaleWidth = (int)(thumbnail.Width * scale);
-                        int scaleHeight = (int)(thumbnail.Height * scale);
-                        thumbnail = ResizeImage(thumbnail, scaleWidth, scaleHeight);
-                    }
-
-                    thumbnailDone.Set();
+                    await _browser.ExecuteScriptAsync($"document.getElementsByTagName('svg')[0].style = 'width:100%;height:100%';");
                 }
-                catch (Exception ex)
+
+                // Hide scrollbar - fixes #18286
+                await _browser.ExecuteScriptAsync("document.querySelector('body').style.overflow='hidden'");
+
+                MemoryStream ms = new MemoryStream();
+                await _browser.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, ms);
+                thumbnail = new Bitmap(ms);
+
+                if (thumbnail.Width != cx && thumbnail.Height != cx && thumbnail.Width != 0 && thumbnail.Height != 0)
                 {
-                    Logger.LogError("Error during NavigationCompleted: ", ex);
-                    thumbnailDone.Set();
+                    // We are not the appropriate size for caller.  Resize now while
+                    // respecting the aspect ratio.
+                    float scale = Math.Min((float)cx / thumbnail.Width, (float)cx / thumbnail.Height);
+                    int scaleWidth = (int)(thumbnail.Width * scale);
+                    int scaleHeight = (int)(thumbnail.Height * scale);
+                    thumbnail = ResizeImage(thumbnail, scaleWidth, scaleHeight);
                 }
+
+                thumbnailDone.Set();
             };
 
             var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
             ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
-                webView2EnvironmentAwaiter = CoreWebView2Environment
-                    .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
-                    .ConfigureAwait(true).GetAwaiter();
+               webView2EnvironmentAwaiter = CoreWebView2Environment
+                   .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
+                   .ConfigureAwait(true).GetAwaiter();
 
             webView2EnvironmentAwaiter.OnCompleted(async () =>
             {
-                for (int attempt = 0; attempt < 3; attempt++)
+                try
                 {
-                    try
+                    _webView2Environment = webView2EnvironmentAwaiter.GetResult();
+                    await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
+                    _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
+                    _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
+                    _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                    _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
+                    _browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
+                    _browser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
+                    _browser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
+                    _browser.CoreWebView2.Settings.IsScriptEnabled = false;
+                    _browser.CoreWebView2.Settings.IsWebMessageEnabled = false;
+
+                    // Don't load any resources.
+                    _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
+                    _browser.CoreWebView2.WebResourceRequested += (object sender, CoreWebView2WebResourceRequestedEventArgs e) =>
                     {
-                        _webView2Environment = webView2EnvironmentAwaiter.GetResult();
-                        await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
-                        _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
-                        _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-                        _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
-                        _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
-                        _browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
-                        _browser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
-                        _browser.CoreWebView2.Settings.IsPasswordAutosaveEnabled = false;
-                        _browser.CoreWebView2.Settings.IsScriptEnabled = false;
-                        _browser.CoreWebView2.Settings.IsWebMessageEnabled = false;
-
-                        // Don't load any resources.
-                        _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
-                        _browser.CoreWebView2.WebResourceRequested += (object sender, CoreWebView2WebResourceRequestedEventArgs e) =>
+                        // Show local file we've saved with the svg contents. Block all else.
+                        if (new Uri(e.Request.Uri) != _localFileURI)
                         {
-                            // Show local file we've saved with the svg contents. Block all else.
-                            if (new Uri(e.Request.Uri) != _localFileURI)
-                            {
-                                e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
-                            }
-                        };
-
-                        // WebView2.NavigateToString() limitation
-                        // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
-                        // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
-                        SvgContentsReady.Wait();
-                        if (string.IsNullOrEmpty(SvgContents) || !SvgContents.Contains("svg"))
-                        {
-                            thumbnailDone.Set();
-                            return;
+                            e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
                         }
+                    };
 
-                        if (SvgContents.Length > 1_500_000)
-                        {
-                            string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
-                            File.WriteAllText(filename, SvgContents);
-                            _localFileURI = new Uri(filename);
-                            _browser.Source = _localFileURI;
-                        }
-                        else
-                        {
-                            _browser.NavigateToString(SvgContents);
-                        }
-
-                        break; // Exit the retry loop if initialization succeeds
-                    }
-                    catch (Exception ex)
+                    // WebView2.NavigateToString() limitation
+                    // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
+                    // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
+                    SvgContentsReady.Wait();
+                    if (string.IsNullOrEmpty(SvgContents) || !SvgContents.Contains("svg"))
                     {
-                        Logger.LogError($"Initialization attempt {attempt} failed: {ex.Message}");
-                        if (attempt == 2)
-                        {
-                            Logger.LogError($"Failed running webView2Environment completed for {FilePath} : ", ex);
-                            thumbnailDone.Set();
-                            return;
-                        }
-
-                        await Task.Delay(1000); // Delay before retrying
+                        thumbnailDone.Set();
+                        return;
                     }
+
+                    if (SvgContents.Length > 1_500_000)
+                    {
+                        string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
+                        File.WriteAllText(filename, SvgContents);
+                        _localFileURI = new Uri(filename);
+                        _browser.Source = _localFileURI;
+                    }
+                    else
+                    {
+                        _browser.NavigateToString(SvgContents);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed running webView2Environment completed for {FilePath} : ", ex);
+                    thumbnailDone.Set();
                 }
             });
 

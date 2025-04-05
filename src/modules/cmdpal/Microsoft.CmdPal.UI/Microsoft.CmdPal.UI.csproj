@@ -90,6 +90,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj" />
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.WebSearch\Microsoft.CmdPal.Ext.WebSearch.csproj" />
     <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.Indexer\Microsoft.CmdPal.Ext.Indexer.csproj" />

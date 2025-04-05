@@ -106,14 +106,14 @@ public class ExtensionWrapper : IExtensionWrapper
                 {
                     Logger.LogDebug($"Starting {ExtensionDisplayName} ({ExtensionClassId})");
 
-                    nint extensionPtr = nint.Zero;
+                    var extensionPtr = nint.Zero;
                     try
                     {
                         // -2147024809: E_INVALIDARG
                         // -2147467262: E_NOINTERFACE
                         // -2147024893: E_PATH_NOT_FOUND
-                        Guid guid = typeof(IExtension).GUID;
-                        global::Windows.Win32.Foundation.HRESULT hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out object? extensionObj);
+                        var guid = typeof(IExtension).GUID;
+                        var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out var extensionObj);
 
                         if (hr.Value == -2147024893)
                         {
@@ -179,7 +179,7 @@ public class ExtensionWrapper : IExtensionWrapper
     {
         await StartExtensionAsync();
 
-        object? supportedProviders = GetExtensionObject()?.GetProvider(_providerTypeMap[typeof(T)]);
+        var supportedProviders = GetExtensionObject()?.GetProvider(_providerTypeMap[typeof(T)]);
         if (supportedProviders is IEnumerable<T> multipleProvidersSupported)
         {
             return multipleProvidersSupported;

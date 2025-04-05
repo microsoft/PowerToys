@@ -18,16 +18,18 @@ public partial class SystemCommandExtensionProvider : CommandProvider
     public SystemCommandExtensionProvider()
     {
         DisplayName = Resources.Microsoft_plugin_ext_system_page_name;
+        Id = "System";
         _commands = [
             new CommandItem(Page)
             {
-                Title = DisplayName,
+                Title = Resources.Microsoft_plugin_ext_system_page_name,
                 Icon = Page.Icon,
                 MoreCommands = [new CommandContextItem(_settingsManager.Settings.SettingsPage)],
             },
         ];
 
         Icon = Page.Icon;
+        Settings = _settingsManager.Settings;
     }
 
     public override ICommandItem[] TopLevelCommands()

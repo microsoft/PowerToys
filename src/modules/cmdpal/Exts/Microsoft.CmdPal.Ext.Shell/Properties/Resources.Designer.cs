@@ -115,7 +115,7 @@ namespace Microsoft.CmdPal.Ext.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Run as administrator (Ctrl+Shift+Enter).
+        ///   Looks up a localized string similar to Run as administrator.
         /// </summary>
         public static string cmd_run_as_administrator {
             get {
@@ -124,7 +124,7 @@ namespace Microsoft.CmdPal.Ext.Shell.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Run as different user (Ctrl+Shift+U).
+        ///   Looks up a localized string similar to Run as different user.
         /// </summary>
         public static string cmd_run_as_user {
             get {

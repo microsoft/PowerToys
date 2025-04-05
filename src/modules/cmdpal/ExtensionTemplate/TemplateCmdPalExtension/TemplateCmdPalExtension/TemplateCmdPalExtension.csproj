@@ -43,6 +43,7 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Web.WebView2" />
     <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Shmuelie.WinRTServer" />
   </ItemGroup>
 
   <!--

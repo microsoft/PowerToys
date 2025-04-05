@@ -17,7 +17,6 @@ namespace Microsoft.CmdPal.Ext.WinGet.Pages;
 public partial class InstallPackageCommand : InvokableCommand
 {
     private readonly CatalogPackage _package;
-
     private readonly StatusMessage _installBanner = new();
     private IAsyncOperationWithProgress<InstallResult, InstallProgress>? _installAction;
     private IAsyncOperationWithProgress<UninstallResult, UninstallProgress>? _unInstallAction;
@@ -42,6 +41,8 @@ public partial class InstallPackageCommand : InvokableCommand
     private static readonly CompositeFormat QueuedPackageUninstall = System.Text.CompositeFormat.Parse(Properties.Resources.winget_queued_package_uninstall);
     private static readonly CompositeFormat UninstallPackageFinishing = System.Text.CompositeFormat.Parse(Properties.Resources.winget_uninstall_package_finishing);
     private static readonly CompositeFormat DownloadProgress = System.Text.CompositeFormat.Parse(Properties.Resources.winget_download_progress);
+
+    internal bool SkipDependencies { get; set; }
 
     public InstallPackageCommand(CatalogPackage package, bool isInstalled)
     {
@@ -96,6 +97,9 @@ public partial class InstallPackageCommand : InvokableCommand
 
             var installOptions = WinGetStatics.WinGetFactory.CreateInstallOptions();
             installOptions.PackageInstallScope = PackageInstallScope.Any;
+
+            installOptions.SkipDependencies = SkipDependencies;
+
             _installAction = WinGetStatics.Manager.InstallPackageAsync(_package, installOptions);
 
             var handler = new AsyncOperationProgressHandler<InstallResult, InstallProgress>(OnInstallProgress);

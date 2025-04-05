@@ -10,6 +10,7 @@
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.2428" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.6.250205002" />
+    <PackageVersion Include="Shmuelie.WinRTServer" Version="2.1.1" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <PackageVersion Include="System.Text.Json" Version="9.0.3" />
   </ItemGroup>

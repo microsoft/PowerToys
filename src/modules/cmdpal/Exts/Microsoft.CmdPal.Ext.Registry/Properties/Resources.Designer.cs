@@ -178,6 +178,15 @@ namespace Microsoft.CmdPal.Ext.Registry.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Windows Registry.
+        /// </summary>
+        internal static string RegistryProvider_DisplayName {
+            get {
+                return ResourceManager.GetString("RegistryProvider_DisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Registry value.
         /// </summary>
         internal static string RegistryValue {

@@ -299,7 +299,8 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="MwbPolicyDefinedIpMappingRules">Predefined IP Address mapping rules</string>
       <string id="NewPlusHideTemplateFilenameExtension">Hide template filename extension</string>
       <string id="AllowDiagnosticData">Allow sending diagnostic data</string>
-      <string id="ConfigureRunAtStartup">Configure the run at startup setting</string>      
+      <string id="ConfigureRunAtStartup">Configure the run at startup setting</string>
+      <string id="NewPlusReplaceVariablesInTemplateFilenames">Replace variables in template filenames</string>
     </stringTable>
 
     <presentationTable>

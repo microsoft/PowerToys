@@ -22,7 +22,9 @@ public partial class SettingsModel : ObservableObject
 
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
-    public HotkeySettings? Hotkey { get; set; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
+    public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
+
+    public HotkeySettings? Hotkey { get; set; } = DefaultActivationShortcut;
 
     public bool ShowAppDetails { get; set; }
 
@@ -48,6 +50,23 @@ public partial class SettingsModel : ObservableObject
     static SettingsModel()
     {
         FilePath = SettingsJsonPath();
+    }
+
+    public ProviderSettings GetProviderSettings(CommandProviderWrapper provider)
+    {
+        ProviderSettings? settings;
+        if (!ProviderSettings.TryGetValue(provider.ProviderId, out settings))
+        {
+            settings = new ProviderSettings(provider);
+            settings.Connect(provider);
+            ProviderSettings[provider.ProviderId] = settings;
+        }
+        else
+        {
+            settings.Connect(provider);
+        }
+
+        return settings;
     }
 
     public static SettingsModel LoadSettings()

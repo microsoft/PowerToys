@@ -105,19 +105,8 @@ public sealed partial class SearchBar : UserControl,
 
         var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
         var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        if (e.Key == VirtualKey.Down)
-        {
-            WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
 
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Up)
-        {
-            WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
-
-            e.Handled = true;
-        }
-        else if (ctrlPressed && e.Key == VirtualKey.Enter)
+        if (ctrlPressed && e.Key == VirtualKey.Enter)
         {
             // ctrl+enter
             WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
@@ -196,6 +185,18 @@ public sealed partial class SearchBar : UserControl,
                 // Mark backspace as held to handle continuous deletion
                 _isBackspaceHeld = true;
             }
+        }
+        else if (e.Key == VirtualKey.Up)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
+
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.Down)
+        {
+            WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
+
+            e.Handled = true;
         }
     }
 

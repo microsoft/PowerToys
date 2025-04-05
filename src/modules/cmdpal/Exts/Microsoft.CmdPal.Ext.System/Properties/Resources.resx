@@ -151,6 +151,9 @@
   <data name="Microsoft_plugin_ext_connection_details" xml:space="preserve">
     <value>Connection Details</value>
   </data>
+  <data name="Microsoft_plugin_ext_adapter_details" xml:space="preserve">
+    <value>Adapter Details</value>
+  </data>
   <data name="Microsoft_plugin_ext_copy" xml:space="preserve">
     <value>Copy to clipboard</value>
   </data>
@@ -309,8 +312,8 @@
     <value>Empty Recycle Bin</value>
     <comment>This should align to the action in Windows of emptying the recycle bin on your computer.</comment>
   </data>
-  <data name="Microsoft_plugin_sys_RecycleBin_ShowEmptySeparate" xml:space="preserve">
-    <value>Show separate result for Empty Recycle Bin command</value>
+  <data name="Microsoft_plugin_sys_RecycleBin_HideEmpty" xml:space="preserve">
+    <value>Hide the Empty Recycle Bin command</value>
   </data>
   <data name="Microsoft_plugin_sys_RecycleBin_ShowEmptySuccessMessage" xml:space="preserve">
     <value>Show a success message after emptying the Recycle Bin</value>

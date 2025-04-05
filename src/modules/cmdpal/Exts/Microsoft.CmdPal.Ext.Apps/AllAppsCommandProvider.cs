@@ -22,7 +22,11 @@ public partial class AllAppsCommandProvider : CommandProvider
         Icon = IconHelpers.FromRelativePath("Assets\\AllApps.svg");
         Settings = AllAppsSettings.Instance.Settings;
 
-        _listItem = new(Page) { Subtitle = Resources.search_installed_apps };
+        _listItem = new(Page)
+        {
+            Subtitle = Resources.search_installed_apps,
+            MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
+        };
     }
 
     public override ICommandItem[] TopLevelCommands() => [_listItem];

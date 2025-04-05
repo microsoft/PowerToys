@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Events;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.Windows.AppLifecycle;
 
 namespace Microsoft.CmdPal.UI;
@@ -30,9 +32,10 @@ internal sealed class Program
 
         Logger.InitializeLogger("\\CmdPal\\Logs\\");
         Logger.LogDebug($"Starting at {DateTime.UtcNow}");
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalProcessStarted());
 
         WinRT.ComWrappersSupport.InitializeComWrappers();
-        bool isRedirect = DecideRedirection();
+        var isRedirect = DecideRedirection();
         if (!isRedirect)
         {
             Microsoft.UI.Xaml.Application.Start((p) =>
@@ -48,17 +51,19 @@ internal sealed class Program
 
     private static bool DecideRedirection()
     {
-        bool isRedirect = false;
-        AppActivationArguments args = AppInstance.GetCurrent().GetActivatedEventArgs();
-        AppInstance keyInstance = AppInstance.FindOrRegisterForKey("randomKey");
+        var isRedirect = false;
+        var args = AppInstance.GetCurrent().GetActivatedEventArgs();
+        var keyInstance = AppInstance.FindOrRegisterForKey("randomKey");
 
         if (keyInstance.IsCurrent)
         {
+            PowerToysTelemetry.Log.WriteEvent(new ColdLaunch());
             keyInstance.Activated += OnActivated;
         }
         else
         {
             isRedirect = true;
+            PowerToysTelemetry.Log.WriteEvent(new ReactivateInstance());
             keyInstance.RedirectActivationToAsync(args).AsTask().ConfigureAwait(false);
         }
 

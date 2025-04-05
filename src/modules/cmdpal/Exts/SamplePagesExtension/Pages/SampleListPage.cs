@@ -54,6 +54,11 @@ internal sealed partial class SampleListPage : ListPage
                 Title = "This item will take you to another page",
                 Subtitle = "This allows for nested lists of items",
             },
+            new ListItem(new OpenUrlCommand("https://github.com/microsoft/powertoys"))
+            {
+                Title = "Or you can go to links",
+                Subtitle = "This takes you to the PowerToys repo on GitHub",
+            },
             new ListItem(new SampleMarkdownPage())
             {
                 Title = "Items can have tags",

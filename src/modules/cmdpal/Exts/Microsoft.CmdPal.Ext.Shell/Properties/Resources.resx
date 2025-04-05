@@ -130,7 +130,7 @@
     <value>execute command through command shell</value>
   </data>
   <data name="cmd_run_as_administrator" xml:space="preserve">
-    <value>Run as administrator (Ctrl+Shift+Enter)</value>
+    <value>Run as administrator</value>
   </data>
   <data name="cmd_command_failed" xml:space="preserve">
     <value>Error running the command</value>
@@ -139,7 +139,7 @@
     <value>Command not found</value>
   </data>
   <data name="cmd_run_as_user" xml:space="preserve">
-    <value>Run as different user (Ctrl+Shift+U)</value>
+    <value>Run as different user</value>
   </data>
   <data name="leave_shell_open" xml:space="preserve">
     <value>Keep shell open</value>

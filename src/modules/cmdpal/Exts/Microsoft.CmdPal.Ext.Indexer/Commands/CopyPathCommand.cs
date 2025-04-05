@@ -5,7 +5,6 @@
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
@@ -24,10 +23,7 @@ internal sealed partial class CopyPathCommand : InvokableCommand
     {
         try
         {
-            var dataPackage = new DataPackage();
-            dataPackage.SetText(_item.FullPath);
-            Clipboard.SetContent(dataPackage);
-            Clipboard.Flush();
+            ClipboardHelper.SetText(_item.FullPath);
         }
         catch
         {
