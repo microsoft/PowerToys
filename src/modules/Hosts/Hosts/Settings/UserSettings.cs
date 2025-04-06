@@ -61,15 +61,16 @@ namespace Hosts.Settings
         public UserSettings()
         {
             _settingsUtils = new SettingsUtils();
-            ShowStartupWarning = true;
-            LoopbackDuplicates = false;
-            AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
-            Encoding = HostsEncoding.Utf8;
-            BackupHosts = true;
-            BackupPath = @"C:\Windows\system32\drivers\etc";
-            DeleteBackupsMode = HostsDeleteBackupMode.Age;
-            DeleteBackupsDays = 15;
-            DeleteBackupsCount = 5;
+            var defaultSettings = new HostsProperties();
+            ShowStartupWarning = defaultSettings.ShowStartupWarning;
+            LoopbackDuplicates = defaultSettings.LoopbackDuplicates;
+            AdditionalLinesPosition = (HostsAdditionalLinesPosition)defaultSettings.AdditionalLinesPosition;
+            Encoding = (HostsEncoding)defaultSettings.Encoding;
+            BackupHosts = defaultSettings.BackupHosts;
+            BackupPath = defaultSettings.BackupPath;
+            DeleteBackupsMode = (HostsDeleteBackupMode)defaultSettings.DeleteBackupsMode;
+            DeleteBackupsDays = defaultSettings.DeleteBackupsDays;
+            DeleteBackupsCount = defaultSettings.DeleteBackupsCount;
 
             LoadSettingsFromJson();
 

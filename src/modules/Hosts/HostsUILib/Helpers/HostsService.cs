@@ -187,7 +187,7 @@ namespace HostsUILib.Helpers
             {
                 await _asyncLock.WaitAsync();
                 _fileSystemWatcher.EnableRaisingEvents = false;
-                _backupManager.CreateBackup(HostsFilePath);
+                _backupManager.Create(HostsFilePath);
 
                 // FileMode.OpenOrCreate is necessary to prevent UnauthorizedAccessException when the hosts file is hidden
                 using var stream = _fileSystem.FileStream.New(HostsFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read, DefaultBufferSize, FileOptions.Asynchronous);

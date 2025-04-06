@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.IO;
 using System.Text.Json.Serialization;
 using Settings.UI.Library.Enumerations;
 
@@ -41,7 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
             Encoding = HostsEncoding.Utf8;
             BackupHosts = true;
-            BackupPath = @"C:\Windows\System32\drivers\etc";
+            BackupPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\drivers\etc");
             DeleteBackupsMode = HostsDeleteBackupMode.Age;
             DeleteBackupsDays = 15;
             DeleteBackupsCount = 5;
