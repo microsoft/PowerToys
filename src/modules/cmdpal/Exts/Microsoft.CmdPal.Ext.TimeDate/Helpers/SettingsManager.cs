@@ -13,6 +13,11 @@ namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
 public class SettingsManager : JsonSettingsManager
 {
+    // Line break character used in WinUI3 TextBox and TextBlock.
+    private const char TEXTBOXNEWLINE = '\r';
+
+    private const string CUSTOMFORMATPLACEHOLDER = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)\rMyUtcFormat=UTC:hh:mm:ss";
+
     private static readonly string _namespace = "timeDate";
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
@@ -97,7 +102,7 @@ public class SettingsManager : JsonSettingsManager
     private readonly TextSetting _customFormats = new(
         Namespaced(nameof(CustomFormats)),
         Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
-        Resources.Microsoft_plugin_timedate_Setting_CustomFormats + "\r" + string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "DIM", "WOM", "WOY", "EAB", "WFT", "UXT", "UMS", "OAD", "EXC", "EXF", "UTC:"),
+        Resources.Microsoft_plugin_timedate_Setting_CustomFormats + TEXTBOXNEWLINE + string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "DIM", "WOM", "WOY", "EAB", "WFT", "UXT", "UMS", "OAD", "EXC", "EXF", "UTC:"),
         string.Empty);
 
     public int FirstWeekOfYear
@@ -148,7 +153,7 @@ public class SettingsManager : JsonSettingsManager
 
     public bool HideNumberMessageOnGlobalQuery => _hideNumberMessageOnGlobalQuery.Value;
 
-    public List<string> CustomFormats => _customFormats.Value.Split("\r").ToList();
+    public List<string> CustomFormats => _customFormats.Value.Split(TEXTBOXNEWLINE).ToList();
 
     internal static string SettingsJsonPath()
     {
@@ -173,7 +178,7 @@ public class SettingsManager : JsonSettingsManager
         Settings.Add(_firstDayOfWeek);
 
         _customFormats.Multiline = true;
-        _customFormats.Placeholder = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)\rMyUtcFormat=UTC:hh:mm:ss";
+        _customFormats.Placeholder = CUSTOMFORMATPLACEHOLDER;
         Settings.Add(_customFormats);
 
         // Load settings from file upon initialization

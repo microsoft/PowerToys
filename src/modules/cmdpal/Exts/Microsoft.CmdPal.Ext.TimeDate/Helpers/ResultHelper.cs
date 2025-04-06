@@ -46,6 +46,8 @@ internal static class ResultHelper
         Details = new Details()
         {
             Title = Resources.Microsoft_plugin_timedate_InvalidInput_DetailsHeader,
+
+            // Because of translation we can't use 'CompositeFormat'.
             Body = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_InvalidInput_SupportedInput, "**", "\n\n", "\n\n* "),
         },
     };
