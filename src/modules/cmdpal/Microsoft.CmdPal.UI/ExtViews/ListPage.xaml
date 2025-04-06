@@ -27,11 +27,6 @@
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
 
-        <StackLayout
-            x:Name="HorizontalStackLayout"
-            Orientation="Horizontal"
-            Spacing="4" />
-
         <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
             <ItemContainer>
                 <cpcontrols:Tag
@@ -86,19 +81,22 @@
                         Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
                 </StackPanel>
 
-                <ItemsView
+                <ItemsControl
                     Grid.RowSpan="2"
                     Grid.Column="2"
                     Margin="0,0,8,0"
                     VerticalAlignment="Center"
                     IsHitTestVisible="False"
-                    IsItemInvokedEnabled="False"
                     IsTabStop="False"
                     ItemTemplate="{StaticResource TagTemplate}"
                     ItemsSource="{x:Bind Tags, Mode=OneWay}"
-                    Layout="{StaticResource HorizontalStackLayout}"
-                    SelectionMode="None"
-                    Visibility="{x:Bind HasTags, Mode=OneWay}" />
+                    Visibility="{x:Bind HasTags, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
             </Grid>
         </DataTemplate>
     </Page.Resources>
