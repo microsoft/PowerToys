@@ -22,6 +22,8 @@ namespace RegistryPreviewUILib
 {
     public sealed partial class RegistryPreviewMainPage : Page
     {
+        private const string NEWFILEHEADER = "Windows Registry Editor Version 5.00\r\n\r\n";
+
         private static SemaphoreSlim _dialogSemaphore = new(1);
         private string lastKeyPath;
 
@@ -78,7 +80,7 @@ namespace RegistryPreviewUILib
             catch
             {
                 // Set default value for empty opening
-                await MonacoEditor.SetTextAsync("Windows Registry Editor Version 5.00\r\n\r\n");
+                await MonacoEditor.SetTextAsync(NEWFILEHEADER);
 
                 // restore TextChanged handler to make for clean UI
                 MonacoEditor.TextChanged += MonacoEditor_TextChanged;
@@ -183,7 +185,7 @@ namespace RegistryPreviewUILib
             _updateWindowTitleFunction(string.Empty);
 
             // Set default value for empty opening
-            await MonacoEditor.SetTextAsync("Windows Registry Editor Version 5.00\r\n\r\n");
+            await MonacoEditor.SetTextAsync(NEWFILEHEADER);
 
             // Reset the cursor but leave editor disabled as no content got loaded
             ChangeCursor(gridPreview, false);
