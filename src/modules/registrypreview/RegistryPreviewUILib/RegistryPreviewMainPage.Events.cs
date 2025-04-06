@@ -169,6 +169,7 @@ namespace RegistryPreviewUILib
             }
 
             // save and update window title
+            // error handling and ui update happens in SaveFile() method
             _ = SaveFile();
         }
 
