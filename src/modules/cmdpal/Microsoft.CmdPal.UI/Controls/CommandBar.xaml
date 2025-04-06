@@ -53,14 +53,14 @@
                         Grid.Column="1"
                         VerticalAlignment="Center"
                         Text="{x:Bind Title, Mode=OneWay}" />
-                    <TextBlock
+                    <!--<TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />-->
                 </Grid>
             </DataTemplate>
 

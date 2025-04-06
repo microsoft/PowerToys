@@ -22,7 +22,9 @@ public partial class SettingsModel : ObservableObject
 
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
-    public HotkeySettings? Hotkey { get; set; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
+    public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
+
+    public HotkeySettings? Hotkey { get; set; } = DefaultActivationShortcut;
 
     public bool ShowAppDetails { get; set; }
 

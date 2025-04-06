@@ -62,6 +62,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         internal bool HideNumberMessageOnGlobalQuery { get; private set; }
 
         /// <summary>
+        /// Gets a value containing the custom format definitions
+        /// </summary>
+        internal List<string> CustomFormats { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TimeDateSettings"/> class.
         /// Private constructor to make sure there is never more than one instance of this class
         /// </summary>
@@ -102,29 +107,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             {
                 new PluginAdditionalOption()
                 {
-                    Key = nameof(CalendarFirstWeekRule),
-                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingFirstWeekRule,
-                    DisplayDescription = Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_Description,
-                    PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
-                    ComboBoxItems = new List<KeyValuePair<string, string>>
-                    {
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_Setting_UseSystemSetting, "-1"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay, "0"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek, "1"),
-                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFourDayWeek, "2"),
-                    },
-                    ComboBoxValue = -1,
-                },
-                new PluginAdditionalOption()
-                {
-                    Key = nameof(FirstDayOfWeek),
-                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
-                    PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
-                    ComboBoxItems = GetSortedListForWeekDaySetting(),
-                    ComboBoxValue = -1,
-                },
-                new PluginAdditionalOption()
-                {
                     Key = nameof(OnlyDateTimeNowGlobal),
                     DisplayLabel = Resources.Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal,
                     DisplayDescription = Resources.Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description,
@@ -150,6 +132,38 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     DisplayLabel = Resources.Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery,
                     Value = false,
                 },
+                new PluginAdditionalOption()
+                {
+                    Key = nameof(CalendarFirstWeekRule),
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingFirstWeekRule,
+                    DisplayDescription = Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_Description,
+                    PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
+                    ComboBoxItems = new List<KeyValuePair<string, string>>
+                    {
+                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_Setting_UseSystemSetting, "-1"),
+                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay, "0"),
+                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek, "1"),
+                        new KeyValuePair<string, string>(Resources.Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFourDayWeek, "2"),
+                    },
+                    ComboBoxValue = -1,
+                },
+                new PluginAdditionalOption()
+                {
+                    Key = nameof(FirstDayOfWeek),
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
+                    PluginOptionType = PluginAdditionalOption.AdditionalOptionType.Combobox,
+                    ComboBoxItems = GetSortedListForWeekDaySetting(),
+                    ComboBoxValue = -1,
+                },
+                new PluginAdditionalOption()
+                {
+                    Key = nameof(CustomFormats),
+                    PluginOptionType = PluginAdditionalOption.AdditionalOptionType.MultilineTextbox,
+                    DisplayLabel = Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
+                    DisplayDescription = string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "DIM", "WOM", "WOY", "EAB", "WFT", "UXT", "UMS", "OAD", "EXC", "EXF", "UTC:"),
+                    PlaceholderText = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)\rMyUtcFormat=UTC:hh:mm:ss",
+                    TextValue = string.Empty,
+                },
             };
 
             return optionList;
@@ -172,6 +186,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             TimeWithSeconds = GetSettingOrDefault(settings, nameof(TimeWithSeconds));
             DateWithWeekday = GetSettingOrDefault(settings, nameof(DateWithWeekday));
             HideNumberMessageOnGlobalQuery = GetSettingOrDefault(settings, nameof(HideNumberMessageOnGlobalQuery));
+            CustomFormats = GetMultilineTextSettingOrDefault(settings, nameof(CustomFormats));
         }
 
         /// <summary>
@@ -202,6 +217,21 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
             // If a setting isn't available, we use the value defined in the method GetAdditionalOptions() as fallback.
             // We can use First() instead of FirstOrDefault() because the values must exist. Otherwise, we made a mistake when defining the settings.
             return option?.ComboBoxValue ?? GetAdditionalOptions().First(x => x.Key == name).ComboBoxValue;
+        }
+
+        /// <summary>
+        /// Return the combobox value of the given settings list with the given name.
+        /// </summary>
+        /// <param name="settings">The object that contain all settings.</param>
+        /// <param name="name">The name of the setting.</param>
+        /// <returns>A settings value.</returns>
+        private static List<string> GetMultilineTextSettingOrDefault(PowerLauncherPluginSettings settings, string name)
+        {
+            var option = settings?.AdditionalOptions?.FirstOrDefault(x => x.Key == name);
+
+            // If a setting isn't available, we use the value defined in the method GetAdditionalOptions() as fallback.
+            // We can use First() instead of FirstOrDefault() because the values must exist. Otherwise, we made a mistake when defining the settings.
+            return option?.TextValueAsMultilineList ?? GetAdditionalOptions().First(x => x.Key == name).TextValueAsMultilineList;
         }
 
         /// <summary>
