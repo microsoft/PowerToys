@@ -1,0 +1,91 @@
+parameters:
+  - name: buildConfigurations
+    type: object
+    default:
+      - Release
+  - name: codeSign
+    type: boolean
+    default: false
+  - name: pool
+    type: object
+    default: []
+  - name: signingIdentity
+    type: object
+    default: {}
+  - name: sdkVersionNumber
+    type: string
+    default: '0.0.1'
+
+jobs:
+- job: "BuildSDK"
+  ${{ if ne(length(parameters.pool), 0) }}:
+    pool: ${{ parameters.pool }}
+  displayName: Build SDK
+  timeoutInMinutes: 240
+  cancelTimeoutInMinutes: 1
+  templateContext: # Required when this template is hosted in 1ES PT
+    outputs:
+    - output: pipelineArtifact
+      artifactName: SDK
+      targetPath: $(Build.ArtifactStagingDirectory)
+  steps:
+  - checkout: self
+    clean: true
+    submodules: true
+    persistCredentials: True
+    fetchTags: false
+    fetchDepth: 1
+
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\src\modules\cmdpal\extensionsdk\nuget\BuildSDKHelper.ps1" -Configuration "Release" -VersionOfSDK ${{ parameters.sdkVersionNumber }} -BuildStep "build" -IsAzurePipelineBuild
+    displayName: Build SDK
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign SDK
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: 'src/modules'
+          signType: batchSigning
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_sdk.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\src\modules\cmdpal\extensionsdk\nuget\BuildSDKHelper.ps1" -Configuration "Release" -VersionOfSDK ${{ parameters.sdkVersionNumber }} -BuildStep "pack" -IsAzurePipelineBuild
+    displayName: Pack SDK
+
+  - task: CopyFiles@2
+    displayName: Copy Nuget to Artifact Staging
+    inputs:
+      sourceFolder: "$(build.sourcesdirectory)/src/modules/cmdpal/extensionsdk/_build"
+      contents: '*.nupkg'
+      targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign NuGet packages
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: $(Build.ArtifactStagingDirectory)
+          Pattern: '*.nupkg'
+          UseMinimatch: true
+          signConfigType: inlineSignParams
+          inlineOperation: >-
+            [
+                {
+                    "KeyCode": "CP-401405",
+                    "OperationCode": "NuGetSign",
+                    "Parameters": {},
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0"
+                },
+                {
+                    "KeyCode": "CP-401405",
+                    "OperationCode": "NuGetVerify",
+                    "Parameters": {},
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0"
+                }
+            ]

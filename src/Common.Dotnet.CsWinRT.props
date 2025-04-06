@@ -14,7 +14,7 @@
     <WarningLevel>4</WarningLevel>
     <NoWarn></NoWarn>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CA1720;CA1859;CA2263;CA2022</WarningsNotAsErrors>
+    <WarningsNotAsErrors>CA1720;CA1859;CA2263;CA2022;MVVMTK0045;MVVMTK0049</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

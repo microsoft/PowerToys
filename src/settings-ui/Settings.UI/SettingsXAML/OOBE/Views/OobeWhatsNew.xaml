@@ -16,6 +16,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -84,20 +85,42 @@
             Grid.Row="2"
             VerticalAlignment="Top"
             IsClosable="False"
-            IsOpen="False"
-            IsTabStop="True"
-            Severity="Error" />
+            IsTabStop="False"
+            Severity="Error">
+            <InfoBar.ActionButton>
+                <Button
+                    x:Uid="RetryBtn"
+                    HorizontalAlignment="Right"
+                    Click="LoadReleaseNotes_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                        <TextBlock x:Uid="RetryLabel" />
+                    </StackPanel>
+                </Button>
+            </InfoBar.ActionButton>
+        </InfoBar>
         <InfoBar
             x:Name="ProxyWarningInfoBar"
             x:Uid="Oobe_WhatsNew_ProxyAuthenticationWarning"
             Grid.Row="2"
             VerticalAlignment="Top"
             IsClosable="False"
-            IsOpen="False"
-            IsTabStop="True"
-            Severity="Warning" />
+            IsTabStop="False"
+            Severity="Warning">
+            <InfoBar.ActionButton>
+                <Button
+                    x:Uid="RetryBtn"
+                    HorizontalAlignment="Right"
+                    Click="LoadReleaseNotes_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                        <TextBlock x:Uid="RetryLabel" />
+                    </StackPanel>
+                </Button>
+            </InfoBar.ActionButton>
+        </InfoBar>
 
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
             <Grid Margin="32,24,32,24">
                 <ProgressRing
                     x:Name="LoadingProgressRing"
