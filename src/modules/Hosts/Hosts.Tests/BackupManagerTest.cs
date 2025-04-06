@@ -27,7 +27,7 @@ namespace Hosts.Tests
             userSettings.Setup(m => m.BackupHosts).Returns(false);
             userSettings.Setup(m => m.BackupPath).Returns(BackupPath);
             var backupManager = new BackupManager(fileSystem, userSettings.Object);
-            backupManager.CreateBackup(HostsPath);
+            backupManager.Create(HostsPath);
 
             Assert.AreEqual(0, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern).Length);
         }
@@ -41,8 +41,8 @@ namespace Hosts.Tests
             userSettings.Setup(m => m.BackupHosts).Returns(true);
             userSettings.Setup(m => m.BackupPath).Returns(BackupPath);
             var backupManager = new BackupManager(fileSystem, userSettings.Object);
-            backupManager.CreateBackup(HostsPath);
-            backupManager.CreateBackup(HostsPath);
+            backupManager.Create(HostsPath);
+            backupManager.Create(HostsPath);
 
             Assert.AreEqual(1, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern).Length);
             var hostsContent = fileSystem.File.ReadAllText(HostsPath);
@@ -68,7 +68,7 @@ namespace Hosts.Tests
             userSettings.Setup(m => m.BackupPath).Returns(BackupPath);
             userSettings.Setup(m => m.DeleteBackupsMode).Returns(HostsDeleteBackupMode.Never);
             var backupManager = new BackupManager(fileSystem, userSettings.Object);
-            backupManager.DeleteBackups();
+            backupManager.Delete();
 
             Assert.AreEqual(30, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern).Length);
             Assert.AreEqual(31, fileSystem.Directory.GetFiles(BackupPath).Length);
@@ -87,7 +87,7 @@ namespace Hosts.Tests
             userSettings.Setup(m => m.DeleteBackupsMode).Returns(HostsDeleteBackupMode.Count);
             userSettings.Setup(m => m.DeleteBackupsCount).Returns(count);
             var backupManager = new BackupManager(fileSystem, userSettings.Object);
-            backupManager.DeleteBackups();
+            backupManager.Delete();
 
             Assert.AreEqual(expectedBackups, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern).Length);
             Assert.AreEqual(expectedBackups + 1, fileSystem.Directory.GetFiles(BackupPath).Length);
@@ -115,7 +115,7 @@ namespace Hosts.Tests
             userSettings.Setup(m => m.DeleteBackupsCount).Returns(count);
             userSettings.Setup(m => m.DeleteBackupsDays).Returns(days);
             var backupManager = new BackupManager(fileSystem, userSettings.Object);
-            backupManager.DeleteBackups();
+            backupManager.Delete();
 
             Assert.AreEqual(expectedBackups, fileSystem.Directory.GetFiles(BackupPath, BackupSearchPattern).Length);
             Assert.AreEqual(expectedBackups + 1, fileSystem.Directory.GetFiles(BackupPath).Length);

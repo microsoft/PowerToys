@@ -85,7 +85,7 @@ namespace Hosts
 
                 try
                 {
-                    Host.GetService<IBackupManager>().DeleteBackups();
+                    Host.GetService<IBackupManager>().Delete();
                 }
                 catch (Exception ex)
                 {

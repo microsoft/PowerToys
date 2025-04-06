@@ -24,22 +24,22 @@ namespace HostsUILib.Helpers
             _userSettings = userSettings;
         }
 
-        public void CreateBackup(string hostsFilePath)
+        public void Create(string hostsFilePath)
         {
             if (_backupDone || !_userSettings.BackupHosts || !_fileSystem.File.Exists(hostsFilePath))
             {
                 return;
             }
 
-            if (!_fileSystem.Directory.Exists(_userSettings.BackupPath))
-            {
-                _fileSystem.Directory.CreateDirectory(_userSettings.BackupPath);
-            }
-
-            var backupPath = _fileSystem.Path.Combine(_userSettings.BackupPath, $"hosts{BackupSuffix}{DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture)}");
-
             try
             {
+                if (!_fileSystem.Directory.Exists(_userSettings.BackupPath))
+                {
+                    _fileSystem.Directory.CreateDirectory(_userSettings.BackupPath);
+                }
+
+                var backupPath = _fileSystem.Path.Combine(_userSettings.BackupPath, $"hosts{BackupSuffix}{DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture)}");
+
                 _fileSystem.File.Copy(hostsFilePath, backupPath);
                 _backupDone = true;
             }
@@ -49,38 +49,38 @@ namespace HostsUILib.Helpers
             }
         }
 
-        public void DeleteBackups()
+        public void Delete()
         {
             switch (_userSettings.DeleteBackupsMode)
             {
                 case HostsDeleteBackupMode.Count:
-                    DeleteBackupsByCount(_userSettings.DeleteBackupsCount);
+                    DeleteByCount(_userSettings.DeleteBackupsCount);
                     break;
                 case HostsDeleteBackupMode.Age:
-                    DeleteBackupsByAge(_userSettings.DeleteBackupsDays, _userSettings.DeleteBackupsCount);
+                    DeleteByAge(_userSettings.DeleteBackupsDays, _userSettings.DeleteBackupsCount);
                     break;
             }
         }
 
-        public void DeleteBackupsByCount(int count)
+        public void DeleteByCount(int count)
         {
             if (count < 1)
             {
                 return;
             }
 
-            var backups = GetBackups().OrderByDescending(f => f.CreationTime).Skip(count).ToArray();
+            var backups = GetAll().OrderByDescending(f => f.CreationTime).Skip(count).ToArray();
             DeleteAll(backups);
         }
 
-        public void DeleteBackupsByAge(int days, int count)
+        public void DeleteByAge(int days, int count)
         {
             if (days < 1)
             {
                 return;
             }
 
-            var backupsEnumerable = GetBackups();
+            var backupsEnumerable = GetAll();
 
             if (count > 0)
             {
@@ -91,7 +91,7 @@ namespace HostsUILib.Helpers
             DeleteAll(backups);
         }
 
-        private IEnumerable<IFileInfo> GetBackups()
+        private IEnumerable<IFileInfo> GetAll()
         {
             return _fileSystem.Directory.GetFiles(_userSettings.BackupPath, $"*{BackupSuffix}*").Select(_fileSystem.FileInfo.New);
         }

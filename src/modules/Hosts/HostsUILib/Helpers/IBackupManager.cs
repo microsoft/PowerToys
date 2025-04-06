@@ -6,8 +6,8 @@ namespace HostsUILib.Helpers
 {
     public interface IBackupManager
     {
-        void CreateBackup(string hostsFilePath);
+        void Create(string hostsFilePath);
 
-        void DeleteBackups();
+        void Delete();
     }
 }
