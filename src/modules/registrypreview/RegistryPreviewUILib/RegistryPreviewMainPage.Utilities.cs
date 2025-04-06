@@ -864,6 +864,8 @@ namespace RegistryPreviewUILib
             }
             catch
             {
+                // Normally nothing to catch here.
+                // But for safety the try-catch ensures that we always release the content dialog lock and exit correctly.
             }
             finally
             {
