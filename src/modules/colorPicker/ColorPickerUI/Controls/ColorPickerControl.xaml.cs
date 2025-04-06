@@ -14,7 +14,6 @@ using System.Windows.Media.Animation;
 
 using ColorPicker.Helpers;
 using ManagedCommon;
-using Wpf.Ui.Controls;
 
 using static System.Net.Mime.MediaTypeNames;
 
@@ -76,9 +75,9 @@ namespace ColorPicker.Controls
             control._ignoreRGBChanges = true;
 
             control.HexCode.Text = ColorToHex(newColor);
-            control.RNumberBox.Value = newColor.R;
-            control.GNumberBox.Value = newColor.G;
-            control.BNumberBox.Value = newColor.B;
+            control.RNumberBox.Text = newColor.R.ToString(CultureInfo.InvariantCulture);
+            control.GNumberBox.Text = newColor.G.ToString(CultureInfo.InvariantCulture);
+            control.BNumberBox.Text = newColor.B.ToString(CultureInfo.InvariantCulture);
             control.SetColorFromTextBoxes(System.Drawing.Color.FromArgb(newColor.R, newColor.G, newColor.B));
 
             control._ignoreRGBChanges = false;
@@ -175,9 +174,9 @@ namespace ColorPicker.Controls
 
             if (!_ignoreRGBChanges)
             {
-                RNumberBox.Value = currentColor.R;
-                GNumberBox.Value = currentColor.G;
-                BNumberBox.Value = currentColor.B;
+                RNumberBox.Text = currentColor.R.ToString(CultureInfo.InvariantCulture);
+                GNumberBox.Text = currentColor.G.ToString(CultureInfo.InvariantCulture);
+                BNumberBox.Text = currentColor.B.ToString(CultureInfo.InvariantCulture);
             }
 
             _currentColor = currentColor;
@@ -231,7 +230,7 @@ namespace ColorPicker.Controls
         {
             SelectedColorChangedCommand.Execute(_currentColor);
             SessionEventHelper.Event.EditorColorAdjusted = true;
-            DetailsFlyout.Hide();
+            DetailsFlyout.IsOpen = false;
         }
 
         private void DetailsFlyout_Closed(object sender, object e)
@@ -357,15 +356,19 @@ namespace ColorPicker.Controls
             (sender as System.Windows.Controls.TextBox).SelectAll();
         }
 
+        private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(e.Text, "^[0-9]+$");
+        }
+
         private void RGBNumberBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (!_ignoreRGBChanges)
             {
-                var numberBox = sender as NumberBox;
-
-                byte r = numberBox.Name == "RNumberBox" ? GetValueFromNumberBox(numberBox) : (byte)RNumberBox.Value;
-                byte g = numberBox.Name == "GNumberBox" ? GetValueFromNumberBox(numberBox) : (byte)GNumberBox.Value;
-                byte b = numberBox.Name == "BNumberBox" ? GetValueFromNumberBox(numberBox) : (byte)BNumberBox.Value;
+                var numberBox = sender as TextBox;
+                byte r = numberBox.Name == "RNumberBox" ? GetValueFromNumberBox(numberBox, _currentColor.R) : _currentColor.R;
+                byte g = numberBox.Name == "GNumberBox" ? GetValueFromNumberBox(numberBox, _currentColor.G) : _currentColor.G;
+                byte b = numberBox.Name == "BNumberBox" ? GetValueFromNumberBox(numberBox, _currentColor.B) : _currentColor.B;
 
                 _ignoreRGBChanges = true;
                 SetColorFromTextBoxes(System.Drawing.Color.FromArgb(r, g, b));
@@ -379,22 +382,24 @@ namespace ColorPicker.Controls
         /// </summary>
         /// <param name="numberBox">numberBox control which value we want to get</param>
         /// <returns>Validated value as per numberbox conditions, if content is invalid it returns previous value</returns>
-        private static byte GetValueFromNumberBox(NumberBox numberBox)
+        private static byte GetValueFromNumberBox(TextBox numberBox, byte previousValue)
         {
+            int minimum = 0;
+            int maximum = 255;
             double? parsedValue = ParseDouble(numberBox.Text);
 
             if (parsedValue != null)
             {
                 var parsedValueByte = (byte)parsedValue;
 
-                if (parsedValueByte >= numberBox.Minimum && parsedValueByte <= numberBox.Maximum)
+                if (parsedValueByte >= minimum && parsedValueByte <= maximum)
                 {
                     return parsedValueByte;
                 }
             }
 
             // not valid input, return previous value
-            return (byte)numberBox.Value;
+            return previousValue;
         }
 
         public static double? ParseDouble(string text)

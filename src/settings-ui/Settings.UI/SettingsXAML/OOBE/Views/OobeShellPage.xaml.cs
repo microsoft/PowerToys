@@ -93,6 +93,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 ModuleName = "CmdNotFound",
                 IsNew = false,
             });
+            Modules.Insert((int)PowerToysModules.CmdPal, new OobePowerToysModule()
+            {
+                ModuleName = "CmdPal",
+                IsNew = true,
+            });
             Modules.Insert((int)PowerToysModules.ColorPicker, new OobePowerToysModule()
             {
                 ModuleName = "ColorPicker",
@@ -273,6 +278,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;
                     case "CmdNotFound": NavigationFrame.Navigate(typeof(OobeCmdNotFound)); break;
+                    case "CmdPal": NavigationFrame.Navigate(typeof(OobeCmdPal)); break;
                     case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
                     case "CropAndLock": NavigationFrame.Navigate(typeof(OobeCropAndLock)); break;
                     case "EnvironmentVariables": NavigationFrame.Navigate(typeof(OobeEnvironmentVariables)); break;

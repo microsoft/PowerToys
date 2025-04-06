@@ -1,0 +1,51 @@
+{
+    "Version": "1.0.0",
+    "UseMinimatch": false,
+    "SignBatches": [
+        {
+            "MatchedPath": [
+                "*.dll",
+                "*.exe"                
+            ],
+            "SigningInfo": {
+                "Operations": [
+                    {
+                        "KeyCode": "CP-230012",
+                        "OperationSetCode": "SigntoolSign",
+                        "Parameters": [
+                            {
+                                "parameterName": "OpusName",
+                                "parameterValue": "Microsoft"
+                            },
+                            {
+                                "parameterName": "OpusInfo",
+                                "parameterValue": "http://www.microsoft.com"
+                            },
+                            {
+                                "parameterName": "FileDigest",
+                                "parameterValue": "/fd \"SHA256\""
+                            },
+                            {
+                                "parameterName": "PageHash",
+                                "parameterValue": "/NPH"
+                            },
+                            {
+                                "parameterName": "TimeStamp",
+                                "parameterValue": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                            }
+                        ],
+                        "ToolName": "sign",
+                        "ToolVersion": "1.0"
+                    },
+                    {
+                        "KeyCode": "CP-230012",
+                        "OperationSetCode": "SigntoolVerify",
+                        "Parameters": [],
+                        "ToolName": "sign",
+                        "ToolVersion": "1.0"
+                    }
+                ]
+            }
+        }
+    ]
+}

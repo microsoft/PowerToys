@@ -18,6 +18,11 @@ $totalFailures = 0
 Get-ChildItem $targetDir -Recurse -Filter *.deps.json -Exclude *UITest*,MouseJump.Common.UnitTests*,*.FuzzTests* | ForEach-Object {
     # Temporarily exclude All UI-Test, Fuzzer-Test projects because of Appium.WebDriver dependencies
     $depsJsonFullFileName = $_.FullName
+
+    if ($depsJsonFullFileName -like "*CmdPal*") {
+        return
+    }
+
     $depsJsonFileName = $_.Name
     $depsJson = Get-Content $depsJsonFullFileName | ConvertFrom-Json
 
