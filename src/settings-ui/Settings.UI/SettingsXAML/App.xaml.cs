@@ -449,6 +449,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "EnvironmentVariables": return typeof(EnvironmentVariablesPage);
                 case "NewPlus": return typeof(NewPlusPage);
                 case "Workspaces": return typeof(WorkspacesPage);
+                case "CmdPal": return typeof(CmdPalPage);
                 case "ZoomIt": return typeof(ZoomItPage);
                 default:
                     // Fallback to Dashboard

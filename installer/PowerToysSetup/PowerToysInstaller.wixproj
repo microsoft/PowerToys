@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureNuGetPackageBuildImports"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\src\Version.props" Condition="Exists('..\..\src\Version.props')" />
+  <Import Project="..\..\src\CmdPalVersion.props" Condition="Exists('..\..\src\CmdPalVersion.props')" />
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
-    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>
     <!-- THIS IS AN INNER LOOP OPTIMIZATION
     The build pipeline builds the Settings and Launcher projects for Publication
     using a specific profile. If you're doing local installer builds, this will
@@ -17,7 +19,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
-    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC</DefineConstants>
+    <DefineConstants>Version=$(Version);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion);</DefineConstants>
     <PreBuildEvent>IF NOT DEFINED IsPipeline (
 call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -winsdk=10.0.19041.0 -vcvars_ver=$(VCToolsVersion)
 SET PTRoot=$(SolutionDir)\..
@@ -32,6 +34,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
       call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
       call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
+      call move /Y ..\..\..\CmdPal.wxs.bk ..\..\..\CmdPal.wxs
       call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
       call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
       call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs
@@ -54,7 +57,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
       call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
       call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
-      </PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <Name>PowerToysInstaller</Name>
@@ -64,6 +67,12 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' != 'true' ">
     <DefineConstants>$(DefineConstants);PerUser=false</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' == 'true' ">
+    <DefineConstants>$(DefineConstants);CIBuild=true</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' != 'true' ">
+    <DefineConstants>$(DefineConstants);CIBuild=false</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <!-- We do not support debug installer builds -->
@@ -104,6 +113,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="AdvancedPaste.wxs" />
     <Compile Include="Awake.wxs" />
     <Compile Include="BaseApplications.wxs" />
+    <Compile Include="CmdPal.wxs" />
     <Compile Include="ColorPicker.wxs" />
     <Compile Include="EnvironmentVariables.wxs" />
     <Compile Include="FileExplorerPreview.wxs" />

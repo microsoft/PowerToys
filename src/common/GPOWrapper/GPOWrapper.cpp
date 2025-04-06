@@ -16,6 +16,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredCmdNotFoundEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredCmdPalEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredCmdPalEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredColorPickerEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredColorPickerEnabledValue());
@@ -231,6 +235,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     GpoRuleConfigured GPOWrapper::GetAllowDataDiagnosticsValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowDataDiagnosticsValue());
+    }
+    GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusReplaceVariablesValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusReplaceVariablesValue());
     }
     GpoRuleConfigured GPOWrapper::GetConfiguredRunAtStartupValue()
     {

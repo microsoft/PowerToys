@@ -136,14 +136,9 @@ namespace Wox.Infrastructure
             var link = new ShellLink();
             const int STGM_READ = 0;
 
-            // Make sure not to open exclusive handles.
-            // See: https://github.com/microsoft/WSL/issues/11276
-            const int STGM_SHARE_DENY_NONE = 0x00000040;
-            const int STGM_TRANSACTED = 0x00010000;
-
             try
             {
-                ((IPersistFile)link).Load(path, STGM_READ | STGM_SHARE_DENY_NONE | STGM_TRANSACTED);
+                ((IPersistFile)link).Load(path, STGM_READ);
             }
             catch (System.IO.FileNotFoundException ex)
             {

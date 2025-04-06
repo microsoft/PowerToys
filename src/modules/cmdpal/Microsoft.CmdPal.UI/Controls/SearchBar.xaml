@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.SearchBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cmdpalUi="using:Microsoft.CmdPal.UI"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <cmdpalUi:PlaceholderTextConverter x:Key="PlaceholderTextConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <!--  Search box  -->
+    <TextBox
+        x:Name="FilterBox"
+        MinHeight="32"
+        VerticalAlignment="Stretch"
+        VerticalContentAlignment="Stretch"
+        KeyDown="FilterBox_KeyDown"
+        PlaceholderText="{x:Bind CurrentPageViewModel.PlaceholderText, Converter={StaticResource PlaceholderTextConverter}, Mode=OneWay}"
+        PreviewKeyDown="FilterBox_PreviewKeyDown"
+        PreviewKeyUp="FilterBox_PreviewKeyUp"
+        Style="{StaticResource SearchTextBoxStyle}"
+        TextChanged="FilterBox_TextChanged" />
+    <!--  Disabled Description="{x:Bind CurrentPageViewModel.TextToSuggest, Mode=OneWay}" for now, needs more work  -->
+</UserControl>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+  xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define CmdPalBuildDir="$(var.BinDir)\WinUI3Apps\CmdPal\"?>
+
+  <Fragment>
+    <DirectoryRef Id="WinUI3AppsInstallFolder">
+      <Directory Id="CmdPalInstallFolder" Name="CmdPal">
+        <Directory Id="CmdPalDepsInstallFolder" Name="Dependencies">
+        <?if $(sys.BUILDARCH) = x64 ?>
+          <Directory Id="CmdPalDepsX64InstallFolder" Name="x64" />
+        <?else ?>
+          <Directory Id="CmdPalDepsArm64InstallFolder" Name="arm64" />
+        <?endif ?>
+        </Directory>
+      </Directory>
+    </DirectoryRef>
+
+    <DirectoryRef Id="CmdPalInstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test">
+      <Component Id="Module_CmdPal" Win64="yes" Guid="3A4942B2-1A86-4182-B3B4-65157365A980">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Module_CmdPal" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <?if $(sys.BUILDARCH) = x64 ?>
+        <File Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_x64.msix" />
+        <?else ?>
+        <File Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_arm64.msix" />
+        <?endif ?>
+
+      </Component>
+    </DirectoryRef>
+
+    <?if $(sys.BUILDARCH) = x64 ?>
+    <DirectoryRef Id="CmdPalDepsX64InstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test\Dependencies\x64">
+      <Component Id="Module_CmdPal_Deps" Win64="yes" Guid="C2790FC4-0665-4462-947A-D942A2AABFF0">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Module_CmdPal_Deps" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test\Dependencies\x64\Microsoft.VCLibs.x64.14.00.Desktop.appx" />
+        <File Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test\Dependencies\x64\Microsoft.WindowsAppRuntime.1.6.msix" />
+      </Component>
+    </DirectoryRef>
+    <?else ?>
+    <DirectoryRef Id="CmdPalDepsArm64InstallFolder" FileSource="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test\Dependencies\arm64">
+      <Component Id="Module_CmdPal_Deps" Win64="yes" Guid="C2790FC4-0665-4462-947A-D942A2AABFF0">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Module_CmdPal_Deps" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test\Dependencies\arm64\Microsoft.VCLibs.ARM64.14.00.Desktop.appx" />
+        <File Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test\Dependencies\arm64\Microsoft.WindowsAppRuntime.1.6.msix" />
+      </Component>
+    </DirectoryRef>
+    <?endif ?>
+
+    <ComponentGroup Id="CmdPalComponentGroup">
+      <Component Id="RemoveCmdPalFolder" Guid="2DF90C08-CC75-4245-A14E-B82904636C53" Directory="INSTALLFOLDER">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveCmdPalFolder" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <RemoveFolder Id="RemoveCmdPalInstallDirFolder" Directory="CmdPalInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveCmdPalDepsInstallDirFolder" Directory="CmdPalDepsInstallFolder" On="uninstall"/>
+    <?if $(sys.BUILDARCH) = x64 ?>
+        <RemoveFolder Id="RemoveCmdPalDepsX64InstallDirFolder" Directory="CmdPalDepsX64InstallFolder" On="uninstall"/>
+    <?else ?>
+        <RemoveFolder Id="RemoveCmdPalDepsArm64InstallDirFolder" Directory="CmdPalDepsArm64InstallFolder" On="uninstall"/>
+    <?endif ?>
+      </Component>
+      <ComponentRef Id="Module_CmdPal" />
+      <ComponentRef Id="Module_CmdPal_Deps" />
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

@@ -28,18 +28,15 @@ namespace Microsoft.PowerToys.Settings.UI
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
+            this.Activated += Window_Activated_SetIcon;
+
             App.ThemeService.ThemeChanged += OnThemeChanged;
             App.ThemeService.ApplyTheme();
 
             ShellPage.SetElevationStatus(App.IsElevated);
             ShellPage.SetIsUserAnAdmin(App.IsUserAnAdmin);
 
-            // Set window icon
             var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("Assets\\Settings\\icon.ico");
-
             var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
             if (createHidden)
             {
@@ -219,6 +216,15 @@ namespace Microsoft.PowerToys.Settings.UI
             }
 
             App.ThemeService.ThemeChanged -= OnThemeChanged;
+        }
+
+        private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
+        {
+            // Set window icon
+            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
+            appWindow.SetIcon("Assets\\Settings\\icon.ico");
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs args)

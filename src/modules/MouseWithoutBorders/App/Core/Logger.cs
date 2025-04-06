@@ -46,13 +46,13 @@ internal static class Logger
         Logger.Log(log);
     }
 
-    internal static void Log(Exception e)
+    internal static void Log(Exception e, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
     {
         if (e is not KnownException)
         {
             string exText = e.ToString();
 
-            Log($"!Exception!: {exText}");
+            Log($"!Exception!: {exText}", memberName, sourceFilePath, sourceLineNumber);
 
             if (DateTime.UtcNow.Hour != lastHour)
             {
@@ -77,18 +77,18 @@ internal static class Logger
     private const string HeaderRECEIVED =
         "Be{0},Ke{1},Mo{2},He{3},Mx{4},Tx{5},Im{6},By{7},Cl{8},Dr{9},De{10},Ed{11},In{12},Ni{13},Pc{14}/{15}";
 
-    internal static void LogDebug(string log, bool clearLog = false)
+    internal static void LogDebug(string log, bool clearLog = false, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
     {
 #if DEBUG
-        Log(log, clearLog);
+        Log(log, clearLog, memberName, sourceFilePath, sourceLineNumber);
 #endif
     }
 
-    internal static void Log(string log, bool clearLog = false)
+    internal static void Log(string log, bool clearLog = false, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)
     {
         log = DateTime.Now.ToString("MM/dd HH:mm:ss.fff", CultureInfo.InvariantCulture) + $"({Thread.CurrentThread.ManagedThreadId})" + log;
 
-        ManagedCommon.Logger.LogInfo(log);
+        ManagedCommon.Logger.LogInfo(log, memberName, sourceFilePath, sourceLineNumber);
         lock (AllLogsLock)
         {
             if (clearLog)
@@ -138,7 +138,7 @@ internal static class Logger
                 Common.PackageSent.ClipboardDragDrop,
                 Common.PackageSent.ClipboardDragDropEnd,
                 Common.PackageSent.ExplorerDragDrop,
-                Common.inputEventCount,
+                Event.inputEventCount,
                 Common.PackageSent.Nil);
             Log(log);
             lastPackageSent = Common.PackageSent; // Copy data
@@ -161,7 +161,7 @@ internal static class Logger
                 Common.PackageReceived.ClipboardDragDrop,
                 Common.PackageReceived.ClipboardDragDropEnd,
                 Common.PackageReceived.ExplorerDragDrop,
-                Common.invalidPackageCount,
+                Event.invalidPackageCount,
                 Common.PackageReceived.Nil,
                 Receiver.processedPackageCount,
                 Receiver.skippedPackageCount);
@@ -197,15 +197,9 @@ internal static class Logger
                 myThreads.Add(t);
             }
 
-            _ = Logger.PrivateDump(sb, AllLogs, "[Program logs]\r\n===============\r\n", 0, level, false);
-            _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, false);
-            Logger.DumpType(sb, typeof(Logger), 0, level);
-            sb.AppendLine("[DragDrop]\r\n===============");
-            Logger.DumpType(sb, typeof(DragDrop), 0, level);
-            sb.AppendLine("[MachineStuff]\r\n===============");
-            Logger.DumpType(sb, typeof(MachineStuff), 0, level);
-            sb.AppendLine("[Receiver]\r\n===============");
-            Logger.DumpType(sb, typeof(Receiver), 0, level);
+            Logger.DumpProgramLogs(sb, level);
+            Logger.DumpOtherLogs(sb, level);
+            Logger.DumpStaticTypes(sb, level);
 
             log = string.Format(
                 CultureInfo.CurrentCulture,
@@ -239,6 +233,36 @@ internal static class Logger
         {
             _ = MessageBox.Show(e.Message + "\r\n" + e.StackTrace, Application.ProductName);
         }
+    }
+
+    internal static void DumpProgramLogs(StringBuilder sb, int level)
+    {
+        _ = Logger.PrivateDump(sb, AllLogs, "[Program logs]\r\n===============\r\n", 0, level, false);
+    }
+
+    internal static void DumpOtherLogs(StringBuilder sb, int level)
+    {
+        _ = Logger.PrivateDump(sb, new Common(), "[Other Logs]\r\n===============\r\n", 0, level, false);
+    }
+
+    internal static void DumpStaticTypes(StringBuilder sb, int level)
+    {
+        sb.AppendLine($"[{nameof(DragDrop)}]\r\n===============");
+        Logger.DumpType(sb, typeof(DragDrop), 0, level);
+        sb.AppendLine($"[{nameof(Event)}]\r\n===============");
+        Logger.DumpType(sb, typeof(Event), 0, level);
+        sb.AppendLine($"[{nameof(Helper)}]\r\n===============");
+        Logger.DumpType(sb, typeof(Helper), 0, level);
+        sb.AppendLine($"[{nameof(Launch)}]\r\n===============");
+        Logger.DumpType(sb, typeof(Launch), 0, level);
+        sb.AppendLine($"[{nameof(Logger)}]\r\n===============");
+        Logger.DumpType(sb, typeof(Logger), 0, level);
+        sb.AppendLine($"[{nameof(MachineStuff)}]\r\n===============");
+        Logger.DumpType(sb, typeof(MachineStuff), 0, level);
+        sb.AppendLine($"[{nameof(Receiver)}]\r\n===============");
+        Logger.DumpType(sb, typeof(Receiver), 0, level);
+        sb.AppendLine($"[{nameof(Service)}]\r\n===============");
+        Logger.DumpType(sb, typeof(Service), 0, level);
     }
 
     internal static bool PrivateDump(StringBuilder sb, object obj, string objName, int level, int maxLevel, bool stop)

@@ -22,7 +22,11 @@ $versionExceptions = @(
     "TraceReloggerLib.dll",
     "Microsoft.WindowsAppRuntime.Release.Net.dll",
     "Microsoft.Windows.Widgets.Projection.dll",
-    "WinRT.Host.Shim.dll") -join '|';
+    "WinRT.Host.Shim.dll",
+    "WyHash.dll",
+    "Microsoft.Recognizers.Text.DataTypes.TimexExpression.dll",
+    "ObjectModelCsProjection.dll",
+    "RendererCsProjection.dll") -join '|';
 $nullVersionExceptions = @(
     "codicon.ttf",
     "e_sqlite3.dll",
@@ -43,12 +47,14 @@ $nullVersionExceptions = @(
     "PushNotificationsLongRunningTask.ProxyStub.dll",
     "WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll",
     "System.Diagnostics.EventLog.Messages.dll",
-    "Microsoft.Windows.Widgets.dll") -join '|';
+    "Microsoft.Windows.Widgets.dll",
+    "AdaptiveCards.ObjectModel.WinUI3.dll",
+    "AdaptiveCards.Rendering.WinUI3.dll") -join '|';
 $totalFailure = 0;
 
 Write-Host $DirPath;
 
-if (-not (Test-Path $DirPath)) {  
+if (-not (Test-Path $DirPath)) {
     Write-Error "Folder does not exist!"
 }
 
@@ -70,7 +76,7 @@ $items | ForEach-Object {
         Write-Host "Version set to 1.0.0.0: " + $_.FullName
         $totalFailure++;
     }
-    elseif ($_.VersionInfo.FileVersion -eq $null -and $_.Name -notmatch $nullVersionExceptions) { 
+    elseif ($_.VersionInfo.FileVersion -eq $null -and $_.Name -notmatch $nullVersionExceptions) {
         # These items are exceptions that actually a version not set.
         Write-Host "Version not set: " + $_.FullName
         $totalFailure++;

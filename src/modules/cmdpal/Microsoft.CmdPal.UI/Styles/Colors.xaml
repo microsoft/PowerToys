@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+
+    <ResourceDictionary.MergedDictionaries>
+        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+        <!--  Other merged dictionaries here  -->
+    </ResourceDictionary.MergedDictionaries>
+
+    <ResourceDictionary.ThemeDictionaries>
+        <!--  For slightly adjust the LayerOnAcrylicFillColorDefault color so that the cursor of the searchbox shows  -->
+        <ResourceDictionary x:Key="Default">
+            <!--  This is a local copy of LayerOnAcrylicFillColorDefaultBrush  -->
+            <SolidColorBrush
+                x:Key="LayerOnAcrylicPrimaryBackgroundBrush"
+                Opacity="0.3"
+                Color="#222222" />
+            <SolidColorBrush
+                x:Key="LayerOnAcrylicSecondaryBackgroundBrush"
+                Opacity="0.0"
+                Color="#222222" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush
+                x:Key="LayerOnAcrylicPrimaryBackgroundBrush"
+                Opacity="0.65"
+                Color="#FFFFFF" />
+            <!--  Because we are tweaking the LayerOnAcrylicPrimaryBackgroundBrush, we need to tweak the command bar background too. If not, it's too bright.  -->
+            <SolidColorBrush
+                x:Key="LayerOnAcrylicSecondaryBackgroundBrush"
+                Opacity="0.4"
+                Color="#FFFFFF" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <!--  This is a local copy of LayerOnAcrylicFillColorDefaultBrush  -->
+            <SolidColorBrush x:Key="LayerOnAcrylicPrimaryBackgroundBrush" Color="{ThemeResource LayerOnAcrylicFillColorDefault}" />
+            <SolidColorBrush x:Key="LayerOnAcrylicSecondaryBackgroundBrush" Color="Transparent" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

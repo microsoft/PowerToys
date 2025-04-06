@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.CmdPal.UI.ContentPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Interactions="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:cmdPalControls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.CmdPal.UI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <StackLayout
+                x:Name="VerticalStackLayout"
+                Orientation="Vertical"
+                Spacing="8" />
+
+            <cmdpalUI:ContentTemplateSelector
+                x:Key="ContentTemplateSelector"
+                FormTemplate="{StaticResource FormContentTemplate}"
+                MarkdownTemplate="{StaticResource MarkdownContentTemplate}"
+                TreeTemplate="{StaticResource TreeContentTemplate}" />
+            <cmdpalUI:ContentTemplateSelector
+                x:Key="NestedContentTemplateSelector"
+                FormTemplate="{StaticResource NestedFormContentTemplate}"
+                MarkdownTemplate="{StaticResource NestedMarkdownContentTemplate}"
+                TreeTemplate="{StaticResource TreeContentTemplate}" />
+
+            <DataTemplate x:Key="FormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
+                <Grid Margin="0,4,4,4" Padding="12,8,8,8">
+                    <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="MarkdownContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
+                <Grid Margin="0,4,4,4" Padding="12,8,8,8">
+                    <toolkit:MarkdownTextBlock
+                        Background="Transparent"
+                        Header3FontSize="12"
+                        Header3FontWeight="Normal"
+                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind Body, Mode=OneWay}" />
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
+                <Grid>
+                    <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="NestedMarkdownContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
+                <Grid>
+                    <toolkit:MarkdownTextBlock
+                        Background="Transparent"
+                        Header3FontSize="12"
+                        Header3FontWeight="Normal"
+                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind Body, Mode=OneWay}" />
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="TreeContentTemplate" x:DataType="viewmodels:ContentTreeViewModel">
+                <StackPanel
+                    Margin="0,4,4,4"
+                    Padding="12,8,8,8"
+                    Orientation="Vertical">
+                    <ItemsRepeater
+                        Margin="8"
+                        VerticalAlignment="Stretch"
+                        ItemsSource="{x:Bind Root, Mode=OneWay}"
+                        Layout="{StaticResource VerticalStackLayout}">
+                        <ItemsRepeater.ItemTemplate>
+                            <cmdpalUI:ContentTemplateSelector
+                                FormTemplate="{StaticResource NestedFormContentTemplate}"
+                                MarkdownTemplate="{StaticResource NestedMarkdownContentTemplate}"
+                                TreeTemplate="{StaticResource TreeContentTemplate}" />
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+
+                    <ItemsRepeater
+                        Margin="8"
+                        VerticalAlignment="Stretch"
+                        ItemsSource="{x:Bind Children, Mode=OneWay}"
+                        Layout="{StaticResource VerticalStackLayout}"
+                        Visibility="{x:Bind HasChildren, Mode=OneWay}">
+                        <ItemsRepeater.ItemTemplate>
+                            <cmdpalUI:ContentTemplateSelector
+                                FormTemplate="{StaticResource FormContentTemplate}"
+                                MarkdownTemplate="{StaticResource MarkdownContentTemplate}"
+                                TreeTemplate="{StaticResource TreeContentTemplate}" />
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+
+                </StackPanel>
+            </DataTemplate>
+
+        </ResourceDictionary>
+    </Page.Resources>
+    <Grid Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+        <ScrollView VerticalAlignment="Top" VerticalScrollMode="Enabled">
+            <ItemsRepeater
+                VerticalAlignment="Stretch"
+                ItemTemplate="{StaticResource ContentTemplateSelector}"
+                ItemsSource="{x:Bind ViewModel.Content, Mode=OneWay}"
+                Layout="{StaticResource VerticalStackLayout}" />
+        </ScrollView>
+    </Grid>
+
+</Page>

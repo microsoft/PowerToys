@@ -43,6 +43,7 @@ void NewSettings::Save()
 
     values.add_property(newplus::constants::non_localizable::settings_json_key_hide_file_extension, new_settings.hide_file_extension);
     values.add_property(newplus::constants::non_localizable::settings_json_key_hide_starting_digits, new_settings.hide_starting_digits);
+    values.add_property(newplus::constants::non_localizable::settings_json_key_replace_variables, new_settings.replace_variables);
     values.add_property(newplus::constants::non_localizable::settings_json_key_template_location, new_settings.template_location);
 
     values.save_to_settings_file();
@@ -69,6 +70,9 @@ void NewSettings::InitializeWithDefaultSettings()
     // Init the default New settings - in case the New/settings.json doesn't exist
     // Currently a similar defaulting logic is also in InitializeWithDefaultSettings in NewViewModel.cs
     SetHideFileExtension(true);
+
+    // By default Replace Variables is turned off
+    SetReplaceVariables(false);
 
     SetTemplateLocation(GetTemplateLocationDefaultPath());
 }
@@ -139,6 +143,12 @@ void NewSettings::ParseJson()
         new_settings.hide_starting_digits = hideStartingDigitsValue.value();
     }
 
+    auto resolveVariables = settings.get_bool_value(newplus::constants::non_localizable::settings_json_key_replace_variables);
+    if (resolveVariables.has_value())
+    {
+        new_settings.replace_variables = resolveVariables.value();
+    }
+
     GetSystemTimeAsFileTime(&new_settings_last_loaded_timestamp);
 }
 
@@ -163,11 +173,8 @@ bool NewSettings::GetEnabled()
 
 bool NewSettings::GetHideFileExtension() const
 {
-    auto gpoSetting = powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue();
-    if (gpoSetting == powertoys_gpo::gpo_rule_configured_enabled)
-    {
-        return true;
-    }
+    const auto gpoSetting = powertoys_gpo::getConfiguredNewPlusHideTemplateFilenameExtensionValue();
+
     if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled)
     {
         return false;
@@ -191,6 +198,23 @@ void NewSettings::SetHideStartingDigits(const bool hide_starting_digits)
     new_settings.hide_starting_digits = hide_starting_digits;
 }
 
+bool NewSettings::GetReplaceVariables() const
+{
+    const auto gpoSetting = powertoys_gpo::getConfiguredNewPlusReplaceVariablesValue();
+
+    if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        return false;
+    }
+
+    return new_settings.replace_variables;
+}
+
+void NewSettings::SetReplaceVariables(const bool replace_variables)
+{
+    new_settings.replace_variables = replace_variables;
+}
+
 std::wstring NewSettings::GetTemplateLocation() const
 {
     return new_settings.template_location;
@@ -201,7 +225,7 @@ void NewSettings::SetTemplateLocation(const std::wstring template_location)
     new_settings.template_location = template_location;
 }
 
-std::wstring NewSettings::GetTemplateLocationDefaultPath()
+std::wstring NewSettings::GetTemplateLocationDefaultPath() const
 {
     static const std::wstring default_template_sub_folder_name =
         GET_RESOURCE_STRING_FALLBACK(

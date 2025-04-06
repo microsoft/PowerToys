@@ -329,4 +329,47 @@
   <data name="ContextMenu_ToggleMinimap" xml:space="preserve">
     <value>Toggle minimap</value>
   </data>
+  <data name="NoMoreFiles" xml:space="preserve">
+    <value>No more files to preview.</value>
+    <comment>The message to show when there are no files remaining to preview.</comment>
+  </data>
+  <data name="DeleteFileError_NotFound" xml:space="preserve">
+    <value>The file cannot be found. Please check if the file has been moved, renamed, or deleted.</value>
+    <comment>Displayed if the file or path was not found</comment>
+  </data>
+  <data name="DeleteFileError_AccessDenied" xml:space="preserve">
+    <value>Access is denied. Please ensure you have permission to delete the file.</value>
+    <comment>Displayed if access to the file was denied when trying to delete it</comment>
+  </data>
+  <data name="DeleteFileError_Generic" xml:space="preserve">
+    <value>An error occurred while deleting the file. Please try again later.</value>
+    <comment>Displayed if the file could not be deleted and no other error code matched</comment>
+  </data>
+  <data name="DeleteFileError_FileInUse" xml:space="preserve">
+    <value>The file is currently in use by another program. Please close any programs that might be using the file, then try again.</value>
+    <comment>Displayed if the file could not be deleted because it is fully or partially locked by another process</comment>
+  </data>
+  <data name="DeleteFileError_WriteProtected" xml:space="preserve">
+    <value>The storage medium is write-protected. If possible, remove the write protection then try again.</value>
+    <comment>Displayed if the file could not be deleted because it exists on non-writable media</comment>
+  </data>
+  <data name="DeleteFileError_Prefix" xml:space="preserve">
+    <value>Cannot delete '{0}'.</value>
+    <comment>The prefix added to all file delete failure messages. {0} is replaced with the name of the file</comment>
+  </data>
+  <data name="DeleteConfirmationDialog.Title" xml:space="preserve">
+    <value>Delete file?</value>
+  </data>
+  <data name="DeleteConfirmationDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteConfirmationDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeleteConfirmationDialog_Message.Text" xml:space="preserve">
+    <value>Are you sure you want to delete this file?</value>
+  </data>
+  <data name="DeleteConfirmationDialog_DontWarnCheckbox.Content" xml:space="preserve">
+    <value>Don't show this warning again</value>
+  </data>
 </root>

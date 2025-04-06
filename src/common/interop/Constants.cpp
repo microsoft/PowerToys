@@ -187,4 +187,8 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::TERMINATE_SETTINGS_SHARED_EVENT;
     }
+    hstring Constants::ShowCmdPalEvent()
+    {
+        return CommonSharedConstants::CMDPAL_SHOW_EVENT;
+    }
 }

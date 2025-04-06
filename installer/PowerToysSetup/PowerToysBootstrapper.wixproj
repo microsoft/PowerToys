@@ -17,6 +17,12 @@
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' != 'true' ">
     <DefineConstants>$(DefineConstants);PerUser=false</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' == 'true' ">
+    <DefineConstants>$(DefineConstants);CIBuild=true</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" Condition=" '$(CIBuild)' != 'true' ">
+    <DefineConstants>$(DefineConstants);CIBuild=false</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup>
     <Configuration>Release</Configuration>
     <Platform Condition="'$(Platform)'=='x64'">x64</Platform>

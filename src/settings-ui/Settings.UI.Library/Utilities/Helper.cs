@@ -53,6 +53,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             return sendCustomAction.ToJsonString();
         }
 
+        public static IFileSystemWatcher GetFileWatcher(string path, Action onChangedCallback, IFileSystem fileSystem = null)
+        {
+            fileSystem ??= FileSystem;
+
+            var dirPath = Path.GetDirectoryName(path);
+            if (!fileSystem.Directory.Exists(dirPath))
+            {
+                return null;
+            }
+
+            var watcher = fileSystem.FileSystemWatcher.New();
+            watcher.Path = dirPath;
+            watcher.Filter = Path.GetFileName(path);
+            watcher.NotifyFilter = NotifyFilters.LastWrite;
+            watcher.EnableRaisingEvents = true;
+
+            watcher.Changed += (o, e) => onChangedCallback();
+
+            return watcher;
+        }
+
         public static IFileSystemWatcher GetFileWatcher(string moduleName, string fileName, Action onChangedCallback, IFileSystem fileSystem = null)
         {
             fileSystem ??= FileSystem;

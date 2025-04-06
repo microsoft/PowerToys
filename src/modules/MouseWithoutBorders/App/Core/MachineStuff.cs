@@ -1018,8 +1018,8 @@ internal static class MachineStuff
             }
 
             NewDesMachineID = Common.DesMachineID = id;
-            SwitchLocation.X = Common.XY_BY_PIXEL + primaryScreenBounds.Left + ((primaryScreenBounds.Right - primaryScreenBounds.Left) / 2);
-            SwitchLocation.Y = Common.XY_BY_PIXEL + primaryScreenBounds.Top + ((primaryScreenBounds.Bottom - primaryScreenBounds.Top) / 2);
+            SwitchLocation.X = Event.XY_BY_PIXEL + primaryScreenBounds.Left + ((primaryScreenBounds.Right - primaryScreenBounds.Left) / 2);
+            SwitchLocation.Y = Event.XY_BY_PIXEL + primaryScreenBounds.Top + ((primaryScreenBounds.Bottom - primaryScreenBounds.Top) / 2);
             SwitchLocation.ResetCount();
             Common.UpdateMultipleModeIconAndMenu();
             Common.HideMouseCursor(false);

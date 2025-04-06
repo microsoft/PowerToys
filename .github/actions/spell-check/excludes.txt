@@ -96,10 +96,11 @@
 ^\Qdoc/devdocs/localization.md\E$
 ^\Qsrc/common/ManagedCommon/ColorFormatHelper.cs\E$
 ^\Qsrc/common/notifications/BackgroundActivatorDLL/cpp.hint\E$
+^\Qsrc/modules/cmdpal/doc/initial-sdk-spec/list-elements-mock-002.pdn\E$
 ^\Qsrc/modules/colorPicker/ColorPickerUI/Assets/ColorPicker/colorPicker.cur\E$
 ^\Qsrc/modules/colorPicker/ColorPickerUI/Shaders/GridShader.cso\E$
-^\Qsrc/modules/MouseUtils/MouseJumpUI/MainForm.resx\E$
 ^\Qsrc/modules/MouseUtils/MouseJump.Common/NativeMethods/User32/UI/WindowsAndMessaging/User32.SYSTEM_METRICS_INDEX.cs\E$
+^\Qsrc/modules/MouseUtils/MouseJumpUI/MainForm.resx\E$
 ^\Qsrc/modules/MouseWithoutBorders/App/Form/frmAbout.cs\E$
 ^\Qsrc/modules/MouseWithoutBorders/App/Form/frmInputCallback.resx\E$
 ^\Qsrc/modules/MouseWithoutBorders/App/Form/frmLogon.resx\E$

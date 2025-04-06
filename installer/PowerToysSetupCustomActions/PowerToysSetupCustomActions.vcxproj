@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <PropertyGroup Label="Globals">
@@ -54,6 +55,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\AdvancedPaste.wxs"" ""$(ProjectDir)..\PowerToysSetup\AdvancedPaste.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Awake.wxs"" ""$(ProjectDir)..\PowerToysSetup\Awake.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs"" ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\CmdPal.wxs"" ""$(ProjectDir)..\PowerToysSetup\CmdPal.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Core.wxs"" ""$(ProjectDir)..\PowerToysSetup\Core.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\EnvironmentVariables.wxs"" ""$(ProjectDir)..\PowerToysSetup\EnvironmentVariables.wxs.bk""""

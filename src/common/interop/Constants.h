@@ -50,6 +50,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring WorkspacesLaunchEditorEvent();
         static hstring WorkspacesHotkeyEvent();
         static hstring PowerToysRunnerTerminateSettingsEvent();
+        static hstring ShowCmdPalEvent();
     };
 }
 

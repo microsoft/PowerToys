@@ -11,6 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         AlwaysOnTop,
         Awake,
         CmdNotFound,
+        CmdPal,
         ColorPicker,
         CropAndLock,
         EnvironmentVariables,

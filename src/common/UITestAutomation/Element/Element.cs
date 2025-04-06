@@ -3,8 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Drawing;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
+using ABI.Windows.Foundation;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
@@ -61,6 +66,14 @@ namespace Microsoft.PowerToys.UITest
         public bool Selected
         {
             get { return this.windowsElement?.Selected ?? false; }
+        }
+
+        /// <summary>
+        /// Gets the Rect of the UI element.
+        /// </summary>
+        public Rectangle? Rect
+        {
+            get { return this.windowsElement?.Rect; }
         }
 
         /// <summary>
@@ -135,6 +148,54 @@ namespace Microsoft.PowerToys.UITest
 
                 actions.DoubleClick();
                 actions.Build().Perform();
+            });
+        }
+
+        /// <summary>
+        /// Drag element move offset.
+        /// </summary>
+        /// <param name="offsetX">The offsetX to move.</param>
+        /// <param name="offsetY">The offsetY to move.</param>
+        public void Drag(int offsetX, int offsetY)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                actions.MoveToElement(windowElement).MoveByOffset(10, 10).ClickAndHold(windowElement).MoveByOffset(offsetX, offsetY).Release();
+                actions.Build().Perform();
+            });
+        }
+
+        /// <summary>
+        /// Drag element move to other element.
+        /// </summary>
+        /// <param name="element">Move to this element.</param>
+        public void Drag(Element element)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                actions.MoveToElement(windowElement).ClickAndHold();
+                Assert.IsNotNull(element.windowsElement, "element is null");
+                int dx = (element.windowsElement.Rect.X - windowElement.Rect.X) / 10;
+                int dy = (element.windowsElement.Rect.Y - windowElement.Rect.Y) / 10;
+                for (int i = 0; i < 10; i++)
+                {
+                    actions.MoveByOffset(dx, dy);
+                }
+
+                actions.Release();
+                actions.Build().Perform();
+            });
+        }
+
+        /// <summary>
+        /// Send Key of the element.
+        /// </summary>
+        /// <param name="key">The Key to Send.</param>
+        public void SendKeys(string key)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                windowElement.SendKeys(key);
             });
         }
 
@@ -222,8 +283,16 @@ namespace Microsoft.PowerToys.UITest
             var foundElements = FindHelper.FindAll<T, AppiumWebElement>(
                 () =>
                 {
-                    var elements = this.windowsElement.FindElements(by.ToSeleniumBy());
-                    return elements;
+                    if (by.GetIsAccessibilityId())
+                    {
+                        var elements = this.windowsElement.FindElementsByAccessibilityId(by.GetAccessibilityId());
+                        return elements;
+                    }
+                    else
+                    {
+                        var elements = this.windowsElement.FindElements(by.ToSeleniumBy());
+                        return elements;
+                    }
                 },
                 this.driver,
                 timeoutMS);

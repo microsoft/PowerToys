@@ -6,7 +6,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:ColorPicker.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     x:Name="colorEditorControl"
     mc:Ignorable="d">
     <Grid>
@@ -22,21 +21,27 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <ui:Button
+            <Button
                 Height="36"
                 VerticalAlignment="Top"
                 AutomationProperties.Name="{x:Static p:Resources.Pick_color}"
                 Command="{Binding OpenColorPickerCommand}"
                 TabIndex="0"
                 ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}">
-                <Button.Content>
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon FontSize="18" Symbol="Eyedropper20" />
-                        <TextBlock Margin="8,0,0,0" Text="{x:Static p:Resources.New_Label}" />
-                    </StackPanel>
 
-                </Button.Content>
-            </ui:Button>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        FontFamily="{StaticResource IconFontFamily}"
+                        Text="&#xef3c;" />
+
+                    <!--  The label text  -->
+                    <TextBlock
+                        Margin="8,0,0,0"
+                        VerticalAlignment="Center"
+                        Text="{x:Static p:Resources.New_Label}" />
+                </StackPanel>
+            </Button>
 
             <ListView
                 x:Name="HistoryColors"
@@ -67,19 +72,19 @@
                             CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItems}"
                             Header="{x:Static p:Resources.Remove}">
                             <MenuItem.Icon>
-                                <ui:SymbolIcon Symbol="Delete24" />
+                                <TextBlock FontFamily="{StaticResource IconFontFamily}" Text="&#xE74D;" />
                             </MenuItem.Icon>
                         </MenuItem>
                         <MenuItem Header="{x:Static p:Resources.Export_by}">
                             <MenuItem.Icon>
-                                <ui:SymbolIcon Symbol="ArrowExportLtr24" />
+                                <TextBlock FontFamily="{StaticResource IconFontFamily}" Text="&#xEDE1;" />
                             </MenuItem.Icon>
                             <MenuItem
                                 Command="{Binding ExportColorsGroupedByColorCommand}"
                                 CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItems}"
                                 Header="{x:Static p:Resources.Export_by_color}">
                                 <MenuItem.Icon>
-                                    <ui:SymbolIcon Symbol="Color20" />
+                                    <TextBlock FontFamily="{StaticResource IconFontFamily}" Text="&#xE790;" />
                                 </MenuItem.Icon>
                             </MenuItem>
                             <MenuItem
@@ -87,7 +92,7 @@
                                 CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItems}"
                                 Header="{x:Static p:Resources.Export_by_format}">
                                 <MenuItem.Icon>
-                                    <ui:SymbolIcon Symbol="Code20" />
+                                    <TextBlock FontFamily="{StaticResource IconFontFamily}" Text="&#xE943;" />
                                 </MenuItem.Icon>
                             </MenuItem>
                         </MenuItem>
@@ -195,7 +200,10 @@
                 TabIndex="2"
                 ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}">
                 <Button.Content>
-                    <ui:SymbolIcon FontSize="18" Symbol="Settings20" />
+                    <TextBlock
+                        FontFamily="{StaticResource IconFontFamily}"
+                        FontSize="18"
+                        Text="&#xE713;" />
                 </Button.Content>
             </Button>
         </Grid>
@@ -263,7 +271,11 @@
             VerticalAlignment="Center"
             Orientation="Vertical"
             Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
-            <ui:SymbolIcon FontSize="40" Symbol="Eyedropper20" />
+            <TextBlock
+                HorizontalAlignment="Center"
+                FontFamily="{StaticResource IconFontFamily}"
+                FontSize="36"
+                Text="&#xEF3C;" />
             <TextBlock
                 Margin="24,16,24,16"
                 HorizontalAlignment="Center"
@@ -281,23 +293,22 @@
             Height="0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Bottom"
+            Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
             BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0"
             Opacity="0">
-            <Border.Background>
-                <SolidColorBrush Color="{DynamicResource SystemAccentColorPrimary}" />
-            </Border.Background>
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 AutomationProperties.LiveSetting="Assertive"
                 AutomationProperties.Name="{x:Static p:Resources.Copied_to_clipboard}"
                 Orientation="Horizontal">
-                <ui:SymbolIcon
+                <TextBlock
                     Margin="0,0,8,0"
+                    FontFamily="{StaticResource IconFontFamily}"
                     FontSize="20"
                     Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
-                    Symbol="Copy20" />
+                    Text="&#xE8C8;" />
                 <TextBlock
                     FontSize="16"
                     Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"

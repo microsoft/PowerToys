@@ -328,12 +328,16 @@ namespace FancyZonesEditor.Models
         // Removes this Layout from the registry and the loaded CustomModels list
         public void Delete()
         {
+            var customModels = MainWindowSettingsModel.CustomModels;
             if (_quickKey != -1)
             {
                 MainWindowSettingsModel.LayoutHotkeys.FreeKey(QuickKey);
+                foreach (var module in customModels)
+                {
+                    module.FirePropertyChanged(nameof(QuickKeysAvailable));
+                }
             }
 
-            var customModels = MainWindowSettingsModel.CustomModels;
             int i = customModels.IndexOf(this);
             if (i != -1)
             {

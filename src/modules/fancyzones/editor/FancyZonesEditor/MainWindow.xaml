@@ -335,6 +335,7 @@
                 </ScrollViewer.DataContext>
                 <Grid>
                     <ui:GridView
+                        x:Name="Monitors"
                         HorizontalAlignment="Center"
                         IsItemClickEnabled="True"
                         IsSelectionEnabled="True"

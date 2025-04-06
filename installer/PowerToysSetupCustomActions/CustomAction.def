@@ -18,7 +18,9 @@ EXPORTS
 	TerminateProcessesCA
 	InstallEmbeddedMSIXCA
 	InstallDSCModuleCA
+	InstallCmdPalPackageCA
 	UnApplyModulesRegistryChangeSetsCA
+	UnRegisterCmdPalPackageCA
 	UnRegisterContextMenuPackagesCA
 	UninstallEmbeddedMSIXCA
 	UninstallDSCModuleCA

@@ -4,11 +4,11 @@
 
 using System;
 using System.Web;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
+using RegistryPreview.Telemetry;
 using Windows.ApplicationModel.Activation;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -27,6 +27,8 @@ namespace RegistryPreview
         /// </summary>
         public App()
         {
+            PowerToysTelemetry.Log.WriteEvent(new RegistryPreviewEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+
             string appLanguage = LanguageHelper.LoadLanguage();
 
             if (!string.IsNullOrEmpty(appLanguage))

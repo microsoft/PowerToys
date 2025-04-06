@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-
+using System.Threading.Tasks;
 using Microsoft.Plugin.Program.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -114,7 +114,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
         [DataTestMethod]
         [DataRow("directory", "oldpath.appref-ms", "newpath.appref-ms")]
-        public void Win32ProgramRepositoryMustCallOnAppRenamedForApprefAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
+        public async Task Win32ProgramRepositoryMustCallOnAppRenamedForApprefAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
             // Arrange
             Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, _settings, _pathsToWatch);
@@ -129,6 +129,9 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
+
+            // We need to wait more than one second to make sure our test can pass
+            await Task.Delay(2 * Win32ProgramRepository.OnRenamedEventWaitTime).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(1, win32ProgramRepository.Count());
@@ -183,7 +186,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
         [DataTestMethod]
         [DataRow("directory", "oldpath.appref-ms", "newpath.appref-ms")]
-        public void Win32ProgramRepositoryMustCallOnAppRenamedForExeAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
+        public async Task Win32ProgramRepositoryMustCallOnAppRenamedForExeAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
             // Arrange
             Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, _settings, _pathsToWatch);
@@ -203,6 +206,9 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
+
+            // We need to wait more than one second to make sure our test can pass
+            await Task.Delay(2 * Win32ProgramRepository.OnRenamedEventWaitTime).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(1, win32ProgramRepository.Count());
@@ -287,7 +293,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
         [DataTestMethod]
         [DataRow("directory", "oldpath.url", "newpath.url")]
-        public void Win32ProgramRepositoryMustCallOnAppRenamedForUrlAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
+        public async Task Win32ProgramRepositoryMustCallOnAppRenamedForUrlAppsWhenRenamedEventIsRaised(string directory, string oldpath, string newpath)
         {
             // Arrange
             Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, _settings, _pathsToWatch);
@@ -307,6 +313,9 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
+
+            // We need to wait more than one second to make sure our test can pass
+            await Task.Delay(2 * Win32ProgramRepository.OnRenamedEventWaitTime).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(1, win32ProgramRepository.Count());
@@ -347,7 +356,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
         [DataTestMethod]
         [DataRow("directory", "oldpath.lnk", "path.lnk")]
-        public void Win32ProgramRepositoryMustCallOnAppRenamedForLnkAppsWhenRenamedEventIsRaised(string directory, string oldpath, string path)
+        public async Task Win32ProgramRepositoryMustCallOnAppRenamedForLnkAppsWhenRenamedEventIsRaised(string directory, string oldpath, string path)
         {
             // Arrange
             Win32ProgramRepository win32ProgramRepository = new Win32ProgramRepository(_fileSystemWatchers, _settings, _pathsToWatch);
@@ -381,6 +390,9 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
             // Act
             _fileSystemMocks[0].Raise(m => m.Renamed += null, e);
+
+            // We need to wait more than one second to make sure our test can pass
+            await Task.Delay(2 * Win32ProgramRepository.OnRenamedEventWaitTime).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(1, win32ProgramRepository.Count());

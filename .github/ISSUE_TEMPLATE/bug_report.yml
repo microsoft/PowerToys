@@ -53,6 +53,7 @@ body:
       - Awake
       - ColorPicker
       - Command not found
+      - Command Palette
       - Crop and Lock
       - Environment Variables
       - FancyZones

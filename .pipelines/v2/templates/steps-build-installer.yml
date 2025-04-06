@@ -87,6 +87,30 @@ steps:
       dir $(build.sourcesdirectory)\extractedMsi
     displayName: "${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Extract and verify MSI"
 
+  # Extract CmdPal msix package to check if its content is signed
+  - pwsh: |-
+      Write-Host "Extracting CmdPal MSIX package"
+
+      # Define the directory to search
+      $searchDir = "extractedMsi\File"
+
+      # Define the regex pattern for MSIX files
+      $pattern = '^Microsoft.CmdPal.UI.*\.msix$'
+
+      # Get all files in the directory and subdirectories
+      $msixFile = Get-ChildItem -Path $searchDir -Recurse -File | Where-Object {
+          $_.Name -match $pattern
+      }
+
+      Write-Host "MSIX file found: " $msixFile
+
+      $destinationDir = "$(build.sourcesdirectory)\extractedMsi\File\extractedCmdPalMsix"
+
+      Expand-Archive -Path $msixFile -DestinationPath $destinationDir
+      Get-ChildItem -Path $destinationDir -Recurse -File
+
+    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Extract CmdPal MSIX package
+
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
       & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\extractedMsi\File'

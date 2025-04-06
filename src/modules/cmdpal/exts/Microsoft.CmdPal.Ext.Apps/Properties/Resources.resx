@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="run_command_action" xml:space="preserve">
+    <value>Run</value>
+    <comment>As in "run command"</comment>
+  </data>
+  <data name="installed_apps" xml:space="preserve">
+    <value>Installed apps</value>
+  </data>
+  <data name="search_installed_apps" xml:space="preserve">
+    <value>Search installed apps</value>
+  </data>
+  <data name="all_apps" xml:space="preserve">
+    <value>All Apps</value>
+  </data>
+  <data name="search_installed_apps_placeholder" xml:space="preserve">
+    <value>Search installed apps...</value>
+  </data>
+  <data name="open_path_in_console" xml:space="preserve">
+    <value>Open path in console</value>
+  </data>
+  <data name="packaged_application" xml:space="preserve">
+    <value>Packaged application</value>
+  </data>
+  <data name="open_containing_folder" xml:space="preserve">
+    <value>Open containing folder</value>
+  </data>
+  <data name="application" xml:space="preserve">
+    <value>Application</value>
+  </data>
+  <data name="internet_shortcut_application" xml:space="preserve">
+    <value>Internet shortcut application</value>
+  </data>
+  <data name="web_application" xml:space="preserve">
+    <value>Web application</value>
+  </data>
+  <data name="run_command" xml:space="preserve">
+    <value>Run command</value>
+  </data>
+  <data name="folder" xml:space="preserve">
+    <value>Folder</value>
+  </data>
+  <data name="file" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="open_location" xml:space="preserve">
+    <value>Open location</value>
+  </data>
+  <data name="run_as_administrator" xml:space="preserve">
+    <value>Run as administrator</value>
+  </data>
+  <data name="run_as_different_user" xml:space="preserve">
+    <value>Run as different user</value>
+  </data>
+  <data name="enable_start_menu_source" xml:space="preserve">
+    <value>Include apps found in the Start Menu</value>
+  </data>
+  <data name="enable_desktop_source" xml:space="preserve">
+    <value>Include apps found on the desktop</value>
+  </data>
+  <data name="enable_registry_source" xml:space="preserve">
+    <value>Include apps registered in the Registry</value>
+  </data>
+  <data name="enable_path_environment_variable_source" xml:space="preserve">
+    <value>Include apps anywhere on the %PATH%</value>
+  </data>
+  <data name="use_thumbnails_setting_label" xml:space="preserve">
+    <value>Use thumbnails for apps</value>
+    <comment>when enabled, we'll display thumbnails from the windows shell for programs</comment>
+  </data>
+  <data name="use_thumbnails_setting_description" xml:space="preserve">
+    <value>Experimental: When enabled, Command Palette will load thumbnails from the Windows Shell. Using thumbnails may cause the app to crash on launch</value>
+    <comment>A description for "use_thumbnails_setting_label"</comment>
+  </data>
+</root>

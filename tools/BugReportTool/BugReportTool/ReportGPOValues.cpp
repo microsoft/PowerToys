@@ -45,6 +45,7 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredAdvancedPasteEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredAdvancedPasteEnabledValue()) << std::endl;
     report << "getConfiguredAlwaysOnTopEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredAlwaysOnTopEnabledValue()) << std::endl;
     report << "getConfiguredAwakeEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredAwakeEnabledValue()) << std::endl;
+    report << "getConfiguredCmdPalEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredCmdPalEnabledValue()) << std::endl;
     report << "getConfiguredColorPickerEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredColorPickerEnabledValue()) << std::endl;
     report << "getConfiguredCropAndLockEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredCropAndLockEnabledValue()) << std::endl;
     report << "getConfiguredFancyZonesEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFancyZonesEnabledValue()) << std::endl;

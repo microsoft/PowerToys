@@ -63,6 +63,11 @@ namespace FancyZonesEditor.Models
                 }
             }
 
+            if (key == Properties.Resources.Quick_Key_None)
+            {
+                return true;
+            }
+
             SelectedKeys[key] = uuid;
             FirePropertyChanged();
             return true;
