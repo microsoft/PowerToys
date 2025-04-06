@@ -1363,7 +1363,7 @@ EXHIBIT A -Mozilla Public License.
 
 ### HexBox.WinUI
 
-We HexBox.WinUI to show a preview of binary values.
+We use HexBox.WinUI to show a preview of binary values.
 
 **Source**: https://github.com/hotkidfamily/HexBox.WinUI
 
