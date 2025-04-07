@@ -372,6 +372,21 @@ namespace KeyboardManagerEditorUI.Styles
             }
         }
 
+        public void SetUpToggleButtonInitialStatus()
+        {
+            // Ensure OriginalToggleBtn is checked
+            if (OriginalToggleBtn != null && OriginalToggleBtn.IsChecked != true)
+            {
+                OriginalToggleBtn.IsChecked = true;
+            }
+
+            // Make sure RemappedToggleBtn is not checked
+            if (RemappedToggleBtn != null && RemappedToggleBtn.IsChecked == true)
+            {
+                RemappedToggleBtn.IsChecked = false;
+            }
+        }
+
         public void Dispose()
         {
             Dispose(true);

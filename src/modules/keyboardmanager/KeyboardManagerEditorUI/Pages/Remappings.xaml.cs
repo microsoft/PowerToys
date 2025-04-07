@@ -196,6 +196,7 @@ namespace KeyboardManagerEditorUI.Pages
             RemappingControl.SetOriginalKeys(new List<string>());
             RemappingControl.SetRemappedKeys(new List<string>());
             RemappingControl.SetApp(false, string.Empty);
+            RemappingControl.SetUpToggleButtonInitialStatus();
 
             RegisterWindowActivationHandler();
 
@@ -222,6 +223,7 @@ namespace KeyboardManagerEditorUI.Pages
                 RemappingControl.SetOriginalKeys(selectedRemapping.OriginalKeys);
                 RemappingControl.SetRemappedKeys(selectedRemapping.RemappedKeys);
                 RemappingControl.SetApp(!selectedRemapping.IsAllApps, selectedRemapping.AppName);
+                RemappingControl.SetUpToggleButtonInitialStatus();
 
                 RegisterWindowActivationHandler();
 
