@@ -2,39 +2,43 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
+using System.Runtime.CompilerServices;
 
-namespace ManagedCommon.Search;
+[assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.System.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
+
+namespace Common.Search;
 
 public class StringMatcher
 {
-    private readonly MatchOption _defaultMatchOption = new();
+    private readonly MatchOption _defaultMatchOption = new MatchOption();
 
     public SearchPrecisionScore UserSettingSearchPrecision { get; set; }
 
-    // private readonly IAlphabet _alphabet;
-    public StringMatcher(/*IAlphabet alphabet = null*/)
+    private readonly IAlphabet _alphabet;
+
+    public StringMatcher(IAlphabet alphabet = null)
     {
-        // _alphabet = alphabet;
+        _alphabet = alphabet;
     }
 
-    private static StringMatcher _instance;
-
-    public static StringMatcher Instance
-    {
-        get
-        {
-            _instance ??= new StringMatcher();
-
-            return _instance;
-        }
-        set => _instance = value;
-    }
+    public static StringMatcher Instance { get; internal set; }
 
     private static readonly char[] Separator = new[] { ' ' };
+
+    [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
+    public static int Score(string source, string target)
+    {
+        return FuzzySearch(target, source).Score;
+    }
+
+    [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
+    public static bool IsMatch(string source, string target)
+    {
+        return Score(source, target) > 0;
+    }
 
     public static MatchResult FuzzySearch(string query, string stringToCompare)
     {
@@ -43,14 +47,7 @@ public class StringMatcher
 
     public MatchResult FuzzyMatch(string query, string stringToCompare)
     {
-        try
-        {
-            return FuzzyMatch(query, stringToCompare, _defaultMatchOption);
-        }
-        catch (IndexOutOfRangeException)
-        {
-            return new MatchResult(false, UserSettingSearchPrecision);
-        }
+        return FuzzyMatch(query, stringToCompare, _defaultMatchOption);
     }
 
     /// <summary>
@@ -73,7 +70,7 @@ public class StringMatcher
 
         var bestResult = new MatchResult(false, UserSettingSearchPrecision);
 
-        for (var startIndex = 0; startIndex < stringToCompare.Length; startIndex++)
+        for (int startIndex = 0; startIndex < stringToCompare.Length; startIndex++)
         {
             MatchResult result = FuzzyMatch(query, stringToCompare, opt, startIndex);
             if (result.Success && (!bestResult.Success || result.Score > bestResult.Score))
@@ -96,27 +93,27 @@ public class StringMatcher
 
         query = query.Trim();
 
-        // if (_alphabet != null)
-        // {
-        //    query = _alphabet.Translate(query);
-        //    stringToCompare = _alphabet.Translate(stringToCompare);
-        // }
+        if (_alphabet != null)
+        {
+            query = _alphabet.Translate(query);
+            stringToCompare = _alphabet.Translate(stringToCompare);
+        }
 
         // Using InvariantCulture since this is internal
         var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToUpper(CultureInfo.InvariantCulture) : stringToCompare;
         var queryWithoutCase = opt.IgnoreCase ? query.ToUpper(CultureInfo.InvariantCulture) : query;
 
         var querySubstrings = queryWithoutCase.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
-        var currentQuerySubstringIndex = 0;
+        int currentQuerySubstringIndex = 0;
         var currentQuerySubstring = querySubstrings[currentQuerySubstringIndex];
         var currentQuerySubstringCharacterIndex = 0;
 
         var firstMatchIndex = -1;
         var firstMatchIndexInWord = -1;
         var lastMatchIndex = 0;
-        var allQuerySubstringsMatched = false;
-        var matchFoundInPreviousLoop = false;
-        var allSubstringsContainedInCompareString = true;
+        bool allQuerySubstringsMatched = false;
+        bool matchFoundInPreviousLoop = false;
+        bool allSubstringsContainedInCompareString = true;
 
         var indexList = new List<int>();
         List<int> spaceIndices = new List<int>();
@@ -130,21 +127,21 @@ public class StringMatcher
                 spaceIndices.Add(compareStringIndex);
             }
 
-            bool mismatch;
+            bool compareResult;
             if (opt.IgnoreCase)
             {
                 var fullStringToCompare = fullStringToCompareWithoutCase[compareStringIndex].ToString();
                 var querySubstring = currentQuerySubstring[currentQuerySubstringCharacterIndex].ToString();
 #pragma warning disable CA1309 // Use ordinal string comparison (We are looking for a fuzzy match here)
-                mismatch = string.Compare(fullStringToCompare, querySubstring, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) != 0;
+                compareResult = string.Compare(fullStringToCompare, querySubstring, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) != 0;
 #pragma warning restore CA1309 // Use ordinal string comparison
             }
             else
             {
-                mismatch = fullStringToCompareWithoutCase[compareStringIndex] != currentQuerySubstring[currentQuerySubstringCharacterIndex];
+                compareResult = fullStringToCompareWithoutCase[compareStringIndex] != currentQuerySubstring[currentQuerySubstringCharacterIndex];
             }
 
-            if (mismatch)
+            if (compareResult)
             {
                 matchFoundInPreviousLoop = false;
                 continue;
@@ -152,13 +149,14 @@ public class StringMatcher
 
             if (firstMatchIndex < 0)
             {
+                // first matched char will become the start of the compared string
                 firstMatchIndex = compareStringIndex;
             }
 
             if (currentQuerySubstringCharacterIndex == 0)
             {
+                // first letter of current word
                 matchFoundInPreviousLoop = true;
-
                 firstMatchIndexInWord = compareStringIndex;
             }
             else if (!matchFoundInPreviousLoop)
@@ -171,7 +169,7 @@ public class StringMatcher
                 {
                     matchFoundInPreviousLoop = true;
 
-                    // if it's the first query string, then we need to update the first match index.
+                    // if it's the beginning character of the first query substring that is matched then we need to update start index
                     firstMatchIndex = currentQuerySubstringIndex == 0 ? startIndexToVerify : firstMatchIndex;
 
                     indexList = GetUpdatedIndexList(startIndexToVerify, currentQuerySubstringCharacterIndex, firstMatchIndexInWord, indexList);
@@ -231,7 +229,7 @@ public class StringMatcher
     private static bool AllPreviousCharsMatched(int startIndexToVerify, int currentQuerySubstringCharacterIndex, string fullStringToCompareWithoutCase, string currentQuerySubstring)
     {
         var allMatch = true;
-        for (var indexToCheck = 0; indexToCheck < currentQuerySubstringCharacterIndex; indexToCheck++)
+        for (int indexToCheck = 0; indexToCheck < currentQuerySubstringCharacterIndex; indexToCheck++)
         {
             if (fullStringToCompareWithoutCase[startIndexToVerify + indexToCheck] !=
                 currentQuerySubstring[indexToCheck])
@@ -251,7 +249,7 @@ public class StringMatcher
 
         updatedList.AddRange(indexList);
 
-        for (var indexToCheck = 0; indexToCheck < currentQuerySubstringCharacterIndex; indexToCheck++)
+        for (int indexToCheck = 0; indexToCheck < currentQuerySubstringCharacterIndex; indexToCheck++)
         {
             updatedList.Add(startIndexToVerify + indexToCheck);
         }
@@ -274,7 +272,7 @@ public class StringMatcher
         // I.e. the length is more important than where in the string a match is found.
         const int matchLenWeightFactor = 2;
 
-        var score = 100 * (query.Length + 1) * matchLenWeightFactor / (1 + firstIndex + (matchLenWeightFactor * (matchLen + 1)));
+        var score = 100 * (query.Length + 1) * matchLenWeightFactor / (1 + firstIndex + matchLenWeightFactor * (matchLen + 1));
 
         // A match with less characters assigning more weights
         if (stringToCompare.Length - query.Length < 5)
@@ -288,15 +286,15 @@ public class StringMatcher
 
         if (allSubstringsContainedInCompareString)
         {
-            var count = query.Count(c => !char.IsWhiteSpace(c));
-            var threshold = 4;
+            int count = query.Count(c => !char.IsWhiteSpace(c));
+            int threshold = 4;
             if (count <= threshold)
             {
                 score += count * 10;
             }
             else
             {
-                score += (threshold * 10) + ((count - threshold) * 5);
+                score += threshold * 10 + (count - threshold) * 5;
             }
         }
 

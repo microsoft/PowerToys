@@ -2,12 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
-
-namespace ManagedCommon.Search;
+namespace Common.Search;
 
 public class MatchResult
 {
+    /// <summary>
+    /// The raw calculated search score without any search precision filtering applied.
+    /// </summary>
+    private int _rawScore;
+
     public MatchResult(bool success, SearchPrecisionScore searchPrecision)
     {
         Success = success;
@@ -28,11 +31,6 @@ public class MatchResult
     /// Gets the final score of the match result with search precision filters applied.
     /// </summary>
     public int Score { get; private set; }
-
-    /// <summary>
-    /// The raw calculated search score without any search precision filtering applied.
-    /// </summary>
-    private int _rawScore;
 
     public int RawScore
     {

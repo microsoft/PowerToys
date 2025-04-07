@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
-
+using Common.Search;
 using ManagedCommon;
 using Microsoft.Toolkit.Uwp.Notifications;
 using PowerLauncher.Helper;

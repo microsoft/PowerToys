@@ -2,13 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Globalization;
-using System.Linq;
-
-namespace ManagedCommon.Search;
+namespace Common.Search;
 
 public interface ISearchService<T>
 {
@@ -39,6 +33,6 @@ public class SearchService<T> : ISearchService<T>
     {
         return string.IsNullOrWhiteSpace(query)
             ? Enumerable.Empty<T>()
-            : searchAlgorithm.GetSuggestions(query, dataSet, selector);
+            : this.searchAlgorithm.GetSuggestions(query, this.dataSet, this.selector);
     }
 }

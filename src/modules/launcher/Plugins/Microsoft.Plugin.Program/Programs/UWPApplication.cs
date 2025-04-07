@@ -18,7 +18,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Xml;
-
+using Common.Search;
 using ManagedCommon;
 using Microsoft.Plugin.Program.Logger;
 using Wox.Infrastructure;

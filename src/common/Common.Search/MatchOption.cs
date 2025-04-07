@@ -2,11 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace ManagedCommon.Search;
+namespace Common.Search;
 
-public enum SearchPrecisionScore
+public class MatchOption
 {
-    Regular = 50,
-    Low = 20,
-    None = 0,
+    public bool IgnoreCase { get; set; } = true;
 }

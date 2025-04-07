@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Common.Search;
 
 [assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
 [assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.System.UnitTests")]

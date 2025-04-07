@@ -2,12 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-
-namespace ManagedCommon.Search;
+namespace Common.Search;
 
 /// <summary>
 /// A basic search algorithm that matches items whose search field contains the query string, ignoring case.

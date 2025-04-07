@@ -14,7 +14,7 @@ using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
-
+using Common.Search;
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Utils;
 using Microsoft.Win32;
