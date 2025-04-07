@@ -11,11 +11,12 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
+using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class SettingsWindow : Window,
+public sealed partial class SettingsWindow : WindowEx,
     IRecipient<NavigateToExtensionSettingsMessage>,
     IRecipient<QuitMessage>
 {
@@ -28,7 +29,7 @@ public sealed partial class SettingsWindow : Window,
         this.SetIcon();
         this.AppWindow.Title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
-        PositionCentered();
+        this.CenterOnScreen();
 
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
@@ -66,19 +67,6 @@ public sealed partial class SettingsWindow : Window,
     {
         NavFrame.Navigate(typeof(ExtensionPage), extension);
         BreadCrumbs.Add(new(extension.DisplayName, string.Empty));
-    }
-
-    private void PositionCentered()
-    {
-        AppWindow.Resize(new SizeInt32 { Width = 1280, Height = 720 });
-        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
-        if (displayArea is not null)
-        {
-            var centeredPosition = AppWindow.Position;
-            centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
-            centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
-            AppWindow.Move(centeredPosition);
-        }
     }
 
     public void Receive(NavigateToExtensionSettingsMessage message) => Navigate(message.ProviderSettingsVM);
