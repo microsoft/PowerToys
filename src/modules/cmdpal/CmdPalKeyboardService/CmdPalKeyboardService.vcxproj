@@ -3,20 +3,49 @@
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
-    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <!-- <CppWinRTOptimized>true</CppWinRTOptimized> -->
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
-    <MinimalCoreWin>true</MinimalCoreWin>
+    <!-- <MinimalCoreWin>true</MinimalCoreWin> -->
     <ProjectGuid>{5f63c743-f6ce-4dba-a200-2b3f8a14e8c2}</ProjectGuid>
     <ProjectName>CmdPalKeyboardService</ProjectName>
     <RootNamespace>CmdPalKeyboardService</RootNamespace>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
-    <AppContainerApplication>false</AppContainerApplication>
+    <!-- <DefaultLanguage>en-US</DefaultLanguage> -->
+    <!-- <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion> -->
+    <!-- <AppContainerApplication>false</AppContainerApplication> -->
     <AppxPackage>false</AppxPackage>
-    <ApplicationType>Windows Store</ApplicationType>
+    <!-- <ApplicationType>Windows Store</ApplicationType> -->
+    <!-- <ApplicationTypeRevision>10.0</ApplicationTypeRevision> -->
+  </PropertyGroup>
+
+  <!-- BEGIN common.build.pre.props -->
+  <PropertyGroup Label="Configuration">
+    <EnableHybridCRT>true</EnableHybridCRT>
+    <UseCrtSDKReferenceStaticWarning Condition="'$(EnableHybridCRT)'=='true'">false</UseCrtSDKReferenceStaticWarning>
+  </PropertyGroup>
+  <!-- END common.build.pre.props -->
+  <!-- BEGIN cppwinrt.build.pre.props -->
+  <PropertyGroup Label="Globals">
+    <CppWinRTEnabled>true</CppWinRTEnabled>
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>17.0</MinimumVisualStudioVersion>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
   </PropertyGroup>
+  <PropertyGroup>
+    <MinimalCoreWin>true</MinimalCoreWin>
+    <AppContainerApplication>true</AppContainerApplication>
+    <WindowsStoreApp>true</WindowsStoreApp>
+    <ApplicationType>Windows Store</ApplicationType>
+    <UseCrtSDKReference Condition="'$(EnableHybridCRT)'=='true'">false</UseCrtSDKReference> <!-- The SDK reference breaks the Hybrid CRT -->
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- We have to use the Desktop platform for Hybrid CRT to work. -->
+    <_VC_Target_Library_Platform>Desktop</_VC_Target_Library_Platform>
+    <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
+  </PropertyGroup>
+  <!-- END cppwinrt.build.pre.props -->
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -33,7 +62,10 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
+
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
@@ -62,7 +94,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>CmdPalKeyboardService.def</ModuleDefinitionFile>
-      <AdditionalDependencies>Shell32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shell32.lib;user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -125,4 +157,43 @@
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
+
+  <!-- BEGIN common.build.post.props -->
+  <!--
+    The Hybrid CRT model statically links the runtime and STL and dynamically
+    links the UCRT instead of the VC++ CRT. The UCRT ships with Windows.
+    WinAppSDK asserts that this is "supported according to the CRT maintainer."
+
+    This must come before Microsoft.Cpp.targets because it manipulates ClCompile.RuntimeLibrary.
+  -->
+  <ItemDefinitionGroup Condition="'$(EnableHybridCRT)'=='true' and '$(Configuration)'=='Debug'">
+    <ClCompile>
+      <!-- We use MultiThreadedDebug, rather than MultiThreadedDebugDLL, to avoid DLL dependencies on VCRUNTIME140d.dll and MSVCP140d.dll. -->
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <!-- Link statically against the runtime and STL, but link dynamically against the CRT by ignoring the static CRT
+           lib and instead linking against the Universal CRT DLL import library. This "hybrid" linking mechanism is
+           supported according to the CRT maintainer. Dynamic linking against the CRT makes the binaries a bit smaller
+           than they would otherwise be if the CRT, runtime, and STL were all statically linked in. -->
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries);libucrtd.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalOptions>%(AdditionalOptions) /defaultlib:ucrtd.lib</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(EnableHybridCRT)'=='true' and ('$(Configuration)'=='Release' or '$(Configuration)'=='AuditMode')">
+    <ClCompile>
+      <!-- We use MultiThreaded, rather than MultiThreadedDLL, to avoid DLL dependencies on VCRUNTIME140.dll and MSVCP140.dll. -->
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <!-- Link statically against the runtime and STL, but link dynamically against the CRT by ignoring the static CRT
+           lib and instead linking against the Universal CRT DLL import library. This "hybrid" linking mechanism is
+           supported according to the CRT maintainer. Dynamic linking against the CRT makes the binaries a bit smaller
+           than they would otherwise be if the CRT, runtime, and STL were all statically linked in. -->
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries);libucrt.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalOptions>%(AdditionalOptions) /defaultlib:ucrt.lib</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <!-- END common.build.post.props -->
+
 </Project>
