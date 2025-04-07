@@ -2,10 +2,6 @@
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
-<<<<<<< HEAD
-=======
-  <Import Project="..\wixVNext.props" Condition="Exists('..\wixVNext.props')" />
->>>>>>> b0893c345 (update)
   <PropertyGroup>
     <DefineConstants>Version=$(Version)</DefineConstants>
     <Name>PowerToysVNextBootstrapper</Name>
