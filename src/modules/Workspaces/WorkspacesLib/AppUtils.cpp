@@ -145,6 +145,7 @@ namespace Utils
                                     if (!path.empty())
                                     {
                                         const bool isSteamProtocol = path.rfind(NonLocalizable::SteamUrlProtocol, 0) == 0;
+                                        data.installPath = path;
 
                                         if (isSteamProtocol)
                                         {
@@ -153,11 +154,10 @@ namespace Utils
 
                                             auto gameId = Steam::GetGameIdFromUrlProtocolPath(path);
                                             auto gameFolder = Steam::GetSteamGameInfoFromAcfFile(gameId);
-                                            data.installPath = gameFolder->gameInstallationPath;
-                                        }
-                                        else
-                                        {
-                                            data.installPath = path;
+                                            if (gameFolder)
+                                            {
+                                                data.installPath = gameFolder->gameInstallationPath;
+                                            }
                                         }
                                     }
                                 }
