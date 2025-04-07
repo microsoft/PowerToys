@@ -14,11 +14,12 @@ using Windows.Graphics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
+using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
-public sealed partial class ToastWindow : Window,
+public sealed partial class ToastWindow : WindowEx,
     IRecipient<QuitMessage>
 {
     private readonly HWND _hwnd;
@@ -46,12 +47,7 @@ public sealed partial class ToastWindow : Window,
 
     private void PositionCentered()
     {
-        var intSize = new SizeInt32
-        {
-            Width = Convert.ToInt32(ToastText.ActualWidth),
-            Height = Convert.ToInt32(ToastText.ActualHeight),
-        };
-        AppWindow.Resize(intSize);
+        this.SetWindowSize(ToastText.ActualWidth, ToastText.ActualHeight);
 
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
@@ -61,7 +57,7 @@ public sealed partial class ToastWindow : Window,
 
             var monitorHeight = displayArea.WorkArea.Height;
             var windowHeight = AppWindow.Size.Height;
-            centeredPosition.Y = monitorHeight - (windowHeight * 2);
+            centeredPosition.Y = monitorHeight - (windowHeight + 8); // Align with other shell toasts, like the volume indicator.
             AppWindow.Move(centeredPosition);
         }
     }
