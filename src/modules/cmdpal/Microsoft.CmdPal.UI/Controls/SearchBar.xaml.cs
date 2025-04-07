@@ -34,7 +34,7 @@ public sealed partial class SearchBar : UserControl,
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
     private bool _isBackspaceHeld;
 
-    private Dictionary<KeyChord, CommandContextItemViewModel>? _keybinds;
+    private Dictionary<KeyChord, CommandContextItemViewModel>? _keyBindings;
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -173,11 +173,11 @@ public sealed partial class SearchBar : UserControl,
             WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
         }
 
-        if (_keybinds != null)
+        if (_keyBindings != null)
         {
-            // Does the pressecd key match any of the keybinds?
+            // Does the pressed key match any of the keybinds?
             var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrlPressed, altPressed, shiftPressed, winPressed, (int)e.Key, 0);
-            if (_keybinds.TryGetValue(pressedKeyChord, out var item))
+            if (_keyBindings.TryGetValue(pressedKeyChord, out var item))
             {
                 // TODO GH #245: This is a bit of a hack, but we need to make sure that the keybinds are updated before we send the message
                 // so that the correct item is activated.
@@ -293,6 +293,6 @@ public sealed partial class SearchBar : UserControl,
 
     public void Receive(UpdateItemKeybindingsMessage message)
     {
-        _keybinds = message.Keys;
+        _keyBindings = message.Keys;
     }
 }

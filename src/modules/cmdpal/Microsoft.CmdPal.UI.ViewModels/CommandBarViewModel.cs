@@ -145,7 +145,7 @@ public partial class CommandBarViewModel : ObservableObject,
     {
         if (_contextKeybinds != null)
         {
-            // Does the pressecd key match any of the keybinds?
+            // Does the pressed key match any of the keybinds?
             var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
             if (_contextKeybinds.TryGetValue(pressedKeyChord, out var item))
             {
