@@ -57,6 +57,9 @@ Color Picker is from Martin.
 ### [@mikeclayton](https://github.com/mikeclayton) - [Michael Clayton](https://michael-clayton.com)
 Michael contributed the [initial version](https://github.com/microsoft/PowerToys/issues/23216) of the Mouse Jump tool and [a number of updates](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+author%3Amikeclayton) based on his FancyMouse utility.
 
+### [@pedrolamas](https://github.com/pedrolamas/) - Pedro Lamas
+Pedro helped create the thumbnail and File Explorer previewers for 3D files like STL and GCode.  If you like 3D printing, these are very helpful.
+
 ### [@PesBandi](https://github.com/PesBandi/) - PesBandi
 PesBandi has helped do massive amounts of Quick Accent and bug fixes.
 
