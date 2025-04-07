@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using CommunityToolkit.Common;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -13,7 +15,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
-using Windows.Win32;
+using WinRT;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -148,14 +150,16 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
             // need to handle that
             _activeExtension = extension;
 
-            var extensionComObject = _activeExtension?.GetExtensionObject();
-            if (extensionComObject != null)
+            var extensionWinRtObject = _activeExtension?.GetExtensionObject();
+            if (extensionWinRtObject != null)
             {
                 try
                 {
                     unsafe
                     {
-                        var hr = PInvoke.CoAllowSetForegroundWindow(extensionComObject);
+                        var winrtObj = (IWinRTObject)extensionWinRtObject;
+                        var intPtr = winrtObj.NativeObject.ThisPtr;
+                        var hr = Native.CoAllowSetForegroundWindow(intPtr);
                         if (hr != 0)
                         {
                             Logger.LogWarning($"Error giving foreground rights: 0x{hr.Value:X8}");
@@ -173,5 +177,19 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
     public void GoHome()
     {
         SetActiveExtension(null);
+    }
+
+    // You may ask yourself, why aren't we using CsWin32 for this?
+    // The CsWin32 projected version includes some object marshalling, like so:
+    //
+    // HRESULT CoAllowSetForegroundWindow([MarshalAs(UnmanagedType.IUnknown)] object pUnk,...)
+    //
+    // And if you do it like that, then the IForegroundTransfer interface isn't marshalled correctly
+    internal sealed class Native
+    {
+        [DllImport("OLE32.dll", ExactSpelling = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        [SupportedOSPlatform("windows5.0")]
+        internal static extern unsafe global::Windows.Win32.Foundation.HRESULT CoAllowSetForegroundWindow(nint pUnk, [Optional] void* lpvReserved);
     }
 }

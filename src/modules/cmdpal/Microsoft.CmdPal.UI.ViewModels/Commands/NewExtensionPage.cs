@@ -21,7 +21,7 @@ public partial class NewExtensionPage : ContentPage
     {
         Name = Properties.Resources.builtin_create_extension_name;
         Title = Properties.Resources.builtin_create_extension_title;
-        Icon = new IconInfo("\uEA86"); // Puzzle
+        Icon = IconHelpers.FromRelativePath("Assets\\CreateExtension.svg");
 
         _inputForm.FormSubmitted += FormSubmitted;
     }

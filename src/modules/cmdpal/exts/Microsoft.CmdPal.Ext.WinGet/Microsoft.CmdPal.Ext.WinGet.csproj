@@ -18,6 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Extension.png" />
+    <None Remove="Assets\Extension.svg" />
     <None Remove="Assets\Store.dark.png" />
     <None Remove="Assets\Store.dark.svg" />
     <None Remove="Assets\Store.light.png" />
@@ -81,6 +83,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="Assets\Extension.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\Extension.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Update="Assets\Store.dark.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
