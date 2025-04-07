@@ -52,6 +52,9 @@ namespace KeyboardManagerEditorUI.Styles
             this.RemappedKeys.ItemsSource = _remappedKeys;
 
             this.Unloaded += InputControl_Unloaded;
+
+            // Set the default focus state
+            OriginalToggleBtn.IsChecked = true;
         }
 
         private void InputControl_Unloaded(object sender, RoutedEventArgs e)
@@ -123,6 +126,9 @@ namespace KeyboardManagerEditorUI.Styles
             {
                 _keyboardHook.Dispose();
                 _keyboardHook = null;
+
+                _currentlyPressedKeys.Clear();
+                _keyPressOrder.Clear();
             }
         }
 
@@ -265,9 +271,13 @@ namespace KeyboardManagerEditorUI.Styles
                 {
                     OriginalToggleBtn.IsChecked = false;
                 }
-            }
 
-            this.Focus(FocusState.Programmatic);
+                SetKeyboardHook();
+            }
+            else
+            {
+                CleanupKeyboardHook();
+            }
         }
 
         private void OriginalToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -282,9 +292,9 @@ namespace KeyboardManagerEditorUI.Styles
                 {
                     RemappedToggleBtn.IsChecked = false;
                 }
-            }
 
-            this.Focus(FocusState.Programmatic);
+                SetKeyboardHook();
+            }
         }
 
         public void SetApp(bool isSpecificApp, string appName)
@@ -304,6 +314,18 @@ namespace KeyboardManagerEditorUI.Styles
 
         private void AllAppsCheckBox_Checked(object sender, RoutedEventArgs e)
         {
+            if (RemappedToggleBtn != null && RemappedToggleBtn.IsChecked == true)
+            {
+                RemappedToggleBtn.IsChecked = false;
+            }
+
+            if (OriginalToggleBtn != null && OriginalToggleBtn.IsChecked == true)
+            {
+                OriginalToggleBtn.IsChecked = false;
+            }
+
+            CleanupKeyboardHook();
+
             AppNameTextBox.Visibility = Visibility.Visible;
         }
 
@@ -312,10 +334,42 @@ namespace KeyboardManagerEditorUI.Styles
             AppNameTextBox.Visibility = Visibility.Collapsed;
         }
 
+        private void AppNameTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            // Reset the focus state when the AppNameTextBox is focused
+            if (RemappedToggleBtn != null && RemappedToggleBtn.IsChecked == true)
+            {
+                RemappedToggleBtn.IsChecked = false;
+            }
+
+            if (OriginalToggleBtn != null && OriginalToggleBtn.IsChecked == true)
+            {
+                OriginalToggleBtn.IsChecked = false;
+            }
+
+            CleanupKeyboardHook();
+        }
+
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             AllAppsCheckBox.Checked += AllAppsCheckBox_Checked;
             AllAppsCheckBox.Unchecked += AllAppsCheckBox_Unchecked;
+
+            AppNameTextBox.GotFocus += AppNameTextBox_GotFocus;
+        }
+
+        public void ResetToggleButtons()
+        {
+            // Reset toggle button status without clearing the key displays
+            if (RemappedToggleBtn != null)
+            {
+                RemappedToggleBtn.IsChecked = false;
+            }
+
+            if (OriginalToggleBtn != null)
+            {
+                OriginalToggleBtn.IsChecked = false;
+            }
         }
 
         public void Dispose()

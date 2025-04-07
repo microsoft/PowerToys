@@ -54,6 +54,15 @@ namespace KeyboardManagerEditorUI.Pages
 
             // Load all existing remappings
             LoadMappings();
+
+            this.Unloaded += Remappings_Unloaded;
+        }
+
+        private void Remappings_Unloaded(object sender, RoutedEventArgs e)
+        {
+            // Make sure we unregister the handler when the page is unloaded
+            UnregisterWindowActivationHandler();
+            RemappingControl.CleanupKeyboardHook();
         }
 
         private void LoadMappings()
@@ -149,18 +158,53 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
+        private void RegisterWindowActivationHandler()
+        {
+            // Get the current window that contains this page
+            var app = Application.Current as App;
+            if (app?.GetWindow() is Window window)
+            {
+                // Register for window activation events
+                window.Activated += Dialog_WindowActivated;
+            }
+        }
+
+        private void UnregisterWindowActivationHandler()
+        {
+            var app = Application.Current as App;
+            if (app?.GetWindow() is Window window)
+            {
+                // Unregister to prevent memory leaks
+                window.Activated -= Dialog_WindowActivated;
+            }
+        }
+
+        private void Dialog_WindowActivated(object sender, WindowActivatedEventArgs args)
+        {
+            // When window is deactivated (user switched to another app)
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                // Make sure to cleanup the keyboard hook when the window loses focus
+                RemappingControl.CleanupKeyboardHook();
+
+                RemappingControl.ResetToggleButtons();
+            }
+        }
+
         private async void NewRemappingBtn_Click(object sender, RoutedEventArgs e)
         {
             RemappingControl.SetOriginalKeys(new List<string>());
             RemappingControl.SetRemappedKeys(new List<string>());
             RemappingControl.SetApp(false, string.Empty);
 
-            RemappingControl.SetKeyboardHook();
+            RegisterWindowActivationHandler();
 
             // Show the dialog to add a new remapping
             KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
             await KeyDialog.ShowAsync();
             KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
+
+            UnregisterWindowActivationHandler();
 
             RemappingControl.CleanupKeyboardHook();
         }
@@ -179,11 +223,13 @@ namespace KeyboardManagerEditorUI.Pages
                 RemappingControl.SetRemappedKeys(selectedRemapping.RemappedKeys);
                 RemappingControl.SetApp(!selectedRemapping.IsAllApps, selectedRemapping.AppName);
 
-                RemappingControl.SetKeyboardHook();
+                RegisterWindowActivationHandler();
 
                 KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
                 await KeyDialog.ShowAsync();
                 KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
+
+                UnregisterWindowActivationHandler();
 
                 RemappingControl.CleanupKeyboardHook();
             }
