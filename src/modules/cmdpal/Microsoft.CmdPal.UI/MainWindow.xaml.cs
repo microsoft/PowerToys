@@ -73,22 +73,7 @@ public sealed partial class MainWindow : Window,
         _keyboardListener = new KeyboardListener();
         _keyboardListener.Start();
 
-        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand((string id) =>
-        {
-            var isRootHotkey = string.IsNullOrEmpty(id);
-
-            // Note to future us: the wParam will have the index of the hotkey we registered.
-            // We can use that in the future to differentiate the hotkeys we've pressed
-            // so that we can bind hotkeys to individual commands
-            if (!this.Visible || !isRootHotkey)
-            {
-                Summon(id);
-            }
-            else if (isRootHotkey)
-            {
-                PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
-            }
-        }));
+        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
 
         // TaskbarCreated is the message that's broadcast when explorer.exe
         // restarts. We need to know when that happens to be able to bring our
@@ -440,9 +425,28 @@ public sealed partial class MainWindow : Window,
         var globalHotkey = settings.Hotkey;
         if (globalHotkey != null)
         {
-            _keyboardListener.SetHotkeyAction(globalHotkey.Win, globalHotkey.Ctrl, globalHotkey.Shift, globalHotkey.Alt, (byte)globalHotkey.Code, string.Empty);
+            if (settings.UseLowLevelGlobalHotkey)
+            {
+                _keyboardListener.SetHotkeyAction(globalHotkey.Win, globalHotkey.Ctrl, globalHotkey.Shift, globalHotkey.Alt, (byte)globalHotkey.Code, string.Empty);
 
-            _hotkeys.Add(new(globalHotkey, string.Empty));
+                _hotkeys.Add(new(globalHotkey, string.Empty));
+            }
+            else
+            {
+                var vk = globalHotkey.Code;
+                var modifiers =
+                                (globalHotkey.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
+                                (globalHotkey.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
+                                (globalHotkey.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
+                                (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
+                                ;
+
+                var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
+                if (success)
+                {
+                    _hotkeys.Add(new(globalHotkey, string.Empty));
+                }
+            }
         }
 
         foreach (var commandHotkey in settings.CommandHotkeys)
@@ -468,6 +472,26 @@ public sealed partial class MainWindow : Window,
         }
     }
 
+    private void HandleSummon(string commandId)
+    {
+        var isRootHotkey = string.IsNullOrEmpty(commandId);
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
+
+        // Note to future us: the wParam will have the index of the hotkey we registered.
+        // We can use that in the future to differentiate the hotkeys we've pressed
+        // so that we can bind hotkeys to individual commands
+        if (!this.Visible || !isRootHotkey)
+        {
+            Activate();
+
+            Summon(commandId);
+        }
+        else if (isRootHotkey)
+        {
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+        }
+    }
+
     private LRESULT HotKeyPrc(
         HWND hwnd,
         uint uMsg,
@@ -482,22 +506,23 @@ public sealed partial class MainWindow : Window,
                     if (hotkeyIndex < _hotkeys.Count)
                     {
                         var hotkey = _hotkeys[hotkeyIndex];
-                        var isRootHotkey = string.IsNullOrEmpty(hotkey.CommandId);
-                        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
+                        HandleSummon(hotkey.CommandId);
 
-                        // Note to future us: the wParam will have the index of the hotkey we registered.
-                        // We can use that in the future to differentiate the hotkeys we've pressed
-                        // so that we can bind hotkeys to individual commands
-                        if (!this.Visible || !isRootHotkey)
-                        {
-                            Activate();
+                        // var isRootHotkey = string.IsNullOrEmpty(hotkey.CommandId);
 
-                            Summon(hotkey.CommandId);
-                        }
-                        else if (isRootHotkey)
-                        {
-                            PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
-                        }
+                        // // Note to future us: the wParam will have the index of the hotkey we registered.
+                        // // We can use that in the future to differentiate the hotkeys we've pressed
+                        // // so that we can bind hotkeys to individual commands
+                        // if (!this.Visible || !isRootHotkey)
+                        // {
+                        //     Activate();
+
+                        // Summon(hotkey.CommandId);
+                        // }
+                        // else if (isRootHotkey)
+                        // {
+                        //     PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+                        // }
                     }
 
                     return (LRESULT)IntPtr.Zero;
