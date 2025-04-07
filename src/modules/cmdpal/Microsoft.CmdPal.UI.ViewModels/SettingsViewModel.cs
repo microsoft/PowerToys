@@ -3,22 +3,26 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsViewModel
+public partial class SettingsViewModel : INotifyPropertyChanged
 {
     private readonly SettingsModel _settings;
     private readonly IServiceProvider _serviceProvider;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public HotkeySettings? Hotkey
     {
         get => _settings.Hotkey;
         set
         {
-            _settings.Hotkey = value;
+            _settings.Hotkey = value ?? SettingsModel.DefaultActivationShortcut;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             Save();
         }
     }

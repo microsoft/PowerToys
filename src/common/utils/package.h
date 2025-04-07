@@ -129,7 +129,7 @@ namespace package {
         try
         {
             PackageManager packageManager;
-            const static auto packages = packageManager.FindPackages();
+            const static auto packages = packageManager.FindPackagesForUser({});
 
             for (auto const& package : packages)
             {
@@ -238,7 +238,7 @@ namespace package {
             PackageManager packageManager;
 
             // Declare use of an external location
-            DeploymentOptions options = DeploymentOptions::ForceApplicationShutdown;
+            DeploymentOptions options = DeploymentOptions::ForceTargetApplicationShutdown;
 
             Collections::IVector<Uri> uris = winrt::single_threaded_vector<Uri>();
             if (!dependencies.empty())

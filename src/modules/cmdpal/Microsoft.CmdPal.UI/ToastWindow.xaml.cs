@@ -4,19 +4,19 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using ManagedCommon;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.UI.Composition;
-using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Graphics;
-using Windows.UI;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.WindowsAndMessaging;
-using WinRT;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
@@ -37,7 +37,7 @@ public sealed partial class ToastWindow : Window,
         AppWindow.IsShownInSwitchers = false;
         ExtendsContentIntoTitleBar = true;
         AppWindow.SetPresenter(AppWindowPresenterKind.CompactOverlay);
-        AppWindow.SetIcon("ms-appx:///Assets/Icons/StoreLogo.png");
+        this.SetIcon();
         AppWindow.Title = RS_.GetString("ToastWindowTitle");
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
 
@@ -47,6 +47,21 @@ public sealed partial class ToastWindow : Window,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
     }
 
+    private static double GetScaleFactor(HWND hwnd)
+    {
+        try
+        {
+            var monitor = PInvoke.MonitorFromWindow(hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+            _ = PInvoke.GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var dpiX, out _);
+            return dpiX / 96.0;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to get scale factor, error: {ex.Message}");
+            return 1.0;
+        }
+    }
+
     private void PositionCentered()
     {
         var intSize = new SizeInt32
@@ -54,7 +69,14 @@ public sealed partial class ToastWindow : Window,
             Width = Convert.ToInt32(ToastText.ActualWidth),
             Height = Convert.ToInt32(ToastText.ActualHeight),
         };
-        AppWindow.Resize(intSize);
+
+        var scaleAdjustment = GetScaleFactor(_hwnd);
+        var scaled = new SizeInt32
+        {
+            Width = (int)Math.Round(intSize.Width * scaleAdjustment),
+            Height = (int)Math.Round(intSize.Height * scaleAdjustment),
+        };
+        AppWindow.Resize(scaled);
 
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)

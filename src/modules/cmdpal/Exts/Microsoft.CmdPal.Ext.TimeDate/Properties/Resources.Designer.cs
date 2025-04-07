@@ -268,7 +268,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Time &amp;amp; Date.
+        ///   Looks up a localized string similar to Time and Date.
         /// </summary>
         public static string Microsoft_plugin_timedate_main_page_title {
             get {

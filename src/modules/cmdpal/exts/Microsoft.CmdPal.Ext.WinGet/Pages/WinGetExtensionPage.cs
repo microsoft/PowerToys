@@ -36,7 +36,7 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
     public static IconInfo WinGetIcon { get; } = IconHelpers.FromRelativePath("Assets\\WinGet.svg");
 
-    public static IconInfo ExtensionsIcon { get; } = new("\uEA86"); // Puzzle
+    public static IconInfo ExtensionsIcon { get; } = IconHelpers.FromRelativePath("Assets\\Extension.svg");
 
     public static string ExtensionsTag => "windows-commandpalette-extension";
 

@@ -187,6 +187,10 @@ public sealed partial class ListPage : Page,
         {
             ItemsList.SelectedIndex++;
         }
+        else
+        {
+            ItemsList.SelectedIndex = 0;
+        }
     }
 
     public void Receive(NavigatePreviousCommand message)
@@ -194,6 +198,10 @@ public sealed partial class ListPage : Page,
         if (ItemsList.SelectedIndex > 0)
         {
             ItemsList.SelectedIndex--;
+        }
+        else
+        {
+            ItemsList.SelectedIndex = ItemsList.Items.Count - 1;
         }
     }
 
