@@ -9,6 +9,7 @@
 #include <string>
 #include <optional>
 #include <Shlwapi.h>
+#include <wrl/client.h>
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
@@ -16,7 +17,6 @@
 
 #include "../logger/logger.h"
 #include "../version/version.h"
-#include <wrl/client.h>
 
 namespace package
 {
@@ -370,13 +370,31 @@ namespace package
                     (version.Major == targetVersion.Major && version.Minor == targetVersion.Minor && version.Build > targetVersion.Build) ||
                     (version.Major == targetVersion.Major && version.Minor == targetVersion.Minor && version.Build == targetVersion.Build && version.Revision >= targetVersion.Revision))
                 {
-                    Logger::info(L"Package {} is already satisfied with version {}.{}.{}, target version {}.{}.{}, {}", id.Name(), version.Major, version.Minor, version.Build, targetVersion.Major, targetVersion.Minor, targetVersion.Build, appxPath);
+                    Logger::info(
+                        L"Package {} is already satisfied with version {}.{}.{}.{}; target version {}.{}.{}.{}; appxPath: {}",
+                        id.Name(),
+                        version.Major,
+                        version.Minor,
+                        version.Build,
+                        version.Revision,
+                        targetVersion.Major,
+                        targetVersion.Minor,
+                        targetVersion.Build,
+                        targetVersion.Revision,
+                        appxPath);
                     return true;
                 }
             }
         }
 
-        Logger::info(L"Package {} is not satisfied. Current version: {}.{}.{}, target version: {}.{}.{}, {}", targetName, targetVersion.Major, targetVersion.Minor, targetVersion.Build, targetVersion.Major, targetVersion.Minor, targetVersion.Build, appxPath);
+        Logger::info(
+            L"Package {} is not satisfied. Target version: {}.{}.{}.{}; appxPath: {}",
+            targetName,
+            targetVersion.Major,
+            targetVersion.Minor,
+            targetVersion.Build,
+            targetVersion.Revision,
+            appxPath);
         return false;
     }
 
