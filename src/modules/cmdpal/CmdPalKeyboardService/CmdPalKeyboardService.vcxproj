@@ -3,19 +3,12 @@
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
-    <!-- <CppWinRTOptimized>true</CppWinRTOptimized> -->
     <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
     <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
-    <!-- <MinimalCoreWin>true</MinimalCoreWin> -->
     <ProjectGuid>{5f63c743-f6ce-4dba-a200-2b3f8a14e8c2}</ProjectGuid>
     <ProjectName>CmdPalKeyboardService</ProjectName>
     <RootNamespace>CmdPalKeyboardService</RootNamespace>
-    <!-- <DefaultLanguage>en-US</DefaultLanguage> -->
-    <!-- <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion> -->
-    <!-- <AppContainerApplication>false</AppContainerApplication> -->
     <AppxPackage>false</AppxPackage>
-    <!-- <ApplicationType>Windows Store</ApplicationType> -->
-    <!-- <ApplicationTypeRevision>10.0</ApplicationTypeRevision> -->
   </PropertyGroup>
 
   <!-- BEGIN common.build.pre.props -->
@@ -62,7 +55,6 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
-
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
 
@@ -137,11 +129,7 @@
   <ItemGroup>
     <None Include="PropertySheet.props" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
-      <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
-    </ProjectReference>
-  </ItemGroup>
+
   <ItemGroup>
     <ResourceCompile Include="CmdPalKeyboardService.rc" />
   </ItemGroup>
