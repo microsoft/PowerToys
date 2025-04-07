@@ -358,9 +358,12 @@ namespace package
                 {
                     try
                     {
-                        if (!IsPackageSatisfied(dependency))
+                        if (IsPackageSatisfied(dependency))
                         {
                             Logger::info(L"Dependency already satisfied: %s", dependency);
+                        }
+                        else
+                        {
                             uris.Append(Uri(dependency));
                         }
                     }
