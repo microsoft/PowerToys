@@ -26,8 +26,12 @@
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
+                <InfoBar Severity="Informational" Title="Command Palette" Message="Command Palette's settings can be configured in its dedicated settings window.">
+                    <InfoBar.ActionButton>
+                        <Button Content="Open Command Palette settings"/>
+                    </InfoBar.ActionButton>
+                </InfoBar>
                 <controls:SettingsGroup x:Uid="CmdPal_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-
                     <tkcontrols:SettingsCard x:Uid="CmdPal_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
