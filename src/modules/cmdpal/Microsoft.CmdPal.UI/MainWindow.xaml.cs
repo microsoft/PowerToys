@@ -28,11 +28,12 @@ using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
+using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
-public sealed partial class MainWindow : Window,
+public sealed partial class MainWindow : WindowEx,
     IRecipient<DismissMessage>,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
@@ -74,8 +75,7 @@ public sealed partial class MainWindow : Window,
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
-        AppWindow.Resize(new SizeInt32 { Width = 1000, Height = 620 });
-        PositionCentered();
+        this.CenterOnScreen(800, Height = 480);
         SetAcrylic();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
@@ -123,26 +123,6 @@ public sealed partial class MainWindow : Window,
         UpdateRegionsForCustomTitleBar();
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
-
-    private void PositionCentered()
-    {
-        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
-        PositionCentered(displayArea);
-    }
-
-    private void PositionCentered(DisplayArea displayArea)
-    {
-        if (displayArea is not null)
-        {
-            var centeredPosition = AppWindow.Position;
-            centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
-            centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
-
-            centeredPosition.X += displayArea.WorkArea.X;
-            centeredPosition.Y += displayArea.WorkArea.Y;
-            AppWindow.Move(centeredPosition);
-        }
-    }
 
     private void HotReloadSettings()
     {
@@ -219,7 +199,7 @@ public sealed partial class MainWindow : Window,
         }
 
         var display = GetScreen(hwnd, target);
-        PositionCentered(display);
+        this.CenterOnScreen();
 
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
         PInvoke.SetForegroundWindow(hwnd);
