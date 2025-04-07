@@ -113,11 +113,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <IntermediateOutputPath Condition=" '$(PerUser)' == 'true' ">obj\$(Platform)\$(Configuration)\UserSetup</IntermediateOutputPath>
     <SuppressIces>ICE40</SuppressIces>
   </PropertyGroup>
-  <PropertyGroup>
-    <!-- suppress warning 1108 regarding -sh being deprecated -->
-    <!-- -sh suppresses file information which was causing wix build to hang in CI -->
-    <LinkerAdditionalOptions>-v -sh -sw1108</LinkerAdditionalOptions>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Include="CustomDialogs\PTInstallDirDlg.wxs" />
     <Compile Include="CustomDialogs\PTLicenseDlg.wxs" />
@@ -153,6 +148,14 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Folder Include="CustomDialogs" />
   </ItemGroup>
   <ItemGroup>
+     <PackageReference Include="WixToolset.Heat" />
+     <PackageReference Include="WixToolset.Firewall.wixext" />
+     <PackageReference Include="WixToolset.Util.wixext" />
+     <PackageReference Include="WixToolset.UI.wixext" />
+     <PackageReference Include="WixToolset.NetFx.wixext" />
+     <PackageReference Include="WixToolset.Bal.wixext" />
+   </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\PowerToysSetupCustomActions\PowerToysSetupCustomActions.vcxproj">
       <Name>PowerToysSetupCustomActions</Name>
       <Project>{32f3882b-f2d6-4586-b5ed-11e39e522bd3}</Project>
@@ -162,7 +165,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       <RefTargetDir>INSTALLFOLDER</RefTargetDir>
     </ProjectReference>
   </ItemGroup>
-    <ItemGroup>
+  <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
     <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
