@@ -13,7 +13,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Input;
-
 using ManagedCommon;
 using Microsoft.Plugin.Shell.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;

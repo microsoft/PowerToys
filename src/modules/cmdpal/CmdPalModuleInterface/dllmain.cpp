@@ -153,7 +153,7 @@ public:
         return app_name.c_str();
     }
 
-    // Return the non localized key of the powertoy, this will be cached by the runner
+    // Return the non localized key of the powertoy, this will be Logger::trace by the runner
     virtual const wchar_t* get_key() override
     {
         return app_key.c_str();

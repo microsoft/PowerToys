@@ -78,7 +78,7 @@ public partial class App : Application
 
         var cmdArgs = Environment.GetCommandLineArgs();
 
-        bool runFromPT = false;
+        var runFromPT = false;
         foreach (var arg in cmdArgs)
         {
             if (arg == "RunFromPT")

@@ -42,8 +42,8 @@ namespace Wox.Test
         {
             var listToReturn = new List<int>();
 
-            Enum.GetValues(typeof(StringMatcher.SearchPrecisionScore))
-                .Cast<StringMatcher.SearchPrecisionScore>()
+            Enum.GetValues(typeof(SearchPrecisionScore))
+                .Cast<SearchPrecisionScore>()
                 .ToList()
                 .ForEach(x => listToReturn.Add((int)x));
 
@@ -154,20 +154,20 @@ namespace Wox.Test
         }
 
         [DataTestMethod]
-        [DataRow("goo", "Google Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("chr", "Google Chrome", StringMatcher.SearchPrecisionScore.Low, true)]
-        [DataRow("chr", "Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("chr", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("chr", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Low, true)]
-        [DataRow("chr", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Regular, false)]
-        [DataRow("chr", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.None, true)]
-        [DataRow("ccs", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Low, true)]
-        [DataRow("cand", "Candy Crush Saga from King", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("cand", "Help cure hope raise on mind entity Chrome", StringMatcher.SearchPrecisionScore.Regular, false)]
+        [DataRow("goo", "Google Chrome", SearchPrecisionScore.Regular, true)]
+        [DataRow("chr", "Google Chrome", SearchPrecisionScore.Low, true)]
+        [DataRow("chr", "Chrome", SearchPrecisionScore.Regular, true)]
+        [DataRow("chr", "Help cure hope raise on mind entity Chrome", SearchPrecisionScore.Regular, true)]
+        [DataRow("chr", "Help cure hope raise on mind entity Chrome", SearchPrecisionScore.Low, true)]
+        [DataRow("chr", "Candy Crush Saga from King", SearchPrecisionScore.Regular, false)]
+        [DataRow("chr", "Candy Crush Saga from King", SearchPrecisionScore.None, true)]
+        [DataRow("ccs", "Candy Crush Saga from King", SearchPrecisionScore.Low, true)]
+        [DataRow("cand", "Candy Crush Saga from King", SearchPrecisionScore.Regular, true)]
+        [DataRow("cand", "Help cure hope raise on mind entity Chrome", SearchPrecisionScore.Regular, false)]
         public void WhenGivenDesiredPrecisionThenShouldReturnAllResultsGreaterOrEqual(
             string queryString,
             string compareString,
-            StringMatcher.SearchPrecisionScore expectedPrecisionScore,
+            SearchPrecisionScore expectedPrecisionScore,
             bool expectedPrecisionResult)
         {
             // When
@@ -191,27 +191,27 @@ namespace Wox.Test
         }
 
         [DataTestMethod]
-        [DataRow("exce", "OverLeaf-Latex: An online LaTeX editor", StringMatcher.SearchPrecisionScore.Regular, false)]
-        [DataRow("term", "Windows Terminal (Preview)", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("sql s managa", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
-        [DataRow("sql' s manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
-        [DataRow("sql s manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("sql manag", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("sql", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("sql serv", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("sql serv man", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("sql studio", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("mic", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("chr", "Shutdown", StringMatcher.SearchPrecisionScore.Regular, false)]
-        [DataRow("mssms", MicrosoftSqlServerManagementStudio, StringMatcher.SearchPrecisionScore.Regular, false)]
-        [DataRow("chr", "Change settings for text-to-speech and for speech recognition (if installed).", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("ch r", "Change settings for text-to-speech and for speech recognition (if installed).", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("a test", "This is a test", StringMatcher.SearchPrecisionScore.Regular, true)]
-        [DataRow("test", "This is a test", StringMatcher.SearchPrecisionScore.Regular, true)]
+        [DataRow("exce", "OverLeaf-Latex: An online LaTeX editor", SearchPrecisionScore.Regular, false)]
+        [DataRow("term", "Windows Terminal (Preview)", SearchPrecisionScore.Regular, true)]
+        [DataRow("sql s managa", MicrosoftSqlServerManagementStudio, SearchPrecisionScore.Regular, false)]
+        [DataRow("sql' s manag", MicrosoftSqlServerManagementStudio, SearchPrecisionScore.Regular, false)]
+        [DataRow("sql s manag", MicrosoftSqlServerManagementStudio, SearchPrecisionScore.Regular, true)]
+        [DataRow("sql manag", MicrosoftSqlServerManagementStudio, SearchPrecisionScore.Regular, true)]
+        [DataRow("sql", MicrosoftSqlServerManagementStudio, SearchPrecisionScore.Regular, true)]
+        [DataRow("sql serv", MicrosoftSqlServerManagementStudio, SearchPrecisionScore.Regular, true)]
+        [DataRow("sql serv man", MicrosoftSqlServerManagementStudio, SearchPrecisionScore.Regular, true)]
+        [DataRow("sql studio", MicrosoftSqlServerManagementStudio, SearchPrecisionScore.Regular, true)]
+        [DataRow("mic", MicrosoftSqlServerManagementStudio, SearchPrecisionScore.Regular, true)]
+        [DataRow("chr", "Shutdown", SearchPrecisionScore.Regular, false)]
+        [DataRow("mssms", MicrosoftSqlServerManagementStudio, SearchPrecisionScore.Regular, false)]
+        [DataRow("chr", "Change settings for text-to-speech and for speech recognition (if installed).", SearchPrecisionScore.Regular, true)]
+        [DataRow("ch r", "Change settings for text-to-speech and for speech recognition (if installed).", SearchPrecisionScore.Regular, true)]
+        [DataRow("a test", "This is a test", SearchPrecisionScore.Regular, true)]
+        [DataRow("test", "This is a test", SearchPrecisionScore.Regular, true)]
         public void WhenGivenQueryShouldReturnResultsContainingAllQuerySubstrings(
             string queryString,
             string compareString,
-            StringMatcher.SearchPrecisionScore expectedPrecisionScore,
+            SearchPrecisionScore expectedPrecisionScore,
             bool expectedPrecisionResult)
         {
             // When

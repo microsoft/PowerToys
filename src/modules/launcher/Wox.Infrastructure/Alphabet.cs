@@ -7,7 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using Common.Search;
 using hyjiacan.py4n;
 
 using Wox.Infrastructure.Storage;

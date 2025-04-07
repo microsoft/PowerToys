@@ -6,8 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Common.Search;
 using ManagedCommon;
-using ManagedCommon.Search;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -503,7 +503,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var matchedItem = ViewModel.NavItems
                 .FirstOrDefault(item =>
                     item.Content?.ToString()
-                        .Equals(queryText, StringComparison.CurrentCultureIgnoreCase) == true);
+                        .Equals(queryText, StringComparison.OrdinalIgnoreCase) == true);
 
             if (matchedItem != null)
             {

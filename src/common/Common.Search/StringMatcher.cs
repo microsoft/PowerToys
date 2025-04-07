@@ -24,21 +24,9 @@ public class StringMatcher
         _alphabet = alphabet;
     }
 
-    public static StringMatcher Instance { get; internal set; }
+    public static StringMatcher Instance { get; set; }
 
     private static readonly char[] Separator = new[] { ' ' };
-
-    [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
-    public static int Score(string source, string target)
-    {
-        return FuzzySearch(target, source).Score;
-    }
-
-    [Obsolete("This method is obsolete and should not be used. Please use the static function StringMatcher.FuzzySearch")]
-    public static bool IsMatch(string source, string target)
-    {
-        return Score(source, target) > 0;
-    }
 
     public static MatchResult FuzzySearch(string query, string stringToCompare)
     {

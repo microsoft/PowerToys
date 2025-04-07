@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
-
+using Common.Search;
 using ManagedCommon;
 using Wox.Plugin;
 
@@ -188,7 +188,7 @@ namespace Wox.Infrastructure.UserSettings
         /// </summary>
         public bool ShouldUsePinyin { get; set; }
 
-        internal StringMatcher.SearchPrecisionScore QuerySearchPrecision { get; private set; } = StringMatcher.SearchPrecisionScore.Regular;
+        internal SearchPrecisionScore QuerySearchPrecision { get; private set; } = SearchPrecisionScore.Regular;
 
         public double WindowLeft { get; set; }
 
