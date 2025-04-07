@@ -418,7 +418,7 @@ namespace package
                     {
                         if (IsPackageSatisfied(dependency))
                         {
-                            Logger::info(L"Dependency already satisfied: %s", dependency);
+                            Logger::info(L"Dependency already satisfied: {}", dependency);
                         }
                         else
                         {
