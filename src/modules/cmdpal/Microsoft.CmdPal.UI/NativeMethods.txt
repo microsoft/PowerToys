@@ -19,6 +19,7 @@ SetFocus
 SetActiveWindow
 MonitorFromWindow
 GetMonitorInfo
+GetDpiForMonitor
 SHCreateStreamOnFileEx
 CoAllowSetForegroundWindow
 SHCreateStreamOnFileEx
