@@ -53,7 +53,7 @@ public partial class CommandBarViewModel : ObservableObject,
     [ObservableProperty]
     public partial ObservableCollection<CommandContextItemViewModel> ContextCommands { get; set; } = [];
 
-    private Dictionary<KeyChord, CommandContextItemViewModel>? _contextKeybinds;
+    private Dictionary<KeyChord, CommandContextItemViewModel>? _contextKeybindings;
 
     public CommandBarViewModel()
     {
@@ -63,7 +63,7 @@ public partial class CommandBarViewModel : ObservableObject,
 
     public void Receive(UpdateCommandBarMessage message) => SelectedItem = message.ViewModel;
 
-    public void Receive(UpdateItemKeybindingsMessage message) => _contextKeybinds = message.Keys;
+    public void Receive(UpdateItemKeybindingsMessage message) => _contextKeybindings = message.Keys;
 
     private void SetSelectedItem(ICommandBarContext? value)
     {
@@ -143,13 +143,13 @@ public partial class CommandBarViewModel : ObservableObject,
 
     public bool CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
-        if (_contextKeybinds != null)
+        if (_contextKeybindings != null)
         {
-            // Does the pressed key match any of the keybinds?
+            // Does the pressed key match any of the keybindings?
             var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
-            if (_contextKeybinds.TryGetValue(pressedKeyChord, out var item))
+            if (_contextKeybindings.TryGetValue(pressedKeyChord, out var item))
             {
-                // TODO GH #245: This is a bit of a hack, but we need to make sure that the keybinds are updated before we send the message
+                // TODO GH #245: This is a bit of a hack, but we need to make sure that the keybindings are updated before we send the message
                 // so that the correct item is activated.
                 WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item));
                 return true;

@@ -175,11 +175,11 @@ public sealed partial class SearchBar : UserControl,
 
         if (_keyBindings != null)
         {
-            // Does the pressed key match any of the keybinds?
+            // Does the pressed key match any of the keybindings?
             var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrlPressed, altPressed, shiftPressed, winPressed, (int)e.Key, 0);
             if (_keyBindings.TryGetValue(pressedKeyChord, out var item))
             {
-                // TODO GH #245: This is a bit of a hack, but we need to make sure that the keybinds are updated before we send the message
+                // TODO GH #245: This is a bit of a hack, but we need to make sure that the keybindings are updated before we send the message
                 // so that the correct item is activated.
                 WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item));
                 e.Handled = true;
