@@ -2,10 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.Windows.AppLifecycle;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -30,11 +34,27 @@ internal sealed class Program
             return 0;
         }
 
-        Logger.InitializeLogger("\\CmdPal\\Logs\\");
+        WinRT.ComWrappersSupport.InitializeComWrappers();
+
+        try
+        {
+            Logger.InitializeLogger("\\CmdPal\\Logs\\");
+        }
+        catch (COMException e)
+        {
+            // This is unexpected. For the sake of debugging:
+            // pop a message box and log the error.
+            PInvoke.MessageBox(
+                (HWND)IntPtr.Zero,
+                $"Failed to initialize the logger. Error: \r{e.Message}",
+                "Command Palette",
+                MESSAGEBOX_STYLE.MB_OK | MESSAGEBOX_STYLE.MB_ICONERROR);
+            return 0;
+        }
+
         Logger.LogDebug($"Starting at {DateTime.UtcNow}");
         PowerToysTelemetry.Log.WriteEvent(new CmdPalProcessStarted());
 
-        WinRT.ComWrappersSupport.InitializeComWrappers();
         var isRedirect = DecideRedirection();
         if (!isRedirect)
         {
