@@ -115,7 +115,7 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Expression wrong or incomplete (Did you forget some parentheses?).
+        ///   Looks up a localized string similar to Expression wrong or incomplete.
         /// </summary>
         public static string calculator_expression_not_complete {
             get {

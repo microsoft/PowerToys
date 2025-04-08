@@ -147,7 +147,7 @@
     <value>Expression contains division by zero</value>
   </data>
   <data name="calculator_expression_not_complete" xml:space="preserve">
-    <value>Expression wrong or incomplete (Did you forget some parentheses?)</value>
+    <value>Expression wrong or incomplete</value>
   </data>
   <data name="calculator_not_a_number" xml:space="preserve">
     <value>Calculation result is not a valid number (NaN)</value>
