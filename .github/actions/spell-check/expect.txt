@@ -1359,7 +1359,6 @@ rgh
 rgn
 rgs
 RIDEV
-ruslanlap
 RIGHTSCROLLBAR
 riid
 ringbuffer
@@ -1385,13 +1384,13 @@ RUNLEVEL
 runtimeclass
 runtimepack
 ruslanlap
+ruuid
 rvm
 rwin
 sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
-SAVEAS
 SAVEFAILED
 scanled
 schedtasks
