@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -12,6 +14,12 @@ namespace Microsoft.CmdPal.Ext.TimeDate.Pages;
 
 internal sealed partial class TimeDateExtensionPage : DynamicListPage
 {
+    private readonly Lock _resultsLock = new();
+
+    private IList<ListItem> _results = new List<ListItem>();
+
+    private bool initialized;
+
     private SettingsManager _settingsManager;
 
     public TimeDateExtensionPage(SettingsManager settingsManager)
@@ -24,20 +32,36 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
         _settingsManager = settingsManager;
     }
 
-    public override IListItem[] GetItems() => DoExecuteSearch(SearchText).ToArray();
+    public override IListItem[] GetItems()
+    {
+       if (!initialized)
+        {
+            DoExecuteSearch(string.Empty);
+        }
+
+       lock (_resultsLock)
+        {
+            ListItem[] results = _results.ToArray();
+            return results;
+        }
+    }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        if (newSearch == oldSearch)
+        {
+            return;
+        }
+
         DoExecuteSearch(newSearch);
-        RaiseItemsChanged(0);
     }
 
-    private List<ListItem> DoExecuteSearch(string query)
+    private void DoExecuteSearch(string query)
     {
         try
         {
             var result = TimeDateCalculator.ExecuteSearch(_settingsManager, query);
-            return result;
+            UpdateResult(result);
         }
         catch (Exception)
         {
@@ -51,7 +75,18 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
                 ResultHelper.CreateInvalidInputErrorResult(),
             };
 
-            return items;
+            UpdateResult(items);
         }
+    }
+
+    private void UpdateResult(IList<ListItem> result)
+    {
+        lock (_resultsLock)
+        {
+            initialized = true;
+            this._results = result;
+        }
+
+        RaiseItemsChanged(this._results.Count);
     }
 }
