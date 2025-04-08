@@ -23,7 +23,6 @@ namespace Microsoft.CmdPal.Ext.Calc.Pages;
 //   - Each item also sets the TextToSuggest to the result
 public sealed partial class CalculatorListPage : DynamicListPage
 {
-    // private readonly SaveCommand _saveCommand = new();
     private readonly Lock _resultsLock = new();
     private SettingsManager _settingsManager;
     private IList<ListItem> _items = [];
@@ -31,7 +30,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
     public CalculatorListPage(SettingsManager settings)
     {
         _settingsManager = settings;
-        Icon = IconHelpers.FromRelativePath("Assets\\Calculator.svg");
+        Icon = CalculatorIcons.ProviderIcon;
         Name = Resources.calculator_title;
         PlaceholderText = Resources.calculator_placeholder_text;
         Id = "com.microsoft.cmdpal.calculator";
