@@ -124,6 +124,15 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search for &quot;{0}&quot; related files.
+        /// </summary>
+        internal static string Indexer_fallback_searchPage_title {
+            get {
+                return ResourceManager.GetString("Indexer_fallback_searchPage_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This file doesn&apos;t exist.
         /// </summary>
         internal static string Indexer_File_Does_Not_Exist {

@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Indexer;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
@@ -15,6 +17,8 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System.IDisposable
 {
     private readonly SettingsManager _settingsManager;
+
+    private readonly CompositeFormat fallbackItemSearchPageTitleCompositeFormat = CompositeFormat.Parse(Resources.Indexer_fallback_searchPage_title);
 
     private SearchEngine _searchEngine = new();
 
@@ -30,7 +34,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
 
     public override void UpdateQuery(string query)
     {
-        if (string.IsNullOrEmpty(query) || string.IsNullOrWhiteSpace(query) || _settingsManager.FallbackCommandModeSettings == SettingsManager.FallbackCommandMode.Off)
+        if (string.IsNullOrWhiteSpace(query))
         {
             Title = string.Empty;
             Subtitle = string.Empty;
@@ -83,19 +87,30 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
             try
             {
                 _searchEngine.Query(query, _queryCookie);
-                var results = _searchEngine.FetchItems(0, 1, _queryCookie, out var _);
+                var results = _searchEngine.FetchItems(0, 20, _queryCookie, out var _);
                 if (results.Count == 0 || (results[0] as IndexerListItem == null))
                 {
                     Title = string.Empty;
                     Subtitle = string.Empty;
                     Command = new NoOpCommand();
+                    return;
                 }
 
-                Title = results[0].Title;
-                Subtitle = results[0].Subtitle;
-                Icon = results[0].Icon;
-                Command = results[0].Command;
-                MoreCommands = results[0].MoreCommands;
+                if (results.Count == 1)
+                {
+                    Title = results[0].Title;
+                    Subtitle = results[0].Subtitle;
+                    Icon = results[0].Icon;
+                    Command = results[0].Command;
+                    MoreCommands = results[0].MoreCommands;
+                    return;
+                }
+
+                var indexerPage = new IndexerPage(_settingsManager, query, _searchEngine, _queryCookie, results);
+                Title = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
+                Icon = Icons.FileExplorer;
+                Subtitle = Resources.Indexer_Subtitle;
+                Command = indexerPage;
             }
             catch
             {

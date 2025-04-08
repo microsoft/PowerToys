@@ -18,16 +18,14 @@ public class SettingsManager : JsonSettingsManager
 
     private static readonly List<ChoiceSetSetting.Choice> _fallbackCommandModeChoice =
     [
-        new ChoiceSetSetting.Choice(Resources.Indexer_Settings_FallbackCommand_AlwaysOn, ((int)FallbackCommandMode.AlwaysOn).ToString(CultureInfo.CurrentCulture)),
-        new ChoiceSetSetting.Choice(Resources.Indexer_Settings_FallbackCommand_Off, ((int)FallbackCommandMode.Off).ToString(CultureInfo.CurrentCulture)),
         new ChoiceSetSetting.Choice(Resources.Indexer_Settings_FallbackCommand_FilePathExist, ((int)FallbackCommandMode.FilePathExist).ToString(CultureInfo.CurrentCulture)),
+        new ChoiceSetSetting.Choice(Resources.Indexer_Settings_FallbackCommand_AlwaysOn, ((int)FallbackCommandMode.AlwaysOn).ToString(CultureInfo.CurrentCulture)),
     ];
 
     public enum FallbackCommandMode
     {
         FilePathExist = 0,
-        Off = 1,
-        AlwaysOn = 2,
+        AlwaysOn = 1,
     }
 
     private readonly ChoiceSetSetting _fallbackCommandMode = new(
@@ -40,20 +38,29 @@ public class SettingsManager : JsonSettingsManager
     {
         get
         {
-            if (_fallbackCommandMode.Value == null || string.IsNullOrEmpty(_fallbackCommandMode.Value))
+            if (string.IsNullOrEmpty(_fallbackCommandMode.Value))
             {
                 // default behavior
                 return FallbackCommandMode.FilePathExist;
             }
 
             // convert _fallbackCommandMode.Value from string to FallbackCommandMode
-            var success = int.TryParse(_fallbackCommandMode.Value, CultureInfo.CurrentCulture, out var parsedValue);
+            var success = int.TryParse(_fallbackCommandMode.Value, CultureInfo.InvariantCulture, out var parsedValue);
             if (!success)
             {
                 return FallbackCommandMode.FilePathExist;
             }
 
-            return (FallbackCommandMode)parsedValue;
+            switch (parsedValue)
+            {
+                case 0:
+                    return FallbackCommandMode.FilePathExist;
+                case 1:
+                    return FallbackCommandMode.AlwaysOn;
+                default:
+                    // default behavior
+                    return FallbackCommandMode.FilePathExist;
+            }
         }
     }
 

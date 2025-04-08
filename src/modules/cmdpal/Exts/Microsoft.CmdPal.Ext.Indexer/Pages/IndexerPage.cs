@@ -15,11 +15,13 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 {
     private readonly List<IListItem> _indexerListItems = [];
 
-    private uint _queryCookie = 10;
+    private uint _queryCookie;
 
     private SettingsManager _settingsManager;
 
-    private SearchEngine _searchEngine = new();
+    private SearchEngine _searchEngine;
+
+    private string initialQuery = string.Empty;
 
     public IndexerPage(SettingsManager settingsManager)
     {
@@ -28,16 +30,28 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         Name = Resources.Indexer_Title;
         PlaceholderText = Resources.Indexer_PlaceholderText;
         _settingsManager = settingsManager;
+        _searchEngine = new();
+        _queryCookie = 10;
+    }
+
+    public IndexerPage(SettingsManager settings, string query, SearchEngine searchEngine, uint queryCookie, IList<IListItem> firstPageData)
+    {
+        _settingsManager = settings;
+        _searchEngine = searchEngine;
+        _queryCookie = queryCookie;
+        _indexerListItems.AddRange(firstPageData);
+        initialQuery = query;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        if (oldSearch != newSearch)
+        if (oldSearch != newSearch && newSearch != initialQuery)
         {
             _ = Task.Run(() =>
             {
                 Query(newSearch);
                 LoadMore();
+                initialQuery = string.Empty;
             });
         }
     }
