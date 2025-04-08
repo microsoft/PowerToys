@@ -156,7 +156,7 @@ inline registry::ChangeSet getBgcodePreviewHandlerChangeSet(const std::wstring i
                                   get_std_product_version(),
                                   (fs::path{ installationDir } / LR"d(PowerToys.BgcodePreviewHandlerCpp.dll)d").wstring(),
                                   L"BgcodePreviewHandler",
-                                  L"BG-code Preview Handler",
+                                  L"Binary G-code Preview Handler",
                                   NonLocalizable::ExtBGCode);
 }
 
@@ -223,7 +223,7 @@ inline registry::ChangeSet getBgcodeThumbnailHandlerChangeSet(const std::wstring
                                   get_std_product_version(),
                                   (fs::path{ installationDir } / LR"d(PowerToys.BgcodeThumbnailProviderCpp.dll)d").wstring(),
                                   L"BgcodeThumbnailProvider",
-                                  L"G-code Thumbnail Provider",
+                                  L"Binary G-code Thumbnail Provider",
                                   NonLocalizable::ExtBGCode);
 }
 

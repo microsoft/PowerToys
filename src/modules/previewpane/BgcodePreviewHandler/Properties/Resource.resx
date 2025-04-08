@@ -118,11 +118,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="BgcodeNotPreviewedError" xml:space="preserve">
-    <value>This BG-code could not be previewed due to an internal error.</value>
-    <comment>This text is displayed if G-code fails to preview</comment>
+    <value>This Binary G-code could not be previewed due to an internal error.</value>
+    <comment>This text is displayed if Binary G-code fails to preview</comment>
   </data>
   <data name="BgcodeWithoutEmbeddedThumbnails" xml:space="preserve">
-    <value>This BG-code does not contain any embedded thumbnails.</value>
+    <value>This Binary G-code does not contain any embedded thumbnails.</value>
   </data>
   <data name="GpoDisabledErrorText" xml:space="preserve">
     <value>Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.</value>

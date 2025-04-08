@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Bgcode
     public class BgcodePreviewHandlerControl : FormHandlerControl
     {
         /// <summary>
-        /// Picture box control to display the BG-code thumbnail.
+        /// Picture box control to display the Binary G-code thumbnail.
         /// </summary>
         private PictureBox _pictureBox;
 
@@ -43,7 +43,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Bgcode
         /// <param name="dataSource">Stream reference to access source file.</param>
         public override void DoPreview<T>(T dataSource)
         {
-            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredGcodePreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            if (global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredBgcodePreviewEnabledValue() == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 // GPO is disabling this utility. Show an error message instead.
                 _infoBarAdded = true;

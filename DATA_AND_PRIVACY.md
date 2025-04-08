@@ -384,6 +384,18 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when there is an error previewing a G-code file.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.BgcodeFileHandlerLoaded</td>
+    <td>Triggered when a Binary G-code file handler is loaded.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.BgcodeFilePreviewed</td>
+    <td>Occurs when a Binary G-code file is previewed in File Explorer.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.BgcodeFilePreviewError</td>
+    <td>Triggered when there is an error previewing a Binary G-code file.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.MarkdownFileHandlerLoaded</td>
     <td>Occurs when a Markdown file handler is loaded.</td>
   </tr>

@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Bgcode.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This BG-code could not be previewed due to an internal error..
+        ///   Looks up a localized string similar to This Binary G-code could not be previewed due to an internal error..
         /// </summary>
         internal static string BgcodeNotPreviewedError {
             get {
@@ -70,7 +70,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Bgcode.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This BG-code does not contain any embedded thumbnails..
+        ///   Looks up a localized string similar to This Binary G-code does not contain any embedded thumbnails..
         /// </summary>
         internal static string BgcodeWithoutEmbeddedThumbnails {
             get {

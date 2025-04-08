@@ -42,17 +42,17 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Bgcode
         /// <returns>A thumbnail extracted from the Binary G-code content.</returns>
         public static Bitmap GetThumbnail(BinaryReader reader, uint cx)
         {
-            if (cx > MaxThumbnailSize || reader == null)
+            if (cx > MaxThumbnailSize || reader == null || reader.BaseStream.Length == 0)
             {
                 return null;
             }
-
-            var bgcodeThumbnail = BgcodeHelper.GetBestThumbnail(reader);
 
             Bitmap thumbnail = null;
 
             try
             {
+                var bgcodeThumbnail = BgcodeHelper.GetBestThumbnail(reader);
+
                 thumbnail = bgcodeThumbnail?.GetBitmap();
             }
             catch (Exception)
