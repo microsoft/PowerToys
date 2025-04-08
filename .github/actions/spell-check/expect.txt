@@ -1194,6 +1194,7 @@ POINTERID
 POINTERUPDATE
 Pokedex
 Pomodoro
+QuickNotes
 Popups
 POPUPWINDOW
 POSITIONITEM
@@ -1818,6 +1819,7 @@ WDA
 wdm
 wdp
 wdupenv
+Weather
 webbrowsers
 webpage
 websites
