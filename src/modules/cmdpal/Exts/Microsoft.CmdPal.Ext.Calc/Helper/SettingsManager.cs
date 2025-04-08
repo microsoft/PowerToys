@@ -97,7 +97,9 @@ public class SettingsManager : JsonSettingsManager
         Settings.Add(_trigUnit);
         Settings.Add(_inputUseEnNumberFormat);
         Settings.Add(_outputUseEnNumberFormat);
-        Settings.Add(_replaceInputIfEndsWithEqualSign);
+
+        // TODO: Move it back if we implement the feature in the future.
+        // Settings.Add(_replaceInputIfEndsWithEqualSign);
 
         // Load settings from file upon initialization
         LoadSettings();

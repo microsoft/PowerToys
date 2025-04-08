@@ -11,7 +11,6 @@ namespace Microsoft.CmdPal.Ext.Calc.Pages;
 public sealed partial class FallbackCalculatorItem : FallbackCommandItem
 {
     private readonly CopyTextCommand _copyCommand = new(string.Empty);
-    private static readonly IconInfo _cachedIcon = IconHelpers.FromRelativePath("Assets\\Calculator.svg");
     private SettingsManager _settings;
 
     public FallbackCalculatorItem(SettingsManager settings)
@@ -21,7 +20,7 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
         _copyCommand.Name = string.Empty;
         Title = string.Empty;
         Subtitle = Resources.calculator_placeholder_text;
-        Icon = _cachedIcon;
+        Icon = CalculatorIcons.FallbackItemsIconInfo;
         _settings = settings;
     }
 

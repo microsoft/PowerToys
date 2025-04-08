@@ -28,6 +28,7 @@ public static class ResultHelper
             Icon = CalculatorIcons.ResultIcon,
             Title = roundedResult?.ToString(outputCulture),
             Subtitle = Properties.Resources.calculator_copy_command_name,
+            TextToSuggest = roundedResult?.ToString(inputCulture),
             MoreCommands = [new CommandContextItem(new CopyTextCommand(roundedResult?.ToString(outputCulture)))],
         };
     }
