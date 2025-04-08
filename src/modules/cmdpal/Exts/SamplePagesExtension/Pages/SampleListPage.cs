@@ -69,62 +69,47 @@ internal sealed partial class SampleListPage : ListPage
             },
 
             new ListItem(
-                new AnonymousCommand(() =>
-                {
-                    var t = new ToastStatusMessage(new StatusMessage()
-                    {
-                        Message = "Primary command invoked",
-                        State = MessageState.Info,
-                    });
-                    t.Show();
-                })
-                {
-                    Result = CommandResult.KeepOpen(),
-                    Icon = new IconInfo("\uE712"),
-                })
+                new ToastCommand("Primary command invoked", MessageState.Info) { Name = "Primary command", Icon = new IconInfo("\uE712") })
             {
                 Title = "You can add context menu items too. Press Ctrl+k",
                 Subtitle = "Try pressing Ctrl+1 with me selected",
                 Icon = new IconInfo("\uE712"),
                 MoreCommands = [
                     new CommandContextItem(
-                        new AnonymousCommand(() =>
-                        {
-                            var t = new ToastStatusMessage(new StatusMessage()
-                            {
-                                Message = "Secondary command invoked",
-                                State = MessageState.Warning,
-                            });
-                            t.Show();
-                        })
-                        {
-                            Name = "Secondary command",
-                            Icon = new IconInfo("\uF147"), // Dial 2
-                            Result = CommandResult.KeepOpen(),
-                        })
+                        new ToastCommand("Secondary command invoked", MessageState.Warning) { Name = "Secondary command", Icon = new IconInfo("\uF147") }) // dial 2
                     {
                         Title = "I'm a second command",
                         RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number1),
                     },
                     new CommandContextItem(
-                        new AnonymousCommand(() =>
-                        {
-                            var t = new ToastStatusMessage(new StatusMessage()
-                            {
-                                Message = "Third command invoked",
-                                State = MessageState.Error,
-                            });
-                            t.Show();
-                        })
-                        {
-                            Name = "Do it",
-                            Icon = new IconInfo("\uF148"), // dial 3
-                            Result = CommandResult.KeepOpen(),
-                        })
+                        new ToastCommand("Third command invoked", MessageState.Error) { Name = "Do it", Icon = new IconInfo("\uF148") }) // dial 3
                     {
-                        Title = "A third command too",
+                        Title = "Context commands can have context menus too",
                         Icon = new IconInfo("\uF148"),
                         RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number2),
+                        MoreCommands = [
+                            new CommandContextItem(
+                                new ToastCommand("Nested A invoked") { Name = "Do it" })
+                            {
+                                Title = "Nested A",
+                                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.A),
+                            },
+
+                            new CommandContextItem(
+                                new ToastCommand("Nested B invoked") { Name = "Do it" })
+                            {
+                                Title = "Nested B",
+                                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.B),
+                                MoreCommands = [
+                                    new CommandContextItem(
+                                        new ToastCommand("Nested C invoked") { Name = "Do it" })
+                                    {
+                                        Title = "You get it",
+                                        RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.B),
+                                    }
+                                ],
+                            },
+                        ],
                     }
                 ],
             },
@@ -185,5 +170,20 @@ internal sealed partial class SampleListPage : ListPage
             },
 
         ];
+    }
+
+    private sealed partial class ToastCommand(string message, MessageState state = MessageState.Info) : InvokableCommand
+    {
+        public override ICommandResult Invoke()
+        {
+            var t = new ToastStatusMessage(new StatusMessage()
+            {
+                Message = message,
+                State = state,
+            });
+            t.Show();
+
+            return CommandResult.KeepOpen();
+        }
     }
 }

@@ -187,7 +187,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         // use Initialize straight up
         MoreCommands.ForEach(contextItem =>
         {
-            contextItem.InitializeProperties();
+            contextItem.SlowInitializeProperties();
         });
 
         _defaultCommandContextItem = new(new CommandContextItem(model.Command!), PageContext)

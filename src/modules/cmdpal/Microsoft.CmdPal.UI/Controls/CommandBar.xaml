@@ -254,7 +254,7 @@
                 ToolTipService.ToolTip="Ctrl+k"
                 Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
                 <Button.Flyout>
-                    <Flyout Placement="TopEdgeAlignedRight">
+                    <Flyout Placement="TopEdgeAlignedRight" Closing="Flyout_Closing">
                         <ListView
                             x:Name="CommandsDropdown"
                             MinWidth="248"
@@ -262,7 +262,7 @@
                             IsItemClickEnabled="True"
                             ItemClick="CommandsDropdown_ItemClick"
                             ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
-                            ItemsSource="{x:Bind ViewModel.ContextCommands, Mode=OneWay}"
+                            ItemsSource="{x:Bind ViewModel.ContextMenu.ContextCommands, Mode=OneWay}"
                             KeyDown="CommandsDropdown_KeyDown"
                             SelectionMode="None">
                             <ListView.ItemContainerStyle>

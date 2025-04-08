@@ -88,8 +88,15 @@ public sealed partial class CommandBar : UserControl,
     {
         if (e.ClickedItem is CommandContextItemViewModel item)
         {
-            ViewModel?.InvokeItemCommand.Execute(item);
-            MoreCommandsButton.Flyout.Hide();
+            if (ViewModel?.InvokeItem(item) ?? true)
+            {
+                MoreCommandsButton.Flyout.Hide();
+            }
+            else
+            {
+                CommandsDropdown.SelectedIndex = 0;
+                CommandsDropdown.Focus(FocusState.Programmatic);
+            }
         }
     }
 
@@ -110,5 +117,10 @@ public sealed partial class CommandBar : UserControl,
         {
             e.Handled = true;
         }
+    }
+
+    private void Flyout_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
+    {
+        ViewModel?.ClearContextStack();
     }
 }
