@@ -41,11 +41,10 @@ namespace Microsoft.PowerToys.Settings.UI
 
             this.InitializeComponent();
 
-            // Set window icon
             _hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             _windowId = Win32Interop.GetWindowIdFromWindow(_hWnd);
             _appWindow = AppWindow.GetFromWindowId(_windowId);
-            _appWindow.SetIcon("Assets\\Settings\\icon.ico");
+            this.Activated += Window_Activated_SetIcon;
 
             OverlappedPresenter presenter = _appWindow.Presenter as OverlappedPresenter;
             presenter.IsMinimizable = false;
@@ -108,6 +107,12 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 shellPage.NavigateToModule(module);
             }
+        }
+
+        private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
+        {
+            // Set window icon
+            _appWindow.SetIcon("Assets\\Settings\\icon.ico");
         }
 
         private void OobeWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)

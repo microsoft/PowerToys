@@ -4,6 +4,7 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -13,6 +14,8 @@ using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
@@ -43,6 +46,21 @@ public sealed partial class ToastWindow : WindowEx,
         PInvoke.EnableWindow(_hwnd, false);
 
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
+    }
+
+    private static double GetScaleFactor(HWND hwnd)
+    {
+        try
+        {
+            var monitor = PInvoke.MonitorFromWindow(hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+            _ = PInvoke.GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var dpiX, out _);
+            return dpiX / 96.0;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to get scale factor, error: {ex.Message}");
+            return 1.0;
+        }
     }
 
     private void PositionCentered()
