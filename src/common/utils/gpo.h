@@ -41,6 +41,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_SVG_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerSVGThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_PDF_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerPDFThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerGcodeThumbnails";
+    const std::wstring POLICY_CONFIGURE_ENABLED_BGCODE_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerBgcodeThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_STL_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerSTLThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_HOSTS_FILE_EDITOR = L"ConfigureEnabledUtilityHostsFileEditor";
     const std::wstring POLICY_CONFIGURE_ENABLED_IMAGE_RESIZER = L"ConfigureEnabledUtilityImageResizer";
@@ -347,6 +348,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredGcodeThumbnailsEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS);
+    }
+
+    inline gpo_rule_configured_t getConfiguredBgcodeThumbnailsEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_BGCODE_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredStlThumbnailsEnabledValue()

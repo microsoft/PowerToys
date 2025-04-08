@@ -4460,7 +4460,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="NewPlus_Behaviour_Replace_Variables_Info_Card_Title.Text" xml:space="preserve">
     <value>Commonly used variables</value>
     <comment>New+ commonly used variables header in the flyout info card</comment>
-  </data>   
+  </data>
   <data name="NewPlus_Year_YYYY_Variable_Description.Text" xml:space="preserve">
     <value>Year, represented by a full four or five digits, depending on the calendar used.</value>
     <comment>New+ description of the year $YYYY variable - casing of $YYYY is important</comment>
@@ -4998,5 +4998,17 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="CmdPal_ActivationShortcut.Description" xml:space="preserve">
     <value>Go to Command Palette settings to customize the activation shortcut.</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_BGCODE.Header" xml:space="preserve">
+    <value>Binary Geometric Code</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_BGCODE.Description" xml:space="preserve">
+    <value>.bgcode</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE.Description" xml:space="preserve">
+    <value>.bgcode</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_BGCODE.Header" xml:space="preserve">
+    <value>Binary Geometric Code</value>
   </data>
 </root>

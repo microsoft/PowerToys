@@ -5,8 +5,8 @@
 HINSTANCE g_hInst = NULL;
 long g_cDllRef = 0;
 
-// {0e6d5bdd-d5f8-4692-a089-8bb88cdd37f4}
-static const GUID CLSID_BgcodePreviewHandler = { 0x0e6d5bdd, 0xd5f8, 0x4692, { 0xa0, 0x89, 0x8b, 0xb8, 0x8c, 0xdd, 0x37, 0xf4 } };
+// {5c93a1e4-99d0-4fb3-991c-6c296a27be21}
+static const GUID CLSID_BgcodeThumbnailProvider = { 0x5c93a1e4, 0x99d0, 0x4fb3, { 0x99, 0x1c, 0x6c, 0x29, 0x6a, 0x27, 0xbe, 0x21 } };
 
 BOOL APIENTRY DllMain(HMODULE hModule,
                       DWORD ul_reason_for_call,
@@ -44,7 +44,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv)
 {
     HRESULT hr = CLASS_E_CLASSNOTAVAILABLE;
 
-    if (IsEqualCLSID(CLSID_BgcodePreviewHandler, rclsid))
+    if (IsEqualCLSID(CLSID_BgcodeThumbnailProvider, rclsid))
     {
         hr = E_OUTOFMEMORY;
 

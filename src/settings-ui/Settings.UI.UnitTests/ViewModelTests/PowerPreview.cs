@@ -67,6 +67,7 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.EnableSvgThumbnail, viewModel.SVGThumbnailIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnablePdfThumbnail, viewModel.PDFThumbnailIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableGcodeThumbnail, viewModel.GCODEThumbnailIsEnabled);
+            Assert.AreEqual(originalSettings.Properties.EnableBgcodeThumbnail, viewModel.BGCODEThumbnailIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableStlThumbnail, viewModel.STLThumbnailIsEnabled);
             Assert.AreEqual(originalSettings.Properties.EnableQoiThumbnail, viewModel.QOIThumbnailIsEnabled);
 
@@ -145,6 +146,24 @@ namespace ViewModelTests
 
             // act
             viewModel.GCODEThumbnailIsEnabled = true;
+        }
+
+        [TestMethod]
+        public void BGCODEThumbnailIsEnabledShouldPrevHandlerWhenSuccessful()
+        {
+            // Assert
+            Func<string, int> sendMockIPCConfigMSG = msg =>
+            {
+                SndModuleSettings<SndPowerPreviewSettings> snd = JsonSerializer.Deserialize<SndModuleSettings<SndPowerPreviewSettings>>(msg);
+                Assert.IsTrue(snd.PowertoysSetting.FileExplorerPreviewSettings.Properties.EnableBgcodeThumbnail);
+                return 0;
+            };
+
+            // arrange
+            PowerPreviewViewModel viewModel = new PowerPreviewViewModel(SettingsRepository<PowerPreviewSettings>.GetInstance(mockPowerPreviewSettingsUtils.Object), SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, PowerPreviewSettings.ModuleName);
+
+            // act
+            viewModel.BGCODEThumbnailIsEnabled = true;
         }
 
         [TestMethod]

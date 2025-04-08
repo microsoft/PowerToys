@@ -70,6 +70,11 @@ PowerPreviewModule::PowerPreviewModule() :
                                       .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredGcodeThumbnailsEnabledValue,
                                       .registryChanges = getGcodeThumbnailHandlerChangeSet(installationDir, installPerUser) });
 
+    m_fileExplorerModules.push_back({ .settingName = L"bgcode-thumbnail-toggle-setting",
+                                      .settingDescription = GET_RESOURCE_STRING(IDS_BGCODE_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
+                                      .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredBgcodeThumbnailsEnabledValue,
+                                      .registryChanges = getBgcodeThumbnailHandlerChangeSet(installationDir, installPerUser) });
+
     m_fileExplorerModules.push_back({ .settingName = L"stl-thumbnail-toggle-setting",
                                       .settingDescription = GET_RESOURCE_STRING(IDS_STL_THUMBNAIL_PROVIDER_SETTINGS_DESCRIPTION),
                                       .checkModuleGPOEnabledRuleFunction = powertoys_gpo::getConfiguredStlThumbnailsEnabledValue,

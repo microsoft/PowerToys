@@ -1186,6 +1186,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.PowerRename.exe",
         L"PowerToys.ImageResizer.exe",
         L"PowerToys.GcodeThumbnailProvider.exe",
+        L"PowerToys.BgcodeThumbnailProvider.exe",
         L"PowerToys.PdfThumbnailProvider.exe",
         L"PowerToys.MonacoPreviewHandler.exe",
         L"PowerToys.MarkdownPreviewHandler.exe",

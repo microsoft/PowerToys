@@ -72,6 +72,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredGcodeThumbnailsEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredBgcodeThumbnailsEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredBgcodeThumbnailsEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredStlThumbnailsEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredStlThumbnailsEnabledValue());

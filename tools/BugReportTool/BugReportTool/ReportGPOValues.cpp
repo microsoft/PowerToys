@@ -59,6 +59,7 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredSvgThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredSvgThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredPdfThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredPdfThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredGcodeThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredGcodeThumbnailsEnabledValue()) << std::endl;
+    report << "getConfiguredBgcodeThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredBgcodeThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredStlThumbnailsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredStlThumbnailsEnabledValue()) << std::endl;
     report << "getConfiguredHostsFileEditorEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredHostsFileEditorEnabledValue()) << std::endl;
     report << "getConfiguredImageResizerEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredImageResizerEnabledValue()) << std::endl;

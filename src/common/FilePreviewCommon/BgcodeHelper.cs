@@ -101,6 +101,8 @@ namespace Microsoft.PowerToys.FilePreviewCommon
 
         private static byte[]? ReadAndDecompressData(BinaryReader reader, BgcodeCompressionType compression, int size)
         {
+            // Though the spec doesn't actually mention it, the referece encoder code never applies compression to thumbnails data
+            // which makes complete sense as this data is PNG, JPEG or QOI encoded so already compressed as much as possible!
             switch (compression)
             {
                 case BgcodeCompressionType.NoCompression:

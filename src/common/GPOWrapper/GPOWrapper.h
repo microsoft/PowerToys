@@ -25,6 +25,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredSvgThumbnailsEnabledValue();
         static GpoRuleConfigured GetConfiguredPdfThumbnailsEnabledValue();
         static GpoRuleConfigured GetConfiguredGcodeThumbnailsEnabledValue();
+        static GpoRuleConfigured GetConfiguredBgcodeThumbnailsEnabledValue();
         static GpoRuleConfigured GetConfiguredStlThumbnailsEnabledValue();
         static GpoRuleConfigured GetConfiguredHostsFileEditorEnabledValue();
         static GpoRuleConfigured GetConfiguredImageResizerEnabledValue();

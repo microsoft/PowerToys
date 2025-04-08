@@ -257,6 +257,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool enableBgcodeThumbnail = true;
+
+        [JsonPropertyName("bgcode-thumbnail-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableBgcodeThumbnail
+        {
+            get => enableBgcodeThumbnail;
+            set
+            {
+                if (value != enableBgcodeThumbnail)
+                {
+                    LogTelemetryEvent(value);
+                    enableBgcodeThumbnail = value;
+                }
+            }
+        }
+
         private bool enableStlThumbnail = true;
 
         [JsonPropertyName("stl-thumbnail-toggle-setting")]
