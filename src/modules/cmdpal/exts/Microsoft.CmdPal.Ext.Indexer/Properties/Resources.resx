@@ -160,7 +160,7 @@
     <value>Always on</value>
   </data>
   <data name="Indexer_Settings_FallbackCommand_Mode" xml:space="preserve">
-    <value>Shows file search results on the top-level search results when:</value>
+    <value>Shows file search results on the top-level search results</value>
   </data>
   <data name="Indexer_Settings_FallbackCommand_Off" xml:space="preserve">
     <value>Always off</value>

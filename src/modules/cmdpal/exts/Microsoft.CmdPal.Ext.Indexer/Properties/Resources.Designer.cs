@@ -196,7 +196,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shows file search results on the top-level search results when:.
+        ///   Looks up a localized string similar to Shows file search results on the top-level search results.
         /// </summary>
         internal static string Indexer_Settings_FallbackCommand_Mode {
             get {
