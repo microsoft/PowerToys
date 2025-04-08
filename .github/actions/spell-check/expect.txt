@@ -1819,7 +1819,6 @@ WDA
 wdm
 wdp
 wdupenv
-Weather
 webbrowsers
 webpage
 websites
