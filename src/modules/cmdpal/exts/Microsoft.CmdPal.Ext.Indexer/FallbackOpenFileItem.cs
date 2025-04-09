@@ -100,7 +100,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
                 }
 
                 // Exit 4: We found more than one result. Make our command take
-                // us to the file search page, pre-populated with this search.
+                // us to the file search page, prepopulated with this search.
                 var indexerPage = new IndexerPage(query, _searchEngine, _queryCookie, results);
                 Title = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
                 Icon = Icons.FileExplorer;
