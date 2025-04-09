@@ -81,7 +81,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #### Mages
 
-We use the Mages NuGet package for calculating stable hashes for strings.
+We use the Mages NuGet package for calculating the result of expression.
 
 **Source**: [https://github.com/FlorianRappl/Mages](https://github.com/FlorianRappl/Mages)
 
