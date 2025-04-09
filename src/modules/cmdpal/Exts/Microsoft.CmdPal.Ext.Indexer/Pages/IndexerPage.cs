@@ -14,31 +14,26 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 {
     private readonly List<IListItem> _indexerListItems = [];
+    private readonly SearchEngine _searchEngine;
 
     private uint _queryCookie;
 
-    private SettingsManager _settingsManager;
-
-    private SearchEngine _searchEngine;
-
     private string initialQuery = string.Empty;
 
-    public IndexerPage(SettingsManager settingsManager)
+    public IndexerPage()
     {
         Id = "com.microsoft.indexer.fileSearch";
         Icon = Icons.FileExplorer;
         Name = Resources.Indexer_Title;
         PlaceholderText = Resources.Indexer_PlaceholderText;
-        _settingsManager = settingsManager;
         _searchEngine = new();
         _queryCookie = 10;
     }
 
-    public IndexerPage(SettingsManager settings, string query, SearchEngine searchEngine, uint queryCookie, IList<IListItem> firstPageData)
+    public IndexerPage(string query, SearchEngine searchEngine, uint queryCookie, IList<IListItem> firstPageData)
     {
         Icon = Icons.FileExplorer;
         Name = Resources.Indexer_Title;
-        _settingsManager = settings;
         _searchEngine = searchEngine;
         _queryCookie = queryCookie;
         _indexerListItems.AddRange(firstPageData);

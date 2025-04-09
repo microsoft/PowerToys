@@ -10,25 +10,22 @@ namespace Microsoft.CmdPal.Ext.Indexer;
 
 public partial class IndexerCommandsProvider : CommandProvider
 {
-    private static readonly SettingsManager _settingsManager = new();
-    private readonly FallbackOpenFileItem _fallbackFileItem = new(_settingsManager);
+    private readonly FallbackOpenFileItem _fallbackFileItem = new();
 
     public IndexerCommandsProvider()
     {
         Id = "Files";
         DisplayName = Resources.IndexerCommandsProvider_DisplayName;
         Icon = Icons.FileExplorer;
-        Settings = _settingsManager.Settings;
     }
 
     public override ICommandItem[] TopLevelCommands()
     {
         return [
-            new CommandItem(new IndexerPage(_settingsManager))
+            new CommandItem(new IndexerPage())
             {
                 Title = Resources.Indexer_Title,
                 Subtitle = Resources.Indexer_Subtitle,
-                MoreCommands = [new CommandContextItem(_settingsManager.Settings.SettingsPage)],
             }
         ];
     }
