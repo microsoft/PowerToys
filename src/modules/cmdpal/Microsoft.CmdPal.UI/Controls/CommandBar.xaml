@@ -255,26 +255,34 @@
                 Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
                 <Button.Flyout>
                     <Flyout Placement="TopEdgeAlignedRight" Closing="Flyout_Closing">
-                        <ListView
-                            x:Name="CommandsDropdown"
-                            MinWidth="248"
-                            Margin="-16,-12,-16,-12"
-                            IsItemClickEnabled="True"
-                            ItemClick="CommandsDropdown_ItemClick"
-                            ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
-                            ItemsSource="{x:Bind ViewModel.ContextMenu.ContextCommands, Mode=OneWay}"
-                            KeyDown="CommandsDropdown_KeyDown"
-                            SelectionMode="None">
-                            <ListView.ItemContainerStyle>
-                                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                                    <Setter Property="MinHeight" Value="0" />
-                                    <Setter Property="Padding" Value="12,7,12,7" />
-                                </Style>
-                            </ListView.ItemContainerStyle>
-                            <ListView.ItemContainerTransitions>
-                                <TransitionCollection />
-                            </ListView.ItemContainerTransitions>
-                        </ListView>
+                        <StackPanel>
+                            
+                            <ListView
+                                x:Name="CommandsDropdown"
+                                MinWidth="248"
+                                Margin="-16,-12,-16,-12"
+                                IsItemClickEnabled="True"
+                                ItemClick="CommandsDropdown_ItemClick"
+                                ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
+                                ItemsSource="{x:Bind ViewModel.ContextMenu.ContextCommands, Mode=OneWay}"
+                                KeyDown="CommandsDropdown_KeyDown"
+                                SelectionMode="Single">
+                                <ListView.ItemContainerStyle>
+                                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                        <Setter Property="MinHeight" Value="0" />
+                                        <Setter Property="Padding" Value="12,7,12,7" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.ItemContainerTransitions>
+                                    <TransitionCollection />
+                                </ListView.ItemContainerTransitions>
+                            </ListView>
+
+                            <!--<TextBox 
+                                Margin="-12,12,-12,-12"
+                                PlaceholderText="Search commands..."></TextBox>-->
+
+                        </StackPanel>
                     </Flyout>
                 </Button.Flyout>
             </Button>

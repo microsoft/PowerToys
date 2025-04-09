@@ -162,8 +162,6 @@ public partial class CommandBarViewModel : ObservableObject,
             var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
             if (_contextKeybindings.TryGetValue(pressedKeyChord, out var item))
             {
-                // TODO GH #245: This is a bit of a hack, but we need to make sure that the keybindings are updated before we send the message
-                // so that the correct item is activated.
                 PerformCommand(item);
 
                 // WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item));
