@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <UseCrtSDKReference>false</UseCrtSDKReference> <!-- The SDK reference breaks the Hybrid CRT -->
+    <!-- We have to use the Desktop platform for Hybrid CRT to work. -->
+    <_VC_Target_Library_Platform>Desktop</_VC_Target_Library_Platform>
+    <_NoWinAPIFamilyApp>true</_NoWinAPIFamilyApp>
+  </PropertyGroup>
+
+</Project>
