@@ -42,10 +42,8 @@ public class ThumbnailHelper
 #pragma warning disable SA1310 // Field names should not contain underscore
 #pragma warning disable SA1306 // Field names should begin with lower-case letter
     private const uint SHGFI_ICON = 0x000000100;
-    private const uint SHGFILARGEICON = 0x000000000;
     private const uint SHGFI_SHELLICONSIZE = 0x000000004;
     private const int SHGFI_SYSICONINDEX = 0x000004000;
-    private const int SHILEXTRALARGE = 2;
     private const int SHIL_JUMBO = 4;
     private const int ILD_TRANSPARENT = 1;
 #pragma warning restore SA1306 // Field names should begin with lower-case letter
