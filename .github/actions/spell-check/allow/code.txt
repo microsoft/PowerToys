@@ -274,9 +274,3 @@ testhost
 
 #Tools
 OIP
-
-# Steam Support
-acfs
-gameid
-installdir
-steamapps
