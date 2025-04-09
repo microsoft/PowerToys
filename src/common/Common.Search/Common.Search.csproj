@@ -5,9 +5,4 @@
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="hyjiacan.pinyin4net" />
-  </ItemGroup>
-
 </Project>
