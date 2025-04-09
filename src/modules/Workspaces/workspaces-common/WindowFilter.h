@@ -11,6 +11,9 @@ namespace WindowFilter
         bool isPopup = WindowUtils::HasStyle(style, WS_POPUP);
         bool hasCaption = WindowUtils::HasStyle(style, WS_CAPTION);
         bool hasMinimizeMaximizeButtons = WindowUtils::HasStyle(style, WS_MINIMIZEBOX) || WindowUtils::HasStyle(style, WS_MAXIMIZEBOX);
+
+        Logger::info("Style for window: {}, {:#x}", reinterpret_cast<void*>(window), style);
+
         if (isPopup && !(hasCaption || hasMinimizeMaximizeButtons))
         {
             // popup windows we want to snap: e.g. Calculator, Telegram

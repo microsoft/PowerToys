@@ -120,6 +120,22 @@ namespace AppLauncher
 
         // packaged apps: try launching first by AppUserModel.ID
         // usage example: elevated Terminal
+        if (!launched && !app.appUserModelId.empty() && !app.packageFullName.empty())
+        {
+            Logger::trace(L"Launching {} as {} - {app.packageFullName}", app.name, app.appUserModelId, app.packageFullName);
+            auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
+            if (res.isOk())
+            {
+                launched = true;
+            }
+            else
+            {
+                launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+            }
+        }
+
+        // win32 app with appUserModelId:
+        // usage example: steam games
         if (!launched && !app.appUserModelId.empty())
         {
             Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
@@ -130,7 +146,6 @@ namespace AppLauncher
             }
             else
             {
-                Logger::error(L"Failed to launch by appUserModelId, {}, {}", app.name, app.appUserModelId);
                 launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
             }
         }

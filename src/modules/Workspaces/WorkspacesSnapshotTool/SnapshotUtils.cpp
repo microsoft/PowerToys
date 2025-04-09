@@ -71,6 +71,8 @@ namespace SnapshotUtils
                 continue;
             }
 
+            Logger::info("Try to get window app:{}", reinterpret_cast<void*>(window));
+
             DWORD pid{};
             GetWindowThreadProcessId(window, &pid);
 
@@ -118,9 +120,11 @@ namespace SnapshotUtils
             auto data = Utils::Apps::GetApp(processPath, pid, installedApps);
             if (!data.has_value() || data->name.empty())
             {
-                Logger::info(L"Installed app not found: {}", processPath);
+                Logger::info(L"Installed app not found:{},{}", reinterpret_cast<void*>(window), processPath);
                 continue;
             }
+
+            Logger::info(L"Found app for window:{},{}", reinterpret_cast<void*>(window), processPath);
 
             auto appData = data.value();
 

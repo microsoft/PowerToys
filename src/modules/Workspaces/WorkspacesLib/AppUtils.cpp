@@ -140,23 +140,32 @@ namespace Utils
                                 }
                                 else if (prop == NonLocalizable::PackageInstallPathProp || prop == NonLocalizable::InstallPathProp)
                                 {
-                                    const std::wstring path = propVariantString.m_pData;
+                                    data.installPath = propVariantString.m_pData;
 
-                                    if (!path.empty())
+                                    if (!data.installPath.empty())
                                     {
-                                        const bool isSteamProtocol = path.rfind(NonLocalizable::SteamUrlProtocol, 0) == 0;
-                                        data.installPath = path;
+                                        const bool isSteamProtocol = data.installPath.rfind(NonLocalizable::SteamUrlProtocol, 0) == 0;
 
                                         if (isSteamProtocol)
                                         {
-                                            Logger::info(L"Found steam game: {}", path);
-                                            data.protocolPath = path;
+                                            Logger::info(L"Found steam game: {}", data.installPath);
+                                            data.protocolPath = data.installPath;
 
-                                            auto gameId = Steam::GetGameIdFromUrlProtocolPath(path);
-                                            auto gameFolder = Steam::GetSteamGameInfoFromAcfFile(gameId);
-                                            if (gameFolder)
+                                            try
                                             {
-                                                data.installPath = gameFolder->gameInstallationPath;
+                                                auto gameId = Steam::GetGameIdFromUrlProtocolPath(data.installPath);
+                                                auto gameFolder = Steam::GetSteamGameInfoFromAcfFile(gameId);
+
+                                                if (gameFolder)
+                                                {
+                                                    Logger::info(L"Found steam game: {}", data.installPath);
+                                                    data.installPath = gameFolder->gameInstallationPath;
+                                                }
+                                            }
+                                            catch (std::exception ex)
+                                            {
+                                                Logger::error(L"Failed to get installPath for game {}", data.installPath);
+                                                Logger::error("Error: {}", ex.what());
                                             }
                                         }
                                     }

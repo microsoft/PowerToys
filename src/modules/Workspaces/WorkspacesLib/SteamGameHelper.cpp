@@ -76,6 +76,17 @@ namespace Utils
             return std::nullopt;
         }
 
+        static fs::path GetSteamBasePath()
+        {
+            auto steamFolderOpt = GetSteamExePathFromRegistry();
+            if (!steamFolderOpt)
+            {
+                return {};
+            }
+
+            return fs::path(*steamFolderOpt).parent_path() / L"steamapps";
+        }
+
         static fs::path GetAcfFilePath(const std::wstring& gameId)
         {
             auto steamFolderOpt = GetSteamExePathFromRegistry();
@@ -84,7 +95,7 @@ namespace Utils
                 return {};
             }
 
-            return fs::path(*steamFolderOpt).parent_path() / L"steamapps" / (L"appmanifest_" + gameId + L".acf");
+            return GetSteamBasePath() / (L"appmanifest_" + gameId + L".acf");
         }
 
         static fs::path GetGameInstallPath(const std::wstring& gameFolderName)
@@ -95,7 +106,7 @@ namespace Utils
                 return {};
             }
 
-            return fs::path(*steamFolderOpt).parent_path() / L"steamapps" / L"common" / gameFolderName;
+            return GetSteamBasePath() / L"steamapps" / L"common" / gameFolderName;
         }
 
         static unordered_map<wstring, wstring> ParseAcfFile(const fs::path& acfPath)
@@ -135,6 +146,8 @@ namespace Utils
                 return nullptr;
 
             fs::path gamePath = Steam::GetGameInstallPath(kv[L"installdir"]);
+            if (!fs::exists(gamePath))
+                return nullptr;
 
             auto game = std::make_unique<Steam::SteamGame>();
             game->gameId = gameId;
