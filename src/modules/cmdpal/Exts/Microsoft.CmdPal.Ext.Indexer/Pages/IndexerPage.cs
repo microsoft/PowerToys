@@ -41,6 +41,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         _queryCookie = queryCookie;
         _indexerListItems.AddRange(firstPageData);
         initialQuery = query;
+        SearchText = query;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
