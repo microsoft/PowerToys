@@ -36,6 +36,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     public IndexerPage(SettingsManager settings, string query, SearchEngine searchEngine, uint queryCookie, IList<IListItem> firstPageData)
     {
+        Icon = Icons.FileExplorer;
+        Name = Resources.Indexer_Title;
         _settingsManager = settings;
         _searchEngine = searchEngine;
         _queryCookie = queryCookie;
