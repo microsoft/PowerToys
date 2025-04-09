@@ -4,8 +4,6 @@
 
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -95,7 +93,6 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         set
         {
             _settings.ShowSystemTrayIcon = value;
-            WeakReferenceMessenger.Default.Send<SystemTrayIconChangedMessage>(new(value));
             Save();
         }
     }

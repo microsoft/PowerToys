@@ -36,8 +36,7 @@ public sealed partial class MainWindow : Window,
     IRecipient<DismissMessage>,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
-    IRecipient<QuitMessage>,
-    IRecipient<SystemTrayIconChangedMessage>
+    IRecipient<QuitMessage>
 {
     private readonly HWND _hwnd;
     private readonly WNDPROC? _hotkeyWndProc;
@@ -82,7 +81,6 @@ public sealed partial class MainWindow : Window,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
-        WeakReferenceMessenger.Default.Register<SystemTrayIconChangedMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -149,6 +147,15 @@ public sealed partial class MainWindow : Window,
         var settings = App.Current.Services.GetService<SettingsModel>()!;
 
         SetupHotkey(settings);
+
+        if (settings.ShowSystemTrayIcon)
+        {
+            AddTrayIcon();
+        }
+        else
+        {
+            RemoveTrayIcon();
+        }
 
         // This will prevent our window from appearing in alt+tab or the taskbar.
         // You'll _need_ to use the hotkey to summon it.
@@ -292,18 +299,6 @@ public sealed partial class MainWindow : Window,
 
     public void Receive(DismissMessage message) =>
         PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
-
-    public void Receive(SystemTrayIconChangedMessage message)
-    {
-        if (message.Enabled)
-        {
-            AddTrayIcon();
-        }
-        else
-        {
-            RemoveTrayIcon();
-        }
-    }
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
