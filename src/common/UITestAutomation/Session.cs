@@ -381,6 +381,25 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Retrieves the color of the pixel at the specified screen coordinates.
+        /// </summary>
+        /// <param name="x">The X coordinate on the screen.</param>
+        /// <param name="y">The Y coordinate on the screen.</param>
+        /// <returns>The color of the pixel at the specified coordinates.</returns>
+        public Color GetPixelColor(int x, int y)
+        {
+            IntPtr hdc = ApiHelper.GetDC(IntPtr.Zero);
+            uint pixel = ApiHelper.GetPixel(hdc, x, y);
+            _ = ApiHelper.ReleaseDC(IntPtr.Zero, hdc);
+
+            int r = (int)(pixel & 0x000000FF);
+            int g = (int)((pixel & 0x0000FF00) >> 8);
+            int b = (int)((pixel & 0x00FF0000) >> 16);
+
+            return Color.FromArgb(r, g, b);
+        }
+
+        /// <summary>
         /// Sends a combination of keys.
         /// </summary>
         /// <param name="keys">The keys to send.</param>
@@ -398,13 +417,13 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="keys">An array of keys to send.</param>
         public void SendKeySequence(params Key[] keys)
         {
-            PerformAction(() =>
-            {
-                foreach (var key in keys)
-                {
-                    KeyboardHelper.SendKeys(key);
-                }
-            });
+            PerformAction(() =>
+            {
+                foreach (var key in keys)
+                {
+                    KeyboardHelper.SendKeys(key);
+                }
+            });
         }
 
         /// <summary>
@@ -424,9 +443,9 @@ namespace Microsoft.PowerToys.UITest
         public void MoveMouseTo(int x, int y)
         {
             PerformAction(() =>
-            {
-                MouseHelper.MoveMouseTo(x, y);
-            });
+         {
+             MouseHelper.MoveMouseTo(x, y);
+         });
         }
 
         /// <summary>
@@ -520,6 +539,15 @@ namespace Microsoft.PowerToys.UITest
             // P/Invoke declaration for GetWindowText
             [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
             private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+            [DllImport("user32.dll")]
+            public static extern IntPtr GetDC(IntPtr hWnd);
+
+            [DllImport("gdi32.dll")]
+            public static extern uint GetPixel(IntPtr hdc, int x, int y);
+
+            [DllImport("user32.dll")]
+            public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
             public static List<(IntPtr HWnd, string Title)> FindDesktopWindowHandler(string[] matchingWindowsTitles)
             {

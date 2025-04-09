@@ -312,6 +312,17 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Retrieves the color of the pixel at the specified screen coordinates.
+        /// </summary>
+        /// <param name="x">The X coordinate on the screen.</param>
+        /// <param name="y">The Y coordinate on the screen.</param>
+        /// <returns>The color of the pixel at the specified coordinates.</returns>
+        public Color GetPixelColor(int x, int y)
+        {
+            return this.Session.GetPixelColor(x, y);
+        }
+
+        /// <summary>
         /// Sends a combination of keys.
         /// </summary>
         /// <param name="keys">The keys to send.</param>
