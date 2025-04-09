@@ -188,6 +188,7 @@ namespace KeyboardManagerEditorUI.Pages
                 RemappingControl.CleanupKeyboardHook();
 
                 RemappingControl.ResetToggleButtons();
+                RemappingControl.UpdateAllAppsCheckBoxState();
             }
         }
 

@@ -55,6 +55,9 @@ namespace KeyboardManagerEditorUI.Styles
 
             // Set the default focus state
             OriginalToggleBtn.IsChecked = true;
+
+            // Ensure AllAppsCheckBox is in the correct state initially
+            UpdateAllAppsCheckBoxState();
         }
 
         private void InputControl_Unloaded(object sender, RoutedEventArgs e)
@@ -151,6 +154,8 @@ namespace KeyboardManagerEditorUI.Styles
                 {
                     _originalKeys.Add(key);
                 }
+
+                UpdateAllAppsCheckBoxState();
             }
         }
 
@@ -225,6 +230,8 @@ namespace KeyboardManagerEditorUI.Styles
                     _remappedKeys.Add(key);
                 }
             }
+
+            UpdateAllAppsCheckBoxState();
         }
 
         public void SetOriginalKeys(List<string> keys)
@@ -387,6 +394,21 @@ namespace KeyboardManagerEditorUI.Styles
             }
         }
 
+        public void UpdateAllAppsCheckBoxState()
+        {
+            // Only enable app-specific remapping for shortcuts (multiple keys)
+            bool isShortcut = _originalKeys.Count > 1;
+
+            AllAppsCheckBox.IsEnabled = isShortcut;
+
+            // If it's not a shortcut, ensure the checkbox is unchecked and app textbox is hidden
+            if (!isShortcut)
+            {
+                AllAppsCheckBox.IsChecked = false;
+                AppNameTextBox.Visibility = Visibility.Collapsed;
+            }
+       }
+
         public void Dispose()
         {
             Dispose(true);
@@ -435,6 +457,8 @@ namespace KeyboardManagerEditorUI.Styles
             {
                 AppNameTextBox.Text = string.Empty;
             }
+
+            UpdateAllAppsCheckBoxState();
 
             // Reset the focus status
             if (this.FocusState != FocusState.Unfocused)
