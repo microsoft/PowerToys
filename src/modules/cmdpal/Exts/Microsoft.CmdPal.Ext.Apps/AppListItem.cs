@@ -32,7 +32,13 @@ internal sealed partial class AppListItem : ListItem
         Tags = [_appTag];
         MoreCommands = _app.Commands!.ToArray();
 
-        _details = new Lazy<Details>(() => BuildDetails());
+        _details = new Lazy<Details>(() =>
+        {
+            var t = BuildDetails();
+            t.Wait();
+            return t.Result;
+        });
+
         _icon = new Lazy<IconInfo>(() =>
         {
             var t = FetchIcon(useThumbnails);
@@ -41,7 +47,7 @@ internal sealed partial class AppListItem : ListItem
         });
     }
 
-    private Details BuildDetails()
+    private async Task<Details> BuildDetails()
     {
         // Build metadata, with app type, path, etc.
         var metadata = new List<DetailsElement>();
@@ -61,17 +67,16 @@ internal sealed partial class AppListItem : ListItem
         {
             try
             {
-                var jumboIconTask = ThumbnailHelper.GetThumbnail(_app.ExePath, true);
-                jumboIconTask.Wait();
-
-                var stream = jumboIconTask.IsCompletedSuccessfully ? jumboIconTask.Result : null;
+                var stream = await ThumbnailHelper.GetThumbnail(_app.ExePath, true);
                 if (stream != null)
                 {
                     heroImage = IconInfo.FromStream(stream);
                 }
             }
-            catch
+            catch (Exception)
             {
+                // do nothing if we fail to load an icon.
+                // Logging it would be too NOISY, there's really no need.
             }
         }
 
