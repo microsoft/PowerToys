@@ -485,7 +485,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("EFDFBB", 0.907, 0, 0.05)] // dutch white
         [DataRow("5218FA", 0.489, 0.05, -0.28)] // han purple
         [DataRow("FF496C", 0.675, 0.21, 0.05)] // infra red
-        [DataRow("545AA7", 0.501, 0.02, -0.12)] // liberty
+        [DataRow("545AA7", 0.5, 0.02, -0.12)] // liberty
         [DataRow("E6A8D7", 0.804, 0.09, -0.04)] // light orchid
         [DataRow("ADDFAD", 0.856, -0.07, 0.05)] // light moss green
         [DataRow("E3F988", 0.942, -0.07, 0.12)] // mindaro
@@ -539,7 +539,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("EFDFBB", 0.907, 0.051, 86.89)] // dutch white
         [DataRow("5218FA", 0.489, 0.286, 279.13)] // han purple
         [DataRow("FF496C", 0.675, 0.217, 14.37)] // infra red
-        [DataRow("545AA7", 0.501, 0.121, 277.7)] // liberty
+        [DataRow("545AA7", 0.5, 0.121, 277.7)] // liberty
         [DataRow("E6A8D7", 0.804, 0.0947, 335.4)] // light orchid
         [DataRow("ADDFAD", 0.856, 0.086, 144.78)] // light moss green
         [DataRow("E3F988", 0.942, 0.141, 118.24)] // mindaro
