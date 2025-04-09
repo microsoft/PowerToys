@@ -4,7 +4,7 @@
 
 using System;
 using System.Linq;
-using Common.Search;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Wox.Infrastructure;

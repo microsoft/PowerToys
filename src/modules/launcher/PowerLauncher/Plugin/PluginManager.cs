@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+
 using global::PowerToys.GPOWrapper;
 using PowerLauncher.Properties;
 using Wox.Infrastructure.Storage;

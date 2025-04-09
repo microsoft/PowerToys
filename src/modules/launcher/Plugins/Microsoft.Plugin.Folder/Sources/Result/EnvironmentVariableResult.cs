@@ -4,7 +4,8 @@
 
 using System.Globalization;
 using System.Text;
-using Common.Search;
+
+using Wox.Infrastructure;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources.Result

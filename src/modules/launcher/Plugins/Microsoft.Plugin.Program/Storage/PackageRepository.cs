@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Programs;
 using Windows.ApplicationModel;

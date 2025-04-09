@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Input;
-using Common.Search;
+
 using Common.UI;
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Properties;
 using PowerToys.Interop;

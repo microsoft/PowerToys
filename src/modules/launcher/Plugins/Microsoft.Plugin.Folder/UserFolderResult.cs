@@ -4,9 +4,10 @@
 
 using System.Globalization;
 using System.Text;
-using Common.Search;
+
 using Microsoft.Plugin.Folder.Sources;
 using Microsoft.Plugin.Folder.Sources.Result;
+using Wox.Infrastructure;
 using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder

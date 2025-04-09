@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using ManagedCommon;
 using Microsoft.Plugin.Uri.UriHelper;
 using Wox.Infrastructure;
