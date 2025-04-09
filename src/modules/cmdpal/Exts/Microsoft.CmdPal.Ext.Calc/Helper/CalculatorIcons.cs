@@ -12,7 +12,5 @@ public static class CalculatorIcons
 
     public static IconInfo ErrorIcon => new IconInfo("\uE783");
 
-    public static IconInfo FallbackItemsIcon => IconHelpers.FromRelativePath("Assets\\Calculator.svg");
-
     public static IconInfo ProviderIcon => IconHelpers.FromRelativePath("Assets\\Calculator.svg");
 }
