@@ -202,7 +202,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Left);
+            slider.InputText(Keys.Left);
 
             Session.Find<Button>(ElementName.Cancel).Click();
 
@@ -244,7 +244,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
+            slider.InputText(Keys.Right);
 
             var expected = value + 1; // one step right
             Assert.AreEqual($"{expected}", slider.Text);
@@ -268,7 +268,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
+            slider.InputText(Keys.Right);
             Session.Find<Button>(ElementName.Cancel).Click();
 
             // verify the file
@@ -314,7 +314,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
+            slider.InputText(Keys.Right);
             Assert.AreEqual($"{expected}", slider.Text);
 
             Session.Find<Button>(ElementName.Save).Click();
@@ -336,7 +336,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
+            slider.InputText(Keys.Right);
             Assert.AreEqual($"{expected + 1}", slider.Text);
 
             Session.Find<Button>(ElementName.Cancel).Click();

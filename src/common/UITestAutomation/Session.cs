@@ -381,12 +381,20 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Keyboard Action key.
-        /// </summary>
-        /// <param name="key1">The Keys1 to click.</param>
-        /// <param name="key2">The Keys2 to click.</param>
-        /// <param name="key3">The Keys3 to click.</param>
-        /// <param name="key4">The Keys4 to click.</param>
+        /// Simulate keyboard input
+        /// </summary>
+        /// <param name="key1">The first key to send.</param>
+        /// <param name="key2">The second key to send (optional).</param>
+        /// <param name="key3">The third key to send (optional).</param>
+        /// <param name="key4">The fourth key to send (optional).</param>
+        public void SendKeys(string key1, string key2 = "", string key3 = "", string key4 = "")
+        {
+            PerformAction(() =>
+            {
+                KeyboardHelper.SendKeys(key1, key2, key3, key4);
+            });
+        }
+
         public void KeyboardAction(string key1, string key2 = "", string key3 = "", string key4 = "")
         {
             PerformAction((actions, windowElement) =>
@@ -549,6 +557,27 @@ namespace Microsoft.PowerToys.UITest
             var windowsDriver = this.WindowsDriver;
             Actions actions = new Actions(this.WindowsDriver);
             action(actions, windowsDriver);
+
+            if (msPostAction > 0)
+            {
+                Task.Delay(msPostAction).Wait();
+            }
+        }
+
+        /// <summary>
+        /// Simulates a manual operation on the element.
+        /// </summary>
+        /// <param name="action">The action to perform on the element.</param>
+        /// <param name="msPreAction">The number of milliseconds to wait before the action. Default value is 500 ms</param>
+        /// <param name="msPostAction">The number of milliseconds to wait after the action. Default value is 500 ms</param>
+        protected void PerformAction(Action action, int msPreAction = 500, int msPostAction = 500)
+        {
+            if (msPreAction > 0)
+            {
+                Task.Delay(msPreAction).Wait();
+            }
+
+            action();
 
             if (msPostAction > 0)
             {

@@ -267,8 +267,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Element>(layoutName).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
-            slider.SendKeys(Keys.Right);
+            slider.InputText(Keys.Right);
+            slider.InputText(Keys.Right);
             var expectedFirstLayoutZoneCount = int.Parse(slider.Text!, CultureInfo.InvariantCulture);
             Session.Find<Button>(ElementName.Save).Click();
 
@@ -278,7 +278,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Element>(layoutName).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Left);
+            slider.InputText(Keys.Left);
             var expectedSecondLayoutZoneCount = int.Parse(slider.Text!, CultureInfo.InvariantCulture);
             Session.Find<Button>(ElementName.Save).Click();
 

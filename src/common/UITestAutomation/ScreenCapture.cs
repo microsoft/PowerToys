@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.UITest
     /// <summary>
     /// Provides methods for capturing the screen with the mouse cursor.
     /// </summary>
-    public class ScreenCapture
+    internal static class ScreenCapture
     {
         [DllImport("user32.dll")]
         private static extern IntPtr GetDC(IntPtr hWnd);
