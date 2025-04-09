@@ -11,7 +11,7 @@ body:
 - type: input
   attributes:
     label: Microsoft PowerToys version
-    placeholder: 0.70.0
+    placeholder: X.XX.X
     description: Hover over system tray icon or look at Settings
   validations:
     required: true
