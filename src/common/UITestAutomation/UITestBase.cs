@@ -51,7 +51,7 @@ namespace Microsoft.PowerToys.UITest
             screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));*/
 
             // Escape Popups before starting
-            this.SendKeys("ESC");
+            this.SendKeys(Key.Esc);
 
             this.sessionHelper = new SessionHelper(scope).Init();
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
@@ -312,15 +312,21 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Simulate keyboard input
-        /// </summary>
-        /// <param name="key1">The first key to send.</param>
-        /// <param name="key2">The second key to send (optional).</param>
-        /// <param name="key3">The third key to send (optional).</param>
-        /// <param name="key4">The fourth key to send (optional).</param>
-        protected void SendKeys(string key1, string key2 = "", string key3 = "", string key4 = "")
+        /// Sends a combination of keys.
+        /// </summary>
+        /// <param name="keys">The keys to send.</param>
+        public void SendKeys(params Key[] keys)
         {
-            this.Session.SendKeys(key1, key2, key3, key4);
+            this.Session.SendKeys(keys);
+        }
+
+        /// <summary>
+        /// Sends a sequence of keys.
+        /// </summary>
+        /// <param name="keys">An array of keys to send.</param>
+        public void SendKeySequence(params Key[] keys)
+        {
+            this.Session.SendKeySequence(keys);
         }
 
         /*protected void AddScreenShotsToTestResultsDirectory()

@@ -381,44 +381,30 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Simulate keyboard input
-        /// </summary>
-        /// <param name="key1">The first key to send.</param>
-        /// <param name="key2">The second key to send (optional).</param>
-        /// <param name="key3">The third key to send (optional).</param>
-        /// <param name="key4">The fourth key to send (optional).</param>
-        public void SendKeys(string key1, string key2 = "", string key3 = "", string key4 = "")
+        /// Sends a combination of keys.
+        /// </summary>
+        /// <param name="keys">The keys to send.</param>
+        public void SendKeys(params Key[] keys)
         {
             PerformAction(() =>
             {
-                KeyboardHelper.SendKeys(key1, key2, key3, key4);
+                KeyboardHelper.SendKeys(keys);
             });
         }
 
-        public void KeyboardAction(string key1, string key2 = "", string key3 = "", string key4 = "")
+        /// <summary>
+        /// Sends a sequence of keys.
+        /// </summary>
+        /// <param name="keys">An array of keys to send.</param>
+        public void SendKeySequence(params Key[] keys)
         {
-            PerformAction((actions, windowElement) =>
-            {
-                if (string.IsNullOrEmpty(key2))
-                {
-                    actions.SendKeys(key1);
-                }
-                else if (string.IsNullOrEmpty(key3))
-                {
-                    actions.SendKeys(key1).SendKeys(key2);
-                }
-                else if (string.IsNullOrEmpty(key4))
-                {
-                    actions.SendKeys(key1).SendKeys(key2).SendKeys(key3);
-                }
-                else
-                {
-                    actions.SendKeys(key1).SendKeys(key2).SendKeys(key3).SendKeys(key4);
-                }
-
-                actions.Release();
-                actions.Build().Perform();
-            });
+            PerformAction(() =>
+            {
+                foreach (var key in keys)
+                {
+                    KeyboardHelper.SendKeys(key);
+                }
+            });
         }
 
         /// <summary>

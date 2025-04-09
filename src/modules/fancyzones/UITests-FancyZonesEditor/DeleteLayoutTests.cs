@@ -222,7 +222,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
             Session.Find<Element>(deletedLayout).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             Session.Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.DeleteLayoutButton)).Click();
-            Session.SendKeys("Tab", "Enter");
+            Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the layout is removed
             Assert.IsTrue(Session.FindAll<Element>(deletedLayout).Count == 0);
@@ -241,7 +241,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Element>(deletedLayout).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             Session.Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.DeleteLayoutButton)).Click();
 
-            Session.SendKeys("Tab", "Enter");
+            Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the layout is removed
             Assert.IsTrue(Session.FindAll<Element>(deletedLayout).Count == 0);
@@ -266,7 +266,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
             Session.Find<Element>(deletedLayout).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             Session.Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.DeleteLayoutButton)).Click();
-            Session.SendKeys("Tab", "Tab", "Enter");
+            Session.SendKeySequence(Key.Tab, Key.Tab, Key.Enter);
 
             // verify the layout is not removed
             Assert.IsNotNull(Session.Find<Element>(deletedLayout));
@@ -283,7 +283,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
             FancyZonesEditorHelper.ClickContextMenuItem(Session, deletedLayout, FancyZonesEditorHelper.ElementName.Delete);
-            Session.SendKeys("Tab", "Enter");
+            Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the layout is removed
             Assert.IsTrue(Session.FindAll<Element>(deletedLayout).Count == 0);
@@ -300,7 +300,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
             FancyZonesEditorHelper.ClickContextMenuItem(Session, deletedLayout, FancyZonesEditorHelper.ElementName.Delete);
-            Session.SendKeys("Tab", "Enter");
+            Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the default layout is reset to the "default" default
             Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.PriorityGrid]).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
@@ -319,7 +319,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
             FancyZonesEditorHelper.ClickContextMenuItem(Session, deletedLayout, FancyZonesEditorHelper.ElementName.Delete);
-            Session.SendKeys("Tab", "Enter");
+            Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the hotkey is available
             Session.Find<Element>(CustomLayouts.CustomLayouts[0].Name).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
