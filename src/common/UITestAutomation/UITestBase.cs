@@ -329,6 +329,25 @@ namespace Microsoft.PowerToys.UITest
             this.Session.SendKeySequence(keys);
         }
 
+        /// <summary>
+        /// Gets the current position of the mouse cursor as a tuple.
+        /// </summary>
+        /// <returns>A tuple containing the X and Y coordinates of the cursor.</returns>
+        public Tuple<int, int> GetMousePosition()
+        {
+            return this.Session.GetMousePosition();
+        }
+
+        /// <summary>
+        /// Moves the mouse cursor to the specified screen coordinates.
+        /// </summary>
+        /// <param name="x">The new x-coordinate of the cursor.</param>
+        /// <param name="y">The new y-coordinate of the cursor.</param
+        public void MoveMouseTo(int x, int y)
+        {
+            this.Session.MoveMouseTo(x, y);
+        }
+
         /*protected void AddScreenShotsToTestResultsDirectory()
         {
             if (screenshotDirectory != null)

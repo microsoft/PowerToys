@@ -407,6 +407,28 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
+        /// <summary>
+        /// Gets the current position of the mouse cursor as a tuple.
+        /// </summary>
+        /// <returns>A tuple containing the X and Y coordinates of the cursor.</returns>
+        public Tuple<int, int> GetMousePosition()
+        {
+            return MouseHelper.GetMousePosition();
+        }
+
+        /// <summary>
+        /// Moves the mouse cursor to the specified screen coordinates.
+        /// </summary>
+        /// <param name="x">The new x-coordinate of the cursor.</param>
+        /// <param name="y">The new y-coordinate of the cursor.</param
+        public void MoveMouseTo(int x, int y)
+        {
+            PerformAction(() =>
+            {
+                MouseHelper.MoveMouseTo(x, y);
+            });
+        }
+
         /// <summary>
         /// Attaches to an existing PowerToys module.
         /// </summary>
