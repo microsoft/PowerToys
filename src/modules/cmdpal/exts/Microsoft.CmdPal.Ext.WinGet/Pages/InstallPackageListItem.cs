@@ -189,7 +189,7 @@ public partial class InstallPackageListItem : ListItem
 
     private void InstallStateChangedHandler(object? sender, InstallPackageCommand e)
     {
-        if (!ApiInformation.IsApiContractPresent("Microsoft.Management.Deployment", 12))
+        if (!ApiInformation.IsApiContractPresent("Microsoft.Management.Deployment.WindowsPackageManagerContract", 12))
         {
             Logger.LogError($"RefreshPackageCatalogAsync isn't available");
             e.FakeChangeStatus();
