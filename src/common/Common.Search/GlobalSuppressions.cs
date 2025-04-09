@@ -8,10 +8,6 @@
 // a specific target and scoped to a namespace, type, member, etc.
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1101:Prefix local calls with this", Justification = "coding style", Scope = "member", Target = "~M:Common.Search.MatchResult.IsSearchPrecisionScoreMet~System.Boolean")]
-[assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1101:Prefix local calls with this", Justification = "coding style", Scope = "member", Target = "~M:Common.Search.MatchResult.IsSearchPrecisionScoreMet(System.Int32)~System.Boolean")]
-[assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1101:Prefix local calls with this", Justification = "coding style", Scope = "member", Target = "~M:Common.Search.MatchResult.ScoreAfterSearchPrecisionFilter(System.Int32)~System.Int32")]
-[assembly: SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1101:Prefix local calls with this", Justification = "coding style", Scope = "member", Target = "~P:Common.Search.MatchResult.RawScore")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1309:Field names should not begin with underscore", Justification = "coding style", Scope = "member", Target = "~F:Common.Search.MatchResult._rawScore")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1309:Field names should not begin with underscore", Justification = "coding style", Scope = "member", Target = "~F:Common.Search.StringMatcher._defaultMatchOption")]
 [assembly: SuppressMessage("StyleCop.CSharp.NamingRules", "SA1309:Field names should not begin with underscore", Justification = "coding style", Scope = "member", Target = "~F:Common.Search.StringMatcher._instance")]

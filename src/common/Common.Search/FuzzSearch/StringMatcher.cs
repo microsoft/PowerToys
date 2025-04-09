@@ -3,13 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
-using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.System.UnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
-
-namespace Common.Search;
+namespace Common.Search.FuzzSearch;
 
 public class StringMatcher
 {
@@ -17,16 +12,13 @@ public class StringMatcher
 
     public SearchPrecisionScore UserSettingSearchPrecision { get; set; }
 
-    private readonly IAlphabet _alphabet;
-
-    public StringMatcher(IAlphabet alphabet = null)
+    public StringMatcher()
     {
-        _alphabet = alphabet;
     }
 
     public static StringMatcher Instance { get; set; }
 
-    private static readonly char[] Separator = new[] { ' ' };
+    private static readonly char[] Separator = [' '];
 
     public static MatchResult FuzzySearch(string query, string stringToCompare)
     {
@@ -80,12 +72,6 @@ public class StringMatcher
         ArgumentNullException.ThrowIfNull(opt);
 
         query = query.Trim();
-
-        if (_alphabet != null)
-        {
-            query = _alphabet.Translate(query);
-            stringToCompare = _alphabet.Translate(stringToCompare);
-        }
 
         // Using InvariantCulture since this is internal
         var fullStringToCompareWithoutCase = opt.IgnoreCase ? stringToCompare.ToUpper(CultureInfo.InvariantCulture) : stringToCompare;
@@ -260,7 +246,7 @@ public class StringMatcher
         // I.e. the length is more important than where in the string a match is found.
         const int matchLenWeightFactor = 2;
 
-        var score = 100 * (query.Length + 1) * matchLenWeightFactor / (1 + firstIndex + matchLenWeightFactor * (matchLen + 1));
+        var score = 100 * (query.Length + 1) * matchLenWeightFactor / (1 + firstIndex + (matchLenWeightFactor * (matchLen + 1)));
 
         // A match with less characters assigning more weights
         if (stringToCompare.Length - query.Length < 5)
@@ -282,7 +268,7 @@ public class StringMatcher
             }
             else
             {
-                score += threshold * 10 + (count - threshold) * 5;
+                score += (threshold * 10) + ((count - threshold) * 5);
             }
         }
 

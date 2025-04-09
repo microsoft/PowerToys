@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Common.Search;
+using Common.Search.FuzzSearch;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
@@ -163,7 +164,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 }
             }
 
-            _searchService = new SearchService<NavigationViewItem>(ViewModel.NavItems, new FuzzSearchAlgorithm<NavigationViewItem>(), (NavigationViewItem item) => item.Content.ToString());
+            _searchService = new FuzzSearchService<NavigationViewItem>(ViewModel.NavItems, (NavigationViewItem item) => item.Content.ToString());
         }
 
         public static int SendDefaultIPCMessage(string msg)
