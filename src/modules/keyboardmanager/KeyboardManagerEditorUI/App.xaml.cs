@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using KeyboardManagerEditorUI.Helpers;
 using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
@@ -42,7 +43,6 @@ namespace KeyboardManagerEditorUI
             Task.Run(() =>
             {
                 Logger.InitializeLogger("\\Keyboard Manager\\WinUI3Editor\\Logs");
-                Logger.LogInfo("keyboard-manager WinUI3 editor logger is initialized");
             });
 
             UnhandledException += App_UnhandledException;
@@ -58,30 +58,24 @@ namespace KeyboardManagerEditorUI
 
             var appWindow = window.AppWindow;
 
-            var windowSize = new Windows.Graphics.SizeInt32(960, 600);
+            var windowSize = new Windows.Graphics.SizeInt32(EditorConstants.DefaultEditorWindowWidth, EditorConstants.DefaultEditorWindowHeight);
             appWindow.Resize(windowSize);
 
-            Task.Run(() =>
+            window.DispatcherQueue.TryEnqueue(() =>
             {
-                App.Current.Resources.MergedDictionaries.Add(new ResourceDictionary()
+                window.Activate();
+                window.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
                 {
-                    Source = new Uri("ms-appx:///Styles/CommonStyle.xaml"),
-                });
-            }).ContinueWith(_ =>
-            {
-                window.DispatcherQueue.TryEnqueue(() =>
-                {
-                    window.Activate();
-                    window.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
-                    {
-                        (window.Content as FrameworkElement)?.UpdateLayout();
-                    });
+                    (window.Content as FrameworkElement)?.UpdateLayout();
                 });
             });
 
             Logger.LogInfo("keyboard-manager WinUI3 editor window is launched");
         }
 
+        /// <summary>
+        /// Log the unhandled exception for the editor.
+        /// </summary>
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             Logger.LogError("Unhandled exception", e.Exception);

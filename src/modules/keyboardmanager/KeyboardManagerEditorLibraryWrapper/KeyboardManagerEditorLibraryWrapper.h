@@ -10,7 +10,7 @@ struct KeyNamePair
     wchar_t keyName[64];
 };
 
-struct KeyboardMapping
+struct SingleKeyMapping
 {
     int originalKey;
     wchar_t* targetKey;
@@ -43,7 +43,7 @@ extern "C"
     __declspec(dllexport) bool SaveMappingSettings(void* config);
 
     __declspec(dllexport) int GetSingleKeyRemapCount(void* config);
-    __declspec(dllexport) bool GetSingleKeyRemap(void* config, int index, KeyboardMapping* mapping);
+    __declspec(dllexport) bool GetSingleKeyRemap(void* config, int index, SingleKeyMapping* mapping);
 
     __declspec(dllexport) int GetSingleKeyToTextRemapCount(void* config);
     __declspec(dllexport) bool GetSingleKeyToTextRemap(void* config, int index, KeyboardTextMapping* mapping);

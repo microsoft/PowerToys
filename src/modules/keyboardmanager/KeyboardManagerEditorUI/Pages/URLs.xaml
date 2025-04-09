@@ -23,7 +23,7 @@
                 Click="NewShortcutBtn_Click">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon
-                        FontSize="16"
+                        FontSize="14"
                         Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                         Glyph="&#xE109;" />
                     <TextBlock VerticalAlignment="Center" Text="New" />

@@ -3,18 +3,32 @@
 // See the LICENSE file in the project root for more information.
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using KeyboardManagerEditorUI.Interop;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.System;
 
 namespace KeyboardManagerEditorUI.Styles
 {
-    public sealed partial class InputControl : UserControl
+    public sealed partial class InputControl : UserControl, IDisposable
     {
-        private List<string> pressedKeys = new List<string>();
-        private List<string> newPressedKeys = new List<string>();
+        // List to store pressed keys
+        private HashSet<VirtualKey> _currentlyPressedKeys = new HashSet<VirtualKey>();
+
+        // List to store order of remapped keys
+        private List<VirtualKey> _keyPressOrder = new List<VirtualKey>();
+
+        // Collection to store original and remapped keys
+        private ObservableCollection<string> _originalKeys = new ObservableCollection<string>();
+        private ObservableCollection<string> _remappedKeys = new ObservableCollection<string>();
+
+        private HotkeySettingsControlHook? _keyboardHook;
+        private bool _disposed;
 
         // Define newMode as a DependencyProperty for binding
         public static readonly DependencyProperty NewModeProperty =
@@ -33,127 +47,200 @@ namespace KeyboardManagerEditorUI.Styles
         public InputControl()
         {
             this.InitializeComponent();
-            this.KeyDown += (sender, e) => InputControl_KeyDown(sender, e, NewMode);
-            this.KeyUp += (sender, e) => InputControl_KeyUp(sender, e, NewMode);
+
+            this.OriginalKeys.ItemsSource = _originalKeys;
+            this.RemappedKeys.ItemsSource = _remappedKeys;
+
+            this.Unloaded += InputControl_Unloaded;
+        }
+
+        private void InputControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            // Reset the control when it is unloaded
+            Reset();
+        }
+
+        private void InputControl_KeyDown(int key)
+        {
+            // if no keys are pressed, clear the lists when a new key is pressed
+            if (_currentlyPressedKeys.Count == 0)
+            {
+                if (NewMode)
+                {
+                    _remappedKeys.Clear();
+                }
+                else
+                {
+                    _originalKeys.Clear();
+                }
+
+                _keyPressOrder.Clear();
+            }
+
+            VirtualKey virtualKey = (VirtualKey)key;
+
+            if (_currentlyPressedKeys.Add(virtualKey))
+            {
+                _keyPressOrder.Add(virtualKey);
+                UpdateKeysDisplay();
+            }
+        }
+
+        private void InputControl_KeyUp(int key)
+        {
+            VirtualKey virtualKey = (VirtualKey)key;
+
+            if (_currentlyPressedKeys.Remove(virtualKey))
+            {
+                _keyPressOrder.Remove(virtualKey);
+            }
         }
 
         private static void OnNewModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var control = d as InputControl;
-            if (control != null)
+            if (d is InputControl control)
             {
-                bool newMode = (bool)e.NewValue;
-                control.UpdateKeyDisplay(newMode);
+                // Clear the lists when the mode changes
+                control._currentlyPressedKeys.Clear();
+                control._keyPressOrder.Clear();
             }
         }
 
-        private void InputControl_KeyDown(object sender, KeyRoutedEventArgs e, bool newMode)
+        public void SetKeyboardHook()
         {
-            // Get the key name and add it to the list if it's not already there
-            string keyName = e.Key.ToString();
-            keyName = NormalizeKeyName(keyName);
+            CleanupKeyboardHook();
 
-            var currentKeyList = newMode ? newPressedKeys : pressedKeys;
+            _keyboardHook = new HotkeySettingsControlHook(
+                InputControl_KeyDown,
+                InputControl_KeyUp,
+                () => true,
+                (key, extraInfo) => true);
+        }
 
-            if (!currentKeyList.Contains(keyName))
+        public void CleanupKeyboardHook()
+        {
+            if (_keyboardHook != null)
             {
-                var allowedModifiers = new[] { "Shift", "Ctrl", "LWin", "RWin", "Alt" };
-                if (currentKeyList.All(k => allowedModifiers.Contains(k)) && pressedKeys.Count < 4)
+                _keyboardHook.Dispose();
+                _keyboardHook = null;
+            }
+        }
+
+        private void UpdateKeysDisplay()
+        {
+            var formattedKeys = GetFormattedKeyList();
+
+            if (NewMode)
+            {
+                _remappedKeys.Clear();
+                foreach (var key in formattedKeys)
                 {
-                    currentKeyList.Add(keyName);
-                    UpdateKeyDisplay(newMode);
+                    _remappedKeys.Add(key);
+                }
+            }
+            else
+            {
+                _originalKeys.Clear();
+                foreach (var key in formattedKeys)
+                {
+                    _originalKeys.Add(key);
                 }
             }
         }
 
-        private void InputControl_KeyUp(object sender, KeyRoutedEventArgs e, bool newMode)
+        private List<string> GetFormattedKeyList()
         {
-            // Console.WriteLine(newMode);
-            string keyName = e.Key.ToString();
-            var currentKeyList = newMode ? newPressedKeys : pressedKeys;
+            List<string> keyList = new List<string>();
+            List<VirtualKey> modifierKeys = new List<VirtualKey>();
+            VirtualKey? actionKey = null;
 
-            if (!currentKeyList.Contains(keyName))
+            foreach (var key in _keyPressOrder)
             {
-                return;
-            }
-
-            // Remove the key name from the list when the key is released
-            // currentKeyList.Remove(keyName);
-            UpdateKeyDisplay(newMode);
-        }
-
-        private void UpdateKeyDisplay(bool newMode)
-        {
-            // Clear current UI elements
-            if (newMode)
-            {
-                NewKeyStackPanel.Children.Clear();
-            } // Assuming keyPanel2 is your second stack panel
-            else
-            {
-                KeyStackPanel.Children.Clear();
-            }
-
-            var currentKeyList = newMode ? newPressedKeys : pressedKeys;
-
-            // Add each pressed key as a TextBlock in the StackPanel
-            foreach (var key in currentKeyList)
-            {
-                Border keyBlockContainer = new Border
+                if (!_currentlyPressedKeys.Contains(key))
                 {
-                    Background = new SolidColorBrush(Microsoft.UI.Colors.White),
-                    Padding = new Thickness(10),
-                    Margin = new Thickness(1),
-                    CornerRadius = new CornerRadius(3),
-                    BorderBrush = new SolidColorBrush(Microsoft.UI.Colors.Black),
-                    BorderThickness = new Thickness(1),
-                };
+                    continue;
+                }
 
-                TextBlock keyBlock = new TextBlock
+                if (IsModifierKey(key))
                 {
-                    Text = key,
-                    FontSize = 12,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    Foreground = new SolidColorBrush(Microsoft.UI.Colors.Black),
-                };
-
-                // Add TextBlock inside the Border container
-                keyBlockContainer.Child = keyBlock;
-
-                // Add Border to StackPanel
-                if (newMode)
-                {
-                    keyBlockContainer.Background = Application.Current.Resources["AccentButtonBackgroundPressed"] as SolidColorBrush;
-                    keyBlockContainer.BorderBrush = Application.Current.Resources["AccentButtonBackgroundPressed"] as SolidColorBrush;
-                    keyBlock.Foreground = new SolidColorBrush(Microsoft.UI.Colors.White);
-                    NewKeyStackPanel.Children.Add(keyBlockContainer); // For remapping keys
+                    if (!modifierKeys.Contains(key))
+                    {
+                        modifierKeys.Add(key);
+                    }
                 }
                 else
                 {
-                    KeyStackPanel.Children.Add(keyBlockContainer); // For normal keys
+                    actionKey = key;
                 }
             }
+
+            foreach (var key in modifierKeys)
+            {
+                keyList.Add(GetKeyDisplayName((int)key));
+            }
+
+            if (actionKey.HasValue)
+            {
+                keyList.Add(GetKeyDisplayName((int)actionKey.Value));
+            }
+
+            return keyList;
+        }
+
+        private string GetKeyDisplayName(int keyCode)
+        {
+            var keyName = new System.Text.StringBuilder(64);
+            KeyboardManagerInterop.GetKeyDisplayName(keyCode, keyName, keyName.Capacity);
+            return keyName.ToString();
+        }
+
+        private bool IsModifierKey(VirtualKey key)
+        {
+            return key == VirtualKey.Control
+                || key == VirtualKey.LeftControl
+                || key == VirtualKey.RightControl
+                || key == VirtualKey.Menu
+                || key == VirtualKey.LeftMenu
+                || key == VirtualKey.RightMenu
+                || key == VirtualKey.Shift
+                || key == VirtualKey.LeftShift
+                || key == VirtualKey.RightShift
+                || key == VirtualKey.LeftWindows
+                || key == VirtualKey.RightWindows;
         }
 
         public void SetRemappedKeys(List<string> keys)
         {
-            RemappedKeys.ItemsSource = keys;
+            _remappedKeys.Clear();
+            if (keys != null)
+            {
+                foreach (var key in keys)
+                {
+                    _remappedKeys.Add(key);
+                }
+            }
         }
 
         public void SetOriginalKeys(List<string> keys)
         {
-            OriginalKeys.ItemsSource = keys;
+            _originalKeys.Clear();
+            if (keys != null)
+            {
+                foreach (var key in keys)
+                {
+                    _originalKeys.Add(key);
+                }
+            }
         }
 
         public List<string> GetOriginalKeys()
         {
-            return pressedKeys as List<string> ?? new List<string>();
+            return _originalKeys.ToList();
         }
 
         public List<string> GetRemappedKeys()
         {
-            return newPressedKeys as List<string> ?? new List<string>();
+            return _remappedKeys.ToList();
         }
 
         public bool GetIsAppSpecific()
@@ -168,14 +255,36 @@ namespace KeyboardManagerEditorUI.Styles
 
         private void RemappedToggleBtn_Checked(object sender, RoutedEventArgs e)
         {
-            NewMode = true;
-            RemappedToggleBtn.IsChecked = false;
+            // Only set NewMode to true if RemappedToggleBtn is checked
+            if (RemappedToggleBtn.IsChecked == true)
+            {
+                NewMode = true;
+
+                // Make sure OriginalToggleBtn is unchecked
+                if (OriginalToggleBtn.IsChecked == true)
+                {
+                    OriginalToggleBtn.IsChecked = false;
+                }
+            }
+
+            this.Focus(FocusState.Programmatic);
         }
 
         private void OriginalToggleBtn_Checked(object sender, RoutedEventArgs e)
         {
-            NewMode = false;
-            OriginalToggleBtn.IsChecked = false;
+            // Only set NewMode to false if OriginalToggleBtn is checked
+            if (OriginalToggleBtn.IsChecked == true)
+            {
+                NewMode = false;
+
+                // Make sure RemappedToggleBtn is unchecked
+                if (RemappedToggleBtn.IsChecked == true)
+                {
+                    RemappedToggleBtn.IsChecked = false;
+                }
+            }
+
+            this.Focus(FocusState.Programmatic);
         }
 
         public void SetApp(bool isSpecificApp, string appName)
@@ -209,20 +318,60 @@ namespace KeyboardManagerEditorUI.Styles
             AllAppsCheckBox.Unchecked += AllAppsCheckBox_Unchecked;
         }
 
-        private string NormalizeKeyName(string keyName)
+        public void Dispose()
         {
-            switch (keyName)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!_disposed)
             {
-                case "Control":
-                    return "Ctrl";
-                case "Menu":
-                    return "Alt";
-                case "LeftWindows":
-                    return "LWin";
-                case "RightWindows":
-                    return "RWin";
-                default:
-                    return keyName;
+                if (disposing)
+                {
+                    CleanupKeyboardHook();
+                    Reset();
+                }
+
+                _disposed = true;
+            }
+        }
+
+        public void Reset()
+        {
+            // Reset key status
+            _currentlyPressedKeys.Clear();
+            _keyPressOrder.Clear();
+
+            // Reset displayed keys
+            _originalKeys.Clear();
+            _remappedKeys.Clear();
+
+            // Reset toggle button status
+            if (RemappedToggleBtn != null)
+            {
+                RemappedToggleBtn.IsChecked = false;
+            }
+
+            if (OriginalToggleBtn != null)
+            {
+                OriginalToggleBtn.IsChecked = false;
+            }
+
+            NewMode = false;
+
+            // Reset app name text box
+            if (AppNameTextBox != null)
+            {
+                AppNameTextBox.Text = string.Empty;
+            }
+
+            // Reset the focus status
+            if (this.FocusState != FocusState.Unfocused)
+            {
+                this.IsTabStop = false;
+                this.IsTabStop = true;
             }
         }
     }

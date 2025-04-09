@@ -46,7 +46,7 @@ extern "C"
         return static_cast<int>(mapping->singleKeyReMap.size());
     }
 
-    bool GetSingleKeyRemap(void* config, int index, KeyboardMapping* mapping)
+    bool GetSingleKeyRemap(void* config, int index, SingleKeyMapping* mapping)
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
@@ -65,11 +65,13 @@ extern "C"
         const auto& kv = allMappings[index];
         mapping->originalKey = static_cast<int>(kv.first);
 
+        // Remap to single key
         if (kv.second.index() == 0)
         {
             mapping->targetKey = AllocateAndCopyString(std::to_wstring(std::get<DWORD>(kv.second)));
             mapping->isShortcut = false;
         }
+        // Remap to shortcut
         else if (kv.second.index() == 1)
         {
             mapping->targetKey = AllocateAndCopyString(std::get<Shortcut>(kv.second).ToHstringVK().c_str());

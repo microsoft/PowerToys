@@ -34,7 +34,7 @@ namespace KeyboardManagerEditorUI.Interop
 
             for (int i = 0; i < count; i++)
             {
-                var mapping = default(KeyboardMapping);
+                var mapping = default(SingleKeyMapping);
                 if (KeyboardManagerInterop.GetSingleKeyRemap(_configHandle, i, ref mapping))
                 {
                     result.Add(new KeyMapping
@@ -122,6 +122,13 @@ namespace KeyboardManagerEditorUI.Interop
             }
 
             return result;
+        }
+
+        public string GetKeyDisplayName(int keyCode)
+        {
+            var keyName = new StringBuilder(64);
+            KeyboardManagerInterop.GetKeyDisplayName(keyCode, keyName, keyName.Capacity);
+            return keyName.ToString();
         }
 
         public bool AddSingleKeyMapping(int originalKey, int targetKey)

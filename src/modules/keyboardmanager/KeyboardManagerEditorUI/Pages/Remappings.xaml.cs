@@ -27,38 +27,33 @@ using Windows.Foundation.Collections;
 
 namespace KeyboardManagerEditorUI.Pages
 {
-    public sealed partial class Shortcuts : Page, IDisposable
+    /// <summary>
+    /// The Remapping page that allow users to configure a single key or shortcut to a new key or shortcut
+    /// </summary>
+    public sealed partial class Remappings : Page, IDisposable
     {
         private KeyboardMappingService? _mappingService;
 
         private bool _disposed;
 
+        // The list of single key mappings
         public ObservableCollection<KeyMapping> SingleKeyMappings { get; } = new ObservableCollection<KeyMapping>();
 
-        public ObservableCollection<ShortcutKeyMapping> ShortcutMappings { get; } = new ObservableCollection<ShortcutKeyMapping>();
+        // The list of shortcut key mappings
+        public ObservableCollection<ShortcutKeyMapping> ShortcutKeyMappings { get; } = new ObservableCollection<ShortcutKeyMapping>();
 
-        public ObservableCollection<Remapping> RemappedShortcuts { get; set; }
+        // The full list of remappings
+        public ObservableCollection<Remapping> RemappingList { get; set; }
 
-        [DllImport("PowerToys.KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        private static extern void GetKeyDisplayName(int keyCode, [Out] StringBuilder keyName, int maxLength);
-
-        public Shortcuts()
+        public Remappings()
         {
             this.InitializeComponent();
 
-            RemappedShortcuts = new ObservableCollection<Remapping>();
+            RemappingList = new ObservableCollection<Remapping>();
             _mappingService = new KeyboardMappingService();
-            LoadMappings();
 
-            /*
-            RemappedShortcuts = new ObservableCollection<Remapping>();
-            RemappedShortcuts.Add(new Remapping() { OriginalKeys = new List<string>() { "Ctrl", "Shift", "F" }, RemappedKeys = new List<string>() { "Shift", "F" }, IsAllApps = true });
-            RemappedShortcuts.Add(new Remapping() { OriginalKeys = new List<string>() { "Ctrl (Left)" }, RemappedKeys = new List<string>() { "Ctrl (Right)" }, IsAllApps = true });
-            RemappedShortcuts.Add(new Remapping() { OriginalKeys = new List<string>() { "Shift", "M" }, RemappedKeys = new List<string>() { "Ctrl", "M" }, IsAllApps = true });
-            RemappedShortcuts.Add(new Remapping() { OriginalKeys = new List<string>() { "Shift", "Alt", "B" }, RemappedKeys = new List<string>() { "Alt", "B" }, IsAllApps = false, AppName = "outlook.exe" });
-            RemappedShortcuts.Add(new Remapping() { OriginalKeys = new List<string>() { "Numpad 1" }, RemappedKeys = new List<string>() { "Ctrl", "F" }, IsAllApps = true });
-            RemappedShortcuts.Add(new Remapping() { OriginalKeys = new List<string>() { "Numpad 2" }, RemappedKeys = new List<string>() { "Alt", "F" }, IsAllApps = true, AppName = "outlook.exe" });
-            */
+            // Load all existing remappings
+            LoadMappings();
         }
 
         private void LoadMappings()
@@ -69,35 +64,37 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             SingleKeyMappings.Clear();
-            ShortcutMappings.Clear();
-            RemappedShortcuts.Clear();
+            ShortcutKeyMappings.Clear();
+            RemappingList.Clear();
 
+            // Load all single key mappings
             foreach (var mapping in _mappingService.GetSingleKeyMappings())
             {
                 SingleKeyMappings.Add(mapping);
 
-                string[] targetKeyCode = mapping.TargetKey.Split(';');
+                string[] targetKeyCodes = mapping.TargetKey.Split(';');
                 var targetKeyNames = new List<string>();
 
-                foreach (var keyCode in targetKeyCode)
+                foreach (var keyCode in targetKeyCodes)
                 {
                     if (int.TryParse(keyCode, out int code))
                     {
-                        targetKeyNames.Add(GetKeyDisplayName(code));
+                        targetKeyNames.Add(_mappingService.GetKeyDisplayName(code));
                     }
                 }
 
-                RemappedShortcuts.Add(new Remapping
+                RemappingList.Add(new Remapping
                 {
-                    OriginalKeys = new List<string> { GetKeyDisplayName(mapping.OriginalKey) },
+                    OriginalKeys = new List<string> { _mappingService.GetKeyDisplayName(mapping.OriginalKey) },
                     RemappedKeys = targetKeyNames,
                     IsAllApps = true,
                 });
             }
 
+            // Load all shortcut key mappings
             foreach (var mapping in _mappingService.GetShortcutMappingsByType(ShortcutOperationType.RemapShortcut))
             {
-                ShortcutMappings.Add(mapping);
+                ShortcutKeyMappings.Add(mapping);
 
                 string[] originalKeyCodes = mapping.OriginalKeys.Split(';');
                 string[] targetKeyCodes = mapping.TargetKeys.Split(';');
@@ -109,7 +106,7 @@ namespace KeyboardManagerEditorUI.Pages
                 {
                     if (int.TryParse(keyCode, out int code))
                     {
-                        originalKeyNames.Add(GetKeyDisplayName(code));
+                        originalKeyNames.Add(_mappingService.GetKeyDisplayName(code));
                     }
                 }
 
@@ -117,11 +114,11 @@ namespace KeyboardManagerEditorUI.Pages
                 {
                     if (int.TryParse(keyCode, out int code))
                     {
-                        targetKeyNames.Add(GetKeyDisplayName(code));
+                        targetKeyNames.Add(_mappingService.GetKeyDisplayName(code));
                     }
                 }
 
-                RemappedShortcuts.Add(new Remapping
+                RemappingList.Add(new Remapping
                 {
                     OriginalKeys = originalKeyNames,
                     RemappedKeys = targetKeyNames,
@@ -129,13 +126,6 @@ namespace KeyboardManagerEditorUI.Pages
                     AppName = string.IsNullOrEmpty(mapping.TargetApp) ? "All Apps" : mapping.TargetApp,
                 });
             }
-        }
-
-        public static string GetKeyDisplayName(int keyCode)
-        {
-            var keyName = new StringBuilder(64);
-            GetKeyDisplayName(keyCode, keyName, keyName.Capacity);
-            return keyName.ToString();
         }
 
         public void Dispose()
@@ -159,15 +149,20 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
-        private async void NewShortcutBtn_Click(object sender, RoutedEventArgs e)
+        private async void NewRemappingBtn_Click(object sender, RoutedEventArgs e)
         {
-            ShortcutControl.SetOriginalKeys(new List<string>());
-            ShortcutControl.SetRemappedKeys(new List<string>());
-            ShortcutControl.SetApp(false, string.Empty);
+            RemappingControl.SetOriginalKeys(new List<string>());
+            RemappingControl.SetRemappedKeys(new List<string>());
+            RemappingControl.SetApp(false, string.Empty);
 
+            RemappingControl.SetKeyboardHook();
+
+            // Show the dialog to add a new remapping
             KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
             await KeyDialog.ShowAsync();
             KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
+
+            RemappingControl.CleanupKeyboardHook();
         }
 
         private void KeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
@@ -178,12 +173,19 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async void ListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            if (e.ClickedItem is Remapping selectedShortcut)
+            if (e.ClickedItem is Remapping selectedRemapping && selectedRemapping.IsEnabled)
             {
-                ShortcutControl.SetOriginalKeys(selectedShortcut.OriginalKeys);
-                ShortcutControl.SetRemappedKeys(selectedShortcut.RemappedKeys);
-                ShortcutControl.SetApp(!selectedShortcut.IsAllApps, selectedShortcut.AppName);
+                RemappingControl.SetOriginalKeys(selectedRemapping.OriginalKeys);
+                RemappingControl.SetRemappedKeys(selectedRemapping.RemappedKeys);
+                RemappingControl.SetApp(!selectedRemapping.IsAllApps, selectedRemapping.AppName);
+
+                RemappingControl.SetKeyboardHook();
+
+                KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
                 await KeyDialog.ShowAsync();
+                KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
+
+                RemappingControl.CleanupKeyboardHook();
             }
         }
 
@@ -201,10 +203,10 @@ namespace KeyboardManagerEditorUI.Pages
 
             try
             {
-                List<string> originalKeys = ShortcutControl.GetOriginalKeys();
-                List<string> remappedKeys = ShortcutControl.GetRemappedKeys();
-                bool isAppSpecific = ShortcutControl.GetIsAppSpecific();
-                string appName = ShortcutControl.GetAppName();
+                List<string> originalKeys = RemappingControl.GetOriginalKeys();
+                List<string> remappedKeys = RemappingControl.GetRemappedKeys();
+                bool isAppSpecific = RemappingControl.GetIsAppSpecific();
+                string appName = RemappingControl.GetAppName();
 
                 // mock data
                 // originalKeys = ["A", "Ctrl"];

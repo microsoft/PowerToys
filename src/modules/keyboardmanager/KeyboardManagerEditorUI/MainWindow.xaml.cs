@@ -28,6 +28,8 @@ namespace KeyboardManagerEditorUI
             this.InitializeComponent();
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(titleBar);
+
+            // Set the default page
             RootView.SelectedItem = RootView.MenuItems[0];
         }
 
@@ -37,7 +39,7 @@ namespace KeyboardManagerEditorUI
             {
                 switch ((string)selectedItem.Tag)
                 {
-                    case "Remappings": NavigationFrame.Navigate(typeof(Pages.Shortcuts)); break;
+                    case "Remappings": NavigationFrame.Navigate(typeof(Pages.Remappings)); break;
                     case "Programs": NavigationFrame.Navigate(typeof(Pages.Programs)); break;
                     case "Text": NavigationFrame.Navigate(typeof(Pages.Text)); break;
                     case "URLs": NavigationFrame.Navigate(typeof(Pages.URLs)); break;
