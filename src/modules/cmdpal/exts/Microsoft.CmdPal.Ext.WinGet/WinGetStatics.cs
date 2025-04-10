@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Management.Deployment;
+using Windows.Foundation.Metadata;
 using WindowsPackageManager.Interop;
 
 namespace Microsoft.CmdPal.Ext.WinGet;
@@ -51,9 +52,12 @@ internal static class WinGetStatics
             _storeCatalog,
         ];
 
-        foreach (var catalogReference in AvailableCatalogs)
+        if (ApiInformation.IsApiContractPresent("Microsoft.Management.Deployment.WindowsPackageManagerContract", 8))
         {
-            catalogReference.PackageCatalogBackgroundUpdateInterval = new(0);
+            foreach (var catalogReference in AvailableCatalogs)
+            {
+                catalogReference.PackageCatalogBackgroundUpdateInterval = new(0);
+            }
         }
 
         // Immediately start the lazy-init of the all packages catalog, but
