@@ -10,7 +10,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -77,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private const string RemoveInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+## Highlights";
         private const string RemoveHotFixInstallerHashesRegex = @"(\r\n)+## Installer Hashes(\r\n.*)+$";
         private const RegexOptions RemoveInstallerHashesRegexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
+        private bool _loadingReleaseNotes;
 
         private static async Task<string> GetReleaseNotesMarkdown()
         {
@@ -127,12 +127,19 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private async Task Reload()
         {
+            if (_loadingReleaseNotes)
+            {
+                return;
+            }
+
             try
             {
+                _loadingReleaseNotes = true;
+                ReleaseNotesMarkdown.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
                 string releaseNotesMarkdown = await GetReleaseNotesMarkdown();
-
-                ProxyWarningInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-                ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                ProxyWarningInfoBar.IsOpen = false;
+                ErrorInfoBar.IsOpen = false;
 
                 ReleaseNotesMarkdown.Text = releaseNotesMarkdown;
                 ReleaseNotesMarkdown.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
@@ -143,21 +150,22 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 Logger.LogError("Exception when loading the release notes", httpEx);
                 if (httpEx.Message.Contains("407", StringComparison.CurrentCulture))
                 {
-                    ProxyWarningInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                    ProxyWarningInfoBar.IsOpen = true;
                 }
                 else
                 {
-                    ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                    ErrorInfoBar.IsOpen = true;
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogError("Exception when loading the release notes", ex);
-                ErrorInfoBar.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                ErrorInfoBar.IsOpen = true;
             }
             finally
             {
                 LoadingProgressRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                _loadingReleaseNotes = false;
             }
         }
 
@@ -247,6 +255,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         private void DataDiagnostics_OpenSettings_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
             Common.UI.SettingsDeepLink.OpenSettings(Common.UI.SettingsDeepLink.SettingsWindow.Overview, true);
+        }
+
+        private async void LoadReleaseNotes_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            await Reload();
         }
     }
 }
