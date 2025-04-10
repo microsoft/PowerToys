@@ -17,7 +17,7 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
 {
     private readonly OpenURLCommand _executeItem;
     private static readonly CompositeFormat PluginOpenURL = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url);
-    private static readonly CompositeFormat PluginOpenURLInBrowser = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url_in_browser);
+    private static readonly CompositeFormat PluginOpenUrlInBrowser = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url_in_browser);
 
     public FallbackOpenURLItem(SettingsManager settings)
         : base(new OpenURLCommand(string.Empty, settings), string.Empty)
@@ -50,7 +50,7 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
         _executeItem.Name = string.IsNullOrEmpty(query) ? string.Empty : Properties.Resources.open_in_default_browser;
 
         Title = string.Format(CultureInfo.CurrentCulture, PluginOpenURL, query);
-        Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpenURLInBrowser, BrowserInfo.Name ?? BrowserInfo.MSEdgeName);
+        Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpenUrlInBrowser, BrowserInfo.Name ?? BrowserInfo.MSEdgeName);
     }
 
     public static bool IsValidUrl(string url)

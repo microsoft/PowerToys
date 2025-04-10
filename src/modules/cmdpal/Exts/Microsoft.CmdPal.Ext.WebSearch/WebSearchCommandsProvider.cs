@@ -38,5 +38,5 @@ public partial class WebSearchCommandsProvider : CommandProvider
         ];
     }
 
-    public override IFallbackCommandItem[]? FallbackCommands() => [_fallbackItem, _openUrlFallbackItem];
+    public override IFallbackCommandItem[]? FallbackCommands() => [_openUrlFallbackItem, _fallbackItem];
 }
