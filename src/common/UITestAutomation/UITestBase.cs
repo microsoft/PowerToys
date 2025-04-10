@@ -328,6 +328,17 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Gets the size of the display.
+        /// </summary>
+        /// <returns>
+        /// A tuple containing the width and height of the display.
+        /// </returns
+        public Tuple<int, int> GetDisplaySize()
+        {
+            return this.Session.GetDisplaySize();
+        }
+
+        /// <summary>
         /// Sends a combination of keys.
         /// </summary>
         /// <param name="keys">The keys to send.</param>

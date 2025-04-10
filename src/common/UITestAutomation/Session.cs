@@ -400,6 +400,22 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Gets the size of the display.
+        /// </summary>
+        /// <returns>
+        /// A tuple containing the width and height of the display.
+        /// </returns
+        public Tuple<int, int> GetDisplaySize()
+        {
+            IntPtr hdc = ApiHelper.GetDC(IntPtr.Zero);
+            int screenWidth = ApiHelper.GetDeviceCaps(hdc, ApiHelper.DESKTOPHORZRES);
+            int screenHeight = ApiHelper.GetDeviceCaps(hdc, ApiHelper.DESKTOPVERTRES);
+            _ = ApiHelper.ReleaseDC(IntPtr.Zero, hdc);
+
+            return Tuple.Create(screenWidth, screenHeight);
+        }
+
+        /// <summary>
         /// Sends a combination of keys.
         /// </summary>
         /// <param name="keys">The keys to send.</param>
@@ -545,6 +561,12 @@ namespace Microsoft.PowerToys.UITest
 
             [DllImport("gdi32.dll")]
             public static extern uint GetPixel(IntPtr hdc, int x, int y);
+
+            [DllImport("gdi32.dll")]
+            public static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
+
+            public const int DESKTOPHORZRES = 118;
+            public const int DESKTOPVERTRES = 117;
 
             [DllImport("user32.dll")]
             public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
