@@ -20,7 +20,7 @@ public sealed partial class CommandBar : UserControl,
     IRecipient<OpenContextMenuMessage>,
     ICurrentPageAware
 {
-    public CommandBarViewModel ViewModel { get; set; } = new();
+    public CommandBarViewModel ViewModel { get; } = new();
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -38,8 +38,25 @@ public sealed partial class CommandBar : UserControl,
 
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
+
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
     }
 
+    // private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    // {
+    //    if (d is CommandBar @this)
+    //    {
+    //        if (e.OldValue is CommandBarViewModel old)
+    //        {
+    //            old.PropertyChanged -= @this.ViewModel_PropertyChanged;
+    //        }
+
+    // if (e.NewValue is CommandBarViewModel page)
+    //        {
+    //            page.PropertyChanged += @this.ViewModel_PropertyChanged;
+    //        }
+    //    }
+    // }
     public void Receive(OpenContextMenuMessage message)
     {
         if (!ViewModel.ShouldShowContextMenu)
@@ -53,7 +70,7 @@ public sealed partial class CommandBar : UserControl,
         };
         MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
         CommandsDropdown.SelectedIndex = 0;
-        CommandsDropdown.Focus(FocusState.Programmatic);
+        ContextFilterBox.Focus(FocusState.Programmatic);
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
@@ -95,7 +112,8 @@ public sealed partial class CommandBar : UserControl,
             else
             {
                 CommandsDropdown.SelectedIndex = 0;
-                CommandsDropdown.Focus(FocusState.Programmatic);
+
+                // CommandsDropdown.Focus(FocusState.Programmatic);
             }
         }
     }
@@ -119,8 +137,91 @@ public sealed partial class CommandBar : UserControl,
         }
     }
 
+    private void Flyout_Opened(object sender, object e)
+    {
+        CommandsDropdown.SelectedIndex = 0;
+        ContextFilterBox.Focus(FocusState.Programmatic);
+    }
+
     private void Flyout_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
     {
         ViewModel?.ClearContextStack();
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        var prop = e.PropertyName;
+        if (prop == nameof(ViewModel.ContextMenu))
+        {
+            CommandsDropdown.SelectedIndex = 0;
+            ContextFilterBox.Focus(FocusState.Programmatic);
+        }
+    }
+
+    private void ContextFilterBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+    }
+
+    private void ContextFilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Enter)
+        {
+            if (CommandsDropdown.SelectedItem is CommandContextItemViewModel item)
+            {
+                if (ViewModel?.InvokeItem(item) ?? true)
+                {
+                    MoreCommandsButton.Flyout.Hide();
+                }
+
+                // else
+                // {
+                //    CommandsDropdown.SelectedIndex = 0;
+                // }
+                e.Handled = true;
+            }
+        }
+        else if (e.Key == VirtualKey.Escape)
+        {
+            ViewModel.PopContextStack();
+            e.Handled = true;
+        }
+
+        CommandsDropdown_KeyDown(sender, e);
+    }
+
+    private void ContextFilterBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Up)
+        {
+            // navigate previous
+            if (CommandsDropdown.SelectedIndex > 0)
+            {
+                CommandsDropdown.SelectedIndex--;
+            }
+            else
+            {
+                CommandsDropdown.SelectedIndex = CommandsDropdown.Items.Count - 1;
+            }
+
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.Down)
+        {
+            // navigate next
+            if (CommandsDropdown.SelectedIndex < CommandsDropdown.Items.Count - 1)
+            {
+                CommandsDropdown.SelectedIndex++;
+            }
+            else
+            {
+                CommandsDropdown.SelectedIndex = 0;
+            }
+
+            e.Handled = true;
+        }
+    }
+
+    private void ContextFilterBox_PreviewKeyUp(object sender, KeyRoutedEventArgs e)
+    {
     }
 }

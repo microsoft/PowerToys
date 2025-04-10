@@ -183,6 +183,7 @@ public partial class CommandBarViewModel : ObservableObject,
         {
             var newContext = command.AllCommands;
             ContextMenuStack.Add(new ContextMenuStackViewModel(newContext));
+            OnPropertyChanging(nameof(ContextMenu));
             OnPropertyChanged(nameof(ContextMenu));
             return false;
         }
@@ -193,6 +194,17 @@ public partial class CommandBarViewModel : ObservableObject,
         }
     }
 
+    public void PopContextStack()
+    {
+        if (ContextMenuStack.Count > 1)
+        {
+            ContextMenuStack.RemoveAt(ContextMenuStack.Count - 1);
+        }
+
+        OnPropertyChanging(nameof(ContextMenu));
+        OnPropertyChanged(nameof(ContextMenu));
+    }
+
     public void ClearContextStack()
     {
         while (ContextMenuStack.Count > 1)
@@ -200,6 +212,7 @@ public partial class CommandBarViewModel : ObservableObject,
             ContextMenuStack.RemoveAt(ContextMenuStack.Count - 1);
         }
 
+        OnPropertyChanging(nameof(ContextMenu));
         OnPropertyChanged(nameof(ContextMenu));
     }
 }
