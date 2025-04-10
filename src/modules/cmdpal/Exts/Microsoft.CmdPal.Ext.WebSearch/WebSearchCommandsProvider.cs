@@ -14,6 +14,7 @@ public partial class WebSearchCommandsProvider : CommandProvider
 {
     private readonly SettingsManager _settingsManager = new();
     private readonly FallbackExecuteSearchItem _fallbackItem;
+    private readonly FallbackOpenURLItem _openUrlFallbackItem;
 
     public WebSearchCommandsProvider()
     {
@@ -23,6 +24,7 @@ public partial class WebSearchCommandsProvider : CommandProvider
         Settings = _settingsManager.Settings;
 
         _fallbackItem = new FallbackExecuteSearchItem(_settingsManager);
+        _openUrlFallbackItem = new FallbackOpenURLItem(_settingsManager);
     }
 
     public override ICommandItem[] TopLevelCommands()
@@ -36,5 +38,5 @@ public partial class WebSearchCommandsProvider : CommandProvider
         ];
     }
 
-    public override IFallbackCommandItem[]? FallbackCommands() => [_fallbackItem];
+    public override IFallbackCommandItem[]? FallbackCommands() => [_openUrlFallbackItem, _fallbackItem];
 }
