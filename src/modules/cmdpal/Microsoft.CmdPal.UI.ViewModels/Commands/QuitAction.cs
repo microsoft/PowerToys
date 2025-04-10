@@ -13,6 +13,7 @@ public partial class QuitCommand : InvokableCommand, IFallbackHandler
 {
     public QuitCommand()
     {
+        Id = "com.microsoft.cmdpal.quit";
         Icon = new IconInfo("\uE711");
     }
 

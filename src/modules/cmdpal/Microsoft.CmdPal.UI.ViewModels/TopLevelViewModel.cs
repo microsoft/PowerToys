@@ -4,7 +4,9 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -17,6 +19,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 {
     private readonly SettingsModel _settings;
+    private readonly ProviderSettings _providerSettings;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
 
@@ -122,16 +125,32 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         }
     }
 
+    public bool IsEnabled
+    {
+        get => _providerSettings.IsFallbackEnabled(this);
+        set
+        {
+            if (value != IsEnabled)
+            {
+                _providerSettings.SetFallbackEnabled(this, value);
+                Save();
+                WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
+            }
+        }
+    }
+
     public TopLevelViewModel(
         CommandItemViewModel item,
         bool isFallback,
         CommandPaletteHost extensionHost,
         string commandProviderId,
         SettingsModel settings,
+        ProviderSettings providerSettings,
         IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
         _settings = settings;
+        _providerSettings = providerSettings;
         _commandProviderId = commandProviderId;
         _commandItemViewModel = item;
 
@@ -257,6 +276,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     internal bool SafeUpdateFallbackTextSynchronous(string newQuery)
     {
         if (!IsFallback)
+        {
+            return false;
+        }
+
+        if (!IsEnabled)
         {
             return false;
         }

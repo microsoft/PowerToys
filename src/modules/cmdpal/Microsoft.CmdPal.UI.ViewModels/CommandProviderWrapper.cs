@@ -169,11 +169,12 @@ public sealed class CommandProviderWrapper
     private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
         var settings = serviceProvider.GetService<SettingsModel>()!;
+        var providerSettings = GetProviderSettings(settings);
 
         Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, serviceProvider);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, providerSettings, serviceProvider);
             topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;

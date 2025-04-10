@@ -14,7 +14,9 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
     private readonly ExecuteItem _executeItem;
 
     public FallbackExecuteItem(SettingsManager settings)
-        : base(new ExecuteItem(string.Empty, settings), Resources.shell_command_display_title)
+        : base(
+            new ExecuteItem(string.Empty, settings) { Id = "com.microsoft.run.fallback" },
+            Resources.shell_command_display_title)
     {
         _executeItem = (ExecuteItem)this.Command!;
         Title = string.Empty;
