@@ -372,6 +372,7 @@ DLGMODALFRAME
 dlib
 dllhost
 dllmain
+dnceng
 DNLEN
 DONOTROUND
 DONTVALIDATEPATH
@@ -917,6 +918,7 @@ MERGECOPY
 MERGEPAINT
 Metadatas
 metafile
+metapackage
 mfc
 Mgmt
 Microwaved
