@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     public class Session
     {
-        public required TestContext TestContext { get; set; }
+        public TestContext TestContext { get; set; }
 
         public WindowsDriver<WindowsElement> Root { get; set; }
 

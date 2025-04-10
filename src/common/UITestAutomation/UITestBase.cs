@@ -62,7 +62,7 @@ namespace Microsoft.PowerToys.UITest
             }
 
             this.sessionHelper = new SessionHelper(scope).Init();
-            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
+            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size, TestContext);
 
             if (this.scope == PowerToysModule.PowerToysSettings)
             {
@@ -392,7 +392,7 @@ namespace Microsoft.PowerToys.UITest
         public void RestartScopeExe()
         {
             this.sessionHelper!.RestartScopeExe();
-            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), this.scope, this.size);
+            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), this.scope, this.size, this.TestContext);
             return;
         }
 
