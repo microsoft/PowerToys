@@ -87,17 +87,12 @@ namespace Microsoft.PowerToys.UITest
             {
                 screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
                 Dispose();
-                Task.Delay(1000).Wait();
                 if (TestContext.CurrentTestOutcome is UnitTestOutcome.Failed
                     or UnitTestOutcome.Error
                     or UnitTestOutcome.Unknown)
                 {
-                    // this.CaptureLastScreenshot();
+                    Task.Delay(1000).Wait();
                     AddScreenShotsToTestResultsDirectory();
-                }
-                else
-                {
-                    Directory.Delete(screenshotDirectory!, true);
                 }
             }
 
@@ -107,7 +102,7 @@ namespace Microsoft.PowerToys.UITest
 
         public void Dispose()
         {
-            // screenshotTimer?.Dispose();
+            screenshotTimer?.Dispose();
             GC.SuppressFinalize(this);
         }
 
