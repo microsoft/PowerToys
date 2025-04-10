@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 
@@ -17,19 +18,28 @@ namespace Microsoft.PowerToys.UITest
     /// Base class that should be inherited by all Test Classes.
     /// </summary>
     [TestClass]
-    public class UITestBase
+    public class UITestBase : IDisposable
     {
-        public Session Session { get; set; }
+        public required TestContext TestContext { get; set; }
 
-        private readonly SessionHelper sessionHelper;
+        public required Session Session { get; set; }
 
+        private readonly bool isInPipeline;
         private readonly PowerToysModule scope;
+        private readonly WindowSize size;
+        private SessionHelper? sessionHelper;
+        private System.Threading.Timer? screenshotTimer;
+        private string? screenshotDirectory;
 
-        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings)
+        // private System.Threading.Timer? screenshotTimer;
+        // private string? screenshotDirectory;
+        public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
         {
             this.scope = scope;
+            this.size = size;
             this.sessionHelper = new SessionHelper(scope).Init();
-            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver());
+            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
+            this.isInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("buildPlatforms"));
         }
 
         /// <summary>
@@ -38,6 +48,24 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
+            // Environment setup for pipeline:
+            // 1.Escape Popups
+            // 2.Continuous screenshots
+            if (isInPipeline)
+            {
+                screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
+                Directory.CreateDirectory(screenshotDirectory);
+
+                // Take screenshot every 1 second
+                screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
+
+                // Escape Popups before starting
+                this.SendKeys(Key.Esc);
+            }
+
+            this.sessionHelper = new SessionHelper(scope).Init();
+            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
+
             if (this.scope == PowerToysModule.PowerToysSettings)
             {
                 // close Debug warning dialog if any
@@ -50,12 +78,32 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// UnInitializes the test.
+        /// Cleanups the test.
         /// </summary>
         [TestCleanup]
-        public void TestClean()
+        public void TestCleanup()
         {
-            this.sessionHelper.Cleanup();
+            if (isInPipeline)
+            {
+                screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+                Dispose();
+                if (TestContext.CurrentTestOutcome is UnitTestOutcome.Failed
+                    or UnitTestOutcome.Error
+                    or UnitTestOutcome.Unknown)
+                {
+                    Task.Delay(1000).Wait();
+                    AddScreenShotsToTestResultsDirectory();
+                }
+            }
+
+            this.Session.Cleanup();
+            this.sessionHelper!.Cleanup();
+        }
+
+        public void Dispose()
+        {
+            screenshotTimer?.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -64,22 +112,22 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="by">The selector to find the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        protected T Find<T>(By by, int timeoutMS = 3000)
+        protected T Find<T>(By by, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.Session.Find<T>(by, timeoutMS);
         }
 
         /// <summary>
-        /// Shortcut for this.Session.Find<Element>(By.Name(name), timeoutMS)
+        /// Shortcut for this.Session.Find<Element>(name, timeoutMS)
         /// </summary>
         /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
         /// <param name="name">The name of the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        protected T Find<T>(string name, int timeoutMS = 3000)
+        protected T Find<T>(string name, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.Session.Find<T>(By.Name(name), timeoutMS);
@@ -89,22 +137,118 @@ namespace Microsoft.PowerToys.UITest
         /// Shortcut for this.Session.Find<Element>(by, timeoutMS)
         /// </summary>
         /// <param name="by">The selector to find the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        protected Element Find(By by, int timeoutMS = 3000)
+        protected Element Find(By by, int timeoutMS = 5000)
         {
             return this.Session.Find(by, timeoutMS);
         }
 
         /// <summary>
-        /// Shortcut for this.Session.Find<Element>(By.Name(name), timeoutMS)
+        /// Shortcut for this.Session.Find<Element>(name, timeoutMS)
         /// </summary>
         /// <param name="name">The name of the element.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        protected Element Find(string name, int timeoutMS = 3000)
+        protected Element Find(string name, int timeoutMS = 5000)
         {
             return this.Session.Find(name, timeoutMS);
+        }
+
+        /// <summary>
+        /// Has only one Element or its derived class by selector.
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="by">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>True if only has one element, otherwise false.</returns>
+        public bool HasOne<T>(By by, int timeoutMS = 5000)
+            where T : Element, new()
+        {
+            return this.FindAll<T>(by, timeoutMS).Count == 1;
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.HasOne<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>True if only has one element, otherwise false.</returns>
+        public bool HasOne(By by, int timeoutMS = 5000)
+        {
+            return this.Session.HasOne<Element>(by, timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.HasOne<T>(name, timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>True if only has one element, otherwise false.</returns>
+        public bool HasOne<T>(string name, int timeoutMS = 5000)
+            where T : Element, new()
+        {
+            return this.Session.HasOne<T>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.HasOne<Element>(name, timeoutMS)
+        /// </summary>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>True if only has one element, otherwise false.</returns>
+        public bool HasOne(string name, int timeoutMS = 5000)
+        {
+            return this.Session.HasOne<Element>(name, timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.Has<T>(by, timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="by">The selector to find the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>True if  has one or more element, otherwise false.</returns>
+        public bool Has<T>(By by, int timeoutMS = 5000)
+            where T : Element, new()
+        {
+            return this.Session.FindAll<T>(by, timeoutMS).Count >= 1;
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.Has<Element>(by, timeoutMS)
+        /// </summary>
+        /// <param name="by">The selector to find the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>True if  has one or more element, otherwise false.</returns>
+        public bool Has(By by, int timeoutMS = 5000)
+        {
+            return this.Session.Has<Element>(by, timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.Has<T>(By.Name(name), timeoutMS)
+        /// </summary>
+        /// <typeparam name="T">The class of the element, should be Element or its derived class.</typeparam>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>True if  has one or more element, otherwise false.</returns>
+        public bool Has<T>(string name, int timeoutMS = 5000)
+            where T : Element, new()
+        {
+            return this.Session.Has<T>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Shortcut for this.Session.Has<Element>(name, timeoutMS)
+        /// </summary>
+        /// <param name="name">The name of the element.</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
+        /// <returns>True if  has one or more element, otherwise false.</returns>
+        public bool Has(string name, int timeoutMS = 5000)
+        {
+            return this.Session.Has<Element>(name, timeoutMS);
         }
 
         /// <summary>
@@ -113,9 +257,9 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <typeparam name="T">The class of the elements, should be Element or its derived class.</typeparam>
         /// <param name="by">The selector to find the elements.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        protected ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 3000)
+        protected ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.Session.FindAll<T>(by, timeoutMS);
@@ -127,9 +271,9 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <typeparam name="T">The class of the elements, should be Element or its derived class.</typeparam>
         /// <param name="name">The name of the elements.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        protected ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 3000)
+        protected ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.Session.FindAll<T>(By.Name(name), timeoutMS);
@@ -140,9 +284,9 @@ namespace Microsoft.PowerToys.UITest
         /// Shortcut for this.Session.FindAll<Element>(by, timeoutMS)
         /// </summary>
         /// <param name="by">The selector to find the elements.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        protected ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 3000)
+        protected ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 5000)
         {
             return this.Session.FindAll<Element>(by, timeoutMS);
         }
@@ -152,11 +296,85 @@ namespace Microsoft.PowerToys.UITest
         /// Shortcut for this.Session.FindAll<Element>(By.Name(name), timeoutMS)
         /// </summary>
         /// <param name="name">The name of the elements.</param>
-        /// <param name="timeoutMS">The timeout in milliseconds (default is 3000).</param>
+        /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        protected ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 3000)
+        protected ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 5000)
         {
             return this.Session.FindAll<Element>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Captures the last screenshot when the test fails.
+        /// </summary>
+        protected void CaptureLastScreenshot()
+        {
+            // Implement your screenshot capture logic here
+            // For example, save a screenshot to a file and return the file path
+            string screenshotPath = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "last_screenshot.png");
+
+            this.Session.Root.GetScreenshot().SaveAsFile(screenshotPath, ScreenshotImageFormat.Png);
+
+            // Save screenshot to screenshotPath & upload to test attachment
+            this.TestContext.AddResultFile(screenshotPath);
+        }
+
+        /// <summary>
+        /// Retrieves the color of the pixel at the specified screen coordinates.
+        /// </summary>
+        /// <param name="x">The X coordinate on the screen.</param>
+        /// <param name="y">The Y coordinate on the screen.</param>
+        /// <returns>The color of the pixel at the specified coordinates.</returns>
+        public Color GetPixelColor(int x, int y)
+        {
+            return this.Session.GetPixelColor(x, y);
+        }
+
+        /// <summary>
+        /// Sends a combination of keys.
+        /// </summary>
+        /// <param name="keys">The keys to send.</param>
+        public void SendKeys(params Key[] keys)
+        {
+            this.Session.SendKeys(keys);
+        }
+
+        /// <summary>
+        /// Sends a sequence of keys.
+        /// </summary>
+        /// <param name="keys">An array of keys to send.</param>
+        public void SendKeySequence(params Key[] keys)
+        {
+            this.Session.SendKeySequence(keys);
+        }
+
+        /// <summary>
+        /// Gets the current position of the mouse cursor as a tuple.
+        /// </summary>
+        /// <returns>A tuple containing the X and Y coordinates of the cursor.</returns>
+        public Tuple<int, int> GetMousePosition()
+        {
+            return this.Session.GetMousePosition();
+        }
+
+        /// <summary>
+        /// Moves the mouse cursor to the specified screen coordinates.
+        /// </summary>
+        /// <param name="x">The new x-coordinate of the cursor.</param>
+        /// <param name="y">The new y-coordinate of the cursor.</param
+        public void MoveMouseTo(int x, int y)
+        {
+            this.Session.MoveMouseTo(x, y);
+        }
+
+        protected void AddScreenShotsToTestResultsDirectory()
+        {
+            if (screenshotDirectory != null)
+            {
+                foreach (string file in Directory.GetFiles(screenshotDirectory))
+                {
+                    this.TestContext.AddResultFile(file);
+                }
+            }
         }
 
         /// <summary>
@@ -164,8 +382,8 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void RestartScopeExe()
         {
-            this.sessionHelper.RestartScopeExe();
-            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver());
+            this.sessionHelper!.RestartScopeExe();
+            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), this.scope, this.size);
             return;
         }
 
@@ -174,7 +392,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void ExitScopeExe()
         {
-            this.sessionHelper.ExitScopeExe();
+            this.sessionHelper!.ExitScopeExe();
             return;
         }
     }

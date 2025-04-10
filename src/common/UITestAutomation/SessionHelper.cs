@@ -43,6 +43,7 @@ namespace Microsoft.PowerToys.UITest
                 Verb = "runas",
             };
 
+            this.ExitExe(winAppDriverProcessInfo.FileName);
             this.appDriver = Process.Start(winAppDriverProcessInfo);
 
             var runnerProcessInfo = new ProcessStartInfo
@@ -56,9 +57,6 @@ namespace Microsoft.PowerToys.UITest
             var desktopCapabilities = new AppiumOptions();
             desktopCapabilities.AddAdditionalCapability("app", "Root");
             this.Root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
-
-            // Set default timeout to 5 seconds
-            this.Root.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
         }
 
         /// <summary>
@@ -67,7 +65,8 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="scope">The PowerToys module to start.</param>
         public SessionHelper Init()
         {
-            this.StartExe(locationPath + this.sessionPath);
+            this.ExitExe(this.locationPath + this.sessionPath);
+            this.StartExe(this.locationPath + this.sessionPath);
 
             Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");
 
@@ -95,28 +94,13 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Starts a new exe and takes control of it.
-        /// </summary>
-        /// <param name="appPath">The path to the application executable.</param>
-        public void StartExe(string appPath)
-        {
-            var opts = new AppiumOptions();
-            opts.AddAdditionalCapability("app", appPath);
-            Console.WriteLine($"appPath: {appPath}");
-            this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
-
-            // Set default timeout to 5 seconds
-            this.Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
-        }
-
-        /// <summary>
         /// Exit a exe.
         /// </summary>
-        /// <param name="path">The path to the application executable.</param>
-        public void ExitExe(string path)
+        /// <param name="appPath">The path to the application executable.</param>
+        public void ExitExe(string appPath)
         {
             // Exit Exe
-            string exeName = Path.GetFileNameWithoutExtension(path);
+            string exeName = Path.GetFileNameWithoutExtension(appPath);
 
             // PowerToys.FancyZonesEditor
             Process[] processes = Process.GetProcessesByName(exeName);
@@ -132,6 +116,21 @@ namespace Microsoft.PowerToys.UITest
                     Assert.Fail($"Failed to terminate process {process.ProcessName} (ID: {process.Id}): {ex.Message}");
                 }
             }
+        }
+
+        /// <summary>
+        /// Starts a new exe and takes control of it.
+        /// </summary>
+        /// <param name="appPath">The path to the application executable.</param>
+        public void StartExe(string appPath)
+        {
+            var opts = new AppiumOptions();
+            opts.AddAdditionalCapability("app", appPath);
+            opts.AddAdditionalCapability("ms:waitForAppLaunch", "5");
+            this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
+
+            // Set default timeout to 5 seconds
+            this.Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
         }
 
         /// <summary>

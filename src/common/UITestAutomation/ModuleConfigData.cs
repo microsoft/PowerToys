@@ -32,6 +32,47 @@ namespace Microsoft.PowerToys.UITest
         Runner,
     }
 
+    /// <summary>
+    /// Represents the window size for the UI test.
+    /// </summary>
+    public enum WindowSize
+    {
+        /// <summary>
+        /// Unspecified window size, won't make any size change
+        /// </summary>
+        UnSpecified,
+
+        /// <summary>
+        /// Small window size, 640 * 480
+        /// </summary>
+        Small,
+
+        /// <summary>
+        /// Small window size, 480 * 640
+        /// </summary>
+        Small_Vertical,
+
+        /// <summary>
+        /// Medium window size, 1024 * 768
+        /// </summary>
+        Medium,
+
+        /// <summary>
+        /// Medium window size, 768 * 1024
+        /// </summary>
+        Medium_Vertical,
+
+        /// <summary>
+        /// Large window size, 1920 * 1080
+        /// </summary>
+        Large,
+
+        /// <summary>
+        /// Large window size, 1080 * 1920
+        /// </summary>
+        Large_Vertical,
+    }
+
     internal class ModuleConfigData
     {
         private Dictionary<PowerToysModule, string> ModulePath { get; }

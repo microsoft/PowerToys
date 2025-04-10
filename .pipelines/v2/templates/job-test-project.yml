@@ -102,7 +102,6 @@ jobs:
       uiTests: true
       rerunFailedTests: true
       testAssemblyVer2: |
-        **\UITests-FancyZones.dll
-        **\UITests-FancyZonesEditor.dll
+        **\*UITest*.dll
         !**\obj\**
         !**\ref\**

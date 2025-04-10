@@ -23,6 +23,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestInitialize]
         public void TestInitialize()
         {
+            FancyZonesEditorHelper.Files.Restore();
+
             // prepare test editor parameters with 2 monitors before launching the editor
             EditorParameters editorParameters = new EditorParameters();
             EditorParameters.ParamsWrapper parameters = new EditorParameters.ParamsWrapper
@@ -130,12 +132,6 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
 
             this.RestartScopeExe();
-        }
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            FancyZonesEditorHelper.Files.Restore();
         }
 
         [TestMethod]

@@ -27,12 +27,6 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
         }
 
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            FancyZonesEditorHelper.Files.Restore();
-        }
-
         [TestMethod]
         public void EditorParams_VerifySelectedMonitor()
         {
@@ -737,6 +731,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
         private void InitFileData()
         {
+            FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
