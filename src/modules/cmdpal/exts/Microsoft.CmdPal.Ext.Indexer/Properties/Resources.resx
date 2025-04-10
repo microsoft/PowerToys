@@ -175,6 +175,6 @@
     <value>Search files</value>
   </data>
   <data name="Indexer_fallback_searchPage_title" xml:space="preserve">
-    <value>Search for "{0}" related files</value>
+    <value>Search for "{0}" in files</value>
   </data>
 </root>
