@@ -20,6 +20,8 @@ namespace Microsoft.PowerToys.UITest
         // Default session path is PowerToys settings dashboard
         private readonly string sessionPath = ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings);
 
+        private readonly string runnerPath = ModuleConfigData.Instance.GetModulePath(PowerToysModule.Runner);
+
         private string? locationPath;
 
         private WindowsDriver<WindowsElement> Root { get; set; }
@@ -27,6 +29,7 @@ namespace Microsoft.PowerToys.UITest
         private WindowsDriver<WindowsElement>? Driver { get; set; }
 
         private Process? appDriver;
+        private Process? runner;
 
         [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
         public SessionHelper(PowerToysModule scope)
@@ -41,6 +44,14 @@ namespace Microsoft.PowerToys.UITest
             };
 
             this.appDriver = Process.Start(winAppDriverProcessInfo);
+
+            var runnerProcessInfo = new ProcessStartInfo
+            {
+                FileName = locationPath + this.runnerPath,
+                Verb = "runas",
+            };
+
+            this.runner = Process.Start(runnerProcessInfo);
 
             var desktopCapabilities = new AppiumOptions();
             desktopCapabilities.AddAdditionalCapability("app", "Root");
@@ -73,6 +84,8 @@ namespace Microsoft.PowerToys.UITest
             {
                 appDriver?.Kill();
                 appDriver?.WaitForExit(); // Optional: Wait for the process to exit
+                runner?.Kill();
+                runner?.WaitForExit(); // Optional: Wait for the process to exit
             }
             catch (Exception ex)
             {
