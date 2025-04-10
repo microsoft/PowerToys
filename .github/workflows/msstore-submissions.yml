@@ -23,7 +23,7 @@ jobs:
           export $(echo 'anypass_just_to_unlock' | gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh)
 
       - name: Log in to Azure
-        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -40,14 +40,14 @@ jobs:
           echo powerToysInstallerArm64Url=$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("arm64"))][0].browser_download_url') >> $GITHUB_OUTPUT
 
       - name: Setup .NET 9.0
-        uses: actions/setup-dotnet@b2ace4b12f4cec1b96b6361ff2694ba9e931ceb4 # v3.3.1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
-      - uses: microsoft/setup-msstore-cli@3b2ec9136230357ce9abc02b9d056626fb248d3f # v1
+      - uses: microsoft/setup-msstore-cli@v1
 
       - name: Fetch Store Credential
-        uses: azure/cli@089eac9d8cc39f5d003e94f8b65efc51076c9cbd # v2.1.0
+        uses: azure/cli@v2
         with:
           azcliversion: latest
           inlineScript: |-
