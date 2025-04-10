@@ -39,6 +39,11 @@ jobs:
           echo powerToysInstallerX64Url=$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("x64"))][0].browser_download_url') >> $GITHUB_OUTPUT
           echo powerToysInstallerArm64Url=$(jq -n "$powerToysSetup" | jq -r '[.[]|select(.name | contains("arm64"))][0].browser_download_url') >> $GITHUB_OUTPUT
 
+      - name: Setup .NET 9.0
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
       - uses: microsoft/setup-msstore-cli@v1
 
       - name: Fetch Store Credential

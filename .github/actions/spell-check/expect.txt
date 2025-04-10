@@ -15,6 +15,7 @@ ACTIVATEAPP
 activationaction
 ACVS
 adaptivecards
+ADate
 ADDSTRING
 ADDUNDORECORD
 ADifferent
@@ -199,8 +200,7 @@ CLIPCHILDREN
 CLIPSIBLINGS
 closesocket
 CLSCTX
-CLSIDs
-Clsids
+clsids
 Clusion
 cmder
 CMDNOTFOUNDMODULEINTERFACE
@@ -417,6 +417,7 @@ DWORDLONG
 dworigin
 dwrite
 dxgi
+eab
 easeofaccess
 ecount
 Edid
@@ -466,6 +467,7 @@ EXAND
 EXCLUDEFROMCAPTURE
 executionpolicy
 exename
+exf
 EXITSIZEMOVE
 exlist
 EXPCMDFLAGS
@@ -898,6 +900,7 @@ MARKDOWNPREVIEWHANDLERCPP
 MAXIMIZEBOX
 MAXSHORTCUTSIZE
 maxversiontested
+mber
 MBM
 MBR
 MDICHILD
@@ -1779,6 +1782,8 @@ USRDLL
 UType
 uuidv
 uwp
+ums
+uxt
 uxtheme
 vabdq
 validmodulename
@@ -1859,10 +1864,10 @@ webbrowsers
 webpage
 websites
 wekyb
+wft
 wgpocpl
 WHEREID
 Wholegrain
-WIC
 wic
 wifi
 wil
@@ -1919,6 +1924,7 @@ WNDCLASSEXW
 WNDCLASSW
 WNDPROC
 wnode
+wom
 WORKSPACESEDITOR
 WORKSPACESLAUNCHER
 WORKSPACESSNAPSHOTTOOL

@@ -137,13 +137,13 @@
 
                 <!--  Back button  -->
                 <StackPanel Orientation="Horizontal">
-                    <FontIcon
-                        Margin="20,0,4,0"
+                    <Image
+                        Width="20"
+                        Margin="20,0,6,0"
                         HorizontalAlignment="Center"
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                         AutomationProperties.AccessibilityView="Raw"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Glyph="&#xE721;"
+                        Source="ms-appx:///Assets/icon.svg"
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
@@ -165,7 +165,7 @@
                                 To="0.5"
                                 Duration="0:0:0.350" />
                         </animations:Implicit.HideAnimations>
-                    </FontIcon>
+                    </Image>
                     <Button
                         x:Name="BackButton"
                         Margin="4,0,4,0"
