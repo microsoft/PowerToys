@@ -292,7 +292,6 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         {
             hour12 = 12;
         }
-        const wchar_t* ampm = (fileTime.wHour < 12) ? L"AM" : L"PM";
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%04d"), L"$01", fileTime.wYear);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$YYYY"), replaceTerm);
@@ -341,7 +340,7 @@ HRESULT GetDatedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR source, SY
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%d"), L"$01", hour12);
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$H"), replaceTerm);
 
-        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", ampm);
+        StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", (fileTime.wHour < 12) ? L"AM" : L"PM");
         res = regex_replace(res, std::wregex(L"(([^\\$]|^)(\\$\\$)*)\\$TT"), replaceTerm);
 
         StringCchPrintf(replaceTerm, MAX_PATH, TEXT("%s%s"), L"$01", (fileTime.wHour < 12) ? L"am" : L"pm");
