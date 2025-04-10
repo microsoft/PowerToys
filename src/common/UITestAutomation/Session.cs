@@ -17,6 +17,8 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     public class Session
     {
+        public required TestContext TestContext { get; set; }
+
         public WindowsDriver<WindowsElement> Root { get; set; }
 
         private WindowsDriver<WindowsElement> WindowsDriver { get; set; }
@@ -40,11 +42,12 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public bool? IsElevated { get; private set; }
 
-        public Session(WindowsDriver<WindowsElement> root, WindowsDriver<WindowsElement> windowsDriver, PowerToysModule scope, WindowSize size)
+        public Session(WindowsDriver<WindowsElement> root, WindowsDriver<WindowsElement> windowsDriver, PowerToysModule scope, WindowSize size, TestContext testContext)
         {
             this.MainWindowHandler = IntPtr.Zero;
             this.Root = root;
             this.WindowsDriver = windowsDriver;
+            this.TestContext = testContext;
 
             // Attach to the scope & reset MainWindowHandler
             this.Attach(scope, size);
@@ -490,6 +493,32 @@ namespace Microsoft.PowerToys.UITest
 
             if (this.Root != null)
             {
+                bool isInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("buildPlatforms"));
+                if (isInPipeline)
+                {
+                    // Escape Popups before starting
+                    this.SendKeys(Key.Esc);
+                }
+
+                if (isInPipeline)
+                {
+                    string screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
+                    Directory.CreateDirectory(screenshotDirectory);
+
+                    // Take screenshot every 1 second
+                    System.Threading.Timer? screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
+                    screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+                    screenshotTimer?.Dispose();
+                    Task.Delay(1000).Wait();
+                    if (screenshotDirectory != null)
+                    {
+                        foreach (string file in Directory.GetFiles(screenshotDirectory))
+                        {
+                            this.TestContext.AddResultFile(file);
+                        }
+                    }
+                }
+
                 // search window handler by window title (admin and non-admin titles)
                 var matchingWindows = ApiHelper.FindDesktopWindowHandler([windowName, AdministratorPrefix + windowName]);
                 if (matchingWindows.Count == 0 || matchingWindows[0].HWnd == IntPtr.Zero)
