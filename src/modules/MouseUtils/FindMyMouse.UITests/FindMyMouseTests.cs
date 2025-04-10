@@ -61,11 +61,11 @@ namespace FindMyMouse.UITests
                         groupAppearanceBehavior.Click();
                     }
 
-                    //// Set the overlay opacity to 100%
-                    // var overlayOpacitySlider = foundCustom.Find<Slider>("Overlay opacity (%)");
-                    // Assert.IsNotNull(overlayOpacitySlider);
-                    // overlayOpacitySlider.QuickSetValue(100);
-                    // Assert.AreEqual("100", overlayOpacitySlider.Text);
+                    // Set the overlay opacity to 100%
+                    var overlayOpacitySlider = foundCustom.Find<Slider>("Overlay opacity (%)");
+                    Assert.IsNotNull(overlayOpacitySlider);
+                    overlayOpacitySlider.QuickSetValue(10);
+                    Assert.AreEqual("10", overlayOpacitySlider.Text);
 
                     //// Changge the edit value
                     // var spotlightRadiusEdit = foundCustom.Find<TextBox>("Spotlight radius (px) Minimum5");
@@ -108,7 +108,40 @@ namespace FindMyMouse.UITests
                 Assert.Fail("Find My Mouse group not found.");
             }
 
-            FindGroup("Overlay opacity (%)");
+            IOUtil.SimulateKeyPress(0xA2);
+            Task.Delay(100).Wait();
+            IOUtil.SimulateKeyPress(0xA2);
+
+            Task.Delay(5000).Wait();
+            MouseSimulator.LeftClick();
+            Task.Delay(5000).Wait();
+        }
+
+        [TestMethod]
+        public void TestEnableMouseHighlighter()
+        {
+            LaunchFromSetting();
+            var foundCustom = this.Find<Custom>("Mouse Highlighter");
+            if (foundCustom != null)
+            {
+                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
+
+                var activationShortcutButton = foundCustom.Find<Button>("Activation shortcut");
+                Assert.IsNotNull(activationShortcutButton);
+
+                activationShortcutButton.Click();
+                var activationShortcutWindow = Session.Find<Window>("Activation shortcut");
+                Assert.IsNotNull(activationShortcutWindow);
+
+                // IOUtil.SimulateShortcut(0x5B, 0x10, 0x45);
+                Session.SendKeys(Key.Win, Key.Shift, Key.H);
+            }
+            else
+            {
+                Assert.Fail("Mouse Highlighter Custom not found.");
+            }
+
+            Task.Delay(10000).Wait();
         }
 
         private bool FindGroup(string groupName)
@@ -157,7 +190,7 @@ namespace FindMyMouse.UITests
         private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
         {
             // Goto Hosts File Editor setting page
-            if (this.FindAll<NavigationViewItem>("Hosts File Editor").Count == 0)
+            if (this.FindAll<NavigationViewItem>("Mouse utilities").Count == 0)
             {
                 // Expand Advanced list-group if needed
                 this.Find<NavigationViewItem>("Input / Output").Click();
