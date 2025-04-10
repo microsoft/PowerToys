@@ -258,5 +258,70 @@ namespace KeyboardManagerEditorUI.Pages
                 Logger.LogError("Error saving shortcut mapping: " + ex.Message);
             }
         }
+
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.DataContext is Remapping remapping)
+            {
+                DeleteRemapping(remapping);
+            }
+        }
+
+        private void DeleteRemapping(Remapping remapping)
+        {
+            if (_mappingService == null)
+            {
+                return;
+            }
+
+            try
+            {
+                // Determine the type of remapping to delete
+                if (remapping.OriginalKeys.Count == 1)
+                {
+                    // Single key mapping
+                    int originalKey = GetKeyCode(remapping.OriginalKeys[0]);
+                    if (originalKey != 0)
+                    {
+                        if (_mappingService.DeleteSingleKeyMapping(originalKey))
+                        {
+                            // Save settings after successful deletion
+                            _mappingService.SaveSettings();
+
+                            // Remove from UI
+                            RemappingList.Remove(remapping);
+                        }
+                    }
+                }
+                else if (remapping.OriginalKeys.Count > 1)
+                {
+                    // Shortcut key mapping
+                    string originalKeysString = string.Join(";", remapping.OriginalKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
+
+                    bool deleteResult;
+                    if (!remapping.IsAllApps && !string.IsNullOrEmpty(remapping.AppName))
+                    {
+                        // App-specific shortcut key mapping
+                        deleteResult = _mappingService.DeleteShortcutMapping(originalKeysString, remapping.AppName);
+                    }
+                    else
+                    {
+                        // Global shortcut key mapping
+                        deleteResult = _mappingService.DeleteShortcutMapping(originalKeysString);
+                    }
+
+                    if (deleteResult)
+                    {
+                        _mappingService.SaveSettings();
+
+                        RemappingList.Remove(remapping);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Error deleting remapping: {ex.Message}");
+            }
+        }
     }
 }

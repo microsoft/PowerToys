@@ -555,6 +555,71 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         std::wstring name(keyName);
         return static_cast<int>(layoutMap.GetKeyFromName(name));
     }
+
+    // Function to delete a single key remapping
+    bool DeleteSingleKeyRemap(void* config, int originalKey)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        // Find and delete the single key remapping
+        auto it = mappingConfig->singleKeyReMap.find(static_cast<DWORD>(originalKey));
+        if (it != mappingConfig->singleKeyReMap.end())
+        {
+            mappingConfig->singleKeyReMap.erase(it);
+            return true;
+        }
+
+        return false;
+    }
+
+    // Function to delete a shortcut remapping
+    bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        if (originalKeys == nullptr)
+        {
+            return false;
+        }
+
+        std::wstring appName = targetApp ? targetApp : L"";
+        Shortcut shortcut(originalKeys);
+
+        // Determine the type of remapping to delete based on the app name
+        if (appName.empty())
+        {
+            // Delete OS level shortcut mapping
+            auto it = mappingConfig->osLevelShortcutReMap.find(shortcut);
+            if (it != mappingConfig->osLevelShortcutReMap.end())
+            {
+                mappingConfig->osLevelShortcutReMap.erase(it);
+                return true;
+            }
+        }
+        else
+        {
+            // Delete app-specific shortcut mapping
+            auto appIt = mappingConfig->appSpecificShortcutReMap.find(appName);
+            if (appIt != mappingConfig->appSpecificShortcutReMap.end())
+            {
+                auto shortcutIt = appIt->second.find(shortcut);
+                if (shortcutIt != appIt->second.end())
+                {
+                    appIt->second.erase(shortcutIt);
+
+                    // If the app-specific mapping is empty, remove the app entry
+                    if (appIt->second.empty())
+                    {
+                        mappingConfig->appSpecificShortcutReMap.erase(appIt);
+                    }
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }
 
 // Test function to call the remapping helper function

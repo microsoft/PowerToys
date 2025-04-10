@@ -168,6 +168,21 @@ namespace KeyboardManagerEditorUI.Interop
             return KeyboardManagerInterop.SaveMappingSettings(_configHandle);
         }
 
+        public bool DeleteSingleKeyMapping(int originalKey)
+        {
+            return KeyboardManagerInterop.DeleteSingleKeyRemap(_configHandle, originalKey);
+        }
+
+        public bool DeleteShortcutMapping(string originalKeys, string targetApp = "")
+        {
+            if (string.IsNullOrEmpty(originalKeys))
+            {
+                return false;
+            }
+
+            return KeyboardManagerInterop.DeleteShortcutRemap(_configHandle, originalKeys, targetApp ?? string.Empty);
+        }
+
         public void Dispose()
         {
             Dispose(true);
