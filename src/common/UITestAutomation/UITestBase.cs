@@ -35,11 +35,15 @@ namespace Microsoft.PowerToys.UITest
         // private string? screenshotDirectory;
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
         {
+            this.isInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("buildPlatforms"));
+            if (isInPipeline)
+            {
+                // Escape Popups before starting
+                this.SendKeys(Key.Esc);
+            }
+
             this.scope = scope;
             this.size = size;
-            this.sessionHelper = new SessionHelper(scope).Init();
-            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
-            this.isInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("buildPlatforms"));
         }
 
         /// <summary>
@@ -48,9 +52,6 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
-            // Environment setup for pipeline:
-            // 1.Escape Popups
-            // 2.Continuous screenshots
             if (isInPipeline)
             {
                 screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
@@ -58,9 +59,6 @@ namespace Microsoft.PowerToys.UITest
 
                 // Take screenshot every 1 second
                 screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
-
-                // Escape Popups before starting
-                this.SendKeys(Key.Esc);
             }
 
             this.sessionHelper = new SessionHelper(scope).Init();
