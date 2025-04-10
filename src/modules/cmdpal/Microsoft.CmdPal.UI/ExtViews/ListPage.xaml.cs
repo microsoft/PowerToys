@@ -229,12 +229,10 @@ public sealed partial class ListPage : Page,
         {
             ItemsList.SelectedIndex++;
         }
-
         else if (GroupedItemsList.SelectedIndex < GroupedItemsList.Items.Count - 1)
         {
             GroupedItemsList.SelectedIndex++;
         }
-
         else
         {
             ItemsList.SelectedIndex = 0;
