@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Application
+    x:Class="Microsoft.CmdPal.UI.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Microsoft.CmdPal.UI">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!--  Other merged dictionaries here  -->
+                <ResourceDictionary Source="Styles/Button.xaml" />
+                <ResourceDictionary Source="Styles/Colors.xaml" />
+                <ResourceDictionary Source="Styles/TextBox.xaml" />
+                <ResourceDictionary Source="Styles/Settings.xaml" />
+                <ResourceDictionary Source="Controls/Tag.xaml" />
+                <ResourceDictionary Source="Controls/KeyVisual/KeyVisual.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <!--  Other app resources here  -->
+
+            <x:Double x:Key="SettingActionControlMinWidth">240</x:Double>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
