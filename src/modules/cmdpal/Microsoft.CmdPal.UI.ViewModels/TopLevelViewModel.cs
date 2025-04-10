@@ -66,6 +66,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     ////// INotifyPropChanged
     public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
 
+    // Fallback items
+    public string DisplayTitle { get; private set; } = string.Empty;
+
     public HotkeySettings? Hotkey
     {
         get => _hotkey;
@@ -140,6 +143,22 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         // UpdateAlias();
         // UpdateHotkey();
         // UpdateTags();
+    }
+
+    internal void InitializeProperties()
+    {
+        ItemViewModel.SlowInitializeProperties();
+
+        if (IsFallback)
+        {
+            var model = _commandItemViewModel.Model.Unsafe;
+
+            // RPC to check type
+            if (model is IFallbackCommandItem fallback)
+            {
+                DisplayTitle = fallback.DisplayTitle;
+            }
+        }
     }
 
     private void Item_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -219,7 +238,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     {
         // Use WyHash64 to generate stable ID hashes.
         // manually seeding with 0, so that the hash is stable across launches
-        var result = WyHash64.ComputeHash64(_commandProviderId + Title + Subtitle, seed: 0);
+        var result = WyHash64.ComputeHash64(_commandProviderId + DisplayTitle + Title + Subtitle, seed: 0);
         _generatedId = $"{_commandProviderId}{result}";
     }
 

@@ -140,11 +140,11 @@ public sealed partial class SaveCommand : InvokableCommand
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "This is sample code")]
 internal sealed partial class FallbackCalculatorItem : FallbackCommandItem
 {
-    private readonly CopyTextCommand _copyCommand = new(string.Empty);
+    private readonly CopyTextCommand _copyCommand = new(string.Empty) { Id = "com.microsoft.calculator.fallback" };
     private static readonly IconInfo _cachedIcon = IconHelpers.FromRelativePath("Assets\\Calculator.svg");
 
     public FallbackCalculatorItem()
-        : base(new NoOpCommand(), Resources.calculator_title)
+        : base(new NoOpCommand(), Resources.calculator_displayTitle_text)
     {
         Command = _copyCommand;
         _copyCommand.Name = string.Empty;

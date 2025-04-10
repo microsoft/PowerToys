@@ -63,7 +63,9 @@
 
                                 <TextBlock x:Uid="ExtensionCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                                <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
+                                <ItemsRepeater 
+                                    ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}"
+                                    Layout="{StaticResource VerticalStackLayout}">
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="viewmodels:TopLevelViewModel">
                                             <controls:SettingsExpander
@@ -103,6 +105,38 @@
 
                                                 </controls:SettingsExpander.Items>
                                             </controls:SettingsExpander>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+
+                                <TextBlock x:Uid="ExtensionFallbackCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                                <ItemsRepeater 
+                                    ItemsSource="{x:Bind ViewModel.FallbackCommands, Mode=OneWay}" 
+                                    Layout="{StaticResource VerticalStackLayout}">
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate x:DataType="viewmodels:TopLevelViewModel">
+                                            <controls:SettingsCard
+                                                DataContext="{x:Bind}"
+                                                Header="{x:Bind DisplayTitle, Mode=OneWay}">
+                                                <controls:SettingsCard.HeaderIcon>
+                                                    <cpcontrols:ContentIcon>
+                                                        <cpcontrols:ContentIcon.Content>
+                                                            <cpcontrols:IconBox
+                                                                Width="20"
+                                                                Height="20"
+                                                                AutomationProperties.AccessibilityView="Raw"
+                                                                SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                                                SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested}" />
+                                                        </cpcontrols:ContentIcon.Content>
+                                                    </cpcontrols:ContentIcon>
+                                                </controls:SettingsCard.HeaderIcon>
+
+                                                <!--  Content goes here  -->
+                                                <ToggleSwitch></ToggleSwitch>
+
+                                                
+                                            </controls:SettingsCard>
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>

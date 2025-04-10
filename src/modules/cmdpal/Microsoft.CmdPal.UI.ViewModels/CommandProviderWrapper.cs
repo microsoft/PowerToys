@@ -174,8 +174,7 @@ public sealed class CommandProviderWrapper
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
             TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, serviceProvider);
-
-            topLevelViewModel.ItemViewModel.SlowInitializeProperties();
+            topLevelViewModel.InitializeProperties();
 
             return topLevelViewModel;
         };
@@ -193,21 +192,6 @@ public sealed class CommandProviderWrapper
                 .ToArray();
         }
     }
-
-    /* This is a View/ExtensionHost piece
-     * public void AllowSetForeground(bool allow)
-    {
-        if (!IsExtension)
-        {
-            return;
-        }
-
-        var iextn = extensionWrapper?.GetExtensionObject();
-        unsafe
-        {
-            PInvoke.CoAllowSetForegroundWindow(iextn);
-        }
-    }*/
 
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;
 

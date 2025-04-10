@@ -18,7 +18,7 @@ public partial class Command : BaseObservable, ICommand
 
 = string.Empty;
 
-    public virtual string Id { get; protected set; } = string.Empty;
+    public virtual string Id { get; set; } = string.Empty;
 
     public virtual IconInfo Icon
     {

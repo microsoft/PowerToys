@@ -79,6 +79,15 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Quickly evaluate typed equations.
+        /// </summary>
+        public static string calculator_displayTitle_text {
+            get {
+                return ResourceManager.GetString("calculator_displayTitle_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error: {0}.
         /// </summary>
         public static string calculator_error {

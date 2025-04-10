@@ -10,6 +10,8 @@ public class ProviderSettings
 {
     public bool IsEnabled { get; set; } = true;
 
+    public Dictionary<string, bool> FallbackCommands { get; set; } = [];
+
     [JsonIgnore]
     public string ProviderDisplayName { get; set; } = string.Empty;
 
@@ -41,5 +43,15 @@ public class ProviderSettings
         {
             throw new InvalidDataException("Did you add a built-in command and forget to set the Id? Make sure you do that!");
         }
+    }
+
+    public bool IsFallbackEnabled(TopLevelViewModel command)
+    {
+        return FallbackCommands.TryGetValue(command.Id, out var enabled) ? enabled : true;
+    }
+
+    public void SetFallbackEnabled(TopLevelViewModel command, bool enabled)
+    {
+        FallbackCommands[command.Id] = enabled;
     }
 }

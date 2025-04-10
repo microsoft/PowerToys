@@ -140,4 +140,7 @@
   <data name="calculator_copy_command_name" xml:space="preserve">
     <value>Copy</value>
   </data>
+  <data name="calculator_displayTitle_text" xml:space="preserve">
+    <value>Quickly evaluate typed equations</value>
+  </data>
 </root>
