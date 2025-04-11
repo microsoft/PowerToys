@@ -385,4 +385,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="BehaviorSettingsHeader.Text" xml:space="preserve">
     <value>Behavior</value>
   </data>
+  <data name="ContextFilterBox.PlaceholderText" xml:space="preserve">
+    <value>Search commands...</value>
+  </data>
 </root>

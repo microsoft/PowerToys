@@ -274,10 +274,6 @@ public sealed partial class CommandBar : UserControl,
         }
     }
 
-    private void ContextFilterBox_PreviewKeyUp(object sender, KeyRoutedEventArgs e)
-    {
-    }
-
     private void UpdateUiForStackChange()
     {
         ContextFilterBox.Text = string.Empty;

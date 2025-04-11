@@ -283,11 +283,10 @@
 
                             <TextBox
                                 x:Name="ContextFilterBox"
+                                x:Uid="ContextFilterBox"
                                 Margin="-12,12,-12,-12"
                                 KeyDown="ContextFilterBox_KeyDown"
-                                PlaceholderText="Search commands..."
                                 PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
-                                PreviewKeyUp="ContextFilterBox_PreviewKeyUp"
                                 TextChanged="ContextFilterBox_TextChanged" />
 
                         </StackPanel>
