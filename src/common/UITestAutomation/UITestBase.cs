@@ -413,6 +413,9 @@ namespace Microsoft.PowerToys.UITest
         public class NativeMethods
         {
             [DllImport("user32.dll")]
+            private static extern int EnumDisplaySettings(IntPtr deviceName, int modeNum, ref DEVMODE devMode);
+
+            [DllImport("user32.dll")]
             private static extern int ChangeDisplaySettings(ref DEVMODE devMode, int flags);
 
             public const int ENUM_CURRENT_SETTINGS = -1;
@@ -472,12 +475,32 @@ namespace Microsoft.PowerToys.UITest
                 devMode.DmFormName = new string(new char[32]);
                 devMode.DmSize = (short)Marshal.SizeOf<DEVMODE>();
 
+                int modeNum = 0;
+                while (EnumDisplaySettings(IntPtr.Zero, modeNum, ref devMode) > 0)
+                {
+                    Console.WriteLine($"Mode {modeNum}: {devMode.DmPelsWidth}x{devMode.DmPelsHeight} @ {devMode.DmDisplayFrequency}Hz");
+                    modeNum++;
+                }
+
                 devMode.DmPelsWidth = 1920;
                 devMode.DmPelsHeight = 1080;
 
                 int result = NativeMethods.ChangeDisplaySettings(ref devMode, NativeMethods.CDS_TEST);
 
                 Screen screenTest = Screen.PrimaryScreen!;
+                if (result == DISP_CHANGE_SUCCESSFUL)
+                {
+                    Console.WriteLine($"Changing display resolution to {devMode.DmPelsWidth}x{devMode.DmPelsHeight}");
+                }
+                else if (result == DISP_CHANGE_RESTART)
+                {
+                    Console.WriteLine($"Changing display resolution to {devMode.DmPelsWidth}x{devMode.DmPelsHeight} requires a restart");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to change display resolution. Error code: {result}");
+                }
+
                 Assert.Fail($"Failed to change display resolution. Current resolution: {screenTest.Bounds.Width}x{screenTest.Bounds.Height}");
             }
         }
