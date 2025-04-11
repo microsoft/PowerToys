@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Peek.CLI</RootNamespace>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <OutputType>WinExe</OutputType> <!-- WinExe to hide the console window. -->
+    <AssemblyName>PowerToys.Peek.CLI</AssemblyName>
+    <PublishAot>True</PublishAot>
+  </PropertyGroup>
+
+</Project>

@@ -3,15 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
+using System.IO;
+using System.IO.Pipes;
+using System.Threading;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Peek.Common;
 using Peek.FilePreviewer;
 using Peek.FilePreviewer.Models;
+using Peek.UI.Models;
 using Peek.UI.Native;
 using Peek.UI.Telemetry.Events;
 using Peek.UI.Views;
@@ -22,7 +27,7 @@ namespace Peek.UI
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
     /// </summary>
-    public partial class App : Application, IApp
+    public partial class App : Application, IApp, IDisposable
     {
         public static int PowerToysPID { get; set; }
 
@@ -34,6 +39,11 @@ namespace Peek.UI
         }
 
         private MainWindow? Window { get; set; }
+
+        private CancellationTokenSource _appCts = new CancellationTokenSource();
+        private bool _disposed;
+        private SelectedItem? _selectedItem;
+        private EventWaitHandle? _peekWaitHandle;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -108,12 +118,14 @@ namespace Peek.UI
                 }
             }
 
-            NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnPeekHotkey);
+            NativeEventWaiter.WaitForEventLoop(Constants.ShowPeekEvent(), OnShowPeek);
             NativeEventWaiter.WaitForEventLoop(Constants.TerminatePeekEvent(), () =>
             {
                 EtwTrace?.Dispose();
                 Environment.Exit(0);
             });
+
+            Task.Run(() => ListenPipeLoop(_appCts.Token));
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -124,11 +136,16 @@ namespace Peek.UI
         /// <summary>
         /// Handle Peek hotkey
         /// </summary>
-        private void OnPeekHotkey()
+        private void OnShowPeek()
         {
-            // Need to read the foreground HWND before activating Peek to avoid focus stealing
-            // Foreground HWND must always be Explorer or Desktop
-            var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+            // null means explorer, not null means CLI
+            if (_selectedItem == null)
+            {
+                // Need to read the foreground HWND before activating Peek to avoid focus stealing
+                // Foreground HWND must always be Explorer or Desktop
+                var foregroundWindowHandle = Windows.Win32.PInvoke.GetForegroundWindow();
+                _selectedItem = new SelectedItemByWindowHandle(foregroundWindowHandle);
+            }
 
             bool firstActivation = false;
 
@@ -138,7 +155,66 @@ namespace Peek.UI
                 Window = new MainWindow();
             }
 
-            Window.Toggle(firstActivation, foregroundWindowHandle);
+            Window.Toggle(firstActivation, _selectedItem);
+            _selectedItem = null;
+        }
+
+        private async Task ListenPipeLoop(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                using (var server = new NamedPipeServerStream("PeekPipe", PipeDirection.In))
+                {
+                    await server.WaitForConnectionAsync(token);
+
+                    using (var reader = new StreamReader(server))
+                    {
+                        var path = await reader.ReadLineAsync(token);
+                        if (!string.IsNullOrWhiteSpace(path))
+                        {
+                            if (_peekWaitHandle == null)
+                            {
+                                _peekWaitHandle = EventWaitHandle.OpenExisting(Constants.ShowPeekEvent());
+                            }
+
+                            _selectedItem = new SelectedItemByPath(path);
+                            _peekWaitHandle.Set();
+                        }
+                    }
+                }
+            }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // dispose managed state (managed objects)
+                    _peekWaitHandle?.Dispose();
+                    _appCts.Cancel();
+                    _appCts.Dispose();
+                }
+
+                // free unmanaged resources (unmanaged objects) and override finalizer
+                // set large fields to null
+                _disposed = true;
+            }
+        }
+
+        /* // override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        // ~App()
+        // {
+        //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        //     Dispose(disposing: false);
+        // } */
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
