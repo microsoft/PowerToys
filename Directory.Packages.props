@@ -87,11 +87,14 @@
     <PackageVersion Include="System.IO.Abstractions" Version="21.0.29" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="21.0.29" />
     <PackageVersion Include="System.Management" Version="9.0.4" />
+    <PackageVersion Include="System.Net.Http" Version="4.3.4" />
+    <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Caching" Version="9.0.4" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="9.0.4" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="9.0.4" />
     <PackageVersion Include="System.Text.Json" Version="9.0.4" />
+    <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />
