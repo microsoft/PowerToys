@@ -61,4 +61,9 @@ public partial class ListItem : CommandItem, IListItem
         : base(command)
     {
     }
+
+    public ListItem()
+        : base()
+    {
+    }
 }
