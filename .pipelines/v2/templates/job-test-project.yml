@@ -105,3 +105,5 @@ jobs:
         **\*UITest*.dll
         !**\obj\**
         !**\ref\**
+    env:
+      platform: '$(BuildPlatform)'
