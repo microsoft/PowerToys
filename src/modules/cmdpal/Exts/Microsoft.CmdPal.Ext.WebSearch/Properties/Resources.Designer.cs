@@ -196,6 +196,24 @@ namespace Microsoft.CmdPal.Ext.WebSearch.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open &quot;{0}&quot;.
+        /// </summary>
+        public static string plugin_open_url {
+            get {
+                return ResourceManager.GetString("plugin_open_url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open url in {0}.
+        /// </summary>
+        public static string plugin_open_url_in_browser {
+            get {
+                return ResourceManager.GetString("plugin_open_url_in_browser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to open {0}..
         /// </summary>
         public static string plugin_search_failed {
