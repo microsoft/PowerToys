@@ -176,6 +176,7 @@ CDeclaration
 cdn
 CElems
 CENTERALIGN
+cer
 certlm
 certmgr
 cfp
@@ -355,6 +356,7 @@ DEVMODE
 DEVMODEW
 devpal
 DIALOGEX
+digicert
 dimm
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -1525,6 +1527,7 @@ SIDs
 siex
 sigdn
 SIGNINGSCENARIO
+signtool
 Signtool
 SINGLEKEY
 sipolicy
