@@ -163,6 +163,12 @@
   <data name="plugin_open" xml:space="preserve">
     <value>Search the web in {0}</value>
   </data>
+  <data name="plugin_open_url" xml:space="preserve">
+    <value>Open "{0}"</value>
+  </data>
+  <data name="plugin_open_url_in_browser" xml:space="preserve">
+    <value>Open url in {0}</value>
+  </data>
   <data name="plugin_search_failed" xml:space="preserve">
     <value>Failed to open {0}.</value>
   </data>
