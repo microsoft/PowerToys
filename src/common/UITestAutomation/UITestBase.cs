@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
@@ -38,6 +39,8 @@ namespace Microsoft.PowerToys.UITest
             this.isInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("buildPlatforms"));
             if (isInPipeline)
             {
+                NativeMethods.ChangeDispalyResolution();
+
                 // Escape Popups before starting
                 this.SendKeys(Key.Esc);
             }
@@ -403,6 +406,78 @@ namespace Microsoft.PowerToys.UITest
         {
             this.sessionHelper!.ExitScopeExe();
             return;
+        }
+
+        public class NativeMethods
+        {
+            [DllImport("user32.dll")]
+            private static extern int ChangeDisplaySettings(ref DEVMODE devMode, int flags);
+
+            public const int ENUM_CURRENT_SETTINGS = -1;
+            public const int CDS_TEST = 0x00000002;
+            public const int CDS_UPDATEREGISTRY = 0x01;
+            public const int DISP_CHANGE_SUCCESSFUL = 0;
+            public const int DISP_CHANGE_RESTART = 1;
+            public const int DISP_CHANGE_FAILED = -1;
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct DEVMODE
+            {
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+                public string DmDeviceName;
+                public short DmSpecVersion;
+                public short DmDriverVersion;
+                public short DmSize;
+                public short DmDriverExtra;
+                public int DmFields;
+                public int DmPositionX;
+                public int DmPositionY;
+                public int DmDisplayOrientation;
+                public int DmDisplayFixedOutput;
+                public short DmColor;
+                public short DmDuplex;
+                public short DmYResolution;
+                public short DmTTOption;
+                public short DmCollate;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+                public string DmFormName;
+                public short DmLogPixels;
+                public int DmBitsPerPel;
+                public int DmPelsWidth;
+                public int DmPelsHeight;
+                public int DmDisplayFlags;
+                public int DmDisplayFrequency;
+                public int DmICMMethod;
+                public int DmICMIntent;
+                public int DmMediaType;
+                public int DmDitherType;
+                public int DmReserved1;
+                public int DmReserved2;
+                public int DmPanningWidth;
+                public int DmPanningHeight;
+            }
+
+            public static void ChangeDispalyResolution()
+            {
+                Screen screen = Screen.PrimaryScreen!;
+                if (screen.Bounds.Width == 1920 && screen.Bounds.Height == 1080)
+                {
+                    return;
+                }
+
+                DEVMODE devMode = default(DEVMODE);
+                devMode.DmDeviceName = new string(new char[32]);
+                devMode.DmFormName = new string(new char[32]);
+                devMode.DmSize = (short)Marshal.SizeOf<DEVMODE>();
+
+                devMode.DmPelsWidth = 1920;
+                devMode.DmPelsHeight = 1080;
+
+                int result = NativeMethods.ChangeDisplaySettings(ref devMode, NativeMethods.CDS_TEST);
+
+                Screen screenTest = Screen.PrimaryScreen!;
+                Assert.Fail($"Failed to change display resolution. Current resolution: {screenTest.Bounds.Width}x{screenTest.Bounds.Height}");
+            }
         }
     }
 }
