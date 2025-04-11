@@ -51,14 +51,14 @@ public class SettingsManager : JsonSettingsManager
         {
             if (_trigUnit.Value == null || string.IsNullOrEmpty(_trigUnit.Value))
             {
-                return CalculateEngine.TrigMode.Gradians;
+                return CalculateEngine.TrigMode.Radians;
             }
 
             var success = int.TryParse(_trigUnit.Value, out var result);
 
             if (!success)
             {
-                return CalculateEngine.TrigMode.Gradians;
+                return CalculateEngine.TrigMode.Radians;
             }
 
             switch (result)
