@@ -191,7 +191,7 @@ namespace Microsoft.PowerToys.UITest
         /// Send Key of the element.
         /// </summary>
         /// <param name="key">The Key to Send.</param>
-        public void InputText(string key)
+        public void SendKeys(string key)
         {
             PerformAction((actions, windowElement) =>
             {

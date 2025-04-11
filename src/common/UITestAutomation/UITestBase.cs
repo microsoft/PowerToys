@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
+using Windows.Foundation.Metadata;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -35,11 +36,16 @@ namespace Microsoft.PowerToys.UITest
         // private string? screenshotDirectory;
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
         {
+            this.isInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
+            Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
+            if (isInPipeline)
+            {
+                // Escape Popups before starting
+                this.SendKeys(Key.Esc);
+            }
+
             this.scope = scope;
             this.size = size;
-            this.sessionHelper = new SessionHelper(scope).Init();
-            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
-            this.isInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("buildPlatforms"));
         }
 
         /// <summary>
@@ -48,9 +54,6 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
-            // Environment setup for pipeline:
-            // 1.Escape Popups
-            // 2.Continuous screenshots
             if (isInPipeline)
             {
                 screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
@@ -58,9 +61,6 @@ namespace Microsoft.PowerToys.UITest
 
                 // Take screenshot every 1 second
                 screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
-
-                // Escape Popups before starting
-                this.SendKeys(Key.Esc);
             }
 
             this.sessionHelper = new SessionHelper(scope).Init();
@@ -327,6 +327,17 @@ namespace Microsoft.PowerToys.UITest
         public Color GetPixelColor(int x, int y)
         {
             return this.Session.GetPixelColor(x, y);
+        }
+
+        /// <summary>
+        /// Gets the size of the display.
+        /// </summary>
+        /// <returns>
+        /// A tuple containing the width and height of the display.
+        /// </returns
+        public Tuple<int, int> GetDisplaySize()
+        {
+            return this.Session.GetDisplaySize();
         }
 
         /// <summary>
