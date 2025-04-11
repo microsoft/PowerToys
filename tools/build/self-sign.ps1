@@ -1,10 +1,11 @@
+#https://learn.microsoft.com/en-us/windows/msix/package/signing-known-issues
+
 param (
-    [string]$architecture = "arm64",  # Default to x64 if not provided
+    [string]$architecture = "x64",  # Default to x64 if not provided
     [string]$buildConfiguration = "Debug"  # Default to Debug if not provided
 )
 
 $signToolPath = $null
-$architecture = "arm64"
 $kitsRootPaths = @(
     "C:\Program Files (x86)\Windows Kits\10\bin",
     "C:\Program Files\Windows Kits\10\bin"
@@ -25,7 +26,7 @@ else {
             } | Sort-Object Name -Descending
 
             foreach ($version in $versions) {
-                $candidatePath = Join-Path -Path $version.FullName -ChildPath $architecture
+                $candidatePath = Join-Path -Path $version.FullName -ChildPath "x86"
                 $exePath = Join-Path -Path $candidatePath -ChildPath "signtool.exe"
                 if (Test-Path $exePath) {
                     Write-Host "Found SignTool at: $exePath"
@@ -47,10 +48,13 @@ else {
 Write-Host "`nUsing SignTool: $signToolPath"
 
 # Set the certificate subject and the ECDSA curve
-$certSubject = "CN=PowerToysSelfSignedCert"
+$certSubject = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
 
 # Check if the certificate already exists in the current user's certificate store
-$existingCert = Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.Subject -like "*PowerToysSelfSignedCert*" }
+$existingCert = Get-ChildItem -Path Cert:\CurrentUser\My |
+Where-Object { $_.Subject -eq $certSubject } |
+Sort-Object NotAfter -Descending |
+Select-Object -First 1
 
 if ($existingCert) {
     # If the certificate exists, use the existing certificate
@@ -58,28 +62,59 @@ if ($existingCert) {
     $cert = $existingCert
 }
 else {
-    # If the certificate doesn't exist, create a new self-signed certificate
-    Write-Host "Certificate does not exist, creating a new certificate..."
-    try {
-        $cert = New-SelfSignedCertificate -Subject $certSubject `
-                                          -CertStoreLocation "Cert:\CurrentUser\My" `
-                                          -KeyAlgorithm RSA `
-                                          -Type CodeSigningCert `
-                                          -HashAlgorithm SHA256
-        Write-Host "New certificate created"
 
-        # ✅ Trust the certificate by importing it into 'Trusted Root Certification Authorities'
-        $trustedRootStore = "Cert:\CurrentUser\Root"
-        $imported = Import-Certificate -FilePath (Export-Certificate -Cert $cert -FilePath "$env:TEMP\temp_cert.cer" -Force).FullName -CertStoreLocation $trustedRootStore
-
-        if ($imported) {
-            Write-Host "✅ Certificate successfully trusted (imported to Root store)"
-        } else {
-            Write-Host "⚠️ Failed to trust certificate"
+    function Import-And-VerifyCertificate {
+        param (
+            [string]$cerPath,
+            [string]$storePath
+        )
+    
+        $thumbprint = (Get-PfxCertificate -FilePath $cerPath).Thumbprint
+    
+        try {
+            $null = Import-Certificate -FilePath $cerPath -CertStoreLocation $storePath -ErrorAction Stop
+        }
+        catch {
+            Write-Warning "❌ Failed to import certificate to $storePath : $_"
+            return $false
+        }
+    
+        $found = Get-ChildItem -Path $storePath | Where-Object { $_.Thumbprint -eq $thumbprint }
+    
+        if ($found) {
+            Write-Host "✅ Certificate is trusted in $storePath"
+            return $true
+        }
+        else {
+            Write-Warning "❌ Certificate not found in $storePath"
+            return $false
         }
     }
-    catch {
-        Write-Host "❌ Error creating certificate: $_"
+    
+    # If the certificate doesn't exist, create a new self-signed certificate
+    Write-Host "Certificate does not exist, creating a new certificate..."
+    $cert = New-SelfSignedCertificate -Subject $certSubject `
+        -CertStoreLocation "Cert:\CurrentUser\My" `
+        -KeyAlgorithm RSA `
+        -Type CodeSigningCert `
+        -HashAlgorithm SHA256
+
+    $cerPath = "$env:TEMP\temp_cert.cer"
+    Export-Certificate -Cert $cert -FilePath $cerPath -Force
+    # used for sign code/msix
+    # CurrentUser\TrustedPeople
+    if (-not (Import-And-VerifyCertificate -cerPath $cerPath -storePath "Cert:\CurrentUser\TrustedPeople")) {
+        exit 1
+    }
+
+    # CurrentUser\Root
+    if (-not (Import-And-VerifyCertificate -cerPath $cerPath -storePath "Cert:\CurrentUser\Root")) {
+        exit 1
+    }
+
+    # LocalMachine\Root
+    if (-not (Import-And-VerifyCertificate -cerPath $cerPath -storePath "Cert:\LocalMachine\Root")) {
+        Write-Warning "⚠️ Failed to import to LocalMachine\Root (admin may be required)"
         exit 1
     }
 }
@@ -91,7 +126,8 @@ Write-Host "Using certificate with thumbprint: $($cert.Thumbprint)"
 $rootDirectory = (Split-Path -Parent(Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)))
 
 # Dynamically build the directory path based on architecture and build configuration
-$directoryPath = Join-Path $rootDirectory "$architecture\$buildConfiguration\WinUI3Apps\CmdPal\"
+# $directoryPath = Join-Path $rootDirectory "$architecture\$buildConfiguration\WinUI3Apps\CmdPal\"
+$directoryPath = Join-Path $rootDirectory "x64\$buildConfiguration\WinUI3Apps\CmdPal\"
 
 Write-Host "Directory path to search for .msix and .appx files: $directoryPath"
 
@@ -115,7 +151,6 @@ else {
         # Execute the sign command
         try {
             Invoke-Expression $signToolCommand
-            Write-Host "File $($file.Name) has been successfully signed!"
         }
         catch {
             Write-Host "Error signing file $($file.Name): $_"
