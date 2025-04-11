@@ -179,8 +179,9 @@ public sealed partial class SearchBar : UserControl,
             var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrlPressed, altPressed, shiftPressed, winPressed, (int)e.Key, 0);
             if (_keyBindings.TryGetValue(pressedKeyChord, out var item))
             {
-                // TODO GH #245: This is a bit of a hack, but we need to make sure that the keybindings are updated before we send the message
-                // so that the correct item is activated.
+                // TODO! If this is a keybinding for a context meu item with
+                // more commands, we need to open the context menu to that
+                // command
                 WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item));
                 e.Handled = true;
             }
@@ -289,7 +290,7 @@ public sealed partial class SearchBar : UserControl,
 
     public void Receive(GoHomeMessage message) => ClearSearch();
 
-    public void Receive(FocusSearchBoxMessage message) => this.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+    public void Receive(FocusSearchBoxMessage message) => FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 
     public void Receive(UpdateItemKeybindingsMessage message)
     {

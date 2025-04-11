@@ -4,25 +4,25 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ContextMenuStackViewModel : ObservableObject
 {
     [ObservableProperty]
-    public partial ObservableCollection<CommandContextItemViewModel> ContextCommands { get; set; }
-
-    [ObservableProperty]
     public partial ObservableCollection<CommandContextItemViewModel> FilteredItems { get; set; }
 
+    private readonly IContextMenuContext _context;
     private string _lastSearchText = string.Empty;
 
     // private Dictionary<KeyChord, CommandContextItemViewModel>? _contextKeybindings;
-    public ContextMenuStackViewModel(IEnumerable<CommandContextItemViewModel> commands)
+    public ContextMenuStackViewModel(IContextMenuContext context)
     {
-        ContextCommands = [.. commands];
-        FilteredItems = [.. ContextCommands];
+        _context = context;
+        FilteredItems = [.. context.AllCommands];
     }
 
     public void SetSearchText(string searchText)
@@ -36,11 +36,11 @@ public partial class ContextMenuStackViewModel : ObservableObject
 
         if (string.IsNullOrEmpty(searchText))
         {
-            ListHelpers.InPlaceUpdateList(FilteredItems, ContextCommands);
+            ListHelpers.InPlaceUpdateList(FilteredItems, _context.AllCommands);
             return;
         }
 
-        var newResults = ListHelpers.FilterList<CommandContextItemViewModel>(ContextCommands, searchText, ScoreContextCommand);
+        var newResults = ListHelpers.FilterList<CommandContextItemViewModel>(_context.AllCommands, searchText, ScoreContextCommand);
         ListHelpers.InPlaceUpdateList(FilteredItems, newResults);
     }
 
@@ -61,5 +61,21 @@ public partial class ContextMenuStackViewModel : ObservableObject
         var descriptionMatch = StringMatcher.FuzzySearch(query, item.Subtitle);
 
         return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max();
+    }
+
+    public CommandContextItemViewModel? CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
+    {
+        var keybindings = _context.Keybindings();
+        if (keybindings != null)
+        {
+            // Does the pressed key match any of the keybindings?
+            var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
+            if (keybindings.TryGetValue(pressedKeyChord, out var item))
+            {
+                return item;
+            }
+        }
+
+        return null;
     }
 }

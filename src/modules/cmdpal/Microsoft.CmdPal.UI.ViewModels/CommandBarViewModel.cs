@@ -6,8 +6,6 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -56,8 +54,7 @@ public partial class CommandBarViewModel : ObservableObject,
 
     public ContextMenuStackViewModel? ContextMenu => ContextMenuStack.LastOrDefault();
 
-    private Dictionary<KeyChord, CommandContextItemViewModel>? _contextKeybindings;
-
+    // private Dictionary<KeyChord, CommandContextItemViewModel>? _contextKeybindings;
     public CommandBarViewModel()
     {
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
@@ -66,8 +63,14 @@ public partial class CommandBarViewModel : ObservableObject,
 
     public void Receive(UpdateCommandBarMessage message) => SelectedItem = message.ViewModel;
 
-    public void Receive(UpdateItemKeybindingsMessage message) => _contextKeybindings = message.Keys;
+    public void Receive(UpdateItemKeybindingsMessage message)
+    {
+        // if (ContextMenuStack.FirstOrDefault() is ContextMenuStackViewModel first) {
+        //    first.SetKeybin
+        // }
+    }
 
+    // _contextKeybindings = message.Keys;
     private void SetSelectedItem(ICommandBarContext? value)
     {
         if (value != null)
@@ -113,7 +116,7 @@ public partial class CommandBarViewModel : ObservableObject,
         {
             ShouldShowContextMenu = true;
             ContextMenuStack.Clear();
-            ContextMenuStack.Add(new ContextMenuStackViewModel([.. SelectedItem.AllCommands]));
+            ContextMenuStack.Add(new ContextMenuStackViewModel(SelectedItem));
 
             // ContextCommands = [.. SelectedItem.AllCommands];
             OnPropertyChanged(nameof(ContextMenu));
@@ -127,71 +130,51 @@ public partial class CommandBarViewModel : ObservableObject,
     // InvokeItemCommand is what this will be in Xaml due to source generator
     // this comes in when an item in the list is tapped
     // [RelayCommand]
-    public bool InvokeItem(CommandContextItemViewModel item) =>
+    public ContextKeybindingResult InvokeItem(CommandContextItemViewModel item) =>
         PerformCommand(item);
-
-    // WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
 
     // this comes in when the primary button is tapped
     public void InvokePrimaryCommand()
     {
         PerformCommand(SecondaryCommand);
-
-        // if (PrimaryCommand != null)
-        // {
-        //    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(PrimaryCommand.Command.Model, PrimaryCommand.Model));
-        // }
     }
 
     // this comes in when the secondary button is tapped
     public void InvokeSecondaryCommand()
     {
         PerformCommand(SecondaryCommand);
-
-        // if (SecondaryCommand != null)
-        // {
-        //    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(SecondaryCommand.Command.Model, SecondaryCommand.Model));
-        // }
     }
 
-    public bool CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
+    public ContextKeybindingResult CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
-        if (_contextKeybindings != null)
-        {
-            // Does the pressed key match any of the keybindings?
-            var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrl, alt, shift, win, key, 0);
-            if (_contextKeybindings.TryGetValue(pressedKeyChord, out var item))
-            {
-                PerformCommand(item);
-
-                // WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item));
-                return true;
-            }
-        }
-
-        return false;
+        var matchedItem = ContextMenu?.CheckKeybinding(ctrl, alt, shift, win, key);
+        return matchedItem != null ? PerformCommand(matchedItem) : ContextKeybindingResult.Unhandled;
     }
 
-    private bool PerformCommand(CommandItemViewModel? command)
+    private ContextKeybindingResult PerformCommand(CommandItemViewModel? command)
     {
         if (command == null)
         {
-            return false;
+            return ContextKeybindingResult.Unhandled;
         }
 
         if (command.HasMoreCommands)
         {
-            var newContext = command.AllCommands;
-            ContextMenuStack.Add(new ContextMenuStackViewModel(newContext));
+            ContextMenuStack.Add(new ContextMenuStackViewModel(command));
             OnPropertyChanging(nameof(ContextMenu));
             OnPropertyChanged(nameof(ContextMenu));
-            return false;
+            return ContextKeybindingResult.KeepOpen;
         }
         else
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
-            return true;
+            return ContextKeybindingResult.Hide;
         }
+    }
+
+    public bool CanPopContextStack()
+    {
+        return ContextMenuStack.Count > 1;
     }
 
     public void PopContextStack()
@@ -215,4 +198,11 @@ public partial class CommandBarViewModel : ObservableObject,
         OnPropertyChanging(nameof(ContextMenu));
         OnPropertyChanged(nameof(ContextMenu));
     }
+}
+
+public enum ContextKeybindingResult
+{
+    Unhandled,
+    Hide,
+    KeepOpen,
 }

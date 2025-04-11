@@ -42,21 +42,6 @@ public sealed partial class CommandBar : UserControl,
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
     }
 
-    // private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    // {
-    //    if (d is CommandBar @this)
-    //    {
-    //        if (e.OldValue is CommandBarViewModel old)
-    //        {
-    //            old.PropertyChanged -= @this.ViewModel_PropertyChanged;
-    //        }
-
-    // if (e.NewValue is CommandBarViewModel page)
-    //        {
-    //            page.PropertyChanged += @this.ViewModel_PropertyChanged;
-    //        }
-    //    }
-    // }
     public void Receive(OpenContextMenuMessage message)
     {
         if (!ViewModel.ShouldShowContextMenu)
@@ -104,7 +89,7 @@ public sealed partial class CommandBar : UserControl,
     {
         if (e.ClickedItem is CommandContextItemViewModel item)
         {
-            if (ViewModel?.InvokeItem(item) ?? true)
+            if (ViewModel?.InvokeItem(item) == ContextKeybindingResult.Hide)
             {
                 MoreCommandsButton.Flyout.Hide();
             }
@@ -128,9 +113,21 @@ public sealed partial class CommandBar : UserControl,
         var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
             InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
 
-        if (ViewModel?.CheckKeybinding(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key) ?? false)
+        var result = ViewModel?.CheckKeybinding(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+
+        if (result == ContextKeybindingResult.Hide)
         {
             e.Handled = true;
+            MoreCommandsButton.Flyout.Hide();
+            WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+        }
+        else if (result == ContextKeybindingResult.KeepOpen)
+        {
+            e.Handled = true;
+        }
+        else if (result == ContextKeybindingResult.Unhandled)
+        {
+            e.Handled = false;
         }
     }
 
@@ -142,6 +139,7 @@ public sealed partial class CommandBar : UserControl,
     private void Flyout_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
     {
         ViewModel?.ClearContextStack();
+        WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
     }
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -165,13 +163,20 @@ public sealed partial class CommandBar : UserControl,
 
     private void ContextFilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
     {
+        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
+        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
+            InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
+
         if (e.Key == VirtualKey.Enter)
         {
             if (CommandsDropdown.SelectedItem is CommandContextItemViewModel item)
             {
-                if (ViewModel?.InvokeItem(item) ?? true)
+                if (ViewModel?.InvokeItem(item) == ContextKeybindingResult.Hide)
                 {
                     MoreCommandsButton.Flyout.Hide();
+                    WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
                 }
                 else
                 {
@@ -181,10 +186,20 @@ public sealed partial class CommandBar : UserControl,
                 e.Handled = true;
             }
         }
-        else if (e.Key == VirtualKey.Escape)
+        else if (e.Key == VirtualKey.Escape ||
+            (e.Key == VirtualKey.Left && altPressed))
         {
-            ViewModel.PopContextStack();
-            UpdateUiForStackChange();
+            if (ViewModel.CanPopContextStack())
+            {
+                ViewModel.PopContextStack();
+                UpdateUiForStackChange();
+            }
+            else
+            {
+                MoreCommandsButton.Flyout.Hide();
+                WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+            }
+
             e.Handled = true;
         }
 

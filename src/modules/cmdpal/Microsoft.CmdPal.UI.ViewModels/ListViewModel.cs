@@ -342,7 +342,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
 
-               WeakReferenceMessenger.Default.Send<UpdateItemKeybindingsMessage>(new(item.Keybindings()));
+               WeakReferenceMessenger.Default.Send<UpdateItemKeybindingsMessage>(new((item as IContextMenuContext).Keybindings()));
 
                if (ShowDetails && item.HasDetails)
                {

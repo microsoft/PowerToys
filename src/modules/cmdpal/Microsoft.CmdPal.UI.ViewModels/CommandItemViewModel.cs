@@ -48,7 +48,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public List<CommandContextItemViewModel> MoreCommands { get; private set; } = [];
 
-    IEnumerable<CommandContextItemViewModel> ICommandBarContext.MoreCommands => MoreCommands;
+    IEnumerable<CommandContextItemViewModel> IContextMenuContext.MoreCommands => MoreCommands;
 
     public bool HasMoreCommands => MoreCommands.Count > 0;
 
@@ -397,23 +397,6 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     {
         base.SafeCleanup();
         Initialized |= InitializedState.CleanedUp;
-    }
-
-    /// <summary>
-    /// Generates a mapping of key -> command item for this particular item's
-    /// MoreCommands. (This won't include the primary Command, but it will
-    /// include the secondary one). This map can be used to quickly check if a
-    /// shortcut key was pressed
-    /// </summary>
-    /// <returns>a dictionary of KeyChord -> Context commands, for all commands
-    /// that have a shortcut key set.</returns>
-    internal Dictionary<KeyChord, CommandContextItemViewModel> Keybindings()
-    {
-        return MoreCommands
-            .Where(c => c.HasRequestedShortcut)
-            .ToDictionary(
-            c => c.RequestedShortcut ?? new KeyChord(0, 0, 0),
-            c => c);
     }
 }
 
