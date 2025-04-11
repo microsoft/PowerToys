@@ -253,9 +253,11 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityFileExplorerMonacoPreview">Source code file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerPDFPreview">PDF file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerGcodePreview">Gcode file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerBgcodePreview">BGcode file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSVGThumbnails">SVG file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerPDFThumbnails">PDF file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">Gcode file thumbnail: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerBgcodeThumbnails">BGcode file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSTLThumbnails">STL file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityHostsFileEditor">Hosts file editor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityImageResizer">Image Resizer: Configure enabled state</string>
