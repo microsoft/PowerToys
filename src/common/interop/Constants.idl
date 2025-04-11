@@ -32,6 +32,7 @@ namespace PowerToys
             static String RegistryPreviewTriggerEvent();
             static String MeasureToolTriggerEvent();
             static String GcodePreviewResizeEvent();
+            static String BgcodePreviewResizeEvent();
             static String QoiPreviewResizeEvent();
             static String DevFilesPreviewResizeEvent();
             static String MarkdownPreviewResizeEvent();
