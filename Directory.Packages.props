@@ -61,7 +61,7 @@
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
     <!-- Moq to stay below v4.20 due to behavior change. need to be sure fixed -->
     <PackageVersion Include="Moq" Version="4.18.4" />
-    <PackageVersion Include="MSTest" Version="3.6.3" />
+    <PackageVersion Include="MSTest" Version="3.8.3" />
     <PackageVersion Include="NLog" Version="5.0.4" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
@@ -84,8 +84,8 @@
     <!-- Package System.Diagnostics.PerformanceCounter added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.11. -->
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="9.0.4" />
     <PackageVersion Include="System.Drawing.Common" Version="9.0.4" />
-    <PackageVersion Include="System.IO.Abstractions" Version="21.0.29" />
-    <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="21.0.29" />
+    <PackageVersion Include="System.IO.Abstractions" Version="22.0.13" />
+    <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
     <PackageVersion Include="System.Management" Version="9.0.4" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Caching" Version="9.0.4" />
