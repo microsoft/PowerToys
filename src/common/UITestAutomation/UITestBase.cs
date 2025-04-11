@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.UITest
             if (isInPipeline)
             {
                 // Escape Popups before starting
-                this.SendKeys(Key.Esc);
+                System.Windows.Forms.SendKeys.SendWait("{ESC}");
             }
 
             this.scope = scope;
