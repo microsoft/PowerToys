@@ -4,17 +4,13 @@
 
 using System.Globalization;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
 public static class ResultHelper
 {
-    public static ListItem CreateResult(CalculateResult result, CultureInfo inputCulture, CultureInfo outputCulture)
-    {
-        return CreateResult(result.RoundedResult, inputCulture, outputCulture);
-    }
-
-    public static ListItem CreateResult(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture)
+    public static ListItem CreateResult(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture, string query, TypedEventHandler<object, object> handleSave)
     {
         // Return null when the expression is not a valid calculator query.
         if (roundedResult == null)
@@ -22,13 +18,41 @@ public static class ResultHelper
             return null;
         }
 
-        return new ListItem(new CopyTextCommand(roundedResult?.ToString(outputCulture)))
+        var result = roundedResult?.ToString(outputCulture);
+
+        // Create a SaveCommand and subscribe to the SaveRequested event
+        // This can append the result to the history list.
+        var saveCommand = new SaveCommand(result);
+        saveCommand.SaveRequested += handleSave;
+
+        return new ListItem(saveCommand)
         {
             // Using CurrentCulture since this is user facing
             Icon = CalculatorIcons.ResultIcon,
-            Title = roundedResult?.ToString(outputCulture),
-            Subtitle = Properties.Resources.calculator_copy_command_name,
-            TextToSuggest = roundedResult?.ToString(inputCulture),
+            Title = result,
+            Subtitle = query,
+            TextToSuggest = result,
+            MoreCommands = [new CommandContextItem(new CopyTextCommand(result))],
+        };
+    }
+
+    public static ListItem CreateResult(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture, string query)
+    {
+        // Return null when the expression is not a valid calculator query.
+        if (roundedResult == null)
+        {
+            return null;
+        }
+
+        var result = roundedResult?.ToString(outputCulture);
+
+        return new ListItem(new CopyTextCommand(result))
+        {
+            // Using CurrentCulture since this is user facing
+            Icon = CalculatorIcons.ResultIcon,
+            Title = result,
+            Subtitle = query,
+            TextToSuggest = result,
         };
     }
 }

@@ -3,9 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using ManagedCommon;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Calc.Helper;
@@ -21,7 +19,7 @@ internal static class ErrorHandler
     /// <param name="exception">Exception if applicable.</param>
     /// <returns>List of results to show. Either an error message or an empty list.</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="errorMessage"/> and <paramref name="exception"/> are both filled with their default values.</exception>
-    internal static IListItem OnError(bool isFallbackSearch, string queryInput, string errorMessage, Exception exception = default)
+    internal static ListItem OnError(bool isFallbackSearch, string queryInput, string errorMessage, Exception exception = default)
     {
         string userMessage;
 
@@ -43,7 +41,7 @@ internal static class ErrorHandler
         return isFallbackSearch ? null : CreateErrorResult(userMessage);
     }
 
-    private static IListItem CreateErrorResult(string errorMessage)
+    private static ListItem CreateErrorResult(string errorMessage)
     {
         return new ListItem(new NoOpCommand())
         {

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Microsoft.CmdPal.Ext.Calc.Helper;
 using Microsoft.CmdPal.Ext.Calc.Properties;
@@ -25,7 +24,12 @@ public sealed partial class CalculatorListPage : DynamicListPage
 {
     private readonly Lock _resultsLock = new();
     private SettingsManager _settingsManager;
-    private IList<IListItem> _items = [];
+    private List<ListItem> _items = [];
+    private List<ListItem> history = [];
+
+    // This is the text that saved when the user click the result.
+    // We need to avoid the double calculation. This may cause some wierd behaviors.
+    private string skipQuerySearchText = string.Empty;
 
     public CalculatorListPage(SettingsManager settings)
     {
@@ -40,16 +44,24 @@ public sealed partial class CalculatorListPage : DynamicListPage
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        if (newSearch == oldSearch)
+        if (oldSearch == newSearch)
         {
             return;
         }
 
-        var result = QueryHelper.Query(newSearch, _settingsManager, false);
+        if (!string.IsNullOrEmpty(skipQuerySearchText) && newSearch == skipQuerySearchText)
+        {
+            // only skip once.
+            skipQuerySearchText = string.Empty;
+            return;
+        }
+
+        skipQuerySearchText = string.Empty;
+        var result = QueryHelper.Query(newSearch, _settingsManager, false, HandleSave);
         UpdateResult(result);
     }
 
-    private void UpdateResult(IListItem result)
+    private void UpdateResult(ListItem result)
     {
         lock (_resultsLock)
         {
@@ -58,10 +70,37 @@ public sealed partial class CalculatorListPage : DynamicListPage
             if (result != null)
             {
                 this._items.Add(result);
+                this._items.AddRange(history);
             }
         }
 
         RaiseItemsChanged(this._items.Count);
+    }
+
+    private void HandleSave(object sender, object args)
+    {
+        var lastResult = _items[0].Title;
+        if (!string.IsNullOrEmpty(lastResult))
+        {
+            var li = new ListItem(new CopyTextCommand(lastResult))
+            {
+                Title = _items[0].Title,
+                Subtitle = _items[0].Subtitle,
+                TextToSuggest = lastResult,
+            };
+
+            history.Insert(0, li);
+            _items.Insert(1, li);
+
+            // Why we need to clean the query record? Removed, but if neccessary, please move it back.
+            // _items[0].Subtitle = string.Empty;
+
+            // this change will call the UpdateSearchText again.
+            // We need to avoid it.
+            skipQuerySearchText = lastResult;
+            SearchText = lastResult;
+            this.RaiseItemsChanged(this._items.Count);
+        }
     }
 
     public override IListItem[] GetItems() => _items.ToArray();

@@ -39,12 +39,6 @@ public class SettingsManager : JsonSettingsManager
         Properties.Resources.calculator_settings_out_en_format_description,
         false);
 
-    private readonly ToggleSetting _replaceInputIfEndsWithEqualSign = new(
-        Namespaced(nameof(ReplaceInputIfQueryEndsWithEqualSign)),
-        Properties.Resources.calculator_settings_replace_input,
-        Properties.Resources.calculator_settings_replace_input_description,
-        true);
-
     public CalculateEngine.TrigMode TrigUnit
     {
         get
@@ -79,8 +73,6 @@ public class SettingsManager : JsonSettingsManager
 
     public bool OutputUseEnglishFormat => _outputUseEnNumberFormat.Value;
 
-    public bool ReplaceInputIfQueryEndsWithEqualSign => _replaceInputIfEndsWithEqualSign.Value;
-
     internal static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
@@ -97,9 +89,6 @@ public class SettingsManager : JsonSettingsManager
         Settings.Add(_trigUnit);
         Settings.Add(_inputUseEnNumberFormat);
         Settings.Add(_outputUseEnNumberFormat);
-
-        // TODO: Move it back if we implement the feature in the future.
-        // Settings.Add(_replaceInputIfEndsWithEqualSign);
 
         // Load settings from file upon initialization
         LoadSettings();

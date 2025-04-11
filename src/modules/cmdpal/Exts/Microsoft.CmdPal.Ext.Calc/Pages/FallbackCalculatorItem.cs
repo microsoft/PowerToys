@@ -26,7 +26,7 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
 
     public override void UpdateQuery(string query)
     {
-        var result = QueryHelper.Query(query, _settings, true);
+        var result = QueryHelper.Query(query, _settings, true, null);
 
         if (result == null)
         {
