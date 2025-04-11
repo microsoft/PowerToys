@@ -592,6 +592,15 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Launch on startup.
+        /// </summary>
+        public static string ShouldLaunchOnStartup {
+            get {
+                return ResourceManager.GetString("ShouldLaunchOnStartup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Edit your layout and click &quot;Capture&quot; when finished..
         /// </summary>
         public static string SnapshotDescription {
