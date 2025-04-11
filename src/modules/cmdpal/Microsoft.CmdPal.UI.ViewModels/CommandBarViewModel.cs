@@ -11,8 +11,7 @@ using Windows.System;
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class CommandBarViewModel : ObservableObject,
-    IRecipient<UpdateCommandBarMessage>,
-    IRecipient<UpdateItemKeybindingsMessage>
+    IRecipient<UpdateCommandBarMessage>
 {
     public ICommandBarContext? SelectedItem
     {
@@ -48,29 +47,17 @@ public partial class CommandBarViewModel : ObservableObject,
     public partial PageViewModel? CurrentPage { get; set; }
 
     [ObservableProperty]
-
-    // [NotifyPropertyChangedFor(nameof(ContextMenu))]
     public partial ObservableCollection<ContextMenuStackViewModel> ContextMenuStack { get; set; } = [];
 
     public ContextMenuStackViewModel? ContextMenu => ContextMenuStack.LastOrDefault();
 
-    // private Dictionary<KeyChord, CommandContextItemViewModel>? _contextKeybindings;
     public CommandBarViewModel()
     {
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
-        WeakReferenceMessenger.Default.Register<UpdateItemKeybindingsMessage>(this);
     }
 
     public void Receive(UpdateCommandBarMessage message) => SelectedItem = message.ViewModel;
 
-    public void Receive(UpdateItemKeybindingsMessage message)
-    {
-        // if (ContextMenuStack.FirstOrDefault() is ContextMenuStackViewModel first) {
-        //    first.SetKeybin
-        // }
-    }
-
-    // _contextKeybindings = message.Keys;
     private void SetSelectedItem(ICommandBarContext? value)
     {
         if (value != null)
@@ -117,8 +104,6 @@ public partial class CommandBarViewModel : ObservableObject,
             ShouldShowContextMenu = true;
             ContextMenuStack.Clear();
             ContextMenuStack.Add(new ContextMenuStackViewModel(SelectedItem));
-
-            // ContextCommands = [.. SelectedItem.AllCommands];
             OnPropertyChanged(nameof(ContextMenu));
         }
         else

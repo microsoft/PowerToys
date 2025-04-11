@@ -69,11 +69,11 @@ internal sealed partial class SampleListPage : ListPage
             },
 
             new ListItem(
-                new ToastCommand("Primary command invoked", MessageState.Info) { Name = "Primary command", Icon = new IconInfo("\uE712") })
+                new ToastCommand("Primary command invoked", MessageState.Info) { Name = "Primary command", Icon = new IconInfo("\uF146") }) // dial 1
             {
                 Title = "You can add context menu items too. Press Ctrl+k",
                 Subtitle = "Try pressing Ctrl+1 with me selected",
-                Icon = new IconInfo("\uE712"),
+                Icon = new IconInfo("\uE712"),  // "More" dots
                 MoreCommands = [
                     new CommandContextItem(
                         new ToastCommand("Secondary command invoked", MessageState.Warning) { Name = "Secondary command", Icon = new IconInfo("\uF147") }) // dial 2
@@ -82,23 +82,23 @@ internal sealed partial class SampleListPage : ListPage
                         RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number1),
                     },
                     new CommandContextItem(
-                        new ToastCommand("Third command invoked", MessageState.Error) { Name = "Do it", Icon = new IconInfo("\uF148") }) // dial 3
+                        new ToastCommand("Third command invoked", MessageState.Error) { Name = "Do 3", Icon = new IconInfo("\uF148") }) // dial 3
                     {
-                        Title = "Context commands can have context menus too",
+                        Title = "We can go deeper...",
                         Icon = new IconInfo("\uF148"),
                         RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number2),
                         MoreCommands = [
                             new CommandContextItem(
-                                new ToastCommand("Nested A invoked") { Name = "Do it" })
+                                new ToastCommand("Nested A invoked") { Name = "Do it", Icon = new IconInfo("A") })
                             {
                                 Title = "Nested A",
                                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.A),
                             },
 
                             new CommandContextItem(
-                                new ToastCommand("Nested B invoked") { Name = "Do it" })
+                                new ToastCommand("Nested B invoked") { Name = "Do it", Icon = new IconInfo("B") })
                             {
-                                Title = "Nested B",
+                                Title = "Nested B...",
                                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.B),
                                 MoreCommands = [
                                     new CommandContextItem(

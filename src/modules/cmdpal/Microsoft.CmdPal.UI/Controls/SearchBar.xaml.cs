@@ -169,24 +169,13 @@ public sealed partial class SearchBar : UserControl,
 
         if (!e.Handled)
         {
+            // The CommandBar is responsible for handling all the item keybindings,
+            // since the bound context item may need to then show another
+            // context menu
             TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
             WeakReferenceMessenger.Default.Send(msg);
             e.Handled = msg.Handled;
         }
-
-        // if (_keyBindings != null)
-        // {
-        //    // Does the pressed key match any of the keybindings?
-        //    var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrlPressed, altPressed, shiftPressed, winPressed, (int)e.Key, 0);
-        //    if (_keyBindings.TryGetValue(pressedKeyChord, out var item))
-        //    {
-        //        // TODO! If this is a keybinding for a context meu item with
-        //        // more commands, we need to open the context menu to that
-        //        // command
-        //        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item));
-        //        e.Handled = true;
-        //    }
-        // }
     }
 
     private void FilterBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)

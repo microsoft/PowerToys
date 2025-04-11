@@ -71,9 +71,6 @@ public sealed partial class CommandBar : UserControl,
         if (result == ContextKeybindingResult.Hide)
         {
             msg.Handled = true;
-
-            // MoreCommandsButton.Flyout.Hide();
-            // WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
         }
         else if (result == ContextKeybindingResult.KeepOpen)
         {
