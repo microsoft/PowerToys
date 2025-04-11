@@ -93,7 +93,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             {
                 if (Alias is CommandAlias a)
                 {
-                    a.Alias = value;
+                    Alias = new CommandAlias(value, Id,  a.IsDirect);
                 }
                 else
                 {
@@ -180,7 +180,11 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         var aliases = _serviceProvider.GetService<AliasManager>();
         if (aliases != null)
         {
-            Alias = aliases.AliasFromId(Id);
+            var a = aliases.AliasFromId(Id);
+            if (a is not null)
+            {
+                Alias = new CommandAlias(a.Alias, a.CommandId, a.IsDirect);
+            }
         }
     }
 
