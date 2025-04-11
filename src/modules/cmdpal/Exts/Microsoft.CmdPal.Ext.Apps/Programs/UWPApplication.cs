@@ -6,13 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
 using PackageVersion = Microsoft.CmdPal.Ext.Apps.Programs.UWP.PackageVersion;
@@ -314,7 +312,12 @@ public class UWPApplication : IProgram
                 }
             }
 
-            var selectedIconPath = paths.FirstOrDefault(File.Exists);
+            // By working from the highest resolution to the lowest, we make
+            // sure that we use the highest quality possible icon for the app.
+            //
+            // FirstOrDefault would result in us using the 1x scaled icon
+            // always, which is usually too small for our needs.
+            var selectedIconPath = paths.LastOrDefault(File.Exists);
             if (!string.IsNullOrEmpty(selectedIconPath))
             {
                 LogoPath = selectedIconPath;
