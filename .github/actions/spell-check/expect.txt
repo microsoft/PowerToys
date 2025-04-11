@@ -990,7 +990,7 @@ MULTIPLEUSE
 multizone
 muxc
 mvvm
-MVVMTK
+mvvmtk
 MWBEx
 MYICON
 NAMECHANGE
