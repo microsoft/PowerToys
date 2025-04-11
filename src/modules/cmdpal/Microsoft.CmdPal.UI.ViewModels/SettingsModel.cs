@@ -26,6 +26,8 @@ public partial class SettingsModel : ObservableObject
 
     public HotkeySettings? Hotkey { get; set; } = DefaultActivationShortcut;
 
+    public bool UseLowLevelGlobalHotkey { get; set; }
+
     public bool ShowAppDetails { get; set; }
 
     public bool HotkeyGoesHome { get; set; }
