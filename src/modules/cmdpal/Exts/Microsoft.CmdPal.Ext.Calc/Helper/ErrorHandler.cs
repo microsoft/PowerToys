@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using ManagedCommon;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Calc.Helper;
@@ -20,7 +21,7 @@ internal static class ErrorHandler
     /// <param name="exception">Exception if applicable.</param>
     /// <returns>List of results to show. Either an error message or an empty list.</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="errorMessage"/> and <paramref name="exception"/> are both filled with their default values.</exception>
-    internal static List<ListItem> OnError(bool isFallbackSearch, string queryInput, string errorMessage, Exception exception = default)
+    internal static IListItem OnError(bool isFallbackSearch, string queryInput, string errorMessage, Exception exception = default)
     {
         string userMessage;
 
@@ -39,10 +40,10 @@ internal static class ErrorHandler
             throw new ArgumentException("The arguments error and exception have default values. One of them has to be filled with valid error data (error message/exception)!");
         }
 
-        return isFallbackSearch ? new List<ListItem>() : new List<ListItem> { CreateErrorResult(userMessage) };
+        return isFallbackSearch ? null : CreateErrorResult(userMessage);
     }
 
-    private static ListItem CreateErrorResult(string errorMessage)
+    private static IListItem CreateErrorResult(string errorMessage)
     {
         return new ListItem(new NoOpCommand())
         {

@@ -3,16 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
 public static partial class QueryHelper
 {
-    public static List<ListItem> Query(string query, SettingsManager settings, bool isFallbackSearch)
+    public static IListItem Query(string query, SettingsManager settings, bool isFallbackSearch)
     {
         ArgumentNullException.ThrowIfNull(query);
 
@@ -23,7 +22,7 @@ public static partial class QueryHelper
         // Happens if the user has only typed the action key so far
         if (string.IsNullOrEmpty(query))
         {
-            return new List<ListItem>();
+            return null;
         }
 
         NumberTranslator translator = NumberTranslator.Create(inputCulture, new CultureInfo("en-US"));
@@ -36,7 +35,7 @@ public static partial class QueryHelper
 
         if (!CalculateHelper.InputValid(input))
         {
-            return new List<ListItem>();
+            return null;
         }
 
         try
@@ -48,18 +47,15 @@ public static partial class QueryHelper
             if (result.Equals(default(CalculateResult)))
             {
                 // If errorMessage is not default then do error handling
-                return errorMessage == default ? new List<ListItem>() : ErrorHandler.OnError(isFallbackSearch, query, errorMessage);
+                return errorMessage == default ? null : ErrorHandler.OnError(isFallbackSearch, query, errorMessage);
             }
             else if (replaceInput)
             {
                 // TODO: need to implement a way to replace the input in the search box
-                return new List<ListItem>();
+                return null;
             }
 
-            return new List<ListItem>
-            {
-                ResultHelper.CreateResult(result.RoundedResult, inputCulture, outputCulture),
-            };
+            return ResultHelper.CreateResult(result.RoundedResult, inputCulture, outputCulture);
         }
         catch (Mages.Core.ParseException)
         {

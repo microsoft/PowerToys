@@ -16,9 +16,9 @@ public class SettingsManager : JsonSettingsManager
 
     private static readonly List<ChoiceSetSetting.Choice> _trigUnitChoices = new()
     {
-        new ChoiceSetSetting.Choice(Properties.Resources.calculator_settings_trig_unit_gradians, "0"),
+        new ChoiceSetSetting.Choice(Properties.Resources.calculator_settings_trig_unit_radians, "0"),
         new ChoiceSetSetting.Choice(Properties.Resources.calculator_settings_trig_unit_degrees, "1"),
-        new ChoiceSetSetting.Choice(Properties.Resources.calculator_settings_trig_unit_radians, "2"),
+        new ChoiceSetSetting.Choice(Properties.Resources.calculator_settings_trig_unit_gradians, "2"),
     };
 
     private readonly ChoiceSetSetting _trigUnit = new(
@@ -64,13 +64,13 @@ public class SettingsManager : JsonSettingsManager
             switch (result)
             {
                 case 0:
-                    return CalculateEngine.TrigMode.Gradians;
+                    return CalculateEngine.TrigMode.Radians;
                 case 1:
                     return CalculateEngine.TrigMode.Degrees;
                 case 2:
-                    return CalculateEngine.TrigMode.Radians;
-                default:
                     return CalculateEngine.TrigMode.Gradians;
+                default:
+                    return CalculateEngine.TrigMode.Radians;
             }
         }
     }
