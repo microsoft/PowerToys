@@ -26,9 +26,9 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
 
     public override void UpdateQuery(string query)
     {
-        var results = QueryHelper.Query(query, _settings, true);
+        var result = QueryHelper.Query(query, _settings, true);
 
-        if (results.Count == 0)
+        if (result == null)
         {
             _copyCommand.Text = string.Empty;
             _copyCommand.Name = string.Empty;
@@ -38,9 +38,9 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
             return;
         }
 
-        _copyCommand.Text = results[0].Title;
+        _copyCommand.Text = result.Title;
         _copyCommand.Name = string.IsNullOrWhiteSpace(query) ? string.Empty : Resources.calculator_copy_command_name;
-        Title = results[0].Title;
+        Title = result.Title;
 
         // we have to make the subtitle the equation,
         // so that we will still string match the original query

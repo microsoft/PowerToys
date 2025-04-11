@@ -25,7 +25,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
 {
     private readonly Lock _resultsLock = new();
     private SettingsManager _settingsManager;
-    private IList<ListItem> _items = [];
+    private IList<IListItem> _items = [];
 
     public CalculatorListPage(SettingsManager settings)
     {
@@ -45,15 +45,20 @@ public sealed partial class CalculatorListPage : DynamicListPage
             return;
         }
 
-        var results = QueryHelper.Query(newSearch, _settingsManager, false);
-        UpdateResult(results);
+        var result = QueryHelper.Query(newSearch, _settingsManager, false);
+        UpdateResult(result);
     }
 
-    private void UpdateResult(IList<ListItem> result)
+    private void UpdateResult(IListItem result)
     {
         lock (_resultsLock)
         {
-            this._items = result;
+            this._items.Clear();
+
+            if (result != null)
+            {
+                this._items.Add(result);
+            }
         }
 
         RaiseItemsChanged(this._items.Count);
