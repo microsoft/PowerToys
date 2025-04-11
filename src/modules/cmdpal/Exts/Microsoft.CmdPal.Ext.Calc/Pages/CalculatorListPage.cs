@@ -92,7 +92,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
             history.Insert(0, li);
             _items.Insert(1, li);
 
-            // Why we need to clean the query record? Removed, but if neccessary, please move it back.
+            // Why we need to clean the query record? Removed, but if necessary, please move it back.
             // _items[0].Subtitle = string.Empty;
 
             // this change will call the UpdateSearchText again.
