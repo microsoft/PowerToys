@@ -267,7 +267,7 @@
                                 IsItemClickEnabled="True"
                                 ItemClick="CommandsDropdown_ItemClick"
                                 ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
-                                ItemsSource="{x:Bind ViewModel.ContextMenu.ContextCommands, Mode=OneWay}"
+                                ItemsSource="{x:Bind ViewModel.ContextMenu.FilteredItems, Mode=OneWay}"
                                 KeyDown="CommandsDropdown_KeyDown"
                                 SelectionMode="Single">
                                 <ListView.ItemContainerStyle>

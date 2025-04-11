@@ -69,8 +69,7 @@ public sealed partial class CommandBar : UserControl,
             ShowMode = FlyoutShowMode.Standard,
         };
         MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
-        CommandsDropdown.SelectedIndex = 0;
-        ContextFilterBox.Focus(FocusState.Programmatic);
+        UpdateUiForStackChange();
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
@@ -111,9 +110,7 @@ public sealed partial class CommandBar : UserControl,
             }
             else
             {
-                CommandsDropdown.SelectedIndex = 0;
-
-                // CommandsDropdown.Focus(FocusState.Programmatic);
+                UpdateUiForStackChange();
             }
         }
     }
@@ -139,8 +136,7 @@ public sealed partial class CommandBar : UserControl,
 
     private void Flyout_Opened(object sender, object e)
     {
-        CommandsDropdown.SelectedIndex = 0;
-        ContextFilterBox.Focus(FocusState.Programmatic);
+        UpdateUiForStackChange();
     }
 
     private void Flyout_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
@@ -153,13 +149,18 @@ public sealed partial class CommandBar : UserControl,
         var prop = e.PropertyName;
         if (prop == nameof(ViewModel.ContextMenu))
         {
-            CommandsDropdown.SelectedIndex = 0;
-            ContextFilterBox.Focus(FocusState.Programmatic);
+            UpdateUiForStackChange();
         }
     }
 
     private void ContextFilterBox_TextChanged(object sender, TextChangedEventArgs e)
     {
+        ViewModel.ContextMenu?.SetSearchText(ContextFilterBox.Text);
+
+        if (CommandsDropdown.SelectedIndex == -1)
+        {
+            CommandsDropdown.SelectedIndex = 0;
+        }
     }
 
     private void ContextFilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -172,17 +173,18 @@ public sealed partial class CommandBar : UserControl,
                 {
                     MoreCommandsButton.Flyout.Hide();
                 }
+                else
+                {
+                    UpdateUiForStackChange();
+                }
 
-                // else
-                // {
-                //    CommandsDropdown.SelectedIndex = 0;
-                // }
                 e.Handled = true;
             }
         }
         else if (e.Key == VirtualKey.Escape)
         {
             ViewModel.PopContextStack();
+            UpdateUiForStackChange();
             e.Handled = true;
         }
 
@@ -223,5 +225,13 @@ public sealed partial class CommandBar : UserControl,
 
     private void ContextFilterBox_PreviewKeyUp(object sender, KeyRoutedEventArgs e)
     {
+    }
+
+    private void UpdateUiForStackChange()
+    {
+        ContextFilterBox.Text = string.Empty;
+        ViewModel.ContextMenu?.SetSearchText(string.Empty);
+        CommandsDropdown.SelectedIndex = 0;
+        ContextFilterBox.Focus(FocusState.Programmatic);
     }
 }
