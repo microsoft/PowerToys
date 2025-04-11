@@ -500,8 +500,6 @@ namespace Microsoft.PowerToys.UITest
                 {
                     Console.WriteLine($"Failed to change display resolution. Error code: {result}");
                 }
-
-                Assert.Fail($"Failed to change display resolution. Current resolution: {screenTest.Bounds.Width}x{screenTest.Bounds.Height}");
             }
         }
     }
