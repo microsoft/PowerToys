@@ -268,11 +268,14 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         if (model is IFallbackCommandItem fallback)
         {
             var wasEmpty = string.IsNullOrEmpty(Title);
+            var oldTitle = Title;
 
             // RPC for method
             fallback.FallbackHandler.UpdateQuery(newQuery);
             var isEmpty = string.IsNullOrEmpty(Title);
-            return wasEmpty != isEmpty;
+            var newTitle = Title;
+
+            return wasEmpty != isEmpty || oldTitle != newTitle;
         }
 
         return false;
