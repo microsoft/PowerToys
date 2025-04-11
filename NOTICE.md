@@ -1445,7 +1445,7 @@ SOFTWARE.
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
 - Moq 4.18.4
-- MSTest 3.6.3
+- MSTest 3.8.3
 - NLog.Extensions.Logging 5.3.8
 - NLog.Schema 5.2.8
 - OpenAI 2.0.0
@@ -1463,8 +1463,8 @@ SOFTWARE.
 - System.Diagnostics.EventLog 9.0.4
 - System.Diagnostics.PerformanceCounter 9.0.4
 - System.Drawing.Common 9.0.4
-- System.IO.Abstractions 21.0.29
-- System.IO.Abstractions.TestingHelpers 21.0.29
+- System.IO.Abstractions 22.0.13
+- System.IO.Abstractions.TestingHelpers 22.0.13
 - System.Management 9.0.4
 - System.Reactive 6.0.1
 - System.Runtime.Caching 9.0.4
