@@ -254,12 +254,12 @@
                 ToolTipService.ToolTip="Ctrl+k"
                 Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
                 <Button.Flyout>
-                    <Flyout 
-                        Placement="TopEdgeAlignedRight" 
+                    <Flyout
+                        Closing="Flyout_Closing"
                         Opened="Flyout_Opened"
-                        Closing="Flyout_Closing">
+                        Placement="TopEdgeAlignedRight">
                         <StackPanel>
-                            
+
                             <ListView
                                 x:Name="CommandsDropdown"
                                 MinWidth="248"
@@ -281,16 +281,14 @@
                                 </ListView.ItemContainerTransitions>
                             </ListView>
 
-                            <TextBox 
+                            <TextBox
                                 x:Name="ContextFilterBox"
                                 Margin="-12,12,-12,-12"
-                                TextChanged="ContextFilterBox_TextChanged"
                                 KeyDown="ContextFilterBox_KeyDown"
+                                PlaceholderText="Search commands..."
                                 PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
                                 PreviewKeyUp="ContextFilterBox_PreviewKeyUp"
-                                PlaceholderText="Search commands...">
-                                
-                            </TextBox>
+                                TextChanged="ContextFilterBox_TextChanged" />
 
                         </StackPanel>
                     </Flyout>
