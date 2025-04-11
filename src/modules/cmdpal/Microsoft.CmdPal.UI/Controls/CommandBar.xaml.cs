@@ -18,6 +18,7 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class CommandBar : UserControl,
     IRecipient<OpenContextMenuMessage>,
+    IRecipient<TryCommandKeybindingMessage>,
     ICurrentPageAware
 {
     public CommandBarViewModel ViewModel { get; } = new();
@@ -38,6 +39,7 @@ public sealed partial class CommandBar : UserControl,
 
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
+        WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
 
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
     }
@@ -55,6 +57,43 @@ public sealed partial class CommandBar : UserControl,
         };
         MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
         UpdateUiForStackChange();
+    }
+
+    public void Receive(TryCommandKeybindingMessage msg)
+    {
+        if (!ViewModel.ShouldShowContextMenu)
+        {
+            return;
+        }
+
+        var result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);
+
+        if (result == ContextKeybindingResult.Hide)
+        {
+            msg.Handled = true;
+
+            // MoreCommandsButton.Flyout.Hide();
+            // WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+        }
+        else if (result == ContextKeybindingResult.KeepOpen)
+        {
+            if (!MoreCommandsButton.Flyout.IsOpen)
+            {
+                var options = new FlyoutShowOptions
+                {
+                    ShowMode = FlyoutShowMode.Standard,
+                };
+                MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
+            }
+
+            UpdateUiForStackChange();
+
+            msg.Handled = true;
+        }
+        else if (result == ContextKeybindingResult.Unhandled)
+        {
+            msg.Handled = false;
+        }
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS has a tendency to delete XAML bound methods over-aggressively")]
