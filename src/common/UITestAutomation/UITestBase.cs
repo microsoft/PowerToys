@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
+using Windows.Foundation.Metadata;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -35,7 +36,8 @@ namespace Microsoft.PowerToys.UITest
         // private string? screenshotDirectory;
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
         {
-            this.isInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("buildPlatforms"));
+            this.isInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
+            Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
             if (isInPipeline)
             {
                 // Escape Popups before starting
