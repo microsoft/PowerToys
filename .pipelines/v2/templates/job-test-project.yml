@@ -104,4 +104,6 @@ jobs:
       testAssemblyVer2: |
         **\*UITest*.dll
         !**\obj\**
-        !**\ref\**
+        !**\ref\**   
+    env:
+      platform: '$(BuildPlatform)'
