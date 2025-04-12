@@ -273,7 +273,7 @@ public partial class MainListPage : DynamicListPage,
         }
     }
 
-    public void Receive(ClearSearchMessage message) => SearchText = string.Empty;
+    public void Receive(ClearSearchMessage message) => ChangeSearchText(string.Empty);
 
     public void Receive(UpdateFallbackItemsMessage message) => RaiseItemsChanged(_tlcManager.TopLevelCommands.Count);
 

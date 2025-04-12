@@ -44,7 +44,7 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
         return ResultHelper.GetResultList(searchControllerResults, !string.IsNullOrEmpty(query));
     }
 
-    public override IListItem[] GetItems() => Query(SearchText).ToArray();
+    public override IListItem[] GetItems() => Query(LastSearchText).ToArray();
 
     public void Dispose()
     {

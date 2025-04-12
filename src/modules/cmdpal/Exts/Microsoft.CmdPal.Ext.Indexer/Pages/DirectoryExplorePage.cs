@@ -145,7 +145,7 @@ public sealed partial class DirectoryExplorePage : DynamicListPage
         _filteredContents = null;
         _path = path;
         Title = path;
-        SearchText = string.Empty;
+        ChangeSearchText(string.Empty);
         RaiseItemsChanged(-1);
     }
 }

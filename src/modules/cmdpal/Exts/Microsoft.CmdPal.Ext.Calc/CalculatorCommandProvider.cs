@@ -79,7 +79,9 @@ public sealed partial class CalculatorListPage : DynamicListPage
             };
             _items.Insert(1, li);
             _items[0].Subtitle = string.Empty;
-            SearchText = lastResult;
+            ChangeSearchText(lastResult);
+
+            // SearchText = lastResult;
             this.RaiseItemsChanged(this._items.Count);
         }
     }
