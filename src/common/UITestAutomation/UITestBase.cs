@@ -470,17 +470,22 @@ namespace Microsoft.PowerToys.UITest
                     return;
                 }
 
+                DEVMODE devModeInfo = default(DEVMODE);
+                devModeInfo.DmDeviceName = new string(new char[32]);
+                devModeInfo.DmFormName = new string(new char[32]);
+                devModeInfo.DmSize = (short)Marshal.SizeOf<DEVMODE>();
+
+                int modeNum = 0;
+                while (EnumDisplaySettings(IntPtr.Zero, modeNum, ref devModeInfo) > 0)
+                {
+                    Console.WriteLine($"Mode {modeNum}: {devModeInfo.DmPelsWidth}x{devModeInfo.DmPelsHeight} @ {devModeInfo.DmDisplayFrequency}Hz");
+                    modeNum++;
+                }
+
                 DEVMODE devMode = default(DEVMODE);
                 devMode.DmDeviceName = new string(new char[32]);
                 devMode.DmFormName = new string(new char[32]);
                 devMode.DmSize = (short)Marshal.SizeOf<DEVMODE>();
-
-                int modeNum = 0;
-                while (EnumDisplaySettings(IntPtr.Zero, modeNum, ref devMode) > 0)
-                {
-                    Console.WriteLine($"Mode {modeNum}: {devMode.DmPelsWidth}x{devMode.DmPelsHeight} @ {devMode.DmDisplayFrequency}Hz");
-                    modeNum++;
-                }
 
                 devMode.DmPelsWidth = 1920;
                 devMode.DmPelsHeight = 1080;
