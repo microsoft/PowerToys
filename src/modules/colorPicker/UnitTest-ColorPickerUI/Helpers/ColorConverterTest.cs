@@ -425,7 +425,7 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("FFEF00", 93.51, 90.98, 95.32)] // canary yellow
         [DataRow("FFA600", 75.81, 83.73, 71.17)] // cheese
         [DataRow("1A2421", 13.15, 5.23, 174.68)] // dark jungle green
-        [DataRow("003399", 24.65, 64.23, 289.12)] // dark powder blueC
+        [DataRow("003399", 24.65, 64.23, 289.12)] // dark powder blue
         [DataRow("D70A53", 46.79, 74.48, 15.37)] // debian red
         [DataRow("80FFD5", 91.92, 45.3, 168.89)] // fathom secret green
         [DataRow("EFDFBB", 89.45, 19.86, 85.57)] // dutch white
@@ -521,14 +521,14 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("808080", 0.6, 0.00, 0.00)] // gray
         [DataRow("000000", 0.00, 0.00, 0.00)] // black
         [DataRow("FF0000", 0.628, 0.258, 29.23)] // red
-        [DataRow("008000", 0.52, 0.177, 142.49)] // green
+        [DataRow("008000", 0.52, 0.177, 142.5)] // green
         [DataRow("80FFFF", 0.928, 0.113, 195.38)] // cyan
         [DataRow("8080FF", 0.661, 0.184, 280.13)] // blue
         [DataRow("BF40BF", 0.598, 0.216, 327.86)] // magenta
         [DataRow("BFBF00", 0.779, 0.17, 109.77)] // yellow
         [DataRow("0048BA", 0.444, 0.19, 260.86)] // absolute zero
         [DataRow("B0BF1A", 0.767, 0.169, 115.4)] // acid green
-        [DataRow("D0FF14", 0.934, 0.225, 122.28)] // arctic lime
+        [DataRow("D0FF14", 0.934, 0.224, 122.28)] // arctic lime
         [DataRow("1B4D3E", 0.382, 0.06, 170.28)] // brunswick green
         [DataRow("FFEF00", 0.935, 0.198, 104.67)] // canary yellow
         [DataRow("FFA600", 0.794, 0.171, 71.19)] // cheese
@@ -536,11 +536,11 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("003399", 0.371, 0.173, 262.12)] // dark powder blue
         [DataRow("D70A53", 0.563, 0.222, 11.5)] // debian red
         [DataRow("80FFD5", 0.916, 0.129, 169.38)] // fathom secret green
-        [DataRow("EFDFBB", 0.907, 0.051, 86.89)] // dutch white
+        [DataRow("EFDFBB", 0.907, 0.05, 86.89)] // dutch white
         [DataRow("5218FA", 0.489, 0.286, 279.13)] // han purple
         [DataRow("FF496C", 0.675, 0.217, 14.37)] // infra red
         [DataRow("545AA7", 0.5, 0.121, 277.7)] // liberty
-        [DataRow("E6A8D7", 0.804, 0.0947, 335.4)] // light orchid
+        [DataRow("E6A8D7", 0.804, 0.095, 335.4)] // light orchid
         [DataRow("ADDFAD", 0.856, 0.086, 144.78)] // light moss green
         [DataRow("E3F988", 0.942, 0.141, 118.24)] // mindaro
         public void ColorRGBtoOklchTest(string hexValue, double lightness, double chroma, double hue)

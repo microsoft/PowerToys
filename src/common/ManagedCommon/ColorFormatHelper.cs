@@ -162,9 +162,8 @@ namespace ManagedCommon
         /// <returns>The perceptual lightness [0..1] and two chromaticities [-0.5..0.5]</returns>
         public static (double Lightness, double ChromaticityA, double ChromaticityB) ConvertToOklabColor(Color color)
         {
-            var xyz = ConvertToCIEXYZColor(color);
-            var oklab = GetOklabColorFromCIEXYZ(xyz.X, xyz.Y, xyz.Z);
-
+            var linear = ConvertSRGBToLinearRGB(color.R / 255d, color.G / 255d, color.B / 255d);
+            var oklab = GetOklabColorFromLinearRGB(linear.R, linear.G, linear.B);
             return oklab;
         }
 
@@ -175,11 +174,19 @@ namespace ManagedCommon
         /// <returns>The perceptual lightness [0..1], the chroma [0..0.5], and the hue angle [0°..360°]</returns>
         public static (double Lightness, double Chroma, double Hue) ConvertToOklchColor(Color color)
         {
-            var xyz = ConvertToCIEXYZColor(color);
-            var oklab = GetOklabColorFromCIEXYZ(xyz.X, xyz.Y, xyz.Z);
+            var oklab = ConvertToOklabColor(color);
             var oklch = GetOklchColorFromOklab(oklab.Lightness, oklab.ChromaticityA, oklab.ChromaticityB);
 
             return oklch;
+        }
+
+        public static (double R, double G, double B) ConvertSRGBToLinearRGB(double r, double g, double b)
+        {
+            // inverse companding, gamma correction must be undone
+            double rLinear = (r > 0.04045) ? Math.Pow((r + 0.055) / 1.055, 2.4) : (r / 12.92);
+            double gLinear = (g > 0.04045) ? Math.Pow((g + 0.055) / 1.055, 2.4) : (g / 12.92);
+            double bLinear = (b > 0.04045) ? Math.Pow((b + 0.055) / 1.055, 2.4) : (b / 12.92);
+            return (rLinear, gLinear, bLinear);
         }
 
         /// <summary>
@@ -197,10 +204,7 @@ namespace ManagedCommon
             double g = color.G / 255d;
             double b = color.B / 255d;
 
-            // inverse companding, gamma correction must be undone
-            double rLinear = (r > 0.04045) ? Math.Pow((r + 0.055) / 1.055, 2.4) : (r / 12.92);
-            double gLinear = (g > 0.04045) ? Math.Pow((g + 0.055) / 1.055, 2.4) : (g / 12.92);
-            double bLinear = (b > 0.04045) ? Math.Pow((b + 0.055) / 1.055, 2.4) : (b / 12.92);
+            (double rLinear, double gLinear, double bLinear) = ConvertSRGBToLinearRGB(r, g, b);
 
             return (
                 (rLinear * 0.41239079926595948) + (gLinear * 0.35758433938387796) + (bLinear * 0.18048078840183429),
@@ -266,69 +270,30 @@ namespace ManagedCommon
         }
 
         /// <summary>
-        /// Convert a CIE XYZ color <see cref="double"/> to an Oklab adapted to sRGB D65 white point
-        /// The constants of the formula used come from this blog post:
-        /// https://bottosson.github.io/posts/oklab/
+        /// Convert a linear RGB color <see cref="double"/> to an Oklab color.
+        /// The constants of this formula come from https://github.com/Evercoder/culori/blob/2bedb8f0507116e75f844a705d0b45cf279b15d0/src/oklab/convertLrgbToOklab.js
+        /// and the implementation is based on https://bottosson.github.io/posts/oklab/
         /// </summary>
-        /// <param name="x">The <see cref="x"/> represents a mix of the three CIE RGB curves</param>
-        /// <param name="y">The <see cref="y"/> represents the luminance</param>
-        /// <param name="z">The <see cref="z"/> is quasi-equal to blue (of CIE RGB)</param>
+        /// <param name="r">Linear R value</param>
+        /// <param name="g">Linear G value</param>
+        /// <param name="b">Linear B value</param>
         /// <returns>The perceptual lightness [0..1] and two chromaticities [-0.5..0.5]</returns>
         private static (double Lightness, double ChromaticityA, double ChromaticityB)
-            GetOklabColorFromCIEXYZ(double x, double y, double z)
+            GetOklabColorFromLinearRGB(double r, double g, double b)
         {
-            static double[] MatrixVectorMultiply(double[,] matrix, double[] vector)
-            {
-                double[] result = new double[vector.Length];
-                for (int i = 0; i < matrix.GetLength(0); i++)
-                {
-                    double sum = 0;
-                    for (int j = 0; j < matrix.GetLength(1); j++)
-                    {
-                        sum += matrix[i, j] * vector[j];
-                    }
+            double l = (0.41222147079999993 * r) + (0.5363325363 * g) + (0.0514459929 * b);
+            double m = (0.2119034981999999 * r) + (0.6806995450999999 * g) + (0.1073969566 * b);
+            double s = (0.08830246189999998 * r) + (0.2817188376 * g) + (0.6299787005000002 * b);
 
-                    result[i] = sum;
-                }
+            double l_ = Math.Cbrt(l);
+            double m_ = Math.Cbrt(m);
+            double s_ = Math.Cbrt(s);
 
-                return result;
-            }
-
-            static double[] VectorPower(double[] vector, double power)
-            {
-                for (int i = 0; i < vector.Length; i++)
-                {
-                    vector[i] = Math.Pow(vector[i], power);
-                }
-
-                return vector;
-            }
-
-            // Matrix constants
-            double[,] xyz_to_lms = new double[3, 3]
-            {
-                { 0.8189330101, 0.3618667424, -0.1288597137 },
-                { 0.0329845436, 0.9293118715, 0.0361456387 },
-                { 0.0482003018, 0.2643662691, 0.6338517070 },
-            };
-            double[,] lms_to_lab = new double[3, 3]
-            {
-                { 0.2104542553, 0.7936177850, -0.0040720468 },
-                { 1.9779984951, -2.4285922050, 0.4505937099 },
-                { 0.0259040371, 0.7827717662, -0.8086757660 },
-            };
-
-            double[] vec = new double[3] { x, y, z };
-
-            // Convert XYZ coordinates to approximate cone responses
-            double[] lms = MatrixVectorMultiply(xyz_to_lms, vec);
-
-            // Apply non-linearity
-            double[] lms_prime = VectorPower(lms, 1 / 3.0);
-
-            // Transform to Lab coordinates
-            double[] lab = MatrixVectorMultiply(lms_to_lab, lms_prime);
-            return (lab[0], lab[1], lab[2]);
+            return (
+                (0.2104542553 * l_) + (0.793617785 * m_) - (0.0040720468 * s_),
+                (1.9779984951 * l_) - (2.428592205 * m_) + (0.4505937099 * s_),
+                (0.0259040371 * l_) + (0.7827717662 * m_) - (0.808675766 * s_)
+            );
         }
 
         /// <summary>
@@ -357,7 +322,7 @@ namespace ManagedCommon
         {
             // Lab to LCh transformation
             double chroma = Math.Sqrt(Math.Pow(chromaticity_a, 2) + Math.Pow(chromaticity_b, 2));
-            double hue = Math.Round(chroma, 3) == 0 ? 0.0 : ((Math.Atan2(chromaticity_b, chromaticity_a) * 180 / Math.PI) + 360) % 360;
+            double hue = Math.Round(chroma, 3) == 0 ? 0.0 : ((Math.Atan2(chromaticity_b, chromaticity_a) * 180d / Math.PI) + 360d) % 360d;
             return (lightness, chroma, hue);
         }
 
