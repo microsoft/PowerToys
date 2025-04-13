@@ -34,7 +34,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             VisibleColorFormats.Add("NCol", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("NCol")));
             VisibleColorFormats.Add("CIEXYZ", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CIEXYZ")));
             VisibleColorFormats.Add("CIELAB", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CIELAB")));
-            VisibleColorFormats.Add("CIELCh", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("CIELCh")));
             VisibleColorFormats.Add("Oklab", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("Oklab")));
             VisibleColorFormats.Add("Oklch", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("Oklch")));
             VisibleColorFormats.Add("VEC4", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("VEC4")));

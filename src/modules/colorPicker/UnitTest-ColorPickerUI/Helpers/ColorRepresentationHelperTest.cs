@@ -25,7 +25,6 @@ namespace Microsoft.ColorPicker.UnitTests
         [DataRow("RGB", "rgb(0, 0, 0)")]
         [DataRow("CIEXYZ", "XYZ(0, 0, 0)")]
         [DataRow("CIELAB", "CIELab(0, 0, 0)")]
-        [DataRow("CIELCh", "CIELCh(0, 0, 0)")]
         [DataRow("Oklab", "oklab(0, 0, 0)")]
         [DataRow("Oklch", "oklch(0, 0, 0)")]
         [DataRow("VEC4", "(0f, 0f, 0f, 1f)")]

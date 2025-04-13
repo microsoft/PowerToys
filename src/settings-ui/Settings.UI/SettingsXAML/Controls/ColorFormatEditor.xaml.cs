@@ -53,8 +53,6 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 new ColorFormatParameter() { Parameter = "%Lc", Description = resourceLoader.GetString("Help_lightnessCIE") },
                 new ColorFormatParameter() { Parameter = "%Ca", Description = resourceLoader.GetString("Help_chromaticityACIE") },
                 new ColorFormatParameter() { Parameter = "%Cb", Description = resourceLoader.GetString("Help_chromaticityBCIE") },
-                new ColorFormatParameter() { Parameter = "%Cc", Description = resourceLoader.GetString("Help_chromaCIE") },
-                new ColorFormatParameter() { Parameter = "%Ch", Description = resourceLoader.GetString("Help_hueCIE") },
                 new ColorFormatParameter() { Parameter = "%Lo", Description = resourceLoader.GetString("Help_lightnessOklab") },
                 new ColorFormatParameter() { Parameter = "%Oa", Description = resourceLoader.GetString("Help_chromaticityAOklab") },
                 new ColorFormatParameter() { Parameter = "%Ob", Description = resourceLoader.GetString("Help_chromaticityBOklab") },

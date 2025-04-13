@@ -407,61 +407,7 @@ namespace Microsoft.ColorPicker.UnitTests
             Assert.AreEqual(chromaticityB, Math.Round(result.ChromaticityB, 2));
         }
 
-        // Test data calculated using https://lch.oklch.com
-        [TestMethod]
-        [DataRow("FFFFFF", 100.00, 0.00, 0.00)] // white
-        [DataRow("808080", 53.59, 0.00, 0.00)] // gray
-        [DataRow("000000", 0.00, 0.00, 0.00)] // black
-        [DataRow("FF0000", 54.29, 106.84, 40.86)] // red
-        [DataRow("008000", 46.28, 67.98, 134.38)] // green
-        [DataRow("80FFFF", 92.82, 38.7, 197.28)] // cyan
-        [DataRow("8080FF", 58.36, 69.46, 291.79)] // blue
-        [DataRow("BF40BF", 50.01, 74.6, 326.46)] // magenta
-        [DataRow("BFBF00", 75.41, 76.211, 99.57)] // yellow
-        [DataRow("0048BA", 33.18, 69.15, 286.04)] // absolute zero
-        [DataRow("B0BF1A", 74.24, 72.74, 104.92)] // acid green
-        [DataRow("D0FF14", 94.21, 94.01, 111.3)] // arctic lime
-        [DataRow("1B4D3E", 29.05, 21.04, 169.9)] // brunswick green
-        [DataRow("FFEF00", 93.51, 90.98, 95.32)] // canary yellow
-        [DataRow("FFA600", 75.81, 83.73, 71.17)] // cheese
-        [DataRow("1A2421", 13.15, 5.23, 174.68)] // dark jungle green
-        [DataRow("003399", 24.65, 64.23, 289.12)] // dark powder blue
-        [DataRow("D70A53", 46.79, 74.48, 15.37)] // debian red
-        [DataRow("80FFD5", 91.92, 45.3, 168.89)] // fathom secret green
-        [DataRow("EFDFBB", 89.45, 19.86, 85.57)] // dutch white
-        [DataRow("5218FA", 34.66, 120.25, 303.21)] // han purple
-        [DataRow("FF496C", 59.83, 74.08, 18.43)] // infra red
-        [DataRow("545AA7", 40.65, 45.35, 288.49)] // liberty
-        [DataRow("E6A8D7", 75.94, 32.34, 333.35)] // light orchid
-        [DataRow("ADDFAD", 84.34, 30.63, 141.37)] // light moss green
-        [DataRow("E3F988", 94.52, 54.94, 110.96)] // mindaro
-        public void ColorRGBtoCIELCHTest(string hexValue, double lightness, double chroma, double hue)
-        {
-            if (string.IsNullOrWhiteSpace(hexValue))
-            {
-                Assert.IsNotNull(hexValue);
-            }
-
-            Assert.IsTrue(hexValue.Length >= 6);
-
-            var red = int.Parse(hexValue.AsSpan(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var green = int.Parse(hexValue.AsSpan(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var blue = int.Parse(hexValue.AsSpan(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-
-            var color = Color.FromArgb(255, red, green, blue);
-            var result = ColorFormatHelper.ConvertToCIELCHColor(color);
-
-            // lightness[0..100]
-            Assert.AreEqual(lightness, Math.Round(result.Lightness, 2));
-
-            // chroma[0..230]
-            Assert.AreEqual(chroma, Math.Round(result.Chroma, 2));
-
-            // hue[0°..360°]
-            Assert.AreEqual(hue, Math.Round(result.Hue, 2));
-        }
-
-        // Test data calculated using https://oklch.com
+        // Test data calculated using https://oklch.com (which uses https://github.com/Evercoder/culori)
         [TestMethod]
         [DataRow("FFFFFF", 1.00, 0.00, 0.00)] // white
         [DataRow("808080", 0.6, 0.00, 0.00)] // gray
@@ -515,7 +461,7 @@ namespace Microsoft.ColorPicker.UnitTests
             Assert.AreEqual(chromaticityB, Math.Round(result.ChromaticityB, 2));
         }
 
-        // Test data calculated using https://oklch.com
+        // Test data calculated using https://oklch.com (which uses https://github.com/Evercoder/culori)
         [TestMethod]
         [DataRow("FFFFFF", 1.00, 0.00, 0.00)] // white
         [DataRow("808080", 0.6, 0.00, 0.00)] // gray
