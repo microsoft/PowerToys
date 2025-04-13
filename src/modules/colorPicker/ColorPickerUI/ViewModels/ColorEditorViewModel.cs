@@ -316,12 +316,6 @@ namespace ColorPicker.ViewModels
             _allColorRepresentations.Add(
                 new ColorFormatModel()
                 {
-                    FormatName = ColorRepresentationType.CIELCh.ToString(),
-                    Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.CIELCh.ToString()),
-                });
-            _allColorRepresentations.Add(
-                new ColorFormatModel()
-                {
                     FormatName = ColorRepresentationType.Oklab.ToString(),
                     Convert = (Color color) => ColorRepresentationHelper.GetStringRepresentationFromMediaColor(color, ColorRepresentationType.Oklab.ToString()),
                 });
