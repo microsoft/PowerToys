@@ -148,30 +148,38 @@
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
+                                EasingMode="EaseIn"
+                                EasingType="Cubic"
                                 From="0"
                                 To="1.0"
-                                Duration="0:0:0.340" />
+                                Duration="0:0:0.187" />
                             <animations:ScaleAnimation
+                                EasingMode="EaseIn"
+                                EasingType="Cubic"
                                 From="0.5"
                                 To="1"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.ShowAnimations>
                         <animations:Implicit.HideAnimations>
                             <animations:OpacityAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="1.0"
                                 To="0"
-                                Duration="0:0:0.240" />
+                                Duration="0:0:0.187" />
                             <animations:ScaleAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="1"
                                 To="0.5"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.HideAnimations>
                     </Image>
                     <Button
                         x:Name="BackButton"
+                        x:Uid="BackButton"
                         Margin="4,0,4,0"
                         Padding="4"
-                        x:Uid="BackButton"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
@@ -183,31 +191,39 @@
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
+                                EasingMode="EaseIn"
+                                EasingType="Cubic"
                                 From="0"
                                 To="1.0"
-                                Duration="0:0:0.340" />
+                                Duration="0:0:0.333" />
                             <animations:ScaleAnimation
                                 From="0.5"
                                 To="1"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.333" />
                             <animations:TranslationAnimation
                                 From="16,0,0"
                                 To="0,0,0"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.333" />
                         </animations:Implicit.ShowAnimations>
                         <animations:Implicit.HideAnimations>
                             <animations:OpacityAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="1.0"
                                 To="0"
-                                Duration="0:0:0.340" />
+                                Duration="0:0:0.333" />
                             <animations:ScaleAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="1"
                                 To="0.5"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.333" />
                             <animations:TranslationAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="0,0,0"
                                 To="16,0,0"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.HideAnimations>
                     </Button>
                     <cpcontrols:IconBox
@@ -224,29 +240,29 @@
                             <animations:OpacityAnimation
                                 From="0"
                                 To="1.0"
-                                Duration="0:0:0.450" />
+                                Duration="0:0:0.333" />
                             <animations:ScaleAnimation
                                 From="0.8"
                                 To="1"
-                                Duration="0:0:0.500" />
+                                Duration="0:0:0.333" />
                             <animations:TranslationAnimation
                                 From="8,0,0"
                                 To="0,0,0"
-                                Duration="0:0:0.400" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.ShowAnimations>
                         <animations:Implicit.HideAnimations>
                             <animations:OpacityAnimation
                                 From="1.0"
                                 To="0"
-                                Duration="0:0:0.340" />
+                                Duration="0:0:0.333" />
                             <animations:ScaleAnimation
                                 From="1"
                                 To="0.8"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.333" />
                             <animations:TranslationAnimation
                                 From="0,0,0"
                                 To="8,0,0"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.HideAnimations>
                     </cpcontrols:IconBox>
                 </StackPanel>
@@ -273,13 +289,13 @@
                     <animations:OpacityAnimation
                         From="0"
                         To="1.0"
-                        Duration="0:0:0.340" />
+                        Duration="0:0:0.333" />
                 </animations:Implicit.ShowAnimations>
                 <animations:Implicit.HideAnimations>
                     <animations:OpacityAnimation
                         From="1.0"
                         To="0"
-                        Duration="0:0:0.340" />
+                        Duration="0:0:0.333" />
                 </animations:Implicit.HideAnimations>
             </ProgressBar>
 
@@ -314,21 +330,21 @@
                         <animations:OpacityAnimation
                             From="0"
                             To="1.0"
-                            Duration="0:0:0.270" />
+                            Duration="0:0:0.187" />
                         <animations:TranslationAnimation
                             From="24,0,0"
                             To="0,0,0"
-                            Duration="0:0:0.280" />
+                            Duration="0:0:0.187" />
                     </animations:Implicit.ShowAnimations>
                     <animations:Implicit.HideAnimations>
                         <animations:OpacityAnimation
                             From="1.0"
                             To="0"
-                            Duration="0:0:0.180" />
+                            Duration="0:0:0.187" />
                         <animations:TranslationAnimation
                             From="0,0,0"
                             To="24,0,0"
-                            Duration="0:0:0.220" />
+                            Duration="0:0:0.187" />
                     </animations:Implicit.HideAnimations>
                     <Grid Margin="12">
                         <Grid.RowDefinitions>
