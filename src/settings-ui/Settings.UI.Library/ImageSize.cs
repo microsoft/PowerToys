@@ -13,7 +13,7 @@ using Settings.UI.Library.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Library;
 
-public partial class ImageSize : INotifyPropertyChanged, IImageSize
+public partial class ImageSize : INotifyPropertyChanged, IHasId
 {
     public event PropertyChangedEventHandler PropertyChanged;
 

@@ -15,7 +15,7 @@ using ManagedCommon;
 
 namespace ImageResizer.Models
 {
-    public class ResizeSize : Observable, IImageSize
+    public class ResizeSize : Observable, IHasId
     {
         private static readonly Dictionary<string, string> _tokens = new Dictionary<string, string>
         {

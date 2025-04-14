@@ -483,7 +483,7 @@ namespace ImageResizer.Properties
                     Sizes.AddRange(jsonSettings.Sizes);
 
                     // Ensure Ids are unique and handle missing Ids
-                    ImageResizerHelper.RecoverInvalidIds(Sizes);
+                    IdRecoveryHelper.RecoverInvalidIds(Sizes);
                 }
             });
 
