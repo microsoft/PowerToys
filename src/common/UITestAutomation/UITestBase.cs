@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
+using Windows.Devices.Display.Core;
 using Windows.Foundation.Metadata;
 using static Microsoft.PowerToys.UITest.UITestBase.NativeMethods;
 
@@ -413,8 +414,29 @@ namespace Microsoft.PowerToys.UITest
 
         public class NativeMethods
         {
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+            public struct DISPLAY_DEVICE
+            {
+                public int cb;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+                public string DeviceName;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+                public string DeviceString;
+                public int StateFlags;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+                public string DeviceID;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+                public string DeviceKey;
+            }
+
             [DllImport("user32.dll")]
             private static extern int EnumDisplaySettings(IntPtr deviceName, int modeNum, ref DEVMODE devMode);
+
+            [DllImport("user32.dll")]
+            private static extern int EnumDisplaySettings(string deviceName, int modeNum, ref DEVMODE devMode);
+
+            [DllImport("user32.dll", CharSet = CharSet.Ansi)]
+            private static extern bool EnumDisplayDevices(IntPtr lpDevice, int iDevNum, ref DISPLAY_DEVICE lpDisplayDevice, int dwFlags);
 
             [DllImport("user32.dll")]
             private static extern int ChangeDisplaySettings(ref DEVMODE devMode, int flags);
@@ -461,6 +483,36 @@ namespace Microsoft.PowerToys.UITest
                 public int DmReserved2;
                 public int DmPanningWidth;
                 public int DmPanningHeight;
+            }
+
+            public static void GetMontorInfo()
+            {
+                int deviceIndex = 0;
+                DISPLAY_DEVICE d = default(DISPLAY_DEVICE);
+                d.cb = Marshal.SizeOf(d);
+
+                Console.WriteLine("montor list :");
+                while (EnumDisplayDevices(IntPtr.Zero, deviceIndex, ref d, 0))
+                {
+                    Console.WriteLine($"montor {deviceIndex + 1}:");
+                    Console.WriteLine($"  name: {d.DeviceName}");
+                    Console.WriteLine($"  string: {d.DeviceString}");
+                    Console.WriteLine($"  ID: {d.DeviceID}");
+                    Console.WriteLine($"  key: {d.DeviceKey}");
+                    Console.WriteLine();
+
+                    DEVMODE dm = default(DEVMODE);
+                    dm.DmSize = (short)Marshal.SizeOf<DEVMODE>();
+                    int modeNum = 0;
+                    while (EnumDisplaySettings(d.DeviceName, modeNum, ref dm) > 0)
+                    {
+                        Console.WriteLine($"  mode {modeNum}: {dm.DmPelsWidth}x{dm.DmPelsHeight} @ {dm.DmDisplayFrequency}Hz");
+                        modeNum++;
+                    }
+
+                    deviceIndex++;
+                    d.cb = Marshal.SizeOf(d); // Reset the size for the next device
+                }
             }
 
             public static void ChangeDispalyResolution()
