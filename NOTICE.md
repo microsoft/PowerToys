@@ -1393,7 +1393,6 @@ SOFTWARE.
 
 ## NuGet Packages used by PowerToys
 
-
 - AdaptiveCards.ObjectModel.WinUI3 2.0.0-beta
 - AdaptiveCards.Rendering.WinUI3 2.1.0-beta
 - AdaptiveCards.Templating 2.0.2
@@ -1419,7 +1418,7 @@ SOFTWARE.
 - LazyCache 2.4.0
 - Mages 3.0.0
 - Markdig.Signed 0.34.0
-- MessagePack 2.5.187
+- MessagePack 3.1.3
 - Microsoft.Bcl.AsyncInterfaces 9.0.4
 - Microsoft.CodeAnalysis.NetAnalyzers 9.0.0
 - Microsoft.Data.Sqlite 9.0.4
@@ -1452,7 +1451,7 @@ SOFTWARE.
 - ReverseMarkdown 4.1.0
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.37.2
-- StreamJsonRpc 2.19.27
+- StreamJsonRpc 2.21.69
 - StyleCop.Analyzers 1.2.0-beta.556
 - System.CodeDom 9.0.4
 - System.CommandLine 2.0.0-beta4.22272.1
@@ -1477,3 +1476,4 @@ SOFTWARE.
 - WinUIEx 2.2.0
 - WPF-UI 3.0.5
 - WyHash 1.0.5
+
