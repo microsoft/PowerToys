@@ -40,6 +40,8 @@ public sealed class CommandProviderWrapper
 
     public CommandSettingsViewModel? Settings { get; private set; }
 
+    private bool _loadedSettings;
+
     public string ProviderId
     {
         get
@@ -66,9 +68,8 @@ public sealed class CommandProviderWrapper
         DisplayName = provider.DisplayName;
         Icon = new(provider.Icon);
         Icon.InitializeProperties();
-        Settings = new(provider.Settings, this, _taskScheduler);
-        Settings.InitializeProperties();
 
+        // UnsafeLoadSettings();
         Logger.LogDebug($"Initialized command provider {ProviderId}");
     }
 
@@ -193,20 +194,40 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    /* This is a View/ExtensionHost piece
-     * public void AllowSetForeground(bool allow)
+    private void UnsafeLoadSettings()
     {
-        if (!IsExtension)
+        var model = _commandProvider.Unsafe!;
+        Settings = new(model.Settings, this, _taskScheduler);
+        Settings.InitializeProperties();
+        _loadedSettings = true;
+    }
+
+    private void SafeLoadSettings()
+    {
+        if (!isValid)
         {
             return;
         }
 
-        var iextn = extensionWrapper?.GetExtensionObject();
-        unsafe
+        if (_loadedSettings)
         {
-            PInvoke.CoAllowSetForegroundWindow(iextn);
+            return;
         }
-    }*/
+
+        try
+        {
+            UnsafeLoadSettings();
+        }
+        catch (Exception e)
+        {
+            Logger.LogError($"Failed to load settings from {Extension!.PackageFamilyName}", ex: e);
+        }
+    }
+
+    public Task LoadSettings()
+    {
+        return Task.Run(SafeLoadSettings);
+    }
 
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;
 
