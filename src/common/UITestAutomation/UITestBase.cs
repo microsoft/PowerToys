@@ -44,6 +44,8 @@ namespace Microsoft.PowerToys.UITest
             if (isInPipeline)
             {
                 NativeMethods.ChangeDispalyResolution();
+                NativeMethods.CreateNewMonitor();
+                NativeMethods.GetMonitorInfo();
 
                 // Escape Popups before starting
                 System.Windows.Forms.SendKeys.SendWait("{ESC}");
@@ -441,6 +443,12 @@ namespace Microsoft.PowerToys.UITest
             [DllImport("user32.dll")]
             private static extern int ChangeDisplaySettings(ref DEVMODE devMode, int flags);
 
+            [DllImport("user32.dll", CharSet = CharSet.Ansi)]
+            private static extern int ChangeDisplaySettingsEx(IntPtr lpszDeviceName, ref DEVMODE lpDevMode, IntPtr hwnd, uint dwflags, IntPtr lParam);
+
+            private const int DM_PELSWIDTH = 0x80000;
+            private const int DM_PELSHEIGHT = 0x100000;
+
             public const int ENUM_CURRENT_SETTINGS = -1;
             public const int CDS_TEST = 0x00000002;
             public const int CDS_UPDATEREGISTRY = 0x01;
@@ -485,16 +493,16 @@ namespace Microsoft.PowerToys.UITest
                 public int DmPanningHeight;
             }
 
-            public static void GetMontorInfo()
+            public static void GetMonitorInfo()
             {
                 int deviceIndex = 0;
                 DISPLAY_DEVICE d = default(DISPLAY_DEVICE);
                 d.cb = Marshal.SizeOf(d);
 
-                Console.WriteLine("montor list :");
+                Console.WriteLine("monitor list :");
                 while (EnumDisplayDevices(IntPtr.Zero, deviceIndex, ref d, 0))
                 {
-                    Console.WriteLine($"montor {deviceIndex + 1}:");
+                    Console.WriteLine($"monitor {deviceIndex + 1}:");
                     Console.WriteLine($"  name: {d.DeviceName}");
                     Console.WriteLine($"  string: {d.DeviceString}");
                     Console.WriteLine($"  ID: {d.DeviceID}");
@@ -512,6 +520,25 @@ namespace Microsoft.PowerToys.UITest
 
                     deviceIndex++;
                     d.cb = Marshal.SizeOf(d); // Reset the size for the next device
+                }
+            }
+
+            public static void CreateNewMonitor()
+            {
+                DEVMODE newMode = default(DEVMODE);
+                newMode.DmSize = (short)Marshal.SizeOf<DEVMODE>();
+                newMode.DmPelsWidth = 1920;
+                newMode.DmPelsHeight = 1080;
+                newMode.DmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+
+                int result = ChangeDisplaySettingsEx(IntPtr.Zero, ref newMode, IntPtr.Zero, CDS_UPDATEREGISTRY, IntPtr.Zero);
+                if (result == DISP_CHANGE_SUCCESSFUL)
+                {
+                    Console.WriteLine("virtual monitor create success");
+                }
+                else
+                {
+                    Console.WriteLine("virtual monitor create faild");
                 }
             }
 
