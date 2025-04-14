@@ -7,8 +7,7 @@
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
 
-    <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UnitTest-FancyZonesEditor\</OutputPath>
   </PropertyGroup>
 
