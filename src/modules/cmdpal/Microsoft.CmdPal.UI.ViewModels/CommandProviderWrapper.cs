@@ -67,7 +67,7 @@ public sealed class CommandProviderWrapper
         Icon = new(provider.Icon);
         Icon.InitializeProperties();
 
-        // Note: explicitly not InitializeProperties'ing the settings here. If
+        // Note: explicitly not InitializeProperties()ing the settings here. If
         // we do that, then we'd regress GH #38321
         Settings = new(provider.Settings, this, _taskScheduler);
 
@@ -153,7 +153,7 @@ public sealed class CommandProviderWrapper
             Icon = new(model.Icon);
             Icon.InitializeProperties();
 
-            // Note: explicitly not InitializeProperties'ing the settings here. If
+            // Note: explicitly not InitializeProperties()ing the settings here. If
             // we do that, then we'd regress GH #38321
             Settings = new(model.Settings, this, _taskScheduler);
 
