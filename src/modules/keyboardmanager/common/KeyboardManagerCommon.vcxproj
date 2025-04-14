@@ -54,6 +54,7 @@
     <ClInclude Include="InputInterface.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="KeyboardManagerConstants.h" />
+    <ClInclude Include="Modifiers.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RemapShortcut.h" />
     <ClInclude Include="Shortcut.h" />
