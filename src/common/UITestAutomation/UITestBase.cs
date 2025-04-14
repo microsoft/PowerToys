@@ -495,7 +495,15 @@ namespace Microsoft.PowerToys.UITest
                 Screen screenTest = Screen.PrimaryScreen!;
                 if (result == DISP_CHANGE_SUCCESSFUL)
                 {
-                    Console.WriteLine($"Changing display resolution to {devMode.DmPelsWidth}x{devMode.DmPelsHeight}");
+                    result = ChangeDisplaySettings(ref devMode, CDS_UPDATEREGISTRY);
+                    if (result == DISP_CHANGE_SUCCESSFUL)
+                    {
+                        Console.WriteLine($"Changing display resolution to {devMode.DmPelsWidth}x{devMode.DmPelsHeight}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Failed to change display resolution. Error code: {result}");
+                    }
                 }
                 else if (result == DISP_CHANGE_RESTART)
                 {
