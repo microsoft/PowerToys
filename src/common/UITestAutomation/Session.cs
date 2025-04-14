@@ -400,6 +400,18 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Retrieves the color of the pixel at the specified screen coordinates as a string.
+        /// </summary>
+        /// <param name="x">The X coordinate on the screen.</param>
+        /// <param name="y">The Y coordinate on the screen.</param>
+        /// <returns>The color of the pixel at the specified coordinates.</returns>
+        public string GetPixelColorString(int x, int y)
+        {
+            Color color = this.GetPixelColor(x, y);
+            return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+        }
+
+        /// <summary>
         /// Gets the size of the display.
         /// </summary>
         /// <returns>

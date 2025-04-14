@@ -26,6 +26,7 @@ namespace FindMyMouse.UITests
             RightUp = 0x0010,
             MiddleDown = 0x0020,
             MiddleUp = 0x0040,
+            Wheel = 0x0800,
         }
 
         // 模拟点击间隔
@@ -98,6 +99,21 @@ namespace FindMyMouse.UITests
         public static void MiddleUp()
         {
             mouse_event((uint)MouseEvent.MiddleUp, 0, 0, 0, UIntPtr.Zero);
+        }
+
+        public static void ScrollWheel(int amount)
+        {
+            mouse_event((uint)MouseEvent.Wheel, 0, 0, (uint)amount, UIntPtr.Zero);
+        }
+
+        public static void ScrollUp()
+        {
+            ScrollWheel(120);
+        }
+
+        public static void ScrollDown()
+        {
+            ScrollWheel(-120);
         }
     }
 }
