@@ -19,6 +19,7 @@ public sealed class CommandProviderWrapper
     private readonly bool isValid;
 
     private readonly ExtensionObject<ICommandProvider> _commandProvider;
+    private readonly TopLevelViewModelFactory _topLevelViewModelFactory;
 
     private readonly TaskScheduler _taskScheduler;
 
@@ -48,12 +49,13 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
+    public CommandProviderWrapper(ICommandProvider provider, TopLevelViewModelFactory factory, TaskScheduler mainThread)
     {
         // This ctor is only used for in-proc builtin commands. So the Unsafe!
         // calls are pretty dang safe actually.
         _commandProvider = new(provider);
         _taskScheduler = mainThread;
+        _topLevelViewModelFactory = factory;
 
         // Hook the extension back into us
         ExtensionHost = new CommandPaletteHost(provider);
@@ -72,9 +74,10 @@ public sealed class CommandProviderWrapper
         Logger.LogDebug($"Initialized command provider {ProviderId}");
     }
 
-    public CommandProviderWrapper(IExtensionWrapper extension, TaskScheduler mainThread)
+    public CommandProviderWrapper(IExtensionWrapper extension, TopLevelViewModelFactory factory, TaskScheduler mainThread)
     {
         _taskScheduler = mainThread;
+        _topLevelViewModelFactory = factory;
         Extension = extension;
         ExtensionHost = new CommandPaletteHost(extension);
         if (!Extension.IsRunning())
@@ -154,7 +157,7 @@ public sealed class CommandProviderWrapper
             Settings = new(model.Settings, this, _taskScheduler);
             Settings.InitializeProperties();
 
-            InitializeCommands(commands, fallbacks, serviceProvider, pageContext);
+            InitializeCommands(commands, fallbacks, settings, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -166,14 +169,12 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, SettingsModel settings, WeakReference<IPageContext> pageContext)
     {
-        var settings = serviceProvider.GetService<SettingsModel>()!;
-
         Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
-            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, serviceProvider);
+            var topLevelViewModel = _topLevelViewModelFactory.Create(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings);
 
             topLevelViewModel.ItemViewModel.SlowInitializeProperties();
 

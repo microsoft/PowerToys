@@ -17,8 +17,9 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 {
     private readonly SettingsModel _settings;
-    private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
+    private readonly HotkeyManager _hotkeyManager;
+    private readonly AliasManager _aliasManager;
 
     private readonly string _commandProviderId;
 
@@ -71,7 +72,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         get => _hotkey;
         set
         {
-            _serviceProvider.GetService<HotkeyManager>()!.UpdateHotkey(Id, value);
+            _hotkeyManager.UpdateHotkey(Id, value);
             UpdateHotkey();
             UpdateTags();
             Save();
@@ -125,17 +126,21 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         CommandPaletteHost extensionHost,
         string commandProviderId,
         SettingsModel settings,
-        IServiceProvider serviceProvider)
+        HotkeyManager hotkeyManager,
+        AliasManager aliasManager)
     {
-        _serviceProvider = serviceProvider;
         _settings = settings;
         _commandProviderId = commandProviderId;
         _commandItemViewModel = item;
+        _hotkeyManager = hotkeyManager;
+        _aliasManager = aliasManager;
 
         IsFallback = isFallback;
         ExtensionHost = extensionHost;
 
         item.PropertyChanged += Item_PropertyChanged;
+        _hotkeyManager = hotkeyManager;
+        _aliasManager = aliasManager;
 
         // UpdateAlias();
         // UpdateHotkey();
@@ -169,7 +174,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     public void SetAlias(CommandAlias? newAlias)
     {
-        _serviceProvider.GetService<AliasManager>()!.UpdateAlias(Id, newAlias);
+        _aliasManager.UpdateAlias(Id, newAlias);
         UpdateAlias();
         UpdateTags();
     }
@@ -177,7 +182,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     private void UpdateAlias()
     {
         // Add tags for the alias, if we have one.
-        var aliases = _serviceProvider.GetService<AliasManager>();
+        var aliases = _aliasManager;
         if (aliases != null)
         {
             Alias = aliases.AliasFromId(Id);

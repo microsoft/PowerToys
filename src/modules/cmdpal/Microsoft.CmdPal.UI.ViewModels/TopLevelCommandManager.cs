@@ -21,17 +21,25 @@ public partial class TopLevelCommandManager : ObservableObject,
     IPageContext
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly TopLevelViewModelFactory _topLevelViewModelFactory;
     private readonly TaskScheduler _taskScheduler;
+    private readonly IExtensionService _extensionService;
 
     private readonly List<CommandProviderWrapper> _builtInCommands = [];
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
-    public TopLevelCommandManager(IServiceProvider serviceProvider)
+    public TopLevelCommandManager(
+        IServiceProvider serviceProvider,
+        IExtensionService extensionService,
+        TopLevelViewModelFactory topLevelViewModelFactory,
+        TaskScheduler taskScheduler)
     {
         _serviceProvider = serviceProvider;
-        _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
+        _topLevelViewModelFactory = topLevelViewModelFactory;
+        _taskScheduler = taskScheduler;
+        _extensionService = extensionService;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
     }
 
@@ -51,7 +59,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         var builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
         foreach (var provider in builtInCommands)
         {
-            CommandProviderWrapper wrapper = new(provider, _taskScheduler);
+            CommandProviderWrapper wrapper = new(provider, _topLevelViewModelFactory, _taskScheduler);
             _builtInCommands.Add(wrapper);
             await LoadTopLevelCommandsFromProvider(wrapper);
         }
@@ -70,7 +78,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             var commandItemViewModel = new CommandItemViewModel(new(i), weakSelf);
-            var topLevelViewModel = new TopLevelViewModel(commandItemViewModel, fallback, commandProvider.ExtensionHost, commandProvider.ProviderId, settings, _serviceProvider);
+            var topLevelViewModel = _topLevelViewModelFactory.Create(commandItemViewModel, fallback, commandProvider.ExtensionHost, commandProvider.ProviderId, settings);
 
             lock (TopLevelCommands)
             {
@@ -184,8 +192,7 @@ public partial class TopLevelCommandManager : ObservableObject,
     public async Task ReloadAllCommandsAsync()
     {
         IsLoading = true;
-        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
-        await extensionService.SignalStopExtensionsAsync();
+        await _extensionService.SignalStopExtensionsAsync();
         lock (TopLevelCommands)
         {
             TopLevelCommands.Clear();
@@ -205,20 +212,18 @@ public partial class TopLevelCommandManager : ObservableObject,
     [RelayCommand]
     public async Task<bool> LoadExtensionsAsync()
     {
-        var extensionService = _serviceProvider.GetService<IExtensionService>()!;
+        _extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
+        _extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
 
-        extensionService.OnExtensionAdded -= ExtensionService_OnExtensionAdded;
-        extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
-
-        var extensions = (await extensionService.GetInstalledExtensionsAsync()).ToImmutableList();
+        var extensions = (await _extensionService.GetInstalledExtensionsAsync()).ToImmutableList();
         _extensionCommandProviders.Clear();
         if (extensions != null)
         {
             await StartExtensionsAndGetCommands(extensions);
         }
 
-        extensionService.OnExtensionAdded += ExtensionService_OnExtensionAdded;
-        extensionService.OnExtensionRemoved += ExtensionService_OnExtensionRemoved;
+        _extensionService.OnExtensionAdded += ExtensionService_OnExtensionAdded;
+        _extensionService.OnExtensionRemoved += ExtensionService_OnExtensionRemoved;
 
         IsLoading = false;
 
@@ -249,7 +254,7 @@ public partial class TopLevelCommandManager : ObservableObject,
                 await extension.StartExtensionAsync();
 
                 // ... and fetch the command provider from it.
-                CommandProviderWrapper wrapper = new(extension, _taskScheduler);
+                CommandProviderWrapper wrapper = new(extension, _topLevelViewModelFactory, _taskScheduler);
                 _extensionCommandProviders.Add(wrapper);
                 await LoadTopLevelCommandsFromProvider(wrapper);
             }
