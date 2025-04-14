@@ -62,9 +62,57 @@ public partial class ProviderSettingsViewModel(
         OnPropertyChanged(nameof(TopLevelCommands));
     }
 
-    public bool HasSettings => _provider.Settings != null && _provider.Settings.SettingsPage != null;
+    public bool HasSettings// => _provider.Settings != null && _provider.Settings.SettingsPage != null;
+    {
+        get
+        {
+            if (_provider.Settings == null)
+            {
+                return false;
+            }
 
-    public ContentPageViewModel? SettingsPage => HasSettings ? _provider?.Settings?.SettingsPage : null;
+            if (_provider.Settings.Initialized)
+            {
+                return _provider.Settings.HasSettings;
+            }
+
+            // settings still need to be loaded.
+            return LoadingSettings;
+        }
+    }
+
+    public ContentPageViewModel? SettingsPage// => HasSettings ? _provider?.Settings?.SettingsPage : null;
+    {
+        get
+        {
+            if (_provider.Settings == null)
+            {
+                return null;
+            }
+
+            if (_provider.Settings.Initialized)
+            {
+                LoadingSettings = false;
+                return _provider.Settings.SettingsPage;
+            }
+
+            _ = Task.Run(() =>
+            {
+                _provider.Settings.SafeInitializeProperties();
+                _provider.Settings.DoOnUiThread(() =>
+                {
+                    LoadingSettings = false;
+                    OnPropertyChanged(nameof(HasSettings));
+                    OnPropertyChanged(nameof(LoadingSettings));
+                    OnPropertyChanged(nameof(SettingsPage));
+                });
+            });
+            return null;
+        }
+    }
+
+    [ObservableProperty]
+    public partial bool LoadingSettings { get; set; } = _provider.Settings?.HasSettings ?? false;
 
     [field: AllowNull]
     public List<TopLevelViewModel> TopLevelCommands
