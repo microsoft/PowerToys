@@ -75,7 +75,7 @@ public sealed partial class MainWindow : WindowEx,
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
-        this.CenterOnScreen(800, Height = 480);
+        this.CenterOnScreen(800, 480);
         SetAcrylic();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
