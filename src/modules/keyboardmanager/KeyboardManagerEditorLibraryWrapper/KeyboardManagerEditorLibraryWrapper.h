@@ -67,6 +67,7 @@ extern "C"
     __declspec(dllexport) void GetKeyDisplayName(int keyCode, wchar_t* keyName, int maxCount);
     __declspec(dllexport) int GetKeyCodeFromName(const wchar_t* keyName);
     __declspec(dllexport) void FreeString(wchar_t* str);
+    __declspec(dllexport) int GetKeyType(int keyCode);
 
     __declspec(dllexport) bool DeleteSingleKeyRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp);

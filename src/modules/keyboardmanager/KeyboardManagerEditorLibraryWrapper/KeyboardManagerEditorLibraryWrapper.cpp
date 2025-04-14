@@ -556,6 +556,12 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         return static_cast<int>(layoutMap.GetKeyFromName(name));
     }
 
+    // Function to get the type of a key (Win, Ctrl, Alt, Shift, or Action)
+    int GetKeyType(int key)
+    {
+        return static_cast<int>(Helpers::GetKeyType(static_cast<DWORD>(key)));
+    }
+
     // Function to delete a single key remapping
     bool DeleteSingleKeyRemap(void* config, int originalKey)
     {

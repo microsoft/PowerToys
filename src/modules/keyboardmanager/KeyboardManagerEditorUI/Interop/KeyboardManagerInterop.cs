@@ -83,6 +83,9 @@ namespace KeyboardManagerEditorUI.Interop
         internal static extern void FreeString(IntPtr str);
 
         [DllImport(DllName)]
+        internal static extern int GetKeyType(int keyCode);
+
+        [DllImport(DllName)]
         internal static extern bool DeleteSingleKeyRemap(IntPtr mappingConfiguration, int originalKey);
 
         [DllImport(DllName)]

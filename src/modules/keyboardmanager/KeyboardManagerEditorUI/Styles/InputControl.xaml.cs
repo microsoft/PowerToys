@@ -85,10 +85,44 @@ namespace KeyboardManagerEditorUI.Styles
 
             VirtualKey virtualKey = (VirtualKey)key;
 
+            // Check if this is a different variant of a modifier key already pressed
+            if (IsModifierKey(virtualKey))
+            {
+                // Remove existing variant of this modifier key if a new one is pressed
+                // This is to ensure that only one variant of a modifier key is displayed at a time
+                RemoveExistingModifierVariant(virtualKey);
+            }
+
             if (_currentlyPressedKeys.Add(virtualKey))
             {
                 _keyPressOrder.Add(virtualKey);
                 UpdateKeysDisplay();
+            }
+        }
+
+        private void RemoveExistingModifierVariant(VirtualKey key)
+        {
+            KeyType keyType = (KeyType)KeyboardManagerInterop.GetKeyType((int)key);
+
+            // No need to remove if the key is an action key
+            if (keyType == KeyType.Action)
+            {
+                return;
+            }
+
+            foreach (var existingKey in _currentlyPressedKeys.ToList())
+            {
+                if (existingKey != key)
+                {
+                    KeyType existingKeyType = (KeyType)KeyboardManagerInterop.GetKeyType((int)existingKey);
+
+                    // Remove the existing key if it is a modifier key and has the same type as the new key
+                    if (existingKeyType == keyType)
+                    {
+                        _currentlyPressedKeys.Remove(existingKey);
+                        _keyPressOrder.Remove(existingKey);
+                    }
+                }
             }
         }
 
