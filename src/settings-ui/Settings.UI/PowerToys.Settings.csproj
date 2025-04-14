@@ -75,6 +75,8 @@
     <PackageReference Include="Microsoft.Web.WebView2" />
     <!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->
     <PackageReference Include="CommunityToolkit.Common" />
+    <!-- HACK: MWB and Advanced Paste. Align the version.  got flagged when https://github.com/microsoft/PowerToys/pull/38779 was done -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
   <!-- Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
