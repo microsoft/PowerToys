@@ -18,6 +18,7 @@ public partial class ProviderSettingsViewModel(
     IServiceProvider _serviceProvider) : ObservableObject
 {
     private readonly SettingsModel _settings = _serviceProvider.GetService<SettingsModel>()!;
+    private readonly Lock _initializeSettingsLock = new();
 
     public string DisplayName => _provider.DisplayName;
 
@@ -62,7 +63,13 @@ public partial class ProviderSettingsViewModel(
         OnPropertyChanged(nameof(TopLevelCommands));
     }
 
-    public bool HasSettings// => _provider.Settings != null && _provider.Settings.SettingsPage != null;
+    /// <summary>
+    /// Gets a value indicating whether returns true if we have a settings page
+    /// that's initialized, or we are still working on initializing that
+    /// settings page. If we don't have a settings object, or that settings
+    /// object doesn't have a settings page, then we'll return false.
+    /// </summary>
+    public bool HasSettings
     {
         get
         {
@@ -81,7 +88,12 @@ public partial class ProviderSettingsViewModel(
         }
     }
 
-    public ContentPageViewModel? SettingsPage// => HasSettings ? _provider?.Settings?.SettingsPage : null;
+    /// <summary>
+    /// Gets will return the settings page, if we have one, and have initialized it.
+    /// If we haven't initialized it, this will kick off a thread to start
+    /// initializing it.
+    /// </summary>
+    public ContentPageViewModel? SettingsPage
     {
         get
         {
@@ -96,20 +108,17 @@ public partial class ProviderSettingsViewModel(
                 return _provider.Settings.SettingsPage;
             }
 
-            _ = Task.Run(() =>
+            // Don't load the settings if we're already working on it
+            lock (_initializeSettingsLock)
             {
-                _provider.Settings.SafeInitializeProperties();
-                _provider.Settings.DoOnUiThread(() =>
-                {
-                    LoadingSettings = false;
-                    OnPropertyChanged(nameof(HasSettings));
-                    OnPropertyChanged(nameof(LoadingSettings));
-                    OnPropertyChanged(nameof(SettingsPage));
-                });
-            });
+                _initializeSettingsTask ??= Task.Run(InitializeSettingsPage);
+            }
+
             return null;
         }
     }
+
+    private Task? _initializeSettingsTask;
 
     [ObservableProperty]
     public partial bool LoadingSettings { get; set; } = _provider.Settings?.HasSettings ?? false;
@@ -138,4 +147,21 @@ public partial class ProviderSettingsViewModel(
     }
 
     private void Save() => SettingsModel.SaveSettings(_settings);
+
+    private void InitializeSettingsPage()
+    {
+        if (_provider.Settings == null)
+        {
+            return;
+        }
+
+        _provider.Settings.SafeInitializeProperties();
+        _provider.Settings.DoOnUiThread(() =>
+        {
+            LoadingSettings = false;
+            OnPropertyChanged(nameof(HasSettings));
+            OnPropertyChanged(nameof(LoadingSettings));
+            OnPropertyChanged(nameof(SettingsPage));
+        });
+    }
 }

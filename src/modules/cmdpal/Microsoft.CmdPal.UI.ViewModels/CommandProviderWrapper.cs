@@ -66,6 +66,9 @@ public sealed class CommandProviderWrapper
         DisplayName = provider.DisplayName;
         Icon = new(provider.Icon);
         Icon.InitializeProperties();
+
+        // Note: explicitly not InitializeProperties'ing the settings here. If
+        // we do that, then we'd regress GH #38321
         Settings = new(provider.Settings, this, _taskScheduler);
 
         Logger.LogDebug($"Initialized command provider {ProviderId}");
@@ -150,7 +153,11 @@ public sealed class CommandProviderWrapper
             Icon = new(model.Icon);
             Icon.InitializeProperties();
 
+            // Note: explicitly not InitializeProperties'ing the settings here. If
+            // we do that, then we'd regress GH #38321
             Settings = new(model.Settings, this, _taskScheduler);
+
+            // We do need to explicitly initialize commands though
             InitializeCommands(commands, fallbacks, serviceProvider, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
@@ -191,37 +198,6 @@ public sealed class CommandProviderWrapper
         }
     }
 
-    // private void UnsafeLoadSettings()
-    // {
-    //    Settings?.SafeInitializeProperties();
-    // }
-
-    // private void SafeLoadSettings()
-    // {
-    //    if (!isValid)
-    //    {
-    //        return;
-    //    }
-
-    // if (_loadedSettings)
-    //    {
-    //        return;
-    //    }
-
-    // try
-    //    {
-    //        UnsafeLoadSettings();
-    //    }
-    //    catch (Exception e)
-    //    {
-    //        Logger.LogError($"Failed to load settings from {Extension!.PackageFamilyName}", ex: e);
-    //    }
-    // }
-
-    // public Task LoadSettings()
-    // {
-    //    return Task.Run(SafeLoadSettings);
-    // }
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;
 
     public override int GetHashCode() => _commandProvider.GetHashCode();
