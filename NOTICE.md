@@ -1465,11 +1465,14 @@ SOFTWARE.
 - System.IO.Abstractions 22.0.13
 - System.IO.Abstractions.TestingHelpers 22.0.13
 - System.Management 9.0.4
+- System.Net.Http 4.3.4
+- System.Private.Uri 4.3.2
 - System.Reactive 6.0.1
 - System.Runtime.Caching 9.0.4
 - System.ServiceProcess.ServiceController 9.0.4
 - System.Text.Encoding.CodePages 9.0.4
 - System.Text.Json 9.0.4
+- System.Text.RegularExpressions 4.3.1
 - UnicodeInformation 2.6.0
 - UnitsNet 5.56.0
 - UTF.Unknown 2.5.1
