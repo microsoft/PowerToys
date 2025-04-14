@@ -151,9 +151,8 @@ public sealed class CommandProviderWrapper
             Icon = new(model.Icon);
             Icon.InitializeProperties();
 
-            Settings = new(model.Settings, this, _taskScheduler);
-            Settings.InitializeProperties();
-
+            // Settings = new(model.Settings, this, _taskScheduler);
+            // Settings.InitializeProperties();
             InitializeCommands(commands, fallbacks, serviceProvider, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
