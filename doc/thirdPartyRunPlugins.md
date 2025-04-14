@@ -46,6 +46,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [QuickNotes](https://github.com/ruslanlap/CommunityPowerToysRunPlugin-QuickNotes) | [ruslanlap](https://github.com/ruslanlap) | Create, manage, and search notes directly from PowerToys Run. |
 | [Weather](https://github.com/ruslanlap/PowerToysRun-Weather) | [ruslanlap](https://github.com/ruslanlap) | Get real-time weather information directly from PowerToys Run. |
 | [Pomodoro](https://github.com/ruslanlap/PowerToysRun-Pomodoro) | [ruslanlap](https://github.com/ruslanlap) | Manage Pomodoro productivity sessions directly from PowerToys Run. |
+| [Magic 8-Ball](https://github.com/ruslanlap/PowerToysRun-Magic8Ball) | [ruslanlap](https://github.com/ruslanlap) | Ask yes-or-no questions and receive fortune-telling responses with animations and sound effects |
 
 ## Extending software plugins
 
