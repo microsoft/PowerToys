@@ -199,6 +199,57 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
+        /// <param name="key1">The first Key to send (e.g., "Control").</param>
+        /// <param name="key2">The second Key to send (e.g., "C").</param>
+        public void SendKeys(string key1, string key2)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                // Send the first key (e.g., Ctrl)
+                actions.KeyDown(key1).Perform();
+
+                // Send the second key (e.g., C)
+                windowElement.SendKeys(key2);
+
+                // Release the firyst key (e.g., Ctrl)
+                actions.KeyUp(key1).Perform();
+            });
+        }
+
+        public void KeyDownAndDrag(string key, int offsetX, int offsetY)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                actions.KeyDown(key).MoveToElement(windowsElement)
+                .ClickAndHold()
+                .Perform();
+
+                int stepCount = 10;
+                int stepX = offsetX / stepCount;
+                int stepY = offsetY / stepCount;
+
+                for (int i = 0; i < stepCount; i++)
+                {
+                    var stepAction = new Actions(driver);
+                    stepAction.MoveByOffset(stepX, stepY).Perform();
+                    Thread.Sleep(10);
+                }
+
+                new Actions(driver)
+                .Release()
+                .KeyUp(key)
+                .Perform();
+            });
+        }
+
+        public void KeyUp(string key)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                actions.KeyUp(key).Build().Perform();
+            });
+        }
+
         /// <summary>
         /// Gets the attribute value of the UI element.
         /// </summary>

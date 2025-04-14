@@ -76,21 +76,21 @@ namespace Microsoft.PowerToys.UITest
             // screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
             // Dispose();
             // Task.Delay(1000).Wait();
-            if (TestContext.CurrentTestOutcome is UnitTestOutcome.Failed
-                or UnitTestOutcome.Error
-                or UnitTestOutcome.Unknown)
-            {
-                this.CaptureLastScreenshot();
+            // if (TestContext.CurrentTestOutcome is UnitTestOutcome.Failed
+            //    or UnitTestOutcome.Error
+            //    or UnitTestOutcome.Unknown)
+            // {
+            //    this.CaptureLastScreenshot();
 
-                // AddScreenShotsToTestResultsDirectory();
-            }
-            else
-            {
-                // Directory.Delete(screenshotDirectory!, true);
-            }
+            // AddScreenShotsToTestResultsDirectory();
+            // }
+            // else
+            // {
+            //    // Directory.Delete(screenshotDirectory!, true);
+            // }
 
-            this.Session.Cleanup();
-            this.sessionHelper!.Cleanup();
+            // this.Session.Cleanup();
+            // this.sessionHelper!.Cleanup();
         }
 
         public void Dispose()
