@@ -5,6 +5,10 @@
 # Once installed, if the workflow run is marked as required,
 # PRs introducing known-vulnerable packages will be blocked from merging.
 #
+# As recommended by Microsoft's security guidelines (https://docs.opensource.microsoft.com/security/tsg/actions/#requirements-for-security-hardening-your-own-github-actions), 
+# 3rd-party actions should be pinned to a specific commit hash to prevent supply chain attacks. 
+# This update aligns with best practices; 1st/2nd-party actions is not required hash pinning.
+#
 # Source repository: https://github.com/actions/dependency-review-action
 name: 'Dependency Review'
 on: [pull_request]
