@@ -104,13 +104,16 @@ jobs:
       vsTestVersion: 'toolsInstaller'
       uiTests: true
       rerunFailedTests: true
-      testAssemblyVer2: |
-        ${{ if eq(parameters.isUIAutomationPipeline, true) }}:
+      ${{ if eq(parameters.isUIAutomationPipeline, true) }}:
+        testAssemblyVer2: |
           **\*UITest*.dll
-        ${{ else }}:
+          !**\obj\**
+          !**\ref\**
+      ${{ else }}:
+        testAssemblyVer2: |
           **\UITests-FancyZones.dll
           **\UITests-FancyZonesEditor.dll
-        !**\obj\**
-        !**\ref\**
+          !**\obj\**
+          !**\ref\**
     env:
       platform: '$(BuildPlatform)'
