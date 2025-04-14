@@ -15,5 +15,8 @@ namespace KeyboardManagerEditorUI.Helpers
         // Default window size
         public const int DefaultEditorWindowWidth = 960;
         public const int DefaultEditorWindowHeight = 600;
+
+        // Default notification timeout
+        public const int DefaultNotificationTimeout = 1500;
     }
 }

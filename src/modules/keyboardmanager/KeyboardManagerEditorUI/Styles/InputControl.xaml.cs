@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
@@ -28,6 +29,11 @@ namespace KeyboardManagerEditorUI.Styles
         private ObservableCollection<string> _remappedKeys = new ObservableCollection<string>();
 
         private HotkeySettingsControlHook? _keyboardHook;
+
+        // TeachingTip for notifications
+        private TeachingTip? currentNotification;
+        private DispatcherTimer? notificationTimer;
+
         private bool _disposed;
 
         // Define newMode as a DependencyProperty for binding
@@ -68,6 +74,13 @@ namespace KeyboardManagerEditorUI.Styles
 
         private void InputControl_KeyDown(int key)
         {
+            VirtualKey virtualKey = (VirtualKey)key;
+
+            if (_currentlyPressedKeys.Contains(virtualKey))
+            {
+                return;
+            }
+
             // if no keys are pressed, clear the lists when a new key is pressed
             if (_currentlyPressedKeys.Count == 0)
             {
@@ -83,7 +96,16 @@ namespace KeyboardManagerEditorUI.Styles
                 _keyPressOrder.Clear();
             }
 
-            VirtualKey virtualKey = (VirtualKey)key;
+            // Count current modifiers
+            int modifierCount = _currentlyPressedKeys.Count(k => IsModifierKey(k));
+
+            // If adding this key would exceed the limits (4 modifiers + 1 action key), don't add it and show notification
+            if ((IsModifierKey(virtualKey) && modifierCount >= 4) ||
+                (!IsModifierKey(virtualKey) && _currentlyPressedKeys.Count >= 5))
+            {
+                ShowNotificationTip("Shortcuts can only have up to 4 modifier keys");
+                return;
+            }
 
             // Check if this is a different variant of a modifier key already pressed
             if (IsModifierKey(virtualKey))
@@ -97,6 +119,67 @@ namespace KeyboardManagerEditorUI.Styles
             {
                 _keyPressOrder.Add(virtualKey);
                 UpdateKeysDisplay();
+            }
+        }
+
+        private void ShowNotificationTip(string message)
+        {
+            // If there's already an active notification, close and remove it first
+            CloseExistingNotification();
+
+            // Create a new notification
+            currentNotification = new TeachingTip
+            {
+                Title = "Input Limit Reached",
+                Subtitle = message,
+                IsLightDismissEnabled = true,
+                PreferredPlacement = TeachingTipPlacementMode.Top,
+                XamlRoot = this.XamlRoot,
+                IconSource = new SymbolIconSource { Symbol = Symbol.Important },
+            };
+
+            // Target the toggle button that triggered the notification
+            currentNotification.Target = NewMode ? RemappedToggleBtn : OriginalToggleBtn;
+
+            // Add the notification to the root panel and show it
+            if (this.Content is Panel rootPanel)
+            {
+                rootPanel.Children.Add(currentNotification);
+                currentNotification.IsOpen = true;
+
+                // Create a timer to auto-dismiss the notification
+                notificationTimer = new DispatcherTimer();
+                notificationTimer.Interval = TimeSpan.FromMilliseconds(EditorConstants.DefaultNotificationTimeout);
+                notificationTimer.Tick += (s, e) =>
+                {
+                    CloseExistingNotification();
+                    notificationTimer = null;
+                };
+                notificationTimer.Start();
+            }
+        }
+
+        // Helper method to close existing notifications
+        private void CloseExistingNotification()
+        {
+            // Stop any running timer
+            if (notificationTimer != null)
+            {
+                notificationTimer.Stop();
+                notificationTimer = null;
+            }
+
+            // Close and remove any existing notification
+            if (currentNotification != null && currentNotification.IsOpen)
+            {
+                currentNotification.IsOpen = false;
+
+                if (this.Content is Panel rootPanel)
+                {
+                    rootPanel.Children.Remove(currentNotification);
+                }
+
+                currentNotification = null;
             }
         }
 
@@ -456,6 +539,7 @@ namespace KeyboardManagerEditorUI.Styles
                 if (disposing)
                 {
                     CleanupKeyboardHook();
+                    CloseExistingNotification();
                     Reset();
                 }
 
@@ -493,6 +577,9 @@ namespace KeyboardManagerEditorUI.Styles
             }
 
             UpdateAllAppsCheckBoxState();
+
+            // Close any existing notifications
+            CloseExistingNotification();
 
             // Reset the focus status
             if (this.FocusState != FocusState.Unfocused)
