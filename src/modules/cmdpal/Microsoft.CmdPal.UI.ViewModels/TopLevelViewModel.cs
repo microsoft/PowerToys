@@ -93,7 +93,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             {
                 if (Alias is CommandAlias a)
                 {
-                    Alias = new CommandAlias(value, Id,  a.IsDirect);
+                    a.Alias = value;
                 }
                 else
                 {
@@ -152,7 +152,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             {
                 GenerateId();
 
-                UpdateAlias();
+                FetchAliasFromAliasManager();
                 UpdateHotkey();
                 UpdateTags();
             }
@@ -169,21 +169,24 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     public void SetAlias(CommandAlias? newAlias)
     {
-        _serviceProvider.GetService<AliasManager>()!.UpdateAlias(Id, newAlias);
-        UpdateAlias();
+        var commandAlias = newAlias is null
+                ? null
+                : new CommandAlias(newAlias.Alias, newAlias.CommandId, newAlias.IsDirect);
+
+        _serviceProvider.GetService<AliasManager>()!.UpdateAlias(Id, commandAlias);
         UpdateTags();
     }
 
-    private void UpdateAlias()
+    private void FetchAliasFromAliasManager()
     {
-        // Add tags for the alias, if we have one.
-        var aliases = _serviceProvider.GetService<AliasManager>();
-        if (aliases != null)
+        var am = _serviceProvider.GetService<AliasManager>();
+        if (am != null)
         {
-            var a = aliases.AliasFromId(Id);
-            if (a is not null)
+            var commandAlias = am.AliasFromId(Id);
+            if (commandAlias is not null)
             {
-                Alias = new CommandAlias(a.Alias, a.CommandId, a.IsDirect);
+                // Decouple from the alias manager alias object
+                Alias = new CommandAlias(commandAlias.Alias, commandAlias.CommandId, commandAlias.IsDirect);
             }
         }
     }
