@@ -32,7 +32,11 @@ namespace notifications
 
     void NotificationUtil::WarnIfElevationIsRequired(std::wstring title, std::wstring message, std::wstring button1, std::wstring button2)
     {
-        if (m_warningsElevatedApps && !m_warningShown && !is_toast_disabled(ElevatedDontShowAgainRegistryPath, ElevatedDisableIntervalInDays))
+        if (is_toast_disabled(ElevatedDontShowAgainRegistryPath, ElevatedDisableIntervalInDays))
+        {
+            return;
+        }
+        if (m_warningsElevatedApps && !m_warningShown)
         {
             std::vector<action_t> actions = {
                 link_button{ button1, NonLocalizable::RunAsAdminInfoPage },
