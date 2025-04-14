@@ -146,6 +146,7 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
 
         // Models
+        services.AddSingleton<ViewModelsFactory>();
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();
