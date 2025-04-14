@@ -13,6 +13,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using Windows.Foundation.Metadata;
+using static Microsoft.PowerToys.UITest.UITestBase.NativeMethods;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -470,29 +471,23 @@ namespace Microsoft.PowerToys.UITest
                     return;
                 }
 
-                DEVMODE devModeInfo = default(DEVMODE);
-                devModeInfo.DmDeviceName = new string(new char[32]);
-                devModeInfo.DmFormName = new string(new char[32]);
-                devModeInfo.DmSize = (short)Marshal.SizeOf<DEVMODE>();
-
-                int modeNum = 0;
-                while (EnumDisplaySettings(IntPtr.Zero, modeNum, ref devModeInfo) > 0)
-                {
-                    Console.WriteLine($"Mode {modeNum}: {devModeInfo.DmPelsWidth}x{devModeInfo.DmPelsHeight} @ {devModeInfo.DmDisplayFrequency}Hz");
-                    modeNum++;
-                }
-
                 DEVMODE devMode = default(DEVMODE);
                 devMode.DmDeviceName = new string(new char[32]);
                 devMode.DmFormName = new string(new char[32]);
                 devMode.DmSize = (short)Marshal.SizeOf<DEVMODE>();
+
+                int modeNum = 0;
+                while (EnumDisplaySettings(IntPtr.Zero, modeNum, ref devMode) > 0)
+                {
+                    Console.WriteLine($"Mode {modeNum}: {devMode.DmPelsWidth}x{devMode.DmPelsHeight} @ {devMode.DmDisplayFrequency}Hz");
+                    modeNum++;
+                }
 
                 devMode.DmPelsWidth = 1920;
                 devMode.DmPelsHeight = 1080;
 
                 int result = NativeMethods.ChangeDisplaySettings(ref devMode, NativeMethods.CDS_TEST);
 
-                Screen screenTest = Screen.PrimaryScreen!;
                 if (result == DISP_CHANGE_SUCCESSFUL)
                 {
                     result = ChangeDisplaySettings(ref devMode, CDS_UPDATEREGISTRY);
