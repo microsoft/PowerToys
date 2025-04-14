@@ -11,6 +11,9 @@ parameters:
   - name: useLatestWebView2
     type: boolean
     default: false
+  - name: isUIAutomationPipeline
+    type: boolean
+    default: false
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}
@@ -102,7 +105,11 @@ jobs:
       uiTests: true
       rerunFailedTests: true
       testAssemblyVer2: |
-        **\*UITest*.dll
+        ${{ if eq(parameters.isUIAutomationPipeline, true) }}:
+          **\*UITest*.dll
+        ${{ else }}:
+          **\UITests-FancyZones.dll
+          **\UITests-FancyZonesEditor.dll
         !**\obj\**
         !**\ref\**
     env:
