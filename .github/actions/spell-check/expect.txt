@@ -938,6 +938,7 @@ mpmc
 MRM
 MRT
 mru
+MSAL
 msc
 mscorlib
 msctls
