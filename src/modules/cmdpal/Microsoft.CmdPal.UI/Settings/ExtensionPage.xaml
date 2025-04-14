@@ -113,7 +113,7 @@
                                     Visibility="{x:Bind ViewModel.HasSettings}" />
 
                                 <Frame x:Name="SettingsFrame" Visibility="{x:Bind ViewModel.HasSettings}">
-                                
+
                                     <controls:SwitchPresenter
                                         HorizontalAlignment="Stretch"
                                         TargetType="x:Boolean"
