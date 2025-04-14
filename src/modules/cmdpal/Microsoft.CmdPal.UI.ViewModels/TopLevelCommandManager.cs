@@ -20,10 +20,10 @@ public partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
     IPageContext
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly TopLevelViewModelFactory _topLevelViewModelFactory;
+    private readonly ViewModelsFactory _viewModelsFactory;
     private readonly TaskScheduler _taskScheduler;
     private readonly IExtensionService _extensionService;
+    private readonly IEnumerable<ICommandProvider> _builtInCommandProviders;
 
     private readonly List<CommandProviderWrapper> _builtInCommands = [];
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
@@ -31,15 +31,15 @@ public partial class TopLevelCommandManager : ObservableObject,
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
     public TopLevelCommandManager(
-        IServiceProvider serviceProvider,
         IExtensionService extensionService,
-        TopLevelViewModelFactory topLevelViewModelFactory,
+        ViewModelsFactory topLevelViewModelFactory,
+        IEnumerable<ICommandProvider> builtInCommands,
         TaskScheduler taskScheduler)
     {
-        _serviceProvider = serviceProvider;
-        _topLevelViewModelFactory = topLevelViewModelFactory;
+        _viewModelsFactory = topLevelViewModelFactory;
         _taskScheduler = taskScheduler;
         _extensionService = extensionService;
+        _builtInCommandProviders = builtInCommands;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
     }
 
@@ -56,10 +56,10 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         // Load built-In commands first. These are all in-proc, and
         // owned by our ServiceProvider.
-        var builtInCommands = _serviceProvider.GetServices<ICommandProvider>();
+        var builtInCommands = _builtInCommandProviders;
         foreach (var provider in builtInCommands)
         {
-            CommandProviderWrapper wrapper = new(provider, _topLevelViewModelFactory, _taskScheduler);
+            var wrapper = _viewModelsFactory.CreateCommandProviderWrapper(provider);
             _builtInCommands.Add(wrapper);
             await LoadTopLevelCommandsFromProvider(wrapper);
         }
@@ -72,13 +72,12 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         WeakReference<IPageContext> weakSelf = new(this);
 
-        await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
+        await commandProvider.LoadTopLevelCommands(weakSelf);
 
-        var settings = _serviceProvider.GetService<SettingsModel>()!;
         var makeAndAdd = (ICommandItem? i, bool fallback) =>
         {
             var commandItemViewModel = new CommandItemViewModel(new(i), weakSelf);
-            var topLevelViewModel = _topLevelViewModelFactory.Create(commandItemViewModel, fallback, commandProvider.ExtensionHost, commandProvider.ProviderId, settings);
+            var topLevelViewModel = _viewModelsFactory.CreateTopLevelViewModel(commandItemViewModel, fallback, commandProvider.ExtensionHost, commandProvider.ProviderId);
 
             lock (TopLevelCommands)
             {
@@ -157,9 +156,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         WeakReference<IPageContext> weakSelf = new(this);
 
         // Fetch the new items
-        await sender.LoadTopLevelCommands(_serviceProvider, weakSelf);
-
-        var settings = _serviceProvider.GetService<SettingsModel>()!;
+        await sender.LoadTopLevelCommands(weakSelf);
 
         foreach (var i in sender.TopLevelItems)
         {
@@ -254,7 +251,7 @@ public partial class TopLevelCommandManager : ObservableObject,
                 await extension.StartExtensionAsync();
 
                 // ... and fetch the command provider from it.
-                CommandProviderWrapper wrapper = new(extension, _topLevelViewModelFactory, _taskScheduler);
+                var wrapper = _viewModelsFactory.CreateCommandProviderWrapper(extension);
                 _extensionCommandProviders.Add(wrapper);
                 await LoadTopLevelCommandsFromProvider(wrapper);
             }
