@@ -186,12 +186,16 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             var model = _commandItemViewModel.Model.Unsafe;
 
             // RPC to check type
-            if (model is IFallbackHandler fallback &&
-                model.Command is IListPage list)
+            var isFallbackHandler = model is IFallbackHandler fallback;
+            var isList = model?.Command is IListPage list;
+            var isFallbackCommandItem = model is IFallbackCommandItem fb;
+            if (isFallbackHandler || isFallbackCommandItem)
             {
                 IsImplicitFallback = true;
-                Logger.LogDebug($"Found implicit fallback: {Title}");
+                Logger.LogDebug($"Found implicit fallback: {Title} ({isFallbackHandler}, {isList}, {isFallbackCommandItem})");
             }
+
+            Logger.LogDebug($"{Title}: ({isFallbackHandler}, {isList}, {isFallbackCommandItem})");
         }
     }
 
