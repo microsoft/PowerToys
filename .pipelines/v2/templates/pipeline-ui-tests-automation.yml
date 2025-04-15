@@ -43,6 +43,8 @@ stages:
             buildConfigurations: [Release]
             enablePackageCaching: true
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+            runTests: false
+            buildTests: true
             useVSPreview: ${{ parameters.useVSPreview }}
 
     - stage: Test_${{ platform }}
