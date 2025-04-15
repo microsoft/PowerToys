@@ -1958,3 +1958,6 @@ ZXk
 ZXNs
 zzz
 steamapps
+acfs
+gameid
+installdir
