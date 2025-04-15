@@ -51,7 +51,7 @@ namespace UITests_FancyZones
             // Start Windows Explorer process
             LaunchExplorer("C:\\");
             string windowName = "Windows (C:) - File Explorer";
-            this.Session.Attach(windowName, WindowSize.Medium); // display window1
+            this.Session.Attach(windowName, WindowSize.Large); // display window1
 
             int screenWidth = Screen.PrimaryScreen?.Bounds.Width ?? 1920;  // default 1920
             int screenHeight = Screen.PrimaryScreen?.Bounds.Height ?? 1080;
@@ -65,10 +65,10 @@ namespace UITests_FancyZones
             LaunchExplorer("C:\\Program Files (x86)");
 
             string windowName_file = "Program Files (x86) - File Explorer";
-            this.Session.Attach(windowName_file, WindowSize.Medium);
+            this.Session.Attach(windowName_file, WindowSize.Large);
 
             var filetabView = DragTabViewWithShift(targetX, targetY);
-            filetabView.SendKeys(OpenQA.Selenium.Keys.Alt, OpenQA.Selenium.Keys.Tab);
+            this.Session.KeyboardAction(OpenQA.Selenium.Keys.LeftControl, OpenQA.Selenium.Keys.Escape, OpenQA.Selenium.Keys.PageDown);
             Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure window switch
 
             string? activeWindowTitle = GetActiveWindowTitle();
