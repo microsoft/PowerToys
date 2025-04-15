@@ -88,7 +88,7 @@ namespace Microsoft.CmdPal.Ext.WindowsServices.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open services (Ctrl+O).
+        ///   Looks up a localized string similar to Open services.
         /// </summary>
         internal static string wox_plugin_service_open_services {
             get {
@@ -133,7 +133,7 @@ namespace Microsoft.CmdPal.Ext.WindowsServices.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restart (Ctrl+R).
+        ///   Looks up a localized string similar to Restart.
         /// </summary>
         internal static string wox_plugin_service_restart {
             get {
