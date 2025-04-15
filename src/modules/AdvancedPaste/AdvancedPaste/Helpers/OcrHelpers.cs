@@ -24,11 +24,11 @@ public static class OcrHelpers
         OcrEngine ocrEngine;
         if (ocrLanguage is not null)
         {
-            ocrEngine = OcrEngine.TryCreateFromLanguage(ocrLanguage) ?? throw new InvalidOperationException("Unable to create OCR engine");
+            ocrEngine = OcrEngine.TryCreateFromLanguage(ocrLanguage) ?? throw new InvalidOperationException("Unable to create OCR engine from specified language");
         }
         else
         {
-            ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages() ?? throw new InvalidOperationException("Unable to create OCR engine");
+            ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages() ?? throw new InvalidOperationException("Unable to create OCR engine from user profile languages");
         }
 
         cancellationToken.ThrowIfCancellationRequested();
