@@ -20,6 +20,16 @@ parameters:
     type: string
     default: '0.0.1'
 
+  - name: cmdPalVersionNumber
+    displayName: "Command Palette Version Number"
+    type: string
+    default: '0.0.1'
+
+  - name: cmdPalSdkVersionNumber
+    displayName: "Command Palette SDK Version Number"
+    type: string
+    default: '0.0.1'
+
   - name: buildConfigurations
     displayName: "Build Configurations"
     type: object
@@ -78,6 +88,7 @@ extends:
               buildPlatforms: ${{ parameters.buildPlatforms }}
               buildConfigurations: ${{ parameters.buildConfigurations }}
               versionNumber: ${{ parameters.versionNumber }}
+              cmdPalVersionNumber: ${{ parameters.cmdPalVersionNumber }}
               publishArtifacts: false # 1ES PT handles publication for us.
               codeSign: true
               runTests: false
@@ -95,7 +106,7 @@ extends:
               beforeBuildSteps:
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
-                    .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
+                    .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment '' -cmdPalVersionNumber '${{ parameters.cmdPalVersionNumber }}'
                   displayName: Prepare versioning
 
                 # Prepare the localizations and telemetry config before the release build
@@ -106,6 +117,28 @@ extends:
                     move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
                     move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
                   displayName: Emplace telemetry files
+
+      - stage: Build_SDK
+        displayName: Build SDK
+        dependsOn: []
+        jobs:
+          - template: .pipelines/v2/templates/job-build-sdk.yml@self
+            parameters:
+              pool:
+                name: SHINE-INT-L
+                image: SHINE-VS17-Latest
+                os: windows
+              codeSign: true
+              sdkVersionNumber: ${{ parameters.cmdPalSdkVersionNumber }}
+              signingIdentity:
+                serviceName: $(SigningServiceName)
+                appId: $(SigningAppId)
+                tenantId: $(SigningTenantId)
+                akvName: $(SigningAKVName)
+                authCertName: $(SigningAuthCertName)
+                signCertName: $(SigningSignCertName)
+                useManagedIdentity: $(SigningUseManagedIdentity)
+                clientId: $(SigningOriginalClientId)
 
       - stage: Publish
         displayName: Publish
