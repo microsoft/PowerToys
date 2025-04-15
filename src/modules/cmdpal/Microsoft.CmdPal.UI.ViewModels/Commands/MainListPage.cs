@@ -142,8 +142,11 @@ public partial class MainListPage : DynamicListPage,
 
             foreach (var command in commands)
             {
-                var changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
-                needsToUpdate = needsToUpdate || changedVisibility;
+                if (command.IsExplicitFallback)
+                {
+                    var changedVisibility = command.SafeUpdateFallbackTextSynchronous(newSearch);
+                    needsToUpdate = needsToUpdate || changedVisibility;
+                }
             }
 
             if (needsToUpdate)
@@ -181,7 +184,7 @@ public partial class MainListPage : DynamicListPage,
         var extensionDisplayName = string.Empty;
         if (topLevelOrAppItem is TopLevelViewModel topLevel)
         {
-            isFallback = topLevel.IsFallback;
+            isFallback = topLevel.IsExplicitFallback || topLevel.IsImplicitFallback;
             if (topLevel.HasAlias)
             {
                 var alias = topLevel.AliasText;

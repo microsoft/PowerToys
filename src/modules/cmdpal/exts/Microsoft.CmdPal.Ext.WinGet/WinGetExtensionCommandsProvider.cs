@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -21,7 +20,7 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
     }
 
     private readonly ICommandItem[] _commands = [
-        new ListItem(new WinGetExtensionPage()),
+        new FallbackListItem(new WinGetExtensionPage()),
 
          new ListItem(
             new WinGetExtensionPage(WinGetExtensionPage.ExtensionsTag) { Title = Properties.Resources.winget_install_extensions_title })
@@ -43,4 +42,20 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
     public override void InitializeWithHost(IExtensionHost host) => WinGetExtensionHost.Instance.Initialize(host);
 
     public void SetAllLookup(Func<string, ICommandItem?> callback) => WinGetStatics.AppSearchCallback = callback;
+
+    private sealed partial class FallbackListItem : ListItem, IFallbackHandler
+    {
+        public FallbackListItem(ListPage page)
+            : base(page)
+        {
+        }
+
+        public void UpdateQuery(string query)
+        {
+            if (Command is ListPage page)
+            {
+                page.SearchText = query;
+            }
+        }
+    }
 }

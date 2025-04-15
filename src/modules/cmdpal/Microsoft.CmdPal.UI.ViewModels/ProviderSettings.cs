@@ -47,7 +47,7 @@ public class ProviderSettings
 
     public bool IsFallbackEnabled(TopLevelViewModel command)
     {
-        return FallbackCommands.TryGetValue(command.Id, out var enabled) ? enabled : true;
+        return FallbackCommands.TryGetValue(command.Id, out var enabled) ? enabled : true /*command.IsExplicitFallback*/;
     }
 
     public void SetFallbackEnabled(TopLevelViewModel command, bool enabled)

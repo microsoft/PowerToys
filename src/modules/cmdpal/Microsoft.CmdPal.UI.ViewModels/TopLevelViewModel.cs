@@ -33,7 +33,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private CommandAlias? Alias { get; set; }
 
-    public bool IsFallback { get; private set; }
+    public bool IsExplicitFallback { get; private set; }
+
+    public bool IsImplicitFallback { get; private set; }
 
     [ObservableProperty]
     public partial ObservableCollection<Tag> Tags { get; set; } = [];
@@ -154,7 +156,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
         _commandProviderId = commandProviderId;
         _commandItemViewModel = item;
 
-        IsFallback = isFallback;
+        IsExplicitFallback = isFallback;
         ExtensionHost = extensionHost;
 
         item.PropertyChanged += Item_PropertyChanged;
@@ -168,7 +170,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     {
         ItemViewModel.SlowInitializeProperties();
 
-        if (IsFallback)
+        if (IsExplicitFallback)
         {
             var model = _commandItemViewModel.Model.Unsafe;
 
@@ -176,6 +178,19 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
             if (model is IFallbackCommandItem fallback)
             {
                 DisplayTitle = fallback.DisplayTitle;
+            }
+        }
+
+        if (!IsExplicitFallback)
+        {
+            var model = _commandItemViewModel.Model.Unsafe;
+
+            // RPC to check type
+            if (model is IFallbackHandler fallback &&
+                model.Command is IListPage list)
+            {
+                IsImplicitFallback = true;
+                Logger.LogDebug($"Found implicit fallback: {Title}");
             }
         }
     }
@@ -275,7 +290,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     internal bool SafeUpdateFallbackTextSynchronous(string newQuery)
     {
-        if (!IsFallback)
+        if (!IsExplicitFallback && !IsImplicitFallback)
         {
             return false;
         }
@@ -287,7 +302,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
         try
         {
-            return UnsafeUpdateFallbackSynchronous(newQuery);
+            return IsExplicitFallback ? UnsafeUpdateFallbackCommandItemSynchronous(newQuery) : UnsafeUpdateImplicitFallbackSynchronous(newQuery);
         }
         catch (Exception ex)
         {
@@ -303,7 +318,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
     /// </summary>
     /// <param name="newQuery">The new search text to pass to the extension</param>
     /// <returns>true if our Title changed across this call</returns>
-    private bool UnsafeUpdateFallbackSynchronous(string newQuery)
+    private bool UnsafeUpdateFallbackCommandItemSynchronous(string newQuery)
     {
         var model = _commandItemViewModel.Model.Unsafe;
 
@@ -314,6 +329,24 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
             // RPC for method
             fallback.FallbackHandler.UpdateQuery(newQuery);
+            var isEmpty = string.IsNullOrEmpty(Title);
+            return wasEmpty != isEmpty;
+        }
+
+        return false;
+    }
+
+    private bool UnsafeUpdateImplicitFallbackSynchronous(string newQuery)
+    {
+        var model = _commandItemViewModel.Model.Unsafe;
+
+        // RPC to check type
+        if (model is IFallbackHandler fallback)
+        {
+            var wasEmpty = string.IsNullOrEmpty(Title);
+
+            // RPC for method
+            fallback.UpdateQuery(newQuery);
             var isEmpty = string.IsNullOrEmpty(Title);
             return wasEmpty != isEmpty;
         }

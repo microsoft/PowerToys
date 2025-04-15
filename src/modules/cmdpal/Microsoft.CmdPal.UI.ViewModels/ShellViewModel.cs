@@ -140,6 +140,14 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
         {
             _mainListPage.UpdateHistory(listItem);
         }
+
+        if (message.Context is TopLevelViewModel topLevel)
+        {
+            if (topLevel.IsImplicitFallback)
+            {
+                topLevel.SafeUpdateFallbackTextSynchronous(_mainListPage.SearchText);
+            }
+        }
     }
 
     public void SetActiveExtension(IExtensionWrapper? extension)
