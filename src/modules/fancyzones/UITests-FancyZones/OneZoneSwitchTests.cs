@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FancyZonesEditor.Models;
@@ -22,6 +24,53 @@ namespace UITests_FancyZones
         public OneZoneSwitchTests()
             : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
         {
+        }
+
+        [TestMethod]
+        public void TestLaunchFileExplore()
+        {
+            KillAllExplorerWindows();
+
+            // Start Windows Explorer process
+            LaunchExplorer("C:\\");
+            string windowName = "Windows (C:) - File Explorer";
+            this.Session.Attach(windowName, WindowSize.Medium);
+
+            DragTabViewWithShift();
+
+            // Start Windows Explorer process
+            LaunchExplorer("C:\\Program Files (x86)");
+
+            string windowName_file = "Program Files (x86) - File Explorer";
+            this.Session.Attach(windowName_file, WindowSize.Medium);
+
+            var filetabView = DragTabViewWithShift();
+            filetabView.SendKeys(Keys.Alt, Keys.Tab);
+            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure window switch
+
+            string? activeWindowTitle = GetActiveWindowTitle();
+            Console.WriteLine($"Active Window Title: {activeWindowTitle}");
+            Assert.AreEqual("Windows (C:) - File Explorer", activeWindowTitle);
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+        private static string? GetActiveWindowTitle()
+        {
+            const int nChars = 256;
+            StringBuilder buff = new StringBuilder(nChars);
+            IntPtr handle = GetForegroundWindow();
+
+            if (GetWindowText(handle, buff, nChars) > 0)
+            {
+                return buff.ToString();
+            }
+
+            return null;
         }
 
         private static void KillAllExplorerWindows()
@@ -41,50 +90,28 @@ namespace UITests_FancyZones
             }
         }
 
-        [TestMethod]
-        public void TestLaunchFileExplore()
+        private void LaunchExplorer(string path)
         {
-            KillAllExplorerWindows();
-
-            // Start Windows Explorer process
             var explorerProcessInfo = new ProcessStartInfo
             {
-                FileName = "explorer.exe", // This launches Windows Explorer
-                Arguments = "C:\\",  // You can specify any path you want Explorer to open, like C:\, D:\, or any directory
+                FileName = "explorer.exe",
+                Arguments = path,
             };
 
-            Process.Start(explorerProcessInfo);  // Start the explorer.exe process
-            Task.Delay(2000).Wait(); // Optional: Wait for a moment to ensure Explorer is up and running
+            Process.Start(explorerProcessInfo);
+            Task.Delay(500).Wait(); // Wait for the Explorer window to fully launch
+        }
 
-            string windowName = "Windows (C:) - File Explorer";
-            this.Session.Attach(windowName, WindowSize.Medium);
-
+        private Element DragTabViewWithShift()
+        {
             var tabView = this.Find<Element>(Microsoft.PowerToys.UITest.By.AccessibilityId("TabView"));
+
             int offsetX = 50;
             int offsetY = 50;
+
             tabView.KeyDownAndDrag(Keys.Shift, offsetX, offsetY);
 
-            // Start Windows Explorer process
-            var explorerProcessInfo_2 = new ProcessStartInfo
-            {
-                FileName = "explorer.exe", // This launches Windows Explorer
-                Arguments = "C:\\Program Files (x86)",  // You can specify any path you want Explorer to open, like C:\, D:\, or any directory
-            };
-
-            Process.Start(explorerProcessInfo_2);  // Start the explorer.exe process
-            Task.Delay(2000).Wait(); // Optional: Wait for a moment to ensure Explorer is up and running
-
-            string windowName_file = "Program Files (x86) - File Explorer";
-            this.Session.Attach(windowName_file, WindowSize.Medium);
-
-            var filetabView = this.Find<Element>(Microsoft.PowerToys.UITest.By.AccessibilityId("TabView"));
-            filetabView.KeyDownAndDrag(Keys.Shift, offsetX,setY = 50);
-
-            filetabView.SendKeys(Keys.Alt, Keys.Tab);
-            Task.Delay(2000).Wait(); // Optional: Wait for a moment to ensure Explorer is up and running
-
-            // filetabView.SendKeys(Keys.Alt, Keys.Tab);
-            // Task.Delay(2000).Wait();
+            return tabView;
         }
     }
 }
