@@ -4,7 +4,7 @@
 # First time run needs admin permission to trust the certificate.
 
 param (
-    [string]$architecture = "x64",  # Default to x64 if not provided
+    [string]$architecture = "x64", # Default to x64 if not provided
     [string]$buildConfiguration = "Debug"  # Default to Debug if not provided
 )
 
@@ -64,36 +64,7 @@ if ($existingCert) {
     Write-Host "Certificate already exists, using the existing certificate"
     $cert = $existingCert
 }
-else {
-
-    function Import-And-VerifyCertificate {
-        param (
-            [string]$cerPath,
-            [string]$storePath
-        )
-    
-        $thumbprint = (Get-PfxCertificate -FilePath $cerPath).Thumbprint
-    
-        try {
-            $null = Import-Certificate -FilePath $cerPath -CertStoreLocation $storePath -ErrorAction Stop
-        }
-        catch {
-            Write-Warning "❌ Failed to import certificate to $storePath : $_"
-            return $false
-        }
-    
-        $found = Get-ChildItem -Path $storePath | Where-Object { $_.Thumbprint -eq $thumbprint }
-    
-        if ($found) {
-            Write-Host "✅ Certificate is trusted in $storePath"
-            return $true
-        }
-        else {
-            Write-Warning "❌ Certificate not found in $storePath"
-            return $false
-        }
-    }
-    
+else {    
     # If the certificate doesn't exist, create a new self-signed certificate
     Write-Host "Certificate does not exist, creating a new certificate..."
     $cert = New-SelfSignedCertificate -Subject $certSubject `
@@ -101,26 +72,65 @@ else {
         -KeyAlgorithm RSA `
         -Type CodeSigningCert `
         -HashAlgorithm SHA256
+}
 
-    $cerPath = "$env:TEMP\temp_cert.cer"
-    Export-Certificate -Cert $cert -FilePath $cerPath -Force
-    # used for sign code/msix
-    # CurrentUser\TrustedPeople
-    if (-not (Import-And-VerifyCertificate -cerPath $cerPath -storePath "Cert:\CurrentUser\TrustedPeople")) {
-        exit 1
+function Import-And-VerifyCertificate {
+    param (
+        [string]$cerPath,
+        [string]$storePath
+    )
+
+    $thumbprint = (Get-PfxCertificate -FilePath $cerPath).Thumbprint
+
+    # ✅ Step 1: Check if already exists in store
+    $existingCert = Get-ChildItem -Path $storePath | Where-Object { $_.Thumbprint -eq $thumbprint }
+
+    if ($existingCert) {
+        Write-Host "✅ Certificate already exists in $storePath"
+        return $true
     }
 
-    # CurrentUser\Root
-    if (-not (Import-And-VerifyCertificate -cerPath $cerPath -storePath "Cert:\CurrentUser\Root")) {
-        exit 1
+    # 🚀 Step 2: Try to import if not already there
+    try {
+        $null = Import-Certificate -FilePath $cerPath -CertStoreLocation $storePath -ErrorAction Stop
+    }
+    catch {
+        Write-Warning "❌ Failed to import certificate to $storePath : $_"
+        return $false
     }
 
-    # LocalMachine\Root
-    if (-not (Import-And-VerifyCertificate -cerPath $cerPath -storePath "Cert:\LocalMachine\Root")) {
-        Write-Warning "⚠️ Failed to import to LocalMachine\Root (admin may be required)"
-        exit 1
+    # 🔁 Step 3: Verify again
+    $imported = Get-ChildItem -Path $storePath | Where-Object { $_.Thumbprint -eq $thumbprint }
+
+    if ($imported) {
+        Write-Host "✅ Certificate successfully imported to $storePath"
+        return $true
+    }
+    else {
+        Write-Warning "❌ Certificate not found in $storePath after import"
+        return $false
     }
 }
+
+$cerPath = "$env:TEMP\temp_cert.cer"
+Export-Certificate -Cert $cert -FilePath $cerPath -Force
+# used for sign code/msix
+# CurrentUser\TrustedPeople
+if (-not (Import-And-VerifyCertificate -cerPath $cerPath -storePath "Cert:\CurrentUser\TrustedPeople")) {
+    exit 1
+}
+
+# CurrentUser\Root
+if (-not (Import-And-VerifyCertificate -cerPath $cerPath -storePath "Cert:\CurrentUser\Root")) {
+    exit 1
+}
+
+# LocalMachine\Root
+if (-not (Import-And-VerifyCertificate -cerPath $cerPath -storePath "Cert:\LocalMachine\Root")) {
+    Write-Warning "⚠️ Failed to import to LocalMachine\Root (admin may be required)"
+    exit 1
+}
+
 
 # Output the thumbprint of the certificate (to confirm which certificate is being used)
 Write-Host "Using certificate with thumbprint: $($cert.Thumbprint)"
