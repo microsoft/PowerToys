@@ -54,7 +54,6 @@ public sealed partial class MainWindow : Window,
 
     // Notification Area ("Tray") icon data
     private NOTIFYICONDATAW? _trayIconData;
-    private bool _createdIcon;
     private DestroyIconSafeHandle? _largeIcon;
 
     private DesktopAcrylicController? _acrylicController;
@@ -99,7 +98,6 @@ public sealed partial class MainWindow : Window,
         _hotkeyWndProc = HotKeyPrc;
         var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
         _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
-        AddNotificationIcon();
 
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
@@ -149,6 +147,7 @@ public sealed partial class MainWindow : Window,
         var settings = App.Current.Services.GetService<SettingsModel>()!;
 
         SetupHotkey(settings);
+        SetupTrayIcon(settings.ShowSystemTrayIcon);
 
         // This will prevent our window from appearing in alt+tab or the taskbar.
         // You'll _need_ to use the hotkey to summon it.
@@ -299,7 +298,7 @@ public sealed partial class MainWindow : Window,
         var extensionService = serviceProvider.GetService<IExtensionService>()!;
         extensionService.SignalStopExtensionsAsync();
 
-        RemoveNotificationIcon();
+        RemoveTrayIcon();
 
         // WinUI bug is causing a crash on shutdown when FailFastOnErrors is set to true (#51773592).
         // Workaround by turning it off before shutdown.
@@ -491,9 +490,9 @@ public sealed partial class MainWindow : Window,
             // WM_WINDOWPOSCHANGING which is always received on explorer startup sequence.
             case PInvoke.WM_WINDOWPOSCHANGING:
                 {
-                    if (!_createdIcon)
+                    if (_trayIconData == null)
                     {
-                        AddNotificationIcon();
+                        SetupTrayIcon();
                     }
                 }
 
@@ -505,7 +504,7 @@ public sealed partial class MainWindow : Window,
                 {
                     // Handle the case where explorer.exe restarts.
                     // Even if we created it before, do it again
-                    AddNotificationIcon();
+                    SetupTrayIcon();
                 }
                 else if (uMsg == WM_TRAY_ICON)
                 {
@@ -525,55 +524,60 @@ public sealed partial class MainWindow : Window,
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
     }
 
-    private void AddNotificationIcon()
+    private void SetupTrayIcon(bool? showSystemTrayIcon = null)
     {
-        // We only need to build the tray data once.
-        if (_trayIconData == null)
+        if (showSystemTrayIcon ?? App.Current.Services.GetService<SettingsModel>()!.ShowSystemTrayIcon)
         {
-            // We need to stash this handle, so it doesn't clean itself up. If
-            // explorer restarts, we'll come back through here, and we don't
-            // really need to re-load the icon in that case. We can just use
-            // the handle from the first time.
-            _largeIcon = GetAppIconHandle();
-            _trayIconData = new NOTIFYICONDATAW()
+            // We only need to build the tray data once.
+            if (_trayIconData == null)
             {
-                cbSize = (uint)Marshal.SizeOf(typeof(NOTIFYICONDATAW)),
-                hWnd = _hwnd,
-                uID = MY_NOTIFY_ID,
-                uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
-                uCallbackMessage = WM_TRAY_ICON,
-                hIcon = (HICON)_largeIcon.DangerousGetHandle(),
-                szTip = RS_.GetString("AppStoreName"),
-            };
+                // We need to stash this handle, so it doesn't clean itself up. If
+                // explorer restarts, we'll come back through here, and we don't
+                // really need to re-load the icon in that case. We can just use
+                // the handle from the first time.
+                _largeIcon = GetAppIconHandle();
+                _trayIconData = new NOTIFYICONDATAW()
+                {
+                    cbSize = (uint)Marshal.SizeOf(typeof(NOTIFYICONDATAW)),
+                    hWnd = _hwnd,
+                    uID = MY_NOTIFY_ID,
+                    uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
+                    uCallbackMessage = WM_TRAY_ICON,
+                    hIcon = (HICON)_largeIcon.DangerousGetHandle(),
+                    szTip = RS_.GetString("AppStoreName"),
+                };
+            }
+
+            var d = (NOTIFYICONDATAW)_trayIconData;
+
+            // Add the notification icon
+            PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, in d);
         }
-
-        var d = (NOTIFYICONDATAW)_trayIconData;
-
-        // Add the notification icon
-        if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, in d))
+        else
         {
-            _createdIcon = true;
+            RemoveTrayIcon();
         }
     }
 
-    private void RemoveNotificationIcon()
+    private void RemoveTrayIcon()
     {
-        if (_trayIconData != null && _createdIcon)
+        if (_trayIconData != null)
         {
             var d = (NOTIFYICONDATAW)_trayIconData;
             if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d))
             {
-                _createdIcon = false;
+                _trayIconData = null;
             }
         }
+
+        _largeIcon?.Close();
     }
 
     private DestroyIconSafeHandle GetAppIconHandle()
     {
         var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
         DestroyIconSafeHandle largeIcon;
-        DestroyIconSafeHandle smallIcon;
-        PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out smallIcon, 1);
+        PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out _, 1);
         return largeIcon;
     }
 }
