@@ -9,21 +9,38 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml.Linq;
 using FancyZonesEditor.Models;
 using FancyZonesEditorCommon.Data;
+using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Appium.Windows;
+using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace UITests_FancyZones
 {
     [TestClass]
     public class OneZoneSwitchTests : UITestBase
     {
+        private static readonly int SubZones = 2;
+
         public OneZoneSwitchTests()
             : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
         {
+        }
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            CustomLayouts customLayouts = new CustomLayouts();
+
+            CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = CustomLayoutsList;
+
+            Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+            this.RestartScopeExe();
         }
 
         [TestMethod]
@@ -34,9 +51,15 @@ namespace UITests_FancyZones
             // Start Windows Explorer process
             LaunchExplorer("C:\\");
             string windowName = "Windows (C:) - File Explorer";
-            this.Session.Attach(windowName, WindowSize.Medium);
+            this.Session.Attach(windowName, WindowSize.Medium); // display window1
 
-            DragTabViewWithShift();
+            int screenWidth = Screen.PrimaryScreen?.Bounds.Width ?? 1920;  // default 1920
+            int screenHeight = Screen.PrimaryScreen?.Bounds.Height ?? 1080;
+
+            int targetX = screenWidth / SubZones / 3;
+            int targetY = screenWidth / SubZones / 2;
+
+            var tabView = DragTabViewWithShift(targetX, targetY);
 
             // Start Windows Explorer process
             LaunchExplorer("C:\\Program Files (x86)");
@@ -44,14 +67,38 @@ namespace UITests_FancyZones
             string windowName_file = "Program Files (x86) - File Explorer";
             this.Session.Attach(windowName_file, WindowSize.Medium);
 
-            var filetabView = DragTabViewWithShift();
-            filetabView.SendKeys(Keys.Alt, Keys.Tab);
+            var filetabView = DragTabViewWithShift(targetX, targetY);
+            filetabView.SendKeys(OpenQA.Selenium.Keys.Alt, OpenQA.Selenium.Keys.Tab);
             Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure window switch
 
             string? activeWindowTitle = GetActiveWindowTitle();
             Console.WriteLine($"Active Window Title: {activeWindowTitle}");
             Assert.AreEqual("Windows (C:) - File Explorer", activeWindowTitle);
         }
+
+        private static readonly CustomLayouts.CustomLayoutListWrapper CustomLayoutsList = new CustomLayouts.CustomLayoutListWrapper
+        {
+            CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>
+            {
+                new CustomLayouts.CustomLayoutWrapper
+                {
+                    Uuid = "{63F09977-D327-4DAC-98F4-0C886CAE9517}",
+                    Type = CustomLayout.Grid.TypeToString(),
+                    Name = "Custom Column",
+                    Info = new CustomLayouts().ToJsonElement(new CustomLayouts.GridInfoWrapper
+                    {
+                        Rows = 1,
+                        Columns = SubZones,
+                        RowsPercentage = new List<int> { 10000 },
+                        ColumnsPercentage = new List<int> { 5000, 5000 },
+                        CellChildMap = new int[][] { [0, 1] },
+                        SensitivityRadius = 20,
+                        ShowSpacing = true,
+                        Spacing = 10,
+                    }),
+                },
+            },
+        };
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
@@ -99,17 +146,19 @@ namespace UITests_FancyZones
             };
 
             Process.Start(explorerProcessInfo);
-            Task.Delay(500).Wait(); // Wait for the Explorer window to fully launch
+            Task.Delay(2000).Wait(); // Wait for the Explorer window to fully launch
         }
 
-        private Element DragTabViewWithShift()
+        private Element DragTabViewWithShift(int targetX = 50, int targetY = 50)
         {
             var tabView = this.Find<Element>(Microsoft.PowerToys.UITest.By.AccessibilityId("TabView"));
+            Assert.IsTrue(tabView.Rect.HasValue, "TabView rectangle should have a value.");
 
-            int offsetX = 50;
-            int offsetY = 50;
+            int dx = targetX - tabView.Rect.Value.X;
+            int dy = targetY - tabView.Rect.Value.Y;
+            Console.WriteLine($"dx: {dx}, dy: {dy}");
 
-            tabView.KeyDownAndDrag(Keys.Shift, offsetX, offsetY);
+            tabView.KeyDownAndDrag(OpenQA.Selenium.Keys.Shift, dx, dy);
 
             return tabView;
         }
