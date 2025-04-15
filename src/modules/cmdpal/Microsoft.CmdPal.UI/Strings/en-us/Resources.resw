@@ -385,4 +385,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="BehaviorSettingsHeader.Text" xml:space="preserve">
     <value>Behavior</value>
   </data>
+  <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Header" xml:space="preserve">
+    <value>Show system tray icon</value>
+  </data>
+  <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Description" xml:space="preserve">
+    <value>Choose if Command Palette is visible in the system tray</value>
+  </data>
 </root>
