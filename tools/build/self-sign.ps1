@@ -1,4 +1,7 @@
 #https://learn.microsoft.com/en-us/windows/msix/package/signing-known-issues
+# 1. Build the powertoys as usual.
+# 2. Call this script to sign the msix package.
+# First time run needs admin permission to trust the certificate.
 
 param (
     [string]$architecture = "x64",  # Default to x64 if not provided
@@ -127,7 +130,12 @@ $rootDirectory = (Split-Path -Parent(Split-Path -Parent (Split-Path -Parent $MyI
 
 # Dynamically build the directory path based on architecture and build configuration
 # $directoryPath = Join-Path $rootDirectory "$architecture\$buildConfiguration\WinUI3Apps\CmdPal\"
-$directoryPath = Join-Path $rootDirectory "x64\$buildConfiguration\WinUI3Apps\CmdPal\"
+$directoryPath = Join-Path $rootDirectory "$architecture\$buildConfiguration\WinUI3Apps\CmdPal\"
+
+if (-not (Test-Path $directoryPath)) {
+    Write-Error "Path to search for msix files does not exist: $directoryPath"
+    exit 1
+}
 
 Write-Host "Directory path to search for .msix and .appx files: $directoryPath"
 
