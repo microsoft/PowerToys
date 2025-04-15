@@ -28,7 +28,7 @@ public static class OcrHelpers
         }
         else
         {
-            ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages() ?? throw new InvalidOperationException("Unable to create OCR engine from user profile languages");
+            ocrEngine = OcrEngine.TryCreateFromUserProfileLanguages() ?? throw new InvalidOperationException("Unable to create OCR engine from user profile language");
         }
 
         cancellationToken.ThrowIfCancellationRequested();
