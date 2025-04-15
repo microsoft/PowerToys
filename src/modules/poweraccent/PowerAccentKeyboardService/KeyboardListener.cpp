@@ -228,7 +228,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                 Logger::debug(L"Next toolbar position - space");
                 m_nextCharCb(TriggerKey::Space, m_leftShiftPressed || m_rightShiftPressed);
             }
-            
+
             return true;
         }
 
@@ -297,7 +297,6 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             {
                 case WM_KEYDOWN:
                 {
-                    Logger::debug(L"Key down: {}", key->vkCode);
                     if (s_instance->OnKeyDown(*key))
                     {
                         return true;
