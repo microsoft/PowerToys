@@ -163,15 +163,15 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
     private void HandleChangeAlias()
     {
-        SetAlias(Alias);
+        SetAlias();
         Save();
     }
 
-    public void SetAlias(CommandAlias? newAlias)
+    public void SetAlias()
     {
-        var commandAlias = newAlias is null
+        var commandAlias = Alias is null
                 ? null
-                : new CommandAlias(newAlias.Alias, newAlias.CommandId, newAlias.IsDirect);
+                : new CommandAlias(Alias.Alias, Alias.CommandId, Alias.IsDirect);
 
         _serviceProvider.GetService<AliasManager>()!.UpdateAlias(Id, commandAlias);
         UpdateTags();
