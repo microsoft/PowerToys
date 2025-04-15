@@ -18,7 +18,8 @@ struct Constants;
 template<>
 struct Constants<char>
 {
-    static inline const char* V = "v";
+    static inline const char* LOWER_V = "v";
+    static inline const char* UPPER_V = "V";
     static inline const char* DOT = ".";
     static inline const char SPACE = ' ';
 };
@@ -26,7 +27,8 @@ struct Constants<char>
 template<>
 struct Constants<wchar_t>
 {
-    static inline const wchar_t* V = L"v";
+    static inline const wchar_t* LOWER_V = L"v";
+    static inline const wchar_t* UPPER_V = L"V";
     static inline const wchar_t* DOT = L".";
     static inline const wchar_t SPACE = L' ';
 };
@@ -36,7 +38,8 @@ std::optional<VersionHelper> fromString(std::basic_string_view<CharT> str)
 {
     try
     {
-        str = left_trim<CharT>(trim<CharT>(str), Constants<CharT>::V);
+        str = left_trim<CharT>(trim<CharT>(str), Constants<CharT>::LOWER_V);
+        str = left_trim<CharT>(trim<CharT>(str), Constants<CharT>::UPPER_V);
         std::basic_string<CharT> spacedStr{ str };
         replace_chars<CharT>(spacedStr, Constants<CharT>::DOT, Constants<CharT>::SPACE);
 

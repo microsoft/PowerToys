@@ -5,21 +5,20 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Storage.Pickers;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
     /// <summary>
     /// General Settings Page.
     /// </summary>
-    public sealed partial class GeneralPage : Page
+    public sealed partial class GeneralPage : Page, IRefreshablePage
     {
         private static DateTime OkToHideBackupAndRestoreMessageTime { get; set; }
 
@@ -73,7 +72,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 loader.GetString("GeneralSettings_RunningAsUserText"),
                 ShellPage.IsElevated,
                 ShellPage.IsUserAnAdmin,
-                App.UpdateUIThemeMethod,
                 ShellPage.SendDefaultIPCMessage,
                 ShellPage.SendRestartAdminIPCMessage,
                 ShellPage.SendCheckForUpdatesIPCMessage,
@@ -85,6 +83,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 loader);
 
             DataContext = ViewModel;
+
+            ViewModel.InitializeReportBugLink();
 
             doRefreshBackupRestoreStatus(100);
         }
@@ -98,6 +98,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             catch (Exception ex)
             {
                 Logger.LogError("Error while trying to open the system color settings", ex);
+            }
+        }
+
+        private void OpenDiagnosticsAndFeedbackSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.DiagnosticsAndFeedback);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error while trying to open the system Diagnostics & Feedback settings", ex);
             }
         }
 
@@ -132,6 +144,26 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
             string r = await Task.FromResult<string>(ShellGetFolder.GetFolderDialog(hwnd));
             return r;
+        }
+
+        private void Click_LanguageRestart(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Restart();
+        }
+
+        private void Click_ViewDiagnosticDataViewerRestart(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Restart();
+        }
+
+        public void RefreshEnabledState()
+        {
+            ViewModel.RefreshSettingsOnExternalChange();
+        }
+
+        private async void ViewDiagnosticData_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(ViewModel.ViewDiagnosticData);
         }
     }
 }

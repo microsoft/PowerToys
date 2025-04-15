@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading;
+
 using Microsoft.UI.Dispatching;
 
 namespace Peek.UI.Native
@@ -13,7 +14,7 @@ namespace Peek.UI.Native
         public static void WaitForEventLoop(string eventName, Action callback)
         {
             var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-            new Thread(() =>
+            var t = new Thread(() =>
             {
                 var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
                 while (true)
@@ -23,7 +24,10 @@ namespace Peek.UI.Native
                         dispatcherQueue.TryEnqueue(() => callback());
                     }
                 }
-            }).Start();
+            });
+
+            t.IsBackground = true;
+            t.Start();
         }
     }
 }

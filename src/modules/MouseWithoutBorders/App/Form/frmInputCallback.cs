@@ -16,6 +16,7 @@ using System.Windows.Forms;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 
 [module: SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions", Scope = "member", Target = "MouseWithoutBorders.frmInputCallback.#InstallKeyboardAndMouseHook()", Justification = "Dotnet port with style preservation")]
 
@@ -62,10 +63,10 @@ namespace MouseWithoutBorders
             try
             {
                 Common.Hook = new InputHook();
-                Common.Hook.MouseEvent += new InputHook.MouseEvHandler(Common.MouseEvent);
-                Common.Hook.KeyboardEvent += new InputHook.KeybdEvHandler(Common.KeybdEvent);
+                Common.Hook.MouseEvent += new InputHook.MouseEvHandler(Event.MouseEvent);
+                Common.Hook.KeyboardEvent += new InputHook.KeybdEvHandler(Event.KeybdEvent);
 
-                Common.Log("(((((Keyboard/Mouse hooks installed/reinstalled!)))))");
+                Logger.Log("(((((Keyboard/Mouse hooks installed/reinstalled!)))))");
                 /* The hook is called in the context of the thread that installed it.
                  * The call is made by sending a message to the thread that installed the hook.
                  * Therefore, the thread that installed the hook must have a message loop!!!

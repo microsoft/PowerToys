@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+
 using Peek.Common.Models;
 
 namespace Peek.Common.Extensions
@@ -27,19 +28,10 @@ namespace Peek.Common.Extensions
 
             try
             {
-                PropVariant propVar;
-
-                propertyStore.GetValue(ref key, out propVar);
+                propertyStore.GetValue(ref key, out PropVariant propVar);
 
                 // VT_UI4 Indicates a 4-byte unsigned integer formatted in little-endian byte order.
-                if ((VarEnum)propVar.Vt == VarEnum.VT_UI4)
-                {
-                    return propVar.UlVal;
-                }
-                else
-                {
-                    return null;
-                }
+                return (VarEnum)propVar.Vt == VarEnum.VT_UI4 ? propVar.UlVal : null;
             }
             catch (Exception)
             {
@@ -63,19 +55,10 @@ namespace Peek.Common.Extensions
 
             try
             {
-                PropVariant propVar;
-
-                propertyStore.GetValue(ref key, out propVar);
+                propertyStore.GetValue(ref key, out PropVariant propVar);
 
                 // VT_UI8 Indicates an 8-byte unsigned integer formatted in little-endian byte order.
-                if ((VarEnum)propVar.Vt == VarEnum.VT_UI8)
-                {
-                    return propVar.UhVal;
-                }
-                else
-                {
-                    return null;
-                }
+                return (VarEnum)propVar.Vt == VarEnum.VT_UI8 ? propVar.UhVal : null;
             }
             catch (Exception)
             {
@@ -98,18 +81,9 @@ namespace Peek.Common.Extensions
 
             try
             {
-                PropVariant propVar;
+                propertyStore.GetValue(ref key, out PropVariant propVar);
 
-                propertyStore.GetValue(ref key, out propVar);
-
-                if ((VarEnum)propVar.Vt == VarEnum.VT_LPWSTR)
-                {
-                    return Marshal.PtrToStringUni(propVar.P) ?? string.Empty;
-                }
-                else
-                {
-                    return null;
-                }
+                return (VarEnum)propVar.Vt == VarEnum.VT_LPWSTR ? Marshal.PtrToStringUni(propVar.P) ?? string.Empty : null;
             }
             catch (Exception)
             {

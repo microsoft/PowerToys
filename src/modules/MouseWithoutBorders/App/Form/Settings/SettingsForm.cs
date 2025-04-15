@@ -5,6 +5,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Form.Settings;
 
 namespace MouseWithoutBorders
@@ -22,9 +23,9 @@ namespace MouseWithoutBorders
             toolTipManual.ToolTipTitle = Application.ProductName;
             Text = Application.ProductName;
 
-            Common.LogDebug("FIRST RUN, SHOWING THE FIRST SETUP PAGE.");
+            Logger.LogDebug("FIRST RUN, SHOWING THE FIRST SETUP PAGE.");
 
-            Common.LogDebug($"{nameof(Common.RunWithNoAdminRight)} = {Common.RunWithNoAdminRight}");
+            Logger.LogDebug($"{nameof(Common.RunWithNoAdminRight)} = {Common.RunWithNoAdminRight}");
 
             if (Common.RunWithNoAdminRight)
             {
@@ -38,11 +39,11 @@ namespace MouseWithoutBorders
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            Common.Settings = null;
+            MachineStuff.Settings = null;
 
             if (_currentPage != null)
             {
-                Common.LogDebug(_currentPage.Name + " closing.");
+                Logger.LogDebug(_currentPage.Name + " closing.");
                 _currentPage.OnPageClosing();
             }
 
@@ -66,7 +67,7 @@ namespace MouseWithoutBorders
 
             if (page != null)
             {
-                Common.LogDebug("GOING TO NEXT PAGE: " + page.Name);
+                Logger.LogDebug("GOING TO NEXT PAGE: " + page.Name);
                 page.BackColor = Color.Transparent;
                 page.NextPage += PageNextPage;
                 page.Location = contentPanel.Location;

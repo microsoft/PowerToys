@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+
 using Microsoft.Plugin.Indexer.SearchHelper;
 using Wox.Infrastructure;
 using Wox.Plugin;

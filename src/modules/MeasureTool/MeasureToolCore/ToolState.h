@@ -31,9 +31,19 @@ struct CommonState
 
     Measurement::Unit units = Measurement::Unit::Pixel;
 
-    mutable Serialized<OverlayBoxText> overlayBoxText;
     POINT cursorPosSystemSpace = {}; // updated atomically
     std::atomic_bool closeOnOtherMonitors = false;
+
+    float GetPhysicalPx2MmRatio(HWND window) const
+    {
+        auto ratio = -1.0f;
+        auto size = MonitorInfo::GetFromWindow(window).GetSize();
+        if (size.width_physical > 0u)
+        {
+            ratio = size.width_mm / static_cast<float>(size.width_physical);
+        }
+        return ratio;
+    }
 };
 
 struct CursorDrag
@@ -77,9 +87,13 @@ struct MeasureToolState
 
     struct PerScreen
     {
+        using PrevMeasurement = std::pair<POINT, Measurement>;
+
         bool cursorInLeftScreenHalf = false;
         bool cursorInTopScreenHalf = false;
         std::optional<Measurement> measuredEdges;
+        std::vector<PrevMeasurement> prevMeasurements;
+
         // While not in a continuous capturing mode, we need to draw captured backgrounds. These are passed
         // directly from a capturing thread.
         const MappedTextureView* capturedScreenTexture = nullptr;

@@ -5,13 +5,14 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using AllExperiments;
-using global::PowerToys.GPOWrapper;
+
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WinRT.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -52,13 +53,16 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private static ISettingsUtils settingsUtils = new SettingsUtils();
 
-        private bool ExperimentationToggleSwitchEnabled { get; set; } = true;
+        /* NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
+          private bool ExperimentationToggleSwitchEnabled { get; set; } = true;
+        */
 
         public OobeShellPage()
         {
             InitializeComponent();
 
-            ExperimentationToggleSwitchEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
+            // NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
+            // ExperimentationToggleSwitchEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
             SetTitleBar();
             DataContext = ViewModel;
             OobeShellHandler = this;
@@ -68,6 +72,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 ModuleName = "Overview",
                 IsNew = false,
+            });
+            Modules.Insert((int)PowerToysModules.AdvancedPaste, new OobePowerToysModule()
+            {
+                ModuleName = "AdvancedPaste",
+                IsNew = true,
             });
             Modules.Insert((int)PowerToysModules.AlwaysOnTop, new OobePowerToysModule()
             {
@@ -82,6 +91,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.CmdNotFound, new OobePowerToysModule()
             {
                 ModuleName = "CmdNotFound",
+                IsNew = false,
+            });
+            Modules.Insert((int)PowerToysModules.CmdPal, new OobePowerToysModule()
+            {
+                ModuleName = "CmdPal",
                 IsNew = true,
             });
             Modules.Insert((int)PowerToysModules.ColorPicker, new OobePowerToysModule()
@@ -92,12 +106,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.CropAndLock, new OobePowerToysModule()
             {
                 ModuleName = "CropAndLock",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.EnvironmentVariables, new OobePowerToysModule()
             {
                 ModuleName = "EnvironmentVariables",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.FancyZones, new OobePowerToysModule()
             {
@@ -107,7 +121,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.FileLocksmith, new OobePowerToysModule()
             {
                 ModuleName = "FileLocksmith",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.FileExplorer, new OobePowerToysModule()
             {
@@ -132,12 +146,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.MouseWithoutBorders, new OobePowerToysModule()
             {
                 ModuleName = "MouseWithoutBorders",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.Peek, new OobePowerToysModule()
             {
                 ModuleName = "Peek",
-                IsNew = true,
+                IsNew = false,
             });
             Modules.Insert((int)PowerToysModules.PowerRename, new OobePowerToysModule()
             {
@@ -165,12 +179,6 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 IsNew = false,
             });
 
-            Modules.Insert((int)PowerToysModules.VideoConference, new OobePowerToysModule()
-            {
-                ModuleName = "VideoConference",
-                IsNew = false,
-            });
-
             Modules.Insert((int)PowerToysModules.MeasureTool, new OobePowerToysModule()
             {
                 ModuleName = "MeasureTool",
@@ -180,12 +188,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.Hosts, new OobePowerToysModule()
             {
                 ModuleName = "Hosts",
-                IsNew = true,
+                IsNew = false,
             });
 
-            Modules.Insert((int)PowerToysModules.PastePlain, new OobePowerToysModule()
+            Modules.Insert((int)PowerToysModules.Workspaces, new OobePowerToysModule()
             {
-                ModuleName = "PastePlain",
+                ModuleName = "Workspaces",
                 IsNew = true,
             });
 
@@ -198,6 +206,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             Modules.Insert((int)PowerToysModules.RegistryPreview, new OobePowerToysModule()
             {
                 ModuleName = "RegistryPreview",
+                IsNew = false,
+            });
+
+            Modules.Insert((int)PowerToysModules.NewPlus, new OobePowerToysModule()
+            {
+                ModuleName = "NewPlus",
+                IsNew = true,
+            });
+
+            Modules.Insert((int)PowerToysModules.ZoomIt, new OobePowerToysModule()
+            {
+                ModuleName = "ZoomIt",
                 IsNew = true,
             });
         }
@@ -231,7 +251,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 switch (selectedItem.Tag)
                 {
-                    case "Overview":
+                    case "Overview": NavigationFrame.Navigate(typeof(OobeOverview)); break;
+                    /* NOTE: Experimentation for OOBE is currently turned off on server side. Keeping this code in a comment to allow future experiments.
                         if (ExperimentationToggleSwitchEnabled && GPOWrapper.GetAllowExperimentationValue() != GpoRuleConfigured.Disabled)
                         {
                             switch (AllExperiments.Experiments.LandingPageExperiment)
@@ -251,11 +272,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                             NavigationFrame.Navigate(typeof(OobeOverview));
                             break;
                         }
-
+                    */
                     case "WhatsNew": NavigationFrame.Navigate(typeof(OobeWhatsNew)); break;
+                    case "AdvancedPaste": NavigationFrame.Navigate(typeof(OobeAdvancedPaste)); break;
                     case "AlwaysOnTop": NavigationFrame.Navigate(typeof(OobeAlwaysOnTop)); break;
                     case "Awake": NavigationFrame.Navigate(typeof(OobeAwake)); break;
                     case "CmdNotFound": NavigationFrame.Navigate(typeof(OobeCmdNotFound)); break;
+                    case "CmdPal": NavigationFrame.Navigate(typeof(OobeCmdPal)); break;
                     case "ColorPicker": NavigationFrame.Navigate(typeof(OobeColorPicker)); break;
                     case "CropAndLock": NavigationFrame.Navigate(typeof(OobeCropAndLock)); break;
                     case "EnvironmentVariables": NavigationFrame.Navigate(typeof(OobeEnvironmentVariables)); break;
@@ -269,14 +292,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                     case "FileExplorer": NavigationFrame.Navigate(typeof(OobeFileExplorer)); break;
                     case "ShortcutGuide": NavigationFrame.Navigate(typeof(OobeShortcutGuide)); break;
                     case "TextExtractor": NavigationFrame.Navigate(typeof(OobePowerOCR)); break;
-                    case "VideoConference": NavigationFrame.Navigate(typeof(OobeVideoConference)); break;
                     case "MouseUtils": NavigationFrame.Navigate(typeof(OobeMouseUtils)); break;
                     case "MouseWithoutBorders": NavigationFrame.Navigate(typeof(OobeMouseWithoutBorders)); break;
                     case "MeasureTool": NavigationFrame.Navigate(typeof(OobeMeasureTool)); break;
                     case "Hosts": NavigationFrame.Navigate(typeof(OobeHosts)); break;
                     case "RegistryPreview": NavigationFrame.Navigate(typeof(OobeRegistryPreview)); break;
-                    case "PastePlain": NavigationFrame.Navigate(typeof(OobePastePlain)); break;
                     case "Peek": NavigationFrame.Navigate(typeof(OobePeek)); break;
+                    case "NewPlus": NavigationFrame.Navigate(typeof(OobeNewPlus)); break;
+                    case "Workspaces": NavigationFrame.Navigate(typeof(OobeWorkspaces)); break;
+                    case "ZoomIt": NavigationFrame.Navigate(typeof(OobeZoomIt)); break;
                 }
             }
         }
@@ -289,6 +313,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 // A custom title bar is required for full window theme and Mica support.
                 // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
                 u.ExtendsContentIntoTitleBar = true;
+                WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(u));
                 u.SetTitleBar(AppTitleBar);
             }
         }

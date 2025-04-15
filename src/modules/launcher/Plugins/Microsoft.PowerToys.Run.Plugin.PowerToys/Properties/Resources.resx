@@ -139,6 +139,10 @@
     <value>Environment Variables</value>
     <comment>"Environment Variables" is the name of the utility</comment>
   </data>
+  <data name="Workspaces_Editor" xml:space="preserve">
+    <value>Workspaces Editor</value>
+    <comment>"Workspaces" is the name of the utility</comment>
+  </data>
   <data name="FancyZones_Editor" xml:space="preserve">
     <value>FancyZones Editor</value>
     <comment>"FancyZones" is the name of the utility</comment>
@@ -148,7 +152,7 @@
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
   <data name="Plugin_Description" xml:space="preserve">
-    <value>Opens PowerToys utilities and settings.</value>
+    <value>Opens PowerToys utilities and settings</value>
   </data>
   <data name="Plugin_Name" xml:space="preserve">
     <value>PowerToys</value>

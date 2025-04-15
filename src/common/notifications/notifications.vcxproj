@@ -27,15 +27,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="notifications.h" />
-    <ClInclude Include="NotificationUtil.h" />
     <ClInclude Include="dont_show_again.h" />
+    <ClInclude Include="NotificationUtil.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dont_show_again.cpp" />
     <ClCompile Include="notifications.cpp" />
+    <ClCompile Include="NotificationUtil.cpp" />
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

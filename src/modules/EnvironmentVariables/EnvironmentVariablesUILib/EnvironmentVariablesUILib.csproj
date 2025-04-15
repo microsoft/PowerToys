@@ -1,0 +1,62 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <RootNamespace>EnvironmentVariablesUILib</RootNamespace>
+    <UseWinUI>true</UseWinUI>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AssemblyName>PowerToys.EnvironmentVariablesUILib</AssemblyName>
+    <Platforms>AnyCPU</Platforms>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.EnvironmentVariablesUILib.pri</ProjectPriFileName>
+    <GenerateLibraryLayout>true</GenerateLibraryLayout>
+    <IsPackable>true</IsPackable>
+    <!-- The default generated file path exceeds the length limit 260 on the build agent. Using a shorter path as a workaround. -->
+    <CompilerGeneratedFilesOutputPath>$(ProjectDir)obj\g</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Properties for nuget package. -->
+    <Description>Implements the UI control for the PowerToys Environment Variables Utility</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(OutDir)\PowerToys.EnvironmentVariablesUILib.pri" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+    <None Include="$(OutDir)\PowerToys.EnvironmentVariablesUILib.pri" Pack="True" PackageCopyToOutput="True" PackagePath="contentFiles\any\$(TargetFramework)" />
+    <None Include="$(OutDir)\PowerToys.EnvironmentVariablesUILib.pdb" Pack="True" PackageCopyToOutput="true" PackagePath="lib/$(TargetFramework)" />
+
+    <None Include="Assets\**\*.png" Pack="true" PackageCopyToOutput="true" PackagePath="contentFiles\any\$(TargetFramework)\Assets"/>
+    <None Include="Assets\**\*.ico" Pack="true" PackageCopyToOutput="true" PackagePath="contentFiles\any\$(TargetFramework)\Assets"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Assets\**\*.png" Pack="false" />
+    <Content Remove="Assets\**\*.ico" Pack="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" />
+    <PackageReference Include="System.IO.Abstractions" />
+    <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
+    <PackageReference Include="System.Text.Json" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <Target Name="EnsureCompilerGeneratedFilesOutputPathExists" BeforeTargets="XamlPreCompile">
+    <MakeDir Directories="$(CompilerGeneratedFilesOutputPath)" />
+  </Target>
+</Project>

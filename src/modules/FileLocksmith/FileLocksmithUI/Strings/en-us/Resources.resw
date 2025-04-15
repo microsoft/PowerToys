@@ -130,6 +130,13 @@
   <data name="Files.Text" xml:space="preserve">
     <value>Files</value>
   </data>
+  <data name="ProcessFilesListDialog.Title" xml:space="preserve">
+    <value>Files</value>
+  </data>
+  <data name="ProcessFilesListDialog.CloseButtonText" xml:space="preserve">
+    <value>Close</value>
+    <comment>As in, close a dialog prompt.</comment>
+  </data>
   <data name="PathsTooltipDescription.Text" xml:space="preserve">
     <value>Click to see the entire list of paths.</value>
     <comment>Paths as in file paths that were selected for the utility to check.</comment>
@@ -163,5 +170,9 @@
   <data name="AppAdminTitle" xml:space="preserve">
     <value>Administrator: File Locksmith</value>
     <comment>Title of the window when running as administrator.</comment>
+  </data>
+  <data name="ShowProcessFiles.Text" xml:space="preserve">
+    <value>Show files</value>
+    <comment>Show files for the selected process</comment>
   </data>
 </root>

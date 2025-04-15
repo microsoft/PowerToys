@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace EnvironmentVariables.Helpers.Win32
+namespace EnvironmentVariables.Win32
 {
     public static class NativeMethods
     {

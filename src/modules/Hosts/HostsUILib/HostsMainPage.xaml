@@ -1,0 +1,728 @@
+﻿<Page
+    x:Class="HostsUILib.Views.HostsMainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:HostsUILib.Helpers"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:local="using:Hosts.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:HostsUILib.Models"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    x:Name="Page"
+    Loaded="Page_Loaded"
+    mc:Ignorable="d">
+    <i:Interaction.Behaviors>
+        <ic:EventTriggerBehavior EventName="Loaded">
+            <ic:InvokeCommandAction Command="{x:Bind ViewModel.ReadHostsCommand}" />
+        </ic:EventTriggerBehavior>
+    </i:Interaction.Behaviors>
+
+    <Page.Resources>
+
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!--  Other merged dictionaries here  -->
+            </ResourceDictionary.MergedDictionaries>
+
+
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <StaticResource x:Key="SubtleButtonBackground" ResourceKey="SubtleFillColorTransparent" />
+                    <StaticResource x:Key="SubtleButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+                    <StaticResource x:Key="SubtleButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+                    <StaticResource x:Key="SubtleButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+
+                    <StaticResource x:Key="SubtleButtonBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushPointerOver" ResourceKey="SubtleFillColorSecondary" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushPressed" ResourceKey="SubtleFillColorTertiary" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
+
+                    <StaticResource x:Key="SubtleButtonForeground" ResourceKey="TextFillColorPrimary" />
+                    <StaticResource x:Key="SubtleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+                    <StaticResource x:Key="SubtleButtonForegroundPressed" ResourceKey="TextFillColorSecondary" />
+                    <StaticResource x:Key="SubtleButtonForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="Light">
+                    <StaticResource x:Key="SubtleButtonBackground" ResourceKey="SubtleFillColorTransparent" />
+                    <StaticResource x:Key="SubtleButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+                    <StaticResource x:Key="SubtleButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+                    <StaticResource x:Key="SubtleButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+
+                    <StaticResource x:Key="SubtleButtonBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushPointerOver" ResourceKey="SubtleFillColorSecondary" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushPressed" ResourceKey="SubtleFillColorTertiary" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
+
+                    <StaticResource x:Key="SubtleButtonForeground" ResourceKey="TextFillColorPrimary" />
+                    <StaticResource x:Key="SubtleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+                    <StaticResource x:Key="SubtleButtonForegroundPressed" ResourceKey="TextFillColorSecondary" />
+                    <StaticResource x:Key="SubtleButtonForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="HighContrast">
+                    <StaticResource x:Key="SubtleButtonBackground" ResourceKey="SystemColorWindowColorBrush" />
+                    <StaticResource x:Key="SubtleButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
+                    <StaticResource x:Key="SubtleButtonBackgroundPressed" ResourceKey="SystemColorWindowColorBrush" />
+                    <StaticResource x:Key="SubtleButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+
+                    <StaticResource x:Key="SubtleButtonBorderBrush" ResourceKey="SystemColorWindowColorBrush" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushPressed" ResourceKey="SystemColorHighlightColorBrush" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushDisabled" ResourceKey="SystemColorGrayTextColor" />
+
+                    <StaticResource x:Key="SubtleButtonForeground" ResourceKey="SystemColorButtonTextColorBrush" />
+                    <StaticResource x:Key="SubtleButtonForegroundPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
+                    <StaticResource x:Key="SubtleButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
+                    <StaticResource x:Key="SubtleButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+                </ResourceDictionary>
+
+            </ResourceDictionary.ThemeDictionaries>
+
+            <Style x:Key="SubtleButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="{ThemeResource SubtleButtonBackground}" />
+                <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
+                <Setter Property="Foreground" Value="{ThemeResource SubtleButtonForeground}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource SubtleButtonBorderBrush}" />
+                <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
+                <Setter Property="Padding" Value="{StaticResource ButtonPadding}" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+                <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+                <Setter Property="FocusVisualMargin" Value="-3" />
+                <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                AnimatedIcon.State="Normal"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Background="{TemplateBinding Background}"
+                                BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Foreground="{TemplateBinding Foreground}">
+                                <ContentPresenter.BackgroundTransition>
+                                    <BrushTransition Duration="0:0:0.083" />
+                                </ContentPresenter.BackgroundTransition>
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonBackgroundPointerOver}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonBorderBrushPointerOver}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonForegroundPointerOver}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                            <VisualState.Setters>
+                                                <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="PointerOver" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonBackgroundPressed}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonBorderBrushPressed}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonForegroundPressed}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                            <VisualState.Setters>
+                                                <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="Pressed" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Disabled">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonBackgroundDisabled}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonBorderBrushDisabled}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonForegroundDisabled}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                            <VisualState.Setters>
+                                                <!--  DisabledVisual Should be handled by the control, not the animated icon.  -->
+                                                <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="Normal" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                            </ContentPresenter>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+
+            <tkconverters:StringVisibilityConverter
+                x:Key="StringVisibilityConverter"
+                EmptyValue="Collapsed"
+                NotEmptyValue="Visible" />
+            <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+            <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <tkconverters:BoolToVisibilityConverter
+                x:Key="BoolToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                TrueValue="Collapsed" />
+            <tkconverters:DoubleToVisibilityConverter
+                x:Key="DoubleToVisibilityConverter"
+                FalseValue="Visible"
+                GreaterThan="0"
+                TrueValue="Collapsed" />
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid Margin="16" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <!--  Buttons  -->
+            <RowDefinition Height="*" />
+            <!--  Content  -->
+        </Grid.RowDefinitions>
+        <Grid>
+            <!--  Buttons  -->
+            <Button x:Uid="AddEntryBtn" Command="{x:Bind NewDialogCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon
+                        x:Name="Icon"
+                        FontSize="16"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        Glyph="&#xe710;" />
+                    <TextBlock x:Uid="AddEntry" />
+                </StackPanel>
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="N" Modifiers="Control" />
+                </Button.KeyboardAccelerators>
+            </Button>
+
+            <StackPanel
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="4">
+                <Button
+                    x:Uid="AdditionalLinesBtn"
+                    Height="32"
+                    Command="{x:Bind AdditionalLinesDialogCommand}"
+                    Content="{ui:FontIcon Glyph=&#xe8a5;,
+                                          FontSize=16}"
+                    Style="{StaticResource SubtleButtonStyle}" />
+
+                <Button
+                    x:Uid="FilterBtn"
+                    Height="32"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <Button.Content>
+                        <Grid>
+                            <FontIcon
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontSize="16"
+                                Glyph="&#xe71c;" />
+                            <InfoBadge
+                                Width="10"
+                                Height="10"
+                                Margin="0,-4,-4,0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        </Grid>
+                    </Button.Content>
+                    <Button.Flyout>
+                        <Flyout ShouldConstrainToRootBounds="False">
+                            <StackPanel
+                                Width="320"
+                                HorizontalAlignment="Stretch"
+                                Spacing="12">
+                                <AutoSuggestBox
+                                    x:Uid="AddressFilter"
+                                    PlaceholderText=""
+                                    QueryIcon="Find"
+                                    Text="{x:Bind ViewModel.AddressFilter, Mode=TwoWay}">
+                                    <i:Interaction.Behaviors>
+                                        <ic:EventTriggerBehavior EventName="TextChanged">
+                                            <ic:InvokeCommandAction Command="{x:Bind ViewModel.ApplyFiltersCommand}" />
+                                        </ic:EventTriggerBehavior>
+                                    </i:Interaction.Behaviors>
+                                </AutoSuggestBox>
+                                <AutoSuggestBox
+                                    x:Uid="HostsFilter"
+                                    QueryIcon="Find"
+                                    Text="{x:Bind ViewModel.HostsFilter, Mode=TwoWay}">
+                                    <i:Interaction.Behaviors>
+                                        <ic:EventTriggerBehavior EventName="TextChanged">
+                                            <ic:InvokeCommandAction Command="{x:Bind ViewModel.ApplyFiltersCommand}" />
+                                        </ic:EventTriggerBehavior>
+                                    </i:Interaction.Behaviors>
+                                </AutoSuggestBox>
+                                <AutoSuggestBox
+                                    x:Uid="CommentFilter"
+                                    QueryIcon="Find"
+                                    Text="{x:Bind ViewModel.CommentFilter, Mode=TwoWay}">
+                                    <i:Interaction.Behaviors>
+                                        <ic:EventTriggerBehavior EventName="TextChanged">
+                                            <ic:InvokeCommandAction Command="{x:Bind ViewModel.ApplyFiltersCommand}" />
+                                        </ic:EventTriggerBehavior>
+                                    </i:Interaction.Behaviors>
+                                </AutoSuggestBox>
+                                <ToggleSwitch x:Uid="ShowOnlyDuplicates" IsOn="{x:Bind ViewModel.ShowOnlyDuplicates, Mode=TwoWay}" />
+                                <Button
+                                    x:Uid="ClearFiltersBtn"
+                                    HorizontalAlignment="Right"
+                                    Command="{x:Bind ViewModel.ClearFiltersCommand}"
+                                    IsEnabled="{x:Bind ViewModel.Filtered, Mode=OneWay}"
+                                    Style="{StaticResource AccentButtonStyle}" />
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+
+                <Button
+                    x:Uid="OpenHostsFileBtn"
+                    Height="32"
+                    Command="{x:Bind ViewModel.OpenHostsFileCommand}"
+                    Content="{ui:FontIcon Glyph=&#xe8a7;,
+                                          FontSize=16}"
+                    Style="{StaticResource SubtleButtonStyle}" />
+
+
+                <Button
+                    x:Uid="SettingsBtn"
+                    Height="32"
+                    Command="{x:Bind ViewModel.OpenSettingsCommand}"
+                    Content="{ui:FontIcon Glyph=&#xe713;,
+                                          FontSize=16}"
+                    Style="{StaticResource SubtleButtonStyle}" />
+            </StackPanel>
+        </Grid>
+
+        <!--
+            https://github.com/microsoft/microsoft-ui-xaml/issues/7690
+            AllowDrop="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+            CanDragItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+            CanReorderItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+        -->
+        <Grid Grid.Row="1" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <ListView
+                x:Name="Entries"
+                x:Uid="Entries"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource OverlayCornerRadius}"
+                GotFocus="Entries_GotFocus"
+                IsItemClickEnabled="True"
+                ItemClick="Entries_ItemClick"
+                ItemsSource="{x:Bind ViewModel.Entries, Mode=TwoWay}"
+                RightTapped="Entries_RightTapped"
+                SelectedItem="{x:Bind ViewModel.Selected, Mode=TwoWay}">
+                <ListView.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem
+                            x:Uid="Edit"
+                            Click="Edit_Click"
+                            Icon="Edit">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Key="E"
+                                    Modifiers="Control"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem x:Uid="Duplicate" Click="Duplicate_Click">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xF413;" />
+                            </MenuFlyoutItem.Icon>
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Key="D"
+                                    Modifiers="Control"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="Ping"
+                            Click="Ping_Click"
+                            Icon="TwoBars">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator
+                                    Key="P"
+                                    Modifiers="Control"
+                                    ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="MoveUp"
+                            Click="ReorderButtonUp_Click"
+                            IsEnabled="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE74A;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Uid="MoveDown"
+                            Click="ReorderButtonDown_Click"
+                            IsEnabled="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE74B;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutItem
+                            x:Uid="Delete"
+                            Click="Delete_Click"
+                            Icon="Delete">
+                            <MenuFlyoutItem.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="Delete" ScopeOwner="{x:Bind Entries}" />
+                            </MenuFlyoutItem.KeyboardAccelerators>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </ListView.ContextFlyout>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Entry">
+                        <Grid
+                            Margin="0"
+                            AutomationProperties.Name="{x:Bind Address, Mode=OneWay}"
+                            Background="Transparent"
+                            ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="150" />
+                                <!--  Address  -->
+                                <ColumnDefinition Width="*" MinWidth="120" />
+                                <!--  Comment  -->
+                                <ColumnDefinition Width="20" />
+                                <!--  Status  -->
+                                <ColumnDefinition Width="20" />
+                                <!--  Duplicate  -->
+                                <ColumnDefinition Width="Auto" />
+                                <!--  ToggleSwitch  -->
+                                <ColumnDefinition Width="Auto" />
+                                <!--  DeleteEntry  -->
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Grid.Column="0"
+                                VerticalAlignment="Center"
+                                Text="{x:Bind Address, Mode=OneWay}"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="{x:Bind helpers:StringHelper.GetHostsWithComment(Hosts, Comment), Mode=OneWay}"
+                                TextWrapping="WrapWholeWords" />
+                            <ProgressRing
+                                Grid.Column="2"
+                                Width="20"
+                                Height="20"
+                                IsActive="{x:Bind Pinging, Mode=OneWay}" />
+                            <FontIcon
+                                x:Name="PingIcon"
+                                x:Uid="PingIcon"
+                                Grid.Column="2"
+                                FontSize="16"
+                                Visibility="Collapsed">
+                                <i:Interaction.Behaviors>
+                                    <ic:DataTriggerBehavior
+                                        Binding="{x:Bind Ping, Mode=OneWay}"
+                                        ComparisonCondition="Equal"
+                                        Value="True">
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Glyph"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="&#xe8fb;" />
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Visibility"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="Visible" />
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Foreground"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="{StaticResource SystemFillColorSuccessBrush}" />
+                                    </ic:DataTriggerBehavior>
+                                    <ic:DataTriggerBehavior
+                                        Binding="{x:Bind Ping, Mode=OneWay}"
+                                        ComparisonCondition="Equal"
+                                        Value="False">
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Glyph"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="&#xe894;" />
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Visibility"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="Visible" />
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Foreground"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="{StaticResource SystemFillColorCriticalBrush}" />
+                                    </ic:DataTriggerBehavior>
+                                    <ic:DataTriggerBehavior
+                                        Binding="{x:Bind Ping, Mode=OneWay}"
+                                        ComparisonCondition="Equal"
+                                        Value="{x:Null}">
+                                        <ic:ChangePropertyAction
+                                            PropertyName="Visibility"
+                                            TargetObject="{Binding ElementName=PingIcon}"
+                                            Value="Collapsed" />
+                                    </ic:DataTriggerBehavior>
+                                </i:Interaction.Behaviors>
+                            </FontIcon>
+                            <FontIcon
+                                x:Uid="DuplicateEntryIcon"
+                                Grid.Column="3"
+                                FontSize="16"
+                                Foreground="{StaticResource SystemControlErrorTextForegroundBrush}"
+                                Glyph="&#xe7BA;"
+                                Visibility="{x:Bind Duplicate, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <ToggleSwitch
+                                x:Uid="ActiveToggle"
+                                Grid.Column="4"
+                                Width="40"
+                                MinWidth="0"
+                                HorizontalAlignment="Center"
+                                GotFocus="Entries_GotFocus"
+                                IsOn="{x:Bind Active, Mode=TwoWay}"
+                                OffContent=""
+                                OnContent="" />
+                            <Button
+                                x:Uid="DeleteEntryBtn"
+                                Grid.Column="5"
+                                Height="32"
+                                Click="Delete_Click"
+                                CommandParameter="{x:Bind (models:Entry)}"
+                                Content="{ui:FontIcon Glyph=&#xE74D;,
+                                                      FontSize=16}"
+                                GotFocus="Entries_GotFocus"
+                                Style="{StaticResource SubtleButtonStyle}" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <StackPanel
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Visibility="{x:Bind ViewModel.Entries.Count, Mode=OneWay, Converter={StaticResource DoubleToVisibilityConverter}}">
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="8"
+                    Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                    <FontIcon FontSize="32" Glyph="&#xe774;" />
+                    <TextBlock
+                        x:Uid="EmptyHosts"
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <HyperlinkButton
+                        x:Uid="AddEntryLink"
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind NewDialogCommand}" />
+                </StackPanel>
+
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="8"
+                    Visibility="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <FontIcon FontSize="32" Glyph="&#xf78b;" />
+                    <TextBlock
+                        x:Uid="EmptyFilterResults"
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                    <HyperlinkButton
+                        x:Uid="ClearFiltersLink"
+                        HorizontalAlignment="Center"
+                        Command="{x:Bind ViewModel.ClearFiltersCommand}" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1">
+                <InfoBar
+                    x:Uid="FileSaveError"
+                    Margin="0,8,0,0"
+                    IsOpen="{x:Bind ViewModel.Error, Mode=TwoWay}"
+                    Message="{x:Bind ViewModel.ErrorMessage, Mode=TwoWay}"
+                    Severity="Error"
+                    Visibility="{x:Bind ViewModel.Error, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <InfoBar.ActionButton>
+                        <Button
+                            x:Uid="MakeWritable"
+                            HorizontalAlignment="Right"
+                            Command="{x:Bind ViewModel.OverwriteHostsCommand}"
+                            Visibility="{x:Bind ViewModel.IsReadOnly, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+                <InfoBar
+                    x:Uid="FileChanged"
+                    Margin="0,8,0,0"
+                    IsOpen="{x:Bind ViewModel.FileChanged, Mode=TwoWay}"
+                    Severity="Informational"
+                    Visibility="{x:Bind ViewModel.FileChanged, Mode=TwoWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <InfoBar.ActionButton>
+                        <Button
+                            x:Uid="Reload"
+                            HorizontalAlignment="Right"
+                            Command="{x:Bind ViewModel.ReadHostsCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+            </StackPanel>
+        </Grid>
+
+        <ProgressRing
+            Grid.Row="1"
+            Width="48"
+            Height="48"
+            IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}" />
+
+        <ContentDialog
+            x:Name="EntryDialog"
+            x:Uid="EntryDialog"
+            IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
+            Loaded="ContentDialog_Loaded_ApplyMargin"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <ContentDialog.DataContext>
+                <models:Entry />
+            </ContentDialog.DataContext>
+            <ScrollViewer>
+                <StackPanel
+                    MinWidth="320"
+                    HorizontalAlignment="Stretch"
+                    Spacing="12">
+                    <TextBox
+                        x:Uid="Address"
+                        IsSpellCheckEnabled="False"
+                        Text="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                        <TextBox.Description>
+                            <StackPanel
+                                Margin="0,4"
+                                Orientation="Horizontal"
+                                Spacing="4"
+                                Visibility="{Binding IsAddressValid, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                <FontIcon
+                                    Margin="0,0,0,0"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    FontSize="14"
+                                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                    Glyph="&#xE7BA;" />
+                                <TextBlock x:Uid="EntryAddressIsInvalidWarning" />
+                            </StackPanel>
+                        </TextBox.Description>
+                    </TextBox>
+                    <TextBox
+                        x:Uid="Hosts"
+                        AcceptsReturn="False"
+                        IsSpellCheckEnabled="False"
+                        ScrollViewer.IsVerticalRailEnabled="True"
+                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                        ScrollViewer.VerticalScrollMode="Enabled"
+                        Text="{Binding Hosts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap">
+                        <TextBox.Description>
+                            <StackPanel
+                                Margin="0,4"
+                                Orientation="Horizontal"
+                                Spacing="4"
+                                Visibility="{Binding IsHostsValid, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                <FontIcon
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    FontSize="14"
+                                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                    Glyph="&#xE7BA;" />
+                                <TextBlock x:Uid="EntryHostsIsInvalidWarning" />
+                            </StackPanel>
+                        </TextBox.Description>
+                    </TextBox>
+                    <TextBox
+                        x:Uid="Comment"
+                        AcceptsReturn="False"
+                        IsSpellCheckEnabled="False"
+                        ScrollViewer.IsVerticalRailEnabled="True"
+                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                        ScrollViewer.VerticalScrollMode="Enabled"
+                        Text="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap" />
+                    <ToggleSwitch
+                        x:Uid="Active"
+                        IsOn="{Binding Active, Mode=TwoWay}"
+                        OffContent=""
+                        OnContent="" />
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+
+        <ContentDialog
+            x:Name="DeleteDialog"
+            x:Uid="DeleteDialog"
+            PrimaryButtonCommand="{x:Bind DeleteCommand}"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <TextBlock x:Uid="DeleteDialogAreYouSure" />
+        </ContentDialog>
+
+        <ContentDialog
+            x:Name="AdditionalLinesDialog"
+            x:Uid="AdditionalLinesDialog"
+            Loaded="ContentDialog_Loaded_ApplyMargin"
+            PrimaryButtonCommand="{x:Bind UpdateAdditionalLinesCommand}"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+
+            <TextBox
+                x:Name="AdditionalLines"
+                MinHeight="40"
+                Padding="16,0"
+                HorizontalAlignment="Stretch"
+                AcceptsReturn="True"
+                ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                ScrollViewer.HorizontalScrollMode="Auto"
+                ScrollViewer.IsHorizontalRailEnabled="True"
+                ScrollViewer.IsVerticalRailEnabled="True"
+                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                ScrollViewer.VerticalScrollMode="Enabled"
+                TextWrapping="NoWrap" />
+        </ContentDialog>
+
+        <TeachingTip
+            x:Uid="TooManyHostsTeachingTip"
+            IconSource="{ui:FontIconSource Glyph=&#xe946;}"
+            IsOpen="{x:Bind ViewModel.ShowSplittedEntriesTooltip, Mode=OneWay}"
+            PlacementMargin="20"
+            PreferredPlacement="Top">
+            <TeachingTip.Content>
+                <TextBlock x:Uid="TooManyHostsTeachingTipContent" TextWrapping="Wrap" />
+            </TeachingTip.Content>
+        </TeachingTip>
+    </Grid>
+</Page>

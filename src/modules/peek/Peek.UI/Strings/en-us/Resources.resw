@@ -194,7 +194,7 @@
     <comment>Date Modified label for the tooltip of preview. {0} is the date.</comment>
   </data>
   <data name="PreviewTooltip_Dimensions" xml:space="preserve">
-    <value>Dimensions: {0} x {1}</value>
+    <value>Dimensions: {0} × {1}</value>
     <comment>Dimensions label for the tooltip of preview. {0} is the width, {1} is the height.</comment>
   </data>
   <data name="PreviewTooltip_FileSize" xml:space="preserve">
@@ -206,7 +206,7 @@
     <comment>Tooltip of preview when there's no file info available.</comment>
   </data>
   <data name="PinButton_Tooltip" xml:space="preserve">
-    <value>Pin the window to the current location</value>
+    <value>Pin the window to the current size</value>
     <comment>Tooltip for button to pin the Peek window.</comment>
   </data>
   <data name="UnpinButton_ToolTip" xml:space="preserve">
@@ -266,7 +266,7 @@
     <comment>Title of the Peek window. {0} is the name of the currently previewed item."Peek" is the name of the utility.</comment>
   </data>
   <data name="Drive_FreeSpace" xml:space="preserve">
-    <value>{0} free</value>
+    <value>{0} available</value>
     <comment>{0} is the free space of the drive</comment>
   </data>
   <data name="Drive_UsedSpace" xml:space="preserve">
@@ -305,5 +305,71 @@
   <data name="Drive_Unknown" xml:space="preserve">
     <value>Unknown</value>
     <comment>Used for unknown drive type or file system</comment>
+  </data>
+  <data name="Audio_Album" xml:space="preserve">
+    <value>Album: {0}</value>
+    <comment>{0} is the title of the album read from file metadata</comment>
+  </data>
+  <data name="Audio_Artist" xml:space="preserve">
+    <value>Artist: {0}</value>
+    <comment>{0} is the artist read from file metadata</comment>
+  </data>
+  <data name="Audio_Length" xml:space="preserve">
+    <value>Length: {0}</value>
+    <comment>{0} is the duration of the audio read from file metadata</comment>
+  </data>
+  <data name="ContextMenu_Copy" xml:space="preserve">
+    <value>Copy</value>
+    <comment>Copy selected text to clipboard</comment>
+  </data>
+  <data name="ContextMenu_ToggleTextWrapping" xml:space="preserve">
+    <value>Toggle text wrapping</value>
+    <comment>Toggle whether text in pane is word-wrapped</comment>
+  </data>
+  <data name="ContextMenu_ToggleMinimap" xml:space="preserve">
+    <value>Toggle minimap</value>
+  </data>
+  <data name="NoMoreFiles" xml:space="preserve">
+    <value>No more files to preview.</value>
+    <comment>The message to show when there are no files remaining to preview.</comment>
+  </data>
+  <data name="DeleteFileError_NotFound" xml:space="preserve">
+    <value>The file cannot be found. Please check if the file has been moved, renamed, or deleted.</value>
+    <comment>Displayed if the file or path was not found</comment>
+  </data>
+  <data name="DeleteFileError_AccessDenied" xml:space="preserve">
+    <value>Access is denied. Please ensure you have permission to delete the file.</value>
+    <comment>Displayed if access to the file was denied when trying to delete it</comment>
+  </data>
+  <data name="DeleteFileError_Generic" xml:space="preserve">
+    <value>An error occurred while deleting the file. Please try again later.</value>
+    <comment>Displayed if the file could not be deleted and no other error code matched</comment>
+  </data>
+  <data name="DeleteFileError_FileInUse" xml:space="preserve">
+    <value>The file is currently in use by another program. Please close any programs that might be using the file, then try again.</value>
+    <comment>Displayed if the file could not be deleted because it is fully or partially locked by another process</comment>
+  </data>
+  <data name="DeleteFileError_WriteProtected" xml:space="preserve">
+    <value>The storage medium is write-protected. If possible, remove the write protection then try again.</value>
+    <comment>Displayed if the file could not be deleted because it exists on non-writable media</comment>
+  </data>
+  <data name="DeleteFileError_Prefix" xml:space="preserve">
+    <value>Cannot delete '{0}'.</value>
+    <comment>The prefix added to all file delete failure messages. {0} is replaced with the name of the file</comment>
+  </data>
+  <data name="DeleteConfirmationDialog.Title" xml:space="preserve">
+    <value>Delete file?</value>
+  </data>
+  <data name="DeleteConfirmationDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteConfirmationDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeleteConfirmationDialog_Message.Text" xml:space="preserve">
+    <value>Are you sure you want to delete this file?</value>
+  </data>
+  <data name="DeleteConfirmationDialog_DontWarnCheckbox.Content" xml:space="preserve">
+    <value>Don't show this warning again</value>
   </data>
 </root>

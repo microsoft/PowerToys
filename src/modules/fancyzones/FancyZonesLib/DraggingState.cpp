@@ -8,8 +8,6 @@ DraggingState::DraggingState(const std::function<void()>& keyUpdateCallback) :
     m_secondaryMouseState(false),
     m_middleMouseState(false),
     m_mouseHook(std::bind(&DraggingState::OnSecondaryMouseDown, this), std::bind(&DraggingState::OnMiddleMouseDown, this)),
-    m_leftShiftKeyState(keyUpdateCallback),
-    m_rightShiftKeyState(keyUpdateCallback),
     m_ctrlKeyState(keyUpdateCallback),
     m_keyUpdateCallback(keyUpdateCallback)
 {
@@ -22,49 +20,30 @@ void DraggingState::Enable()
         m_mouseHook.enable();
     }
 
-    m_leftShiftKeyState.enable();
-    m_rightShiftKeyState.enable();
     m_ctrlKeyState.enable();
 }
 
 void DraggingState::Disable()
 {
-    const bool leftShiftPressed = m_leftShiftKeyState.state();
-    const bool rightShiftPressed = m_rightShiftKeyState.state();
-
-    if (FancyZonesSettings::settings().shiftDrag)
-    {
-        if (leftShiftPressed)
-        {
-            FancyZonesUtils::SwallowKey(VK_LSHIFT);
-        }
-
-        if (rightShiftPressed)
-        {
-            FancyZonesUtils::SwallowKey(VK_RSHIFT);
-        }
-    }
-
     m_dragging = false;
     m_secondaryMouseState = false;
     m_middleMouseState = false;
+    m_shift = false;
 
     m_mouseHook.disable();
-    m_leftShiftKeyState.disable();
-    m_rightShiftKeyState.disable();
     m_ctrlKeyState.disable();
 }
 
 void DraggingState::UpdateDraggingState() noexcept
 {
-    // This updates m_dragEnabled depending on if the shift key is being held down
+    // This updates m_dragging depending on if the shift key is being held down
     if (FancyZonesSettings::settings().shiftDrag)
     {
-        m_dragging = ((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_secondaryMouseState);
+        m_dragging = (m_shift ^ m_secondaryMouseState);
     }
     else
     {
-        m_dragging = !((m_leftShiftKeyState.state() || m_rightShiftKeyState.state()) ^ m_secondaryMouseState);
+        m_dragging = !(m_shift ^ m_secondaryMouseState);
     }
 }
 
@@ -96,4 +75,10 @@ bool DraggingState::IsDragging() const noexcept
 bool DraggingState::IsSelectManyZonesState() const noexcept
 {
     return m_ctrlKeyState.state() || m_middleMouseState;
+}
+
+void DraggingState::SetShiftState(bool value) noexcept
+{
+    m_shift = value;
+    m_keyUpdateCallback();
 }

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -115,13 +116,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             internalSettings = new HotkeySettings();
 
             this.Unloaded += ShortcutControl_Unloaded;
-            hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            this.Loaded += ShortcutControl_Loaded;
 
-            if (App.GetSettingsWindow() != null)
-            {
-                App.GetSettingsWindow().Activated += ShortcutDialog_SettingsWindow_Activated;
-            }
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
             // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
             shortcutDialog = new ContentDialog
@@ -134,11 +131,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 CloseButtonText = resourceLoader.GetString("Activation_Shortcut_Cancel"),
                 DefaultButton = ContentDialogButton.Primary,
             };
-            shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
             shortcutDialog.SecondaryButtonClick += ShortcutDialog_Reset;
             shortcutDialog.RightTapped += ShortcutDialog_Disable;
-            shortcutDialog.Opened += ShortcutDialog_Opened;
-            shortcutDialog.Closing += ShortcutDialog_Closing;
+
             AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
 
             OnAllowDisableChanged(this, null);
@@ -156,12 +151,26 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             // Dispose the HotkeySettingsControlHook object to terminate the hook threads when the textbox is unloaded
-            if (hook != null)
-            {
-                hook.Dispose();
-            }
+            hook?.Dispose();
 
             hook = null;
+        }
+
+        private void ShortcutControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            // These all belong here; because of virtualization in e.g. a ListView, the control can go through several Loaded / Unloaded cycles.
+            hook?.Dispose();
+
+            hook = new HotkeySettingsControlHook(Hotkey_KeyDown, Hotkey_KeyUp, Hotkey_IsActive, FilterAccessibleKeyboardEvents);
+
+            shortcutDialog.PrimaryButtonClick += ShortcutDialog_PrimaryButtonClick;
+            shortcutDialog.Opened += ShortcutDialog_Opened;
+            shortcutDialog.Closing += ShortcutDialog_Closing;
+
+            if (App.GetSettingsWindow() != null)
+            {
+                App.GetSettingsWindow().Activated += ShortcutDialog_SettingsWindow_Activated;
+            }
         }
 
         private void KeyEventHandler(int key, bool matchValue, int matchValueCode)
@@ -321,7 +330,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             // Tab and Shift+Tab are accessible keys and should not be displayed in the hotkey control.
             if (internalSettings.Code > 0 && !internalSettings.IsAccessibleShortcut())
             {
-                lastValidSettings = internalSettings.Clone();
+                lastValidSettings = internalSettings with { };
 
                 if (!ComboIsValid(lastValidSettings))
                 {
@@ -436,7 +445,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             if (ComboIsValid(lastValidSettings))
             {
-                HotkeySettings = lastValidSettings.Clone();
+                HotkeySettings = lastValidSettings with { };
             }
 
             PreviewKeysControl.ItemsSource = hotkeySettings.GetKeysList();

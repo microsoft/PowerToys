@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+
 using Wox.Plugin.Common.Win32;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
@@ -49,6 +50,11 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.GUID
         public static Guid V5(Guid uuidNamespace, string uuidName)
         {
             return V3AndV5(uuidNamespace, uuidName, 5);
+        }
+
+        public static Guid V7()
+        {
+            return Guid.CreateVersion7();
         }
 
         private static Guid V3AndV5(Guid uuidNamespace, string uuidName, short version)

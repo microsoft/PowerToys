@@ -36,7 +36,10 @@ using System.Text;
 [module: SuppressMessage("Microsoft.Portability", "CA1901:PInvokeDeclarationsShouldBePortable", Scope = "member", Target = "MouseWithoutBorders.NativeMethods.#GetAsyncKeyState(System.IntPtr)", MessageId = "0", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Portability", "CA1901:PInvokeDeclarationsShouldBePortable", Scope = "member", Target = "MouseWithoutBorders.NativeMethods.#GetAsyncKeyState(System.IntPtr)", MessageId = "return", Justification = "Dotnet port with style preservation")]
 
+// Disable the warning to preserve original code
+#pragma warning disable CA1716
 namespace MouseWithoutBorders.Class
+#pragma warning restore CA1716
 {
     internal partial class NativeMethods
     {
@@ -71,6 +74,41 @@ namespace MouseWithoutBorders.Class
 
         [DllImport("kernel32.dll")]
         internal static extern uint WTSGetActiveConsoleSessionId();
+
+        [DllImport("Wtsapi32.dll")]
+        internal static extern bool WTSQuerySessionInformation(IntPtr hServer, int sessionId, WTSInfoClass infoClass, out IntPtr ppBuffer, out int pBytesReturned);
+
+        [DllImport("Wtsapi32.dll")]
+        internal static extern void WTSFreeMemory(IntPtr pointer);
+
+        internal enum WTSInfoClass
+        {
+            WTSInitialProgram,
+            WTSApplicationName,
+            WTSWorkingDirectory,
+            WTSOEMId,
+            WTSSessionId,
+            WTSUserName,
+            WTSWinStationName,
+            WTSDomainName,
+            WTSConnectState,
+            WTSClientBuildNumber,
+            WTSClientName,
+            WTSClientDirectory,
+            WTSClientProductId,
+            WTSClientHardwareId,
+            WTSClientAddress,
+            WTSClientDisplay,
+            WTSClientProtocolType,
+            WTSIdleTime,
+            WTSLogonTime,
+            WTSIncomingBytes,
+            WTSOutgoingBytes,
+            WTSIncomingFrames,
+            WTSOutgoingFrames,
+            WTSClientInfo,
+            WTSSessionInfo,
+        }
 
 #endif
 
@@ -809,7 +847,7 @@ namespace MouseWithoutBorders.Class
 
         // [DllImport("kernel32.dll", SetLastError = true)]
         // internal static extern IntPtr CreateToolhelp32Snapshot(UInt32 dwFlags, UInt32 th32ProcessID);
-        [DllImport("Wtsapi32.dll")]
+        [DllImport("Wtsapi32.dll", SetLastError = true)]
         internal static extern uint WTSQueryUserToken(uint SessionId, ref IntPtr phToken);
 
         [SuppressMessage("Microsoft.Globalization", "CA2101:SpecifyMarshalingForPInvokeStringArguments", MessageId = "1", Justification = "Dotnet port with style preservation")]
@@ -932,7 +970,7 @@ namespace MouseWithoutBorders.Class
         /// <summary>
         /// Use this method to figure out if your code is running on a Microsoft computer.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>True if running on a Microsoft computer, otherwise false.</returns>
         internal static bool IsRunningAtMicrosoft()
         {
             string domain = GetDNSDomain();

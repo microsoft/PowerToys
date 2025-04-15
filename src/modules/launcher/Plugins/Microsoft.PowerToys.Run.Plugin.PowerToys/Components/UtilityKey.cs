@@ -15,5 +15,6 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
         RegistryPreview = 6,
         CropAndLock = 7,
         EnvironmentVariables = 8,
+        Workspaces = 9,
     }
 }

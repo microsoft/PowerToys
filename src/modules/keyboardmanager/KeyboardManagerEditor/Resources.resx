@@ -144,6 +144,15 @@
   <data name="EditShortcuts_WindowName" xml:space="preserve">
     <value>Remap shortcuts</value>
   </data>
+  <data name="Edit_This_Shortcut_WindowName" xml:space="preserve">
+    <value>Edit shortcut</value>
+  </data>
+  <data name="Browse_For_Program_Button" xml:space="preserve">
+    <value>Select program</value>
+  </data>
+  <data name="Browse_For_Path_Button" xml:space="preserve">
+    <value>Select path</value>
+  </data>
   <data name="Ok_Button" xml:space="preserve">
     <value>OK</value>
   </data>
@@ -161,12 +170,60 @@
     <value>To send:</value>
   </data>
   <data name="EditShortcuts_TargetHeader" xml:space="preserve">
-    <value>To send:</value>
+    <value>To:</value>
   </data>
   <data name="EditShortcuts_TargetAppHeader" xml:space="preserve">
     <value>Target app:</value>
   </data>
-  <data name="EditKeyboard_OrphanedDialogTitle" xml:space="preserve">
+  <data name="EditShortcuts_Label_Args" xml:space="preserve">
+    <value>Args:</value>
+  </data>
+  <data name="EditShortcuts_Label_Elevation" xml:space="preserve">
+    <value>Elevation:</value>
+  </data>
+  <data name="EditShortcuts_Label_Start_As" xml:space="preserve">
+    <value>Visibility:</value>
+  </data>
+  <data name="EditShortcuts_Label_Program" xml:space="preserve">
+    <value>App:</value>
+  </data>
+  <data name="EditShortcuts_Label_Start_In" xml:space="preserve">
+    <value>Start in:</value>
+  </data>
+  <data name="EditShortcuts_Label_Action" xml:space="preserve">
+    <value>Action:</value>
+  </data>
+  <data name="EditShortcuts_Label_Path_URI" xml:space="preserve">
+    <value>Path/URI:</value>
+  </data>
+  <data name="EditShortcuts_Label_Shortcut" xml:space="preserve">
+    <value>Shortcut:</value>
+  </data>
+  <data name="EditShortcuts_Label_Keys" xml:space="preserve">
+    <value>Keys:</value>
+  </data>
+  <data name="EditShortcuts_Visibility_Normal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="EditShortcuts_Visibility_Hidden" xml:space="preserve">
+    <value>Hidden</value>
+  </data>
+  <data name="EditShortcuts_Label_If_Running" xml:space="preserve">
+    <value>If running:</value>
+  </data>
+  <data name="EditShortcuts_Label_App_Running_Sound" xml:space="preserve">
+    <value>Running sound:</value>
+  </data>
+  <data name="EditShortcuts_LabelApp_Not_Running_Sound" xml:space="preserve">
+    <value>Start sound:</value>
+  </data>
+  <data name="EditShortcuts_Bad_Key" xml:space="preserve">
+    <value>Key in use</value>
+  </data>
+	<data name="EditShortcuts_BtnSelectFile" xml:space="preserve">
+    <value>Select file</value>
+  </data>
+	<data name="EditKeyboard_OrphanedDialogTitle" xml:space="preserve">
     <value>Warning: The following keys do not have assignments:</value>
     <comment>Key on a keyboard</comment>
   </data>
@@ -184,7 +241,11 @@
     <comment>Key on a keyboard</comment>
   </data>
   <data name="EditShortcuts_Info" xml:space="preserve">
-    <value>Select the shortcut you want to change ("Select") and then configure the key, shortcut or text you want it to send ("To send").</value>
+    <value>Edit shortcuts to activate and then configure the actions to happen when activated.</value>
+    <comment>Key on a keyboard</comment>
+  </data>
+  <data name="Edit_Single_Shortcut_Info" xml:space="preserve">
+    <value>Edit shortcut to activate and then configure the action to happen when activated.</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="EditShortcuts_InfoExample" xml:space="preserve">
@@ -211,6 +272,12 @@
     <value>Keys selected:</value>
     <comment>Keys on a keyboard</comment>
   </data>
+  <data name="Type_HoldSpace" xml:space="preserve">
+    <value>Hold Space to toggle allow chord</value>
+  </data>
+  <data name="Type_HoldBackSpace" xml:space="preserve">
+    <value>Hold BackSpace to toggle exact match</value>
+  </data>
   <data name="Type_HoldEnter" xml:space="preserve">
     <value>Hold Enter to continue</value>
   </data>
@@ -219,6 +286,27 @@
   </data>
   <data name="EditShortcuts_AllApps" xml:space="preserve">
     <value>All apps</value>
+  </data>
+  <data name="EditShortcuts_Allow_Chords" xml:space="preserve">
+    <value>Allow chords</value>
+  </data>
+  <data name="EditShortcuts_Exact_Match" xml:space="preserve">
+    <value>Exact Match</value>
+  </data>
+  <data name="EditShortcuts_Path_To_Program" xml:space="preserve">
+    <value>Path to program</value>
+  </data>
+  <data name="EditShortcuts_Uri_Example" xml:space="preserve">
+    <value>E.g.: https://website.url</value>
+  </data>
+  <data name="EditShortcuts_What_Can_I_Use_Link" xml:space="preserve">
+    <value>What can I use?</value>
+  </data>
+  <data name="EditShortcuts_Args_For_Program" xml:space="preserve">
+    <value>Arguments for program</value>
+  </data>
+  <data name="EditShortcuts_Start_In_Dir_For_Program" xml:space="preserve">
+    <value>Start in directory</value>
   </data>
   <data name="ErrorMessage_RemapSuccessful" xml:space="preserve">
     <value>Remapping successful</value>
@@ -288,11 +376,20 @@
     <comment>Key on a keyboard</comment>
   </data>
   <data name="Mapping_Type_DropDown_Text" xml:space="preserve">
-    <value>Text</value>
+    <value>Send Text</value>
+    <comment>Text as in that the shortcut will be mapped into a sequence of characters. This is not about mobile text messages.</comment>
   </data>
   <data name="Mapping_Type_DropDown_Key_Shortcut" xml:space="preserve">
-    <value>Key/Shortcut</value>
+    <value>Send Key/Shortcut</value>
     <comment>Key on a keyboard</comment>
+  </data>
+  <data name="Mapping_Type_DropDown_Run_Program" xml:space="preserve">
+    <value>Run Program</value>
+    <comment>Run Program</comment>
+  </data>
+  <data name="Mapping_Type_DropDown_Open_URI" xml:space="preserve">
+    <value>Open URI</value>
+    <comment>URI to open.</comment>
   </data>
   <data name="Add_Key_Remap_Button" xml:space="preserve">
     <value>Add key remapping</value>
@@ -304,6 +401,33 @@
   <data name="Delete_Remapping_Button" xml:space="preserve">
     <value>Delete remapping</value>
   </data>
+  <data name="Already_Running_Do_Nothing" xml:space="preserve">
+    <value>Do nothing</value>
+  </data>
+  <data name="Already_Running_Show_Window" xml:space="preserve">
+    <value>Show window</value>
+  </data>
+  <data name="Already_Running_Start_Another" xml:space="preserve">
+    <value>Start another</value>
+  </data>
+  <data name="Already_Running_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Already_Running_Terminate" xml:space="preserve">
+    <value>End task</value>
+  </data>
+  <data name="Already_Running_Close_And_Terminate" xml:space="preserve">
+    <value>Close and end task</value>
+  </data>
+  <data name="Elevation_Type_Normal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Elevation_Type_Elevated" xml:space="preserve">
+    <value>Elevated</value>
+  </data>
+  <data name="Elevation_Type_Different_User" xml:space="preserve">
+    <value>Different User</value>
+  </data>
   <data name="Delete_Remapping_Event" xml:space="preserve">
     <value>Remapping deleted</value>
   </data>
@@ -312,7 +436,7 @@
     <comment>Row as in horizontal rows in a table, and columns</comment>
   </data>
   <data name="ERRORMESSAGE_DISABLEASACTIONKEY" xml:space="preserve">
-    <value>Disable can not be an action or a modifier key</value>
+    <value>Disable cannot be an action or a modifier key</value>
     <comment>Key on a keyboard</comment>
   </data>
   <data name="EditShortcuts_SourceHeader" xml:space="preserve">

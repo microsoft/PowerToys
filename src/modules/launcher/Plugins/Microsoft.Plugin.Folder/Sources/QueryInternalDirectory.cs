@@ -9,6 +9,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq;
+
 using ManagedCommon;
 using Microsoft.Plugin.Folder.Sources.Result;
 

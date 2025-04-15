@@ -19,13 +19,13 @@ This plugin uses a package called [UnitsNet](https://github.com/angularsen/Units
  - [Temperature](https://github.com/angularsen/UnitsNet/blob/master/UnitsNet/GeneratedCode/Units/TemperatureUnit.g.cs)
  - [Volume](https://github.com/angularsen/UnitsNet/blob/master/UnitsNet/GeneratedCode/Units/VolumeUnit.g.cs)
 
- These are the ones that are currently enabled (though UnitsNet supports many more). They are defined in [`Main.cs`](/src/modules/launcher/Plugins/Community.PowerToys.Run.UnitConverter/Main.cs).
+ These are the ones that are currently enabled (though UnitsNet supports many more). They are defined in [`UnitHandler.cs`](/src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.UnitConverter/UnitHandler.cs).
 
 
-### [`InputInterpreter`](/src/modules/launcher/Plugins/Community.PowerToys.Run.UnitConverter/InputInterpreter.cs)
+### [`InputInterpreter`](/src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.UnitConverter/InputInterpreter.cs)
  - Class which manipulates user input such that it may be interpreted correctly and thus converted.
  - Uses a regex amongst other things to do this.
 
-### [`UnitHandler`](/src/modules/launcher/Plugins/Community.PowerToys.Run.UnitConverter/UnitHandler.cs)
+### [`UnitHandler`](/src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.UnitConverter/UnitHandler.cs)
  - Class that does the actual conversion.
  - Supports abbreviations in user input (single, double, or none).

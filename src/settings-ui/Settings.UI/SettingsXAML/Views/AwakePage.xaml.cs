@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -53,7 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             var settingsPath = _settingsUtils.GetSettingsFilePath(_appName);
 
-            _fileSystemWatcher = _fileSystem.FileSystemWatcher.CreateNew();
+            _fileSystemWatcher = _fileSystem.FileSystemWatcher.New();
             _fileSystemWatcher.Path = _fileSystem.Path.GetDirectoryName(settingsPath);
             _fileSystemWatcher.Filter = _fileSystem.Path.GetFileName(settingsPath);
             _fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;
@@ -163,7 +164,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 // Get the enabled state from GPO.
                 ViewModel.IsEnabledGpoConfigured = true;
-                ViewModel.IsEnabled = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                ViewModel.EnabledGPOConfiguration = enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
             }
             else
             {

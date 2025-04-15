@@ -6,6 +6,7 @@ std::vector<std::wstring> processes =
     L"PowerToys.exe",
     L"PowerToys.Settings.exe",
     L"PowerToys.ColorPickerUI.exe",
+    L"PowerToys.AdvancedPaste.exe",
     L"PowerToys.Awake.exe",
     L"PowerToys.FancyZonesEditor.exe",
     L"PowerToys.FancyZones.exe",
@@ -42,4 +43,10 @@ std::vector<std::wstring> processes =
     L"PowerToys.Peek.UI.exe",
     L"PowerToys.CropAndLock.exe",
     L"PowerToys.EnvironmentVariables.exe",
+    L"PowerToys.WorkspacesSnapshotTool.exe",
+    L"PowerToys.WorkspacesLauncher.exe",
+    L"PowerToys.WorkspacesLauncherUI.exe",
+    L"PowerToys.WorkspacesWindowArranger.exe",
+    L"PowerToys.WorkspacesEditor.exe",
+    L"PowerToys.ZoomIt.exe",
 };

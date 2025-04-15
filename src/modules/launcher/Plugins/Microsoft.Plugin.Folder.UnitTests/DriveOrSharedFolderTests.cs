@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.Plugin.Folder.Sources;
 using Microsoft.Plugin.Folder.Sources.Result;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,6 +20,7 @@ namespace Microsoft.Plugin.Folder.UnitTests
 
         [DataTestMethod]
         [DataRow(@"\\test-server\testdir", true)]
+        [DataRow(@"//test-server/testdir", true)]
         [DataRow(@"c:", true)]
         [DataRow(@"c:\", true)]
         [DataRow(@"C:\", true)]

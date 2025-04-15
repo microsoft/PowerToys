@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 

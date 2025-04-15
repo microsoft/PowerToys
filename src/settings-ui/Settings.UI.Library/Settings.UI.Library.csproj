@@ -1,61 +1,44 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-	<Import Project="..\..\Version.props" />
-
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\Common.SelfContained.props" />
     <PropertyGroup>
-        <TargetFramework>net8.0-windows</TargetFramework>
-        <Version>$(Version).0</Version>
-        <Authors>Microsoft Corporation</Authors>
-        <Product>PowerToys</Product>
         <Description>PowerToys Settings UI Library</Description>
         <AssemblyName>PowerToys.Settings.UI.Lib</AssemblyName>
-        <SelfContained>true</SelfContained>
     </PropertyGroup>
-
-    <!-- SelfContained=true requires RuntimeIdentifier to be set -->
-    <PropertyGroup Condition="'$(Platform)'=='x64'">
-        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Platform)'=='ARM64'">
-        <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
-    </PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<DefineConstants>DEBUG;TRACE</DefineConstants>
-		<DebugType>full</DebugType>
-		<DebugSymbols>true</DebugSymbols>
-	</PropertyGroup>
 
     <ItemGroup>
-		<None Include="backup_restore_settings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
+        <None Include="backup_restore_settings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="System.IO.Abstractions" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="System.IO.Abstractions" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
-		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
-		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
+        <ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
+        <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
+        <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+        <ProjectReference Include="..\..\modules\MouseUtils\MouseJump.Common\MouseJump.Common.csproj" />
+    </ItemGroup>
 
-	<ItemGroup>
-	  <Compile Update="Resources\Resources.Designer.cs">
-	    <DependentUpon>Resources.resx</DependentUpon>
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	  </Compile>
-	</ItemGroup>
+    <ItemGroup>
+        <Compile Update="Resources\Resources.Designer.cs">
+            <DependentUpon>Resources.resx</DependentUpon>
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+        </Compile>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <EmbeddedResource Update="Resources\Resources.resx">
-	    <SubType>Designer</SubType>
-	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-	    <Generator>PublicResXFileCodeGenerator</Generator>
-	  </EmbeddedResource>
-	</ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Update="Resources\Resources.resx">
+            <SubType>Designer</SubType>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+            <Generator>PublicResXFileCodeGenerator</Generator>
+        </EmbeddedResource>
+    </ItemGroup>
 
 </Project>

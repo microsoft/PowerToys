@@ -1,10 +1,14 @@
-﻿// Copyright (c) Brice Lambson
+﻿#pragma warning disable IDE0073
+// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+#pragma warning restore IDE0073
 
 using System;
+using System.Globalization;
 using System.Text;
 using System.Windows;
+
 using ImageResizer.Models;
 using ImageResizer.Properties;
 using ImageResizer.Utilities;
@@ -18,6 +22,19 @@ namespace ImageResizer
     {
         static App()
         {
+            try
+            {
+                string appLanguage = LanguageHelper.LoadLanguage();
+                if (!string.IsNullOrEmpty(appLanguage))
+                {
+                    System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
+                }
+            }
+            catch (CultureNotFoundException)
+            {
+                // error
+            }
+
             Console.InputEncoding = Encoding.Unicode;
         }
 

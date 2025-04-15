@@ -9,5 +9,11 @@ namespace Peek.FilePreviewer.Models
         public bool SourceCodeWrapText { get; }
 
         public bool SourceCodeTryFormat { get; }
+
+        public int SourceCodeFontSize { get; }
+
+        public bool SourceCodeStickyScroll { get; }
+
+        public bool SourceCodeMinimap { get; }
     }
 }

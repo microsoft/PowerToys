@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.SshConfigParser;
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Wox.Plugin.Logger;

@@ -7,8 +7,8 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+
 using Common.ComInterlop;
-using Microsoft.PowerToys.STATestExtension;
 using Microsoft.PowerToys.ThumbnailHandler.Pdf;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

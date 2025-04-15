@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-using Common.UI;
+using ManagedCommon;
 using Microsoft.Win32;
 using Wox.Plugin.Common.VirtualDesktop.Interop;
 using Wox.Plugin.Common.Win32;
@@ -90,7 +90,7 @@ namespace Wox.Plugin.Common.VirtualDesktop.Helper
         /// Method to update the list of Virtual Desktops from Registry
         /// The data in the registry are always up to date
         /// </summary>
-        /// <remarks>If we can not read from registry, we set the list/guid to empty values.</remarks>
+        /// <remarks>If we cannot read from registry, we set the list/guid to empty values.</remarks>
         public void UpdateDesktopList()
         {
             int userSessionId = Process.GetCurrentProcess().SessionId;

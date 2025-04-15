@@ -27,6 +27,17 @@ std::wstring LayoutMap::GetKeyName(DWORD key)
     return impl->GetKeyName(key);
 }
 
+DWORD LayoutMap::GetKeyFromName(const std::wstring& name)
+{
+    auto list = impl->GetKeyNameList(false);
+    for (const auto& [value, key] : list)
+    {
+        if (key == name)
+            return value;
+    }
+    return {};
+}
+
 std::vector<DWORD> LayoutMap::GetKeyCodeList(const bool isShortcut)
 {
     return impl->GetKeyCodeList(isShortcut);
@@ -230,10 +241,12 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_KANA] = L"IME Kana";
     keyboardLayoutMap[VK_HANGEUL] = L"IME Hangeul";
     keyboardLayoutMap[VK_HANGUL] = L"IME Hangul";
+    keyboardLayoutMap[VK_IME_ON] = L"IME On";
     keyboardLayoutMap[VK_JUNJA] = L"IME Junja";
     keyboardLayoutMap[VK_FINAL] = L"IME Final";
     keyboardLayoutMap[VK_HANJA] = L"IME Hanja";
     keyboardLayoutMap[VK_KANJI] = L"IME Kanji";
+    keyboardLayoutMap[VK_IME_OFF] = L"IME Off";
     keyboardLayoutMap[VK_CONVERT] = L"IME Convert";
     keyboardLayoutMap[VK_NONCONVERT] = L"IME Non-Convert";
     keyboardLayoutMap[VK_ACCEPT] = L"IME Kana";

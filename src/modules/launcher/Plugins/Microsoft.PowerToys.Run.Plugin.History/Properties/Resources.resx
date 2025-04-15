@@ -121,7 +121,7 @@
     <value>History</value>
   </data>
   <data name="wox_plugin_history_plugin_description" xml:space="preserve">
-    <value>Accesses previously selected results.</value>
+    <value>Accesses previously selected results</value>
   </data>
   <data name="wox_plugin_history_processing_failed" xml:space="preserve">
     <value>Failed to process the input</value>

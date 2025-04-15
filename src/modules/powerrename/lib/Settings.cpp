@@ -33,9 +33,11 @@ namespace
 
 CSettings::CSettings()
 {
+    generalJsonFilePath = PTSettingsHelper::get_powertoys_general_save_file_location();
     std::wstring result = PTSettingsHelper::get_module_save_folder_location(PowerRenameConstants::ModuleKey);
-    jsonFilePath = result + std::wstring(c_powerRenameDataFilePath);
+    moduleJsonFilePath = result + std::wstring(c_powerRenameDataFilePath);
     UIFlagsFilePath = result + std::wstring(c_powerRenameUIFlagsFilePath);
+    RefreshEnabledState();
     Load();
 }
 
@@ -43,7 +45,6 @@ void CSettings::Save()
 {
     json::JsonObject jsonData;
 
-    jsonData.SetNamedValue(c_enabled, json::value(settings.enabled));
     jsonData.SetNamedValue(c_showIconOnMenu, json::value(settings.showIconOnMenu));
     jsonData.SetNamedValue(c_extendedContextMenuOnly, json::value(settings.extendedContextMenuOnly));
     jsonData.SetNamedValue(c_persistState, json::value(settings.persistState));
@@ -51,13 +52,13 @@ void CSettings::Save()
     jsonData.SetNamedValue(c_maxMRUSize, json::value(settings.maxMRUSize));
     jsonData.SetNamedValue(c_useBoostLib, json::value(settings.useBoostLib));
 
-    json::to_file(jsonFilePath, jsonData);
+    json::to_file(moduleJsonFilePath, jsonData);
     GetSystemTimeAsFileTime(&lastLoadedTime);
 }
 
 void CSettings::Load()
 {
-    if (!std::filesystem::exists(jsonFilePath))
+    if (!std::filesystem::exists(moduleJsonFilePath))
     {
         MigrateFromRegistry();
 
@@ -75,16 +76,42 @@ void CSettings::Reload()
 {
     // Load json settings from data file if it is modified in the meantime.
     FILETIME lastModifiedTime{};
-    if (LastModifiedTime(jsonFilePath, &lastModifiedTime) &&
-        CompareFileTime(&lastModifiedTime, &lastLoadedTime) == 1)
+    if (LastModifiedTime(moduleJsonFilePath, &lastModifiedTime) &&
+            CompareFileTime(&lastModifiedTime, &lastLoadedTime) == 1)
     {
         Load();
     }
 }
 
+void CSettings::RefreshEnabledState()
+{
+    // Load json settings from data file if it is modified in the meantime.
+    FILETIME lastModifiedTime{};
+    if (!(LastModifiedTime(generalJsonFilePath, &lastModifiedTime) &&
+          CompareFileTime(&lastModifiedTime, &lastLoadedGeneralSettingsTime) == 1))
+        return;
+
+    lastLoadedGeneralSettingsTime = lastModifiedTime;
+
+    auto json = json::from_file(generalJsonFilePath);
+    if (!json)
+        return;
+
+    const json::JsonObject& jsonSettings = json.value();
+    try
+    {
+        json::JsonObject modulesEnabledState;
+        json::get(jsonSettings, L"enabled", modulesEnabledState, json::JsonObject{});
+        json::get(modulesEnabledState, L"PowerRename", settings.enabled, true);
+    }
+    catch (const winrt::hresult_error&)
+    {
+    }
+}
+
 void CSettings::MigrateFromRegistry()
 {
-    settings.enabled = GetRegBoolean(c_enabled, true);
+    //settings.enabled = GetRegBoolean(c_enabled, true);
     settings.showIconOnMenu = GetRegBoolean(c_showIconOnMenu, true);
     settings.extendedContextMenuOnly = GetRegBoolean(c_extendedContextMenuOnly, false); // Disabled by default.
     settings.persistState = GetRegBoolean(c_persistState, true);
@@ -100,16 +127,12 @@ void CSettings::MigrateFromRegistry()
 
 void CSettings::ParseJson()
 {
-    auto json = json::from_file(jsonFilePath);
+    auto json = json::from_file(moduleJsonFilePath);
     if (json)
     {
         const json::JsonObject& jsonSettings = json.value();
         try
         {
-            if (json::has(jsonSettings, c_enabled, json::JsonValueType::Boolean))
-            {
-                settings.enabled = jsonSettings.GetNamedBoolean(c_enabled);
-            }
             if (json::has(jsonSettings, c_showIconOnMenu, json::JsonValueType::Boolean))
             {
                 settings.showIconOnMenu = jsonSettings.GetNamedBoolean(c_showIconOnMenu);

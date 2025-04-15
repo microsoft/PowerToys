@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.Plugin.WindowWalker.Properties;
 using Wox.Infrastructure;
 using Wox.Plugin;
@@ -67,6 +68,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     searchResult.Result.SwitchToWindow();
                     return true;
                 },
+                Score = searchResult.Score,
 
                 // For debugging you can set the second parameter to true to see more information.
                 ToolTipData = GetToolTip(searchResult.Result, false),
@@ -90,6 +92,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
             if (WindowWalkerSettings.Instance.SubtitleShowPid)
             {
                 subtitleText += $" ({window.Process.ProcessID})";
+            }
+
+            if (!window.Process.IsResponding)
+            {
+                subtitleText += $" [{Resources.wox_plugin_windowwalker_NotResponding}]";
             }
 
             if (WindowWalkerSettings.Instance.SubtitleShowDesktopName && Main.VirtualDesktopHelperInstance.GetDesktopCount() > 1)
@@ -148,7 +155,8 @@ namespace Microsoft.Plugin.WindowWalker.Components
                     $"Desktop number: {window.Desktop.Number}\n" +
                     $"Desktop is visible: {window.Desktop.IsVisible}\n" +
                     $"Desktop position: {window.Desktop.Position}\n" +
-                    $"Is AllDesktops view: {window.Desktop.IsAllDesktopsView}";
+                    $"Is AllDesktops view: {window.Desktop.IsAllDesktopsView}\n" +
+                    $"Responding: {window.Process.IsResponding}";
 
                 return new ToolTipData(window.Title, text);
             }

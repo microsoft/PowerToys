@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -43,11 +46,25 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             DataContext = ViewModel;
             InitializeComponent();
+
+            this.MouseUtils_MouseJump_Panel.ViewModel = ViewModel;
         }
 
         public void RefreshEnabledState()
         {
             ViewModel.RefreshEnabledState();
+        }
+
+        private void OpenAnimationsSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            try
+            {
+                StartProcessHelper.Start(StartProcessHelper.AnimationsSettings);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error while trying to open the animations settings", ex);
+            }
         }
     }
 }

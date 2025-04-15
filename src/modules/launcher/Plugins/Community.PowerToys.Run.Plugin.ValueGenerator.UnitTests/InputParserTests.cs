@@ -5,13 +5,14 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wox.Plugin;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
 {
     [TestClass]
-    public class InputParserTests
+    public partial class InputParserTests
     {
         [DataTestMethod]
         [DataRow("md5 abc", typeof(Hashing.HashRequest))]
@@ -26,6 +27,8 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
         [DataRow("uUiD5 ns:URL abc", typeof(GUID.GUIDRequest))]
         [DataRow("Guidvv ns:DNS abc", null)]
         [DataRow("guidv4", typeof(GUID.GUIDRequest))]
+        [DataRow("guidv7", typeof(GUID.GUIDRequest))]
+        [DataRow("GUIDv7", typeof(GUID.GUIDRequest))]
         [DataRow("base64 abc", typeof(Base64.Base64Request))]
         [DataRow("base99 abc", null)]
         [DataRow("base64s abc", null)]
@@ -89,25 +92,22 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
 
         private static bool CommandIsKnown(string command)
         {
-            string[] hashes = new string[] { "md5", "sha1", "sha256", "sha384", "sha512", "base64", "base64d" };
+            string[] hashes = ["md5", "sha1", "sha256", "sha384", "sha512", "base64", "base64d"];
             if (hashes.Contains(command.ToLowerInvariant()))
             {
                 return true;
             }
 
-            Regex regexGuiUUID = new Regex("^(guid|uuid)([1345]{0,1}|v[1345]{1})$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            if (regexGuiUUID.IsMatch(command))
+            if (GetKnownUuidImplementations().IsMatch(command))
             {
                 return true;
             }
 
-            string[] uriCommands = new string[] { "url", "urld", "esc:hex", "uesc:hex", "esc:data", "uesc:data" };
-            if (uriCommands.Contains(command.ToLowerInvariant()))
-            {
-                return true;
-            }
-
-            return false;
+            string[] uriCommands = ["url", "urld", "esc:hex", "uesc:hex", "esc:data", "uesc:data"];
+            return uriCommands.Contains(command.ToLowerInvariant());
         }
+
+        [GeneratedRegex("^(guid|uuid)([13457]{0,1}|v[13457]{1})$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
+        private static partial Regex GetKnownUuidImplementations();
     }
 }

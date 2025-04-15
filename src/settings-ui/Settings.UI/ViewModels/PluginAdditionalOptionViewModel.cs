@@ -6,11 +6,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PluginAdditionalOptionViewModel : INotifyPropertyChanged
+    public partial class PluginAdditionalOptionViewModel : INotifyPropertyChanged
     {
         private PluginAdditionalOption _additionalOption;
 
@@ -28,6 +29,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string SecondDisplayLabel => _additionalOption.SecondDisplayLabel;
 
         public string SecondDisplayDescription => _additionalOption.SecondDisplayDescription;
+
+        public PluginAdditionalOption.AdditionalOptionType Type => _additionalOption.PluginOptionType;
 
         // Bool checkbox setting
         public bool ShowCheckBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Checkbox;
@@ -65,10 +68,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        // TextBox setting
+        // TextBox and MultilineTextBox setting
         public bool ShowTextBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.Textbox;
 
+        public bool ShowMultilineTextBox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.MultilineTextbox;
+
         public int TextBoxMaxLength => (_additionalOption.TextBoxMaxLength == null) ? 0 : _additionalOption.TextBoxMaxLength.Value; // 0 is the default and means no limit.
+
+        public string PlaceholderText => _additionalOption.PlaceholderText;
 
         public string TextValue
         {
@@ -99,7 +106,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _additionalOption.NumberValue;
             set
             {
-                if (value != _additionalOption.NumberValue)
+                if (double.IsNaN(value))
+                {
+                    // If the user clears the NumberBox and presses enter or moves focus away then `value` converted to double results in `double.NaN`. This crashes the settings app. (https://github.com/microsoft/PowerToys/issues/32738#issuecomment-2105983967)
+                    // To prevent the crash and provide a nice user experience we reset the NumberBox to the last valid value. This happens by sending a `NotifyPropertyChanged()` command and let the NumberBox reload its value.
+                    // (Yes we could use 0, but this needs additional code for checking 0 against min and max.
+                    //  And yes we could also use the min value of the NumberBox, but this is not user friendly as the minimum value of NumberBox can be `double.MinValue`.)
+                    NotifyPropertyChanged();
+                }
+                else if (value != _additionalOption.NumberValue)
                 {
                     _additionalOption.NumberValue = value;
                     NotifyPropertyChanged();
@@ -113,6 +128,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ShowCheckboxAndTextbox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndTextbox;
 
         public bool ShowCheckboxAndNumberbox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndNumberbox;
+
+        public bool ShowCheckboxAndMultilineTextbox => _additionalOption.PluginOptionType == PluginAdditionalOption.AdditionalOptionType.CheckboxAndMultilineTextbox;
 
         // Enabled state of ComboBox, TextBox, NumberBox (If combined with checkbox then checkbox value decides it.)
         public bool SecondSettingIsEnabled => (int)_additionalOption.PluginOptionType > 10 ? _additionalOption.Value : true;

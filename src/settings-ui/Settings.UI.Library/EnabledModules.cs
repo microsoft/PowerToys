@@ -6,6 +6,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using Microsoft.PowerToys.Settings.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 
@@ -15,6 +16,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         private Action notifyEnabledChangedAction;
 
+        // Default values for enabled modules should match their expected "enabled by default" values.
+        // Otherwise, a run of DSC on clean settings will not match the expected default result.
         public EnabledModules()
         {
         }
@@ -55,7 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool fileExplorerPreview = true;
 
         [JsonPropertyName("File Explorer Preview")]
-        public bool FileExplorerPreview
+        public bool PowerPreview
         {
             get => fileExplorerPreview;
             set
@@ -85,22 +88,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool videoConference; // defaulting to off https://github.com/microsoft/PowerToys/issues/14507
-
-        [JsonPropertyName("Video Conference")]
-        public bool VideoConference
-        {
-            get => this.videoConference;
-            set
-            {
-                if (this.videoConference != value)
-                {
-                    LogTelemetryEvent(value);
-                    this.videoConference = value;
-                }
-            }
-        }
-
         private bool powerRename = true;
 
         public bool PowerRename
@@ -116,7 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool keyboardManager = true;
+        private bool keyboardManager; // defaulting to off
 
         [JsonPropertyName("Keyboard Manager")]
         public bool KeyboardManager
@@ -183,7 +170,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool awake;
+        private bool awake = true;
 
         [JsonPropertyName("Awake")]
         public bool Awake
@@ -199,7 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool mouseWithoutBorders = true;
+        private bool mouseWithoutBorders; // defaulting to off
 
         [JsonPropertyName("MouseWithoutBorders")]
         public bool MouseWithoutBorders
@@ -247,7 +234,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool mouseJump = true;
+        private bool mouseJump; // defaulting to off
 
         [JsonPropertyName("MouseJump")]
         public bool MouseJump
@@ -279,7 +266,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool mousePointerCrosshairs = true;
+        private bool mousePointerCrosshairs; // defaulting to off
 
         [JsonPropertyName("MousePointerCrosshairs")]
         public bool MousePointerCrosshairs
@@ -295,7 +282,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool powerAccent;
+        private bool powerAccent; // defaulting to off
 
         [JsonPropertyName("QuickAccent")]
         public bool PowerAccent
@@ -311,10 +298,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool powerOCR = true;
+        private bool powerOCR; // defaulting to off
 
         [JsonPropertyName("TextExtractor")]
-        public bool PowerOCR
+        public bool PowerOcr
         {
             get => powerOCR;
             set
@@ -328,18 +315,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool pastePlain = true;
+        private bool advancedPaste = true;
 
-        [JsonPropertyName("PastePlain")]
-        public bool PastePlain
+        [JsonPropertyName("AdvancedPaste")]
+        public bool AdvancedPaste
         {
-            get => pastePlain;
+            get => advancedPaste;
             set
             {
-                if (pastePlain != value)
+                if (advancedPaste != value)
                 {
                     LogTelemetryEvent(value);
-                    pastePlain = value;
+                    advancedPaste = value;
                     NotifyChange();
                 }
             }
@@ -456,6 +443,72 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     environmentVariables = value;
+                }
+            }
+        }
+
+        private bool newPlus;
+
+        [JsonPropertyName("NewPlus")] // This key must match newplus::constants::non_localizable
+        public bool NewPlus
+        {
+            get => newPlus;
+            set
+            {
+                if (newPlus != value)
+                {
+                    LogTelemetryEvent(value);
+                    newPlus = value;
+                }
+            }
+        }
+
+        private bool workspaces = true;
+
+        [JsonPropertyName("Workspaces")]
+        public bool Workspaces
+        {
+            get => workspaces;
+            set
+            {
+                if (workspaces != value)
+                {
+                    LogTelemetryEvent(value);
+                    workspaces = value;
+                    NotifyChange();
+                }
+            }
+        }
+
+        private bool cmdPal = true;
+
+        [JsonPropertyName("CmdPal")]
+        public bool CmdPal
+        {
+            get => cmdPal;
+            set
+            {
+                if (cmdPal != value)
+                {
+                    LogTelemetryEvent(value);
+                    cmdPal = value;
+                }
+            }
+        }
+
+        private bool zoomIt;
+
+        [JsonPropertyName("ZoomIt")]
+        public bool ZoomIt
+        {
+            get => zoomIt;
+            set
+            {
+                if (zoomIt != value)
+                {
+                    LogTelemetryEvent(value);
+                    zoomIt = value;
+                    NotifyChange();
                 }
             }
         }

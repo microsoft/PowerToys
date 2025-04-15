@@ -88,6 +88,15 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Image sizes.
+        /// </summary>
+        public static string Image_Sizes {
+            get {
+                return ResourceManager.GetString("Image_Sizes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Image Resizer.
         /// </summary>
         public static string ImageResizer {
@@ -151,7 +160,7 @@ namespace ImageResizer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Over_write files.
+        ///   Looks up a localized string similar to Ov_erwrite files.
         /// </summary>
         public static string Input_Replace {
             get {
@@ -174,6 +183,15 @@ namespace ImageResizer.Properties {
         public static string Input_ShrinkOnly {
             get {
                 return ResourceManager.GetString("Input_ShrinkOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to _Make pictures smaller but not larger.
+        /// </summary>
+        public static string Input_ShrinkOnly_Content {
+            get {
+                return ResourceManager.GetString("Input_ShrinkOnly.Content", resourceCulture);
             }
         }
         

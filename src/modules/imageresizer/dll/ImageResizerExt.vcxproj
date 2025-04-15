@@ -79,18 +79,18 @@
   <ItemGroup>
     <ClCompile Include="ContextMenuHandler.cpp" />
     <ClCompile Include="dllmain.cpp">
-      <CompileAsManaged Condition="'$(CIBuild)'!='true'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">
+      <CompileAsManaged>false</CompileAsManaged>
+      <PrecompiledHeader>
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ImageResizerExt.cpp" />
     <ClCompile Include="ImageResizerExt_i.c">
-      <CompileAsManaged Condition="'$(CIBuild)'!='true'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">
+      <CompileAsManaged>false</CompileAsManaged>
+      <PrecompiledHeader>
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -121,6 +121,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+      <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>

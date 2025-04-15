@@ -1,25 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
   <PropertyGroup>
     <AssemblyTitle>UnitTests-SvgPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-SvgPreviewHandler</AssemblyDescription>
     <AssemblyTitle>UnitTests-SvgPreviewHandler</AssemblyTitle>
     <Description>PowerToys UnitTests-SvgPreviewHandler</Description>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <ProjectGuid>{060D75DA-2D1C-48E6-A4A1-6F0718B64661}</ProjectGuid>
     <RootNamespace>SvgPreviewHandlerUnitTests</RootNamespace>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
   </PropertyGroup>
-
-  <Import Project="..\..\..\Version.props" />
 
   <ItemGroup>
     <None Remove="HelperFiles\file1.svg" />
@@ -28,18 +23,12 @@
 
   <ItemGroup>
     <PackageReference Include="Moq" />
-    <PackageReference Include="MSTest.TestAdapter" />
-    <PackageReference Include="MSTest.TestFramework" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSTest" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <ProjectReference Include="..\common\PreviewHandlerCommon.csproj" />
     <ProjectReference Include="..\SvgPreviewHandler\SvgPreviewHandler.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="HelperFiles\file1.svg">

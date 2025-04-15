@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -13,7 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerRenameViewModel : Observable
+    public partial class PowerRenameViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 

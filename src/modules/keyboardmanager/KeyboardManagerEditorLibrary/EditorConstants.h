@@ -10,8 +10,13 @@ namespace EditorConstants
     inline const int EditKeyboardTableMinWidth = 700;
     inline const int DefaultEditShortcutsWindowWidth = 1410;
     inline const int DefaultEditShortcutsWindowHeight = 600;
+    inline const int DefaultEditSingleShortcutsWindowWidth = 1080;
+    inline const int DefaultEditSingleShortcutsWindowHeight = 400;
     inline const int MinimumEditShortcutsWindowWidth = 500;
     inline const int MinimumEditShortcutsWindowHeight = 500;
+    inline const int MinimumEditSingleShortcutsWindowWidth = 500;
+    inline const int MinimumEditSingleShortcutsWindowHeight = 600;
+
     inline const int EditShortcutsTableMinWidth = 1000;
 
     // Key Remap table constants

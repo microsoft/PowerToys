@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.8" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.17" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
     <stringTable>
       <string id="PowerToys">Microsoft PowerToys</string>
-	  <string id="InstallerUpdates">Installer and Updates</string>
-	  <string id="PowerToysRun">PowerToys Run</string>
+      <string id="InstallerUpdates">Installer and Updates</string>
+      <string id="PowerToysRun">PowerToys Run</string>
+      <string id="AdvancedPaste">Advanced Paste</string>
+      <string id="MouseWithoutBorders">Mouse Without Borders</string>
+      <string id="GeneralSettings">General settings</string>
+      <string id="NewPlus">New+</string>
+      <string id="DeprecatedPolicies">Deprecated policies</string>
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
@@ -19,8 +24,18 @@
       <string id="SUPPORTED_POWERTOYS_0_76_0">PowerToys version 0.76.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_77_0">PowerToys version 0.77.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_78_0">PowerToys version 0.78.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_81_0">PowerToys version 0.81.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_81_1">PowerToys version 0.81.1 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_83_0">PowerToys version 0.83.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_84_0">PowerToys version 0.84.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_85_0">PowerToys version 0.85.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_86_0">PowerToys version 0.86.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_88_0">PowerToys version 0.88.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_89_0">PowerToys version 0.89.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_90_0">PowerToys version 0.90.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
-            <string id="ConfigureGlobalUtilityEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
+      <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
 
 If you enable this setting, all utilities will be always enabled and the user won't be able to disable it.
 
@@ -31,7 +46,7 @@ If you don't configure this setting, users are able to enable or disable the uti
 The individual enabled state policies for the utilities will override this policy.
 </string>
 
-	  <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
+      <string id="ConfigureEnabledUtilityDescription">This policy configures the enabled state for a PowerToys utility.
 
 If you enable this setting, the utility will be always enabled and the user won't be able to disable it.
 
@@ -93,6 +108,22 @@ If this setting is enabled or not configured, the user can control experimentati
 
 If this setting is disabled, experimentation is not allowed.
 </string>
+      <string id="AllowDiagnosticDataDescription">This policy configures whether sending of PowerToys diagnostic data is allowed. With diagnostic data sending allowed the user helps inform bug fixes, performance and improvements.
+
+If this setting is enabled or not configured, the user can control diagnostic data sending in the PowerToys settings menu.
+
+If this setting is disabled, diagnostic data sending is not allowed.
+</string>
+      <string id="ConfigureRunAtStartupDescription">This policy configures the "run at startup" setting of PowerToys.
+
+If you enable this setting, the "run at startup" setting will be always enabled and the user won't be able to disable it.
+
+If you disable this setting, the "run at startup" setting will be always disabled and the user won't be able to enable it.
+
+If you don't configure this setting, users are able to enable or disable "run at startup" at will.
+
+Note: This only controls the PowerToys method that creates a scheduled task to start PowerToys at login. It doesn't control other custom auto-start methods that the user might try to use outside of PowerToys or manually creating/deleting a scheduled task.
+</string>
       <string id="PowerToysRunAllPluginsEnabledStateDescription">This policy configures the enabled state for all PowerToys Run plugins. All plugins will have the same state.
 
 If you enable this setting, the plugins will be always enabled and the user won't be able to disable it.
@@ -118,11 +149,101 @@ You can set the enabled state for all plugins not configured by this policy usin
 
 Note: Changes require a restart of PowerToys Run.
 </string>
-      <string id="ConfigureGlobalUtilityEnabledState">Configure global utility enabled state</string>
+      <string id="AllowPowerToysAdvancedPasteOnlineAIModelsDescription">This policy allows you to disable Advanced Paste online AI models.
+
+If you enable or don't configure this policy, the user takes control over the enabled state of the Enable paste with AI Advanced Paste setting.
+
+If you disable this policy, the user won't be able to enable Enable paste with AI Advanced Paste setting and use Advanced Paste AI prompt nor set up the Open AI key in PowerToys Settings.
+</string>
+      <string id="MwbClipboardSharingEnabledDescription">This policy configures if the user can share the clipboard between machines.
+
+If you enable or don't configure this policy, the user takes control over the clipboard sharing setting.
+
+If you disable this policy, the user won't be able to enable the clipboard sharing setting.
+</string>
+      <string id="MwbFileTransferEnabledDescription">This policy configures if the user can transfer files between machines.
+
+If you enable or don't configure this policy, the user takes control over the file sharing setting.
+
+If you disable this policy, the user won't be able to enable the file sharing Settings.
+
+Note: The file sharing feature depends on the clipboard sharing feature. Disabling clipboard sharing automatically disables file sharing too.
+</string>
+      <string id="MwbUseOriginalUserInterfaceDescription">This policy configures if the user can use the old Mouse Without Borders user interface.
+
+If you enable or don't configure this policy, the user takes control over the setting and can enable or disable the old user interface.
+
+If you disable this policy, the user won't be able to enable the old user interface.
+</string>
+      <string id="MwbDisallowBlockingScreensaverDescription">This policy configures if the user is allowed to disable the screensaver on the remote machines.
+
+If you enable this policy, the user won't be able to enable the "block screensaver" screensaver setting and the screensaver is not blocked.
+
+If you disable or don't configure this policy, the user takes control over the setting and can block the screensaver.
+</string>
+      <string id="MwbAllowServiceModeDescription">This policy configures if the user is allowed to use Mouse Without Borders in Service Mode.
+
+If this setting is enabled or not configured, the user can enable and use Mouse Without Borders in Service Mode.
+
+If this setting is disabled, the user won't be able to enable or use Mouse Without Borders in Service Mode.
+
+Note: As most other PowerToys policies, a restart of PowerToys is required for a change in this policy to take full effect.
+</string>
+      <string id="MwbSameSubnetOnlyDescription">This policy configures if connections are only allowed in the same subnet.
+
+If you enable this policy, the setting is enabled and only connections in the same subnet are allowed.
+
+If you disable this policy, the setting is disabled and all connections are allowed.
+
+If you don't configure this policy, the user takes control over the setting and can enable or disable it.
+</string>
+      <string id="MwbValidateRemoteIpDescription">This policy configures if reverse DNS lookup is used to validate the remote machine IP Address.
+
+If you enable this policy, the setting is enabled and the IP Address is validated.
+
+If you disable this policy, the setting is disabled and the IP Address is not validated.
+
+If you don't configure this policy, the user takes control over the setting and can enable or disable it.
+</string>
+      <string id="MwbDisableUserDefinedIpMappingRulesDescription">This policy configures if the user can define IP Address mapping rules.
+
+If you enable this policy, the setting is disabled and the user can't define rules or use existing ones.
+
+If you disable or don't configure this policy, the user takes control over the setting.
+
+Note: Enabling this policy does not prevent policy defined mapping rules from working.
+</string>
+      <string id="MwbPolicyDefinedIpMappingRulesDescription">This policy allows you to define IP Address mapping rules.
+
+If you enable this policy, you can define IP Address mapping rules that the user can't change or disable.
+Please enter one mapping per line in the format: "hostname IP"
+
+If you disable or don't configure this policy, no predefined rules are applied.
+</string>
+      <string id="NewPlusHideTemplateFilenameExtensionDescription">This policy configures if the template filenames are shown with extension or not.
+
+If you enable this policy, the setting is enabled and the extension is hidden.
+
+If you disable this policy, the setting is disabled and the extension is shown.
+
+If you don't configure this policy, the user takes control over the setting and can enable or disable it.
+</string>
+      <string id="NewPlusReplaceVariablesInTemplateFilenamesDescription">This policy configures if supported variables will get replaced in template filenames.
+
+If you enable this policy, the setting is enabled and supported variables in filenames will get replaced.
+
+If you disable this policy, the setting is disabled and variables in filenames will not get replaced.
+
+If you don't configure this policy, the user will be able to control the setting and can enable or disable it.
+</string>
+
+      <string id="ConfigureAllUtilityGlobalEnabledState">Configure global utility enabled state</string>
+      <string id="ConfigureEnabledUtilityAdvancedPaste">Advanced Paste: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityColorPicker">Color Picker: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityCmdNotFound">Command Not Found: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityCmdPal">CmdPal: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityCropAndLock">Crop And Lock: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityEnvironmentVariables">Environment Variables: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFancyZones">FancyZones: Configure enabled state</string>
@@ -144,16 +265,18 @@ Note: Changes require a restart of PowerToys Run.
       <string id="ConfigureEnabledUtilityMouseJump">Mouse Jump: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMousePointerCrosshairs">Mouse Pointer Crosshairs: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseWithoutBorders">Mouse Without Borders: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityPastePlain">Paste as Plain Text: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityNewPlus">New+: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPeek">Peek: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerRename">Power Rename: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityPowerLauncher">PowerToys Run: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityWorkspaces">PowerToys Workspaces: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityQuickAccent">Quick Accent: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityRegistryPreview">Registry Preview: Configure enabled state</string>		
+      <string id="ConfigureEnabledUtilityRegistryPreview">Registry Preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityScreenRuler">Screen Ruler: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityVideoConferenceMute">Video Conference Mute: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityZoomIt">Zoom It: Configure enabled state</string>
       <string id="DisablePerUserInstallation">Disable per-user installation</string>
       <string id="DisableAutomaticUpdateDownload">Disable automatic downloads</string>
       <string id="DoNotShowWhatsNewAfterUpdates">Do not show the release notes after updates</string>
@@ -164,14 +287,31 @@ Note: Changes require a restart of PowerToys Run.
       <string id="PowerToysRunIndividualPluginEnabledState">Configure enabled state for individual plugins</string>
       <string id="ConfigureEnabledUtilityFileExplorerQOIPreview">QOI file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerQOIThumbnails">QOI file thumbnail: Configure enabled state</string>
+      <string id="AllowPowerToysAdvancedPasteOnlineAIModels">Allow using online AI models</string>
+      <string id="MwbClipboardSharingEnabled">Clipboard sharing enabled</string>
+      <string id="MwbFileTransferEnabled">File transfer enabled</string>
+      <string id="MwbUseOriginalUserInterface">Original user interface is available</string>
+      <string id="MwbDisallowBlockingScreensaver">Disallow blocking screensaver on other machines</string>
+      <string id="MwbAllowServiceMode">Allow Service Mode</string>
+      <string id="MwbSameSubnetOnly">Connect only in same subnet</string>
+      <string id="MwbValidateRemoteIp">Validate remote machine IP Address</string>
+      <string id="MwbDisableUserDefinedIpMappingRules">Disable user defined IP Address mapping rules</string>
+      <string id="MwbPolicyDefinedIpMappingRules">Predefined IP Address mapping rules</string>
+      <string id="NewPlusHideTemplateFilenameExtension">Hide template filename extension</string>
+      <string id="AllowDiagnosticData">Allow sending diagnostic data</string>
+      <string id="ConfigureRunAtStartup">Configure the run at startup setting</string>
+      <string id="NewPlusReplaceVariablesInTemplateFilenames">Replace variables in template filenames</string>
     </stringTable>
-	
-	<presentationTable>
-	  <presentation id="PowerToysRunIndividualPluginEnabledState">
+
+    <presentationTable>
+      <presentation id="PowerToysRunIndividualPluginEnabledState">
         <listBox refId="PowerToysRunIndividualPluginEnabledList">List of managed plugins:</listBox>
       </presentation>
-	</presentationTable>
-	
+      <presentation id="MwbPolicyDefinedIpMappingRules">
+        <multiTextBox refId="MwbPolicyDefinedIpMappingsList">List of IP Address mappings:</multiTextBox>
+      </presentation>
+    </presentationTable>
+
   </resources>
 </policyDefinitionResources>
 

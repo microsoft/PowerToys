@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\Common.SelfContained.props" />
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>PowerToys.Settings.DSC.Schema</RootNamespace>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <WindowsPackageType>None</WindowsPackageType>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    </PropertyGroup>
+
+    <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+    <PropertyGroup>
+        <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+        <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
+        <ProjectReference Include="..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <GeneratedDSCModule>"$(ProjectDir)..\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(Version)\Microsoft.PowerToys.Configure.psm1"</GeneratedDSCModule>
+        <GeneratedDSCManifest>"$(ProjectDir)..\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(Version)\Microsoft.PowerToys.Configure.psd1"</GeneratedDSCManifest>
+    </PropertyGroup>
+
+    <!-- The following sections assume that the machine we're building on is always x64. That means we won't be able to run/inspect arm64 executables, therefore we must always execute x64 generator. -->
+
+    <Target Name="PostBuildAction" AfterTargets="Build" Outputs="$(GeneratedDSCModule)" Condition="'$(Platform)'!='ARM64'">
+        <Exec Command="&quot;$(OutDir)$(AssemblyName).exe&quot; &quot;$(SolutionDir)x64\$(Configuration)\WinUI3Apps\PowerToys.Settings.UI.Lib.dll&quot; $(GeneratedDSCModule) $(GeneratedDSCManifest)" />
+    </Target>
+
+    <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(Platform)'=='ARM64'">
+      <Exec Command="&quot;$(MSBuildToolsPath)\msbuild.exe&quot; PowerToys.sln -p:Configuration=&quot;$(Configuration)&quot; -p:Platform=&quot;x64&quot; -verbosity:m -t:DSC\PowerToys_Settings_DSC_Schema_Generator" WorkingDirectory="$(SolutionDir)" />
+    </Target>
+
+</Project>

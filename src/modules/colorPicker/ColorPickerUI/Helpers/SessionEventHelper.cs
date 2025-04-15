@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using ColorPicker.Telemetry;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;

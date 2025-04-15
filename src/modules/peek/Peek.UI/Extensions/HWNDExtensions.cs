@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text;
+
 using Peek.UI.Native;
 using Windows.Foundation;
 using Windows.Win32;

@@ -5,8 +5,10 @@ using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
+
 using HelixToolkit.Wpf;
 using Microsoft.PowerToys.Settings.UI.Library;
+
 using Bitmap = System.Drawing.Bitmap;
 using Color = System.Windows.Media.Color;
 using ColorConverter = System.Windows.Media.ColorConverter;

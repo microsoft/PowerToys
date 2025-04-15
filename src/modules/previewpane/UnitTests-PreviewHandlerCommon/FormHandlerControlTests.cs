@@ -5,6 +5,7 @@
 using System.Drawing;
 
 using System.Windows.Forms;
+
 using Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

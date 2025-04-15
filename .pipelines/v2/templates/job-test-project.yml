@@ -1,0 +1,108 @@
+parameters:
+  - name: configuration
+    type: string
+    default: "Release"
+  - name: platform
+    type: string
+    default: ""
+  - name: inputArtifactStem
+    type: string
+    default: ""
+  - name: useLatestWebView2
+    type: boolean
+    default: false
+
+jobs:
+- job: Test${{ parameters.platform }}${{ parameters.configuration }}
+  displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}
+  variables:
+    BuildPlatform: ${{ parameters.platform }}
+    BuildConfiguration: ${{ parameters.configuration }}
+    SrcPath: $(Build.Repository.LocalPath)
+    TestArtifactsName: build-${{ parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
+  pool:
+    ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+      ${{ if ne(parameters.platform, 'ARM64') }}:
+        name: SHINE-INT-Testing-x64
+      ${{ else }}:
+        name: SHINE-INT-Testing-arm64
+    ${{ else }}:
+      ${{ if ne(parameters.platform, 'ARM64') }}:
+        name: SHINE-OSS-Testing-x64
+      ${{ else }}:
+        name: SHINE-OSS-Testing-arm64
+  steps:
+  - checkout: self
+    submodules: false
+    clean: true
+    fetchDepth: 1
+    fetchTags: false
+
+  - ${{ if eq(parameters.useLatestWebView2, true) }}:
+    - powershell: |
+        $edge_url = 'https://go.microsoft.com/fwlink/?linkid=2084649&Channel=Canary&language=en'
+        $timeout = New-TimeSpan -Minutes 6
+        $timeoutSeconds = [int]$timeout.TotalSeconds
+        $command = {
+            Invoke-WebRequest -Uri $using:edge_url -OutFile $(Pipeline.Workspace)\MicrosoftEdgeSetup.exe
+            Write-Host "##[command]Installing Canary channel of Microsoft Edge"
+            Start-Process $(Pipeline.Workspace)\MicrosoftEdgeSetup.exe -ArgumentList '/silent /install' -Wait
+        }
+
+        $job = Start-Job -ScriptBlock $command
+        Wait-Job $job -Timeout $timeoutSeconds
+        if ($job.State -eq "Running") {
+            Stop-Job $job
+            Write-Host "##[warning]The job was stopped because it exceeded the time limit."
+        }
+      displayName: "Install the latest MSEdge Canary"
+
+    - script: 
+        reg add "HKLM\Software\Policies\Microsoft\Edge\WebView2\ReleaseChannels" /v PowerToys.exe /t REG_SZ /d "3"
+      displayName: "Enable WebView2 Canary Channel"
+
+  - ${{ if ne(parameters.platform, 'arm64') }}:
+      - download: current
+        displayName: Download artifacts
+        artifact: $(TestArtifactsName)
+        patterns: |-
+          **
+          !**\*.pdb
+          !**\*.lib
+  - ${{ else }}:
+      - template: steps-download-artifacts-with-azure-cli.yml
+        parameters:
+          artifactName: $(TestArtifactsName)
+
+  - template: steps-ensure-dotnet-version.yml
+    parameters:
+      sdk: true
+      version: '9.0'
+
+  - task: VisualStudioTestPlatformInstaller@1
+    displayName: Ensure VSTest Platform
+
+  - pwsh: |-
+      & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
+    displayName: Download and install WinAppDriver
+
+  - ${{ if ne(parameters.platform, 'arm64') }}:
+    - task: ScreenResolutionUtility@1
+      inputs:
+        displaySettings: 'optimal'
+
+  - task: VSTest@3
+    displayName: Run UI Tests
+    inputs:
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      testSelector: 'testAssemblies'
+      searchFolder: '$(Pipeline.Workspace)\$(TestArtifactsName)'
+      vsTestVersion: 'toolsInstaller'
+      uiTests: true
+      rerunFailedTests: true
+      testAssemblyVer2: |
+        **\UITests-FancyZones.dll
+        **\UITests-FancyZonesEditor.dll
+        !**\obj\**
+        !**\ref\**

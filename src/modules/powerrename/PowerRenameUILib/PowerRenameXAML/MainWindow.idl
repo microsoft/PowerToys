@@ -15,6 +15,7 @@ namespace PowerRenameUI
         Windows.Foundation.Collections.IObservableVector<PatternSnippet> SearchRegExShortcuts { get; };
         Windows.Foundation.Collections.IObservableVector<PatternSnippet> DateTimeShortcuts { get; };
         Windows.Foundation.Collections.IObservableVector<PatternSnippet> CounterShortcuts { get; };
+        Windows.Foundation.Collections.IObservableVector<PatternSnippet> RandomizerShortcuts { get; };
 
         String OriginalCount;
         String RenamedCount;

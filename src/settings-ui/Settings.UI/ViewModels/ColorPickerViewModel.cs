@@ -9,16 +9,18 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Timers;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class ColorPickerViewModel : Observable, IDisposable
+    public partial class ColorPickerViewModel : Observable, IDisposable
     {
         private bool disposedValue;
 
@@ -28,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private readonly ISettingsUtils _settingsUtils;
-        private readonly object _delayedActionLock = new object();
+        private readonly System.Threading.Lock _delayedActionLock = new System.Threading.Lock();
 
         private readonly ColorPickerSettings _colorPickerSettings;
         private Timer _delayedTimer;
@@ -55,15 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _settingsUtils = settingsUtils ?? throw new ArgumentNullException(nameof(settingsUtils));
 
-            if (colorPickerSettingsRepository == null)
-            {
-                // used in release. This method converts the settings stored in the previous form, so we have forwards compatibility
-                _colorPickerSettings = _settingsUtils.GetSettingsOrDefault<ColorPickerSettings, ColorPickerSettingsVersion1>(ColorPickerSettings.ModuleName, settingsUpgrader: ColorPickerSettings.UpgradeSettings);
-            }
-            else
-            {
-                _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig; // used in the unit tests
-            }
+            _colorPickerSettings = colorPickerSettingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
 
@@ -361,7 +355,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        CultureInfo.InvariantCulture,
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        ColorPickerSettings.ModuleName,
-                       JsonSerializer.Serialize(_colorPickerSettings)));
+                       JsonSerializer.Serialize(_colorPickerSettings, SourceGenerationContextContext.Default.ColorPickerSettings)));
         }
 
         public void RefreshEnabledState()
@@ -424,10 +418,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return colorFormatModel.IsValid;
         }
 
-        internal void DeleteModel(ColorFormatModel colorFormatModel)
+        internal int DeleteModel(ColorFormatModel colorFormatModel)
         {
+            var deleteIndex = ColorFormats.IndexOf(colorFormatModel);
             ColorFormats.Remove(colorFormatModel);
-            SetPreviewSelectedIndex();
+            return deleteIndex;
         }
 
         internal void UpdateColorFormat(string oldName, ColorFormatModel colorFormat)

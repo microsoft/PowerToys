@@ -130,7 +130,7 @@
     <value>Failed to open URI</value>
   </data>
   <data name="Microsoft_plugin_uri_plugin_description" xml:space="preserve">
-    <value>Opens URLs and UNC network shares.</value>
+    <value>Opens URLs and UNC network shares</value>
   </data>
   <data name="Microsoft_plugin_uri_plugin_name" xml:space="preserve">
     <value>URI Handler</value>

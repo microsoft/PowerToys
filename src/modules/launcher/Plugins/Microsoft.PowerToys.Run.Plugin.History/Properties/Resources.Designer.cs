@@ -61,7 +61,7 @@ namespace Microsoft.PowerToys.Run.Plugin.History.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Accesses previously selected results..
+        ///   Looks up a localized string similar to Accesses previously selected results.
         /// </summary>
         public static string wox_plugin_history_plugin_description {
             get {

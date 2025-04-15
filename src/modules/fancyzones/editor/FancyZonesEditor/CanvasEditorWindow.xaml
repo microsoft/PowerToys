@@ -8,7 +8,6 @@
     xmlns:props="clr-namespace:FancyZonesEditor.Properties"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     Title=""
-    Height="196"
     MinWidth="360"
     ui:TitleBar.IsIconVisible="False"
     ui:WindowHelper.UseModernWindowStyle="True"
@@ -18,10 +17,10 @@
     Closed="OnClosed"
     ContentRendered="EditorWindow_ContentRendered"
     ResizeMode="NoResize"
-    SizeToContent="Width"
+    SizeToContent="WidthAndHeight"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
-    <Grid Height="160">
+    <Grid>
         <Grid
             Height="36"
             Margin="0,-36,0,0"
@@ -36,10 +35,7 @@
                 Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
                 CornerRadius="1.5" />
         </Grid>
-        <StackPanel
-            Margin="16"
-            VerticalAlignment="Bottom"
-            FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
+        <StackPanel Margin="16" FocusManager.FocusedElement="{Binding ElementName=newZoneButton}">
 
             <local:ClickAutomationEventButton
                 x:Name="newZoneButton"
@@ -59,7 +55,18 @@
                 TabIndex="0"
                 ToolTip="{x:Static props:Resources.Add_zone}" />
 
-            <Grid Margin="0,24,0,-4">
+            <TextBlock
+                Margin="0,16,0,0"
+                Focusable="True"
+                FontSize="12"
+                TextWrapping="Wrap">
+                <Run FontWeight="SemiBold" Text="{x:Static props:Resources.KeyboardControlsName}" />
+                <Run Foreground="{DynamicResource SecondaryForegroundBrush}" Text="{x:Static props:Resources.KeyboardControlsDescriptionCanvas}" />
+            </TextBlock>
+
+
+
+            <Grid Margin="0,24,0,-36">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="8" />

@@ -63,6 +63,7 @@ private:
 
     // Get selected value of dropdown or -1 if nothing is selected
     static DWORD GetSelectedValue(ComboBox comboBox);
+    static DWORD GetSelectedValue(TextBlock text);
 
     // Function to set accessible name for combobox
     static void SetAccessibleNameForComboBox(ComboBox dropDown, int index);
@@ -110,8 +111,10 @@ public:
     static void AddShortcutToControl(Shortcut shortcut, StackPanel table, VariableSizedWrapGrid parent, KBMEditor::KeyboardManagerState& keyboardManagerState, const int colIndex, std::vector<std::unique_ptr<KeyDropDownControl>>& keyDropDownControlObjects, RemapBuffer& remapBuffer, StackPanel row, TextBox targetApp, bool isHybridControl, bool isSingleKeyWindow);
 
     // Get keys name list depending if Disable is in dropdown
-    static std::vector<std::pair<DWORD,std::wstring>> GetKeyList(bool isShortcut, bool renderDisable);
+    static std::vector<std::pair<DWORD, std::wstring>> GetKeyList(bool isShortcut, bool renderDisable);
 
     // Get number of selected keys. Do not count -1 and 0 values as they stand for Not selected and None
     static int GetNumberOfSelectedKeys(std::vector<int32_t> keys);
+
+    bool exactMatch = false;
 };

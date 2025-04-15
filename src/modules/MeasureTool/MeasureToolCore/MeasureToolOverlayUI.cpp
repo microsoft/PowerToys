@@ -8,8 +8,51 @@
 
 #include <common/utils/window.h>
 
+#include <exception>
+#include <iostream>
+#include <utility>
+#include <vector>
+
 namespace
 {
+    constexpr std::pair<bool, bool> GetHorizontalVerticalLines(MeasureToolState::Mode mode)
+    {
+        switch (mode)
+        {
+        case MeasureToolState::Mode::Cross:
+            return { true, true };
+
+        case MeasureToolState::Mode::Vertical:
+            return { false, true };
+
+        case MeasureToolState::Mode::Horizontal:
+            return { true, false };
+
+        default:
+            throw std::runtime_error("Unknown MeasureToolState Mode");
+        }
+    }
+
+    void CopyToClipboard(HWND window, const MeasureToolState& toolState)
+    {
+        std::vector<Measurement> allMeasurements;
+        for (const auto& [handle, perScreen] : toolState.perScreen)
+        {
+            for (const auto& [_, measurement] : perScreen.prevMeasurements)
+            {
+                allMeasurements.push_back(measurement);
+            }
+
+            if (handle == window && perScreen.measuredEdges)
+            {
+                allMeasurements.push_back(*perScreen.measuredEdges);
+            }
+        }
+
+        const auto [printWidth, printHeight] = GetHorizontalVerticalLines(toolState.global.mode);
+        SetClipboardToMeasurements(allMeasurements, printWidth, printHeight, toolState.commonState->units);
+    }
+
     inline std::pair<D2D_POINT_2F, D2D_POINT_2F> ComputeCrossFeetLine(D2D_POINT_2F center, const bool horizontal)
     {
         D2D_POINT_2F start = center, end = center;
@@ -26,6 +69,92 @@ namespace
         }
 
         return { start, end };
+    }
+
+    bool HandleCursorUp(HWND window, MeasureToolState* toolState, const POINT cursorPos)
+    {
+        ClipCursor(nullptr);
+        CopyToClipboard(window, *toolState);
+
+        auto& perScreen = toolState->perScreen[window];
+
+        const bool shiftPress = GetKeyState(VK_SHIFT) & 0x8000;
+        if (shiftPress && perScreen.measuredEdges)
+        {
+            perScreen.prevMeasurements.push_back(MeasureToolState::PerScreen::PrevMeasurement(cursorPos, perScreen.measuredEdges.value()));
+        }
+
+        perScreen.measuredEdges = std::nullopt;
+
+        return !shiftPress;
+    }
+
+    void DrawMeasurement(const Measurement& measurement,
+                         D2DState& d2dState,
+                         bool drawFeetOnCross,
+                         MeasureToolState::Mode mode,
+                         POINT cursorPos,
+                         const CommonState& commonState,
+                         HWND window)
+    {
+        const auto [drawHorizontalCrossLine, drawVerticalCrossLine] = GetHorizontalVerticalLines(mode);
+
+        const float hMeasure = measurement.Width(Measurement::Unit::Pixel);
+        const float vMeasure = measurement.Height(Measurement::Unit::Pixel);
+
+        d2dState.ToggleAliasedLinesMode(true);
+        if (drawHorizontalCrossLine)
+        {
+            const D2D_POINT_2F hLineStart{ .x = measurement.rect.left, .y = static_cast<float>(cursorPos.y) };
+            D2D_POINT_2F hLineEnd{ .x = hLineStart.x + hMeasure, .y = hLineStart.y };
+            d2dState.dxgiWindowState.rt->DrawLine(hLineStart, hLineEnd, d2dState.solidBrushes[Brush::line].get());
+
+            if (drawFeetOnCross)
+            {
+                // To fill all pixels which are close, we call DrawLine with end point one pixel too far, since
+                // it doesn't get filled, i.e. end point of the range is excluded. However, we want to draw cross
+                // feet *on* the last pixel row, so we must subtract 1px from the corresponding axis.
+                hLineEnd.x -= 1.f;
+                const auto [left_start, left_end] = ComputeCrossFeetLine(hLineStart, false);
+                const auto [right_start, right_end] = ComputeCrossFeetLine(hLineEnd, false);
+                d2dState.dxgiWindowState.rt->DrawLine(left_start, left_end, d2dState.solidBrushes[Brush::line].get());
+                d2dState.dxgiWindowState.rt->DrawLine(right_start, right_end, d2dState.solidBrushes[Brush::line].get());
+            }
+        }
+
+        if (drawVerticalCrossLine)
+        {
+            const D2D_POINT_2F vLineStart{ .x = static_cast<float>(cursorPos.x), .y = measurement.rect.top };
+            D2D_POINT_2F vLineEnd{ .x = vLineStart.x, .y = vLineStart.y + vMeasure };
+            d2dState.dxgiWindowState.rt->DrawLine(vLineStart, vLineEnd, d2dState.solidBrushes[Brush::line].get());
+
+            if (drawFeetOnCross)
+            {
+                vLineEnd.y -= 1.f;
+                const auto [top_start, top_end] = ComputeCrossFeetLine(vLineStart, true);
+                const auto [bottom_start, bottom_end] = ComputeCrossFeetLine(vLineEnd, true);
+                d2dState.dxgiWindowState.rt->DrawLine(top_start, top_end, d2dState.solidBrushes[Brush::line].get());
+                d2dState.dxgiWindowState.rt->DrawLine(bottom_start, bottom_end, d2dState.solidBrushes[Brush::line].get());
+            }
+        }
+
+        d2dState.ToggleAliasedLinesMode(false);
+
+        OverlayBoxText text;
+
+        const auto [crossSymbolPos, measureStringBufLen] =
+            measurement.Print(text.buffer.data(),
+                              text.buffer.size(),
+                              drawHorizontalCrossLine,
+                              drawVerticalCrossLine,
+                              commonState.units | Measurement::Unit::Pixel); // Always show pixels.
+
+        d2dState.DrawTextBox(text.buffer.data(),
+                             measureStringBufLen,
+                             crossSymbolPos,
+                             D2D_POINT_2F{ static_cast<float>(cursorPos.x), static_cast<float>(cursorPos.y) },
+                             true,
+                             window);
     }
 }
 
@@ -85,17 +214,29 @@ LRESULT CALLBACK MeasureToolWndProc(HWND window, UINT message, WPARAM wparam, LP
         }
         break;
     case WM_RBUTTONUP:
+    {
         PostMessageW(window, WM_CLOSE, {}, {});
         break;
+    }
     case WM_LBUTTONUP:
+    {
+        bool shouldClose = true;
+
         if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
         {
-            state->Read([](const MeasureToolState& s) { s.commonState->overlayBoxText.Read([](const OverlayBoxText& text) {
-                                                            SetClipBoardToText(text.buffer.data());
-                                                        }); });
+            state->Access([&](MeasureToolState& s) {
+                shouldClose = HandleCursorUp(window,
+                                             &s,
+                                             convert::FromSystemToWindow(window, s.commonState->cursorPosSystemSpace));
+            });
         }
-        PostMessageW(window, WM_CLOSE, {}, {});
+
+        if (shouldClose)
+        {
+            PostMessageW(window, WM_CLOSE, {}, {});
+        }
         break;
+    }
     case WM_MOUSEWHEEL:
         if (auto state = GetWindowParam<Serialized<MeasureToolState>*>(window))
         {
@@ -119,29 +260,29 @@ void DrawMeasureToolTick(const CommonState& commonState,
 {
     bool continuousCapture = {};
     bool drawFeetOnCross = {};
-    bool drawHorizontalCrossLine = true;
-    bool drawVerticalCrossLine = true;
 
-    Measurement measuredEdges{};
+    std::optional<Measurement> measuredEdges{};
     MeasureToolState::Mode mode = {};
     winrt::com_ptr<ID2D1Bitmap> backgroundBitmap;
     const MappedTextureView* backgroundTextureToConvert = nullptr;
-
-    bool gotMeasurement = false;
+    std::vector<MeasureToolState::PerScreen::PrevMeasurement> prevMeasurements;
     toolState.Read([&](const MeasureToolState& state) {
         continuousCapture = state.global.continuousCapture;
         drawFeetOnCross = state.global.drawFeetOnCross;
         mode = state.global.mode;
-        if (auto it = state.perScreen.find(window); it != end(state.perScreen))
+
+        if (const auto it = state.perScreen.find(window); it != end(state.perScreen))
         {
             const auto& perScreen = it->second;
+
+            prevMeasurements = perScreen.prevMeasurements;
+
             if (!perScreen.measuredEdges)
             {
                 return;
             }
 
-            gotMeasurement = true;
-            measuredEdges = *perScreen.measuredEdges;
+            measuredEdges = perScreen.measuredEdges;
 
             if (continuousCapture)
                 return;
@@ -157,23 +298,9 @@ void DrawMeasureToolTick(const CommonState& commonState,
         }
     });
 
-    if (!gotMeasurement)
-        return;
-
-    switch (mode)
+    if (!measuredEdges && prevMeasurements.empty())
     {
-    case MeasureToolState::Mode::Cross:
-        drawHorizontalCrossLine = true;
-        drawVerticalCrossLine = true;
-        break;
-    case MeasureToolState::Mode::Vertical:
-        drawHorizontalCrossLine = false;
-        drawVerticalCrossLine = true;
-        break;
-    case MeasureToolState::Mode::Horizontal:
-        drawHorizontalCrossLine = true;
-        drawVerticalCrossLine = false;
-        break;
+        return;
     }
 
     if (!continuousCapture && !backgroundBitmap && backgroundTextureToConvert)
@@ -189,73 +316,23 @@ void DrawMeasureToolTick(const CommonState& commonState,
     }
 
     if (continuousCapture || !backgroundBitmap)
+    {
         d2dState.dxgiWindowState.rt->Clear();
-
-    const float hMeasure = measuredEdges.Width(Measurement::Unit::Pixel);
-    const float vMeasure = measuredEdges.Height(Measurement::Unit::Pixel);
+    }
 
     if (!continuousCapture && backgroundBitmap)
     {
         d2dState.dxgiWindowState.rt->DrawBitmap(backgroundBitmap.get());
     }
 
-    const auto cursorPos = convert::FromSystemToWindow(window, commonState.cursorPosSystemSpace);
-
-    d2dState.ToggleAliasedLinesMode(true);
-    if (drawHorizontalCrossLine)
+    for (const auto& [prevCursorPos, prevMeasurement] : prevMeasurements)
     {
-        const D2D_POINT_2F hLineStart{ .x = measuredEdges.rect.left, .y = static_cast<float>(cursorPos.y) };
-        D2D_POINT_2F hLineEnd{ .x = hLineStart.x + hMeasure, .y = hLineStart.y };
-        d2dState.dxgiWindowState.rt->DrawLine(hLineStart, hLineEnd, d2dState.solidBrushes[Brush::line].get());
-
-        if (drawFeetOnCross)
-        {
-            // To fill all pixels which are close, we call DrawLine with end point one pixel too far, since
-            // it doesn't get filled, i.e. end point of the range is excluded. However, we want to draw cross
-            // feet *on* the last pixel row, so we must subtract 1px from the corresponding axis.
-            hLineEnd.x -= 1.f;
-            auto [left_start, left_end] = ComputeCrossFeetLine(hLineStart, false);
-            auto [right_start, right_end] = ComputeCrossFeetLine(hLineEnd, false);
-            d2dState.dxgiWindowState.rt->DrawLine(left_start, left_end, d2dState.solidBrushes[Brush::line].get());
-            d2dState.dxgiWindowState.rt->DrawLine(right_start, right_end, d2dState.solidBrushes[Brush::line].get());
-        }
+        DrawMeasurement(prevMeasurement, d2dState, drawFeetOnCross, mode, prevCursorPos, commonState, window);
     }
 
-    if (drawVerticalCrossLine)
+    if (measuredEdges)
     {
-        const D2D_POINT_2F vLineStart{ .x = static_cast<float>(cursorPos.x), .y = measuredEdges.rect.top };
-        D2D_POINT_2F vLineEnd{ .x = vLineStart.x, .y = vLineStart.y + vMeasure };
-        d2dState.dxgiWindowState.rt->DrawLine(vLineStart, vLineEnd, d2dState.solidBrushes[Brush::line].get());
-
-        if (drawFeetOnCross)
-        {
-            vLineEnd.y -= 1.f;
-            auto [top_start, top_end] = ComputeCrossFeetLine(vLineStart, true);
-            auto [bottom_start, bottom_end] = ComputeCrossFeetLine(vLineEnd, true);
-            d2dState.dxgiWindowState.rt->DrawLine(top_start, top_end, d2dState.solidBrushes[Brush::line].get());
-            d2dState.dxgiWindowState.rt->DrawLine(bottom_start, bottom_end, d2dState.solidBrushes[Brush::line].get());
-        }
+        const auto cursorPos = convert::FromSystemToWindow(window, commonState.cursorPosSystemSpace);
+        DrawMeasurement(*measuredEdges, d2dState, drawFeetOnCross, mode, cursorPos, commonState, window);
     }
-
-    d2dState.ToggleAliasedLinesMode(false);
-
-    OverlayBoxText text;
-
-    const auto [crossSymbolPos, measureStringBufLen] =
-        measuredEdges.Print(text.buffer.data(),
-                            text.buffer.size(),
-                            drawHorizontalCrossLine,
-                            drawVerticalCrossLine,
-                            commonState.units);
-
-    commonState.overlayBoxText.Access([&](OverlayBoxText& v) {
-        v = text;
-    });
-
-    d2dState.DrawTextBox(text.buffer.data(),
-                         measureStringBufLen,
-                         crossSymbolPos,
-                         D2D_POINT_2F{ static_cast<float>(cursorPos.x), static_cast<float>(cursorPos.y) },
-                         true,
-                         window);
 }

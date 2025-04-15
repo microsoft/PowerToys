@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
+
 using Wox.Plugin.Common.Win32;
 
 namespace Wox.Plugin.Common

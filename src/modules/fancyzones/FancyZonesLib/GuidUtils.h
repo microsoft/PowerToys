@@ -16,7 +16,9 @@ namespace std
         size_t operator()(const GUID& Value) const
         {
             RPC_STATUS status = RPC_S_OK;
-            return ::UuidHash(&const_cast<GUID&>(Value), &status);
+            // Make a copy of the Value to avoid using const_cast to cast away cost - workaround C26492
+            GUID copy = Value;
+            return ::UuidHash(&copy, &status);
         }
     };
 }

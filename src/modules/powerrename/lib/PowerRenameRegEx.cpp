@@ -130,23 +130,106 @@ IFACEMETHODIMP CPowerRenameRegEx::GetReplaceTerm(_Outptr_ PWSTR* replaceTerm)
     return hr;
 }
 
-HRESULT CPowerRenameRegEx::_OnEnumerateItemsChanged()
+HRESULT CPowerRenameRegEx::_OnEnumerateOrRandomizeItemsChanged()
 {
     m_enumerators.clear();
-    const auto options = parseEnumOptions(m_RawReplaceTerm);
-    for (const auto e : options)
-        m_enumerators.emplace_back(e);
+    m_randomizer.clear();
 
+    if (m_flags & RandomizeItems)
+    {
+        const auto options = parseRandomizerOptions(m_RawReplaceTerm);
+
+        for (const auto& option : options)
+        {
+            m_randomizer.emplace_back(option);
+        }
+    }
+
+    if (m_flags & EnumerateItems)
+    {
+        const auto options = parseEnumOptions(m_RawReplaceTerm);
+        for (const auto& option : options)
+        {
+            if (m_randomizer.end() ==
+                std::find_if(
+                    m_randomizer.begin(),
+                    m_randomizer.end(),
+                    [option](const Randomizer& r) -> bool { return r.options.replaceStrSpan.offset == option.replaceStrSpan.offset; }
+                ))
+            {
+                // Only add as enumerator if we didn't find a randomizer already at this offset.
+                // Every randomizer will also be a valid enumerator according to the definition of enumerators, which allows any string to mean the default enumerator, so it should be interpreted that the user wanted a randomizer if both were found at the same offset of the replace string.
+                m_enumerators.emplace_back(option);
+            }
+        }
+    }
+
+    m_replaceWithRandomizerOffsets.clear();
     m_replaceWithEnumeratorOffsets.clear();
+
+    int32_t offset = 0;
+    int ei = 0; // Enumerators index
+    int ri = 0; // Randomizer index
+
     std::wstring replaceWith{ m_RawReplaceTerm };
     // Remove counter expressions and calculate their offsets in replaceWith string.
-    int32_t offset = 0;
-    for (const auto& e : options)
+
+    if ((m_flags & EnumerateItems) && (m_flags & RandomizeItems))
     {
-        replaceWith.erase(e.replaceStrSpan.offset + offset, e.replaceStrSpan.length);
-        m_replaceWithEnumeratorOffsets.push_back(offset);
-        offset -= static_cast<int32_t>(e.replaceStrSpan.length);
+        // Both flags are on, we need to merge which ones should be applied.
+        while ((ei < m_enumerators.size()) && (ri < m_randomizer.size()))
+        {
+            const auto& e = m_enumerators[ei];
+            const auto& r = m_randomizer[ri];
+            if (e.replaceStrSpan.offset < r.options.replaceStrSpan.offset)
+            {
+                // if the enumerator is next in line, remove counter expression and calculate offset with it.
+                replaceWith.erase(e.replaceStrSpan.offset + offset, e.replaceStrSpan.length);
+                m_replaceWithEnumeratorOffsets.push_back(offset);
+                offset -= static_cast<int32_t>(e.replaceStrSpan.length);
+
+                ei++;
+            }
+            else
+            {
+                // if the randomizer is next in line, remove randomizer expression and calculate offset with it.
+                replaceWith.erase(r.options.replaceStrSpan.offset + offset, r.options.replaceStrSpan.length);
+                m_replaceWithRandomizerOffsets.push_back(offset);
+                offset -= static_cast<int32_t>(r.options.replaceStrSpan.length);
+
+                ri++;
+            }
+        }
     }
+
+    if (m_flags & EnumerateItems)
+    {
+        // Continue with all remaining enumerators
+        while (ei < m_enumerators.size())
+        {
+            const auto& e = m_enumerators[ei];
+            replaceWith.erase(e.replaceStrSpan.offset + offset, e.replaceStrSpan.length);
+            m_replaceWithEnumeratorOffsets.push_back(offset);
+            offset -= static_cast<int32_t>(e.replaceStrSpan.length);
+
+            ei++;
+        }
+    }
+
+    if (m_flags & RandomizeItems)
+    {
+        // Continue with all remaining randomizer instances
+        while (ri < m_randomizer.size())
+        {
+            const auto& r = m_randomizer[ri];
+            replaceWith.erase(r.options.replaceStrSpan.offset + offset, r.options.replaceStrSpan.length);
+            m_replaceWithRandomizerOffsets.push_back(offset);
+            offset -= static_cast<int32_t>(r.options.replaceStrSpan.length);
+
+            ri++;
+        }
+    }
+
     return SHStrDup(replaceWith.data(), &m_replaceTerm);
 }
 
@@ -163,8 +246,8 @@ IFACEMETHODIMP CPowerRenameRegEx::PutReplaceTerm(_In_ PCWSTR replaceTerm, bool f
             CoTaskMemFree(m_replaceTerm);
             m_RawReplaceTerm = replaceTerm;
 
-            if (m_flags & EnumerateItems)
-                hr = _OnEnumerateItemsChanged();
+            if ((m_flags & RandomizeItems) || (m_flags & EnumerateItems))
+                hr = _OnEnumerateOrRandomizeItemsChanged();
             else
                 hr = SHStrDup(replaceTerm, &m_replaceTerm);
         }
@@ -189,13 +272,20 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
     if (m_flags != flags)
     {
         const bool newEnumerate = flags & EnumerateItems;
-        const bool refreshReplaceTerm = !!(m_flags & EnumerateItems) != newEnumerate;
+        const bool newRandomizer = flags & RandomizeItems;
+        const bool refreshReplaceTerm =
+            (!!(m_flags & EnumerateItems) != newEnumerate) ||
+            (!!(m_flags & RandomizeItems) != newRandomizer);
+
         m_flags = flags;
+
         if (refreshReplaceTerm)
         {
             CSRWExclusiveAutoLock lock(&m_lock);
-            if (newEnumerate)
-                _OnEnumerateItemsChanged();
+            if (newEnumerate || newRandomizer)
+            {
+                _OnEnumerateOrRandomizeItemsChanged();
+            }
             else
             {
                 CoTaskMemFree(m_replaceTerm);
@@ -325,17 +415,75 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
         static const std::wregex zeroGroupRegex(L"(([^\\$]|^)(\\$\\$)*)\\$[0]");
         static const std::wregex otherGroupsRegex(L"(([^\\$]|^)(\\$\\$)*)\\$([1-9])");
 
-        if (m_flags & EnumerateItems)
+        if ((m_flags & EnumerateItems) || (m_flags & RandomizeItems))
         {
+            int ei = 0; // Enumerators index
+            int ri = 0; // Randomizer index
             std::array<wchar_t, MAX_PATH> buffer;
             int32_t offset = 0;
 
-            for (size_t ei = 0; ei < m_enumerators.size(); ++ei)
+            if ((m_flags & EnumerateItems) && (m_flags & RandomizeItems))
             {
-                const auto& e = m_enumerators[ei];
-                const auto replacementLength = static_cast<int32_t>(e.printTo(buffer.data(), buffer.size(), enumIndex));
-                replaceTerm.insert(e.replaceStrSpan.offset + offset + m_replaceWithEnumeratorOffsets[ei], buffer.data());
-                offset += replacementLength;
+                // Both flags are on, we need to merge which ones should be applied.
+                while ((ei < m_enumerators.size()) && (ri < m_randomizer.size()))
+                {
+                    const auto& e = m_enumerators[ei];
+                    const auto& r = m_randomizer[ri];
+                    if (e.replaceStrSpan.offset < r.options.replaceStrSpan.offset)
+                    {
+                        // if the enumerator is next in line, apply it.
+                        const auto replacementLength = static_cast<int32_t>(e.printTo(buffer.data(), buffer.size(), enumIndex));
+                        replaceTerm.insert(e.replaceStrSpan.offset + offset + m_replaceWithEnumeratorOffsets[ei], buffer.data());
+                        offset += replacementLength;
+
+                        ei++;
+                    }
+                    else
+                    {
+                        // if the randomizer is next in line, apply it.
+                        std::string randomValue = r.randomize();
+                        std::wstring wRandomValue(randomValue.begin(), randomValue.end());
+                        replaceTerm.insert(r.options.replaceStrSpan.offset + offset + m_replaceWithRandomizerOffsets[ri], wRandomValue);
+                        offset += static_cast<int32_t>(wRandomValue.length());
+
+                        if (e.replaceStrSpan.offset == r.options.replaceStrSpan.offset)
+                        {
+                            // In theory, this shouldn't happen here as we were guarding against it when filling the randomizer and enumerator structures, but it's still here as a fail safe.
+                            // Every randomizer will also be a valid enumerator according to the definition of enumerators, which allow any string to mean the default enumerator, so it should be interpreted that the user wanted a randomizer if both were found at the same offset of the replace string.
+                            ei++;
+                        }
+
+                        ri++;
+                    }
+                }
+            }
+
+            if (m_flags & EnumerateItems)
+            {
+                // Replace all remaining enumerators
+                while (ei < m_enumerators.size())
+                {
+                    const auto& e = m_enumerators[ei];
+                    const auto replacementLength = static_cast<int32_t>(e.printTo(buffer.data(), buffer.size(), enumIndex));
+                    replaceTerm.insert(e.replaceStrSpan.offset + offset + m_replaceWithEnumeratorOffsets[ei], buffer.data());
+                    offset += replacementLength;
+
+                    ei++;
+                }
+            }
+            if (m_flags & RandomizeItems)
+            {
+                // Replace all remaining randomizer instances
+                while (ri < m_randomizer.size())
+                {
+                    const auto& r = m_randomizer[ri];
+                    std::string randomValue = r.randomize();
+                    std::wstring wRandomValue(randomValue.begin(), randomValue.end());
+                    replaceTerm.insert(r.options.replaceStrSpan.offset + offset + m_replaceWithRandomizerOffsets[ri], wRandomValue);
+                    offset += static_cast<int32_t>(wRandomValue.length());
+
+                    ri++;
+                }
             }
         }
 

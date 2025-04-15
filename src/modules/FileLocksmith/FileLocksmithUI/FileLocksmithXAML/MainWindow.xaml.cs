@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using ManagedCommon;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
@@ -21,6 +22,7 @@ namespace FileLocksmithUI
             SetTitleBar(AppTitleBar);
             Activated += MainWindow_Activated;
             AppWindow.SetIcon("Assets/FileLocksmith/Icon.ico");
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 
             var loader = ResourceLoaderInstance.ResourceLoader;
             var title = isElevated ? loader.GetString("AppAdminTitle") : loader.GetString("AppTitle");

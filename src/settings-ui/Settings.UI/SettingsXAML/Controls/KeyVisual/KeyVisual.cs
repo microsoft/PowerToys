@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     [TemplateVisualState(Name = "Disabled", GroupName = "CommonStates")]
     [TemplateVisualState(Name = "Default", GroupName = "StateStates")]
     [TemplateVisualState(Name = "Error", GroupName = "StateStates")]
-    public sealed class KeyVisual : Control
+    public sealed partial class KeyVisual : Control
     {
         private const string KeyPresenter = "KeyPresenter";
         private KeyVisual _keyVisual;

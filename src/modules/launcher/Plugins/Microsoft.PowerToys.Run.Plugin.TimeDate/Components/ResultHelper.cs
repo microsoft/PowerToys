@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows;
+
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -49,13 +50,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         {
             try
             {
-                Clipboard.Clear();
                 Clipboard.SetText(text);
                 return true;
             }
             catch (Exception exception)
             {
                 Log.Exception("Can't copy to clipboard", exception, typeof(ResultHelper));
+                MessageBox.Show(exception.Message, Resources.Microsoft_plugin_timedate_copy_failed);
                 return false;
             }
         }
@@ -82,10 +83,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         /// Gets a result with an error message that only numbers can't be parsed
         /// </summary>
         /// <returns>Element of type <see cref="Result"/>.</returns>
-        internal static Result CreateNumberErrorResult(string theme) => new Result()
+        internal static Result CreateNumberErrorResult(string theme, string title, string subtitle) => new Result()
         {
-            Title = Resources.Microsoft_plugin_timedate_ErrorResultTitle,
-            SubTitle = Resources.Microsoft_plugin_timedate_ErrorResultSubTitle,
+            Title = title,
+            SubTitle = subtitle,
             ToolTipData = new ToolTipData(Resources.Microsoft_plugin_timedate_ErrorResultTitle, Resources.Microsoft_plugin_timedate_ErrorResultSubTitle),
             IcoPath = $"Images\\Warning.{theme}.png",
         };

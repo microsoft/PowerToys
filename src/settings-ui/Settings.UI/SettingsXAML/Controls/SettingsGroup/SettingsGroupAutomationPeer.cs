@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public class SettingsGroupAutomationPeer : FrameworkElementAutomationPeer
+    public partial class SettingsGroupAutomationPeer : FrameworkElementAutomationPeer
     {
         public SettingsGroupAutomationPeer(SettingsGroup owner)
             : base(owner)

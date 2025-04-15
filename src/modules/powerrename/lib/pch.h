@@ -27,7 +27,6 @@
 #include <variant>
 #include <charconv>
 #include <string>
-
-#include <ProjectTelemetry.h>
+#include <random>
 
 #include <winrt/base.h>

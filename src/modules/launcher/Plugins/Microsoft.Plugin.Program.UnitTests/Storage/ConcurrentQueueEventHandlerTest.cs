@@ -4,6 +4,7 @@
 
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+
 using Microsoft.Plugin.Program.Storage;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -7,8 +7,6 @@
 #include <common/utils/winapi_error.h>
 #include <common/logger/logger_settings.h>
 
-#include <keyboardmanager/common/Shortcut.h>
-#include <keyboardmanager/common/RemapShortcut.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/common/KeyboardEventHandlers.h>

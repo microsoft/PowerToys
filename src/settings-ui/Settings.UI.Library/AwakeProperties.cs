@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+using Settings.UI.Library.Attributes;
+
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class AwakeProperties
@@ -17,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IntervalHours = 0;
             IntervalMinutes = 1;
             ExpirationDateTime = DateTimeOffset.Now;
-            CustomTrayTimes = new Dictionary<string, int>();
+            CustomTrayTimes = [];
         }
 
         [JsonPropertyName("keepDisplayOn")]
@@ -36,14 +38,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public DateTimeOffset ExpirationDateTime { get; set; }
 
         [JsonPropertyName("customTrayTimes")]
-        public Dictionary<string, int> CustomTrayTimes { get; set; }
-    }
-
-    public enum AwakeMode
-    {
-        PASSIVE = 0,
-        INDEFINITE = 1,
-        TIMED = 2,
-        EXPIRABLE = 3,
+        [CmdConfigureIgnore]
+        public Dictionary<string, uint> CustomTrayTimes { get; set; }
     }
 }

@@ -9,17 +9,18 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Timers;
-using Common.UI;
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Windows.Globalization;
 using Windows.Media.Ocr;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerOcrViewModel : Observable, IDisposable
+    public partial class PowerOcrViewModel : Observable, IDisposable
     {
         private bool disposedValue;
 
@@ -29,7 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
         private readonly ISettingsUtils _settingsUtils;
-        private readonly object _delayedActionLock = new object();
+        private readonly System.Threading.Lock _delayedActionLock = new System.Threading.Lock();
 
         private readonly PowerOcrSettings _powerOcrSettings;
         private Timer _delayedTimer;
@@ -56,7 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _languageIndex = value;
                     if (_powerOcrSettings != null && _languageIndex < possibleOcrLanguages.Count && _languageIndex >= 0)
                     {
-                        _powerOcrSettings.Properties.PreferredLanguage = possibleOcrLanguages[_languageIndex].DisplayName;
+                        _powerOcrSettings.Properties.PreferredLanguage = possibleOcrLanguages[_languageIndex].NativeName;
                         NotifySettingsChanged();
                     }
 
@@ -109,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else
             {
-                _isEnabled = GeneralSettingsConfig.Enabled.PowerOCR;
+                _isEnabled = GeneralSettingsConfig.Enabled.PowerOcr;
             }
         }
 
@@ -129,8 +130,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _isEnabled = value;
                     OnPropertyChanged(nameof(IsEnabled));
 
-                    // Set the status of PowerOCR in the general settings
-                    GeneralSettingsConfig.Enabled.PowerOCR = value;
+                    // Set the status of PowerOcr in the general settings
+                    GeneralSettingsConfig.Enabled.PowerOcr = value;
                     var outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
 
                     SendConfigMSG(outgoing.ToString());
@@ -185,7 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     systemLanguageIndex = AvailableLanguages.Count;
                 }
 
-                AvailableLanguages.Add(language.NativeName);
+                AvailableLanguages.Add(EnsureStartUpper(language.NativeName));
             }
 
             // if the previously stored preferred language is not available (has been deleted or this is the first run with language preference)
@@ -236,7 +237,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        CultureInfo.InvariantCulture,
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        PowerOcrSettings.ModuleName,
-                       JsonSerializer.Serialize(_powerOcrSettings)));
+                       JsonSerializer.Serialize(_powerOcrSettings, SourceGenerationContextContext.Default.PowerOcrSettings)));
         }
 
         public void RefreshEnabledState()
@@ -262,6 +263,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        public string SnippingToolInfoBarMargin
+        {
+            // Workaround for wrong StackPanel behavior: On hidden controls the margin is still reserved.
+            get => IsWin11OrGreater ? "0,0,0,25" : "0,0,0,0";
+        }
+
+        private string EnsureStartUpper(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return input;
+            }
+
+            var inputArray = input.ToCharArray();
+            inputArray[0] = char.ToUpper(inputArray[0], CultureInfo.CurrentCulture);
+            return new string(inputArray);
         }
     }
 }

@@ -4,10 +4,13 @@
 
 using System.Text.Json.Serialization;
 
+using Settings.UI.Library.Attributes;
+
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class ShortcutGuideProperties
     {
+        [CmdConfigureIgnore]
         public HotkeySettings DefaultOpenShortcutGuide => new HotkeySettings(true, false, false, true, 0xBF);
 
         public ShortcutGuideProperties()

@@ -6,6 +6,7 @@ using System;
 using System.Security.Policy;
 using System.Text;
 using System.Web;
+
 using Wox.Plugin.Logger;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.Uri

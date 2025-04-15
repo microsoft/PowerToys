@@ -4,6 +4,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerLauncher.ViewModel;
 using Wox.Plugin;

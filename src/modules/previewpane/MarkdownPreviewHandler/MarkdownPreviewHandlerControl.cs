@@ -6,6 +6,7 @@ using System.IO.Abstractions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+
 using Common;
 using Microsoft.PowerToys.PreviewHandler.Markdown.Properties;
 using Microsoft.PowerToys.PreviewHandler.Markdown.Telemetry.Events;
@@ -19,7 +20,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
     /// <summary>
     /// Win Form Implementation for Markdown Preview Handler.
     /// </summary>
-    public class MarkdownPreviewHandlerControl : FormHandlerControl
+    public partial class MarkdownPreviewHandlerControl : FormHandlerControl
     {
         private static readonly IFileSystem FileSystem = new FileSystem();
         private static readonly IPath Path = FileSystem.Path;
@@ -65,7 +66,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         {
             get
             {
-                string codeBase = Assembly.GetExecutingAssembly().Location;
+                string codeBase = AppContext.BaseDirectory;
                 UriBuilder uri = new UriBuilder(codeBase);
                 string path = Uri.UnescapeDataString(uri.Path);
                 return Path.GetDirectoryName(path);
@@ -130,7 +131,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     DefaultBackgroundColor = Color.Transparent,
                 };
 
-                var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents --disable-features=RendererAppContainer");
+                var webView2Options = new CoreWebView2EnvironmentOptions("--block-new-web-contents");
                 ConfiguredTaskAwaitable<CoreWebView2Environment>.ConfiguredTaskAwaiter
                         webView2EnvironmentAwaiter = CoreWebView2Environment
                             .CreateAsync(userDataFolder: _webView2UserDataFolder, options: webView2Options)
@@ -143,7 +144,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                         await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
                         _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
                         _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
-                        _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+                        _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
                         _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
                         _browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
                         _browser.CoreWebView2.Settings.IsGeneralAutofillEnabled = false;
@@ -159,6 +160,23 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                             if (new Uri(e.Request.Uri) != _localFileURI)
                             {
                                 e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
+                            }
+                        };
+
+                        _browser.CoreWebView2.ContextMenuRequested += (object sender, CoreWebView2ContextMenuRequestedEventArgs args) =>
+                        {
+                            var menuItems = args.MenuItems;
+
+                            if (!menuItems.IsReadOnly)
+                            {
+                                var copyMenuItem = menuItems.FirstOrDefault(menuItem => menuItem.Name == "copy");
+
+                                menuItems.Clear();
+
+                                if (copyMenuItem != null)
+                                {
+                                    menuItems.Add(copyMenuItem);
+                                }
                             }
                         };
 

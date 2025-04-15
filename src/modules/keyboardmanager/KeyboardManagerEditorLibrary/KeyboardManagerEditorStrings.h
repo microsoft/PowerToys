@@ -22,6 +22,16 @@ namespace KeyboardManagerEditorStrings
         return GET_RESOURCE_STRING(IDS_MAPPING_TYPE_DROPDOWN_KEY_SHORTCUT);
     }
 
+    inline std::wstring MappingTypeRunProgram()
+    {
+        return GET_RESOURCE_STRING(IDS_MAPPING_TYPE_DROPDOWN_RUN_PROGRAM);
+    }
+
+    inline std::wstring MappingTypeOpenUri()
+    {
+        return GET_RESOURCE_STRING(IDS_MAPPING_TYPE_DROPDOWN_OPEN_URI);
+    }
+
     // Function to return the error message
     winrt::hstring GetErrorMessage(ShortcutErrorType errorType);
 }

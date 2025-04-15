@@ -53,6 +53,7 @@
           <RegistryValue Type="string" Name="CommandNotFound_Scripts" Value="" KeyPath="yes"/>
         </RegistryKey>
         <File Id="CommandNotFound_Scripts_EnableModule.ps1" Source="$(var.SettingsV2AssetsFilesPath)\Scripts\EnableModule.ps1" />
+        <File Id="CommandNotFound_Scripts_UpgradeModule.ps1" Source="$(var.SettingsV2AssetsFilesPath)\Scripts\UpgradeModule.ps1" />
         <File Id="CommandNotFound_Scripts_DisableModule.ps1" Source="$(var.SettingsV2AssetsFilesPath)\Scripts\DisableModule.ps1" />
         <File Id="CommandNotFound_Scripts_CheckCmdNotFoundRequirements.ps1" Source="$(var.SettingsV2AssetsFilesPath)\Scripts\CheckCmdNotFoundRequirements.ps1" />
         <File Id="CommandNotFound_Scripts_InstallWinGetClientModule.ps1" Source="$(var.SettingsV2AssetsFilesPath)\Scripts\InstallWinGetClientModule.ps1" />

@@ -123,9 +123,6 @@
   <data name="AWAKE_EXIT" xml:space="preserve">
     <value>Exit</value>
   </data>
-  <data name="AWAKE_1_HOUR" xml:space="preserve">
-    <value>1 hour</value>
-  </data>
   <data name="AWAKE_HOURS" xml:space="preserve">
     <value>{0} hours</value>
     <comment>{0} shouldn't be removed. It will be replaced by a number greater than 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
@@ -145,9 +142,6 @@
     <value>Keep awake until expiration date and time</value>
     <comment>Keep the system awake until expiration date and time</comment>
   </data>
-  <data name="AWAKE_1_MINUTE" xml:space="preserve">
-    <value>1 minute</value>
-  </data>
   <data name="AWAKE_MINUTES" xml:space="preserve">
     <value>{0} minutes</value>
     <comment>{0} shouldn't be removed. It will be replaced by a number greater than 1 at runtime by the application. Used for defining a period to keep the PC awake.</comment>
@@ -158,5 +152,70 @@
   </data>
   <data name="AWAKE_UNCHECKED" xml:space="preserve">
     <value>Unchecked</value>
+  </data>
+  <data name="AWAKE_CMD_HELP_CONFIG_OPTION" xml:space="preserve">
+    <value>Specifies whether Awake will be using the PowerToys configuration file for managing the state.</value>
+  </data>
+  <data name="AWAKE_CMD_HELP_DISPLAY_OPTION" xml:space="preserve">
+    <value>Determines whether the display should be kept awake.</value>
+  </data>
+  <data name="AWAKE_CMD_HELP_EXPIRE_AT_OPTION" xml:space="preserve">
+    <value>Determines the end date and time when Awake will back off and let the system manage the current sleep and display state.</value>
+  </data>
+  <data name="AWAKE_CMD_HELP_PID_OPTION" xml:space="preserve">
+    <value>Bind the execution of Awake to another process. When the process ends, the system will resume managing the current sleep and display state.</value>
+  </data>
+  <data name="AWAKE_CMD_HELP_TIME_OPTION" xml:space="preserve">
+    <value>Determines the interval (in seconds) during which the computer is kept awake.</value>
+  </data>
+  <data name="AWAKE_EXIT_BINDING_HOOK_MESSAGE" xml:space="preserve">
+    <value>Terminating from process binding hook.</value>
+  </data>
+  <data name="AWAKE_EXIT_MESSAGE" xml:space="preserve">
+    <value>Exiting from the internal termination handler.</value>
+  </data>
+  <data name="AWAKE_EXIT_SIGNAL_MESSAGE" xml:space="preserve">
+    <value>Received a signal to end the process. Making sure we quit...</value>
+  </data>
+  <data name="AWAKE_TRAY_TEXT_EXPIRATION" xml:space="preserve">
+    <value>Expiring</value>
+  </data>
+  <data name="AWAKE_TRAY_TEXT_INDEFINITE" xml:space="preserve">
+    <value>Indefinite</value>
+  </data>
+  <data name="AWAKE_TRAY_TEXT_OFF" xml:space="preserve">
+    <value>Passive</value>
+  </data>
+  <data name="AWAKE_TRAY_TEXT_TIMED" xml:space="preserve">
+    <value>Interval</value>
+  </data>
+  <data name="AWAKE_LABEL_DAYS" xml:space="preserve">
+    <value>d</value>
+    <comment>Used to display number of days in the system tray tooltip.</comment>
+  </data>
+  <data name="AWAKE_LABEL_HOURS" xml:space="preserve">
+    <value>h</value>
+    <comment>Used to display number of hours in the system tray tooltip.</comment>
+  </data>
+  <data name="AWAKE_LABEL_MINUTES" xml:space="preserve">
+    <value>m</value>
+    <comment>Used to display number of minutes in the system tray tooltip.</comment>
+  </data>
+  <data name="AWAKE_LABEL_SECONDS" xml:space="preserve">
+    <value>s</value>
+    <comment>Used to display number of seconds in the system tray tooltip.</comment>
+  </data>
+  <data name="AWAKE_CMD_PARENT_PID_OPTION" xml:space="preserve">
+    <value>Uses the parent process as the bound target - once the process terminates, Awake stops.</value>
+  </data>
+  <data name="AWAKE_TRAY_TEXT_PID_BINDING" xml:space="preserve">
+    <value>Bound to</value>
+    <comment>Describes the process ID Awake is bound to when running.</comment>
+  </data>
+  <data name="AWAKE_SCREEN_ON" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="AWAKE_SCREEN_OFF" xml:space="preserve">
+    <value>Off</value>
   </data>
 </root>

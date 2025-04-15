@@ -19,8 +19,14 @@ $versionExceptions = @(
     "Microsoft.Xaml.Interactions.dll",
     "Microsoft.Xaml.Interactivity.dll",
     "hyjiacan.py4n.dll",
+    "TraceReloggerLib.dll",
     "Microsoft.WindowsAppRuntime.Release.Net.dll",
-    "Microsoft.Windows.Widgets.Projection.dll") -join '|';
+    "Microsoft.Windows.Widgets.Projection.dll",
+    "WinRT.Host.Shim.dll",
+    "WyHash.dll",
+    "Microsoft.Recognizers.Text.DataTypes.TimexExpression.dll",
+    "ObjectModelCsProjection.dll",
+    "RendererCsProjection.dll") -join '|';
 $nullVersionExceptions = @(
     "codicon.ttf",
     "e_sqlite3.dll",
@@ -41,13 +47,15 @@ $nullVersionExceptions = @(
     "PushNotificationsLongRunningTask.ProxyStub.dll",
     "WindowsAppSdk.AppxDeploymentExtensions.Desktop.dll",
     "System.Diagnostics.EventLog.Messages.dll",
-    "Microsoft.Windows.Widgets.dll") -join '|';
+    "Microsoft.Windows.Widgets.dll",
+    "AdaptiveCards.ObjectModel.WinUI3.dll",
+    "AdaptiveCards.Rendering.WinUI3.dll") -join '|';
 $totalFailure = 0;
 
 Write-Host $DirPath;
 
-if (-not (Test-Path $DirPath)) {  
-    Write-Host "Folder does not exist!"
+if (-not (Test-Path $DirPath)) {
+    Write-Error "Folder does not exist!"
 }
 
 Write-Host "Total items: " $items.Count
@@ -58,12 +66,17 @@ if ($items.Count -eq 0) {
 }
 
 $items | ForEach-Object {
+    if ($_.VersionInfo.FileVersion -eq "0.0.0.0" -and $_.Name -notmatch $versionExceptions) {
+        # These items are exceptions that actually have the 0.0.0.0 version.
+        Write-Host "Version set to 0.0.0.0: " + $_.FullName
+        $totalFailure++;
+    }
     if ($_.VersionInfo.FileVersion -eq "1.0.0.0" -and $_.Name -notmatch $versionExceptions) {
         # These items are exceptions that actually have the 1.0.0.0 version.
         Write-Host "Version set to 1.0.0.0: " + $_.FullName
         $totalFailure++;
     }
-    elseif ($_.VersionInfo.FileVersion -eq $null -and $_.Name -notmatch $nullVersionExceptions) { 
+    elseif ($_.VersionInfo.FileVersion -eq $null -and $_.Name -notmatch $nullVersionExceptions) {
         # These items are exceptions that actually a version not set.
         Write-Host "Version not set: " + $_.FullName
         $totalFailure++;
@@ -78,6 +91,7 @@ $items | ForEach-Object {
 }
 
 if ($totalFailure -gt 0) {
+    Write-Error "Some items had issues."
     exit 1
 }
 

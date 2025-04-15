@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+
 using ManagedCommon;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
@@ -266,7 +267,7 @@ namespace Wox.Infrastructure.Image
             if (imageResult.ImageType != ImageType.Error && imageResult.ImageType != ImageType.Cache)
             {
                 // we need to get image hash
-                string hash = _enableImageHash ? _hashGenerator.GetHashFromImage(img) : null;
+                string hash = _enableImageHash ? _hashGenerator.GetHashFromImage(img, path) : null;
 
                 if (hash != null)
                 {

@@ -3,7 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.Tracing;
-using EnvironmentVariables.Models;
+
+using EnvironmentVariablesUILib.Models;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 

@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
+
 using Peek.Common.Extensions;
 using Peek.Common.Models;
 using Windows.Foundation;

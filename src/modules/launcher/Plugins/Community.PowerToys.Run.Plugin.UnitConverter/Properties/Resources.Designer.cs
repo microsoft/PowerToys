@@ -88,7 +88,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Provides unit conversion (e.g. 10 ft in m)..
+        ///   Looks up a localized string similar to Provides unit conversion (e.g. 10 ft to m).
         /// </summary>
         public static string plugin_description {
             get {

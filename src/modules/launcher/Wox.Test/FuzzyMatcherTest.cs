@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Wox.Infrastructure;
 using Wox.Plugin;

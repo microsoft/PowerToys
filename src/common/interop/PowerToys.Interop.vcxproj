@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\Version.props" />
+  <Import Project="..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup>
     <AssemblyTitle>PowerToys.Interop</AssemblyTitle>
   </PropertyGroup>
@@ -25,16 +25,25 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{F055103B-F80B-4D0C-BF48-057C55620033}</ProjectGuid>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <Keyword>ManagedCProj</Keyword>
-    <RootNamespace>PowerToysInterop</RootNamespace>
+    <RootNamespace>PowerToys.Interop</RootNamespace>
     <ProjectName>PowerToys.Interop</ProjectName>
+    <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTRootNamespaceAutoMerge>true</CppWinRTRootNamespaceAutoMerge>
+    <CppWinRTGenerateWindowsMetadata>true</CppWinRTGenerateWindowsMetadata>
+    <MinimalCoreWin>true</MinimalCoreWin>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>false</AppContainerApplication>
+    <AppxPackage>false</AppxPackage>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <CLRSupport>NetCore</CLRSupport>
     <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -55,93 +64,123 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <UseDebugLibraries>true</UseDebugLibraries>
+      <LinkIncremental>true</LinkIncremental>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <UseDebugLibraries>false</UseDebugLibraries>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <LinkIncremental>false</LinkIncremental>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>PowerToysInterop;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <PreprocessorDefinitions>_WINRT_DLL;WINRT_LEAN_AND_MEAN;PowerToysInterop;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)src\common\interop;../../;../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <OmitDefaultLibName>false</OmitDefaultLibName>
-      <AdditionalOptions>/Zc:twoPhase- </AdditionalOptions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>%(AdditionalOptions) /bigobj /Zc:twoPhase- </AdditionalOptions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;shell32.lib;advapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>PowerToys.Interop.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <AssemblyVersionFiles Include="Generated Files\AssemblyInfo.cpp" />
-  </ItemGroup>
-  <Target Name="GenerateAssemblyInfo" BeforeTargets="PrepareForBuild">
-    <ItemGroup>
-      <HeaderLines Include="#include &quot;../pch.h&quot;" />
-      <HeaderLines Include="using namespace System%3b" />
-      <HeaderLines Include="using namespace System::Reflection%3b" />
-      <HeaderLines Include="using namespace System::Runtime::CompilerServices%3b" />
-      <HeaderLines Include="using namespace System::Runtime::InteropServices%3b" />
-      <HeaderLines Include="using namespace System::Security::Permissions%3b" />
-      <HeaderLines Include="[assembly: AssemblyTitleAttribute(L&quot;$(AssemblyTitle)&quot;)]%3b" />
-      <HeaderLines Include="[assembly: AssemblyDescriptionAttribute(&quot;&quot;)]%3b" />
-      <HeaderLines Include="[assembly: AssemblyConfigurationAttribute(&quot;&quot;)]%3b" />
-      <HeaderLines Include="[assembly: AssemblyCompanyAttribute(&quot;$(AssemblyCompany)&quot;)]%3b" />
-      <HeaderLines Include="[assembly: AssemblyCopyrightAttribute(&quot;$(AssemblyCopyright)&quot;)]%3b" />
-      <HeaderLines Include="[assembly: AssemblyProductAttribute(&quot;$(AssemblyTitle)&quot;)]%3b" />
-      <HeaderLines Include="[assembly: AssemblyTrademarkAttribute(&quot;&quot;)]%3b" />
-      <HeaderLines Include="[assembly: AssemblyCultureAttribute(&quot;&quot;)]%3b" />
-      <HeaderLines Include="[assembly: AssemblyVersionAttribute(&quot;$(Version).0&quot;)]%3b" />
-      <HeaderLines Include="[assembly: ComVisible(false)]%3b" />
-      <HeaderLines Include="[assembly:CLSCompliantAttribute(true)]%3b" />
-    </ItemGroup>
-    <WriteLinesToFile File="Generated Files\AssemblyInfo.cpp" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
-  </Target>
-  <ItemGroup>
-    <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.h" />
-    <ClInclude Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.h" />
-    <ClInclude Include="HotkeyManager.h" />
-    <ClInclude Include="KeyboardHook.h" />
+    <ClInclude Include="async_message_queue.h" />
+    <ClInclude Include="CommonManaged.h">
+      <DependentUpon>CommonManaged.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <DependentUpon>KeyboardListener.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="HotkeyManager.h">
+      <DependentUpon>HotkeyManager.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="KeyboardHook.h">
+      <DependentUpon>KeyboardHook.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="keyboard_layout.h" />
+    <ClInclude Include="keyboard_layout_impl.h" />
+    <ClInclude Include="LayoutMapManaged.h">
+      <DependentUpon>LayoutMapManaged.idl</DependentUpon>
+    </ClInclude>
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="shared_constants.h" />
+    <ClInclude Include="TwoWayPipeMessageIPCManaged.h">
+      <DependentUpon>TwoWayPipeMessageIPCManaged.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="two_way_pipe_message_ipc.h" />
+    <ClInclude Include="two_way_pipe_message_ipc_impl.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\MicrophoneDevice.cpp">
-      <CompileAsManaged>false</CompileAsManaged>
+    <ClCompile Include="CommonManaged.cpp">
+      <DependentUpon>CommonManaged.idl</DependentUpon>
     </ClCompile>
-    <ClCompile Include="..\..\modules\videoconference\VideoConferenceShared\VideoCaptureDeviceList.cpp">
-      <CompileAsManaged>false</CompileAsManaged>
+    <ClCompile Include="Constants.cpp">
+      <DependentUpon>KeyboardListener.idl</DependentUpon>
     </ClCompile>
-    <ClCompile Include="Generated Files\AssemblyInfo.cpp" />
-    <ClCompile Include="HotkeyManager.cpp" />
-    <ClCompile Include="interop.cpp" />
-    <ClCompile Include="KeyboardHook.cpp" />
-    <ClCompile Include="keyboard_layout.cpp">
-      <CompileAsManaged>false</CompileAsManaged>
+    <ClCompile Include="HotkeyManager.cpp">
+      <DependentUpon>HotkeyManager.idl</DependentUpon>
     </ClCompile>
-    <ClCompile Include="two_way_pipe_message_ipc.cpp">
-      <CompileAsManaged>false</CompileAsManaged>
+    <ClCompile Include="KeyboardHook.cpp">
+      <DependentUpon>KeyboardHook.idl</DependentUpon>
     </ClCompile>
+    <ClCompile Include="keyboard_layout.cpp" />
+    <ClCompile Include="LayoutMapManaged.cpp">
+      <DependentUpon>LayoutMapManaged.idl</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="TwoWayPipeMessageIPCManaged.cpp">
+      <DependentUpon>TwoWayPipeMessageIPCManaged.idl</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="two_way_pipe_message_ipc.cpp" />
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="interop.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="PowerToys.Interop.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PropertySheet.props" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="CommonManaged.idl" />
+    <Midl Include="Constants.idl" />
+    <Midl Include="HotkeyManager.idl" />
+    <Midl Include="KeyboardHook.idl" />
+    <Midl Include="LayoutMapManaged.idl" />
+    <Midl Include="TwoWayPipeMessageIPCManaged.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\version\version.vcxproj">
+      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+    <Import Project="..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
+    <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
 </Project>

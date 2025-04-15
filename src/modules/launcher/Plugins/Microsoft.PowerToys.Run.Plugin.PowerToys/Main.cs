@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Components;
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Properties;
 using Wox.Infrastructure;

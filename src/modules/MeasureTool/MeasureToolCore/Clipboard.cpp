@@ -2,6 +2,8 @@
 
 #include "Clipboard.h"
 
+#include <sstream>
+
 void SetClipBoardToText(const std::wstring_view text)
 {
     if (!OpenClipboard(nullptr))
@@ -25,4 +27,26 @@ void SetClipBoardToText(const std::wstring_view text)
     EmptyClipboard();
     SetClipboardData(CF_UNICODETEXT, handle.get());
     CloseClipboard();
+}
+
+void SetClipboardToMeasurements(const std::vector<Measurement>& measurements,
+                                bool printWidth,
+                                bool printHeight,
+                                Measurement::Unit units)
+{
+    if (measurements.empty())
+    {
+        return;
+    }
+
+    std::wostringstream stream;
+    bool isFirst = true;
+
+    for (const auto& measurement : measurements)
+    {
+        measurement.PrintToStream(stream, !isFirst, printWidth, printHeight, units);
+        isFirst = false;
+    }
+
+    SetClipBoardToText(stream.str());
 }

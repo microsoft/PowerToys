@@ -15,6 +15,12 @@
         </RegistryKey>
         <File Id="WinUI3AppsMicrosoftUIXamlAssetsFile_NoiseAsset_256x256_PNG.png" Source="$(var.BinDir)WinUI3Apps\Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png" />
       </Component>
+      <Component Id="WinUI3AppsMicrosoftUIXamlAssets_map.html" Win64="yes" Guid="A970464C-A5BC-43DB-ACB3-7D83CF3047B3">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="WinUI3AppsMicrosoftUIXamlAssets_map" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Id="WinUI3AppsMicrosoftUIXamlAssetsFile_map.html" Source="$(var.BinDir)WinUI3Apps\Microsoft.UI.Xaml\Assets\map.html" />
+      </Component>
     </DirectoryRef>
 
     <DirectoryRef Id="WinUI3AppsInstallFolder">
@@ -453,6 +459,7 @@
         <RemoveFolder Id="RemoveFolderWinUI3AppsMicrosoftUIXamlAssetsInstallFolder" Directory="WinUI3AppsMicrosoftUIXamlAssetsInstallFolder" On="uninstall"/>
       </Component>
       <ComponentRef Id="WinUI3AppsMicrosoftUIXamlAssets_NoiseAsset_256x256_PNG.png" />
+      <ComponentRef Id="WinUI3AppsMicrosoftUIXamlAssets_map.html" />
     </ComponentGroup>
   </Fragment>
 </Wix>

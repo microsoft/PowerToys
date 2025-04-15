@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -12,7 +13,7 @@ using Settings.UI.Library.Enumerations;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerPreviewViewModel : Observable
+    public partial class PowerPreviewViewModel : Observable
     {
         private const string ModuleName = PowerPreviewSettings.ModuleName;
 
@@ -92,6 +93,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _monacoWrapText = Settings.Properties.EnableMonacoPreviewWordWrap;
             _monacoPreviewTryFormat = Settings.Properties.MonacoPreviewTryFormat;
             _monacoMaxFileSize = Settings.Properties.MonacoPreviewMaxFileSize.Value;
+            _monacoFontSize = Settings.Properties.MonacoPreviewFontSize.Value;
+            _monacoStickyScroll = Settings.Properties.MonacoPreviewStickyScroll;
+            _monacoMinimap = Settings.Properties.MonacoPreviewMinimap;
 
             _pdfRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredPdfPreviewEnabledValue();
             if (_pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _pdfRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
@@ -231,6 +235,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _monacoWrapText;
         private bool _monacoPreviewTryFormat;
         private int _monacoMaxFileSize;
+        private bool _monacoStickyScroll;
+        private int _monacoFontSize;
+        private bool _monacoMinimap;
 
         private GpoRuleConfigured _pdfRenderEnabledGpoRuleConfiguration;
         private bool _pdfRenderEnabledStateIsGPOConfigured;
@@ -590,6 +597,56 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _monacoMaxFileSize = value;
                     Settings.Properties.MonacoPreviewMaxFileSize.Value = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool MonacoPreviewStickyScroll
+        {
+            get
+            {
+                return _monacoStickyScroll;
+            }
+
+            set
+            {
+                if (_monacoStickyScroll != value)
+                {
+                    _monacoStickyScroll = value;
+                    Settings.Properties.MonacoPreviewStickyScroll = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool MonacoPreviewMinimap
+        {
+            get => _monacoMinimap;
+            set
+            {
+                if (_monacoMinimap != value)
+                {
+                    _monacoMinimap = value;
+                    Settings.Properties.MonacoPreviewMinimap = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public int MonacoPreviewFontSize
+        {
+            get
+            {
+                return _monacoFontSize;
+            }
+
+            set
+            {
+                if (_monacoFontSize != value)
+                {
+                    _monacoFontSize = value;
+                    Settings.Properties.MonacoPreviewFontSize.Value = value;
                     RaisePropertyChanged();
                 }
             }

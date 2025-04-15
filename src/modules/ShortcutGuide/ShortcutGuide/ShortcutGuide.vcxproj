@@ -84,7 +84,7 @@
     <ClCompile Include="native_event_waiter.cpp" />
     <ClCompile Include="overlay_window.cpp" />
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(CIBuild)'!='true'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="shortcut_guide.cpp" />
     <ClCompile Include="start_visible.cpp" />
@@ -95,7 +95,55 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="PropertySheet.props" />
-    <CopyFileToFolders Include="Assets\ShortcutGuide\**">
+    <CopyFileToFolders Include="Assets\ShortcutGuide\0.svg">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\1.svg">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\2.svg">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\3.svg">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\4.svg">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\5.svg">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\6.svg">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\7.svg">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\8.svg">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\9.svg">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\no_active_window.svg">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\overlay.svg">
+      <FileType>Document</FileType>
+      <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ShortcutGuide\overlay_portrait.svg">
       <FileType>Document</FileType>
       <DestinationFolders>$(OutDir)\Assets\ShortcutGuide</DestinationFolders>
     </CopyFileToFolders>
@@ -109,6 +157,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+      <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
       <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>

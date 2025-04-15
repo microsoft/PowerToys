@@ -58,6 +58,15 @@ namespace UnitTestsVersionHelper
             Assert::AreEqual(25ull, sut->minor);
             Assert::AreEqual(1ull, sut->revision);
         }
+        TEST_METHOD (stringConstructorShouldProperlyInitializationVersionNumbersWithUppercaseV)
+        {
+            auto sut = VersionHelper::fromString(L"V2.25.1");
+            Assert::IsTrue(sut.has_value());
+
+            Assert::AreEqual(2ull, sut->major);
+            Assert::AreEqual(25ull, sut->minor);
+            Assert::AreEqual(1ull, sut->revision);
+        }
         TEST_METHOD (emptyStringNotAccepted)
         {
             auto sut = VersionHelper::fromString("");

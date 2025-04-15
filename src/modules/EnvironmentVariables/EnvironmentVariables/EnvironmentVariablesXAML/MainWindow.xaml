@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <winuiex:WindowEx
     x:Class="EnvironmentVariables.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -6,16 +6,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:EnvironmentVariables"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:views="using:EnvironmentVariables.Views"
     xmlns:winuiex="using:WinUIEx"
     x:Uid="Window"
     MinWidth="700"
     MinHeight="480"
+    Closed="Window_Closed"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
-    <Grid>
+    <Grid x:Name="MainGrid" Loaded="Grid_Loaded">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -42,6 +42,5 @@
                 VerticalAlignment="Center"
                 Style="{StaticResource CaptionTextBlockStyle}" />
         </Grid>
-        <views:MainPage Grid.Row="1" />
     </Grid>
 </winuiex:WindowEx>

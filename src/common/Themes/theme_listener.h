@@ -22,7 +22,7 @@ public:
         dwThreadId = 0;
     }
 
-    AppTheme AppTheme;
+    Theme AppTheme;
     void ThemeListener::AddChangedHandler(THEME_HANDLE handle);
     void ThemeListener::DelChangedHandler(THEME_HANDLE handle);
     void CheckTheme();

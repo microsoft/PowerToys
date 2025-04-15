@@ -1,8 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: "\U0001F6A8 Microsoft Security Response Center (MSRC)"
-    url: https://msrc.microsoft.com/create-report
-    about: Report security bugs
   - name: "\U0001F4DA PowerToys user documentation"
     url: https://aka.ms/powertoys-docs
     about: Documentation for users of PowerToys utilities

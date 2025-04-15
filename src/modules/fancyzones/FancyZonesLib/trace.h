@@ -1,16 +1,15 @@
 #pragma once
 
+#include <common/Telemetry/TraceBase.h>
+
 struct Settings;
 class Layout;
 class LayoutAssignedWindows;
 
-class Trace
+class Trace : public telemetry::TraceBase
 {
 public:
-    static void RegisterProvider() noexcept;
-    static void UnregisterProvider() noexcept;
-
-    class FancyZones
+    class FancyZones : public telemetry::TraceBase
     {
     public:
         static void EnableFancyZones(bool enabled) noexcept;
@@ -26,7 +25,7 @@ public:
     static void SettingsTelemetry(const Settings& settings) noexcept;
     static void VirtualDesktopChanged() noexcept;
 
-    class WorkArea
+    class WorkArea : public telemetry::TraceBase
     {
     public:
         enum class InputMode

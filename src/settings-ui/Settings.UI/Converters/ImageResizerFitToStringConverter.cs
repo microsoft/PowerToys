@@ -3,40 +3,38 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Windows;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml.Data;
 
-namespace Microsoft.PowerToys.Settings.UI.Converters
+namespace Microsoft.PowerToys.Settings.UI.Converters;
+
+public sealed partial class ImageResizerFitToStringConverter : IValueConverter
 {
-    public sealed class ImageResizerFitToStringConverter : IValueConverter
+    // Maps each ResizeFit to its localized string.
+    private static readonly Dictionary<ResizeFit, string> FitToText = new()
     {
-        public object Convert(object value, Type targetType, object parameter, string language)
+        { ResizeFit.Fill,    Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Fit_Fill_ThirdPersonSingular") },
+        { ResizeFit.Fit,     Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Fit_Fit_ThirdPersonSingular") },
+        { ResizeFit.Stretch, Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Fit_Stretch_ThirdPersonSingular") },
+    };
+
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is ResizeFit fit && FitToText.TryGetValue(fit, out string fitText))
         {
-            var toLower = false;
-            if ((string)parameter == "ToLower")
-            {
-                toLower = true;
-            }
-
-            string targetValue = string.Empty;
-            switch (value)
-            {
-                case 0: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Fit_Fill_ThirdPersonSingular"); break;
-                case 1: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Fit_Fit_ThirdPersonSingular"); break;
-                case 2: targetValue = Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_Fit_Stretch_ThirdPersonSingular"); break;
-            }
-
-            if (toLower)
-            {
-                targetValue = targetValue.ToLower(CultureInfo.CurrentCulture);
-            }
-
-            return targetValue;
+            return parameter is string lowerParam && lowerParam == "ToLower" ?
+                fitText.ToLower(CultureInfo.CurrentCulture) :
+                fitText;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        {
-            return value;
-        }
+        return DependencyProperty.UnsetValue;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        return value;
     }
 }

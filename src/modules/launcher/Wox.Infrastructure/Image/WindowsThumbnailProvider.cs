@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
+
 using Microsoft.Win32;
 using Wox.Plugin.Logger;
 

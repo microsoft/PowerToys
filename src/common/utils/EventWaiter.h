@@ -1,3 +1,5 @@
+#pragma once
+
 #include <functional>
 #include <thread>
 #include <string>
@@ -9,7 +11,7 @@ public:
     EventWaiter() {}
     EventWaiter(const std::wstring& name, std::function<void(DWORD)> callback)
     {
-        // Create localExitThreadEvent and localWaitingEvent for capturing. We can not capture 'this' as we implement move constructor.
+        // Create localExitThreadEvent and localWaitingEvent for capturing. We cannot capture 'this' as we implement move constructor.
         auto localExitThreadEvent = exitThreadEvent = CreateEvent(nullptr, false, false, nullptr);
         HANDLE localWaitingEvent = waitingEvent = CreateEvent(nullptr, false, false, name.c_str());
         std::thread([=]() {

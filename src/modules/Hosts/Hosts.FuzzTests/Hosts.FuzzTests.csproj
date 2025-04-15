@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\Hosts.FuzzTests\</OutputPath>
+	</PropertyGroup>
+	
+	<ItemGroup>
+	  <Compile Include="..\Hosts.Tests\Mocks\CustomMockFileSystem.cs" Link="CustomMockFileSystem.cs" />
+	  <Compile Include="..\Hosts.Tests\Mocks\MockFileSystemWatcher.cs" Link="MockFileSystemWatcher.cs" />
+	  <Compile Include="..\Hosts.Tests\Mocks\MockFileSystemWatcherFactory.cs" Link="MockFileSystemWatcherFactory.cs" />
+	  <Compile Include="..\HostsUILib\Consts.cs" Link="Consts.cs" />
+	  <Compile Include="..\HostsUILib\Helpers\ValidationHelper.cs" Link="ValidationHelper.cs" />
+	  <Compile Include="..\HostsUILib\Exceptions\NotRunningElevatedException.cs" Link="NotRunningElevatedException.cs" />
+	  <Compile Include="..\HostsUILib\Exceptions\ReadOnlyHostsException.cs" Link="ReadOnlyHostsException.cs" />
+	  <Compile Include="..\HostsUILib\Helpers\HostsService.cs" Link="HostsService.cs" />
+	  <Compile Include="..\HostsUILib\Helpers\IElevationHelper.cs" Link="IElevationHelper.cs" />
+	  <Compile Include="..\HostsUILib\Helpers\IHostsService.cs" Link="IHostsService.cs" />
+	  <Compile Include="..\HostsUILib\Helpers\ILogger.cs" Link="ILogger.cs" />
+	  <Compile Include="..\HostsUILib\Helpers\LoggerInstance.cs" Link="LoggerInstance.cs" />
+	  <Compile Include="..\HostsUILib\Models\AddressType.cs" Link="AddressType.cs" />
+	  <Compile Include="..\HostsUILib\Models\Entry.cs" Link="Entry.cs" />
+	  <Compile Include="..\HostsUILib\Models\HostsData.cs" Link="HostsData.cs" />
+	  <Compile Include="..\HostsUILib\Settings\HostsAdditionalLinesPosition.cs" Link="HostsAdditionalLinesPosition.cs" />
+	  <Compile Include="..\HostsUILib\Settings\HostsEncoding.cs" Link="HostsEncoding.cs" />
+	  <Compile Include="..\HostsUILib\Settings\IUserSettings.cs" Link="IUserSettings.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Moq" />
+		<PackageReference Include="MSTest" />
+		<PackageReference Include="System.IO.Abstractions" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
+		<PackageReference Include="System.IO.Abstractions.TestingHelpers" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="OneFuzzConfig.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	
+</Project>

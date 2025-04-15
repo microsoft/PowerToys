@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;
 using Wox.Plugin.Logger;
 

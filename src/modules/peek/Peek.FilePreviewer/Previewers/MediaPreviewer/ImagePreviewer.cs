@@ -5,15 +5,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.PowerToys.FilePreviewCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Peek.Common;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
@@ -22,10 +23,11 @@ using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Helpers;
 using Peek.FilePreviewer.Previewers.Interfaces;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
 
 namespace Peek.FilePreviewer.Previewers
 {
-    public partial class ImagePreviewer : ObservableObject, IImagePreviewer, IDisposable
+    public partial class ImagePreviewer : ObservableObject, IImagePreviewer
     {
         [ObservableProperty]
         private ImageSource? preview;
@@ -50,41 +52,30 @@ namespace Peek.FilePreviewer.Previewers
 
         private IFileSystemItem Item { get; }
 
+        private bool IsPng() => Item.Extension == ".png";
+
+        private bool IsSvg() => Item.Extension == ".svg";
+
+        private bool IsQoi() => Item.Extension == ".qoi";
+
         private DispatcherQueue Dispatcher { get; }
 
-        private Task<bool>? LowQualityThumbnailTask { get; set; }
+        private static readonly HashSet<string> _supportedFileTypes =
+            BitmapDecoder.GetDecoderInformationEnumerator()
+                .SelectMany(di => di.FileExtensions)
+                .Union([".svg", ".qoi"])
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        private Task<bool>? HighQualityThumbnailTask { get; set; }
-
-        private Task<bool>? FullQualityImageTask { get; set; }
-
-        private bool IsHighQualityThumbnailLoaded => HighQualityThumbnailTask?.Status == TaskStatus.RanToCompletion;
-
-        private bool IsFullImageLoaded => FullQualityImageTask?.Status == TaskStatus.RanToCompletion;
-
-        private IntPtr lowQualityThumbnail;
-
-        private ImageSource? lowQualityThumbnailPreview;
-
-        private IntPtr highQualityThumbnail;
-
-        private ImageSource? highQualityThumbnailPreview;
-
-        public static bool IsFileTypeSupported(string fileExt)
+        public static bool IsItemSupported(IFileSystemItem item)
         {
-            return _supportedFileTypes.Contains(fileExt);
-        }
-
-        public void Dispose()
-        {
-            Clear();
-            GC.SuppressFinalize(this);
+            return _supportedFileTypes.Contains(item.Extension);
         }
 
         public async Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (IsSvg(Item))
+
+            if (IsSvg())
             {
                 var size = await Task.Run(Item.GetSvgSize);
                 if (size != null)
@@ -92,7 +83,7 @@ namespace Peek.FilePreviewer.Previewers
                     ImageSize = size.Value;
                 }
             }
-            else if (IsQoi(Item))
+            else if (IsQoi())
             {
                 var size = await Task.Run(Item.GetQoiSize);
                 if (size != null)
@@ -114,30 +105,12 @@ namespace Peek.FilePreviewer.Previewers
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
-            Clear();
-            State = PreviewState.Loading;
-
-            LowQualityThumbnailTask = LoadLowQualityThumbnailAsync(cancellationToken);
-            HighQualityThumbnailTask = LoadHighQualityThumbnailAsync(cancellationToken);
-            FullQualityImageTask = LoadFullQualityImageAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
-            await Task.WhenAll(LowQualityThumbnailTask, HighQualityThumbnailTask, FullQualityImageTask);
+            State = PreviewState.Loading;
 
-            // If Preview is still null, FullQualityImage was not available. Preview the thumbnail instead.
-            if (Preview == null)
-            {
-                if (highQualityThumbnailPreview != null)
-                {
-                    Preview = highQualityThumbnailPreview;
-                }
-                else
-                {
-                    Preview = lowQualityThumbnailPreview;
-                }
-            }
-
-            if (Preview == null && HasFailedLoadingPreview())
+            if (!await LoadFullQualityImageAsync(cancellationToken) &&
+                !await LoadThumbnailAsync(cancellationToken))
             {
                 State = PreviewState.Error;
             }
@@ -172,69 +145,23 @@ namespace Peek.FilePreviewer.Previewers
 
         private void UpdateMaxImageSize()
         {
-            var imageWidth = ImageSize?.Width ?? 0;
-            var imageHeight = ImageSize?.Height ?? 0;
+            double imageWidth = ImageSize?.Width ?? 0;
+            double imageHeight = ImageSize?.Height ?? 0;
 
-            if (ScalingFactor != 0)
-            {
-                MaxImageSize = new Size(imageWidth / ScalingFactor, imageHeight / ScalingFactor);
-            }
-            else
-            {
-                MaxImageSize = new Size(imageWidth, imageHeight);
-            }
+            MaxImageSize = ScalingFactor != 0 ?
+                new Size(imageWidth / ScalingFactor, imageHeight / ScalingFactor) :
+                new Size(imageWidth, imageHeight);
         }
 
-        private Task<bool> LoadLowQualityThumbnailAsync(CancellationToken cancellationToken)
+        private Task<bool> LoadThumbnailAsync(CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             return TaskExtension.RunSafe(async () =>
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var hr = ThumbnailHelper.GetThumbnail(Item.Path, out lowQualityThumbnail, ThumbnailHelper.LowQualityThumbnailSize);
-                if (hr != HResult.Ok)
-                {
-                    Logger.LogError("Error loading low quality thumbnail - hresult: " + hr);
-                    throw new ImageLoadingException(nameof(lowQualityThumbnail));
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-
                 await Dispatcher.RunOnUiThread(async () =>
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    if (!IsFullImageLoaded && !IsHighQualityThumbnailLoaded)
-                    {
-                        var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(lowQualityThumbnail, IsPng(Item), cancellationToken);
-                        lowQualityThumbnailPreview = thumbnailBitmap;
-                    }
-                });
-            });
-        }
-
-        private Task<bool> LoadHighQualityThumbnailAsync(CancellationToken cancellationToken)
-        {
-            return TaskExtension.RunSafe(async () =>
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var hr = ThumbnailHelper.GetThumbnail(Item.Path, out highQualityThumbnail, ThumbnailHelper.HighQualityThumbnailSize);
-                if (hr != HResult.Ok)
-                {
-                    Logger.LogError("Error loading high quality thumbnail - hresult: " + hr);
-                    throw new ImageLoadingException(nameof(highQualityThumbnail));
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await Dispatcher.RunOnUiThread(async () =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    if (!IsFullImageLoaded)
-                    {
-                        var thumbnailBitmap = await BitmapHelper.GetBitmapFromHBitmapAsync(highQualityThumbnail, IsPng(Item), cancellationToken);
-                        highQualityThumbnailPreview = thumbnailBitmap;
-                    }
+                    Preview = await ThumbnailHelper.GetCachedThumbnailAsync(Item.Path, IsPng(), cancellationToken);
                 });
             });
         }
@@ -251,7 +178,7 @@ namespace Peek.FilePreviewer.Previewers
 
                     using FileStream stream = ReadHelper.OpenReadOnly(Item.Path);
 
-                    if (IsSvg(Item))
+                    if (IsSvg())
                     {
                         var source = new SvgImageSource();
                         source.RasterizePixelHeight = ImageSize?.Height ?? 0;
@@ -266,7 +193,7 @@ namespace Peek.FilePreviewer.Previewers
 
                         Preview = source;
                     }
-                    else if (IsQoi(Item))
+                    else if (IsQoi())
                     {
                         using var bitmap = QoiImage.FromStream(stream);
 
@@ -274,121 +201,11 @@ namespace Peek.FilePreviewer.Previewers
                     }
                     else
                     {
-                        var bitmap = new BitmapImage();
-                        await bitmap.SetSourceAsync(stream.AsRandomAccessStream());
-                        Preview = bitmap;
+                        Preview = new BitmapImage();
+                        await ((BitmapImage)Preview).SetSourceAsync(stream.AsRandomAccessStream());
                     }
                 });
             });
         }
-
-        private bool HasFailedLoadingPreview()
-        {
-            var hasFailedLoadingLowQualityThumbnail = !(LowQualityThumbnailTask?.Result ?? true);
-            var hasFailedLoadingHighQualityThumbnail = !(HighQualityThumbnailTask?.Result ?? true);
-            var hasFailedLoadingFullQualityImage = !(FullQualityImageTask?.Result ?? true);
-
-            return hasFailedLoadingLowQualityThumbnail && hasFailedLoadingHighQualityThumbnail && hasFailedLoadingFullQualityImage;
-        }
-
-        private bool IsPng(IFileSystemItem item)
-        {
-            return item.Extension == ".png";
-        }
-
-        private bool IsSvg(IFileSystemItem item)
-        {
-            return item.Extension == ".svg";
-        }
-
-        private bool IsQoi(IFileSystemItem item)
-        {
-            return item.Extension == ".qoi";
-        }
-
-        private void Clear()
-        {
-            lowQualityThumbnailPreview = null;
-            highQualityThumbnailPreview = null;
-            Preview = null;
-
-            if (lowQualityThumbnail != IntPtr.Zero)
-            {
-                NativeMethods.DeleteObject(lowQualityThumbnail);
-            }
-
-            if (highQualityThumbnail != IntPtr.Zero)
-            {
-                NativeMethods.DeleteObject(highQualityThumbnail);
-            }
-        }
-
-        private static readonly HashSet<string> _supportedFileTypes = new HashSet<string>
-        {
-                // Image types
-                ".bmp",
-                ".gif",
-                ".jpg",
-                ".jfif",
-                ".jfi",
-                ".jif",
-                ".jpeg",
-                ".jpe",
-                ".png",
-                ".tif",  // very slow for large files: no thumbnail?
-                ".tiff", // NEED TO TEST
-                ".dib",  // NEED TO TEST
-                ".heic",
-                ".heif",
-                ".hif",  // NEED TO TEST
-                ".avif", // NEED TO TEST
-                ".jxr",
-                ".wdp",
-                ".ico",  // NEED TO TEST
-                ".thumb", // NEED TO TEST
-
-                // Raw types
-                ".arw",
-                ".cr2",
-                ".crw",
-                ".erf",
-                ".kdc", // NEED TO TEST
-                ".mrw",
-                ".nef",
-                ".nrw",
-                ".orf",
-                ".pef",
-                ".raf",
-                ".raw",
-                ".rw2",
-                ".rwl",
-                ".sr2",
-                ".srw",
-                ".srf",
-                ".dcs", // NEED TO TEST
-                ".dcr",
-                ".drf", // NEED TO TEST
-                ".k25",
-                ".3fr",
-                ".ari", // NEED TO TEST
-                ".bay", // NEED TO TEST
-                ".cap", // NEED TO TEST
-                ".iiq",
-                ".eip", // NEED TO TEST
-                ".fff",
-                ".mef",
-
-                // ".mdc", // Crashes in GetFullBitmapFromPathAsync
-                ".mos",
-                ".R3D",
-                ".rwz", // NEED TO TEST
-                ".x3f",
-                ".ori",
-                ".cr3",
-
-                ".svg",
-
-                ".qoi",
-        };
     }
 }

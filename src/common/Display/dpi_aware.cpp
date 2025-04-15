@@ -1,7 +1,9 @@
 #include "dpi_aware.h"
+
 #include "monitors.h"
 #include <ShellScalingApi.h>
 #include <array>
+#include <cmath>
 
 namespace DPIAware
 {
@@ -60,6 +62,24 @@ namespace DPIAware
         }
     }
 
+    void Convert(HMONITOR monitor_handle, RECT& rect)
+    {
+        if (monitor_handle == NULL)
+        {
+            const POINT ptZero = { 0, 0 };
+            monitor_handle = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
+        }
+
+        UINT dpi_x, dpi_y;
+        if (GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y) == S_OK)
+        {
+            rect.left = static_cast<long>(std::round(rect.left * static_cast<float>(dpi_x) / DEFAULT_DPI));
+            rect.right = static_cast<long>(std::round(rect.right * static_cast<float>(dpi_x) / DEFAULT_DPI));
+            rect.top = static_cast<long>(std::round(rect.top * static_cast<float>(dpi_y) / DEFAULT_DPI));
+            rect.bottom = static_cast<long>(std::round(rect.bottom * static_cast<float>(dpi_y) / DEFAULT_DPI));
+        }
+    }
+
     void ConvertByCursorPosition(float& width, float& height)
     {
         HMONITOR targetMonitor = nullptr;
@@ -86,6 +106,24 @@ namespace DPIAware
         {
             width = width * DEFAULT_DPI / dpi_x;
             height = height * DEFAULT_DPI / dpi_y;
+        }
+    }
+
+    void InverseConvert(HMONITOR monitor_handle, RECT& rect)
+    {
+        if (monitor_handle == NULL)
+        {
+            const POINT ptZero = { 0, 0 };
+            monitor_handle = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
+        }
+
+        UINT dpi_x, dpi_y;
+        if (GetDpiForMonitor(monitor_handle, MDT_EFFECTIVE_DPI, &dpi_x, &dpi_y) == S_OK)
+        {
+            rect.left = static_cast<long>(std::round(rect.left * static_cast<float>(DEFAULT_DPI) / dpi_x));
+            rect.right = static_cast<long>(std::round(rect.right * static_cast<float>(DEFAULT_DPI) / dpi_x));
+            rect.top = static_cast<long>(std::round(rect.top * static_cast<float>(DEFAULT_DPI) / dpi_y));
+            rect.bottom = static_cast<long>(std::round(rect.bottom * static_cast<float>(DEFAULT_DPI) / dpi_y));
         }
     }
 

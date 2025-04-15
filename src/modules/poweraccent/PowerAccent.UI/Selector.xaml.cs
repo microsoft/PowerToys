@@ -5,7 +5,9 @@
 using System;
 using System.ComponentModel;
 using System.Windows;
+
 using Wpf.Ui.Controls;
+
 using Point = PowerAccent.Core.Point;
 using Size = PowerAccent.Core.Size;
 

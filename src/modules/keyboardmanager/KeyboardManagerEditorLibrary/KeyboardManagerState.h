@@ -22,6 +22,7 @@ namespace Helpers
 namespace winrt::Windows::UI::Xaml::Controls
 {
     struct StackPanel;
+    struct TextBlock;
 }
 
 namespace KBMEditor
@@ -80,10 +81,17 @@ namespace KBMEditor
         std::map<DWORD, std::unique_ptr<KeyDelay>> keyDelays;
         std::mutex keyDelays_mutex;
 
-        // Display a key by appending a border Control as a child of the panel.
-        void AddKeyToLayout(const winrt::Windows::UI::Xaml::Controls::StackPanel& panel, const winrt::hstring& key);
-
     public:
+        // Display a key by appending a border Control as a child of the panel.
+        winrt::Windows::UI::Xaml::Controls::TextBlock AddKeyToLayout(const winrt::Windows::UI::Xaml::Controls::StackPanel& panel, const winrt::hstring& key);
+
+        
+
+        // flag to set if we want to allow building a chord
+        bool AllowChord = false;
+
+        bool exactMatch = false;
+
         // Stores the keyboard layout
         LayoutMap keyboardMap;
 
@@ -120,6 +128,9 @@ namespace KBMEditor
         // Function to return the currently detected shortcut which is displayed on the UI
         Shortcut GetDetectedShortcut();
 
+        // Function to SetDetectedShortcut and also UpdateDetectShortcutUI
+        void KeyboardManagerState::SetDetectedShortcut(Shortcut shortcut);
+
         // Function to return the currently detected remap key which is displayed on the UI
         DWORD GetDetectedSingleRemapKey();
 
@@ -145,6 +156,8 @@ namespace KBMEditor
 
         // Function to clear all the registered key delays
         void ClearRegisteredKeyDelays();
+
+        void ClearStoredShortcut();
 
         // Handle a key event, for a delayed key.
         bool HandleKeyDelayEvent(LowlevelKeyboardEvent* ev);

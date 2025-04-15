@@ -21,22 +21,6 @@ namespace NonLocalizable
     const wchar_t SystemAppsFolder[] = L"SYSTEMAPPS";
 }
 
-// Placeholder enums since dwmapi.h doesn't have these until SDK 22000.
-// TODO: Remove once SDK targets 22000 or above.
-enum DWMWINDOWATTRIBUTE_CUSTOM
-{
-    DWMWA_WINDOW_CORNER_PREFERENCE = 33
-
-};
-
-enum DWM_WINDOW_CORNER_PREFERENCE
-{
-    DWMWCP_DEFAULT = 0,
-    DWMWCP_DONOTROUND = 1,
-    DWMWCP_ROUND = 2,
-    DWMWCP_ROUNDSMALL = 3
-};
-
 namespace
 {
     BOOL CALLBACK saveDisplayToVector(HMONITOR monitor, HDC /*hdc*/, LPRECT /*rect*/, LPARAM data)

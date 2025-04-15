@@ -1,85 +1,26 @@
-## FancyZones Lib
+# FancyZones UI tests
 
-#### [`FancyZones.cpp`](/src/modules/fancyzones/lib/FancyZones.cpp)
-TODO
+UI tests are implemented using [Windows Application Driver](https://github.com/microsoft/WinAppDriver).
 
-#### [`Settings.cpp`](/src/modules/fancyzones/lib/Settings.cpp)
-TODO
+## Before running tests
 
-#### [`trace.cpp`](/src/modules/fancyzones/lib/trace.cpp)
-TODO
+  - Install Windows Application Driver v1.2.1 from https://github.com/microsoft/WinAppDriver/releases/tag/v1.2.1. 
+  - Enable Developer Mode in Windows settings
 
-#### [`Zone.cpp`](/src/modules/fancyzones/lib/Zone.cpp)
-TODO
+## Running tests
+  
+  - Exit PowerToys if it's running
+  - Run WinAppDriver.exe from the installation directory. Skip this step if installed in the default directory (`C:\Program Files (x86)\Windows Application Driver`); in this case, it'll be launched automatically during tests.
+  - Open `PowerToys.sln` in Visual Studio and build the solution.
+  - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`). 
 
-#### [`ZoneSet.cpp`](/src/modules/fancyzones/lib/ZoneSet.cpp)
-TODO
+>Note: notifications or other application windows, that are shown above the window under test, can disrupt the testing process.
 
-#### [`WorkArea.cpp`](/src/modules/fancyzones/lib/WorkArea.cpp)
-TODO
 
-## FancyZones Editor
+## Extra tools and information
 
-#### [`App.xaml.cs`](/src/modules/fancyzones/editor/App.xaml.cs)
-TODO
+**Test samples**: https://github.com/microsoft/WinAppDriver/tree/master/Samples
 
-#### [`Properties\AssemblyInfo.cs`](/src/modules/fancyzones/editor/Properties\AssemblyInfo.cs)
-TODO
+While working on tests, you may need a tool that helps you to view the element's accessibility data, e.g. for finding the button to click. For this purpose, you could use [AccessibilityInsights](https://accessibilityinsights.io/docs/windows/overview) or [WinAppDriver UI Recorder](https://github.com/microsoft/WinAppDriver/wiki/WinAppDriver-UI-Recorder).
 
-#### [`CanvasEditor.xaml.cs`](/src/modules/fancyzones/editor/CanvasEditor.xaml.cs)
-TODO
-
-#### [`CanvasEditorWindow.xaml.cs`](/src/modules/fancyzones/editor/CanvasEditorWindow.xaml.cs)
-TODO
-
-#### [`Models\CanvasLayoutModel.cs`](/src/modules/fancyzones/editor/Models\CanvasLayoutModel.cs)
-TODO
-
-#### [`CanvasZone.xaml.cs`](/src/modules/fancyzones/editor/CanvasZone.xaml.cs)
-TODO
-
-#### [`EditorOverlay.xaml.cs`](/src/modules/fancyzones/editor/EditorOverlay.xaml.cs)
-TODO
-
-#### [`EditorWindow.cs`](/src/modules/fancyzones/editor/EditorWindow.cs)
-TODO
-
-#### [`GridEditor.xaml.cs`](/src/modules/fancyzones/editor/GridEditor.xaml.cs)
-TODO
-
-#### [`GridEditorWindow.xaml.cs`](/src/modules/fancyzones/editor/GridEditorWindow.xaml.cs)
-TODO
-
-#### [`Models\GridLayoutModel.cs`](/src/modules/fancyzones/editor/Models\GridLayoutModel.cs)
-TODO
-
-#### [`GridResizer.xaml.cs`](/src/modules/fancyzones/editor/GridResizer.xaml.cs)
-TODO
-
-#### [`GridZone.xaml.cs`](/src/modules/fancyzones/editor/GridZone.xaml.cs)
-TODO
-
-#### [`Models\LayoutModel.cs`](/src/modules/fancyzones/editor/Models/LayoutModel.cs)
-TODO
-
-#### [`LayoutPreview.xaml.cs`](/src/modules/fancyzones/editor/LayoutPreview.xaml.cs)
-TODO
-
-#### [`MainWindow.xaml.cs`](/src/modules/fancyzones/editor/MainWindow.xaml.cs)
-TODO
-
-#### [`Properties\Resources.Designer.cs`](/src/modules/fancyzones/editor/Properties/Resources.Designer.cs)
-TODO
-
-#### [`RowColInfo.cs`](/src/modules/fancyzones/editor/RowColInfo.cs)
-TODO
-
-#### [`Models\Settings.cs`](/src/modules/fancyzones/editor/Models/Settings.cs)
-TODO
-
-#### [`Properties\Settings.Designer.cs`](/src/modules/fancyzones/editor/Properties/Settings.Designer.cs)
-TODO
-
-#### [`WindowLayout.xaml.cs`](/src/modules/fancyzones/editor/WindowLayout.xaml.cs)
-TODO
-
+>Note: close helper tools while running tests. Overlapping windows can affect test results.

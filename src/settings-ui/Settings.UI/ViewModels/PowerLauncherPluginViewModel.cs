@@ -8,12 +8,13 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class PowerLauncherPluginViewModel : INotifyPropertyChanged
+    public partial class PowerLauncherPluginViewModel : INotifyPropertyChanged
     {
         private readonly PowerLauncherPluginSettings settings;
         private readonly Func<bool> isDark;
@@ -37,6 +38,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _enabledGpoRuleConfiguration = (GpoRuleConfigured)settings.EnabledPolicyUiState;
             _enabledGpoRuleIsConfigured = _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+
+            _hasValidWebsiteUri = Uri.IsWellFormedUriString(settings.Website, UriKind.Absolute);
+            _websiteUri = _hasValidWebsiteUri ? settings.Website : WebsiteFallbackUri;
         }
 
         public string Id { get => settings.Id; }
@@ -45,7 +49,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string Description { get => settings.Description; }
 
+        public string Version { get => settings.Version; }
+
         public string Author { get => settings.Author; }
+
+        // Fallback value for the website in case the uri from json is not well formatted
+        private const string WebsiteFallbackUri = "https://aka.ms/PowerToys";
+        private string _websiteUri;
+        private bool _hasValidWebsiteUri;
+
+        public string WebsiteUri => _websiteUri;
+
+        public bool HasValidWebsiteUri => _hasValidWebsiteUri;
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledGpoRuleIsConfigured;
@@ -179,10 +194,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return $"{Name}. {Description}";
         }
 
-        public string IconPath
-        {
-            get => isDark() ? settings.IconPathDark : settings.IconPathLight;
-        }
+#nullable enable
+        public Uri? IconPath => Uri.TryCreate(isDark() ? settings.IconPathDark : settings.IconPathLight, UriKind.Absolute, out var uri) ? uri : null;
+#nullable restore
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -196,6 +210,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => !Disabled && !IsGlobal && string.IsNullOrWhiteSpace(ActionKeyword);
         }
 
+        // The Badge is shown in case of ANY error event, but NEVER when the plugin is disabled.
+        // Logic = !disabled && (errorA or errorB or errorC...)
+        // Current count of possible error events: 1 (NotAccessible)
         public bool ShowBadgeOnPluginSettingError
         {
             get => !Disabled && ShowNotAccessibleWarning;

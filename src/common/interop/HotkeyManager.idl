@@ -1,0 +1,23 @@
+namespace PowerToys
+{
+    namespace Interop
+    {
+        struct Hotkey
+        {
+            Boolean Win;
+            Boolean Ctrl;
+            Boolean Shift;
+            Boolean Alt;
+            UInt8 Key;
+        };
+        delegate void HotkeyCallback();
+
+        [default_interface] runtimeclass HotkeyManager : Windows.Foundation.IClosable
+        {
+            HotkeyManager();
+            UInt16 RegisterHotkey(Hotkey _hotkey, HotkeyCallback _callback);
+            void UnregisterHotkey(UInt16 _handle);
+        }
+
+    }
+}

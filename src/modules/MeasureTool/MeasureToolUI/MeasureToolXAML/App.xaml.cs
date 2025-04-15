@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -22,6 +23,12 @@ namespace MeasureToolUI
         public App()
         {
             Logger.InitializeLogger("\\Measure Tool\\MeasureToolUI\\Logs");
+
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
 
             this.InitializeComponent();
         }

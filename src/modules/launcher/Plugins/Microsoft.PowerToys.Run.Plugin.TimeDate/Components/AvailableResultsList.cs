@@ -6,29 +6,35 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
-    internal class AvailableResultsList
+    internal static class AvailableResultsList
     {
         /// <summary>
         /// Returns a list with all available date time formats
         /// </summary>
         /// <param name="isKeywordSearch">Is this a search with plugin activation keyword or not</param>
-        /// <param name="timeLong">Required for UnitTest: Show time in long format</param>
-        /// <param name="dateLong">Required for UnitTest: Show date in long format</param>
-        /// <param name="timestamp">Required for UnitTest: Use custom <see cref="DateTime"/> object to calculate results</param>
+        /// <param name="timeLongFormat">Required for UnitTest: Show time in long format</param>
+        /// <param name="dateLongFormat">Required for UnitTest: Show date in long format</param>
+        /// <param name="timestamp">Use custom <see cref="DateTime"/> object to calculate results instead of the system date/time</param>
+        /// <param name="firstWeekOfYear">Required for UnitTest: Use custom first week of the year instead of the plugin setting.</param>
+        /// <param name="firstDayOfWeek">Required for UnitTest: Use custom first day of the week instead the plugin setting.</param>
         /// <returns>List of results</returns>
-        internal static List<AvailableResult> GetList(bool isKeywordSearch, bool? timeLong = null, bool? dateLong = null, DateTime? timestamp = null)
+        internal static List<AvailableResult> GetList(bool isKeywordSearch, bool? timeLongFormat = null, bool? dateLongFormat = null, DateTime? timestamp = null, CalendarWeekRule? firstWeekOfYear = null, DayOfWeek? firstDayOfWeek = null)
         {
             List<AvailableResult> results = new List<AvailableResult>();
-            bool timeExtended = timeLong ?? TimeDateSettings.Instance.TimeWithSeconds;
-            bool dateExtended = dateLong ?? TimeDateSettings.Instance.DateWithWeekday;
-            bool isSystemDateTime = timestamp == null;
             Calendar calendar = CultureInfo.CurrentCulture.Calendar;
+
+            bool timeExtended = timeLongFormat ?? TimeDateSettings.Instance.TimeWithSeconds;
+            bool dateExtended = dateLongFormat ?? TimeDateSettings.Instance.DateWithWeekday;
+            bool isSystemDateTime = timestamp == null;
             DateTime dateTimeNow = timestamp ?? DateTime.Now;
             DateTime dateTimeNowUtc = dateTimeNow.ToUniversalTime();
+            CalendarWeekRule firstWeekRule = firstWeekOfYear ?? TimeAndDateHelper.GetCalendarWeekRule(TimeDateSettings.Instance.CalendarFirstWeekRule);
+            DayOfWeek firstDayOfTheWeek = firstDayOfWeek ?? TimeAndDateHelper.GetFirstDayOfWeek(TimeDateSettings.Instance.FirstDayOfWeek);
 
             results.AddRange(new[]
             {
@@ -62,10 +68,90 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 // We use long instead of int for unix time stamp because int is too small after 03:14:07 UTC 2038-01-19
                 long unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
                 long unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();
-                int weekOfYear = calendar.GetWeekOfYear(dateTimeNow, DateTimeFormatInfo.CurrentInfo.CalendarWeekRule, DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
+                int weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
                 string era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(dateTimeNow));
                 string eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
 
+                // Custom formats
+                foreach (string f in TimeDateSettings.Instance.CustomFormats)
+                {
+                    string[] formatParts = f.Split("=", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    string formatSyntax = formatParts.Length == 2 ? formatParts[1] : string.Empty;
+                    string searchTags = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagCustom");
+                    DateTime dtObject = dateTimeNow;
+
+                    // If Length = 0 then empty string.
+                    if (formatParts.Length >= 1)
+                    {
+                        try
+                        {
+                            // Verify and check input and update search tags
+                            if (formatParts.Length == 1)
+                            {
+                                throw new FormatException("Format syntax part after equal sign is missing.");
+                            }
+
+                            bool containsCustomSyntax = TimeAndDateHelper.StringContainsCustomFormatSyntax(formatSyntax);
+                            if (formatSyntax.StartsWith("UTC:", StringComparison.InvariantCulture))
+                            {
+                                searchTags = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagCustomUtc");
+                                dtObject = dateTimeNowUtc;
+                            }
+
+                            // Get formated date
+                            var value = TimeAndDateHelper.ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, eraShort, Regex.Replace(formatSyntax, "^UTC:", string.Empty), firstWeekRule, firstDayOfTheWeek);
+                            try
+                            {
+                                value = dtObject.ToString(value, CultureInfo.CurrentCulture);
+                            }
+                            catch
+                            {
+                                if (!containsCustomSyntax)
+                                {
+                                    throw;
+                                }
+                                else
+                                {
+                                    // Do not fail as we have custom format syntax. Instead fix backslashes.
+                                    value = Regex.Replace(value, @"(?<!\\)\\", string.Empty).Replace("\\\\", "\\");
+                                }
+                            }
+
+                            // Add result
+                            results.Add(new AvailableResult()
+                            {
+                                Value = value,
+                                Label = formatParts[0],
+                                AlternativeSearchTag = searchTags,
+                                IconType = ResultIconType.DateTime,
+                            });
+                        }
+                        catch (ArgumentOutOfRangeException e)
+                        {
+                            Wox.Plugin.Logger.Log.Exception($"Failed to convert into custom format {formatParts[0]}: {formatSyntax}", e, typeof(AvailableResultsList));
+                            results.Add(new AvailableResult()
+                            {
+                                Value = Resources.Microsoft_plugin_timedate_ErrorConvertCustomFormat + " " + e.Message,
+                                Label = formatParts[0],
+                                AlternativeSearchTag = searchTags,
+                                IconType = ResultIconType.Error,
+                            });
+                        }
+                        catch (Exception e)
+                        {
+                            Wox.Plugin.Logger.Log.Exception($"Failed to convert into custom format {formatParts[0]}: {formatSyntax}", e, typeof(AvailableResultsList));
+                            results.Add(new AvailableResult()
+                            {
+                                Value = Resources.Microsoft_plugin_timedate_InvalidCustomFormat + " " + formatSyntax,
+                                Label = formatParts[0],
+                                AlternativeSearchTag = searchTags,
+                                IconType = ResultIconType.Error,
+                            });
+                        }
+                    }
+                }
+
+                // Predefined formats
                 results.AddRange(new[]
                 {
                     new AvailableResult()
@@ -133,7 +219,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = TimeAndDateHelper.GetNumberOfDayInWeek(dateTimeNow).ToString(CultureInfo.CurrentCulture),
+                        Value = TimeAndDateHelper.GetNumberOfDayInWeek(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_DayOfWeek,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                         IconType = ResultIconType.Date,
@@ -147,6 +233,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
+                        Value = DateTime.DaysInMonth(dateTimeNow.Year, dateTimeNow.Month).ToString(CultureInfo.CurrentCulture),
+                        Label = Resources.Microsoft_plugin_timedate_DaysInMonth,
+                        AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                        IconType = ResultIconType.Date,
+                    },
+                    new AvailableResult()
+                    {
                         Value = dateTimeNow.DayOfYear.ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_DayOfYear,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
@@ -154,7 +247,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow).ToString(CultureInfo.CurrentCulture),
+                        Value = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_WeekOfMonth,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                         IconType = ResultIconType.Date,
@@ -196,6 +289,13 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
+                        Value = DateTime.IsLeapYear(dateTimeNow.Year) ? Resources.Microsoft_plugin_timedate_LeapYear : Resources.Microsoft_plugin_timedate_NoLeapYear,
+                        Label = Resources.Microsoft_plugin_timedate_LeapYear,
+                        AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                        IconType = ResultIconType.Date,
+                    },
+                    new AvailableResult()
+                    {
                         Value = era,
                         Label = Resources.Microsoft_plugin_timedate_Era,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagEra"),
@@ -215,13 +315,31 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                         IconType = ResultIconType.Date,
                     },
-                    new AvailableResult()
+                });
+
+                try
+                {
+                    results.Add(new AvailableResult()
                     {
                         Value = dateTimeNow.ToFileTime().ToString(CultureInfo.CurrentCulture),
                         Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                         IconType = ResultIconType.DateTime,
-                    },
+                    });
+                }
+                catch
+                {
+                    results.Add(new AvailableResult()
+                    {
+                        Value = Resources.Microsoft_plugin_timedate_ErrorConvertWft,
+                        Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
+                        AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
+                        IconType = ResultIconType.Error,
+                    });
+                }
+
+                results.AddRange(new[]
+                {
                     new AvailableResult()
                     {
                         Value = dateTimeNowUtc.ToString("u"),

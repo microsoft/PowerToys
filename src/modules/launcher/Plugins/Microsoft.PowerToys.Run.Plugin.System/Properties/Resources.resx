@@ -233,7 +233,7 @@
     <value>Physical address (MAC)</value>
   </data>
   <data name="Microsoft_plugin_sys_plugin_description" xml:space="preserve">
-    <value>Executes system commands (e.g. 'shutdown', 'lock', 'sleep').</value>
+    <value>Executes system commands (e.g. 'shutdown', 'lock', 'sleep')</value>
     <comment>This should align to the actions in Windows relating to shutting down, signing out, locking, sleeping, restarting, emptying the recycle bin, and hibernating your computer. </comment>
   </data>
   <data name="Microsoft_plugin_sys_plugin_name" xml:space="preserve">

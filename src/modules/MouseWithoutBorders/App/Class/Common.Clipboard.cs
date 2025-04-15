@@ -16,6 +16,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using Microsoft.PowerToys.Telemetry;
 
 // <summary>
@@ -27,14 +28,21 @@ using Microsoft.PowerToys.Telemetry;
 //     2023- Included in PowerToys.
 // </history>
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Exceptions;
+
 using SystemClipboard = System.Windows.Forms.Clipboard;
+using Thread = MouseWithoutBorders.Core.Thread;
 
 namespace MouseWithoutBorders
 {
     internal partial class Common
     {
-        private const uint BIG_CLIPBOARD_DATA_TIMEOUT = 30000;
+        internal static readonly char[] Comma = new char[] { ',' };
+        internal static readonly char[] Star = new char[] { '*' };
+        internal static readonly char[] NullSeparator = new char[] { '\0' };
+
+        internal const uint BIG_CLIPBOARD_DATA_TIMEOUT = 30000;
         private const uint MAX_CLIPBOARD_DATA_SIZE_CAN_BE_SENT_INSTANTLY_TCP = 1024 * 1024; // 1MB
         private const uint MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT = 100 * 1024 * 1024; // 100MB
         private const int TEXT_HEADER_SIZE = 12;
@@ -43,11 +51,9 @@ namespace MouseWithoutBorders
         private static long lastClipboardEventTime;
         private static string lastMachineWithClipboardData;
         private static string lastDragDropFile;
-        private static long clipboardCopiedTime;
-
-        internal static readonly char[] Comma = new char[] { ',' };
-        internal static readonly char[] Star = new char[] { '*' };
-        internal static readonly char[] NullSeparator = new char[] { '\0' };
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static long clipboardCopiedTime;
+#pragma warning restore SA1307
 
         internal static ID LastIDWithClipboardData { get; set; }
 
@@ -81,8 +87,8 @@ namespace MouseWithoutBorders
 
         internal static bool CheckClipboardEx(ByteArrayOrString data, bool isFilePath)
         {
-            LogDebug($"{nameof(CheckClipboardEx)}: ShareClipboard = {Setting.Values.ShareClipboard}, TransferFile = {Setting.Values.TransferFile}, data = {data}.");
-            LogDebug($"{nameof(CheckClipboardEx)}: {nameof(Setting.Values.OneWayClipboardMode)} = {Setting.Values.OneWayClipboardMode}.");
+            Logger.LogDebug($"{nameof(CheckClipboardEx)}: ShareClipboard = {Setting.Values.ShareClipboard}, TransferFile = {Setting.Values.TransferFile}, data = {data}.");
+            Logger.LogDebug($"{nameof(CheckClipboardEx)}: {nameof(Setting.Values.OneWayClipboardMode)} = {Setting.Values.OneWayClipboardMode}.");
 
             if (!Setting.Values.ShareClipboard)
             {
@@ -96,7 +102,7 @@ namespace MouseWithoutBorders
 
             if (GetTick() - LastClipboardEventTime < 1000)
             {
-                LogDebug("GetTick() - lastClipboardEventTime < 1000");
+                Logger.LogDebug("GetTick() - lastClipboardEventTime < 1000");
                 LastClipboardEventTime = GetTick();
                 return false;
             }
@@ -128,7 +134,7 @@ namespace MouseWithoutBorders
                     {
                         if (lastClipboardObject is string lastStringData && lastStringData.Equals(stringData, StringComparison.OrdinalIgnoreCase))
                         {
-                            LogDebug("CheckClipboardEx: Same string data.");
+                            Logger.LogDebug("CheckClipboardEx: Same string data.");
                             return false;
                         }
                     }
@@ -137,23 +143,23 @@ namespace MouseWithoutBorders
 
                     if (isFilePath)
                     {
-                        Common.LogDebug("Clipboard contains FileDropList");
+                        Logger.LogDebug("Clipboard contains FileDropList");
 
                         if (!Setting.Values.TransferFile)
                         {
-                            Common.LogDebug("TransferFile option is unchecked.");
+                            Logger.LogDebug("TransferFile option is unchecked.");
                             return false;
                         }
 
                         string filePath = stringData;
 
-                        _ = Common.ImpersonateLoggedOnUserAndDoSomething(() =>
+                        _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                         {
                             if (File.Exists(filePath) || Directory.Exists(filePath))
                             {
                                 if (File.Exists(filePath) && new FileInfo(filePath).Length <= MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT)
                                 {
-                                    LogDebug("Clipboard contains: " + filePath);
+                                    Logger.LogDebug("Clipboard contains: " + filePath);
                                     LastDragDropFile = filePath;
                                     SendClipboardBeat();
                                     SetToggleIcon(new int[TOGGLE_ICONS_SIZE] { ICON_BIG_CLIPBOARD, -1, ICON_BIG_CLIPBOARD, -1 });
@@ -162,7 +168,7 @@ namespace MouseWithoutBorders
                                 {
                                     if (Directory.Exists(filePath))
                                     {
-                                        LogDebug("Clipboard contains a directory: " + filePath);
+                                        Logger.LogDebug("Clipboard contains a directory: " + filePath);
                                         LastDragDropFile = filePath;
                                         SendClipboardBeat();
                                     }
@@ -170,7 +176,7 @@ namespace MouseWithoutBorders
                                     {
                                         LastDragDropFile = filePath + " - File too big (greater than 100MB), please drag and drop the file instead!";
                                         SendClipboardBeat();
-                                        Log("Clipboard: File too big: " + filePath);
+                                        Logger.Log("Clipboard: File too big: " + filePath);
                                     }
 
                                     SetToggleIcon(new int[TOGGLE_ICONS_SIZE] { ICON_ERROR, -1, ICON_ERROR, -1 });
@@ -178,7 +184,7 @@ namespace MouseWithoutBorders
                             }
                             else
                             {
-                                Log("CheckClipboardEx: File not found: " + filePath);
+                                Logger.Log("CheckClipboardEx: File not found: " + filePath);
                             }
                         });
                     }
@@ -192,7 +198,7 @@ namespace MouseWithoutBorders
                             s.Write(texts, 0, texts.Length);
                         }
 
-                        Common.LogDebug("Plain/Zip = " + texts.Length.ToString(CultureInfo.CurrentCulture) + "/" +
+                        Logger.LogDebug("Plain/Zip = " + texts.Length.ToString(CultureInfo.CurrentCulture) + "/" +
                             ms.Length.ToString(CultureInfo.CurrentCulture));
 
                         LastClipboardData = ms.GetBuffer();
@@ -204,20 +210,20 @@ namespace MouseWithoutBorders
                     {
                         if (lastClipboardObject is byte[] lastByteData && Enumerable.SequenceEqual(lastByteData, byteData))
                         {
-                            LogDebug("CheckClipboardEx: Same byte[] data.");
+                            Logger.LogDebug("CheckClipboardEx: Same byte[] data.");
                             return false;
                         }
                     }
 
                     HasSwitchedMachineSinceLastCopy = false;
 
-                    Common.LogDebug("Clipboard contains image");
+                    Logger.LogDebug("Clipboard contains image");
                     IsClipboardDataImage = true;
                     LastClipboardData = byteData;
                 }
                 else
                 {
-                    LogDebug("*** Clipboard contains something else!");
+                    Logger.LogDebug("*** Clipboard contains something else!");
                     return false;
                 }
 
@@ -241,7 +247,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Log(e);
+                Logger.Log(e);
             }
 
             return false;
@@ -256,6 +262,10 @@ namespace MouseWithoutBorders
 
             new Task(() =>
             {
+                // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+                // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+                using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                 System.Threading.Thread thread = Thread.CurrentThread;
                 thread.Name = $"{nameof(SendClipboardDataUsingTCP)}.{thread.ManagedThreadId}";
                 Thread.UpdateThreads(thread);
@@ -329,10 +339,10 @@ namespace MouseWithoutBorders
                             break;
 
                         default:
-                            ProcessPackage(data, tcp);
+                            Receiver.ProcessPackage(data, tcp);
                             if (++unexpectedCount > 100)
                             {
-                                Log("ReceiveClipboardDataUsingTCP: unexpectedCount > 100!");
+                                Logger.Log("ReceiveClipboardDataUsingTCP: unexpectedCount > 100!");
                                 done = true;
                             }
 
@@ -361,11 +371,11 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Log("ReceiveClipboardDataUsingTCP: " + e.Message);
+                Logger.Log("ReceiveClipboardDataUsingTCP: " + e.Message);
             }
         }
 
-        private static readonly object ClipboardThreadOldLock = new();
+        private static readonly Lock ClipboardThreadOldLock = new();
         private static System.Threading.Thread clipboardThreadOld;
 
         internal static void GetRemoteClipboard(string postAction)
@@ -380,6 +390,10 @@ namespace MouseWithoutBorders
 
                 new Task(() =>
                 {
+                    // SuppressFlow fixes an issue on service mode, where the helper process can't get enough permissions to be started again.
+                    // More details can be found on: https://github.com/microsoft/PowerToys/pull/36892
+                    using var asyncFlowControl = ExecutionContext.SuppressFlow();
+
                     System.Threading.Thread thread = Thread.CurrentThread;
                     thread.Name = $"{nameof(ConnectAndGetData)}.{thread.ManagedThreadId}";
                     Thread.UpdateThreads(thread);
@@ -394,7 +408,7 @@ namespace MouseWithoutBorders
         {
             if (Sk == null)
             {
-                Log("ConnectAndGetData: Sk == null!");
+                Logger.Log("ConnectAndGetData: Sk == null!");
                 return;
             }
 
@@ -402,7 +416,7 @@ namespace MouseWithoutBorders
             TcpClient clipboardTcpClient = null;
             string postAct = (string)postAction;
 
-            LogDebug("ConnectAndGetData.postAction: " + postAct);
+            Logger.LogDebug("ConnectAndGetData.postAction: " + postAct);
 
             ClipboardPostAction clipboardPostAct = postAct.Contains("mspaint,") ? ClipboardPostAction.Mspaint
                 : postAct.Equals("desktop", StringComparison.OrdinalIgnoreCase) ? ClipboardPostAction.Desktop
@@ -416,8 +430,8 @@ namespace MouseWithoutBorders
 
                 if (!IsConnectedByAClientSocketTo(remoteMachine))
                 {
-                    Log($"No potential inbound connection from {MachineName} to {remoteMachine}, ask for a push back instead.");
-                    ID machineId = MachinePool.ResolveID(remoteMachine);
+                    Logger.Log($"No potential inbound connection from {MachineName} to {remoteMachine}, ask for a push back instead.");
+                    ID machineId = MachineStuff.MachinePool.ResolveID(remoteMachine);
 
                     if (machineId != ID.NONE)
                     {
@@ -434,7 +448,7 @@ namespace MouseWithoutBorders
                     }
                     else
                     {
-                        Log($"Unable to resolve {remoteMachine} to its long IP.");
+                        Logger.Log($"Unable to resolve {remoteMachine} to its long IP.");
                     }
 
                     return;
@@ -446,7 +460,7 @@ namespace MouseWithoutBorders
             }
             catch (ThreadAbortException)
             {
-                Common.Log("The current thread is being aborted (1).");
+                Logger.Log("The current thread is being aborted (1).");
                 if (clipboardTcpClient != null && clipboardTcpClient.Connected)
                 {
                     clipboardTcpClient.Client.Close();
@@ -456,7 +470,7 @@ namespace MouseWithoutBorders
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
                 Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE]
                 {
                     Common.ICON_BIG_CLIPBOARD,
@@ -511,7 +525,7 @@ namespace MouseWithoutBorders
 
                 if ((rv = deStream.ReadEx(header, 0, header.Length)) < header.Length)
                 {
-                    Common.Log("Reading header failed: " + rv.ToString(CultureInfo.CurrentCulture));
+                    Logger.Log("Reading header failed: " + rv.ToString(CultureInfo.CurrentCulture));
                     Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE]
                     {
                         Common.ICON_BIG_CLIPBOARD,
@@ -521,12 +535,12 @@ namespace MouseWithoutBorders
                 }
 
                 fileName = Common.GetStringU(header).Replace("\0", string.Empty);
-                Common.LogDebug("Header: " + fileName);
+                Logger.LogDebug("Header: " + fileName);
                 string[] headers = fileName.Split(Star);
 
                 if (headers.Length < 2 || !long.TryParse(headers[0], out long dataSize))
                 {
-                    Common.Log(string.Format(
+                    Logger.Log(string.Format(
                         CultureInfo.CurrentCulture,
                         "Reading header failed: {0}:{1}",
                         headers.Length,
@@ -541,7 +555,7 @@ namespace MouseWithoutBorders
 
                 fileName = headers[1];
 
-                Common.LogDebug(string.Format(
+                Logger.LogDebug(string.Format(
                     CultureInfo.CurrentCulture,
                     "Receiving {0}:{1} from {2}...",
                     Path.GetFileName(fileName),
@@ -565,7 +579,7 @@ namespace MouseWithoutBorders
                 {
                     if (postAct.Equals("desktop", StringComparison.OrdinalIgnoreCase))
                     {
-                        _ = ImpersonateLoggedOnUserAndDoSomething(() =>
+                        _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                         {
                             savingFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\MouseWithoutBorders\\";
 
@@ -591,7 +605,7 @@ namespace MouseWithoutBorders
                         m = new FileStream(tempFile, FileMode.Create);
                     }
 
-                    Common.Log("==> " + tempFile);
+                    Logger.Log("==> " + tempFile);
                 }
 
                 ShowToolTip(
@@ -641,7 +655,7 @@ namespace MouseWithoutBorders
                 if (m != null && fileName != null)
                 {
                     m.Flush();
-                    Common.LogDebug(m.Length.ToString(CultureInfo.CurrentCulture) + " bytes received.");
+                    Logger.LogDebug(m.Length.ToString(CultureInfo.CurrentCulture) + " bytes received.");
                     Common.LastClipboardEventTime = Common.GetTick();
                     string toolTipText = null;
                     string sizeText = m.Length >= 1024
@@ -682,7 +696,7 @@ namespace MouseWithoutBorders
                                 Path.GetFileName(fileName),
                                 remoteMachine);
 
-                            _ = ImpersonateLoggedOnUserAndDoSomething(() =>
+                            _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                             {
                                 ProcessStartInfo startInfo = new();
                                 startInfo.UseShellExecute = true;
@@ -736,7 +750,7 @@ namespace MouseWithoutBorders
             }
             catch (ThreadAbortException)
             {
-                Common.Log("The current thread is being aborted (3).");
+                Logger.Log("The current thread is being aborted (3).");
                 s.Close();
 
                 if (m != null)
@@ -752,11 +766,11 @@ namespace MouseWithoutBorders
                 if (e is IOException)
                 {
                     string log = $"{nameof(ReceiveAndProcessClipboardData)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
-                    Common.Log(log);
+                    Logger.Log(log);
                 }
                 else
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
 
                 Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE]
@@ -803,15 +817,15 @@ namespace MouseWithoutBorders
                 NetworkStream ns = new(s);
                 enStream = Common.GetEncryptedStream(ns);
                 Common.SendOrReceiveARandomDataBlockPerInitialIV(enStream);
-                LogDebug($"{nameof(ShakeHand)}: Writing header package.");
+                Logger.LogDebug($"{nameof(ShakeHand)}: Writing header package.");
                 enStream.Write(package.Bytes, 0, PACKAGE_SIZE_EX);
 
-                LogDebug($"{nameof(ShakeHand)}: Sent: clientPush={clientPushData}, postAction={postAction}.");
+                Logger.LogDebug($"{nameof(ShakeHand)}: Sent: clientPush={clientPushData}, postAction={postAction}.");
 
                 deStream = Common.GetDecryptedStream(ns);
                 Common.SendOrReceiveARandomDataBlockPerInitialIV(deStream, false);
 
-                LogDebug($"{nameof(ShakeHand)}: Reading header package.");
+                Logger.LogDebug($"{nameof(ShakeHand)}: Reading header package.");
 
                 int bytesReceived = deStream.ReadEx(buf, 0, Common.PACKAGE_SIZE_EX);
                 package.Bytes = buf;
@@ -824,41 +838,41 @@ namespace MouseWithoutBorders
                     {
                         name = remoteName = package.MachineName;
 
-                        Common.LogDebug($"{nameof(ShakeHand)}: Connection from {name}:{package.Src}");
+                        Logger.LogDebug($"{nameof(ShakeHand)}: Connection from {name}:{package.Src}");
 
-                        if (Common.MachinePool.ResolveID(name) == package.Src && Common.IsConnectedTo(package.Src))
+                        if (MachineStuff.MachinePool.ResolveID(name) == package.Src && Common.IsConnectedTo(package.Src))
                         {
                             clientPushData = package.Type == PackageType.ClipboardPush;
                             postAction = package.PostAction;
                             handShaken = true;
-                            LogDebug($"{nameof(ShakeHand)}: Received: clientPush={clientPushData}, postAction={postAction}.");
+                            Logger.LogDebug($"{nameof(ShakeHand)}: Received: clientPush={clientPushData}, postAction={postAction}.");
                         }
                         else
                         {
-                            Common.LogDebug($"{nameof(ShakeHand)}: No active connection to the machine: {name}.");
+                            Logger.LogDebug($"{nameof(ShakeHand)}: No active connection to the machine: {name}.");
                         }
                     }
                     else
                     {
-                        Common.LogDebug($"{nameof(ShakeHand)}: Unexpected package type: {package.Type}.");
+                        Logger.LogDebug($"{nameof(ShakeHand)}: Unexpected package type: {package.Type}.");
                     }
                 }
                 else
                 {
-                    Common.LogDebug($"{nameof(ShakeHand)}: BytesTransferred != PACKAGE_SIZE_EX: {bytesReceived}");
+                    Logger.LogDebug($"{nameof(ShakeHand)}: BytesTransferred != PACKAGE_SIZE_EX: {bytesReceived}");
                 }
 
                 if (!handShaken)
                 {
                     string msg = $"Clipboard connection rejected: {name}:{remoteName}/{package.Src}\r\n\r\nMake sure you run the same version in all machines.";
-                    Common.Log(msg);
+                    Logger.Log(msg);
                     Common.ShowToolTip(msg, 3000, ToolTipIcon.Warning);
                     Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_BIG_CLIPBOARD, -1, -1, -1 });
                 }
             }
             catch (ThreadAbortException)
             {
-                Common.Log($"{nameof(ShakeHand)}: The current thread is being aborted.");
+                Logger.Log($"{nameof(ShakeHand)}: The current thread is being aborted.");
                 s.Close();
             }
             catch (Exception e)
@@ -866,11 +880,11 @@ namespace MouseWithoutBorders
                 if (e is IOException)
                 {
                     string log = $"{nameof(ShakeHand)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
-                    Common.Log(log);
+                    Logger.Log(log);
                 }
                 else
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
 
                 Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE]
@@ -904,7 +918,7 @@ namespace MouseWithoutBorders
                 Common.DoSomethingInUIThread(() => Common.MainForm.ChangeIcon(Common.ICON_SMALL_CLIPBOARD));
 
                 System.Net.IPAddress ip = GetConnectedClientSocketIPAddressFor(remoteMachine);
-                Common.LogDebug($"{nameof(ConnectToRemoteClipboardSocket)}Connecting to {remoteMachine}:{ip}:{sk.TcpPort}...");
+                Logger.LogDebug($"{nameof(ConnectToRemoteClipboardSocket)}Connecting to {remoteMachine}:{ip}:{sk.TcpPort}...");
 
                 if (ip != null)
                 {
@@ -915,7 +929,7 @@ namespace MouseWithoutBorders
                     clipboardTcpClient.Connect(remoteMachine, sk.TcpPort);
                 }
 
-                Common.LogDebug($"Connected from {clipboardTcpClient.Client.LocalEndPoint}. Getting data...");
+                Logger.LogDebug($"Connected from {clipboardTcpClient.Client.LocalEndPoint}. Getting data...");
                 return clipboardTcpClient;
             }
             else
@@ -928,7 +942,7 @@ namespace MouseWithoutBorders
         {
             if (data == null || data.Length <= 0)
             {
-                Common.Log("data is null or empty!");
+                Logger.Log("data is null or empty!");
                 return;
             }
 
@@ -986,28 +1000,28 @@ namespace MouseWithoutBorders
 
                 if (txt.StartsWith("RTF", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    Common.LogDebug(((double)tmp.Length / 1024).ToString("0.00", CultureInfo.InvariantCulture) + "KB of RTF <-");
+                    Logger.LogDebug(((double)tmp.Length / 1024).ToString("0.00", CultureInfo.InvariantCulture) + "KB of RTF <-");
                     data1.SetData(DataFormats.Rtf, tmp);
                 }
                 else if (txt.StartsWith("HTM", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    Common.LogDebug(((double)tmp.Length / 1024).ToString("0.00", CultureInfo.InvariantCulture) + "KB of HTM <-");
+                    Logger.LogDebug(((double)tmp.Length / 1024).ToString("0.00", CultureInfo.InvariantCulture) + "KB of HTM <-");
                     data1.SetData(DataFormats.Html, tmp);
                 }
                 else if (txt.StartsWith("TXT", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    Common.LogDebug(((double)tmp.Length / 1024).ToString("0.00", CultureInfo.InvariantCulture) + "KB of TXT <-");
+                    Logger.LogDebug(((double)tmp.Length / 1024).ToString("0.00", CultureInfo.InvariantCulture) + "KB of TXT <-");
                     data1.SetData(DataFormats.UnicodeText, tmp);
                 }
                 else
                 {
                     if (textTypeCount == 0)
                     {
-                        Common.LogDebug(((double)txt.Length / 1024).ToString("0.00", CultureInfo.InvariantCulture) + "KB of UNI <-");
+                        Logger.LogDebug(((double)txt.Length / 1024).ToString("0.00", CultureInfo.InvariantCulture) + "KB of UNI <-");
                         data1.SetData(DataFormats.UnicodeText, txt);
                     }
 
-                    Common.Log("Invalid clipboard format received!");
+                    Logger.Log("Invalid clipboard format received!");
                 }
 
                 textTypeCount++;
@@ -1035,26 +1049,26 @@ namespace MouseWithoutBorders
                             SystemClipboard.SetFileDropList(filePaths);
                             return true;
                         },
-                        (log) => Common.TelemetryLogTrace(
+                        (log) => Logger.TelemetryLogTrace(
                             log,
                             SeverityLevel.Information),
                         () => Common.LastClipboardEventTime = Common.GetTick());
                 }
                 catch (ExternalException e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
                 catch (ThreadStateException e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
                 catch (ArgumentNullException e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
                 catch (ArgumentException e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
             });
         }
@@ -1072,20 +1086,20 @@ namespace MouseWithoutBorders
                         SystemClipboard.SetImage(image);
                         return true;
                     },
-                        (log) => Common.TelemetryLogTrace(log, SeverityLevel.Information),
+                        (log) => Logger.TelemetryLogTrace(log, SeverityLevel.Information),
                         () => Common.LastClipboardEventTime = Common.GetTick());
                 }
                 catch (ExternalException e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
                 catch (ThreadStateException e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
                 catch (ArgumentNullException e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
             });
         }
@@ -1103,20 +1117,20 @@ namespace MouseWithoutBorders
                         SystemClipboard.SetText(text);
                         return true;
                     },
-                        (log) => Common.TelemetryLogTrace(log, SeverityLevel.Information),
+                        (log) => Logger.TelemetryLogTrace(log, SeverityLevel.Information),
                         () => Common.LastClipboardEventTime = Common.GetTick());
                 }
                 catch (ExternalException e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
                 catch (ThreadStateException e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
                 catch (ArgumentNullException e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
             });
         }
@@ -1132,15 +1146,15 @@ namespace MouseWithoutBorders
                 catch (ExternalException e)
                 {
                     string dataFormats = string.Join(",", dataObject.GetFormats());
-                    Common.Log($"{e.Message}: {dataFormats}");
+                    Logger.Log($"{e.Message}: {dataFormats}");
                 }
                 catch (ThreadStateException e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
                 catch (ArgumentNullException e)
                 {
-                    Common.Log(e);
+                    Logger.Log(e);
                 }
             });
         }

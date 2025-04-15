@@ -1,4 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />	
+
   <PropertyGroup>
     <AssemblyTitle>UnitTests-SvgThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-SvgThumbnailProvider</AssemblyDescription>
@@ -9,9 +12,6 @@
   <PropertyGroup>
     <ProjectGuid>{1EF1EEF0-10F0-4F2E-8550-39B6D8044D3E}</ProjectGuid>
     <RootNamespace>SvgThumbnailProviderUnitTests</RootNamespace>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
@@ -19,29 +19,19 @@
     <TestProjectType>UnitTest</TestProjectType>
   </PropertyGroup>
 
-  <Import Project="..\..\..\Version.props" />
-
   <ItemGroup>
     <None Remove="HelperFiles\file1.svg" />
     <None Remove="HelperFiles\file2.svg" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="MSTest.TestAdapter" />
-    <PackageReference Include="MSTest.TestFramework" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSTest" />
+    <PackageReference Include="Microsoft.Web.WebView2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />
     <ProjectReference Include="..\SvgThumbnailProvider\SvgThumbnailProvider.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\STATestClassAttribute.cs"
-      Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs"
-      Link="STATestMethodAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>

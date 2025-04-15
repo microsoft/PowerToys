@@ -15,6 +15,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
@@ -24,8 +25,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         private static SettingsBackupAndRestoreUtils instance;
         private (bool Success, string Severity, bool LastBackupExists, DateTime? LastRan) lastBackupSettingsResults;
-        private static object backupSettingsInternalLock = new object();
-        private static object removeOldBackupsLock = new object();
+        private static Lock backupSettingsInternalLock = new Lock();
+        private static Lock removeOldBackupsLock = new Lock();
 
         public DateTime LastBackupStartTime { get; set; }
 
@@ -324,8 +325,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                             // the settings file needs to be updated, update the real one with non-excluded stuff...
                             Logger.LogInfo($"Settings file {currentFile.Key} is different and is getting updated from backup");
 
-                            var newCurrentSettingsFile = JsonMergeHelper.Merge(File.ReadAllText(currentSettingsFiles[currentFile.Key]), settingsToRestoreJson);
-                            File.WriteAllText(currentSettingsFiles[currentFile.Key], newCurrentSettingsFile);
+                            // we needed a new "CustomRestoreSettings" for now, to overwrite because some settings don't merge well (like KBM shortcuts)
+                            var overwrite = false;
+                            if (backupRestoreSettings["CustomRestoreSettings"] != null && backupRestoreSettings["CustomRestoreSettings"][currentFile.Key] != null)
+                            {
+                                var customRestoreSettings = backupRestoreSettings["CustomRestoreSettings"][currentFile.Key];
+                                overwrite = customRestoreSettings["overwrite"] != null && (bool)customRestoreSettings["overwrite"];
+                            }
+
+                            if (overwrite)
+                            {
+                                File.WriteAllText(currentSettingsFiles[currentFile.Key], settingsToRestoreJson);
+                            }
+                            else
+                            {
+                                var newCurrentSettingsFile = JsonMergeHelper.Merge(File.ReadAllText(currentSettingsFiles[currentFile.Key]), settingsToRestoreJson);
+                                File.WriteAllText(currentSettingsFiles[currentFile.Key], newCurrentSettingsFile);
+                            }
+
                             anyFilesUpdated = true;
                         }
                     }
@@ -916,7 +933,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         private static void RemoveOldBackups(string location, int minNumberToKeep, TimeSpan deleteIfOlderThanTs)
         {
-            if (!Monitor.TryEnter(removeOldBackupsLock, 1000))
+            if (!removeOldBackupsLock.TryEnter(1000))
             {
                 return;
             }
@@ -985,7 +1002,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
             finally
             {
-                Monitor.Exit(removeOldBackupsLock);
+                removeOldBackupsLock.Exit();
             }
         }
 

@@ -3,12 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Peek.FilePreviewer.Previewers.Archives.Models
 {
-    public class ArchiveItemTemplateSelector : DataTemplateSelector
+    public partial class ArchiveItemTemplateSelector : DataTemplateSelector
     {
         public DataTemplate? DirectoryTemplate { get; set; }
 

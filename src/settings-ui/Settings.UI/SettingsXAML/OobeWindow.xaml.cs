@@ -3,14 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using interop;
-using ManagedCommon;
+
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.Views;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using PowerToys.Interop;
 using Windows.Graphics;
 using WinUIEx;
 using WinUIEx.Messaging;
@@ -31,22 +31,19 @@ namespace Microsoft.PowerToys.Settings.UI
         private WindowId _windowId;
         private IntPtr _hWnd;
         private AppWindow _appWindow;
-        private WindowMessageMonitor _msgMonitor;
         private bool disposedValue;
 
         public OobeWindow(PowerToysModules initialModule)
         {
+            App.ThemeService.ThemeChanged += OnThemeChanged;
+            App.ThemeService.ApplyTheme();
+
             this.InitializeComponent();
 
-            // Set window icon
             _hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             _windowId = Win32Interop.GetWindowIdFromWindow(_hWnd);
             _appWindow = AppWindow.GetFromWindowId(_windowId);
-            _appWindow.SetIcon("Assets\\Settings\\icon.ico");
-
-            OverlappedPresenter presenter = _appWindow.Presenter as OverlappedPresenter;
-            presenter.IsMinimizable = false;
-            presenter.IsMaximizable = false;
+            this.Activated += Window_Activated_SetIcon;
 
             var dpi = NativeMethods.GetDpiForWindow(_hWnd);
             _currentDPI = dpi;
@@ -60,18 +57,6 @@ namespace Microsoft.PowerToys.Settings.UI
             _appWindow.Resize(size);
 
             this.initialModule = initialModule;
-
-            _msgMonitor = new WindowMessageMonitor(this);
-            _msgMonitor.WindowMessageReceived += (_, e) =>
-            {
-                const int WM_NCLBUTTONDBLCLK = 0x00A3;
-                if (e.Message.MessageId == WM_NCLBUTTONDBLCLK)
-                {
-                    // Disable double click on title bar to maximize window
-                    e.Result = 0;
-                    e.Handled = true;
-                }
-            };
 
             this.SizeChanged += OobeWindow_SizeChanged;
 
@@ -107,6 +92,12 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
+        private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
+        {
+            // Set window icon
+            _appWindow.SetIcon("Assets\\Settings\\icon.ico");
+        }
+
         private void OobeWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
         {
             var dpi = NativeMethods.GetDpiForWindow(_hWnd);
@@ -133,14 +124,19 @@ namespace Microsoft.PowerToys.Settings.UI
             {
                 mainWindow.CloseHiddenWindow();
             }
+
+            App.ThemeService.ThemeChanged -= OnThemeChanged;
+        }
+
+        private void OnThemeChanged(object sender, ElementTheme theme)
+        {
+            WindowHelper.SetTheme(this, theme);
         }
 
         private void Dispose(bool disposing)
         {
             if (!disposedValue)
             {
-                _msgMonitor?.Dispose();
-
                 disposedValue = true;
             }
         }

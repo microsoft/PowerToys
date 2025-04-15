@@ -367,7 +367,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Executes system commands (e.g. &apos;shutdown&apos;, &apos;lock&apos;, &apos;sleep&apos;)..
+        ///   Looks up a localized string similar to Executes system commands (e.g. &apos;shutdown&apos;, &apos;lock&apos;, &apos;sleep&apos;).
         /// </summary>
         internal static string Microsoft_plugin_sys_plugin_description {
             get {

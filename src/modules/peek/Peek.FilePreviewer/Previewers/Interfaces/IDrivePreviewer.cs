@@ -6,7 +6,7 @@ using Peek.FilePreviewer.Previewers.Drive.Models;
 
 namespace Peek.FilePreviewer.Previewers.Interfaces
 {
-    public interface IDrivePreviewer : IPreviewer
+    public interface IDrivePreviewer : IPreviewer, IPreviewTarget
     {
         public DrivePreviewData? Preview { get; }
     }

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Windows;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin.Logger;
 using Wox.Plugin.Properties;
@@ -222,7 +223,7 @@ namespace Wox.Plugin
         {
             if (Plugin == null)
             {
-                Log.Warn($"Can not initialize {Metadata.Name} plugin as it was not loaded", GetType());
+                Log.Warn($"Cannot initialize {Metadata.Name} plugin as it was not loaded", GetType());
                 return false;
             }
 

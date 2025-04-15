@@ -21,6 +21,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
                 UtilityKey.RegistryPreview => "Images/RegistryPreview.png",
                 UtilityKey.CropAndLock => "Images/CropAndLock.png",
                 UtilityKey.EnvironmentVariables => "Images/EnvironmentVariables.png",
+                UtilityKey.Workspaces => "Images/Workspaces.png",
                 _ => null,
             };
         }
@@ -38,6 +39,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
                 UtilityKey.RegistryPreview => SettingsDeepLink.SettingsWindow.RegistryPreview,
                 UtilityKey.CropAndLock => SettingsDeepLink.SettingsWindow.CropAndLock,
                 UtilityKey.EnvironmentVariables => SettingsDeepLink.SettingsWindow.EnvironmentVariables,
+                UtilityKey.Workspaces => SettingsDeepLink.SettingsWindow.Workspaces,
                 _ => null,
             };
         }

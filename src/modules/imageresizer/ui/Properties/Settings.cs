@@ -1,6 +1,8 @@
-﻿// Copyright (c) Brice Lambson
+﻿#pragma warning disable IDE0073
+// Copyright (c) Brice Lambson
 // The Brice Lambson licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.  Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+#pragma warning restore IDE0073
 
 using System;
 using System.Collections;
@@ -15,6 +17,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Windows.Media.Imaging;
+
 using ImageResizer.Models;
 
 namespace ImageResizer.Properties
@@ -251,6 +254,7 @@ namespace ImageResizer.Properties
             {
                 _selectedSizeIndex = value;
                 NotifyPropertyChanged();
+                NotifyPropertyChanged(nameof(SelectedSize));
             }
         }
 
@@ -420,7 +424,7 @@ namespace ImageResizer.Properties
             string jsonData = JsonSerializer.Serialize(new SettingsWrapper() { Properties = this }, _jsonSerializerOptions);
 
             // Create directory if it doesn't exist
-            IFileInfo file = _fileSystem.FileInfo.FromFileName(SettingsPath);
+            IFileInfo file = _fileSystem.FileInfo.New(SettingsPath);
             file.Directory.Create();
 
             // write string to file

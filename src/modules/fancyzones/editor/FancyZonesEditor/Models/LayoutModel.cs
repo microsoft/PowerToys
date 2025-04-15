@@ -8,6 +8,8 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
+using FancyZonesEditorCommon.Data;
+
 namespace FancyZonesEditor.Models
 {
     // Base LayoutModel
@@ -195,7 +197,7 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        private int _sensitivityRadius = LayoutSettings.DefaultSensitivityRadius;
+        private int _sensitivityRadius = LayoutDefaultSettings.DefaultSensitivityRadius;
 
         public int SensitivityRadiusMinimum
         {
@@ -304,13 +306,13 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        private int _zoneCount = LayoutSettings.DefaultZoneCount;
+        private int _zoneCount = LayoutDefaultSettings.DefaultZoneCount;
 
         public bool IsZoneAddingAllowed
         {
             get
             {
-                return TemplateZoneCount < LayoutSettings.MaxZones;
+                return TemplateZoneCount < LayoutDefaultSettings.MaxZones;
             }
         }
 
@@ -326,12 +328,16 @@ namespace FancyZonesEditor.Models
         // Removes this Layout from the registry and the loaded CustomModels list
         public void Delete()
         {
+            var customModels = MainWindowSettingsModel.CustomModels;
             if (_quickKey != -1)
             {
                 MainWindowSettingsModel.LayoutHotkeys.FreeKey(QuickKey);
+                foreach (var module in customModels)
+                {
+                    module.FirePropertyChanged(nameof(QuickKeysAvailable));
+                }
             }
 
-            var customModels = MainWindowSettingsModel.CustomModels;
             int i = customModels.IndexOf(this);
             if (i != -1)
             {

@@ -7,11 +7,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using interop;
+
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Components;
 using Microsoft.PowerToys.Run.Plugin.PowerToys.Properties;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.GPOWrapper;
+using PowerToys.Interop;
 using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.PowerToys
@@ -21,7 +22,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
         private const int MaxNumberOfRetry = 5;
         private readonly List<Utility> _utilities;
         private readonly FileSystemWatcher _watcher;
-        private readonly object _loadingSettingsLock = new();
+        private readonly Lock _loadingSettingsLock = new();
         private bool _disposed;
 
         public UtilityProvider()
@@ -92,7 +93,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                 _utilities.Add(new Utility(
                     UtilityKey.PowerOCR,
                     Resources.Text_Extractor,
-                    generalSettings.Enabled.PowerOCR,
+                    generalSettings.Enabled.PowerOcr,
                     (_) =>
                     {
                         using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowPowerOCRSharedEvent());
@@ -184,6 +185,20 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                     }));
             }
 
+            if (GPOWrapper.GetConfiguredWorkspacesEnabledValue() != GpoRuleConfigured.Disabled)
+            {
+                _utilities.Add(new Utility(
+                UtilityKey.Workspaces,
+                Resources.Workspaces_Editor,
+                generalSettings.Enabled.Workspaces,
+                (_) =>
+                {
+                    using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.WorkspacesLaunchEditorEvent());
+                    eventHandle.Set();
+                    return true;
+                }));
+            }
+
             _watcher = new FileSystemWatcher
             {
                 Path = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath()),
@@ -223,12 +238,13 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys
                                 case UtilityKey.ColorPicker: u.Enable(generalSettings.Enabled.ColorPicker); break;
                                 case UtilityKey.FancyZones: u.Enable(generalSettings.Enabled.FancyZones); break;
                                 case UtilityKey.Hosts: u.Enable(generalSettings.Enabled.Hosts); break;
-                                case UtilityKey.PowerOCR: u.Enable(generalSettings.Enabled.PowerOCR); break;
+                                case UtilityKey.PowerOCR: u.Enable(generalSettings.Enabled.PowerOcr); break;
                                 case UtilityKey.MeasureTool: u.Enable(generalSettings.Enabled.MeasureTool); break;
                                 case UtilityKey.ShortcutGuide: u.Enable(generalSettings.Enabled.ShortcutGuide); break;
                                 case UtilityKey.RegistryPreview: u.Enable(generalSettings.Enabled.RegistryPreview); break;
                                 case UtilityKey.CropAndLock: u.Enable(generalSettings.Enabled.CropAndLock); break;
                                 case UtilityKey.EnvironmentVariables: u.Enable(generalSettings.Enabled.EnvironmentVariables); break;
+                                case UtilityKey.Workspaces: u.Enable(generalSettings.Enabled.Workspaces); break;
                             }
                         }
 

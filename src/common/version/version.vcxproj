@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\Version.props" />
+  
   <Target Name="GenerateVersionData" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <HeaderLines Include="#pragma once" />
@@ -10,7 +10,7 @@
     </ItemGroup>
     <WriteLinesToFile File="Generated Files\version_gen.h" Lines="@(HeaderLines)" Overwrite="true" Encoding="Unicode" WriteOnlyWhenDifferent="true" />
   </Target>
-  <!-- Needed for .\src\modules\videoconference\VideoConferenceProxyFilter\build_vcm_x86.cmd -->
+  <!-- Project Configurations needed for building Tools -->
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>

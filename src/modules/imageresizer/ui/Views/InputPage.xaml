@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:m="clr-namespace:ImageResizer.Models"
     xmlns:p="clr-namespace:ImageResizer.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml">
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    xmlns:v="clr-namespace:ImageResizer.Views">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -22,18 +23,26 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             VerticalContentAlignment="Stretch"
+            AutomationProperties.HelpText="{Binding Settings.SelectedSize, Converter={StaticResource SizeTypeToHelpTextConverter}}"
+            AutomationProperties.Name="{x:Static p:Resources.Image_Sizes}"
             ItemsSource="{Binding Settings.AllSizes}"
             SelectedIndex="{Binding Settings.SelectedSizeIndex}">
+            <ComboBox.ItemContainerStyle>
+                <Style BasedOn="{StaticResource {x:Type ComboBoxItem}}" TargetType="ComboBoxItem">
+                    <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+                    <Setter Property="AutomationProperties.HelpText" Value="{Binding ., Converter={StaticResource SizeTypeToHelpTextConverter}}" />
+                </Style>
+            </ComboBox.ItemContainerStyle>
             <ComboBox.Resources>
                 <DataTemplate DataType="{x:Type m:ResizeSize}">
-                    <Grid VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}">
+                    <Grid VerticalAlignment="Center">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{Binding Name}" />
                         <StackPanel Grid.Row="1" Orientation="Horizontal">
-                            <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
+                            <TextBlock Text="{Binding Fit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ThirdPersonSingular}" />
                             <TextBlock
                                 Margin="4,0,0,0"
                                 Style="{StaticResource BodyStrongTextBlockStyle}"
@@ -48,16 +57,13 @@
                                 Style="{StaticResource BodyStrongTextBlockStyle}"
                                 Text="{Binding Height, Converter={StaticResource AutoDoubleConverter}, ConverterParameter=Auto}"
                                 Visibility="{Binding ShowHeight, Converter={StaticResource BoolValueConverter}}" />
-                            <TextBlock
-                                Margin="4,0,0,0"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
+                            <TextBlock Margin="4,0,0,0" Text="{Binding Unit, Converter={StaticResource EnumValueConverter}, ConverterParameter=ToLower}" />
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
 
                 <DataTemplate DataType="{x:Type m:CustomSize}">
-                    <Grid VerticalAlignment="Center" AutomationProperties.Name="{Binding Name}">
+                    <Grid VerticalAlignment="Center">
                         <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
                     </Grid>
                 </DataTemplate>
@@ -109,8 +115,12 @@
                     KeyDown="Button_KeyDown"
                     Minimum="0"
                     SpinButtonPlacementMode="Inline">
+                    <ui:NumberBox.NumberFormatter>
+                        <v:ZeroToEmptyStringNumberFormatter />
+                    </ui:NumberBox.NumberFormatter>
                     <ui:NumberBox.Value>
                         <Binding
+                            Converter="{StaticResource NumberBoxValueConverter}"
                             ElementName="SizeComboBox"
                             Mode="TwoWay"
                             Path="SelectedValue.Width"
@@ -138,8 +148,12 @@
                     Minimum="0"
                     SpinButtonPlacementMode="Inline"
                     Visibility="{Binding ElementName=SizeComboBox, Path=SelectedValue.ShowHeight, Converter={StaticResource BoolValueConverter}}">
+                    <ui:NumberBox.NumberFormatter>
+                        <v:ZeroToEmptyStringNumberFormatter />
+                    </ui:NumberBox.NumberFormatter>
                     <ui:NumberBox.Value>
                         <Binding
+                            Converter="{StaticResource NumberBoxValueConverter}"
                             ElementName="SizeComboBox"
                             Mode="TwoWay"
                             Path="SelectedValue.Height"
@@ -197,25 +211,25 @@
                 Grid.Row="1"
                 Margin="16"
                 Orientation="Vertical">
-                <CheckBox IsChecked="{Binding Settings.ShrinkOnly}">
+                <CheckBox AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Content.(AccessText.Text), Converter={StaticResource AccessTextToTextConverter}}" IsChecked="{Binding Settings.ShrinkOnly}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_ShrinkOnly}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
 
-                <CheckBox IsChecked="{Binding Settings.IgnoreOrientation}">
+                <CheckBox AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Content.(AccessText.Text), Converter={StaticResource AccessTextToTextConverter}}" IsChecked="{Binding Settings.IgnoreOrientation}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_IgnoreOrientation}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
 
-                <CheckBox IsChecked="{Binding Settings.Replace}">
+                <CheckBox AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Content.(AccessText.Text), Converter={StaticResource AccessTextToTextConverter}}" IsChecked="{Binding Settings.Replace}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_Replace}" TextWrapping="Wrap" />
                     </CheckBox.Content>
                 </CheckBox>
 
-                <CheckBox IsChecked="{Binding Settings.RemoveMetadata}">
+                <CheckBox AutomationProperties.Name="{Binding RelativeSource={RelativeSource Self}, Path=Content.(AccessText.Text), Converter={StaticResource AccessTextToTextConverter}}" IsChecked="{Binding Settings.RemoveMetadata}">
                     <CheckBox.Content>
                         <AccessText Text="{x:Static p:Resources.Input_RemoveMetadata}" TextWrapping="Wrap" />
                     </CheckBox.Content>

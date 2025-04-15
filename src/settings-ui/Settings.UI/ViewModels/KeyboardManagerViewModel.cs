@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -18,10 +19,11 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.Utilities;
+using Microsoft.Win32;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class KeyboardManagerViewModel : Observable
+    public partial class KeyboardManagerViewModel : Observable
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -30,7 +32,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private const string PowerToyName = KeyboardManagerSettings.ModuleName;
         private const string JsonFileType = ".json";
 
+        // Default editor path. Can be removed once the new WinUI3 editor is released.
         private const string KeyboardManagerEditorPath = "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe";
+
+        // New WinUI3 editor path. Still in development and do NOT use it in production.
+        private const string KeyboardManagerEditorUIPath = "KeyboardManagerEditorUI\\PowerToys.KeyboardManagerEditorUI.exe";
+
         private Process editor;
 
         private enum KeyboardManagerEditorType
@@ -190,11 +197,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
             else if (appSpecificShortcutList == null)
             {
-                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, NewRemapString = x.NewRemapString, TargetApp = allAppsDescription }).ToList();
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, NewRemapString = x.NewRemapString, RunProgramFilePath = x.RunProgramFilePath, OperationType = x.OperationType, OpenUri = x.OpenUri, SecondKeyOfChord = x.SecondKeyOfChord, RunProgramArgs = x.RunProgramArgs, TargetApp = allAppsDescription }).ToList();
             }
             else
             {
-                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, NewRemapString = x.NewRemapString, TargetApp = allAppsDescription }).Concat(appSpecificShortcutList).ToList();
+                return globalShortcutList.ConvertAll(x => new AppSpecificKeysDataModel { OriginalKeys = x.OriginalKeys, NewRemapKeys = x.NewRemapKeys, NewRemapString = x.NewRemapString, RunProgramFilePath = x.RunProgramFilePath, OperationType = x.OperationType, OpenUri = x.OpenUri, SecondKeyOfChord = x.SecondKeyOfChord, RunProgramArgs = x.RunProgramArgs, TargetApp = allAppsDescription }).Concat(appSpecificShortcutList).ToList();
             }
         }
 
@@ -260,7 +267,37 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                string path = Path.Combine(Environment.CurrentDirectory, KeyboardManagerEditorPath);
+                // Launch the new editor if:
+                // 1. the experimentation toggle is enabled in the settings
+                // 2. the new WinUI3 editor is enabled in the registry. The registry value does not exist by default and is only used for development purposes
+                string editorPath = KeyboardManagerEditorPath;
+                try
+                {
+                    // Check if the experimentation toggle is enabled in the settings
+                    var settingsUtils = new SettingsUtils();
+                    bool isExperimentationEnabled = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.EnableExperimentation;
+
+                    // Only read the registry value if the experimentation toggle is enabled
+                    if (isExperimentationEnabled)
+                    {
+                        // Read the registry value to determine which editor to launch
+                        var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\PowerToys\Keyboard Manager");
+                        if (key != null && (int?)key.GetValue("UseNewEditor") == 1)
+                        {
+                            editorPath = KeyboardManagerEditorUIPath;
+                        }
+
+                        // Close the registry key
+                        key?.Close();
+                    }
+                }
+                catch (Exception e)
+                {
+                    // Fall back to the default editor path if any exception occurs
+                    Logger.LogError("Failed to launch the new WinUI3 Editor", e);
+                }
+
+                string path = Path.Combine(Environment.CurrentDirectory, editorPath);
                 Logger.LogInfo($"Starting {PowerToyName} editor from {path}");
 
                 // InvariantCulture: type represents the KeyboardManagerEditorType enum value

@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
+
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -22,14 +24,17 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             var result = settings?.Length;
 
             // Assert
-            Assert.AreEqual(4, result);
+            Assert.AreEqual(7, result);
         }
 
         [DataTestMethod]
+        [DataRow("CalendarFirstWeekRule")]
+        [DataRow("FirstDayOfWeek")]
         [DataRow("OnlyDateTimeNowGlobal")]
         [DataRow("TimeWithSeconds")]
         [DataRow("DateWithWeekday")]
         [DataRow("HideNumberMessageOnGlobalQuery")]
+        [DataRow("CustomFormats")]
         public void DoesSettingExist(string name)
         {
             // Setup
@@ -58,6 +63,37 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 
             // Assert
             Assert.AreEqual(valueExpected, result);
+        }
+
+        [DataTestMethod]
+        [DataRow("CalendarFirstWeekRule", -1)]
+        [DataRow("FirstDayOfWeek", -1)]
+        public void DefaultEnumValues(string name, int valueExpected)
+        {
+            // Setup
+            TimeDateSettings setting = TimeDateSettings.Instance;
+
+            // Act
+            PropertyInfo propertyInfo = setting?.GetType()?.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            var result = propertyInfo?.GetValue(setting);
+
+            // Assert
+            Assert.AreEqual(valueExpected, result);
+        }
+
+        [DataTestMethod]
+        [DataRow("CustomFormats")]
+        public void DefaultEmptyMultilineTextValues(string name)
+        {
+            // Setup
+            TimeDateSettings setting = TimeDateSettings.Instance;
+
+            // Act
+            PropertyInfo propertyInfo = setting?.GetType()?.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
+            List<string> result = (List<string>)propertyInfo?.GetValue(setting);
+
+            // Assert
+            Assert.AreEqual(0, result.Count);
         }
     }
 }

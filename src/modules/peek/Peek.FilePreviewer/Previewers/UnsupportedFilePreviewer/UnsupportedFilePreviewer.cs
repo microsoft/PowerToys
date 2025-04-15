@@ -5,12 +5,13 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Peek.Common.Extensions;
 using Peek.Common.Helpers;
@@ -21,71 +22,83 @@ using Windows.Foundation;
 
 namespace Peek.FilePreviewer.Previewers
 {
-    public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer, IDisposable
+    public partial class UnsupportedFilePreviewer : ObservableObject, IUnsupportedFilePreviewer
     {
-        private static readonly EnumerationOptions _fileEnumOptions = new() { MatchType = MatchType.Win32, AttributesToSkip = 0, IgnoreInaccessible = true };
-        private static readonly EnumerationOptions _directoryEnumOptions = new() { MatchType = MatchType.Win32, AttributesToSkip = FileAttributes.ReparsePoint, IgnoreInaccessible = true };
-        private readonly DispatcherTimer _folderSizeDispatcherTimer = new();
-        private ulong _folderSize;
+        /// <summary>
+        /// The number of files to scan between updates when calculating folder size.
+        /// </summary>
+        private const int FolderEnumerationChunkSize = 100;
+
+        /// <summary>
+        /// The maximum view updates per second when enumerating a folder's contents.
+        /// </summary>
+        private const int MaxUpdateFps = 15;
+
+        /// <summary>
+        /// The icon to display when a file or folder's thumbnail or icon could not be retrieved.
+        /// </summary>
+        private static readonly SvgImageSource DefaultIcon = new(new Uri("ms-appx:///Assets/Peek/DefaultFileIcon.svg"));
+
+        /// <summary>
+        /// The options to use for the folder size enumeration. We recurse through all files and all subfolders.
+        /// </summary>
+        private static readonly EnumerationOptions FolderEnumerationOptions;
 
         [ObservableProperty]
-        private UnsupportedFilePreviewData preview = new UnsupportedFilePreviewData();
+        private UnsupportedFilePreviewData preview = new();
 
         [ObservableProperty]
         private PreviewState state;
 
-        public UnsupportedFilePreviewer(IFileSystemItem file)
+        static UnsupportedFilePreviewer()
         {
-            _folderSizeDispatcherTimer.Interval = TimeSpan.FromMilliseconds(500);
-            _folderSizeDispatcherTimer.Tick += FolderSizeDispatcherTimer_Tick;
-
-            Item = file;
-            Preview.FileName = file.Name;
-            Preview.DateModified = file.DateModified?.ToString(CultureInfo.CurrentCulture);
-            Dispatcher = DispatcherQueue.GetForCurrentThread();
+            FolderEnumerationOptions = new() { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint };
         }
 
-        public bool IsPreviewLoaded => Preview.IconPreview != null;
+        public UnsupportedFilePreviewer(IFileSystemItem file)
+        {
+            Item = file;
+            Dispatcher = DispatcherQueue.GetForCurrentThread();
+        }
 
         private IFileSystemItem Item { get; }
 
         private DispatcherQueue Dispatcher { get; }
 
-        private Task<bool>? IconPreviewTask { get; set; }
-
-        private Task<bool>? DisplayInfoTask { get; set; }
-
-        public void Dispose()
-        {
-            _folderSizeDispatcherTimer.Tick -= FolderSizeDispatcherTimer_Tick;
-            GC.SuppressFinalize(this);
-        }
-
-        public Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)
-        {
-            Size? size = new Size(680, 500);
-            var previewSize = new PreviewSize { MonitorSize = size, UseEffectivePixels = true };
-            return Task.FromResult(previewSize);
-        }
+        public Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken) =>
+            Task.FromResult(new PreviewSize { MonitorSize = new Size(680, 500), UseEffectivePixels = true });
 
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            State = PreviewState.Loading;
-
-            IconPreviewTask = LoadIconPreviewAsync(cancellationToken);
-            DisplayInfoTask = LoadDisplayInfoAsync(cancellationToken);
-
-            await Task.WhenAll(IconPreviewTask, DisplayInfoTask);
-
-            if (HasFailedLoadingPreview())
+            try
             {
-                State = PreviewState.Error;
+                await Dispatcher.RunOnUiThread(async () =>
+                {
+                    Preview.FileName = Item.Name;
+                    Preview.DateModified = Item.DateModified?.ToString(CultureInfo.CurrentCulture);
+
+                    State = PreviewState.Loaded;
+
+                    await LoadIconPreviewAsync(cancellationToken);
+                });
+
+                var progress = new Progress<string>(update =>
+                {
+                    Dispatcher.TryEnqueue(() =>
+                    {
+                        Preview.FileSize = update;
+                    });
+                });
+
+                await LoadDisplayInfoAsync(progress, cancellationToken);
             }
-            else
+            catch (OperationCanceledException)
             {
-                State = PreviewState.Loaded;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("UnsupportedFilePreviewer error.", ex);
+                State = PreviewState.Error;
             }
         }
 
@@ -98,139 +111,59 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        public async Task<bool> LoadIconPreviewAsync(CancellationToken cancellationToken)
+        private async Task LoadIconPreviewAsync(CancellationToken cancellationToken)
         {
-            bool isIconValid = false;
-
-            var isTaskSuccessful = await TaskExtension.RunSafe(async () =>
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await Dispatcher.RunOnUiThread(async () =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    var iconBitmap = await IconHelper.GetThumbnailAsync(Item.Path, cancellationToken)
-                        ?? await IconHelper.GetIconAsync(Item.Path, cancellationToken);
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    isIconValid = iconBitmap != null;
-
-                    Preview.IconPreview = iconBitmap ?? new SvgImageSource(new Uri("ms-appx:///Assets/Peek/DefaultFileIcon.svg"));
-                });
-            });
-
-            return isIconValid && isTaskSuccessful;
+            Preview.IconPreview = await ThumbnailHelper.GetThumbnailAsync(Item.Path, cancellationToken) ??
+                await ThumbnailHelper.GetIconAsync(Item.Path, cancellationToken) ??
+                DefaultIcon;
         }
 
-        public async Task<bool> LoadDisplayInfoAsync(CancellationToken cancellationToken)
+        private async Task LoadDisplayInfoAsync(IProgress<string> sizeProgress, CancellationToken cancellationToken)
         {
-            bool isDisplayValid = false;
+            string type = await Item.GetContentTypeAsync();
 
-            var isTaskSuccessful = await TaskExtension.RunSafe(async () =>
+            Dispatcher.TryEnqueue(() => Preview.FileType = type);
+
+            if (Item is FolderItem folderItem)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var type = await Task.Run(Item.GetContentTypeAsync);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                isDisplayValid = type != null;
-
-                var readableFileSize = string.Empty;
-
-                if (Item is FileItem)
-                {
-                    readableFileSize = ReadableStringHelper.BytesToReadableString(Item.FileSizeBytes);
-                }
-                else if (Item is FolderItem)
-                {
-                    ComputeFolderSize(cancellationToken);
-                }
-
-                await Dispatcher.RunOnUiThread(() =>
-                {
-                    Preview.FileSize = readableFileSize;
-                    Preview.FileType = type;
-                    return Task.CompletedTask;
-                });
-            });
-
-            return isDisplayValid && isTaskSuccessful;
-        }
-
-        private bool HasFailedLoadingPreview()
-        {
-            var isLoadingIconPreviewSuccessful = IconPreviewTask?.Result ?? false;
-            var isLoadingDisplayInfoSuccessful = DisplayInfoTask?.Result ?? false;
-
-            return !isLoadingIconPreviewSuccessful || !isLoadingDisplayInfoSuccessful;
-        }
-
-        private void ComputeFolderSize(CancellationToken cancellationToken)
-        {
-            Task.Run(
-            async () =>
-            {
-                try
-                {
-                    // Special folders like recycle bin don't have a path
-                    if (string.IsNullOrWhiteSpace(Item.Path))
-                    {
-                        return;
-                    }
-
-                    await Dispatcher.RunOnUiThread(_folderSizeDispatcherTimer.Start);
-                    GetDirectorySize(new DirectoryInfo(Item.Path), cancellationToken);
-                }
-                catch (OperationCanceledException)
-                {
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError("Failed to calculate folder size", ex);
-                }
-                finally
-                {
-                    await Dispatcher.RunOnUiThread(_folderSizeDispatcherTimer.Stop);
-                }
-
-                // If everything went well, ensure the UI is updated
-                await Dispatcher.RunOnUiThread(UpdateFolderSize);
-            },
-            cancellationToken);
-        }
-
-        private void GetDirectorySize(DirectoryInfo directory, CancellationToken cancellationToken)
-        {
-            var files = directory.GetFiles("*", _fileEnumOptions);
-            for (var i = 0; i < files.Length; i++)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var f = files[i];
-                if (f.Length > 0)
-                {
-                    _folderSize += Convert.ToUInt64(f.Length);
-                }
+                await Task.Run(() => CalculateFolderSizeWithProgress(Item.Path, sizeProgress, cancellationToken), cancellationToken);
             }
-
-            var directories = directory.GetDirectories("*", _directoryEnumOptions);
-            for (var i = 0; i < directories.Length; i++)
+            else
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                GetDirectorySize(directories[i], cancellationToken);
+                ReportProgress(sizeProgress, Item.FileSizeBytes);
             }
         }
 
-        private void UpdateFolderSize()
+        private void CalculateFolderSizeWithProgress(string path, IProgress<string> progress, CancellationToken cancellationToken)
         {
-            Preview.FileSize = ReadableStringHelper.BytesToReadableString(_folderSize);
+            ulong folderSize = 0;
+            TimeSpan updateInterval = TimeSpan.FromMilliseconds(1000 / MaxUpdateFps);
+            DateTime nextUpdate = DateTime.UtcNow + updateInterval;
+
+            var files = new DirectoryInfo(path).EnumerateFiles("*", FolderEnumerationOptions);
+
+            foreach (var chunk in files.Chunk(FolderEnumerationChunkSize))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (DateTime.Now >= nextUpdate)
+                {
+                    ReportProgress(progress, folderSize);
+                    nextUpdate = DateTime.UtcNow + updateInterval;
+                }
+
+                foreach (var file in chunk)
+                {
+                    folderSize += (ulong)file.Length;
+                }
+            }
+
+            ReportProgress(progress, folderSize);
         }
 
-        private void FolderSizeDispatcherTimer_Tick(object? sender, object e)
+        private void ReportProgress(IProgress<string> progress, ulong size)
         {
-            UpdateFolderSize();
+            progress.Report(ReadableStringHelper.BytesToReadableString(size));
         }
     }
 }

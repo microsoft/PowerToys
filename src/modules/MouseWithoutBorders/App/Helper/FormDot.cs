@@ -6,6 +6,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
+
 using static MouseWithoutBorders.NativeMethods;
 
 namespace MouseWithoutBorders

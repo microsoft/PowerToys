@@ -14,6 +14,7 @@ using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Microsoft.Plugin.Program.Logger;
 using Microsoft.Plugin.Program.Utils;
 using Microsoft.Win32;
@@ -21,6 +22,7 @@ using Wox.Infrastructure;
 using Wox.Infrastructure.FileSystemHelper;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
+
 using DirectoryWrapper = Wox.Infrastructure.FileSystemHelper.DirectoryWrapper;
 
 namespace Microsoft.Plugin.Program.Programs
@@ -80,7 +82,7 @@ namespace Microsoft.Plugin.Program.Programs
         public ApplicationType AppType { get; set; }
 
         // Wrappers for File Operations
-        public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
+        public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new Wox.Infrastructure.FileSystemHelper.FileVersionInfoWrapper();
 
         public static IFile FileWrapper { get; set; } = new FileSystem().File;
 

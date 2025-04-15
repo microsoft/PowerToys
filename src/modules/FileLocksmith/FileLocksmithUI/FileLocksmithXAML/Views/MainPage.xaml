@@ -6,7 +6,7 @@
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:interop="using:FileLocksmith.Interop"
+    xmlns:interop="using:PowerToys.FileLocksmithLib.Interop"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
@@ -141,27 +141,16 @@
                                             IsTextSelectionEnabled="True"
                                             Text="{x:Bind user}" />
                                     </tkcontrols:SettingsCard>
-                                    <tkcontrols:SettingsCard ContentAlignment="Vertical">
+                                    <tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard.Header>
                                             <TextBlock>
                                                 <Run x:Uid="Files" />
                                                 <Run Text="(" /><Run Text="{x:Bind files, Converter={StaticResource fileCountConverter}}" /><Run Text=")" />
                                             </TextBlock>
                                         </tkcontrols:SettingsCard.Header>
-                                        <ItemsRepeater ItemsSource="{x:Bind files}">
-                                            <ItemsRepeater.ItemTemplate>
-                                                <DataTemplate x:DataType="x:String">
-                                                    <TextBlock
-                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                        IsTextSelectionEnabled="True"
-                                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                                        Text="{Binding}"
-                                                        TextTrimming="CharacterEllipsis"
-                                                        TextWrapping="NoWrap"
-                                                        ToolTipService.ToolTip="{Binding}" />
-                                                </DataTemplate>
-                                            </ItemsRepeater.ItemTemplate>
-                                        </ItemsRepeater>
+                                        <Button Click="ShowProcessFiles_Click">
+                                            <TextBlock x:Uid="ShowProcessFiles" />
+                                        </Button>
                                     </tkcontrols:SettingsCard>
                                 </tkcontrols:SettingsExpander.Items>
                             </tkcontrols:SettingsExpander>
@@ -195,8 +184,17 @@
         </Grid>
 
         <ContentDialog x:Name="SelectedFilesListDialog" x:Uid="SelectedFilesListDialog">
-            <ScrollViewer Padding="0,0,16,0">
-                <TextBlock IsTextSelectionEnabled="True" Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}" />
+            <TextBlock
+                IsTextSelectionEnabled="True"
+                Text="{x:Bind ViewModel.PathsToString, Mode=OneWay}"
+                TextWrapping="Wrap" />
+        </ContentDialog>
+        <ContentDialog x:Name="ProcessFilesListDialog" x:Uid="ProcessFilesListDialog">
+            <ScrollViewer Padding="15" HorizontalScrollBarVisibility="Auto">
+                <TextBlock
+                    x:Name="ProcessFilesListDialogTextBlock"
+                    x:Uid="ProcessFilesListDialogTextBlock"
+                    IsTextSelectionEnabled="True" />
             </ScrollViewer>
         </ContentDialog>
     </Grid>

@@ -3,12 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using FileLocksmith.Interop;
+
 using Microsoft.UI.Xaml.Data;
 
 namespace PowerToys.FileLocksmithUI.Converters
 {
-    public sealed class FileCountConverter : IValueConverter
+    public sealed partial class FileCountConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

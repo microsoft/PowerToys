@@ -83,21 +83,19 @@ public:
             std::wstring path = get_module_folderpath(globals::instance);
             std::wstring packageUri = path + L"\\FileLocksmithContextMenuPackage.msix";
 
-            if (!package::IsPackageRegistered(constants::nonlocalizable::ContextMenuPackageName))
+            if (!package::IsPackageRegisteredWithPowerToysVersion(constants::nonlocalizable::ContextMenuPackageName))
             {
                 package::RegisterSparsePackage(path, packageUri);
             }
         }
 
         m_enabled = true;
-        save_settings();
     }
 
     virtual void disable() override
     {
         Logger::info(L"File Locksmith disabled");
         m_enabled = false;
-        save_settings();
     }
 
     virtual bool is_enabled() override
@@ -123,7 +121,7 @@ public:
     }
 
 private:
-    bool m_enabled;
+    bool m_enabled = false;
     bool m_extended_only;
 
     void init_settings()
@@ -136,7 +134,7 @@ private:
     void save_settings()
     {
         auto& settings = FileLocksmithSettingsInstance();
-        settings.SetEnabled(m_enabled);
+        m_enabled = FileLocksmithSettingsInstance().GetEnabled();
         settings.SetExtendedContextMenuOnly(m_extended_only);
 
         settings.Save();

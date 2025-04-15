@@ -121,7 +121,7 @@
     <value>Folder</value>
   </data>
   <data name="wox_plugin_folder_plugin_description" xml:space="preserve">
-    <value>Navigates folders starting from a drive letter 'C:\' or from the user home '~'.</value>
+    <value>Navigates folders starting from a drive letter 'C:\' or from the user home '~'</value>
   </data>
   <data name="Microsoft_plugin_folder_copy_path" xml:space="preserve">
     <value>Copy path (Ctrl+C)</value>

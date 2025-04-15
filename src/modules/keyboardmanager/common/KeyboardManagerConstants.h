@@ -28,6 +28,9 @@ namespace KeyboardManagerConstants
     // Name of the property use to store shortcut to text remaps.
     inline const std::wstring RemapShortcutsToTextSettingName = L"remapShortcutsToText";
 
+    // Name of the property use to store shortcut to run-program remaps.
+    inline const std::wstring RemapShortcutsToRunProgramSettingName = L"remapShortcutsToRunProgram";
+
     // Name of the property use to store global shortcut remaps array.
     inline const std::wstring GlobalRemapShortcutsSettingName = L"global";
 
@@ -42,6 +45,33 @@ namespace KeyboardManagerConstants
 
     // Name of the property use to store new remapped string.
     inline const std::wstring NewTextSettingName = L"unicodeText";
+
+    // Name of the property use to store runProgramStartInDir.
+    inline const std::wstring RunProgramStartInDirSettingName = L"runProgramStartInDir";
+
+    // Name of the property use to store runProgramStartInDir.
+    inline const std::wstring RunProgramElevationLevelSettingName = L"runProgramElevationLevel";
+
+    // Name of the property use to store runProgramAlreadyRunningAction.
+    inline const std::wstring RunProgramAlreadyRunningAction = L"runProgramAlreadyRunningAction";
+
+    // Name of the property use to store runProgramStartWindowType.
+    inline const std::wstring RunProgramStartWindowType = L"runProgramStartWindowType";
+
+    // Name of the property use to store runProgramArgs.
+    inline const std::wstring RunProgramArgsSettingName = L"runProgramArgs";
+
+    // Name of the property use to store runProgramFilePath.
+    inline const std::wstring RunProgramFilePathSettingName = L"runProgramFilePath";
+
+    // Name of the property use to store openUri.
+    inline const std::wstring ShortcutOpenURI = L"openUri";
+
+    // Name of the property use to store shortcutOperationType.
+    inline const std::wstring ShortcutOperationType = L"operationType";
+
+    // Name of the property use to store exactMatch.
+    inline const std::wstring ShortcutExactMatch = L"exactMatch";
 
     // Name of the property use to store the target application.
     inline const std::wstring TargetAppSettingName = L"targetApp";

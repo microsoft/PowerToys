@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
         /// <summary>
         /// Use UISettings to get system colors and scroll bar size.
         /// </summary>
-        private static UISettings _uISettings = new UISettings();
+        private static readonly UISettings _uISettings = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PdfPreviewHandlerControl"/> class.
@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
 
             try
             {
-                if (!(dataSource is string filePath))
+                if (dataSource is not string filePath)
                 {
                     throw new ArgumentException($"{nameof(dataSource)} for {nameof(PdfPreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
                 }
@@ -97,28 +97,26 @@ namespace Microsoft.PowerToys.PreviewHandler.Pdf
                             // Only show first 10 pages.
                             for (uint i = 0; i < pdf.PageCount && i < 10; i++)
                             {
-                                using (var page = pdf.GetPage(i))
+                                using var page = pdf.GetPage(i);
+                                var image = PageToImage(page);
+
+                                var picturePanel = new Panel()
                                 {
-                                    var image = PageToImage(page);
+                                    Name = "picturePanel",
+                                    Margin = new Padding(6, 6, 6, 0),
+                                    Size = CalculateSize(image),
+                                    BorderStyle = BorderStyle.FixedSingle,
+                                };
 
-                                    var picturePanel = new Panel()
-                                    {
-                                        Name = "picturePanel",
-                                        Margin = new Padding(6, 6, 6, 0),
-                                        Size = CalculateSize(image),
-                                        BorderStyle = BorderStyle.FixedSingle,
-                                    };
+                                var picture = new PictureBox
+                                {
+                                    Dock = DockStyle.Fill,
+                                    Image = image,
+                                    SizeMode = PictureBoxSizeMode.Zoom,
+                                };
 
-                                    var picture = new PictureBox
-                                    {
-                                        Dock = DockStyle.Fill,
-                                        Image = image,
-                                        SizeMode = PictureBoxSizeMode.Zoom,
-                                    };
-
-                                    picturePanel.Controls.Add(picture);
-                                    _flowLayoutPanel.Controls.Add(picturePanel);
-                                }
+                                picturePanel.Controls.Add(picture);
+                                _flowLayoutPanel.Controls.Add(picturePanel);
                             }
 
                             if (pdf.PageCount > 10)

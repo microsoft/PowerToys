@@ -20,9 +20,9 @@ namespace LoadingAndSavingRemappingHelper
         std::map<std::wstring, std::set<KeyShortcutTextUnion>> ogKeys;
         for (int i = 0; i < remappings.size(); i++)
         {
-            KeyShortcutTextUnion ogKey = remappings[i].first[0];
-            KeyShortcutTextUnion newKey = remappings[i].first[1];
-            std::wstring appName = remappings[i].second;
+            KeyShortcutTextUnion ogKey = remappings[i].mapping[0];
+            KeyShortcutTextUnion newKey = remappings[i].mapping[1];
+            std::wstring appName = remappings[i].appName;
 
             const bool ogKeyValidity = (ogKey.index() == 0 && std::get<DWORD>(ogKey) != NULL) || (ogKey.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(ogKey)));
             const bool newKeyValidity = (newKey.index() == 0 && std::get<DWORD>(newKey) != NULL) || (newKey.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey))) || (newKey.index() == 2 && !std::get<std::wstring>(newKey).empty());
@@ -58,8 +58,8 @@ namespace LoadingAndSavingRemappingHelper
 
         for (int i = 0; i < remappings.size(); i++)
         {
-            DWORD ogKey = std::get<DWORD>(remappings[i].first[0]);
-            KeyShortcutTextUnion newKey = remappings[i].first[1];
+            DWORD ogKey = std::get<DWORD>(remappings[i].mapping[0]);
+            KeyShortcutTextUnion newKey = remappings[i].mapping[1];
 
             const bool hasValidKeyRemapping = newKey.index() == 0 && std::get<DWORD>(newKey) != 0;
             const bool hasValidShortcutRemapping = newKey.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey));
@@ -69,7 +69,7 @@ namespace LoadingAndSavingRemappingHelper
                 ogKeys.insert(ogKey);
 
                 // newKey should be added only if the target is a key
-                if (remappings[i].first[1].index() == 0)
+                if (remappings[i].mapping[1].index() == 0)
                 {
                     newKeys.insert(std::get<DWORD>(newKey));
                 }
@@ -125,8 +125,8 @@ namespace LoadingAndSavingRemappingHelper
         DWORD successfulKeyToTextRemapCount = 0;
         for (int i = 0; i < remappings.size(); i++)
         {
-            const DWORD originalKey = std::get<DWORD>(remappings[i].first[0]);
-            KeyShortcutTextUnion newKey = remappings[i].first[1];
+            const DWORD originalKey = std::get<DWORD>(remappings[i].mapping[0]);
+            KeyShortcutTextUnion newKey = remappings[i].mapping[1];
 
             if (originalKey != NULL && !(newKey.index() == 0 && std::get<DWORD>(newKey) == NULL) && !(newKey.index() == 1 && !EditorHelpers::IsValidShortcut(std::get<Shortcut>(newKey))) && !(newKey.index() == 2 && std::get<std::wstring>(newKey).empty()))
             {
@@ -203,12 +203,12 @@ namespace LoadingAndSavingRemappingHelper
         // Save the shortcuts that are valid and report if any of them were invalid
         for (int i = 0; i < remappings.size(); i++)
         {
-            Shortcut originalShortcut = std::get<Shortcut>(remappings[i].first[0]);
-            KeyShortcutTextUnion newShortcut = remappings[i].first[1];
+            Shortcut originalShortcut = std::get<Shortcut>(remappings[i].mapping[0]);
+            KeyShortcutTextUnion newShortcut = remappings[i].mapping[1];
 
             if (EditorHelpers::IsValidShortcut(originalShortcut) && ((newShortcut.index() == 0 && std::get<DWORD>(newShortcut) != NULL) || (newShortcut.index() == 1 && EditorHelpers::IsValidShortcut(std::get<Shortcut>(newShortcut))) || (newShortcut.index() == 2 && !std::get<std::wstring>(newShortcut).empty())))
             {
-                if (remappings[i].second == L"")
+                if (remappings[i].appName == L"")
                 {
                     bool result = mappingConfiguration.AddOSLevelShortcut(originalShortcut, newShortcut);
                     if (result)
@@ -225,7 +225,7 @@ namespace LoadingAndSavingRemappingHelper
                 }
                 else
                 {
-                    bool result = mappingConfiguration.AddAppSpecificShortcut(remappings[i].second, originalShortcut, newShortcut);
+                    bool result = mappingConfiguration.AddAppSpecificShortcut(remappings[i].appName, originalShortcut, newShortcut);
                     if (result)
                     {
                         if (newShortcut.index() == 0)

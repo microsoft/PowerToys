@@ -15,8 +15,11 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading.Tasks;
+
 using Microsoft.PowerToys.Settings.UI.Library;
+using MouseWithoutBorders.Core;
 using Windows.UI.Input.Preview.Injection;
+
 using static MouseWithoutBorders.Class.NativeMethods;
 
 [module: SuppressMessage("Microsoft.Portability", "CA1901:PInvokeDeclarationsShouldBePortable", Scope = "member", Target = "MouseWithoutBorders.InputSimulation.#keybd_event(System.Byte,System.Byte,System.UInt32,System.Int32)", MessageId = "3", Justification = "Dotnet port with style preservation")]
@@ -150,7 +153,7 @@ namespace MouseWithoutBorders.Class
             }
 
             log += "*"; // ((Keys)kd.wVk).ToString(CultureInfo.InvariantCulture);
-            Common.LogDebug(log);
+            Logger.LogDebug(log);
         }
 
         // Md.X, Md.Y is from 0 to 65535
@@ -159,10 +162,10 @@ namespace MouseWithoutBorders.Class
             uint rv = 0;
             NativeMethods.INPUT mouse_input = default;
 
-            long w65535 = (Common.DesktopBounds.Right - Common.DesktopBounds.Left) * 65535 / Common.ScreenWidth;
-            long h65535 = (Common.DesktopBounds.Bottom - Common.DesktopBounds.Top) * 65535 / Common.ScreenHeight;
-            long l65535 = Common.DesktopBounds.Left * 65535 / Common.ScreenWidth;
-            long t65535 = Common.DesktopBounds.Top * 65535 / Common.ScreenHeight;
+            long w65535 = (MachineStuff.DesktopBounds.Right - MachineStuff.DesktopBounds.Left) * 65535 / Common.ScreenWidth;
+            long h65535 = (MachineStuff.DesktopBounds.Bottom - MachineStuff.DesktopBounds.Top) * 65535 / Common.ScreenHeight;
+            long l65535 = MachineStuff.DesktopBounds.Left * 65535 / Common.ScreenWidth;
+            long t65535 = MachineStuff.DesktopBounds.Top * 65535 / Common.ScreenHeight;
             mouse_input.type = 0;
             long dx = (md.X * w65535 / 65535) + l65535;
             long dy = (md.Y * h65535 / 65535) + t65535;
@@ -172,7 +175,7 @@ namespace MouseWithoutBorders.Class
 
             if (md.dwFlags != Common.WM_MOUSEMOVE)
             {
-                Common.LogDebug($"InputSimulation.SendMouse: x = {md.X}, y = {md.Y}, WheelDelta = {md.WheelDelta}, dwFlags = {md.dwFlags}.");
+                Logger.LogDebug($"InputSimulation.SendMouse: x = {md.X}, y = {md.Y}, WheelDelta = {md.WheelDelta}, dwFlags = {md.dwFlags}.");
             }
 
             switch (md.dwFlags)
@@ -218,9 +221,9 @@ namespace MouseWithoutBorders.Class
                 rv = SendInputEx(mouse_input);
             });
 
-            if (Common.MainFormVisible && !Common.IsDropping)
+            if (Common.MainFormVisible && !DragDrop.IsDropping)
             {
-                Common.MainFormDot();
+                Helper.MainFormDot();
             }
 
             return rv;
@@ -230,17 +233,17 @@ namespace MouseWithoutBorders.Class
         {
             NativeMethods.INPUT mouse_input = default;
 
-            long w65535 = (Common.DesktopBounds.Right - Common.DesktopBounds.Left) * 65535 / Common.ScreenWidth;
-            long h65535 = (Common.DesktopBounds.Bottom - Common.DesktopBounds.Top) * 65535 / Common.ScreenHeight;
-            long l65535 = Common.DesktopBounds.Left * 65535 / Common.ScreenWidth;
-            long t65535 = Common.DesktopBounds.Top * 65535 / Common.ScreenHeight;
+            long w65535 = (MachineStuff.DesktopBounds.Right - MachineStuff.DesktopBounds.Left) * 65535 / Common.ScreenWidth;
+            long h65535 = (MachineStuff.DesktopBounds.Bottom - MachineStuff.DesktopBounds.Top) * 65535 / Common.ScreenHeight;
+            long l65535 = MachineStuff.DesktopBounds.Left * 65535 / Common.ScreenWidth;
+            long t65535 = MachineStuff.DesktopBounds.Top * 65535 / Common.ScreenHeight;
             mouse_input.type = 0;
             long dx = (x * w65535 / 65535) + l65535;
             long dy = (y * h65535 / 65535) + t65535;
             mouse_input.mi.dx = (int)dx;
             mouse_input.mi.dy = (int)dy;
 
-            Common.LogDebug($"InputSimulation.MoveMouseEx: x = {x}, y = {y}.");
+            Logger.LogDebug($"InputSimulation.MoveMouseEx: x = {x}, y = {y}.");
 
             mouse_input.mi.dwFlags |= (int)(NativeMethods.MOUSEEVENTF.MOVE | NativeMethods.MOUSEEVENTF.ABSOLUTE);
 
@@ -262,7 +265,7 @@ namespace MouseWithoutBorders.Class
             mouse_input.mi.mouseData = 0;
             mouse_input.mi.dwFlags = (int)(NativeMethods.MOUSEEVENTF.MOVE | NativeMethods.MOUSEEVENTF.ABSOLUTE);
 
-            Common.LogDebug($"InputSimulation.MoveMouse: x = {x}, y = {y}.");
+            Logger.LogDebug($"InputSimulation.MoveMouse: x = {x}, y = {y}.");
 
             Common.DoSomethingInTheInputSimulationThread(() =>
             {
@@ -283,7 +286,7 @@ namespace MouseWithoutBorders.Class
             mouse_input.mi.mouseData = 0;
             mouse_input.mi.dwFlags = (int)NativeMethods.MOUSEEVENTF.MOVE;
 
-            Common.LogDebug($"InputSimulation.MoveMouseRelative: x = {dx}, y = {dy}.");
+            Logger.LogDebug($"InputSimulation.MoveMouseRelative: x = {dx}, y = {dy}.");
 
             Common.DoSomethingInTheInputSimulationThread(() =>
             {
@@ -307,7 +310,7 @@ namespace MouseWithoutBorders.Class
 
                 InputHook.SkipMouseUpCount++;
                 _ = SendInputEx(input);
-                Common.LogDebug("MouseUp() called");
+                Logger.LogDebug("MouseUp() called");
             });
         }
 
@@ -336,7 +339,7 @@ namespace MouseWithoutBorders.Class
                     input.mi.dwFlags = (int)NativeMethods.MOUSEEVENTF.LEFTUP;
                     _ = SendInputEx(input);
 
-                    Common.LogDebug("MouseClick() called");
+                    Logger.LogDebug("MouseClick() called");
                     Thread.Sleep(200);
                 }
                 finally
@@ -448,7 +451,7 @@ namespace MouseWithoutBorders.Class
                             eatKey = true;
                             Common.ReleaseAllKeys();
                             uint rv = NativeMethods.LockWorkStation();
-                            Common.LogDebug("LockWorkStation returned " + rv.ToString(CultureInfo.CurrentCulture));
+                            Logger.LogDebug("LockWorkStation returned " + rv.ToString(CultureInfo.CurrentCulture));
                         }
 
                         break;

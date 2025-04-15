@@ -73,15 +73,14 @@ The installer can only be compiled in `Release` mode; steps 1 and 2 must be perf
 
 1. Compile `PowerToys.sln`. Instructions are listed above.
 1. Compile `BugReportTool.sln` tool. Path from root: `tools\BugReportTool\BugReportTool.sln` (details listed below)
-1. Compile `WebcamReportTool.sln` tool. Path from root: `tools\WebcamReportTool\WebcamReportTool.sln` (details listed below)
 1. Compile `StylesReportTool.sln` tool. Path from root: `tools\StylesReportTool\StylesReportTool.sln` (details listed below)
 1. Compile `PowerToysSetup.sln` Path from root: `installer\PowerToysSetup.sln` (details listed below)
 
 ### Prerequisites for building the MSI installer
 
 1. Install the [WiX Toolset Visual Studio 2022 Extension](https://marketplace.visualstudio.com/items?itemName=WixToolset.WixToolsetVisualStudio2022Extension).
-1. Install the [WiX Toolset build tools](https://github.com/wixtoolset/wix3/releases/tag/wix314rtm). (installer [direct link](https://github.com/wixtoolset/wix3/releases/download/wix314rtm/wix314.exe))
-1. Download [WiX binaries](https://github.com/wixtoolset/wix3/releases/download/wix314rtm/wix314-binaries.zip) and extract `wix.targets` to `C:\Program Files (x86)\WiX Toolset v3.14`.
+1. Install the [WiX Toolset build tools](https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm). (installer [direct link](https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314.exe))
+1. Download [WiX binaries](https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip) and extract `wix.targets` to `C:\Program Files (x86)\WiX Toolset v3.14`.
 
 ### Building prerequisite projects
 
@@ -95,9 +94,6 @@ The installer can only be compiled in `Release` mode; steps 1 and 2 must be perf
 nuget restore .\tools\BugReportTool\BugReportTool.sln
 msbuild -p:Platform=x64 -p:Configuration=Release .\tools\BugReportTool\BugReportTool.sln
 
-nuget restore .\tools\WebcamReportTool\WebcamReportTool.sln
-msbuild -p:Platform=x64 -p:Configuration=Release .\tools\WebcamReportTool\WebcamReportTool.sln
-
 nuget restore .\tools\StylesReportTool\StylesReportTool.sln
 msbuild -p:Platform=x64 -p:Configuration=Release .\tools\StylesReportTool\StylesReportTool.sln
 ```
@@ -107,9 +103,6 @@ msbuild -p:Platform=x64 -p:Configuration=Release .\tools\StylesReportTool\Styles
 If you prefer, you can alternatively build prerequisite projects for the installer using the Visual Studio UI.
 
 1. Open `tools\BugReportTool\BugReportTool.sln`
-1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
-1. From the `Build` menu, choose `Build Solution`.
-1. Open `tools\WebcamReportTool\WebcamReportTool.sln`
 1. In Visual Studio, in the `Solutions Configuration` drop-down menu select `Release`
 1. From the `Build` menu, choose `Build Solution`.
 1. Open `tools\StylesReportTool\StylesReportTool.sln`

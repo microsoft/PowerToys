@@ -129,6 +129,12 @@ IFACEMETHODIMP MonacoPreviewHandler::SetRect(const RECT* prc)
     HRESULT hr = E_INVALIDARG;
     if (prc != NULL)
     {
+        if (m_rcParent.left == 0 && m_rcParent.top == 0 && m_rcParent.right == 0 && m_rcParent.bottom == 0 && (prc->left != 0 || prc->top != 0 || prc->right != 0 || prc->bottom != 0))
+        {
+            // MonacoPreviewHandler position first initialisation, do the first preview
+            m_rcParent = *prc;
+            DoPreview();
+        }
         if (!m_resizeEvent)
         {
             Logger::error(L"Failed to create resize event for MonacoPreviewHandler");
@@ -153,8 +159,13 @@ IFACEMETHODIMP MonacoPreviewHandler::DoPreview()
 {
     try
     {
-        Logger::info(L"Starting MonacoPreviewHandler.exe");
+        if (m_hwndParent == NULL || (m_rcParent.left == 0 && m_rcParent.top == 0 && m_rcParent.right == 0 && m_rcParent.bottom == 0))
+        {
+            // Postponing Start MonacoPreviewHandler.exe, parent and position not yet initialized. Preview will be done after initialisation.
+            return S_OK;
+        }
 
+        Logger::info(L"Starting MonacoPreviewHandler.exe");
         STARTUPINFO info = { sizeof(info) };
         std::wstring cmdLine{ L"\"" + m_filePath + L"\"" };
         cmdLine += L" ";
@@ -178,6 +189,13 @@ IFACEMETHODIMP MonacoPreviewHandler::DoPreview()
         sei.lpParameters = cmdLine.c_str();
         sei.nShow = SW_SHOWDEFAULT;
         ShellExecuteEx(&sei);
+
+        // Prevent to leak processes: preview is called multiple times when minimizing and restoring Explorer window
+        if (m_process)
+        {
+            TerminateProcess(m_process, 0);
+        }
+
         m_process = sei.hProcess;
     }
     catch (std::exception& e)

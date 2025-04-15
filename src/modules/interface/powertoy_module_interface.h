@@ -125,7 +125,7 @@ public:
         return powertoys_gpo::gpo_rule_configured_not_configured;
     }
 
-    // Some actions like PastePlain generate new inputs, which we don't want to catch again.
+    // Some actions like AdvancedPaste generate new inputs, which we don't want to catch again.
     // The flag was purposefully chose to not collide with other keyboard manager flags.
     const static inline ULONG_PTR CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG = 0x110;
 

@@ -4,9 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+
 using Common.UI;
 using ManagedCommon;
 
@@ -18,10 +20,11 @@ namespace Peek.FilePreviewer.Previewers
 
         public static HashSet<string> GetExtensions()
         {
-            HashSet<string> set = new HashSet<string>();
+            HashSet<string> set = [];
+
             try
             {
-                JsonDocument languageListDocument = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguages();
+                using JsonDocument languageListDocument = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguages();
                 JsonElement languageList = languageListDocument.RootElement.GetProperty("list");
                 foreach (JsonElement e in languageList.EnumerateArray())
                 {
@@ -45,13 +48,13 @@ namespace Peek.FilePreviewer.Previewers
         /// <summary>
         /// Prepares temp html for the previewing
         /// </summary>
-        public static string PreviewTempFile(string fileText, string extension, string tempFolder, bool tryFormat, bool wrapText)
+        public static string PreviewTempFile(string fileText, string extension, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll, int fontSize, bool minimap)
         {
             // TODO: check if file is too big, add MaxFileSize to settings
-            return InitializeIndexFileAndSelectedFile(fileText, extension, tempFolder, tryFormat, wrapText);
+            return InitializeIndexFileAndSelectedFile(fileText, extension, tempFolder, tryFormat, wrapText, stickyScroll, fontSize, minimap);
         }
 
-        private static string InitializeIndexFileAndSelectedFile(string fileContent, string extension, string tempFolder, bool tryFormat, bool wrapText)
+        private static string InitializeIndexFileAndSelectedFile(string fileContent, string extension, string tempFolder, bool tryFormat, bool wrapText, bool stickyScroll, int fontSize, bool minimap)
         {
             string vsCodeLangSet = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.GetLanguage(extension);
 
@@ -78,10 +81,14 @@ namespace Peek.FilePreviewer.Previewers
             string html = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.ReadIndexHtml();
 
             html = html.Replace("[[PT_LANG]]", vsCodeLangSet, StringComparison.InvariantCulture);
-            html = html.Replace("[[PT_WRAP]]", wrapText ? "1" : "0", StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_WRAP]]", wrapText ? "true" : "false", StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_CONTEXTMENU]]", "false", StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_STICKY_SCROLL]]", stickyScroll ? "true" : "false", StringComparison.InvariantCulture);
             html = html.Replace("[[PT_THEME]]", theme, StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_FONT_SIZE]]", fontSize.ToString(CultureInfo.InvariantCulture), StringComparison.InvariantCulture);
             html = html.Replace("[[PT_CODE]]", base64FileCode, StringComparison.InvariantCulture);
             html = html.Replace("[[PT_URL]]", Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, StringComparison.InvariantCulture);
+            html = html.Replace("[[PT_MINIMAP]]", minimap ? "true" : "false", StringComparison.InvariantCulture);
 
             string filename = tempFolder + "\\" + Guid.NewGuid().ToString() + ".html";
             File.WriteAllText(filename, html);

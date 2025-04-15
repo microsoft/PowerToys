@@ -121,6 +121,6 @@
     <value>OneNote</value>
   </data>
   <data name="PluginDescription" xml:space="preserve">
-    <value>Searches your local OneNote notebooks. This plugin requires the OneNote desktop app which is included in Microsoft Office.</value>
+    <value>Searches your local OneNote notebooks. This plugin requires the OneNote desktop app which is included in Microsoft Office</value>
   </data>
 </root>

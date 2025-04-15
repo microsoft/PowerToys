@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+
 using Microsoft.Plugin.Folder.Sources.Result;
 
 namespace Microsoft.Plugin.Folder.Sources

@@ -133,7 +133,7 @@
     <value>Pausing</value>
   </data>
   <data name="wox_plugin_service_plugin_description" xml:space="preserve">
-    <value>Manages Windows services.</value>
+    <value>Manages Windows services</value>
   </data>
   <data name="wox_plugin_service_plugin_name" xml:space="preserve">
     <value>Service</value>

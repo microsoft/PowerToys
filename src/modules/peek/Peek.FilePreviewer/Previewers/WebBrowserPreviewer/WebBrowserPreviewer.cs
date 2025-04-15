@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Dispatching;
 using Peek.Common.Constants;
@@ -13,6 +14,7 @@ using Peek.Common.Extensions;
 using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
+using Peek.FilePreviewer.Previewers.Interfaces;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -41,6 +43,9 @@ namespace Peek.FilePreviewer.Previewers
 
         [ObservableProperty]
         private bool isDevFilePreview;
+
+        [ObservableProperty]
+        private bool customContextMenu;
 
         private bool disposed;
 
@@ -106,12 +111,17 @@ namespace Peek.FilePreviewer.Previewers
                 {
                     bool isHtml = File.Extension == ".html" || File.Extension == ".htm";
                     bool isMarkdown = File.Extension == ".md";
-                    IsDevFilePreview = MonacoHelper.SupportedMonacoFileTypes.Contains(File.Extension);
 
-                    if (IsDevFilePreview && !isHtml && !isMarkdown)
+                    bool supportedByMonaco = MonacoHelper.SupportedMonacoFileTypes.Contains(File.Extension);
+                    bool useMonaco = supportedByMonaco && !isHtml && !isMarkdown;
+
+                    IsDevFilePreview = supportedByMonaco;
+                    CustomContextMenu = useMonaco;
+
+                    if (useMonaco)
                     {
                         var raw = await ReadHelper.Read(File.Path.ToString());
-                        Preview = new Uri(MonacoHelper.PreviewTempFile(raw, File.Extension, TempFolderPath.Path, _previewSettings.SourceCodeTryFormat, _previewSettings.SourceCodeWrapText));
+                        Preview = new Uri(MonacoHelper.PreviewTempFile(raw, File.Extension, TempFolderPath.Path, _previewSettings.SourceCodeTryFormat, _previewSettings.SourceCodeWrapText, _previewSettings.SourceCodeStickyScroll, _previewSettings.SourceCodeFontSize, _previewSettings.SourceCodeMinimap));
                     }
                     else if (isMarkdown)
                     {
@@ -137,9 +147,9 @@ namespace Peek.FilePreviewer.Previewers
             });
         }
 
-        public static bool IsFileTypeSupported(string fileExt)
+        public static bool IsItemSupported(IFileSystemItem item)
         {
-            return _supportedFileTypes.Contains(fileExt) || MonacoHelper.SupportedMonacoFileTypes.Contains(fileExt);
+            return _supportedFileTypes.Contains(item.Extension) || MonacoHelper.SupportedMonacoFileTypes.Contains(item.Extension);
         }
 
         private bool HasFailedLoadingPreview()

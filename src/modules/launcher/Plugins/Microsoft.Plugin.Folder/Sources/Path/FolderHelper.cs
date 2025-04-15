@@ -35,7 +35,7 @@ namespace Microsoft.Plugin.Folder.Sources
             ArgumentNullException.ThrowIfNull(search);
 
             // Using Ordinal this is internal and we're comparing symbols
-            if (search.StartsWith(@"\\", StringComparison.Ordinal))
+            if (search.StartsWith(@"\\", StringComparison.Ordinal) || search.StartsWith(@"//", StringComparison.Ordinal))
             { // share folder
                 return true;
             }

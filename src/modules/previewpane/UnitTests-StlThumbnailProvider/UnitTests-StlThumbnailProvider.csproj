@@ -1,17 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
   <PropertyGroup>
     <AssemblyTitle>UnitTests-StlThumbnailProvider</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-StlThumbnailProvider</AssemblyDescription>
     <AssemblyTitle>UnitTests-StlThumbnailProvider</AssemblyTitle>
     <Description>PowerToys UnitTests-StlThumbnailProvider</Description>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <ProjectGuid>{F1F6B6B6-9F18-4A17-8B5C-97DF552C53DC}</ProjectGuid>
     <RootNamespace>StlThumbnailProviderUnitTests</RootNamespace>
-    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
@@ -19,26 +16,17 @@
     <TestProjectType>UnitTest</TestProjectType>
   </PropertyGroup>
 
-  <Import Project="..\..\..\Version.props" />
-
   <ItemGroup>
     <None Remove="HelperFiles\sample.stl" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="MSTest.TestAdapter" />
-    <PackageReference Include="MSTest.TestFramework" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSTest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />
     <ProjectReference Include="..\StlThumbnailProvider\StlThumbnailProvider.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="HelperFiles\sample.stl">

@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
+
 using Wox.Infrastructure;
 using Wox.Plugin;
 

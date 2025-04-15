@@ -8,17 +8,16 @@
   <?define FileLocksmithProjectName="FileLocksmith"?>
   <?define ColorPickerProjectName="ColorPicker"?>
   <?define PowerOCRProjectName="PowerOCR"?>
-  <?define VideoConferenceProjectName="VideoConference"?>
   <?define AwakeProjectName="Awake"?>
   <?define MouseUtilsProjectName="MouseUtils"?>
   <?define AlwaysOnTopProjectName="AlwaysOnTop"?>
   <?define MeasureToolProjectName="MeasureTool"?>
   <?define HostsProjectName="Hosts"?>
   <?define MouseWithoutBordersProjectName="MouseWithoutBorders"?>
-  <?define PastePlainProjectName="PastePlain"?>
+  <?define AdvancedPasteProjectName="AdvancedPaste"?>
   <?define RegistryPreviewProjectName="RegistryPreview"?>
   <?define PeekProjectName="Peek"?>
-  <?define CmdNotFoundProjectName="CmdNotFound"?>
+  <?define WorkspacesProjectName="Workspaces"?>
   
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>

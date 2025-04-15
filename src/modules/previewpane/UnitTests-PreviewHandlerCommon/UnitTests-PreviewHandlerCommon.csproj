@@ -1,15 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+
   <PropertyGroup>
     <AssemblyTitle>UnitTests-PreviewHandlerCommon</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-PreviewHandlerCommon</AssemblyDescription>
     <AssemblyTitle>UnitTests-PreviewHandlerCommon</AssemblyTitle>
     <Description>PowerToys UnitTests-PreviewHandlerCommon</Description>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <ProjectGuid>{748417CA-F17E-487F-9411-CAFB6D3F4877}</ProjectGuid>
     <RootNamespace>PreviewHandlerCommonUnitTests</RootNamespace>
-    <TargetFramework>net8.0-windows</TargetFramework>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
@@ -17,16 +16,10 @@
     <TestProjectType>UnitTest</TestProjectType>
   </PropertyGroup>
 
-  <Import Project="..\..\..\Version.props" />
+  
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="MSTest.TestAdapter" />
-    <PackageReference Include="MSTest.TestFramework" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\STATestClassAttribute.cs" Link="STATestClassAttribute.cs" />
-    <Compile Include="..\STATestMethodAttribute.cs" Link="STATestMethodAttribute.cs" />
+    <PackageReference Include="MSTest" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Moq" />

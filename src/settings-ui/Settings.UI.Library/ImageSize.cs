@@ -3,241 +3,119 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Settings.UI.Library.Resources;
 
-namespace Microsoft.PowerToys.Settings.UI.Library
+namespace Microsoft.PowerToys.Settings.UI.Library;
+
+public partial class ImageSize : INotifyPropertyChanged
 {
-    public class ImageSize : INotifyPropertyChanged
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
     {
-        public ImageSize(int id)
+        bool changed = !EqualityComparer<T>.Default.Equals(field, value);
+        if (changed)
         {
-            Id = id;
-            Name = string.Empty;
-            Fit = (int)ResizeFit.Fit;
-            Width = 0;
-            Height = 0;
-            Unit = (int)ResizeUnit.Pixel;
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AccessibleTextHelper)));
         }
 
-        public ImageSize()
+        return changed;
+    }
+
+    public ImageSize(int id = 0, string name = "", ResizeFit fit = ResizeFit.Fit, double width = 0, double height = 0, ResizeUnit unit = ResizeUnit.Pixel)
+    {
+        Id = id;
+        Name = name;
+        Fit = fit;
+        Width = width;
+        Height = height;
+        Unit = unit;
+    }
+
+    private int _id;
+    private string _name;
+    private ResizeFit _fit;
+    private double _height;
+    private double _width;
+    private ResizeUnit _unit;
+
+    public int Id
+    {
+        get => _id;
+        set => SetProperty(ref _id, value);
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the <see cref="Height"/> property is used. When false, the
+    /// <see cref="Width"/> property is used to evenly scale the image in both X and Y dimensions.
+    /// </summary>
+    [JsonIgnore]
+    public bool IsHeightUsed
+    {
+        // Height is ignored when using percentage scaling where the aspect ratio is maintained
+        // (i.e. non-stretch fits). In all other cases, both Width and Height are needed.
+        get => !(Unit == ResizeUnit.Percent && Fit != ResizeFit.Stretch);
+    }
+
+    [JsonPropertyName("name")]
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
+
+    [JsonPropertyName("fit")]
+    public ResizeFit Fit
+    {
+        get => _fit;
+        set
         {
-            Id = 0;
-            Name = string.Empty;
-            Fit = (int)ResizeFit.Fit;
-            Width = 0;
-            Height = 0;
-            Unit = (int)ResizeUnit.Pixel;
-        }
-
-        public ImageSize(int id, string name, ResizeFit fit, double width, double height, ResizeUnit unit)
-        {
-            Id = id;
-            Name = name;
-            Fit = (int)fit;
-            Width = width;
-            Height = height;
-            Unit = (int)unit;
-        }
-
-        private int _id;
-        private string _name;
-        private int _fit;
-        private double _height;
-        private double _width;
-        private int _unit;
-
-        public int Id
-        {
-            get
+            if (SetProperty(ref _fit, value))
             {
-                return _id;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHeightUsed)));
             }
-
-            set
-            {
-                if (_id != value)
-                {
-                    _id = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public int ExtraBoxOpacity
-        {
-            get
-            {
-                if (Unit == 2 && Fit != 2)
-                {
-                    return 0;
-                }
-                else
-                {
-                    return 100;
-                }
-            }
-        }
-
-        public bool EnableEtraBoxes
-        {
-            get
-            {
-                if (Unit == 2 && Fit != 2)
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
-            }
-        }
-
-        [JsonPropertyName("name")]
-        public string Name
-        {
-            get
-            {
-                return _name;
-            }
-
-            set
-            {
-                if (_name != value)
-                {
-                    _name = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        [JsonPropertyName("fit")]
-        public int Fit
-        {
-            get
-            {
-                return _fit;
-            }
-
-            set
-            {
-                if (_fit != value)
-                {
-                    _fit = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(ExtraBoxOpacity));
-                    OnPropertyChanged(nameof(EnableEtraBoxes));
-                }
-            }
-        }
-
-        [JsonPropertyName("width")]
-        public double Width
-        {
-            get
-            {
-                return _width;
-            }
-
-            set
-            {
-                double newWidth = -1;
-
-                if (value < 0 || double.IsNaN(value))
-                {
-                    newWidth = 0;
-                }
-                else
-                {
-                    newWidth = value;
-                }
-
-                if (_width != newWidth)
-                {
-                    _width = newWidth;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        [JsonPropertyName("height")]
-        public double Height
-        {
-            get
-            {
-                return _height;
-            }
-
-            set
-            {
-                double newHeight = -1;
-
-                if (value < 0 || double.IsNaN(value))
-                {
-                    newHeight = 0;
-                }
-                else
-                {
-                    newHeight = value;
-                }
-
-                if (_height != newHeight)
-                {
-                    _height = newHeight;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        [JsonPropertyName("unit")]
-        public int Unit
-        {
-            get
-            {
-                return _unit;
-            }
-
-            set
-            {
-                if (_unit != value)
-                {
-                    _unit = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(ExtraBoxOpacity));
-                    OnPropertyChanged(nameof(EnableEtraBoxes));
-                }
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            var handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
-        public void Update(ImageSize modifiedSize)
-        {
-            ArgumentNullException.ThrowIfNull(modifiedSize);
-
-            Id = modifiedSize.Id;
-            Name = modifiedSize.Name;
-            Fit = modifiedSize.Fit;
-            Width = modifiedSize.Width;
-            Height = modifiedSize.Height;
-            Unit = modifiedSize.Unit;
-        }
-
-        public string ToJsonString()
-        {
-            return JsonSerializer.Serialize(this);
         }
     }
+
+    [JsonPropertyName("width")]
+    public double Width
+    {
+        get => _width;
+        set => SetProperty(ref _width, value < 0 || double.IsNaN(value) ? 0 : value);
+    }
+
+    [JsonPropertyName("height")]
+    public double Height
+    {
+        get => _height;
+        set => SetProperty(ref _height, value < 0 || double.IsNaN(value) ? 0 : value);
+    }
+
+    [JsonPropertyName("unit")]
+    public ResizeUnit Unit
+    {
+        get => _unit;
+        set
+        {
+            if (SetProperty(ref _unit, value))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHeightUsed)));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets access to all properties for formatting accessibility descriptions.
+    /// </summary>
+    [JsonIgnore]
+    public ImageSize AccessibleTextHelper => this;
+
+    public string ToJsonString() => JsonSerializer.Serialize(this);
 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Windows;
+
 using FancyZonesEditor.Models;
 using ManagedCommon;
 
@@ -23,7 +24,7 @@ namespace FancyZonesEditor
             Logger.LogTrace();
 
             // If new custom Canvas layout is created (i.e. edited Blank layout),
-            // it's type needs to be updated
+            // its type needs to be updated
             if (EditingLayout.Type == LayoutType.Blank)
             {
                 EditingLayout.Type = LayoutType.Custom;

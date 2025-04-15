@@ -22,13 +22,13 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID /*lpRese
     {
     case DLL_PROCESS_ATTACH:
         g_hInst_MouseWithoutBorders = hModule;
-        Trace::RegisterProvider();
+        Trace::MouseWithoutBorders::RegisterProvider();
         break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
         break;
     case DLL_PROCESS_DETACH:
-        Trace::UnregisterProvider();
+        Trace::MouseWithoutBorders::UnregisterProvider();
         break;
     }
     return TRUE;
@@ -198,7 +198,7 @@ private:
             Logger::error("Failed to delete MWB service");
             return;
         }
-    
+
         Trace::MouseWithoutBorders::ToggleServiceRegistration(false);
     }
 
@@ -242,11 +242,10 @@ private:
         }
 
         // Pass local app data of the current user to the service
-        PWSTR cLocalAppPath;
+        wil::unique_cotaskmem_string cLocalAppPath;
         winrt::check_hresult(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &cLocalAppPath));
-        CoTaskMemFree(cLocalAppPath);
 
-        std::wstring localAppPath{ cLocalAppPath };
+        std::wstring localAppPath{ cLocalAppPath.get() };
         std::wstring binaryWithArgsPath = L"\"";
         binaryWithArgsPath += servicePath;
         binaryWithArgsPath += L"\" ";
@@ -259,7 +258,8 @@ private:
             std::wstring_view existingServicePath{ pServiceConfig->lpBinaryPathName };
             alreadyRegistered = true;
             isServicePathCorrect = (existingServicePath == binaryWithArgsPath);
-            if (isServicePathCorrect) {
+            if (isServicePathCorrect)
+            {
                 Logger::warn(L"The service path is not correct. Current: {} Expected: {}", existingServicePath, binaryWithArgsPath);
             }
 
@@ -291,18 +291,19 @@ private:
 
         if (alreadyRegistered)
         {
-            if (!isServicePathCorrect) {
+            if (!isServicePathCorrect)
+            {
                 if (!ChangeServiceConfigW(schService,
-                    SERVICE_NO_CHANGE,
-                    SERVICE_NO_CHANGE,
-                    SERVICE_NO_CHANGE,
-                    binaryWithArgsPath.c_str(),
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr,
-                    nullptr))
+                                          SERVICE_NO_CHANGE,
+                                          SERVICE_NO_CHANGE,
+                                          SERVICE_NO_CHANGE,
+                                          binaryWithArgsPath.c_str(),
+                                          nullptr,
+                                          nullptr,
+                                          nullptr,
+                                          nullptr,
+                                          nullptr,
+                                          nullptr))
                 {
                     Logger::error(L"Failed to update the service's path. ERROR: {}", GetLastError());
                 }
@@ -362,7 +363,11 @@ private:
 
     void update_state_from_settings(const PowerToysSettings::PowerToyValues& values)
     {
-        const bool new_run_in_service_mode = values.get_bool_value(USE_SERVICE_PROPERTY_NAME).value_or(false);
+        bool new_run_in_service_mode = values.get_bool_value(USE_SERVICE_PROPERTY_NAME).value_or(false);
+        if (powertoys_gpo::getConfiguredMwbAllowServiceModeValue() == powertoys_gpo::gpo_rule_configured_disabled)
+        {
+            new_run_in_service_mode = false;
+        }
 
         if (new_run_in_service_mode != run_in_service_mode)
         {

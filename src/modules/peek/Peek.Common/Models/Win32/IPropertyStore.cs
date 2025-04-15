@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+
 using static Peek.Common.Helpers.PropertyStoreHelper;
 
 namespace Peek.Common.Models

@@ -13,8 +13,8 @@
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
-BOOL APIENTRY DllMain(HMODULE /*hModule*/, 
-                      DWORD ul_reason_for_call, 
+BOOL APIENTRY DllMain(HMODULE /*hModule*/,
+                      DWORD ul_reason_for_call,
                       LPVOID /*lpReserved*/)
 {
     switch (ul_reason_for_call)
@@ -65,6 +65,7 @@ private:
     DWORD m_processPid = 0;
 
     HANDLE m_hInvokeEvent;
+    HANDLE m_hTerminateEvent;
 
     // Load the settings file.
     void init_settings()
@@ -163,7 +164,7 @@ private:
         {
             return false;
         }
-        if (wcsncmp(className, L"Progman", MAX_PATH) !=0 && wcsncmp(className, L"WorkerW", MAX_PATH) != 0)
+        if (wcsncmp(className, L"Progman", MAX_PATH) != 0 && wcsncmp(className, L"WorkerW", MAX_PATH) != 0)
         {
             return false;
         }
@@ -187,7 +188,7 @@ private:
         }
 
         // Enumerate all Shell Windows to compare the window handle against.
-        IUnknownPtr spEnum{};
+        IUnknownPtr spEnum{}; // _com_ptr_t; no Release required.
         result = spShellWindows->_NewEnum(&spEnum);
         if (result != S_OK || spEnum == nullptr)
         {
@@ -195,7 +196,7 @@ private:
             return true; // Might as well assume it's possible it's an explorer window.
         }
 
-        IEnumVARIANTPtr spEnumVariant{};
+        IEnumVARIANTPtr spEnumVariant{}; // _com_ptr_t; no Release required.
         result = spEnum.QueryInterface(__uuidof(spEnumVariant), &spEnumVariant);
         if (result != S_OK || spEnumVariant == nullptr)
         {
@@ -219,8 +220,6 @@ private:
                     {
                         VariantClear(&variantElement);
                         spWebBrowserApp->Release();
-                        spEnumVariant->Release();
-                        spEnum->Release();
                         return true;
                     }
                 }
@@ -229,8 +228,6 @@ private:
             VariantClear(&variantElement);
         }
 
-        spEnumVariant->Release();
-        spEnum->Release();
         return false;
     }
 
@@ -243,7 +240,7 @@ private:
         }
 
         DWORD pid{};
-        if (GetWindowThreadProcessId(foregroundWindowHandle, &pid)!=0)
+        if (GetWindowThreadProcessId(foregroundWindowHandle, &pid) != 0)
         {
             // If the foreground window is the Peek window, send activation signal.
             if (m_processPid != 0 && pid == m_processPid)
@@ -325,6 +322,7 @@ public:
         init_settings();
 
         m_hInvokeEvent = CreateDefaultEvent(CommonSharedConstants::SHOW_PEEK_SHARED_EVENT);
+        m_hTerminateEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_PEEK_SHARED_EVENT);
     };
 
     ~Peek()
@@ -406,6 +404,8 @@ public:
         if (m_enabled)
         {
             ResetEvent(m_hInvokeEvent);
+            SetEvent(m_hTerminateEvent);
+            WaitForSingleObject(m_hProcess, 1500);
             auto result = TerminateProcess(m_hProcess, 1);
             if (result == 0)
             {

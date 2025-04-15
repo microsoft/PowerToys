@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+
 using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Library

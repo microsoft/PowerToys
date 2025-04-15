@@ -5,6 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
+
 using Wox.Plugin.Logger;
 
 namespace Wox.Infrastructure
@@ -12,7 +14,7 @@ namespace Wox.Infrastructure
     public static class Stopwatch
     {
         private static readonly Dictionary<string, long> Count = new Dictionary<string, long>();
-        private static readonly object Locker = new object();
+        private static readonly Lock Locker = new Lock();
 
         /// <summary>
         /// This stopwatch will appear only in Debug mode

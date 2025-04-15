@@ -1,19 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\..\Version.props" />
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
-    <Version>$(Version).0</Version>
-    <Authors>Microsoft Corporation</Authors>
-    <Product>PowerToys</Product>
     <Description>PowerToys ManagedCommon</Description>
     <AssemblyName>PowerToys.ManagedCommon</AssemblyName>
   </PropertyGroup>
 
+  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.Interop</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="System.Management" />
   </ItemGroup>
 

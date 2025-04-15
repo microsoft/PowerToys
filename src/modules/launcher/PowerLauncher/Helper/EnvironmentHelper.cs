@@ -7,13 +7,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
+
 using Wox.Plugin.Logger;
+
 using Stopwatch = Wox.Infrastructure.Stopwatch;
 
 namespace PowerLauncher.Helper
 {
     /// <Note>
-    /// On Windows operating system the name of environment variables is case insensitive. This means if we have a user and machine variable with differences in their name casing (eg. test vs Test), the name casing from machine level is used and won't be overwritten by the user var.
+    /// On Windows operating system the name of environment variables is case-insensitive. This means if we have a user and machine variable with differences in their name casing (eg. test vs Test), the name casing from machine level is used and won't be overwritten by the user var.
     /// Example for Window's behavior: test=ValueMachine (Machine level) + TEST=ValueUser (User level) => test=ValueUser (merged)
     /// To get the same behavior we use "StringComparer.OrdinalIgnoreCase" as compare property for the HashSet and Dictionaries where we merge machine and user variable names.
     /// </Note>
@@ -94,7 +96,7 @@ namespace PowerLauncher.Helper
                 // Determine deleted variables and add them with a "string.Empty" value as marker to the dictionary
                 foreach (DictionaryEntry pVar in oldProcessEnvironment)
                 {
-                    // We must compare case insensitive (see dictionary assignment) to avoid false positives when the variable name has changed (Example: "path" -> "Path")
+                    // We must compare case-insensitive (see dictionary assignment) to avoid false positives when the variable name has changed (Example: "path" -> "Path")
                     if (!newEnvironment.ContainsKey((string)pVar.Key) & !_protectedProcessVariables.Contains((string)pVar.Key))
                     {
                         newEnvironment.Add((string)pVar.Key, string.Empty);
@@ -105,7 +107,7 @@ namespace PowerLauncher.Helper
                 // Later we only like to recreate the changed ones
                 foreach (string varName in newEnvironment.Keys.ToList())
                 {
-                    // To be able to detect changed names correctly we have to compare case sensitive
+                    // To be able to detect changed names correctly we have to compare case-sensitive
                     if (oldProcessEnvironment.Contains(varName))
                     {
                         if (oldProcessEnvironment[varName].Equals(newEnvironment[varName]))
@@ -153,7 +155,7 @@ namespace PowerLauncher.Helper
                         }
                         catch (Exception ex)
                         {
-                            // The dotnet method "System.Environment.SetEnvironmentVariable" has it's own internal method to check the input parameters. Here we catch the exceptions that we don't check before updating the environment variable and log it to avoid crashes of PT Run.
+                            // The dotnet method "System.Environment.SetEnvironmentVariable" has its own internal method to check the input parameters. Here we catch the exceptions that we don't check before updating the environment variable and log it to avoid crashes of PT Run.
                             Log.Exception($"Unhandled exception while updating the environment variable [{kv.Key}] for the PT Run process. (The variable value has a length of [{varValueLength}].)", ex, typeof(PowerLauncher.Helper.EnvironmentHelper));
                         }
                     }
@@ -187,7 +189,7 @@ namespace PowerLauncher.Helper
                     string uVarKey = (string)uVar.Key;
                     string uVarValue = (string)uVar.Value;
 
-                    // The variable name of the path variable can be upper case, lower case ore mixed case. So we have to compare case insensitive.
+                    // The variable name of the path variable can be upper case, lower case ore mixed case. So we have to compare case-insensitive.
                     if (!uVarKey.Equals(PathVariableName, StringComparison.OrdinalIgnoreCase))
                     {
                         environment[uVarKey] = uVarValue;

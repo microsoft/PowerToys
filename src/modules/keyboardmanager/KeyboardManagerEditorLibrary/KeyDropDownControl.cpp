@@ -30,6 +30,11 @@ DWORD KeyDropDownControl::GetSelectedValue(ComboBox comboBox)
     return stoul(std::wstring(value));
 }
 
+DWORD KeyDropDownControl::GetSelectedValue(TextBlock text)
+{
+    return keyboardManagerState->keyboardMap.GetKeyFromName(std::wstring{ text.Text() });
+}
+
 void KeyDropDownControl::SetSelectedValue(std::wstring value)
 {
     this->dropDown.as<ComboBox>().SelectedValue(winrt::box_value(value));
@@ -87,7 +92,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
         auto child0 = Media::VisualTreeHelper::GetChild(combo, 0);
         if (!child0)
             return;
-        
+
         auto grid = child0.as<Grid>();
         if (!grid)
             return;
@@ -95,7 +100,7 @@ void KeyDropDownControl::SetDefaultProperties(bool isShortcut, bool renderDisabl
         auto& gridChildren = grid.Children();
         if (!gridChildren)
             return;
-        
+
         gridChildren.Append(warningTip);
     });
 
@@ -276,21 +281,19 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
             std::vector<int32_t> selectedKeyCodes = GetSelectedCodesFromStackPanel(parent);
             if (!isHybridControl)
             {
-                std::get<Shortcut>(shortcutRemapBuffer[validationResult.second].first[colIndex]).SetKeyCodes(selectedKeyCodes);
+                std::get<Shortcut>(shortcutRemapBuffer[validationResult.second].mapping[colIndex]).SetKeyCodes(selectedKeyCodes);
             }
             else
             {
                 // If exactly one key is selected consider it to be a key remap
                 if (GetNumberOfSelectedKeys(selectedKeyCodes) == 1)
                 {
-                    shortcutRemapBuffer[validationResult.second].first[colIndex] = (DWORD)selectedKeyCodes[0];
+                    shortcutRemapBuffer[validationResult.second].mapping[colIndex] = (DWORD)selectedKeyCodes[0];
                 }
                 else
                 {
-                    Shortcut tempShortcut;
-                    tempShortcut.SetKeyCodes(selectedKeyCodes);
                     // Assign instead of setting the value in the buffer since the previous value may not be a Shortcut
-                    shortcutRemapBuffer[validationResult.second].first[colIndex] = tempShortcut;
+                    shortcutRemapBuffer[validationResult.second].mapping[colIndex] = Shortcut(selectedKeyCodes);
                 }
             }
 
@@ -302,11 +305,11 @@ void KeyDropDownControl::SetSelectionHandler(StackPanel& table, StackPanel row, 
                 std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);
                 if (newText == lowercaseDefAppName)
                 {
-                    shortcutRemapBuffer[validationResult.second].second = L"";
+                    shortcutRemapBuffer[validationResult.second].appName = L"";
                 }
                 else
                 {
-                    shortcutRemapBuffer[validationResult.second].second = targetApp.Text().c_str();
+                    shortcutRemapBuffer[validationResult.second].appName = targetApp.Text().c_str();
                 }
             }
         }
@@ -364,10 +367,31 @@ std::vector<int32_t> KeyDropDownControl::GetSelectedCodesFromStackPanel(Variable
     std::vector<int32_t> selectedKeyCodes;
 
     // Get selected indices for each drop down
-    for (int i = 0; i < (int)parent.Children().Size(); i++)
+    for (uint32_t i = 0; i < parent.Children().Size(); i++)
     {
-        ComboBox ItDropDown = parent.Children().GetAt(i).as<ComboBox>();
-        selectedKeyCodes.push_back(GetSelectedValue(ItDropDown));
+        if (auto ItDropDown = parent.Children().GetAt(i).try_as<ComboBox>(); ItDropDown)
+        {
+            selectedKeyCodes.push_back(GetSelectedValue(ItDropDown));
+        }
+
+        // If it's a ShortcutControl -> use its layout, see KeyboardManagerState::AddKeyToLayout
+        else if (auto sp = parent.Children().GetAt(i).try_as<StackPanel>(); sp)
+        {
+            for (uint32_t j = 0; j < sp.Children().Size(); ++j)
+            {
+                auto border = sp.Children().GetAt(j).try_as<Border>();
+
+                // if this is null then this is a different layout
+                // likely because this not a shortcut to another shortcut but rather
+                // run app or open uri
+
+                if (border != nullptr)
+                {
+                    auto textBlock = border.Child().try_as<TextBlock>();
+                    selectedKeyCodes.push_back(GetSelectedValue(textBlock));
+                }
+            }
+        }
     }
 
     return selectedKeyCodes;
@@ -432,27 +456,36 @@ void KeyDropDownControl::AddShortcutToControl(Shortcut shortcut, StackPanel tabl
     // Remove references to the old drop down objects to destroy them
     keyDropDownControlObjects.clear();
     std::vector<DWORD> shortcutKeyCodes = shortcut.GetKeyCodes();
-    if (shortcutKeyCodes.size() != 0)
+
+    auto secondKey = shortcut.GetSecondKey();
+
+    bool ignoreWarning = false;
+
+    // If more than one key is to be added, ignore a shortcut to key warning on partially entering the remapping
+    if (shortcutKeyCodes.size() > 1)
     {
-        bool ignoreWarning = false;
+        ignoreWarning = true;
+    }
 
-        // If more than one key is to be added, ignore a shortcut to key warning on partially entering the remapping
-        if (shortcutKeyCodes.size() > 1)
+    KeyDropDownControl::AddDropDown(table, row, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
+
+    for (int i = 0; i < shortcutKeyCodes.size(); i++)
+    {
+        // New drop down gets added automatically when the SelectedValue(key code) is set
+        if (i < (int)parent.Children().Size())
         {
-            ignoreWarning = true;
+            ComboBox currentDropDown = parent.Children().GetAt(i).as<ComboBox>();
+            currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcutKeyCodes[i])));
         }
+    }
 
+    if (shortcut.HasChord())
+    {
+        // if this has a chord, render it last
         KeyDropDownControl::AddDropDown(table, row, parent, colIndex, remapBuffer, keyDropDownControlObjects, targetApp, isHybridControl, isSingleKeyWindow, ignoreWarning);
-
-        for (int i = 0; i < shortcutKeyCodes.size(); i++)
-        {
-            // New drop down gets added automatically when the SelectedValue(key code) is set
-            if (i < (int)parent.Children().Size())
-            {
-                ComboBox currentDropDown = parent.Children().GetAt(i).as<ComboBox>();
-                currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcutKeyCodes[i])));
-            }
-        }
+        auto nextI = static_cast<int>(shortcutKeyCodes.size());
+        ComboBox currentDropDown = parent.Children().GetAt(nextI).as<ComboBox>();
+        currentDropDown.SelectedValue(winrt::box_value(std::to_wstring(shortcut.GetSecondKey())));
     }
 }
 

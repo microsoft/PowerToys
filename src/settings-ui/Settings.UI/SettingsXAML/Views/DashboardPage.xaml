@@ -15,6 +15,26 @@
     mc:Ignorable="d">
 
     <Page.Resources>
+        <DataTemplate x:Key="KeyVisualTemplate">
+            <controls:KeyVisual
+                VerticalAlignment="Center"
+                AutomationProperties.AccessibilityView="Raw"
+                Content="{Binding}"
+                IsTabStop="False"
+                VisualType="TextOnly" />
+        </DataTemplate>
+        <DataTemplate x:Key="CommaTemplate">
+            <StackPanel Background="{ThemeResource SystemFillColorSolidAttentionBackground}">
+                <TextBlock
+                    Margin="4,0"
+                    VerticalAlignment="Bottom"
+                    Text="," />
+            </StackPanel>
+        </DataTemplate>
+        <converters:KeyVisualTemplateSelector
+            x:Key="KeyVisualTemplateSelector"
+            CommaTemplate="{StaticResource CommaTemplate}"
+            KeyVisualTemplate="{StaticResource KeyVisualTemplate}" />
         <converters:ModuleItemTemplateSelector
             x:Key="ModuleItemTemplateSelector"
             ButtonTemplate="{StaticResource ModuleItemButtonTemplate}"
@@ -156,7 +176,7 @@
                                                 <ItemsControl
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     IsTabStop="False"
-                                                    ItemsSource="{x:Bind GetMappedNewRemapKeys()}">
+                                                    ItemsSource="{x:Bind GetMappedNewRemapKeys(15)}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Horizontal" Spacing="12" />
@@ -190,7 +210,7 @@
                                     <DataTemplate x:DataType="Lib:AppSpecificKeysDataModel">
                                         <StackPanel Orientation="Horizontal">
                                             <Border
-                                                Padding="8,4"
+                                                Padding="8,0"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                                 BorderThickness="1"
@@ -198,29 +218,27 @@
                                                 <ItemsControl
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     IsTabStop="False"
-                                                    ItemsSource="{x:Bind GetMappedOriginalKeys()}">
+                                                    ItemTemplateSelector="{StaticResource KeyVisualTemplateSelector}"
+                                                    ItemsSource="{x:Bind GetMappedOriginalKeysWithSplitChord()}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Horizontal" Spacing="12" />
                                                         </ItemsPanelTemplate>
                                                     </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <controls:KeyVisual
-                                                                VerticalAlignment="Center"
-                                                                AutomationProperties.AccessibilityView="Raw"
-                                                                Content="{Binding}"
-                                                                IsTabStop="False"
-                                                                VisualType="TextOnly" />
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
                                             </Border>
                                             <controls:IsEnabledTextBlock
                                                 x:Uid="To"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
-                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                                            <controls:IsEnabledTextBlock
+                                                x:Uid="Starts"
+                                                Margin="8,0,8,0"
+                                                VerticalAlignment="Center"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
+                                                Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay}" />
                                             <Border
                                                 Padding="8,4"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -230,7 +248,7 @@
                                                 <ItemsControl
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     IsTabStop="False"
-                                                    ItemsSource="{x:Bind GetMappedNewRemapKeys()}">
+                                                    ItemsSource="{x:Bind GetMappedNewRemapKeys(15)}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <StackPanel Orientation="Horizontal" Spacing="12" />
@@ -307,6 +325,7 @@
                                 Padding="0"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
+                                AutomationProperties.Name="{x:Bind Label}"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="DashboardListItemClick"
@@ -329,17 +348,28 @@
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <Image Width="20" Margin="0,0,0,0">
+                                        <Image
+                                            Grid.Column="0"
+                                            Width="20"
+                                            Margin="0,0,0,0">
                                             <Image.Source>
                                                 <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock
+                                        <StackPanel
                                             Grid.Column="1"
                                             VerticalAlignment="Center"
-                                            FontWeight="SemiBold"
-                                            Text="{x:Bind Label, Mode=OneWay}"
-                                            TextTrimming="CharacterEllipsis" />
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontWeight="SemiBold"
+                                                Text="{x:Bind Label, Mode=OneWay}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <InfoBadge
+                                                Margin="4,0,0,0"
+                                                Style="{StaticResource NewInfoBadge}"
+                                                Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                        </StackPanel>
                                         <FontIcon
                                             Grid.Column="2"
                                             Width="20"
@@ -352,9 +382,11 @@
                                             </ToolTipService.ToolTip>
                                         </FontIcon>
                                         <ToggleSwitch
+                                            x:Uid="Enable_Module"
                                             Grid.Column="3"
                                             Margin="0,-2,0,0"
                                             HorizontalAlignment="Right"
+                                            AutomationProperties.HelpText="{x:Bind Label}"
                                             IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
                                             IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
                                             OffContent=""
@@ -365,6 +397,7 @@
                                     <ItemsControl
                                         Grid.Row="1"
                                         Margin="16,8,16,16"
+                                        IsTabStop="False"
                                         ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
                                         ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}"
                                         Visibility="{x:Bind IsEnabled, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
@@ -398,6 +431,7 @@
                                 Padding="0"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Stretch"
+                                AutomationProperties.Name="{x:Bind Label}"
                                 Background="Transparent"
                                 BorderThickness="0"
                                 Click="DashboardListItemClick"
@@ -417,17 +451,25 @@
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-                                        <Image Width="20">
+                                        <Image Grid.Column="0" Width="20">
                                             <Image.Source>
                                                 <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
                                             </Image.Source>
                                         </Image>
-                                        <TextBlock
+                                        <StackPanel
                                             Grid.Column="1"
                                             VerticalAlignment="Center"
-                                            FontWeight="SemiBold"
-                                            Text="{x:Bind Label, Mode=OneWay}"
-                                            TextTrimming="CharacterEllipsis" />
+                                            Orientation="Horizontal">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontWeight="SemiBold"
+                                                Text="{x:Bind Label, Mode=OneWay}"
+                                                TextTrimming="CharacterEllipsis" />
+                                            <InfoBadge
+                                                Margin="4,0,0,0"
+                                                Style="{StaticResource NewInfoBadge}"
+                                                Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                        </StackPanel>
                                         <FontIcon
                                             Grid.Column="2"
                                             Width="20"
@@ -440,9 +482,11 @@
                                             </ToolTipService.ToolTip>
                                         </FontIcon>
                                         <ToggleSwitch
+                                            x:Uid="Enable_Module"
                                             Grid.Column="3"
                                             Margin="0,-2,0,0"
                                             HorizontalAlignment="Right"
+                                            AutomationProperties.HelpText="{x:Bind Label}"
                                             IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
                                             IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
                                             OffContent=""

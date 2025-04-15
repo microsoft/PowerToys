@@ -4,10 +4,12 @@
 
 using System.IO.Abstractions;
 using System.Text.Json;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using PowerAccent.Core.SerializationContext;
 using PowerToys.PowerAccentKeyboardService;
 
 namespace PowerAccent.Core.Services;
@@ -17,7 +19,7 @@ public class SettingsService
     private const string PowerAccentModuleName = "QuickAccent";
     private readonly SettingsUtils _settingsUtils;
     private readonly IFileSystemWatcher _watcher;
-    private readonly object _loadingSettingsLock = new object();
+    private readonly Lock _loadingSettingsLock = new Lock();
     private KeyboardListener _keyboardListener;
 
     public SettingsService(KeyboardListener keyboardListener)
@@ -27,11 +29,6 @@ public class SettingsService
         ReadSettings();
         _watcher = Helper.GetFileWatcher(PowerAccentModuleName, "settings.json", () => { ReadSettings(); });
     }
-
-    private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
-    {
-        WriteIndented = true,
-    };
 
     private void ReadSettings()
     {
@@ -45,9 +42,8 @@ public class SettingsService
                     {
                         Logger.LogInfo("QuickAccent settings.json was missing, creating a new one");
                         var defaultSettings = new PowerAccentSettings();
-                        var options = _serializerOptions;
 
-                        _settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), PowerAccentModuleName);
+                        _settingsUtils.SaveSettings(JsonSerializer.Serialize(this, SourceGenerationContext.Default.SettingsService), PowerAccentModuleName);
                     }
 
                     var settings = _settingsUtils.GetSettingsOrDefault<PowerAccentSettings>(PowerAccentModuleName);
@@ -65,7 +61,10 @@ public class SettingsService
                         ExcludedApps = settings.Properties.ExcludedApps.Value;
                         _keyboardListener.UpdateExcludedApps(ExcludedApps);
 
-                        SelectedLang = Enum.TryParse(settings.Properties.SelectedLang.Value, out Language selectedLangValue) ? selectedLangValue : Language.ALL;
+                        SelectedLang = settings.Properties.SelectedLang.Value
+                            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(lang => Enum.TryParse(lang, out Language selectedLangValue) ? selectedLangValue : Language.SPECIAL)
+                            .ToArray();
 
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
@@ -186,9 +185,9 @@ public class SettingsService
         }
     }
 
-    private Language _selectedLang;
+    private Language[] _selectedLang;
 
-    public Language SelectedLang
+    public Language[] SelectedLang
     {
         get
         {

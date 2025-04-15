@@ -3,6 +3,9 @@
 #include "srwlock.h"
 
 #include "Enumerating.h"
+
+#include "Randomizer.h"
+
 #include "PowerRenameInterfaces.h"
 
 #define DEFAULT_FLAGS 0
@@ -38,7 +41,7 @@ protected:
     void _OnReplaceTermChanged();
     void _OnFlagsChanged();
     void _OnFileTimeChanged();
-    HRESULT _OnEnumerateItemsChanged();
+    HRESULT _OnEnumerateOrRandomizeItemsChanged();
 
     size_t _Find(std::wstring data, std::wstring toSearch, bool caseInsensitive, size_t pos);
 
@@ -58,6 +61,9 @@ protected:
 
     std::vector<Enumerator> m_enumerators;
     std::vector<int32_t> m_replaceWithEnumeratorOffsets;
+
+    std::vector<Randomizer> m_randomizer;
+    std::vector<int32_t> m_replaceWithRandomizerOffsets;
 
     struct RENAME_REGEX_EVENT
     {

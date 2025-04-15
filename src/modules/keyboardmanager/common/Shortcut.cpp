@@ -21,16 +21,38 @@ std::vector<std::wstring> Shortcut::splitwstring(const std::wstring& input, wcha
     return splittedStrings;
 }
 
-// Constructor to initialize Shortcut from it's virtual key code string representation.
+// Constructor to initialize Shortcut from its virtual key code string representation.
 Shortcut::Shortcut(const std::wstring& shortcutVK) :
     winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
 {
     auto keys = splitwstring(shortcutVK, ';');
+    SetKeyCodes(ConvertToNumbers(keys));
+}
+
+std::vector<int32_t> Shortcut::ConvertToNumbers(std::vector<std::wstring>& keys)
+{
+    std::vector<int32_t> keysAsNumbers;
     for (auto it : keys)
     {
         auto vkKeyCode = std::stoul(it);
-        SetKey(vkKeyCode);
+        keysAsNumbers.push_back(vkKeyCode);
     }
+    return keysAsNumbers;
+}
+
+// Constructor to initialize Shortcut from single key
+Shortcut::Shortcut(const DWORD key)
+{
+    SetKey(key);
+}
+
+// Constructor to initialize Shortcut from its virtual key code string representation.
+Shortcut::Shortcut(const std::wstring& shortcutVK, const DWORD secondKeyOfChord) :
+    winKey(ModifierKey::Disabled), ctrlKey(ModifierKey::Disabled), altKey(ModifierKey::Disabled), shiftKey(ModifierKey::Disabled), actionKey(NULL)
+{
+    auto keys = splitwstring(shortcutVK, ';');
+    SetKeyCodes(ConvertToNumbers(keys));
+    secondKey = secondKeyOfChord;
 }
 
 // Constructor to initialize shortcut from a list of keys
@@ -88,12 +110,44 @@ void Shortcut::Reset()
     altKey = ModifierKey::Disabled;
     shiftKey = ModifierKey::Disabled;
     actionKey = NULL;
+    secondKey = NULL;
+    chordStarted = false;
 }
 
 // Function to return the action key
 DWORD Shortcut::GetActionKey() const
 {
     return actionKey;
+}
+
+bool Shortcut::IsRunProgram() const
+{
+    return operationType == OperationType::RunProgram;
+}
+
+bool Shortcut::IsOpenURI() const
+{
+    return operationType == OperationType::OpenURI;
+}
+
+DWORD Shortcut::GetSecondKey() const
+{
+    return secondKey;
+}
+
+bool Shortcut::HasChord() const
+{
+    return secondKey != NULL;
+}
+
+void Shortcut::SetChordStarted(bool started)
+{
+    chordStarted = started;
+}
+
+bool Shortcut::IsChordStarted() const
+{
+    return chordStarted;
 }
 
 // Function to return the virtual key code of the win key state expected in the shortcut. Argument is used to decide which win key to return in case of both. If the current shortcut doesn't use both win keys then arg is ignored. Return NULL if it is not a part of the shortcut
@@ -131,7 +185,7 @@ DWORD Shortcut::GetWinKey(const ModifierKey& input) const
 }
 
 // Function to return the virtual key code of the ctrl key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-DWORD Shortcut::GetCtrlKey() const
+DWORD Shortcut::GetCtrlKey(const ModifierKey& input) const
 {
     if (ctrlKey == ModifierKey::Disabled)
     {
@@ -147,12 +201,20 @@ DWORD Shortcut::GetCtrlKey() const
     }
     else
     {
+        if (input == ModifierKey::Right)
+        {
+            return VK_RCONTROL;
+        }
+        if (input == ModifierKey::Left)
+        {
+            return VK_LCONTROL;
+        }
         return VK_CONTROL;
     }
 }
 
 // Function to return the virtual key code of the alt key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-DWORD Shortcut::GetAltKey() const
+DWORD Shortcut::GetAltKey(const ModifierKey& input) const
 {
     if (altKey == ModifierKey::Disabled)
     {
@@ -166,6 +228,14 @@ DWORD Shortcut::GetAltKey() const
     {
         return VK_RMENU;
     }
+    if (input == ModifierKey::Right)
+    {
+        return VK_RMENU;
+    }
+    else if (input == ModifierKey::Left || input == ModifierKey::Disabled)
+    {
+        return VK_LMENU;
+    }
     else
     {
         return VK_MENU;
@@ -173,7 +243,7 @@ DWORD Shortcut::GetAltKey() const
 }
 
 // Function to return the virtual key code of the shift key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-DWORD Shortcut::GetShiftKey() const
+DWORD Shortcut::GetShiftKey(const ModifierKey& input) const
 {
     if (shiftKey == ModifierKey::Disabled)
     {
@@ -189,6 +259,14 @@ DWORD Shortcut::GetShiftKey() const
     }
     else
     {
+        if (input == ModifierKey::Right)
+        {
+            return VK_RSHIFT;
+        }
+        if (input == ModifierKey::Left)
+        {
+            return VK_LSHIFT;
+        }
         return VK_SHIFT;
     }
 }
@@ -279,6 +357,16 @@ bool Shortcut::CheckShiftKey(const DWORD input) const
     {
         return (VK_SHIFT == input) || (VK_LSHIFT == input) || (VK_RSHIFT == input);
     }
+}
+
+bool Shortcut::SetSecondKey(const DWORD input)
+{
+    if (secondKey == input)
+    {
+        return false;
+    }
+    secondKey = input;
+    return true;
 }
 
 // Function to set a key in the shortcut based on the passed key code argument. Returns false if it is already set to the same value. This can be used to avoid UI refreshing
@@ -413,10 +501,10 @@ void Shortcut::ResetKey(const DWORD input)
     {
         shiftKey = ModifierKey::Disabled;
     }
-    else
-    {
-        actionKey = {};
-    }
+
+    // we always want to reset these also, I think for now since this got a little weirder when chords
+    actionKey = {};
+    secondKey = {};
 }
 
 // Function to return the string representation of the shortcut in virtual key codes appended in a string by ";" separator.
@@ -429,19 +517,24 @@ winrt::hstring Shortcut::ToHstringVK() const
     }
     if (ctrlKey != ModifierKey::Disabled)
     {
-        output = output + winrt::to_hstring(static_cast<unsigned int>(GetCtrlKey())) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetCtrlKey(ModifierKey::Both))) + winrt::to_hstring(L";");
     }
     if (altKey != ModifierKey::Disabled)
     {
-        output = output + winrt::to_hstring(static_cast<unsigned int>(GetAltKey())) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetAltKey(ModifierKey::Both))) + winrt::to_hstring(L";");
     }
     if (shiftKey != ModifierKey::Disabled)
     {
-        output = output + winrt::to_hstring(static_cast<unsigned int>(GetShiftKey())) + winrt::to_hstring(L";");
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetShiftKey(ModifierKey::Both))) + winrt::to_hstring(L";");
     }
     if (actionKey != NULL)
     {
         output = output + winrt::to_hstring(static_cast<unsigned int>(GetActionKey())) + winrt::to_hstring(L";");
+    }
+
+    if (secondKey != NULL)
+    {
+        output = output + winrt::to_hstring(static_cast<unsigned int>(GetSecondKey())) + winrt::to_hstring(L";");
     }
 
     if (!output.empty())
@@ -462,15 +555,15 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
     }
     if (ctrlKey != ModifierKey::Disabled)
     {
-        keys.push_back(GetCtrlKey());
+        keys.push_back(GetCtrlKey(ModifierKey::Both));
     }
     if (altKey != ModifierKey::Disabled)
     {
-        keys.push_back(GetAltKey());
+        keys.push_back(GetAltKey(ModifierKey::Both));
     }
     if (shiftKey != ModifierKey::Disabled)
     {
-        keys.push_back(GetShiftKey());
+        keys.push_back(GetShiftKey(ModifierKey::Both));
     }
     if (actionKey != NULL)
     {
@@ -479,15 +572,48 @@ std::vector<DWORD> Shortcut::GetKeyCodes()
     return keys;
 }
 
+bool Shortcut::IsActionKey(const DWORD input)
+{
+    auto shortcut = Shortcut();
+    shortcut.SetKey(input);
+    return (shortcut.actionKey != NULL);
+}
+
+bool Shortcut::IsModifier(const DWORD input)
+{
+    auto shortcut = Shortcut();
+    shortcut.SetKey(input);
+    return (shortcut.actionKey == NULL);
+}
+
 // Function to set a shortcut from a vector of key codes
 void Shortcut::SetKeyCodes(const std::vector<int32_t>& keys)
 {
     Reset();
+
+    bool foundActionKey = false;
     for (int i = 0; i < keys.size(); i++)
     {
         if (keys[i] != -1 && keys[i] != 0)
         {
-            SetKey(keys[i]);
+            Shortcut tempShortcut = Shortcut(keys[i]);
+
+            if (!foundActionKey && tempShortcut.actionKey != NULL)
+            {
+                // last key was an action key, next key is secondKey
+                foundActionKey = true;
+                SetKey(keys[i]);
+            }
+            else if (foundActionKey && tempShortcut.actionKey != NULL)
+            {
+                // already found actionKey, and we found another, add this as the secondKey
+                secondKey = keys[i];
+            }
+            else
+            {
+                // just add whatever it is.
+                SetKey(keys[i]);
+            }
         }
     }
 }

@@ -6,7 +6,7 @@
   "Author": "cyberrex5",
   "Version": "1.0.0",
   "Language": "csharp",
-  "Website": "https://aka.ms/powertoys",
+  "Website": "https://aka.ms/PowerToys",
   "ExecuteFileName": "Community.PowerToys.Run.Plugin.WebSearch.dll",
   "IcoPathDark": "Images\\WebSearch.dark.png",
   "IcoPathLight": "Images\\WebSearch.light.png"

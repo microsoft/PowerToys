@@ -11,7 +11,7 @@ public:
 
     // Constructor
     KeyboardManager();
-    
+
     ~KeyboardManager()
     {
         if (editorIsRunningEvent)
@@ -19,7 +19,7 @@ public:
             CloseHandle(editorIsRunningEvent);
         }
     }
-    
+
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
 

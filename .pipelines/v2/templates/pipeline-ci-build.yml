@@ -1,0 +1,75 @@
+variables:
+  - name: runCodesignValidationInjectionBG
+    value: false
+  - name: EnablePipelineCache
+    value: true
+  - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
+    - name: EnablePipelineCache
+      value: true
+
+parameters:
+  - name: buildPlatforms
+    type: object
+    default:
+      - x64
+      - arm64
+  - name: enableMsBuildCaching
+    type: boolean
+    default: false
+  - name: runTests
+    type: boolean
+    default: true
+  - name: useVSPreview
+    type: boolean
+    default: false
+  - name: useLatestWebView2
+    type: boolean
+    default: false
+  - name: useLatestWinAppSDK
+    type: boolean
+    default: false
+  - name: winAppSDKVersionNumber
+    type: string
+    default: 1.6
+  - name: useExperimentalVersion
+    type: boolean
+    default: false
+
+stages:
+  - ${{ each platform in parameters.buildPlatforms }}:
+    - stage: Build_${{ platform }}
+      displayName: Build ${{ platform }}
+      dependsOn: []
+      jobs:
+        - template: job-build-project.yml
+          parameters:
+            pool:
+              ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+                name: SHINE-INT-L
+              ${{ else }}:
+                name: SHINE-OSS-L
+              ${{ if eq(parameters.useVSPreview, true) }}:
+                demands: ImageOverride -equals SHINE-VS17-Preview
+            buildPlatforms:
+              - ${{ platform }}
+            buildConfigurations: [Release]
+            enablePackageCaching: true
+            enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+            runTests: ${{ parameters.runTests }}
+            useVSPreview: ${{ parameters.useVSPreview }}
+            useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
+            ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
+              winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
+              useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+
+    - ${{ if and(eq(parameters.runTests, true), not(and(eq(platform, 'arm64'), eq(variables['System.PullRequest.IsFork'], true)))) }}:
+      - stage: Test_${{ platform }}
+        displayName: Test ${{ platform }}
+        dependsOn:
+          - Build_${{platform}}
+        jobs:
+          - template: job-test-project.yml
+            parameters:
+              platform: ${{ platform }}
+              configuration: Release
+              useLatestWebView2: ${{ parameters.useLatestWebView2 }}

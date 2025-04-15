@@ -63,7 +63,11 @@
                                 IsClosable="False"
                                 IsOpen="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
                                 IsTabStop="{x:Bind ViewModel.SomeUpdateSettingsAreGpoManaged, Mode=OneWay}"
-                                Severity="Informational" />
+                                Severity="Informational">
+                                <InfoBar.IconSource>
+                                    <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                                </InfoBar.IconSource>
+                            </InfoBar>
                         </tkcontrols:SettingsExpander.ItemsHeader>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
@@ -110,6 +114,7 @@
                                 <StackPanel Spacing="16">
                                     <Button
                                         x:Uid="General_DownloadAndInstall"
+                                        Margin="0,0,0,16"
                                         Command="{Binding UpdateNowButtonEventHandler}"
                                         IsEnabled="{Binding IsDownloadAllowed}"
                                         Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
@@ -228,6 +233,25 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="True">
+                    <tkcontrols:SettingsCard x:Uid="LanguageHeader" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
+                        <ComboBox
+                            x:Name="Languages_ComboBox"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            DisplayMemberPath="Language"
+                            ItemsSource="{Binding Languages, Mode=TwoWay}"
+                            SelectedIndex="{Binding LanguagesIndex, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="LanguageRestartInfo"
+                        IsClosable="False"
+                        IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.LanguageChanged}"
+                        IsTabStop="True"
+                        Severity="Informational">
+                        <InfoBar.ActionButton>
+                            <Button x:Uid="LanguageRestartInfoButton" Click="Click_LanguageRestart" />
+                        </InfoBar.ActionButton>
+                    </InfoBar>
+
                     <tkcontrols:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
                         <tkcontrols:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
@@ -239,13 +263,25 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="GeneralPage_RunAtStartUp">
+                    <tkcontrols:SettingsCard x:Uid="GeneralPage_RunAtStartUp" IsEnabled="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard x:Uid="HideSystemTrayIcon">
                         <ToggleSwitch x:Uid="HideSystemTrayIcon_ToggleSwitch" IsOn="{x:Bind ViewModel.HideSysTrayIcon, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="GPO_SettingIsManaged"
+                        BorderThickness="0"
+                        CornerRadius="0"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay}"
+                        IsTabStop="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay}"
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
@@ -275,6 +311,7 @@
                                         </ToolTipService.ToolTip>
                                     </TextBlock>
                                     <Button
+                                        x:Uid="General_SettingsBackupAndRestore_ButtonSelectFolder"
                                         Grid.Column="1"
                                         Command="{Binding SelectSettingBackupDirEventHandler}"
                                         Content="&#xe8da;"
@@ -362,7 +399,62 @@
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
-                        Severity="Informational" />
+                        Severity="Informational">
+                        <InfoBar.IconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                        </InfoBar.IconSource>
+                    </InfoBar>
+                </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="General_DiagnosticsAndFeedback" Visibility="Visible">
+                    <StackPanel>
+                        <HyperlinkButton
+                            x:Uid="GeneralPage_DiagnosticsAndFeedback_Link"
+                            Margin="-8,0,0,0"
+                            NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
+                        <tkcontrols:SettingsCard
+                            x:Uid="GeneralPage_EnableDataDiagnostics"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}"
+                            IsEnabled="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <InfoBar
+                            x:Uid="GPO_SettingIsManaged"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
+                            Severity="Informational">
+                            <InfoBar.IconSource>
+                                <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                            </InfoBar.IconSource>
+                        </InfoBar>
+                        <tkcontrols:SettingsExpander
+                            x:Uid="GeneralPage_ViewDiagnosticData"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
+                            IsEnabled="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                            IsExpanded="True">
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableViewDiagnosticData" IsEnabled="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}">
+                                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableViewDataDiagnostics, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Uid="GeneralPage_ViewDiagnosticDataViewer"
+                                    ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                                    Click="ViewDiagnosticData_Click"
+                                    IsClickEnabled="True" />
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+                        <InfoBar
+                            x:Uid="GeneralPage_ViewDiagnosticDataViewerInfo"
+                            IsClosable="False"
+                            IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ViewDiagnosticDataViewerChanged}"
+                            IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ViewDiagnosticDataViewerChanged}"
+                            Severity="Informational">
+                            <InfoBar.ActionButton>
+                                <Button x:Uid="GeneralPage_ViewDiagnosticDataViewerInfoButton" Click="Click_ViewDiagnosticDataViewerRestart" />
+                            </InfoBar.ActionButton>
+                        </InfoBar>
+
+                    </StackPanel>
                 </controls:SettingsGroup>
             </StackPanel>
 
@@ -370,7 +462,7 @@
         <controls:SettingsPageControl.PrimaryLinks>
             <controls:PageLink x:Uid="GeneralPage_Documentation" Link="https://aka.ms/PowerToysOverview" />
             <controls:PageLink x:Uid="General_Repository" Link="https://aka.ms/powertoys" />
-            <controls:PageLink x:Uid="GeneralPage_ReportAbug" Link="https://aka.ms/powerToysReportBug" />
+            <controls:PageLink x:Uid="GeneralPage_ReportAbug" Link="{x:Bind ViewModel.ReportBugLink, Mode=OneWay}" />
             <controls:PageLink x:Uid="GeneralPage_RequestAFeature_URL" Link="https://aka.ms/powerToysRequestFeature" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>

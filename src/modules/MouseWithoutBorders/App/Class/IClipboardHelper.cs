@@ -16,14 +16,20 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using Microsoft.VisualStudio.Threading;
 using Newtonsoft.Json;
 using StreamJsonRpc;
 
 #if !MM_HELPER
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 #endif
+
 using SystemClipboard = System.Windows.Forms.Clipboard;
+#if !MM_HELPER
+using Thread = MouseWithoutBorders.Core.Thread;
+#endif
 
 namespace MouseWithoutBorders
 {
@@ -125,7 +131,7 @@ namespace MouseWithoutBorders
     {
         public void SendLog(string log)
         {
-            Common.LogDebug("FROM HELPER: " + log);
+            Logger.LogDebug("FROM HELPER: " + log);
 
             if (!string.IsNullOrEmpty(log))
             {
@@ -141,14 +147,14 @@ namespace MouseWithoutBorders
                 }
                 else if (log.StartsWith("Trace:", StringComparison.InvariantCulture))
                 {
-                    Common.TelemetryLogTrace(log, SeverityLevel.Information);
+                    Logger.TelemetryLogTrace(log, SeverityLevel.Information);
                 }
             }
         }
 
         public void SendDragFile(string fileName)
         {
-            Common.DragDropStep05Ex(fileName);
+            DragDrop.DragDropStep05Ex(fileName);
         }
 
         public void SendClipboardData(ByteArrayOrString data, bool isFilePath)
@@ -195,7 +201,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
 #if MM_HELPER
                         _ = e;
 #else
-                        Common.Log(e);
+                        Logger.Log(e);
 #endif
                     }
                 },
@@ -245,7 +251,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
             {
                 Common.IpcChannelCreated = false;
                 Common.ShowToolTip("Error setting up clipboard sharing, clipboard sharing will not work!", 5000, ToolTipIcon.Error);
-                Common.Log(e);
+                Logger.Log(e);
             }
         }
 #else
@@ -261,7 +267,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
             }
             catch (Exception e)
             {
-                Logger.LogEvent(e.Message, EventLogEntryType.Error);
+                EventLogger.LogEvent(e.Message, EventLogEntryType.Error);
             }
 
             return null;
@@ -270,7 +276,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
 
     }
 
-    internal static class Logger
+    internal static class EventLogger
     {
 #if MM_HELPER
         private const string EventSourceName = "MouseWithoutBordersHelper";

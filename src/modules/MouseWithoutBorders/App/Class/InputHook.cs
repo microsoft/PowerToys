@@ -17,7 +17,9 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+
 using Microsoft.PowerToys.Settings.UI.Library;
+using MouseWithoutBorders.Core;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.InputHook.#MouseHookProc(System.Int32,System.Int32,System.IntPtr)", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Scope = "member", Target = "MouseWithoutBorders.InputHook.#ProcessKeyEx(System.Int32,System.Int32)", Justification = "Dotnet port with style preservation")]
@@ -116,7 +118,7 @@ namespace MouseWithoutBorders.Class
             if (hMouseHook == 0)
             {
                 le = Marshal.GetLastWin32Error();
-                Common.Log("Error installing Mouse hook: " + le.ToString(CultureInfo.CurrentCulture));
+                Logger.Log("Error installing Mouse hook: " + le.ToString(CultureInfo.CurrentCulture));
                 er = true;
                 Stop();
             }
@@ -132,7 +134,7 @@ namespace MouseWithoutBorders.Class
             if (hKeyboardHook == 0)
             {
                 le = Marshal.GetLastWin32Error();
-                Common.Log("Error installing keyboard hook: " + le.ToString(CultureInfo.CurrentCulture));
+                Logger.Log("Error installing keyboard hook: " + le.ToString(CultureInfo.CurrentCulture));
                 er = true;
                 Stop();
             }
@@ -165,7 +167,7 @@ namespace MouseWithoutBorders.Class
                     int errorCode = Marshal.GetLastWin32Error();
 
                     // throw new Win32Exception(errorCode);
-                    Common.Log("Exception uninstalling Mouse hook, error code: " + errorCode.ToString(CultureInfo.CurrentCulture));
+                    Logger.Log("Exception uninstalling Mouse hook, error code: " + errorCode.ToString(CultureInfo.CurrentCulture));
                 }
             }
 
@@ -178,7 +180,7 @@ namespace MouseWithoutBorders.Class
                     int errorCode = Marshal.GetLastWin32Error();
 
                     // throw new Win32Exception(errorCode);
-                    Common.Log("Exception uninstalling keyboard hook, error code: " + errorCode.ToString(CultureInfo.CurrentCulture));
+                    Logger.Log("Exception uninstalling keyboard hook, error code: " + errorCode.ToString(CultureInfo.CurrentCulture));
                 }
             }
         }
@@ -204,7 +206,7 @@ namespace MouseWithoutBorders.Class
         {
             int rv = 1, dx = 0, dy = 0;
             bool local = false;
-            Common.InputEventCount++;
+            Event.InputEventCount++;
 
             try
             {
@@ -218,14 +220,14 @@ namespace MouseWithoutBorders.Class
                 }
                 else
                 {
-                    Common.RealInputEventCount++;
+                    Event.RealInputEventCount++;
 
-                    if (Common.NewDesMachineID == Common.MachineID || Common.NewDesMachineID == ID.ALL)
+                    if (MachineStuff.NewDesMachineID == Common.MachineID || MachineStuff.NewDesMachineID == ID.ALL)
                     {
                         local = true;
-                        if (Common.MainFormVisible && !Common.IsDropping)
+                        if (Common.MainFormVisible && !DragDrop.IsDropping)
                         {
-                            Common.MainFormDot();
+                            Helper.MainFormDot();
                         }
                     }
 
@@ -233,7 +235,7 @@ namespace MouseWithoutBorders.Class
                     {
                         if (wParam == Common.WM_LBUTTONUP && SkipMouseUpCount > 0)
                         {
-                            Common.LogDebug($"{nameof(SkipMouseUpCount)}: {SkipMouseUpCount}.");
+                            Logger.LogDebug($"{nameof(SkipMouseUpCount)}: {SkipMouseUpCount}.");
                             SkipMouseUpCount--;
                             rv = NativeMethods.CallNextHookEx(hMouseHook, nCode, wParam, lParam);
                             return rv;
@@ -263,19 +265,19 @@ namespace MouseWithoutBorders.Class
                         }
                         else
                         {
-                            if (Common.SwitchLocation.Count > 0 && Common.NewDesMachineID != Common.MachineID && Common.NewDesMachineID != ID.ALL)
+                            if (MachineStuff.SwitchLocation.Count > 0 && MachineStuff.NewDesMachineID != Common.MachineID && MachineStuff.NewDesMachineID != ID.ALL)
                             {
-                                Common.SwitchLocation.Count--;
+                                MachineStuff.SwitchLocation.Count--;
 
-                                if (Common.SwitchLocation.X > Common.XY_BY_PIXEL - 100000 || Common.SwitchLocation.Y > Common.XY_BY_PIXEL - 100000)
+                                if (MachineStuff.SwitchLocation.X > Event.XY_BY_PIXEL - 100000 || MachineStuff.SwitchLocation.Y > Event.XY_BY_PIXEL - 100000)
                                 {
-                                    hookCallbackMouseData.X = Common.SwitchLocation.X - Common.XY_BY_PIXEL;
-                                    hookCallbackMouseData.Y = Common.SwitchLocation.Y - Common.XY_BY_PIXEL;
+                                    hookCallbackMouseData.X = MachineStuff.SwitchLocation.X - Event.XY_BY_PIXEL;
+                                    hookCallbackMouseData.Y = MachineStuff.SwitchLocation.Y - Event.XY_BY_PIXEL;
                                 }
                                 else
                                 {
-                                    hookCallbackMouseData.X = (Common.SwitchLocation.X * Common.ScreenWidth / 65535) + Common.PrimaryScreenBounds.Left;
-                                    hookCallbackMouseData.Y = (Common.SwitchLocation.Y * Common.ScreenHeight / 65535) + Common.PrimaryScreenBounds.Top;
+                                    hookCallbackMouseData.X = (MachineStuff.SwitchLocation.X * Common.ScreenWidth / 65535) + MachineStuff.PrimaryScreenBounds.Left;
+                                    hookCallbackMouseData.Y = (MachineStuff.SwitchLocation.Y * Common.ScreenHeight / 65535) + MachineStuff.PrimaryScreenBounds.Top;
                                 }
 
                                 Common.HideMouseCursor(false);
@@ -288,33 +290,33 @@ namespace MouseWithoutBorders.Class
                                 hookCallbackMouseData.X += dx;
                                 hookCallbackMouseData.Y += dy;
 
-                                if (hookCallbackMouseData.X < Common.PrimaryScreenBounds.Left)
+                                if (hookCallbackMouseData.X < MachineStuff.PrimaryScreenBounds.Left)
                                 {
-                                    hookCallbackMouseData.X = Common.PrimaryScreenBounds.Left - 1;
+                                    hookCallbackMouseData.X = MachineStuff.PrimaryScreenBounds.Left - 1;
                                 }
-                                else if (hookCallbackMouseData.X > Common.PrimaryScreenBounds.Right)
+                                else if (hookCallbackMouseData.X > MachineStuff.PrimaryScreenBounds.Right)
                                 {
-                                    hookCallbackMouseData.X = Common.PrimaryScreenBounds.Right + 1;
-                                }
-
-                                if (hookCallbackMouseData.Y < Common.PrimaryScreenBounds.Top)
-                                {
-                                    hookCallbackMouseData.Y = Common.PrimaryScreenBounds.Top - 1;
-                                }
-                                else if (hookCallbackMouseData.Y > Common.PrimaryScreenBounds.Bottom)
-                                {
-                                    hookCallbackMouseData.Y = Common.PrimaryScreenBounds.Bottom + 1;
+                                    hookCallbackMouseData.X = MachineStuff.PrimaryScreenBounds.Right + 1;
                                 }
 
-                                dx += dx < 0 ? -Common.MOVE_MOUSE_RELATIVE : Common.MOVE_MOUSE_RELATIVE;
-                                dy += dy < 0 ? -Common.MOVE_MOUSE_RELATIVE : Common.MOVE_MOUSE_RELATIVE;
+                                if (hookCallbackMouseData.Y < MachineStuff.PrimaryScreenBounds.Top)
+                                {
+                                    hookCallbackMouseData.Y = MachineStuff.PrimaryScreenBounds.Top - 1;
+                                }
+                                else if (hookCallbackMouseData.Y > MachineStuff.PrimaryScreenBounds.Bottom)
+                                {
+                                    hookCallbackMouseData.Y = MachineStuff.PrimaryScreenBounds.Bottom + 1;
+                                }
+
+                                dx += dx < 0 ? -Event.MOVE_MOUSE_RELATIVE : Event.MOVE_MOUSE_RELATIVE;
+                                dy += dy < 0 ? -Event.MOVE_MOUSE_RELATIVE : Event.MOVE_MOUSE_RELATIVE;
                             }
                         }
 
                         MouseEvent(hookCallbackMouseData, dx, dy);
 
-                        Common.DragDropStep01(wParam);
-                        Common.DragDropStep09(wParam);
+                        DragDrop.DragDropStep01(wParam);
+                        DragDrop.DragDropStep09(wParam);
                     }
 
                     if (local)
@@ -325,7 +327,7 @@ namespace MouseWithoutBorders.Class
             }
             catch (Exception e)
             {
-                Common.Log(e);
+                Logger.Log(e);
                 rv = NativeMethods.CallNextHookEx(hMouseHook, nCode, wParam, lParam);
             }
 
@@ -334,13 +336,13 @@ namespace MouseWithoutBorders.Class
 
         private int KeyboardHookProc(int nCode, int wParam, IntPtr lParam)
         {
-            Common.InputEventCount++;
+            Event.InputEventCount++;
             if (!RealData)
             {
                 return NativeMethods.CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
             }
 
-            Common.RealInputEventCount++;
+            Event.RealInputEventCount++;
 
             keyboardHookStruct = LParamToKeyboardHookStruct(lParam);
             hookCallbackKeybdData.dwFlags = keyboardHookStruct.Flags;
@@ -430,7 +432,7 @@ namespace MouseWithoutBorders.Class
 
                             if (Common.DesMachineID != ID.ALL)
                             {
-                                Common.SwitchToMachine(Common.MachineName.Trim());
+                                MachineStuff.SwitchToMachine(Common.MachineName.Trim());
                             }
 
                             /*
@@ -454,7 +456,7 @@ namespace MouseWithoutBorders.Class
                         break;
 
                     default:
-                        Common.LogDebug("X");
+                        Logger.LogDebug("X");
                         return ProcessHotKeys(vkCode, hookCallbackKeybdData);
                 }
             }
@@ -516,7 +518,7 @@ namespace MouseWithoutBorders.Class
             if (Common.HotkeyMatched(vkCode, winDown, CtrlDown, altDown, shiftDown, Setting.Values.HotKeySwitch2AllPC))
             {
                 ResetLastSwitchKeys();
-                Common.SwitchToMultipleMode(Common.DesMachineID != ID.ALL, true);
+                MachineStuff.SwitchToMultipleMode(Common.DesMachineID != ID.ALL, true);
             }
 
             if (Common.HotkeyMatched(vkCode, winDown, CtrlDown, altDown, shiftDown, Setting.Values.HotKeyToggleEasyMouse))
@@ -541,7 +543,7 @@ namespace MouseWithoutBorders.Class
                 {
                     if (Common.GetTick() - lastHotKeyLockMachine < 500)
                     {
-                        Common.SwitchToMultipleMode(true, true);
+                        MachineStuff.SwitchToMultipleMode(true, true);
 
                         var codes = GetVkCodesList(Setting.Values.HotKeyLockMachine);
 
@@ -559,7 +561,7 @@ namespace MouseWithoutBorders.Class
                             KeyboardEvent(hookCallbackKeybdData);
                         }
 
-                        Common.SwitchToMultipleMode(false, true);
+                        MachineStuff.SwitchToMultipleMode(false, true);
 
                         _ = NativeMethods.LockWorkStation();
                     }
@@ -623,9 +625,9 @@ namespace MouseWithoutBorders.Class
 
         private static bool Switch2(int index)
         {
-            if (Common.MachineMatrix != null && Common.MachineMatrix.Length > index)
+            if (MachineStuff.MachineMatrix != null && MachineStuff.MachineMatrix.Length > index)
             {
-                string mcName = Common.MachineMatrix[index].Trim();
+                string mcName = MachineStuff.MachineMatrix[index].Trim();
                 if (!string.IsNullOrEmpty(mcName))
                 {
                     // Common.DoSomethingInUIThread(delegate()
@@ -634,7 +636,7 @@ namespace MouseWithoutBorders.Class
                     }
 
                     // );
-                    Common.SwitchToMachine(mcName);
+                    MachineStuff.SwitchToMachine(mcName);
 
                     if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                     {

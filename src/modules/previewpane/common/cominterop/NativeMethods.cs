@@ -37,5 +37,8 @@ namespace PreviewHandlerCommon.ComInterop
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetClientRect(IntPtr hWnd, ref Common.ComInterlop.RECT rect);
+
+        [DllImport("user32.dll")]
+        public static extern bool IsWindow(IntPtr hWnd);
     }
 }

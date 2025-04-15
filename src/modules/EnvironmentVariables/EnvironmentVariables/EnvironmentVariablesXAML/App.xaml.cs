@@ -4,8 +4,12 @@
 
 using System;
 using System.IO.Abstractions;
-using EnvironmentVariables.Helpers;
-using EnvironmentVariables.ViewModels;
+
+using EnvironmentVariables.Telemetry;
+using EnvironmentVariablesUILib;
+using EnvironmentVariablesUILib.Helpers;
+using EnvironmentVariablesUILib.Telemetry;
+using EnvironmentVariablesUILib.ViewModels;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,6 +25,8 @@ namespace EnvironmentVariables
     public partial class App : Application
     {
         public IHost Host { get; }
+
+        public ETWTrace EtwTrace { get; } = new ETWTrace();
 
         public static T GetService<T>()
             where T : class
@@ -40,6 +46,12 @@ namespace EnvironmentVariables
         /// </summary>
         public App()
         {
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             this.InitializeComponent();
 
             Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>
@@ -47,8 +59,11 @@ namespace EnvironmentVariables
                 services.AddSingleton<IFileSystem, FileSystem>();
                 services.AddSingleton<IElevationHelper, ElevationHelper>();
                 services.AddSingleton<IEnvironmentVariablesService, EnvironmentVariablesService>();
+                services.AddSingleton<ILogger, LoggerWrapper>();
+                services.AddSingleton<ITelemetry, TelemetryWrapper>();
 
                 services.AddSingleton<MainViewModel>();
+                services.AddSingleton<EnvironmentVariablesMainPage>();
             }).Build();
 
             UnhandledException += App_UnhandledException;
@@ -85,8 +100,7 @@ namespace EnvironmentVariables
                 Logger.LogInfo($"EnvironmentVariables started detached from PowerToys Runner.");
             }
 
-            PowerToysTelemetry.Log.WriteEvent(new EnvironmentVariables.Telemetry.EnvironmentVariablesOpenedEvent());
-
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.EnvironmentVariablesOpenedEvent());
             window = new MainWindow();
             window.Activate();
         }

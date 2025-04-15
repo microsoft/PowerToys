@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 using System;
 using System.Threading;
+
 using global::Windows.System;
-using interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -14,6 +14,7 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
+using PowerToys.Interop;
 using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI.Flyout
@@ -116,8 +117,24 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
+                case ModuleType.Workspaces: // Launch Workspaces Editor
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.WorkspacesLaunchEditorEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    break;
+
                 case ModuleType.ShortcutGuide: // Launch Shortcut Guide
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    break;
+
+                case ModuleType.CmdPal: // Show CmdPal
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowCmdPalEvent()))
                     {
                         eventHandle.Set();
                     }

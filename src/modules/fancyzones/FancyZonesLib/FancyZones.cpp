@@ -7,6 +7,7 @@
 #include <common/utils/EventWaiter.h>
 #include <common/utils/winapi_error.h>
 #include <common/SettingsAPI/FileWatcher.h>
+#include <common/notifications/NotificationUtil.h>
 
 #include <FancyZonesLib/DraggingState.h>
 #include <FancyZonesLib/EditorParameters.h>
@@ -21,6 +22,7 @@
 #include <FancyZonesLib/FancyZonesWindowProcessing.h>
 #include <FancyZonesLib/FancyZonesWindowProperties.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
+#include <FancyZonesLib/KeyboardInput.h>
 #include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/on_thread_executor.h>
 #include <FancyZonesLib/Settings.h>
@@ -143,6 +145,7 @@ public:
     void ToggleEditor() noexcept;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
+    void OnKeyboardInput(WPARAM flags, HRAWINPUT hInput) noexcept;
     void OnDisplayChange(DisplayChangeType changeType) noexcept;
     bool AddWorkArea(HMONITOR monitor, const FancyZonesDataTypes::WorkAreaId& id, const FancyZonesUtils::Rect& rect) noexcept;
 
@@ -183,6 +186,8 @@ private:
 
     EventWaiter m_toggleEditorEventWaiter;
 
+    std::unique_ptr<notifications::NotificationUtil> m_notificationUtil;
+
     // If non-recoverable error occurs, trigger disabling of entire FancyZones.
     static std::function<void()> disableModuleCallback;
 
@@ -220,7 +225,13 @@ FancyZones::Run() noexcept
     m_window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, 0, 0, 0, 0, nullptr, nullptr, m_hinstance, this);
     if (!m_window)
     {
-        Logger::error(L"Failed to create FancyZones window");
+        Logger::critical(L"Failed to create FancyZones window");
+        return;
+    }
+
+    if (!KeyboardInput::Initialize(m_window))
+    {
+        Logger::critical(L"Failed to register raw input device");
         return;
     }
 
@@ -258,6 +269,8 @@ FancyZones::Run() noexcept
         }
     });
 
+    m_notificationUtil = std::make_unique<notifications::NotificationUtil>();
+
     SyncVirtualDesktops();
 
     // id format of applied-layouts and app-zone-history was changed in 0.60
@@ -280,6 +293,8 @@ FancyZones::Destroy() noexcept
         m_window = nullptr;
     }
 
+    m_notificationUtil.reset();
+
     CoUninitialize();
 }
 
@@ -294,7 +309,7 @@ FancyZones::VirtualDesktopChanged() noexcept
 
 void FancyZones::MoveSizeStart(HWND window, HMONITOR monitor)
 {
-    m_windowMouseSnapper = WindowMouseSnap::Create(window, m_workAreaConfiguration.GetAllWorkAreas());
+    m_windowMouseSnapper = WindowMouseSnap::Create(window, m_workAreaConfiguration.GetAllWorkAreas(), m_notificationUtil.get());
     if (m_windowMouseSnapper)
     {
         if (FancyZonesSettings::settings().spanZonesAcrossMonitors)
@@ -390,7 +405,7 @@ void FancyZones::WindowCreated(HWND window) noexcept
         return;
     }
 
-    if (!FancyZonesWindowProcessing::IsProcessable(window))
+    if (!FancyZonesWindowProcessing::IsProcessableAutomatically(window))
     {
         return;
     }
@@ -580,6 +595,12 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     }
     break;
 
+    case WM_INPUT:
+    {
+        OnKeyboardInput(wparam, reinterpret_cast<HRAWINPUT>(lparam));
+    }
+    break;
+
     case WM_SETTINGCHANGE:
     {
         if (wparam == SPI_SETWORKAREA)
@@ -715,6 +736,26 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
     break;
     }
     return 0;
+}
+
+void FancyZones::OnKeyboardInput(WPARAM /*flags*/, HRAWINPUT hInput) noexcept
+{
+    auto input = KeyboardInput::OnKeyboardInput(hInput);
+    if (!input.has_value())
+    {
+        return;
+    }
+
+    switch (input.value().vkKey)
+    {
+    case VK_SHIFT:
+        {
+            m_draggingState.SetShiftState(input.value().pressed);
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 void FancyZones::OnDisplayChange(DisplayChangeType changeType) noexcept
@@ -1050,7 +1091,7 @@ bool FancyZones::ShouldProcessSnapHotkey(DWORD vkCode) noexcept
     }
 
     auto window = GetForegroundWindow();
-    if (!FancyZonesWindowProcessing::IsProcessable(window))
+    if (!FancyZonesWindowProcessing::IsProcessableManually(window))
     {
         return false;
     }

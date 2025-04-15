@@ -8,6 +8,8 @@
 #include <common/utils/EventLocker.h>
 #include <common/utils/winapi_error.h>
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/MappingConfiguration.h>
 
@@ -23,8 +25,6 @@
 #include "ShortcutErrorType.h"
 #include "EditorConstants.h"
 #include <common/Themes/theme_listener.h>
-
-using namespace winrt::Windows::Foundation;
 
 static UINT g_currentDPI = DPIAware::DEFAULT_DPI;
 
@@ -49,7 +49,7 @@ static ThemeListener theme_listener{};
 static void handleTheme()
 {
     auto theme = theme_listener.AppTheme;
-    auto isDark = theme == AppTheme::Dark;
+    auto isDark = theme == Theme::Dark;
     Logger::info(L"Theme is now {}", isDark ? L"Dark" : L"Light");
     if (hwndEditKeyboardNativeWindow != nullptr)
     {
@@ -57,7 +57,7 @@ static void handleTheme()
     }
 }
 
-static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
+static winrt::Windows::Foundation::IAsyncOperation<bool> OrphanKeysConfirmationDialog(
     KBMEditor::KeyboardManagerState& state,
     const std::vector<DWORD>& keys,
     XamlRoot root)
@@ -90,7 +90,7 @@ static IAsyncOperation<bool> OrphanKeysConfirmationDialog(
     co_return res == ContentDialogResult::Primary;
 }
 
-static IAsyncAction OnClickAccept(KBMEditor::KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
+static winrt::Windows::Foundation::IAsyncAction OnClickAccept(KBMEditor::KeyboardManagerState& keyboardManagerState, XamlRoot root, std::function<void()> ApplyRemappings)
 {
     ShortcutErrorType isSuccess = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(SingleKeyRemapControl::singleKeyRemapBuffer);
 
@@ -137,7 +137,7 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
         windowClass.lpfnWndProc = EditKeyboardWindowProc;
         windowClass.hInstance = hInst;
         windowClass.lpszClassName = szWindowClass;
-        windowClass.hbrBackground = CreateSolidBrush((ThemeHelpers::GetAppTheme() == AppTheme::Dark) ? 0x00000000 : 0x00FFFFFF);
+        windowClass.hbrBackground = CreateSolidBrush((ThemeHelpers::GetAppTheme() == Theme::Dark) ? 0x00000000 : 0x00FFFFFF);
         windowClass.hIcon = static_cast<HICON>(LoadImageW(
             windowClass.hInstance,
             MAKEINTRESOURCE(IDS_KEYBOARDMANAGER_ICON),
@@ -339,8 +339,8 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
         // Whenever a remap is added move to the bottom of the screen
         scrollViewer.ChangeView(nullptr, scrollViewer.ScrollableHeight(), nullptr);
 
-        // Set focus to the first Type Button in the newly added row
-        UIHelpers::SetFocusOnTypeButtonInLastRow(keyRemapTable, EditorConstants::RemapTableColCount);
+        // Set focus to the first "Select" Button in the newly added row
+        UIHelpers::SetFocusOnFirstSelectButtonInLastRowOfEditKeyboardWindow(keyRemapTable, EditorConstants::RemapTableColCount);
     });
 
     // Remap key button content
@@ -428,11 +428,15 @@ inline void CreateEditKeyboardWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMan
 
 void CreateEditKeyboardWindow(HINSTANCE hInst, KBMEditor::KeyboardManagerState& keyboardManagerState, MappingConfiguration& mappingConfiguration)
 {
+    Shared::Trace::ETWTrace trace;
+    trace.UpdateState(true);
+
     // Move implementation into the separate method so resources get destroyed correctly
     CreateEditKeyboardWindowImpl(hInst, keyboardManagerState, mappingConfiguration);
 
     // Calling ClearXamlIslands() outside of the message loop is not enough to prevent
     // Microsoft.UI.XAML.dll from crashing during deinitialization, see https://github.com/microsoft/PowerToys/issues/10906
+    trace.Flush();
     Logger::trace("Terminating process {}", GetCurrentProcessId());
     Logger::flush();
     TerminateProcess(GetCurrentProcess(), 0);
@@ -496,7 +500,7 @@ LRESULT CALLBACK EditKeyboardWindowProc(HWND hWnd, UINT messageCode, WPARAM wPar
     }
     break;
     default:
-        // If the Xaml Bridge object exists, then use it's message handler to handle keyboard focus operations
+        // If the Xaml Bridge object exists, then use its message handler to handle keyboard focus operations
         if (xamlBridgePtr != nullptr)
         {
             return xamlBridgePtr->MessageHandler(messageCode, wParam, lParam);

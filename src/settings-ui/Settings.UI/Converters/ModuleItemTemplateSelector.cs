@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Converters
 {
-    public class ModuleItemTemplateSelector : DataTemplateSelector
+    public partial class ModuleItemTemplateSelector : DataTemplateSelector
     {
         public DataTemplate TextTemplate { get; set; }
 

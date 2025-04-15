@@ -26,3 +26,4 @@ void SetRegNumber(const std::wstring& valueName, unsigned int value);
 bool GetRegBoolean(const std::wstring& valueName, bool defaultValue);
 void SetRegBoolean(const std::wstring& valueName, bool value);
 bool LastModifiedTime(const std::wstring& filePath, FILETIME* lpFileTime);
+std::wstring CreateGuidStringWithoutBrackets();

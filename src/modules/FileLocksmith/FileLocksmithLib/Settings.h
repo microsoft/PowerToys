@@ -16,13 +16,8 @@ public:
         if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled)
             return false;
         Reload();
+        RefreshEnabledState();
         return settings.enabled;
-    }
-
-    inline void SetEnabled(bool enabled)
-    {
-        settings.enabled = enabled;
-        Save();
     }
 
     inline bool GetShowInExtendedContextMenu() const
@@ -45,12 +40,15 @@ private:
         bool showInExtendedContextMenu{ false };
     };
 
+    void RefreshEnabledState();
     void Reload();
     void ParseJson();
 
     Settings settings;
+    std::wstring generalJsonFilePath;
     std::wstring jsonFilePath;
-    FILETIME lastLoadedTime;
+    FILETIME lastLoadedTime{};
+    FILETIME lastLoadedGeneralSettingsTime{};
 };
 
 FileLocksmithSettings& FileLocksmithSettingsInstance();

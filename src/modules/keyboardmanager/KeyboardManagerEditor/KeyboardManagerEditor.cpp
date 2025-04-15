@@ -77,8 +77,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         type = static_cast<KeyboardManagerEditorType>(_wtoi(cmdArgs[1]));
     }
 
-    if (numArgs == 3)
+    std::wstring keysForShortcutToEdit = L"";
+    std::wstring action = L"";    
+
+    // do some parsing of the cmdline arg to see if we need to behave different
+    // like, single edit mode, or "delete" mode.    
+    // These extra args are from "OpenEditor" in the KeyboardManagerViewModel
+    if (numArgs >= 3)
     {
+        if (numArgs >= 4)
+        {
+            keysForShortcutToEdit = std::wstring(cmdArgs[3]);
+        }
+
+        if (numArgs >= 5)
+        {
+            action = std::wstring(cmdArgs[4]);
+        }
+
+
         std::wstring pid = std::wstring(cmdArgs[2]);
         Logger::trace(L"Editor started from the settings with pid {}", pid);
         if (!pid.empty())
@@ -108,7 +125,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return -1;
     }
 
-    editor->OpenEditorWindow(type);
+    editor->OpenEditorWindow(type, keysForShortcutToEdit, action);
 
     editor = nullptr;
 
@@ -149,7 +166,7 @@ bool KeyboardManagerEditor::StartLowLevelKeyboardHook()
     return (hook != nullptr);
 }
 
-void KeyboardManagerEditor::OpenEditorWindow(KeyboardManagerEditorType type)
+void KeyboardManagerEditor::OpenEditorWindow(KeyboardManagerEditorType type, std::wstring keysForShortcutToEdit, std::wstring action)
 {
     switch (type)
     {
@@ -157,7 +174,7 @@ void KeyboardManagerEditor::OpenEditorWindow(KeyboardManagerEditorType type)
         CreateEditKeyboardWindow(hInstance, keyboardManagerState, mappingConfiguration);
         break;
     case KeyboardManagerEditorType::ShortcutEditor:
-        CreateEditShortcutsWindow(hInstance, keyboardManagerState, mappingConfiguration);
+        CreateEditShortcutsWindow(hInstance, keyboardManagerState, mappingConfiguration, keysForShortcutToEdit, action);
     }
 }
 

@@ -4,12 +4,12 @@
 
 using System;
 using System.IO;
-using FileLocksmith.Interop;
+
 using Microsoft.UI.Xaml.Data;
 
 namespace PowerToys.FileLocksmithUI.Converters
 {
-    public sealed class FileListToDescriptionConverter : IValueConverter
+    public sealed partial class FileListToDescriptionConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

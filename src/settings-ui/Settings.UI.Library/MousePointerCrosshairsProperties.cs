@@ -4,10 +4,13 @@
 
 using System.Text.Json.Serialization;
 
+using Settings.UI.Library.Attributes;
+
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class MousePointerCrosshairsProperties
     {
+        [CmdConfigureIgnore]
         public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, false, true, false, 0x50); // Win + Alt + P
 
         [JsonPropertyName("activation_shortcut")]

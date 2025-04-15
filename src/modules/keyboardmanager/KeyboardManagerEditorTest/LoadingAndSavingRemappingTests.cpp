@@ -42,8 +42,8 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Remap A to B and B to C
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x42, (DWORD)0x43 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x42, (DWORD)0x43 }), std::wstring() });
 
             // Assert that remapping set is valid
             bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
@@ -62,8 +62,8 @@ namespace RemappingUITests
             Shortcut s2;
             s2.SetKey(VK_MENU);
             s2.SetKey(VK_TAB);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x42, s2 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, s1 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x42, s2 }), std::wstring() });
 
             // Assert that remapping set is valid
             bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
@@ -82,8 +82,8 @@ namespace RemappingUITests
             Shortcut s2;
             s2.SetKey(VK_MENU);
             s2.SetKey(VK_TAB);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s1, (DWORD)0x41 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ s2, (DWORD)0x42 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ s1, (DWORD)0x41 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ s2, (DWORD)0x42 }), std::wstring() });
 
             // Assert that remapping set is valid
             bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
@@ -108,8 +108,8 @@ namespace RemappingUITests
             Shortcut dest2;
             dest2.SetKey(CommonSharedConstants::VK_WIN_BOTH);
             dest2.SetKey(0x41);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, dest2 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src1, dest1 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src2, dest2 }), std::wstring() });
 
             // Assert that remapping set is valid
             bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
@@ -134,10 +134,10 @@ namespace RemappingUITests
             Shortcut dest2;
             dest2.SetKey(CommonSharedConstants::VK_WIN_BOTH);
             dest2.SetKey(0x41);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, (DWORD)0x41 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x42, dest2 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src1, dest1 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src2, (DWORD)0x41 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x42, dest2 }), std::wstring() });
 
             // Assert that remapping set is valid
             bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
@@ -150,7 +150,7 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Remap A to NULL
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, (DWORD)0 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, (DWORD)0 }), std::wstring() });
 
             // Assert that remapping set is invalid
             bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
@@ -165,7 +165,7 @@ namespace RemappingUITests
             // Remap A to incomplete shortcut (Ctrl)
             Shortcut src1;
             src1.SetKey(VK_CONTROL);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, src1 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, src1 }), std::wstring() });
 
             // Assert that remapping set is invalid
             bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
@@ -181,8 +181,8 @@ namespace RemappingUITests
             Shortcut src1;
             src1.SetKey(VK_CONTROL);
             src1.SetKey(0x43);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, src1 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, src1 }), std::wstring() });
 
             // Assert that remapping set is invalid
             bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
@@ -201,8 +201,8 @@ namespace RemappingUITests
             Shortcut dest1;
             dest1.SetKey(VK_CONTROL);
             dest1.SetKey(0x56);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, (DWORD)0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src1, (DWORD)0x42 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src1, dest1 }), std::wstring() });
 
             // Assert that remapping set is invalid
             bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
@@ -221,8 +221,8 @@ namespace RemappingUITests
             Shortcut dest1;
             dest1.SetKey(VK_CONTROL);
             dest1.SetKey(0x56);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, (DWORD)0x42 }), testApp1));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), testApp1));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src1, (DWORD)0x42 }), testApp1 });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src1, dest1 }), testApp1 });
 
             // Assert that remapping set is invalid
             bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::RemapUnsuccessful);
@@ -241,8 +241,8 @@ namespace RemappingUITests
             Shortcut dest1;
             dest1.SetKey(VK_CONTROL);
             dest1.SetKey(0x56);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, (DWORD)0x42 }), testApp1));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), testApp2));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src1, (DWORD)0x42 }), testApp1 });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src1, dest1 }), testApp2 });
 
             // Assert that remapping set is valid
             bool isSuccess = (LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer) == ShortcutErrorType::NoError);
@@ -264,7 +264,7 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Remap A to B
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring() });
 
             // Assert that only A is orphaned
             Assert::AreEqual((size_t)1, LoadingAndSavingRemappingHelper::GetOrphanedKeys(remapBuffer).size());
@@ -277,8 +277,8 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Remap A to B and B to A
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x42, (DWORD)0x41 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x42, (DWORD)0x41 }), std::wstring() });
 
             // Assert that there are no orphaned keys
             Assert::AreEqual(true, LoadingAndSavingRemappingHelper::GetOrphanedKeys(remapBuffer).empty());
@@ -293,8 +293,8 @@ namespace RemappingUITests
             Shortcut dest1;
             dest1.SetKey(VK_CONTROL);
             dest1.SetKey(0x42);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, dest1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x43, (DWORD)0x41 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, dest1 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x43, (DWORD)0x41 }), std::wstring() });
 
             // Assert that only C is orphaned
             Assert::AreEqual((size_t)1, LoadingAndSavingRemappingHelper::GetOrphanedKeys(remapBuffer).size());
@@ -391,10 +391,10 @@ namespace RemappingUITests
             s1.SetKey(0x56);
             Shortcut s2;
             s2.SetKey(VK_LMENU);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x42, s1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x43, (DWORD)0 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)0x44, s2 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x42, s1 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x43, (DWORD)0 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x44, s2 }), std::wstring() });
 
             // Apply the single key remaps from the buffer to the keyboard manager state variable
             LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(testShortcuts, remapBuffer, false);
@@ -415,10 +415,10 @@ namespace RemappingUITests
             RemapBuffer remapBuffer;
 
             // Add Ctrl->A, Alt->B, Shift->C and Win->D remappings to the buffer
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)VK_CONTROL, (DWORD)0x41 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)VK_MENU, (DWORD)0x42 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)VK_SHIFT, (DWORD)0x43 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ (DWORD)CommonSharedConstants::VK_WIN_BOTH, (DWORD)0x44 }), std::wstring()));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)VK_CONTROL, (DWORD)0x41 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)VK_MENU, (DWORD)0x42 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)VK_SHIFT, (DWORD)0x43 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)CommonSharedConstants::VK_WIN_BOTH, (DWORD)0x44 }), std::wstring() });
 
             // Apply the single key remaps from the buffer to the keyboard manager state variable
             LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings(testShortcuts, remapBuffer, false);
@@ -496,14 +496,14 @@ namespace RemappingUITests
             src4.SetKey(0x47);
             Shortcut dest4;
             dest4.SetKey(VK_CONTROL);
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, dest1 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, dest2 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src3, (DWORD)0 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src4, dest4 }), std::wstring()));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src3, dest2 }), testApp1));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src4, dest1 }), testApp1));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src1, (DWORD)0 }), testApp1));
-            remapBuffer.push_back(std::make_pair(RemapBufferItem({ src2, dest4 }), testApp1));
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src1, dest1 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src2, dest2 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src3, (DWORD)0 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src4, dest4 }), std::wstring() });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src3, dest2 }), testApp1 });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src4, dest1 }), testApp1 });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src1, (DWORD)0 }), testApp1 });
+            remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ src2, dest4 }), testApp1 });
 
             // Apply the shortcut remaps from the buffer to the keyboard manager state variable
             LoadingAndSavingRemappingHelper::ApplyShortcutRemappings(testShortcuts, remapBuffer, false);

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Input;
+
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -30,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new ColorPickerViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
-                null,
+                SettingsRepository<ColorPickerSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();
@@ -63,7 +64,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var index = ViewModel.ColorFormats.IndexOf(color);
             if (index > 0)
             {
-                ViewModel.ColorFormats.Move(index, index - 1);
+                ViewModel.ColorFormats.Move(index, --index);
+                SetColorFormatsFocus(index);
             }
         }
 
@@ -78,7 +80,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var index = ViewModel.ColorFormats.IndexOf(color);
             if (index < ViewModel.ColorFormats.Count - 1)
             {
-                ViewModel.ColorFormats.Move(index, index + 1);
+                ViewModel.ColorFormats.Move(index, ++index);
+                SetColorFormatsFocus(index);
             }
         }
 
@@ -95,7 +98,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description") };
             dialog.PrimaryButtonClick += (s, args) =>
             {
-                ViewModel.DeleteModel(color);
+                var deleteIndex = ViewModel.DeleteModel(color);
+                SetColorFormatsFocus(deleteIndex < ViewModel.ColorFormats.Count ? deleteIndex : ViewModel.ColorFormats.Count - 1);
             };
             var result = await dialog.ShowAsync();
         }
@@ -105,6 +109,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ColorFormatModel newColorFormat = ColorFormatDialog.DataContext as ColorFormatModel;
             ViewModel.AddNewColorFormat(newColorFormat.Name, newColorFormat.Format, true);
             ColorFormatDialog.Hide();
+            SetColorFormatsFocus(0);
         }
 
         private void Update()
@@ -158,6 +163,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 modifiedColorFormat.Name = oldProperties.Key;
                 modifiedColorFormat.Format = oldProperties.Value;
             }
+        }
+
+        private void SetColorFormatsFocus(int index)
+        {
+            ColorFormats.UpdateLayout();
+            var colorFormat = ColorFormats.ContainerFromIndex(index) as ContentPresenter;
+            colorFormat.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
         }
     }
 }

@@ -1,54 +1,33 @@
 #pragma once
-#include <Windows.h>
-#include "KeyboardHook.h"
+#include "HotkeyManager.g.h"
 
-namespace interop
+namespace winrt::PowerToys::Interop::implementation
 {
-public
-    ref struct Hotkey
+    struct HotkeyManager : HotkeyManagerT<HotkeyManager>
     {
-        bool Win;
-        bool Ctrl;
-        bool Shift;
-        bool Alt;
-        unsigned char Key;
-
-        Hotkey()
-        {
-            Win = false;
-            Ctrl = false;
-            Shift = false;
-            Alt = false;
-            Key = 0;
-        }
-    };
-
-public
-    delegate void HotkeyCallback();
-
-    typedef unsigned short HOTKEY_HANDLE;
-
-public
-    ref class HotkeyManager
-    {
-    public:
         HotkeyManager();
-        ~HotkeyManager();
 
-        HOTKEY_HANDLE RegisterHotkey(Hotkey ^ hotkey, HotkeyCallback ^ callback);
-        void UnregisterHotkey(HOTKEY_HANDLE handle);
+        uint16_t RegisterHotkey(winrt::PowerToys::Interop::Hotkey const& _hotkey, winrt::PowerToys::Interop::HotkeyCallback const& _callback);
+        void UnregisterHotkey(uint16_t _handle);
+        void Close();
 
     private:
-        KeyboardHook ^ keyboardHook;
-        Dictionary<HOTKEY_HANDLE, HotkeyCallback ^> ^ hotkeys;
-        Hotkey ^ pressedKeys;
-        KeyboardEventCallback ^ keyboardEventCallback;
-        IsActiveCallback ^ isActiveCallback;
-        FilterKeyboardEvent ^ filterKeyboardCallback;
+        KeyboardHook keyboardHook{ nullptr };
+        std::map<uint16_t, HotkeyCallback> hotkeys;
+        Hotkey pressedKeys{ };
+        KeyboardEventCallback keyboardEventCallback;
+        IsActiveCallback isActiveCallback;
+        FilterKeyboardEvent filterKeyboardCallback;
 
-        void KeyboardEventProc(KeyboardEvent ^ ev);
+        void KeyboardEventProc(KeyboardEvent ev);
         bool IsActiveProc();
-        bool FilterKeyboardProc(KeyboardEvent ^ ev);
-        HOTKEY_HANDLE GetHotkeyHandle(Hotkey ^ hotkey);
+        bool FilterKeyboardProc(KeyboardEvent ev);
+        uint16_t GetHotkeyHandle(Hotkey hotkey);
+    };
+}
+namespace winrt::PowerToys::Interop::factory_implementation
+{
+    struct HotkeyManager : HotkeyManagerT<HotkeyManager, implementation::HotkeyManager>
+    {
     };
 }

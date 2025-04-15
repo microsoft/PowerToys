@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+
 using ManagedCommon;
 using Windows.Storage;
 
@@ -11,19 +12,17 @@ using Windows.Storage;
 
 namespace Peek.Common.Models
 {
-    public class FolderItem : IFileSystemItem
+    public class FolderItem(string path, string name, string parsingName) : IFileSystemItem
     {
         private StorageFolder? storageFolder;
 
-        public FolderItem(string path, string name)
-        {
-            Path = path;
-            Name = name;
-        }
+        public string Name { get; init; } = name;
 
-        public string Name { get; init; }
+        public string ParsingName { get; init; } = parsingName;
 
-        public string Path { get; init; }
+        public string Path { get; init; } = path;
+
+        public string Extension => string.Empty;
 
         public async Task<IStorageItem?> GetStorageItemAsync()
         {
@@ -36,7 +35,7 @@ namespace Peek.Common.Models
             {
                 try
                 {
-                    storageFolder = await StorageFolder.GetFolderFromPathAsync(Path);
+                    storageFolder = string.IsNullOrEmpty(Path) ? null : await StorageFolder.GetFolderFromPathAsync(Path);
                 }
                 catch (Exception ex)
                 {

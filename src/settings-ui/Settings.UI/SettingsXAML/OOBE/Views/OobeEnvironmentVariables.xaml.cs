@@ -3,13 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Threading;
-using interop;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {

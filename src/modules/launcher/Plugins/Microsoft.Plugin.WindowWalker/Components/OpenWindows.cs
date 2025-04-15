@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
+
 using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.WindowWalker.Components
@@ -20,7 +21,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <summary>
         /// Used to enforce single execution of EnumWindows
         /// </summary>
-        private static readonly object _enumWindowsLock = new();
+        private static readonly Lock _enumWindowsLock = new();
 
         /// <summary>
         /// PowerLauncher main executable

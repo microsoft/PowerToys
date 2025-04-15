@@ -6,13 +6,18 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Threading;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using MouseJump.Common.Helpers;
+using MouseJump.Common.Models.Drawing;
+using MouseJump.Common.Models.Settings;
+using MouseJump.Common.Models.Styles;
 
 namespace MouseJumpUI.Helpers;
 
-internal class SettingsHelper
+internal sealed class SettingsHelper
 {
     public SettingsHelper()
     {
@@ -91,5 +96,66 @@ internal class SettingsHelper
     public void ReloadSettings()
     {
         this.CurrentSettings = this.LoadSettings();
+    }
+
+    public static PreviewStyle GetActivePreviewStyle(MouseJumpSettings settings)
+    {
+        var previewType = Enum.TryParse<PreviewType>(settings.Properties.PreviewType, true, out var previewTypeResult)
+            ? previewTypeResult
+            : PreviewType.Bezelled;
+
+        var canvasSize = new SizeInfo(
+            settings.Properties.ThumbnailSize.Width,
+            settings.Properties.ThumbnailSize.Height);
+
+        var properties = settings.Properties;
+
+        var previewStyle = previewType switch
+        {
+            PreviewType.Compact => StyleHelper.CompactPreviewStyle.WithCanvasSize(canvasSize),
+            PreviewType.Bezelled => StyleHelper.BezelledPreviewStyle.WithCanvasSize(canvasSize),
+            PreviewType.Custom => new PreviewStyle(
+                canvasSize: canvasSize,
+                canvasStyle: new(
+                    marginStyle: new(0),
+                    borderStyle: new(
+                        color: ConfigHelper.DeserializeFromConfigColorString(
+                            properties.BorderColor),
+                        all: properties.BorderThickness,
+                        depth: properties.Border3dDepth
+                    ),
+                    paddingStyle: new(
+                        all: properties.BorderPadding
+                    ),
+                    backgroundStyle: new(
+                        color1: ConfigHelper.DeserializeFromConfigColorString(
+                            properties.BackgroundColor1),
+                        color2: ConfigHelper.DeserializeFromConfigColorString(
+                            properties.BackgroundColor2)
+                    )
+                ),
+                screenStyle: new(
+                    marginStyle: new(
+                        all: properties.ScreenMargin
+                    ),
+                    borderStyle: new(
+                        color: ConfigHelper.DeserializeFromConfigColorString(
+                            properties.BezelColor),
+                        all: properties.BezelThickness,
+                        depth: properties.Bezel3dDepth
+                    ),
+                    paddingStyle: new(0),
+                    backgroundStyle: new(
+                        color1: ConfigHelper.DeserializeFromConfigColorString(
+                            properties.ScreenColor1),
+                        color2: ConfigHelper.DeserializeFromConfigColorString(
+                            properties.ScreenColor2)
+                    )
+                )),
+            _ => throw new InvalidOperationException(
+                $"Unhandled {nameof(PreviewType)} '{previewType}'"),
+        };
+
+        return previewStyle;
     }
 }

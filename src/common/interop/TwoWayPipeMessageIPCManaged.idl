@@ -1,0 +1,14 @@
+namespace PowerToys
+{
+    namespace Interop
+    {
+        delegate void TwoWayPipeIPCReadCallback(String message);
+        [default_interface] runtimeclass TwoWayPipeMessageIPCManaged : Windows.Foundation.IClosable
+        {
+            TwoWayPipeMessageIPCManaged(String inputPipeName, String outputPipeName, TwoWayPipeIPCReadCallback _callback);
+            void Send(String msg);
+            void Start();
+            void End();
+        }
+    }
+}

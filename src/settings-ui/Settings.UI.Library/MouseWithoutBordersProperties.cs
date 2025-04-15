@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
+using Settings.UI.Library.Attributes;
+
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
 #pragma warning disable SA1649 // File name should match first type name
@@ -23,16 +25,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
     public class MouseWithoutBordersProperties : ICloneable
     {
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultHotKeySwitch2AllPC => new HotkeySettings();
 
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultHotKeyLockMachine => new HotkeySettings(true, true, true, false, 0x4C);
 
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultHotKeyReconnect => new HotkeySettings(true, true, true, false, 0x52);
 
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultHotKeyToggleEasyMouse => new HotkeySettings(true, true, true, false, 0x45);
 
+        [CmdConfigureIgnore]
         public StringProperty SecurityKey { get; set; }
 
+        [CmdConfigureIgnore]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool UseService { get; set; }
 
@@ -72,42 +80,54 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowClipboardAndNetworkStatusMessages { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public List<string> MachineMatrixString { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public StringProperty MachinePool { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        [CmdConfigureIgnoreAttribute]
         public bool MatrixOneRow { get; set; }
 
         public IntProperty EasyMouse { get; set; }
 
+        [CmdConfigureIgnore]
         public IntProperty MachineID { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public IntProperty LastX { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public IntProperty LastY { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public IntProperty PackageID { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        [CmdConfigureIgnoreAttribute]
         public bool FirstRun { get; set; }
 
         public IntProperty HotKeySwitchMachine { get; set; }
 
         [ObsoleteAttribute("Use ToggleEasyMouseShortcut instead", false)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [CmdConfigureIgnoreAttribute]
         public IntProperty HotKeyToggleEasyMouse { get; set; }
 
         [ObsoleteAttribute("Use LockMachineShortcut instead", false)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [CmdConfigureIgnoreAttribute]
         public IntProperty HotKeyLockMachine { get; set; }
 
         [ObsoleteAttribute("Use ReconnectShortcut instead", false)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [CmdConfigureIgnoreAttribute]
         public IntProperty HotKeyReconnect { get; set; }
 
         [ObsoleteAttribute("Use Switch2AllPCShortcut instead", false)]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [CmdConfigureIgnoreAttribute]
         public IntProperty HotKeySwitch2AllPC { get; set; }
 
         public HotkeySettings ToggleEasyMouseShortcut { get; set; }
@@ -118,6 +138,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public HotkeySettings Switch2AllPCShortcut { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public IntProperty TCPPort { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -126,8 +147,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public StringProperty Name2IP { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        [CmdConfigureIgnoreAttribute]
         public bool FirstCtrlShiftS { get; set; }
 
+        [CmdConfigureIgnoreAttribute]
         public StringProperty DeviceID { get; set; }
 
         public MouseWithoutBordersProperties()

@@ -4,7 +4,9 @@
 
 using System;
 using System.Windows.Forms;
+
 using MouseWithoutBorders.Class;
+using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Form.Settings;
 
 namespace MouseWithoutBorders
@@ -58,8 +60,8 @@ namespace MouseWithoutBorders
                 MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
                 Setting.Values.FirstRun = false;
-                Common.CloseSetupForm();
-                Common.ShowMachineMatrix();
+                MachineStuff.CloseSetupForm();
+                MachineStuff.ShowMachineMatrix();
             }
         }
     }

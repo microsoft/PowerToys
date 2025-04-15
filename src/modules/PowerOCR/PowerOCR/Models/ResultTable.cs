@@ -10,8 +10,10 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+
 using PowerOCR.Helpers;
 using Windows.Media.Ocr;
+
 using Rect = System.Windows.Rect;
 
 namespace PowerOCR.Models;

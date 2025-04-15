@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -10,7 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     [TemplateVisualState(Name = "Normal", GroupName = "CommonStates")]
     [TemplateVisualState(Name = "Disabled", GroupName = "CommonStates")]
-    public class IsEnabledTextBlock : Control
+    public partial class IsEnabledTextBlock : Control
     {
         public IsEnabledTextBlock()
         {

@@ -8,6 +8,6 @@ namespace Wox.Infrastructure.Image
 {
     public interface IImageHashGenerator
     {
-        string GetHashFromImage(ImageSource image);
+        string GetHashFromImage(ImageSource image, string filePath);
     }
 }

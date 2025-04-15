@@ -3,25 +3,45 @@
 
 #include <common/monitor_utils.h>
 
+using namespace Windows::UI::Xaml::Media;
+using namespace Windows::UI::Xaml::Automation::Peers;
+
 namespace UIHelpers
 {
-    // This method sets focus to the first Type button on the last row of the Grid
-    void SetFocusOnTypeButtonInLastRow(StackPanel& parent, long colCount)
+    // This method sets focus to the first "Select" button on the last row of the Grid of EditKeyboardWindow
+    void SetFocusOnFirstSelectButtonInLastRowOfEditKeyboardWindow(StackPanel& parent, long colCount)
     {
         // First element in the last row (StackPanel)
         auto lastHotKeyLine = parent.Children().GetAt(parent.Children().Size() - 1).as<StackPanel>();
 
-        // Get "To" Column
-        auto toColumn = lastHotKeyLine.Children().GetAt(2).as<StackPanel>();
+        // Get "From" Column
+        auto fromColumn = lastHotKeyLine.Children().GetAt(0).as<StackPanel>();
 
-        // Get first line in "To" Column
-        auto firstLineIntoColumn = toColumn.Children().GetAt(0).as<StackPanel>();
+        // Get "Select" Button from the "From" Column
+        Button selectButton = fromColumn.Children().GetAt(0).as<Button>();
+        if (selectButton != nullptr)
+        {
+            // Set programmatic focus on the button
+            selectButton.Focus(FocusState::Programmatic);
+        }
+    }
 
-        // Get Type Button from the first line
-        Button typeButton = firstLineIntoColumn.Children().GetAt(1).as<Button>();
+    // This method sets focus to the first "Select" button on the last row of the Grid of EditShortcutsWindow
+    void SetFocusOnFirstSelectButtonInLastRowOfEditShortcutsWindow(StackPanel& parent, long colCount)
+    {
+        // First element in the last row (StackPanel)
+        auto lastHotKeyLine = parent.Children().GetAt(parent.Children().Size() - 1).as<StackPanel>();
 
-        // Set programmatic focus on the button
-        typeButton.Focus(FocusState::Programmatic);
+        // Get "From" Column
+        auto fromColumn = lastHotKeyLine.Children().GetAt(0).as<StackPanel>();
+
+        StackPanel selectButtonTry = fromColumn.Children().GetAt(1).as<StackPanel>();
+        Button selectButtonTry2 = selectButtonTry.Children().GetAt(1).as<Button>();
+        if (selectButtonTry2 != nullptr)
+        {
+            // Set programmatic focus on the button
+            selectButtonTry2.Focus(FocusState::Programmatic);
+        }
     }
 
     RECT GetForegroundWindowDesktopRect()
@@ -51,6 +71,34 @@ namespace UIHelpers
 
         parentElement.Children().IndexOf(frameworkElement, index);
         return parentElement.Children().GetAt(index + 1);
+    }
+
+    winrt::Windows::Foundation::IInspectable GetLabelWrapped(const winrt::Windows::Foundation::IInspectable& element, std::wstring label, double textWidth, HorizontalAlignment horizontalAlignment)
+    {
+        StackPanel sp = StackPanel();
+
+        try
+        {
+            sp.Name(L"Wrapped_" + element.as<FrameworkElement>().Name());
+        }
+        catch (...)
+        {
+        }
+
+        sp.Orientation(Orientation::Horizontal);
+        sp.HorizontalAlignment(horizontalAlignment);
+        TextBlock text;
+        text.FontWeight(Text::FontWeights::Bold());
+        text.Text(label);
+
+        if (textWidth >= 0)
+        {
+            text.Width(textWidth);
+        }
+
+        sp.Children().Append(text);
+        sp.Children().Append(element.as<FrameworkElement>());
+        return sp;
     }
 
     winrt::Windows::Foundation::IInspectable GetWrapped(const winrt::Windows::Foundation::IInspectable& element, double width)

@@ -130,7 +130,7 @@
     <value>Program</value>
   </data>
   <data name="wox_plugin_program_plugin_description" xml:space="preserve">
-    <value>Searches programs.</value>
+    <value>Searches programs</value>
   </data>
   <data name="powertoys_run_plugin_program_win32_application" xml:space="preserve">
     <value>Application</value>

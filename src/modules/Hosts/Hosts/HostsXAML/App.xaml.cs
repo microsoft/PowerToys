@@ -1,48 +1,55 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.IO.Abstractions;
 using System.Threading;
-using Hosts.Helpers;
-using Hosts.Settings;
-using Hosts.ViewModels;
-using Hosts.Views;
+
+using Common.UI;
+using HostsEditor.Telemetry;
+using HostsUILib.Helpers;
+using HostsUILib.Settings;
+using HostsUILib.ViewModels;
+using HostsUILib.Views;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using PowerToys.Interop;
+using static HostsUILib.Settings.IUserSettings;
 
+using Host = Hosts.Helpers.Host;
+
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
 namespace Hosts
 {
+    /// <summary>
+    /// Provides application-specific behavior to supplement the default Application class.
+    /// </summary>
     public partial class App : Application
     {
-        private Window _window;
-
-        public IHost Host
-        {
-            get;
-        }
-
-        public static T GetService<T>()
-            where T : class
-        {
-            if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
-            {
-                throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
-            }
-
-            return service;
-        }
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="App"/> class.
+        /// Initializes the singleton application object.  This is the first line of authored code
+        /// executed, and as such is the logical equivalent of main() or WinMain().
+        /// </summary>
         public App()
         {
+            PowerToysTelemetry.Log.WriteEvent(new HostEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+
+            string appLanguage = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(appLanguage))
+            {
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+            }
+
             InitializeComponent();
 
-            Host = Microsoft.Extensions.Hosting.Host.
+            Host.HostInstance = Microsoft.Extensions.Hosting.Host.
                 CreateDefaultBuilder().
                 UseContentRoot(AppContext.BaseDirectory).
                 ConfigureServices((context, services) =>
@@ -50,28 +57,34 @@ namespace Hosts
                     // Core Services
                     services.AddSingleton<IFileSystem, FileSystem>();
                     services.AddSingleton<IHostsService, HostsService>();
-                    services.AddSingleton<IUserSettings, UserSettings>();
+                    services.AddSingleton<IUserSettings, Hosts.Settings.UserSettings>();
                     services.AddSingleton<IElevationHelper, ElevationHelper>();
+                    services.AddSingleton<IDuplicateService, DuplicateService>();
 
                     // Views and ViewModels
-                    services.AddTransient<MainPage>();
-                    services.AddTransient<MainViewModel>();
+                    services.AddSingleton<ILogger, LoggerWrapper>();
+                    services.AddSingleton<IElevationHelper, ElevationHelper>();
+                    services.AddSingleton<OpenSettingsFunction>(() =>
+                    {
+                        SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts, true);
+                    });
+
+                    services.AddSingleton<MainViewModel, MainViewModel>();
+                    services.AddSingleton<HostsMainPage, HostsMainPage>();
                 }).
                 Build();
-
-            UnhandledException += App_UnhandledException;
 
             var cleanupBackupThread = new Thread(() =>
             {
                 // Delete old backups only if running elevated
-                if (!GetService<IElevationHelper>().IsElevated)
+                if (!Host.GetService<IElevationHelper>().IsElevated)
                 {
                     return;
                 }
 
                 try
                 {
-                    GetService<IHostsService>().CleanupBackup();
+                    Host.GetService<IHostsService>().CleanupBackup();
                 }
                 catch (Exception ex)
                 {
@@ -81,8 +94,20 @@ namespace Hosts
 
             cleanupBackupThread.IsBackground = true;
             cleanupBackupThread.Start();
+
+            UnhandledException += App_UnhandledException;
+
+            Hosts.Helpers.NativeEventWaiter.WaitForEventLoop(Constants.TerminateHostsSharedEvent(), () =>
+            {
+                EtwTrace?.Dispose();
+                Environment.Exit(0);
+            });
         }
 
+        /// <summary>
+        /// Invoked when the application is launched.
+        /// </summary>
+        /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             var cmdArgs = Environment.GetCommandLineArgs();
@@ -96,6 +121,7 @@ namespace Hosts
                     RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
                     {
                         Logger.LogInfo("PowerToys Runner exited. Exiting Hosts");
+                        EtwTrace?.Dispose();
                         dispatcher.TryEnqueue(App.Current.Exit);
                     });
                 }
@@ -105,15 +131,19 @@ namespace Hosts
                 Logger.LogInfo($"Hosts started detached from PowerToys Runner.");
             }
 
-            PowerToysTelemetry.Log.WriteEvent(new Hosts.Telemetry.HostsFileEditorOpenedEvent());
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.HostsFileEditorOpenedEvent());
 
-            _window = new MainWindow();
-            _window.Activate();
+            window = new MainWindow();
+            window.Activate();
         }
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             Logger.LogError("Unhandled exception", e.Exception);
         }
+
+        private Window window;
+
+        public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
     }
 }

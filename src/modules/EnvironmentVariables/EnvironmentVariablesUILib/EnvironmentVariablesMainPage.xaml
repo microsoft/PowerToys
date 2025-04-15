@@ -1,0 +1,912 @@
+﻿<Page
+    x:Class="EnvironmentVariablesUILib.EnvironmentVariablesMainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:EnvironmentVariablesUILib.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:EnvironmentVariablesUILib.Models"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    x:Name="RootPage"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <ResourceDictionary>
+            <!--  These resource dictionaries are needed to reference styles part of SettingsControls  -->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsCard/SettingsCard.xaml" />
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsExpander/SettingsExpander.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <StaticResource x:Key="SubtleButtonBackground" ResourceKey="SubtleFillColorTransparent" />
+                    <StaticResource x:Key="SubtleButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+                    <StaticResource x:Key="SubtleButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+                    <StaticResource x:Key="SubtleButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+
+                    <StaticResource x:Key="SubtleButtonBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushPointerOver" ResourceKey="SubtleFillColorSecondary" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushPressed" ResourceKey="SubtleFillColorTertiary" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
+
+                    <StaticResource x:Key="SubtleButtonForeground" ResourceKey="TextFillColorPrimary" />
+                    <StaticResource x:Key="SubtleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+                    <StaticResource x:Key="SubtleButtonForegroundPressed" ResourceKey="TextFillColorSecondary" />
+                    <StaticResource x:Key="SubtleButtonForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="Light">
+                    <StaticResource x:Key="SubtleButtonBackground" ResourceKey="SubtleFillColorTransparent" />
+                    <StaticResource x:Key="SubtleButtonBackgroundPointerOver" ResourceKey="SubtleFillColorSecondary" />
+                    <StaticResource x:Key="SubtleButtonBackgroundPressed" ResourceKey="SubtleFillColorTertiary" />
+                    <StaticResource x:Key="SubtleButtonBackgroundDisabled" ResourceKey="SubtleFillColorTransparent" />
+
+                    <StaticResource x:Key="SubtleButtonBorderBrush" ResourceKey="SubtleFillColorTransparent" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushPointerOver" ResourceKey="SubtleFillColorSecondary" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushPressed" ResourceKey="SubtleFillColorTertiary" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushDisabled" ResourceKey="SubtleFillColorTransparent" />
+
+                    <StaticResource x:Key="SubtleButtonForeground" ResourceKey="TextFillColorPrimary" />
+                    <StaticResource x:Key="SubtleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimary" />
+                    <StaticResource x:Key="SubtleButtonForegroundPressed" ResourceKey="TextFillColorSecondary" />
+                    <StaticResource x:Key="SubtleButtonForegroundDisabled" ResourceKey="TextFillColorDisabled" />
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="HighContrast">
+                    <StaticResource x:Key="SubtleButtonBackground" ResourceKey="SystemColorWindowColorBrush" />
+                    <StaticResource x:Key="SubtleButtonBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
+                    <StaticResource x:Key="SubtleButtonBackgroundPressed" ResourceKey="SystemColorWindowColorBrush" />
+                    <StaticResource x:Key="SubtleButtonBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+
+                    <StaticResource x:Key="SubtleButtonBorderBrush" ResourceKey="SystemColorWindowColorBrush" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushPointerOver" ResourceKey="SystemColorHighlightColorBrush" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushPressed" ResourceKey="SystemColorHighlightColorBrush" />
+                    <StaticResource x:Key="SubtleButtonBorderBrushDisabled" ResourceKey="SystemColorGrayTextColor" />
+
+                    <StaticResource x:Key="SubtleButtonForeground" ResourceKey="SystemColorButtonTextColorBrush" />
+                    <StaticResource x:Key="SubtleButtonForegroundPointerOver" ResourceKey="SystemControlHighlightBaseHighBrush" />
+                    <StaticResource x:Key="SubtleButtonForegroundPressed" ResourceKey="SystemControlHighlightBaseHighBrush" />
+                    <StaticResource x:Key="SubtleButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+                </ResourceDictionary>
+
+            </ResourceDictionary.ThemeDictionaries>
+
+            <Style x:Key="SubtleButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="{ThemeResource SubtleButtonBackground}" />
+                <Setter Property="BackgroundSizing" Value="InnerBorderEdge" />
+                <Setter Property="Foreground" Value="{ThemeResource SubtleButtonForeground}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource SubtleButtonBorderBrush}" />
+                <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
+                <Setter Property="Padding" Value="{StaticResource ButtonPadding}" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+                <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+                <Setter Property="FocusVisualMargin" Value="-3" />
+                <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                AnimatedIcon.State="Normal"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Background="{TemplateBinding Background}"
+                                BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Foreground="{TemplateBinding Foreground}">
+                                <ContentPresenter.BackgroundTransition>
+                                    <BrushTransition Duration="0:0:0.083" />
+                                </ContentPresenter.BackgroundTransition>
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonBackgroundPointerOver}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonBorderBrushPointerOver}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonForegroundPointerOver}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                            <VisualState.Setters>
+                                                <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="PointerOver" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonBackgroundPressed}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonBorderBrushPressed}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonForegroundPressed}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                            <VisualState.Setters>
+                                                <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="Pressed" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                        <VisualState x:Name="Disabled">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonBackgroundDisabled}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonBorderBrushDisabled}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SubtleButtonForegroundDisabled}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                            <VisualState.Setters>
+                                                <!--  DisabledVisual Should be handled by the control, not the animated icon.  -->
+                                                <Setter Target="ContentPresenter.(AnimatedIcon.State)" Value="Normal" />
+                                            </VisualState.Setters>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                            </ContentPresenter>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <x:Double x:Key="SecondaryTextFontSize">12</x:Double>
+            <Style x:Key="SecondaryTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="{StaticResource SecondaryTextFontSize}" />
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Style>
+
+            <DataTemplate x:Key="VariableTemplate" x:DataType="models:Variable">
+                <tkcontrols:SettingsCard
+                    CommandParameter="{x:Bind (models:Variable)}"
+                    IsActionIconVisible="False"
+                    IsClickEnabled="False"
+                    Style="{StaticResource DefaultSettingsExpanderItemStyle}">
+                    <tkcontrols:SettingsCard.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{x:Bind Name, Mode=TwoWay}" />
+                            <FontIcon
+                                Margin="6,0,6,0"
+                                FontSize="16"
+                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                Glyph="&#xE930;"
+                                Visibility="{x:Bind IsAppliedFromProfile, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="VariableIsAppliedByActiveProfileTooltip" TextWrapping="Wrap" />
+                                </ToolTipService.ToolTip>
+                            </FontIcon>
+                        </StackPanel>
+                    </tkcontrols:SettingsCard.Header>
+                    <tkcontrols:SettingsCard.Description>
+                        <StackPanel HorizontalAlignment="Left">
+                            <ItemsControl
+                                x:Name="VariableValuesList"
+                                HorizontalAlignment="Left"
+                                ItemsSource="{x:Bind ValuesList, Mode=TwoWay}"
+                                Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <TextBlock
+                                            Margin="0,2,0,2"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            IsTextSelectionEnabled="True"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{Binding Text}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock
+                                IsTextSelectionEnabled="True"
+                                Text="{x:Bind Values, Mode=TwoWay}"
+                                Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard.Description>
+                    <Button
+                        Content="{ui:FontIcon Glyph=&#xE712;}"
+                        IsEnabled="{x:Bind IsEditable}"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <Button.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem
+                                    x:Uid="EditItem"
+                                    Click="EditVariable_Click"
+                                    CommandParameter="{x:Bind (models:Variable)}"
+                                    Icon="{ui:FontIcon Glyph=&#xE70F;}" />
+                                <MenuFlyoutSeparator />
+                                <MenuFlyoutItem
+                                    x:Uid="RemoveItem"
+                                    Click="Delete_Variable_Click"
+                                    CommandParameter="{x:Bind (models:Variable)}"
+                                    Icon="{ui:FontIcon Glyph=&#xE74D;}" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="More_Options_ButtonTooltip" TextWrapping="Wrap" />
+                        </ToolTipService.ToolTip>
+                    </Button>
+                </tkcontrols:SettingsCard>
+            </DataTemplate>
+
+            <converters:VariableTypeToGlyphConverter x:Key="VariableTypeToGlyphConverter" />
+            <converters:EnvironmentStateToBoolConverter x:Key="EnvironmentStateToBoolConverter" />
+            <converters:EnvironmentStateToMessageConverter x:Key="EnvironmentStateToMessageConverter" />
+            <converters:EnvironmentStateToTitleConverter x:Key="EnvironmentStateToTitleConverter" />
+            <converters:EnvironmentStateToVisibilityConverter x:Key="EnvironmentStateToVisibilityConverter" />
+
+            <tkconverters:BoolToVisibilityConverter
+                x:Key="BoolToInvertedVisibilityConverter"
+                FalseValue="Visible"
+                TrueValue="Collapsed" />
+            <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
+        </ResourceDictionary>
+    </Page.Resources>
+
+
+    <Grid Margin="16" RowSpacing="8">
+        <Grid.RowDefinitions>
+
+            <RowDefinition Height="Auto" />
+            <!--  buttons  -->
+            <RowDefinition Height="Auto" />
+            <!--  Warning messages  -->
+            <RowDefinition Height="*" />
+            <!--  content  -->
+            <RowDefinition Height="Auto" />
+            <!--  content  -->
+        </Grid.RowDefinitions>
+
+        <!--  buttons  -->
+        <StackPanel Orientation="Horizontal">
+            <Button Command="{x:Bind NewProfileCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon
+                        x:Name="Icon"
+                        FontSize="16"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        Glyph="&#xe710;" />
+                    <TextBlock x:Uid="NewProfileBtn" />
+                </StackPanel>
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="N" Modifiers="Control" />
+                </Button.KeyboardAccelerators>
+            </Button>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <InfoBar
+                x:Name="InvalidStateInfoBar"
+                x:Uid="InvalidStateInfoBar"
+                Title="{x:Bind ViewModel.EnvironmentState, Mode=OneWay, Converter={StaticResource EnvironmentStateToTitleConverter}}"
+                CloseButtonClick="InvalidStateInfoBar_CloseButtonClick"
+                IsOpen="{x:Bind ViewModel.EnvironmentState, Mode=OneWay, Converter={StaticResource EnvironmentStateToBoolConverter}}"
+                Message="{x:Bind ViewModel.EnvironmentState, Mode=OneWay, Converter={StaticResource EnvironmentStateToMessageConverter}}"
+                Severity="Warning"
+                Visibility="{x:Bind ViewModel.EnvironmentState, Mode=OneWay, Converter={StaticResource EnvironmentStateToVisibilityConverter}}">
+                <InfoBar.ActionButton>
+                    <Button
+                        Click="ReloadButton_Click"
+                        Content="{ui:FontIcon Glyph=&#xe72c;}"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Visibility="{x:Bind ViewModel.IsInfoBarButtonVisible, Mode=OneWay}" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+        </Grid>
+
+        <Grid
+            Grid.Row="2"
+            Margin="0,24,0,0"
+            ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <!--  Left side  -->
+                <ColumnDefinition Width="*" />
+                <!--  GridSplitter  -->
+                <ColumnDefinition Width="Auto" />
+                <!--  Applied values  -->
+                <ColumnDefinition Width="480" />
+            </Grid.ColumnDefinitions>
+            <ScrollViewer
+                Grid.Row="1"
+                Grid.Column="0"
+                VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock x:Uid="ProfilesLbl" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <FontIcon
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE946;">
+                            <ToolTipService.ToolTip>
+                                <TextBlock x:Uid="ProfilesDescriptionLbl" TextWrapping="Wrap" />
+                            </ToolTipService.ToolTip>
+                        </FontIcon>
+                    </StackPanel>
+                    <ItemsControl Margin="0,4,0,0" ItemsSource="{x:Bind ViewModel.Profiles, Mode=TwoWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:ProfileVariablesSet">
+                                <tkcontrols:SettingsExpander
+                                    Margin="0,0,0,4"
+                                    Header="{x:Bind Name, Mode=TwoWay}"
+                                    HeaderIcon="{ui:FontIcon Glyph=&#xEDE3;}">
+                                    <tkcontrols:SettingsExpander.ItemsHeader>
+                                        <ItemsRepeater
+                                            ItemTemplate="{StaticResource VariableTemplate}"
+                                            ItemsSource="{x:Bind Variables, Mode=OneWay}"
+                                            TabFocusNavigation="Local"
+                                            VerticalCacheLength="10" />
+                                    </tkcontrols:SettingsExpander.ItemsHeader>
+
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <ToggleSwitch
+                                            x:Uid="ToggleSwitch"
+                                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                                            Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
+                                        <Button Content="{ui:FontIcon Glyph=&#xE712;}" Style="{StaticResource SubtleButtonStyle}">
+                                            <Button.Flyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem
+                                                        x:Uid="EditItem"
+                                                        Click="EditProfileBtn_Click"
+                                                        CommandParameter="{x:Bind (models:ProfileVariablesSet)}"
+                                                        Icon="{ui:FontIcon Glyph=&#xE70F;}" />
+                                                    <MenuFlyoutSeparator />
+                                                    <MenuFlyoutItem
+                                                        x:Uid="RemoveItem"
+                                                        Click="RemoveProfileBtn_Click"
+                                                        CommandParameter="{x:Bind (models:ProfileVariablesSet)}"
+                                                        Icon="{ui:FontIcon Glyph=&#xE74D;}" />
+                                                </MenuFlyout>
+                                            </Button.Flyout>
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock x:Uid="More_Options_ButtonTooltip" TextWrapping="Wrap" />
+                                            </ToolTipService.ToolTip>
+                                        </Button>
+                                    </StackPanel>
+                                </tkcontrols:SettingsExpander>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+
+                    <StackPanel
+                        Margin="0,24,0,0"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <TextBlock x:Uid="DefaultVariablesLbl" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <FontIcon
+                            FontSize="16"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE946;">
+                            <ToolTipService.ToolTip>
+                                <TextBlock x:Uid="DefaultVariablesDescriptionLbl" TextWrapping="Wrap" />
+                            </ToolTipService.ToolTip>
+                        </FontIcon>
+                    </StackPanel>
+
+                    <tkcontrols:SettingsExpander
+                        Margin="0,4,0,0"
+                        Header="{x:Bind ViewModel.UserDefaultSet.Name}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE77B;}">
+                        <tkcontrols:SettingsExpander.ItemsHeader>
+                            <ItemsRepeater
+                                ItemTemplate="{StaticResource VariableTemplate}"
+                                ItemsSource="{x:Bind ViewModel.UserDefaultSet.Variables, Mode=OneWay}"
+                                TabFocusNavigation="Local"
+                                VerticalCacheLength="10" />
+                        </tkcontrols:SettingsExpander.ItemsHeader>
+                        <StackPanel Orientation="Horizontal">
+                            <Button
+                                x:Name="AddDefaultVariableUserBtn"
+                                x:Uid="AddVariableContent"
+                                Click="AddDefaultVariableBtn_Click"
+                                CommandParameter="{x:Bind ViewModel.UserDefaultSet}"
+                                Content="Add variable"
+                                Style="{StaticResource AccentButtonStyle}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="AddVariableTooltip" TextWrapping="Wrap" />
+                                </ToolTipService.ToolTip>
+                            </Button>
+                        </StackPanel>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander Header="{x:Bind ViewModel.SystemDefaultSet.Name}" HeaderIcon="{ui:FontIcon Glyph=&#xE977;}">
+                        <tkcontrols:SettingsExpander.ItemsHeader>
+                            <ItemsRepeater
+                                ItemTemplate="{StaticResource VariableTemplate}"
+                                ItemsSource="{x:Bind ViewModel.SystemDefaultSet.Variables, Mode=OneWay}"
+                                TabFocusNavigation="Local"
+                                VerticalCacheLength="10" />
+                        </tkcontrols:SettingsExpander.ItemsHeader>
+                        <tkcontrols:SettingsExpander.Description>
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="4"
+                                Visibility="{x:Bind ViewModel.IsElevated, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                                <Border
+                                    Width="12"
+                                    Height="12"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                    CornerRadius="12">
+                                    <FontIcon
+                                        FontSize="8"
+                                        Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                                        Glyph="&#xEA1F;" />
+                                </Border>
+                                <TextBlock x:Uid="EditSystemDefaultSetInfoBar" />
+                            </StackPanel>
+                        </tkcontrols:SettingsExpander.Description>
+                        <StackPanel Orientation="Horizontal">
+                            <Button
+                                x:Name="AddDefaultVariableSystemBtn"
+                                x:Uid="AddVariableContent"
+                                Click="AddDefaultVariableBtn_Click"
+                                CommandParameter="{x:Bind ViewModel.SystemDefaultSet}"
+                                IsEnabled="{x:Bind ViewModel.IsElevated}"
+                                Style="{StaticResource AccentButtonStyle}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="AddVariableTooltip" TextWrapping="Wrap" />
+                                </ToolTipService.ToolTip>
+                            </Button>
+                        </StackPanel>
+                    </tkcontrols:SettingsExpander>
+                </StackPanel>
+            </ScrollViewer>
+            <tkcontrols:GridSplitter
+                x:Name="Splitter"
+                Grid.Row="2"
+                Grid.Column="1"
+                Width="8"
+                Foreground="Transparent"
+                ResizeBehavior="BasedOnAlignment"
+                ResizeDirection="Auto" />
+
+            <Grid
+                x:Name="AppliedValuesPanel"
+                Grid.Row="2"
+                Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock x:Uid="AppliedVariablesLbl" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <FontIcon
+                        FontSize="16"
+                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                        Glyph="&#xE946;">
+                        <ToolTipService.ToolTip>
+                            <TextBlock x:Uid="AppliedVariablesDescriptionLbl" TextWrapping="Wrap" />
+                        </ToolTipService.ToolTip>
+                    </FontIcon>
+                </StackPanel>
+
+                <Grid
+                    Grid.Row="1"
+                    Margin="0,8,0,0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{ThemeResource ControlCornerRadius}">
+                    <ScrollViewer x:Name="AppliedVariablesScrollViewer" HorizontalScrollBarVisibility="Auto">
+                        <ItemsControl Margin="12,8,12,0" ItemsSource="{x:Bind ViewModel.AppliedVariables, Mode=TwoWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:Variable">
+                                    <Grid Height="56" ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="24" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <FontIcon
+                                            Grid.Column="0"
+                                            VerticalAlignment="Center"
+                                            FontSize="14"
+                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                            Glyph="{x:Bind ParentType, Mode=OneWay, Converter={StaticResource VariableTypeToGlyphConverter}}" />
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock
+                                                Text="{x:Bind Name}"
+                                                TextTrimming="CharacterEllipsis"
+                                                TextWrapping="NoWrap" />
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind Values}"
+                                                TextTrimming="CharacterEllipsis"
+                                                TextWrapping="NoWrap">
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="{x:Bind Values}" TextWrapping="WrapWholeWords" />
+                                                </ToolTipService.ToolTip>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+        </Grid>
+
+
+        <ContentDialog
+            x:Name="AddDefaultVariableDialog"
+            x:Uid="AddDefaultVariableDialog"
+            IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
+            IsSecondaryButtonEnabled="True"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <ContentDialog.DataContext>
+                <models:Variable />
+            </ContentDialog.DataContext>
+            <ScrollViewer>
+                <StackPanel
+                    MinWidth="320"
+                    HorizontalAlignment="Stretch"
+                    Spacing="16">
+                    <TextBox
+                        x:Uid="AddNewVariableName"
+                        IsSpellCheckEnabled="False"
+                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TextChanged="AddDefaultVariableNameTxtBox_TextChanged" />
+                    <TextBox
+                        x:Uid="AddNewVariableValue"
+                        AcceptsReturn="False"
+                        IsSpellCheckEnabled="False"
+                        ScrollViewer.IsVerticalRailEnabled="True"
+                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                        ScrollViewer.VerticalScrollMode="Enabled"
+                        Text="{Binding Values, Mode=TwoWay}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+
+        <ContentDialog
+            x:Name="EditVariableDialog"
+            x:Uid="EditVariableDialog"
+            IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
+            IsSecondaryButtonEnabled="True"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <ContentDialog.DataContext>
+                <models:Variable />
+            </ContentDialog.DataContext>
+            <ScrollViewer>
+                <StackPanel
+                    MinWidth="320"
+                    HorizontalAlignment="Stretch"
+                    Spacing="16">
+                    <TextBox
+                        x:Name="EditVariableDialogNameTxtBox"
+                        x:Uid="AddNewVariableName"
+                        IsSpellCheckEnabled="False"
+                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TextChanged="EditVariableDialogNameTxtBox_TextChanged" />
+                    <TextBox
+                        x:Name="EditVariableDialogValueTxtBox"
+                        x:Uid="AddNewVariableValue"
+                        AcceptsReturn="False"
+                        IsSpellCheckEnabled="False"
+                        ScrollViewer.IsVerticalRailEnabled="True"
+                        ScrollViewer.VerticalScrollBarVisibility="Visible"
+                        ScrollViewer.VerticalScrollMode="Enabled"
+                        Text="{Binding Values, Mode=TwoWay}"
+                        TextChanged="EditVariableDialogValueTxtBox_TextChanged"
+                        TextWrapping="Wrap" />
+                    <MenuFlyoutSeparator Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    <ItemsControl
+                        x:Name="EditVariableValuesList"
+                        Margin="0,-8,0,12"
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding ValuesList, Mode=TwoWay}"
+                        Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="40" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        LostFocus="EditVariableValuesListTextBox_LostFocus"
+                                        Text="{Binding Text}" />
+                                    <Button
+                                        x:Uid="More_Options_Button"
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Content="&#xE712;"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                        Style="{StaticResource SubtleButtonStyle}">
+                                        <Button.Flyout>
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem
+                                                    x:Uid="MoveUp"
+                                                    Click="ReorderButtonUp_Click"
+                                                    Icon="{ui:FontIcon Glyph=&#xE74A;}" />
+                                                <MenuFlyoutItem
+                                                    x:Uid="MoveDown"
+                                                    Click="ReorderButtonDown_Click"
+                                                    Icon="{ui:FontIcon Glyph=&#xE74B;}" />
+                                                <MenuFlyoutSeparator />
+                                                <MenuFlyoutItem
+                                                    x:Uid="RemoveListItem"
+                                                    Click="RemoveListVariableButton_Click"
+                                                    Icon="{ui:FontIcon Glyph=&#xE74D;}" />
+                                                <MenuFlyoutSeparator />
+                                                <MenuFlyoutItem
+                                                    x:Uid="InsertListEntryBefore"
+                                                    Click="InsertListEntryBeforeButton_Click"
+                                                    Icon="{ui:FontIcon Glyph=&#xECC8;}" />
+                                                <MenuFlyoutItem
+                                                    x:Uid="InsertListEntryAfter"
+                                                    Click="InsertListEntryAfterButton_Click"
+                                                    Icon="{ui:FontIcon Glyph=&#xECC8;}" />
+                                            </MenuFlyout>
+                                        </Button.Flyout>
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="More_Options_ButtonTooltip" />
+                                        </ToolTipService.ToolTip>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+
+        <ContentDialog
+            x:Name="AddProfileDialog"
+            x:Uid="AddProfileDialog"
+            IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
+            IsSecondaryButtonEnabled="True"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            <ContentDialog.DataContext>
+                <models:ProfileVariablesSet />
+            </ContentDialog.DataContext>
+            <ScrollViewer>
+                <StackPanel
+                    MinWidth="360"
+                    HorizontalAlignment="Stretch"
+                    Spacing="12">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox
+                            x:Uid="NewProfileNameTxtBox"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            IsSpellCheckEnabled="False"
+                            Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <ToggleSwitch
+                            x:Uid="NewProfileEnabled"
+                            Grid.Column="1"
+                            MinWidth="0"
+                            Margin="0,0,0,0"
+                            VerticalAlignment="Center"
+                            IsOn="{Binding IsEnabled, Mode=TwoWay}"
+                            OffContent=""
+                            OnContent="" />
+                    </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <TextBlock x:Uid="NewProfileVariablesListViewHeader" Margin="0,12,0,8" />
+                        <TextBlock
+                            x:Uid="NewProfileVariablesListViewApplyToSystemHeader"
+                            Grid.Column="1"
+                            Margin="0,12,0,8"
+                            HorizontalAlignment="Right"
+                            Visibility="Collapsed" />
+
+                        <ItemsControl
+                            x:Name="NewProfileVariablesListView"
+                            Grid.Row="1"
+                            Grid.ColumnSpan="2"
+                            Margin="0,-8,0,12"
+                            HorizontalAlignment="Stretch"
+                            ItemsSource="{Binding Variables, Mode=TwoWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:Variable">
+                                    <Grid Height="48" ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition />
+                                            <ColumnDefinition Width="40" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel VerticalAlignment="Center" Orientation="Vertical">
+                                            <TextBlock
+                                                Text="{x:Bind Name}"
+                                                TextTrimming="CharacterEllipsis"
+                                                TextWrapping="NoWrap" />
+                                            <TextBlock
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind Values}"
+                                                TextTrimming="CharacterEllipsis"
+                                                TextWrapping="NoWrap" />
+                                        </StackPanel>
+                                        <ToggleSwitch
+                                            x:Uid="ApplyAsSystemBtn"
+                                            Grid.Column="1"
+                                            IsOn="{x:Bind Path=ApplyToSystem, Mode=TwoWay}"
+                                            Visibility="Collapsed" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                    </Grid>
+
+                    <Button>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                x:Name="AddVariableIcon"
+                                FontSize="16"
+                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                Glyph="&#xe710;" />
+                            <TextBlock x:Uid="AddVariableBtn" />
+                        </StackPanel>
+                        <Button.Flyout>
+                            <Flyout
+                                x:Name="AddVariableFlyout"
+                                Closed="AddVariableFlyout_Closed"
+                                Placement="Right"
+                                ShouldConstrainToRootBounds="False">
+                                <Grid Width="320" Height="480">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <tkcontrols:Segmented
+                                        x:Name="SwitchViewsSegmentedView"
+                                        MaxWidth="500"
+                                        HorizontalAlignment="Stretch"
+                                        SelectionMode="Single">
+                                        <tkcontrols:SegmentedItem
+                                            x:Name="AddNewVariableSegmentedItem"
+                                            x:Uid="NewVariableSegmentedButton"
+                                            Tag="NewVariable" />
+                                        <tkcontrols:SegmentedItem
+                                            x:Name="AddExistingVariableSegmentedItem"
+                                            x:Uid="ExistingVariableSegmentedButton"
+                                            Tag="ExistingVariable" />
+                                    </tkcontrols:Segmented>
+
+                                    <tkcontrols:SwitchPresenter
+                                        x:Name="AddVariableSwitchPresenter"
+                                        Grid.Row="1"
+                                        Value="{Binding SelectedItem.Tag, ElementName=SwitchViewsSegmentedView}">
+                                        <tkcontrols:Case Value="NewVariable">
+                                            <StackPanel Grid.Row="1" Orientation="Vertical">
+
+                                                <!--  Adding new variable  -->
+                                                <TextBox
+                                                    x:Name="AddNewVariableName"
+                                                    x:Uid="AddNewVariableName"
+                                                    Margin="0,16,0,0"
+                                                    TextChanged="AddNewVariableName_TextChanged" />
+
+                                                <TextBox
+                                                    x:Name="AddNewVariableValue"
+                                                    x:Uid="AddNewVariableValue"
+                                                    Margin="0,16,0,0" />
+                                            </StackPanel>
+                                        </tkcontrols:Case>
+                                        <tkcontrols:Case Value="ExistingVariable">
+                                            <!--  Adding existing variables  -->
+                                            <ListView
+                                                x:Name="ExistingVariablesListView"
+                                                Grid.Row="1"
+                                                Margin="-12,12,0,12"
+                                                HorizontalAlignment="Stretch"
+                                                ItemsSource="{x:Bind ViewModel.DefaultVariables.Variables, Mode=OneWay}"
+                                                Loaded="ExistingVariablesListView_Loaded"
+                                                SelectionChanged="ExistingVariablesListView_SelectionChanged"
+                                                SelectionMode="Multiple">
+
+                                                <ListView.ItemTemplate>
+                                                    <DataTemplate x:DataType="models:Variable">
+                                                        <Grid Height="48" ColumnSpacing="8">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="20" />
+                                                                <ColumnDefinition />
+                                                            </Grid.ColumnDefinitions>
+                                                            <FontIcon
+                                                                Grid.Column="0"
+                                                                VerticalAlignment="Center"
+                                                                FontSize="14"
+                                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                                Glyph="{x:Bind ParentType, Mode=OneWay, Converter={StaticResource VariableTypeToGlyphConverter}}" />
+                                                            <StackPanel
+                                                                Grid.Column="1"
+                                                                VerticalAlignment="Center"
+                                                                Orientation="Vertical">
+                                                                <TextBlock
+                                                                    Text="{x:Bind Name}"
+                                                                    TextTrimming="CharacterEllipsis"
+                                                                    TextWrapping="NoWrap" />
+                                                                <TextBlock
+                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                                    Text="{x:Bind Values}"
+                                                                    TextTrimming="CharacterEllipsis"
+                                                                    TextWrapping="NoWrap" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListView.ItemTemplate>
+                                            </ListView>
+
+                                        </tkcontrols:Case>
+                                    </tkcontrols:SwitchPresenter>
+                                    <Grid Grid.Row="2" HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Button
+                                            x:Name="ConfirmAddVariableBtn"
+                                            x:Uid="ConfirmAddVariableBtn"
+                                            Margin="4,0,4,0"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{x:Bind AddVariableCommand}"
+                                            IsEnabled="False"
+                                            Style="{StaticResource AccentButtonStyle}" />
+
+                                        <Button
+                                            x:Name="CancelAddVariableBtn"
+                                            x:Uid="CancelAddVariableBtn"
+                                            Grid.Column="1"
+                                            Margin="4,0,4,0"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{x:Bind CancelAddVariableCommand}" />
+
+                                    </Grid>
+                                </Grid>
+
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+    </Grid>
+</Page>

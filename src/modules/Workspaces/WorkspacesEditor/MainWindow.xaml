@@ -1,0 +1,29 @@
+﻿<Window
+    x:Class="WorkspacesEditor.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:props="clr-namespace:WorkspacesEditor.Properties"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    x:Name="WorkspacesMainWindow"
+    Title="{x:Static props:Resources.MainTitle}"
+    MinWidth="750"
+    MinHeight="680"
+    ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
+    ui:TitleBar.InactiveBackground="{DynamicResource TertiaryBackgroundBrush}"
+    ui:TitleBar.IsIconVisible="True"
+    ui:WindowHelper.UseModernWindowStyle="True"
+    AutomationProperties.Name="Workspaces Editor"
+    Background="{DynamicResource PrimaryBackgroundBrush}"
+    Closing="OnClosing"
+    ContentRendered="OnContentRendered"
+    ResizeMode="CanResize"
+    WindowStartupLocation="CenterOwner"
+    mc:Ignorable="d">
+    <Border BorderThickness="1" CornerRadius="20">
+        <Grid Margin="0,10,0,0">
+            <Frame x:Name="ContentFrame" NavigationUIVisibility="Hidden" />
+        </Grid>
+    </Border>
+</Window>

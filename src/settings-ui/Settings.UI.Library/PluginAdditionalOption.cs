@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -15,9 +17,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Combobox = 1,
             Textbox = 2,
             Numberbox = 3,
+            MultilineTextbox = 4,
             CheckboxAndCombobox = 11,
             CheckboxAndTextbox = 12,
             CheckboxAndNumberbox = 13,
+            CheckboxAndMultilineTextbox = 14,
         }
 
         /// <summary>
@@ -62,14 +66,47 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<KeyValuePair<string, string>> ComboBoxItems { get; set; }
 
+        private string _textValue;
+
+        /// <summary>
+        /// Gets or sets the text of a (multiline) text setting.
+        /// </summary>
+        /// <remarks>
+        /// For multiline text "\r" is used as line break. Alternatively you can use the <see cref="TextValueAsMultilineList" /> property.
+        /// </remarks>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public string TextValue { get; set; }
+        public string TextValue
+        {
+            get { return _textValue; }
+            set { _textValue = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the text value for multiline texts using a list of type string.
+        /// </summary>
+        /// <remarks>
+        /// Getter: It reads the <see cref="TextValue" /> property and converts it to a list.<br />
+        /// Setter: It converts the list to a string separated by "\r" and sets the <see cref="TextValue"/> property.
+        /// </remarks>
+        // This property should help to deal with the line break handling. It is an alias for the TextValue property. Therefore, it should not be written to the json file.
+        [JsonIgnore]
+        public List<string> TextValueAsMultilineList
+        {
+            get { return _textValue?.Split("\r", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)?.ToList() ?? new List<string>(); }
+            set { _textValue = (value != null && value.Count > 0) ? string.Join("\r", value.ToArray()) : string.Empty; }
+        }
 
         /// <summary>
         /// Gets or sets the value that specifies the maximum number of characters allowed for user input in the text box. (Optional; Default is 0 which means no limit.)
         /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? TextBoxMaxLength { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value for the placeholder of a textbox.
+        /// </summary>
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string PlaceholderText { get; set; }
 
         public double NumberValue { get; set; }
 
