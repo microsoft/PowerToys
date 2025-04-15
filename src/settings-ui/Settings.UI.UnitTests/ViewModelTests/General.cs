@@ -244,7 +244,6 @@ namespace ViewModelTests
                 "GeneralSettings_RunningAsUserText",
                 false,
                 false,
-                UpdateUIThemeMethod,
                 sendMockIPCConfigMSG,
                 sendRestartAdminIPCMessage,
                 sendCheckForUpdatesIPCMessage,
