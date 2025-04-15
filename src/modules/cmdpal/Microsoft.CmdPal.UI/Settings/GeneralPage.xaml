@@ -36,7 +36,10 @@
 
                     <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                    <controls:SettingsExpander x:Uid="Settings_GeneralPage_ActivationKey_SettingsExpander" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}" IsExpanded="True">
+                    <controls:SettingsExpander
+                        x:Uid="Settings_GeneralPage_ActivationKey_SettingsExpander"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsExpanded="True">
                         <ptControls:ShortcutControl HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}" />
 
                         <controls:SettingsExpander.Items>
