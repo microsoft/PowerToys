@@ -29,7 +29,7 @@ stages:
       displayName: Build ${{ platform }}
       dependsOn: []
       jobs:
-        - template: job-build-project.yml
+        - template: job-ui-tests-automation-build.yml
           parameters:
             pool:
               ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
@@ -43,7 +43,6 @@ stages:
             buildConfigurations: [Release]
             enablePackageCaching: true
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
-            runTests: false
             useVSPreview: ${{ parameters.useVSPreview }}
 
     - stage: Test_${{ platform }}
