@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <PropertyGroup Label="Globals">
@@ -54,6 +55,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\AdvancedPaste.wxs"" ""$(ProjectDir)..\PowerToysSetup\AdvancedPaste.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Awake.wxs"" ""$(ProjectDir)..\PowerToysSetup\Awake.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs"" ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\CmdPal.wxs"" ""$(ProjectDir)..\PowerToysSetup\CmdPal.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Core.wxs"" ""$(ProjectDir)..\PowerToysSetup\Core.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\EnvironmentVariables.wxs"" ""$(ProjectDir)..\PowerToysSetup\EnvironmentVariables.wxs.bk""""
@@ -73,9 +75,9 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Settings.wxs"" ""$(ProjectDir)..\PowerToysSetup\Settings.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ShortcutGuide.wxs"" ""$(ProjectDir)..\PowerToysSetup\ShortcutGuide.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Tools.wxs"" ""$(ProjectDir)..\PowerToysSetup\Tools.wxs.bk""""
-      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs"" ""$(ProjectDir)..\PowerToysSetup\VideoConference.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinUI3Applications.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinUI3Applications.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Workspaces.wxs"" ""$(ProjectDir)..\PowerToysSetup\Workspaces.wxs.bk""""
       if not "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform)
       if "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(NormalizedPerUserValue)
       </Command>
@@ -159,6 +161,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\common\logger\logger.vcxproj">
       <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+      <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

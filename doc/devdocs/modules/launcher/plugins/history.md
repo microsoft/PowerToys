@@ -96,7 +96,7 @@ The plugin uses only these interfaces (all inside the `Main.cs`):
 
 #### Build Dependency
 Access to PluginManager was needed to make this plugin work. Because of this a reference to PowerToys.PowerLauncher was needed.
-Since History Plugin needs a reference to PowerToys.PowerLauncher, it can not be set as a dependency reference in PowerToys.PowerLauncher project (else a circular reference would exist).
+Since History Plugin needs a reference to PowerToys.PowerLauncher, it cannot be set as a dependency reference in PowerToys.PowerLauncher project (else a circular reference would exist).
 This means that if you build PowerToys.PowerLauncher only it will not build History Plugin. You will need to manually build History Plugin at least once and again manually if you change it.
 
 ### Caching

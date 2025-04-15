@@ -1,119 +1,289 @@
 # reject `m_data` as VxWorks defined it and that breaks things if it's used elsewhere
 # see [fprime](https://github.com/nasa/fprime/commit/d589f0a25c59ea9a800d851ea84c2f5df02fb529)
 # and [Qt](https://github.com/qtproject/qt-solutions/blame/fb7bc42bfcc578ff3fa3b9ca21a41e96eb37c1c7/qtscriptclassic/src/qscriptbuffer_p.h#L46)
-# \bm_data\b
+#\bm_data\b
 
+# Were you debugging using a framework with `fit()`?
 # If you have a framework that uses `it()` for testing and `fit()` for debugging a specific test,
-# you might not want to check in code where you were debugging w/ `fit()`, in which case, you might want
-# to use this:
+# you might not want to check in code where you skip all the other tests.
 #\bfit\(
 
-# s.b. anymore
+# Should be `HH:MM:SS`
+\bHH:SS:MM\b
+
+# Should be `86400` (seconds in a standard day)
+\b84600\b(?:.*\bday\b)
+
+# Should probably be `2006-01-02` (yyyy-mm-dd)
+# Assuming that the time is being passed to https://go.dev/src/time/format.go
+\b2006-02-01\b
+
+# Should probably be `YYYYMMDD`
+\b[Yy]{4}[Dd]{2}[Mm]{2}(?!.*[Yy]{4}[Dd]{2}[Mm]{2}).*$
+
+# Should be `a priori` or `and prior`
+(?i)(?<!posteriori)\sand priori\s
+
+# Should only be one of `a`, `an`, or `the`
+\b(?:(?:an?|the)\s+){2,}\b
+
+# Should be `anymore`
 \bany more[,.]
 
-# s.b. GitHub
-(?<![&*.]|// |\btype )\bGithub\b(?![{)])
+# Should be `'`
+(?i)\b(?:(?:i|s?he|they|what|who|you)"ll|(?:are|ca|did|do|does|ha[ds]|have|is|should|were|wo|would)n"t|(?:s?he|let|that|there|what|where|who)"s|(?:i|they|we|what|who|you)"ve)\b
 
-# s.b. GitLab
-(?<![&*.]|// |\btype )\bGitlab\b(?![{)])
+# Should be `briefcase`
+\bbrief-case\b
 
-# s.b. JavaScript
+# Should be `can, not only ..., ... also...`
+\bcan not only.*can also\b
+
+# Should be `cannot` (or `can't`)
+# See https://www.grammarly.com/blog/cannot-or-can-not/
+# > Don't use `can not` when you mean `cannot`. The only time you're likely to see `can not` written as separate words is when the word `can` happens to precede some other phrase that happens to start with `not`.
+# > `Can't` is a contraction of `cannot`, and it's best suited for informal writing.
+# > In formal writing and where contractions are frowned upon, use `cannot`.
+# > It is possible to write `can not`, but you generally find it only as part of some other construction, such as `not only . . . but also.`
+# - if you encounter such a case, add a pattern for that case to patterns.txt.
+\b[Cc]an not\b
+
+# Do not use `(click) here` links
+# For more information, see:
+# * https://www.w3.org/QA/Tips/noClickHere
+# * https://webaim.org/techniques/hypertext/link_text
+# * https://granicus.com/blog/why-click-here-links-are-bad/
+# * https://heyoka.medium.com/dont-use-click-here-f32f445d1021
+(?i)(?:>|\[)(?:(?:click |)here|this(?=\]\([^\)]+:/)|link|(?:read |)more(?!</value))(?:</|\]\()
+
+# Should be `equals` to `is equal to`
+\bequals to\b
+
+# Should be `GitHub`
+(?<![&*.]|// |\b(?:from|import|type) )\bGithub\b(?![{()])
+
+# Should be `GitLab`
+(?<![&*.]|// |\b(?:from|import|type) )\bGitlab\b(?![{()])
+
+# Should probably be `https://`...
+# Markdown generally doesn't assume that links are to urls
+\]\(www\.\w
+
+# Should be `JavaScript`
 \bJavascript\b
 
-# s.b. macOS or Mac OS X or ...
+# Should be `macOS` or `Mac OS X` or ...
 \bMacOS\b
 
-# s.b. Microsoft
+# Should be `Microsoft`
 \bMicroSoft\b
 
-# s.b. TypeScript
+# Should be `OAuth`
+(?:^|[^-/*$])[ '"]oAuth(?: [a-z]|\d+ |[^ a-zA-Z0-9:;_.()])
+
+# Should be `RabbitMQ`
+\bRabbitmq\b
+
+# Should be `TypeScript`
 \bTypescript\b
 
-# s.b. another
+# Should be `another`
 \ban[- ]other\b
 
-# s.b. deprecation warning
+# Should be `case-(in)sensitive`
+\bcase (?:in|)sensitive\b
+
+# Should be `coinciding`
+\bco-inciding\b
+
+# Should be `deprecation warning(s)`
 \b[Dd]epreciation [Ww]arnings?\b
 
-# s.b. greater than
+# Should be `greater than`
 \bgreater then\b
 
-# s.b. in front of
+# Should be `has`
+\b[Ii]t only have\b
+
+# Should be `here-in`, `the`, `them`, `this`, `these` or reworded in some other way
+\bthe here(?:\.|,| (?!and|defined))
+
+# Should be `greater than`
+\bhigher than\b
+
+# Should be `ID`
+#\bId\b
+
+# Should be `in front of`
 \bin from of\b
 
-# s.b. into
+# Should be `into`
 # when not phrasal and when `in order to` would be wrong:
 # https://thewritepractice.com/into-vs-in-to/
 \sin to\s(?!if\b)
 
-# s.b. is obsolete
+# Should be `use`
+\sin used by\b
+
+# Should be `is obsolete`
 \bis obsolescent\b
 
-# s.b. it's or its
+# Should be `it's` or `its`
 \bits['’]
 
-# s.b. opt-in
-(?<!\sfor)\sopt in\s
+# Should be `its`
+\bit's(?= own\b)
 
-# s.b. less than
+# Should be `log in`
+\blogin to the
+
+# Should be `long-standing`
+\blong standing\b
+
+# Should probably be a person named `Nick` or the abbreviation `NIC`
+\bNic\b
+
+# Should be `not supposed`
+\bsupposed not\b
+
+# Should probably be `much more`
+\bmore much\b
+
+# Should be `perform its`
+\bperform it's\b
+
+# Should be `opt-in`
+(?<!\scan|for)(?<!\sif)\sopt in\s
+
+# Should be `less than`
 \bless then\b
 
-# s.b. one of
-\bon of\b
+# Should be `load balancer`
+\b[Ll]oud balancer
 
-# s.b. otherwise
+# Should be `moot`
+\bmute point\b
+
+# Should be `one of`
+(?<!-)\bon of\b
+
+# Should be `on the other hand`
+\b(?i)on another hand\b
+
+# Most people only have two hands. Reword.
+\b(?i)on the third hand\b
+
+# Should be `otherwise`
 \bother[- ]wise\b
 
-# s.b. or (more|less)
+# Should be `or (more|less)`
 \bore (?:more|less)\b
 
-# s.b. nonexistent
+# Should be `rather than`
+\brather then\b
+
+# Should be `regardless, ...` or `regardless of (whether)`
+\b[Rr]egardless if you\b
+
+# Should be `no longer needed`
+\bno more needed\b(?! than\b)
+
+# Should be `did not exist`
+\bwere not existent\b
+
+# Should be `nonexistent`
 \bnon existing\b
+
+# Should be `nonexistent`
 \b[Nn]o[nt][- ]existent\b
 
-# s.b. brief / details/ param / return / retval
+# Should be `@brief` / `@details` / `@param` / `@return` / `@retval`
 (?:^\s*|(?:\*|//|/*)\s+`)[\\@](?:breif|(?:detail|detials)|(?:params(?!\.)|prama?)|ret(?:uns?)|retvl)\b
 
-# s.b. preexisting
+# Should be `preexisting`
 [Pp]re[- ]existing
 
-# s.b. preempt
+# Should be `preempt`
 [Pp]re[- ]empt\b
 
-# s.b. preemptively
+# Should be `preemptively`
 [Pp]re[- ]emptively
 
-# s.b. recently changed or recent changes
+# Should be `prepopulate`
+[Pp]re[- ]populate
+
+# Should be `prerequisite`
+[Pp]re[- ]requisite
+
+# Should be `recently changed` or `recent changes`
 [Rr]ecent changed
 
-# s.b. reentrancy
+# Should be `reentrancy`
 [Rr]e[- ]entrancy
 
-# s.b. reentrant
+# Should be `reentrant`
 [Rr]e[- ]entrant
 
-# s.b. understand
+# Should be `strong suit`
+\b(?:my|his|her|their) strong suite\b
+
+# Should be `understand`
 \bunder stand\b
 
-# s.b. workarounds
+# Should be `URI` or `uri` unless it refers to a person named `Uri`
+#(?<!\.)\bUri\b(?![(])
+
+# Should be `it uses is`
+/\bis uses is\b/
+
+# Should be `uses it as`
+(?:^|\. |and )uses is as (?!an?\b|follows|livestock|[^.]+\s+as\b)
+
+# Should be `was`
+\bhas been(?= removed in v?\d)
+
+# Should be `where`
+\bwere they are\b
+
+# should be `vCenter`
+\bV[Cc]enter\b
+
+# Should be `VM`
+\bVm\b
+
+# Should be `workarounds`
 #\bwork[- ]arounds\b
 
-# s.b. workaround
+# Should be `workaround`
 (?:(?:[Aa]|[Tt]he|ugly)\swork[- ]around\b|\swork[- ]around\s+for)
 
-# s.b. (coarse|fine)-grained
+# Should be `worst`
+(?i)worse-case
+
+# Should be `you are not` or reworded
+\byour not\b
+
+# Should be `(coarse|fine)-grained`
 \b(?:coarse|fine) grained\b
 
-# s.b. neither/nor -- or reword
-#\bnot\b[^.?!"/(]+\bnor\b
+# Homoglyph (Cyrillic) should be `A`/`B`/`C`/`E`/`H`/`I`/`I`/`J`/`K`/`M`/`O`/`P`/`S`/`T`/`Y`
+# It's possible that your content is intentionally mixing Cyrllic and Latin scripts, but if it isn't, you definitely want to correct this.
+(?<=[A-Z]{2})[АВСЕНІӀЈКМОРЅТУ]|[АВСЕНІӀЈКМОРЅТУ](?=[A-Z]+(?:\b|[a-z]+)|[a-z]+(?:[^a-z]|$))
 
-# probably a double negative
-# s.b. neither/nor (plus rewording the beginning)
-\bnot\b[^.?!"/]*\bneither\b[^.?!"/(]*\bnor\b
+# Homoglyph (Cyrillic) should be `a`/`b`/`e`
+# It's possible that your content is intentionally mixing Cyrllic and Latin scripts, but if it isn't, you definitely want to correct this.
+[аве](?=[A-Za-z]{2,})|(?<=[A-Za-z]{2})[аве]|(?<=[A-Za-z])[аве](?=[A-Za-z])
 
-# In English, it is generally wrong to have the same word twice in a row without punctuation.
-# Duplicated words are generally mistakes.
-# There are a few exceptions where it is acceptable (e.g. "that that").
-# If the highlighted doubled word pair is in a code snippet, you can write a pattern to mask it.
-# If the highlighted doubled word pair is in prose, have someone read the English before you dismiss this error.
+# Should be `neither/nor` -- or reword
+#(?!<do )\bnot\b([^.?!"/(](?!neither|,.*?,))+\bnor\b
+
+# Should be `neither/nor` (plus rewording the beginning)
+# This is probably a double negative...
+\bnot\b[^.?!"/(]*\bneither\b[^.?!"/(]*\bnor\b
+
+# In English, duplicated words are generally mistakes
+# There are a few exceptions (e.g. "that that").
+# If the highlighted doubled word pair is in:
+# * code, write a pattern to mask it.
+# * prose, have someone read the English before you dismiss this error.
 \s([A-Z]{3,}|[A-Z][a-z]{2,}|[a-z]{3,})\s\g{-1}\s

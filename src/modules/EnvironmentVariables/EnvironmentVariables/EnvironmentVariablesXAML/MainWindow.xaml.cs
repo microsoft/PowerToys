@@ -40,6 +40,7 @@ namespace EnvironmentVariables
             var handle = this.GetWindowHandle();
             RegisterWindow(handle);
 
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(handle);
             WindowHelpers.BringToForeground(handle);
 
             MainPage = App.GetService<EnvironmentVariablesMainPage>();
@@ -87,6 +88,11 @@ namespace EnvironmentVariables
             }
 
             return NativeMethods.CallWindowProc(oldWndProc, hWnd, msg, wParam, lParam);
+        }
+
+        private void Window_Closed(object sender, WindowEventArgs args)
+        {
+            (App.Current as EnvironmentVariables.App).EtwTrace?.Dispose();
         }
     }
 }

@@ -3,12 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using RegistryPreview.Telemetry;
 using RegistryPreviewUILib;
 using Windows.Data.Json;
 using Windows.Graphics;
@@ -38,8 +39,8 @@ namespace RegistryPreview
             OpenWindowPlacementFile(settingsFolder, windowPlacementFile);
 
             // Update the Win32 looking window with the correct icon (and grab the appWindow handle for later)
-            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            Microsoft.UI.WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
+            IntPtr windowHandle = this.GetWindowHandle();
+            WindowId windowId = Win32Interop.GetWindowIdFromWindow(windowHandle);
             appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(windowId);
             appWindow.SetIcon("Assets\\RegistryPreview\\RegistryPreview.ico");
 
@@ -49,6 +50,7 @@ namespace RegistryPreview
 
             // Extend the canvas to include the title bar so the app can support theming
             ExtendsContentIntoTitleBar = true;
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(windowHandle);
             SetTitleBar(titleBar);
 
             // if have settings, update the location of the window
@@ -86,6 +88,8 @@ namespace RegistryPreview
             MainPage = new RegistryPreviewMainPage(this, this.UpdateWindowTitle, App.AppFilename);
 
             WindowHelpers.BringToForeground(windowHandle);
+
+            PowerToysTelemetry.Log.WriteEvent(new RegistryPreviewEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)

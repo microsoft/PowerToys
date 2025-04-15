@@ -2,6 +2,8 @@
 #include "trace.h"
 #include <string>
 
+#include <common/Telemetry/TraceBase.h>
+
 /*
 *
 * This file captures the telemetry for the File Explorer Custom Renders project.
@@ -19,19 +21,9 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-void Trace::RegisterProvider()
-{
-    TraceLoggingRegister(g_hProvider);
-}
-
-void Trace::UnregisterProvider()
-{
-    TraceLoggingUnregister(g_hProvider);
-}
-
 void Trace::EnabledPowerPreview(bool enabled)
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "PowerPreview_Enabled",
         TraceLoggingBoolean(enabled, "Enabled"),
@@ -42,7 +34,7 @@ void Trace::EnabledPowerPreview(bool enabled)
 
 void Trace::PowerPreviewSettingsUpdated(LPCWSTR SettingsName, bool oldState, bool newState, bool globalState)
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "PowerPreview_TweakUISettings_SuccessfullyUpdatedSettings",
         TraceLoggingWideString(SettingsName, "Previewer_Settings_Name"),
@@ -56,7 +48,7 @@ void Trace::PowerPreviewSettingsUpdated(LPCWSTR SettingsName, bool oldState, boo
 
 void Trace::PowerPreviewSettingsUpdateFailed(LPCWSTR SettingsName, bool oldState, bool newState, bool globalState)
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "PowerPreview_TweakUISettings_FailedUpdatingSettings",
         TraceLoggingWideString(SettingsName, "Previewer_Settings_Name"),
@@ -70,7 +62,7 @@ void Trace::PowerPreviewSettingsUpdateFailed(LPCWSTR SettingsName, bool oldState
 
 void Trace::SetConfigInvalidJSON(const char* exceptionMessage)
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "PowerPreview_TweakUISettings_SetConfig__InvalidJSONGiven",
         TraceLoggingString(exceptionMessage, "ExceptionMessage"),
@@ -81,7 +73,7 @@ void Trace::SetConfigInvalidJSON(const char* exceptionMessage)
 
 void Trace::Destroyed()
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "PowerPreview_TweakUISettings_Destroyed",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -89,9 +81,9 @@ void Trace::Destroyed()
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
 
-void Trace::InitSetErrorLoadingFile(const char* exceptionMessage) 
+void Trace::InitSetErrorLoadingFile(const char* exceptionMessage)
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "PowerPreview_TweakUISettings_InitSet__ErrorLoadingFile",
         TraceLoggingString(exceptionMessage, "ExceptionMessage"),
@@ -99,4 +91,3 @@ void Trace::InitSetErrorLoadingFile(const char* exceptionMessage)
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
-

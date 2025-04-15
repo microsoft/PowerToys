@@ -208,6 +208,10 @@
     <Content Include="Logo.ico" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
+    <PackageReference Include="MessagePack" />
+    <!-- HACK: To align Microsoft.Bcl.AsyncInterfaces.dll version with Advanced Paste version (from the Semantic Kernel dependency). -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="StreamJsonRpc" />
     <PackageReference Include="System.Data.SqlClient" /> <!-- It's a dependency of Microsoft.Windows.Compatibility. We're adding it here to force it to the version specified in Directory.Packages.props -->

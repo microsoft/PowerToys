@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Text.Json;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
@@ -13,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class SettingsUtils : ISettingsUtils
     {
-        private const string DefaultFileName = "settings.json";
+        public const string DefaultFileName = "settings.json";
         private const string DefaultModuleName = "";
         private readonly IFile _file;
         private readonly ISettingsPath _settingsPath;

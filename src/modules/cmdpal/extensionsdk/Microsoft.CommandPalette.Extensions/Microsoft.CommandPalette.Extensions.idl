@@ -1,0 +1,368 @@
+namespace Microsoft.CommandPalette.Extensions
+{
+    [contractversion(1)]
+    apicontract ExtensionsContract {}
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IExtension {
+        IInspectable GetProvider(ProviderType providerType);
+        void Dispose();
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    enum ProviderType {
+        Commands = 0,
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IIconData {
+        String Icon { get; };
+        Windows.Storage.Streams.IRandomAccessStreamReference Data { get; };
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IIconInfo {
+        IIconData Light { get; };
+        IIconData Dark { get; };
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    struct KeyChord
+    {
+        Windows.System.VirtualKeyModifiers Modifiers;
+        Int32 Vkey;
+        Int32 ScanCode;
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface INotifyPropChanged {
+        event Windows.Foundation.TypedEventHandler<Object, IPropChangedEventArgs> PropChanged;
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IPropChangedEventArgs {
+        String PropertyName { get; };
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface INotifyItemsChanged {
+        event Windows.Foundation.TypedEventHandler<Object, IItemsChangedEventArgs> ItemsChanged;
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IItemsChangedEventArgs {
+        Int32 TotalItems { get; };
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommand requires INotifyPropChanged{
+        String Name{ get; };
+        String Id{ get; };
+        IIconInfo Icon{ get; };
+    }
+    
+    enum CommandResultKind {
+        Dismiss,    // Reset the palette to the main page and dismiss
+        GoHome,     // Go back to the main page, but keep it open
+        GoBack,     // Go back one level
+        Hide,       // Keep this page open, but hide the palette.
+        KeepOpen,   // Do nothing.
+        GoToPage,   // Go to another page. GoToPageArgs will tell you where.
+        ShowToast,  // Display a transient message to the user
+        Confirm,    // Display a confirmation dialog
+    };
+    
+    enum NavigationMode {
+        Push,   // Push the target page onto the navigation stack
+        GoBack, // Go back one page before navigating to the target page
+        GoHome, // Go back to the home page before navigating to the target page
+    };
+    
+    [uuid("f9d6423b-bd5e-44bb-a204-2f5c77a72396")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandResultArgs{};
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandResult {
+        CommandResultKind Kind { get; };
+        ICommandResultArgs Args { get; };
+    }
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IGoToPageArgs requires ICommandResultArgs{
+        String PageId { get; };
+        NavigationMode NavigationMode { get; };
+    }
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IToastArgs requires ICommandResultArgs{
+        String Message { get; };
+        ICommandResult Result { get; };
+    }
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IConfirmationArgs requires ICommandResultArgs{
+        String Title { get; };
+        String Description { get; };
+        ICommand PrimaryCommand { get; };
+        Boolean IsPrimaryCommandCritical { get; };
+    }
+    
+    // This is a "leaf" of the UI. This is something that can be "done" by the user.
+    // * A ListPage
+    // * the MoreCommands flyout of for a ListItem or a MarkdownPage
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IInvokableCommand requires ICommand {
+        ICommandResult Invoke(Object sender);
+    }
+    
+    
+    [uuid("ef5db50c-d26b-4aee-9343-9f98739ab411")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFilterItem {}
+    
+    [uuid("0a923c7f-5b7b-431d-9898-3c8c841d02ed")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ISeparatorFilterItem requires IFilterItem {}
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFilter requires IFilterItem {
+        String Id { get; };
+        String Name { get; };
+        IIconInfo Icon { get; };
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFilters {
+        String CurrentFilterId { get; set; };
+        IFilterItem[] Filters();
+    }
+    
+    struct Color
+    {
+        UInt8 R;
+        UInt8 G;
+        UInt8 B;
+        UInt8 A;
+    };
+    
+    struct OptionalColor
+    {
+        Boolean HasValue;
+        Microsoft.CommandPalette.Extensions.Color Color;
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ITag {
+        IIconInfo Icon { get; };
+        String Text { get; };
+        OptionalColor Foreground { get; };
+        OptionalColor Background { get; };
+        String ToolTip { get; };
+    };
+    
+    [uuid("6a6dd345-37a3-4a1e-914d-4f658a4d583d")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDetailsData {}
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDetailsElement {
+        String Key { get; };
+        IDetailsData Data { get; };
+    }
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDetails {
+        IIconInfo HeroImage { get; };
+        String Title { get; };
+        String Body { get; };
+        IDetailsElement[] Metadata { get; };
+    }
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDetailsTags requires IDetailsData {
+        ITag[] Tags { get; };
+    }
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDetailsLink requires IDetailsData {
+        Windows.Foundation.Uri Link { get; };
+        String Text { get; };
+    }
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDetailsCommand requires IDetailsData {
+        ICommand Command { get; };
+    }
+    [uuid("58070392-02bb-4e89-9beb-47ceb8c3d741")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDetailsSeparator requires IDetailsData {}
+    
+    enum MessageState
+    {
+        Info = 0,
+        Success,
+        Warning,
+        Error,
+    };
+    
+    enum StatusContext
+    {
+        Page,
+        Extension
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IProgressState requires INotifyPropChanged
+    {
+        Boolean IsIndeterminate { get; };
+        UInt32 ProgressPercent { get; };
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IStatusMessage requires INotifyPropChanged
+    {
+        MessageState State { get; };
+        IProgressState Progress { get; };
+        String Message { get; };
+        // TODO! Icon maybe? Work with design on this
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ILogMessage
+    {
+        MessageState State { get; };
+        String Message { get; };
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IExtensionHost
+    {
+        Windows.Foundation.IAsyncAction ShowStatus(IStatusMessage message, StatusContext context);
+        Windows.Foundation.IAsyncAction HideStatus(IStatusMessage message);
+    
+        Windows.Foundation.IAsyncAction LogMessage(ILogMessage message);
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IPage requires ICommand {
+        String Title { get; };
+        Boolean IsLoading { get; };
+    
+        OptionalColor AccentColor { get; };
+    }
+    
+    [uuid("c78b9851-e76b-43ee-8f76-da5ba14e69a4")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IContextItem {}
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandItem requires INotifyPropChanged {
+        ICommand Command{ get; };
+        IContextItem[] MoreCommands{ get; };
+        IIconInfo Icon{ get; };
+        String Title{ get; };
+        String Subtitle{ get; };
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandContextItem requires ICommandItem, IContextItem {
+        Boolean IsCritical { get; }; // READ: "make this red"
+        KeyChord RequestedShortcut { get; };
+    }
+    
+    [uuid("924a87fc-32fe-4471-9156-84b3b30275a6")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ISeparatorContextItem requires IContextItem {}
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IListItem requires ICommandItem {
+        ITag[] Tags{ get; };
+        IDetails Details{ get; };
+        String Section { get; };
+        String TextToSuggest { get; };
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IGridProperties  {
+        Windows.Foundation.Size TileSize { get; };
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IListPage requires IPage, INotifyItemsChanged {
+        // DevPal will be responsible for filtering the list of items, unless the
+        // class implements IDynamicListPage
+        String SearchText { get; };
+        String PlaceholderText { get; };
+        Boolean ShowDetails{ get; };
+        IFilters Filters { get; };
+        IGridProperties GridProperties { get; };
+        Boolean HasMoreItems { get; };
+        ICommandItem EmptyContent { get; };
+    
+        IListItem[] GetItems();
+        void LoadMore();
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IDynamicListPage requires IListPage {
+        String SearchText { set; };
+    }
+    
+    [uuid("b64def0f-8911-4afa-8f8f-042bd778d088")]
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IContent requires INotifyPropChanged {
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFormContent requires IContent {
+        String TemplateJson { get; };
+        String DataJson { get; };
+        String StateJson { get; };
+        ICommandResult SubmitForm(String inputs, String data);
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IMarkdownContent requires IContent {
+        String Body { get; };
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ITreeContent requires IContent, INotifyItemsChanged {
+        IContent RootContent { get; };
+        IContent[] GetChildren();
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IContentPage requires IPage, INotifyItemsChanged {
+        IContent[] GetContent();
+        IDetails Details { get; };
+        IContextItem[] Commands { get; };
+    }
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandSettings {
+        IContentPage SettingsPage { get; };
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackHandler {
+        void UpdateQuery(String query);
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackCommandItem requires ICommandItem {
+        IFallbackHandler FallbackHandler{ get; };
+        String DisplayTitle { get; };
+    };
+    
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsChanged
+    {
+        String Id { get; };
+        String DisplayName { get; };
+        IIconInfo Icon { get; };
+        ICommandSettings Settings { get; };
+        Boolean Frozen { get; };
+    
+        ICommandItem[] TopLevelCommands();
+        IFallbackCommandItem[] FallbackCommands();
+    
+        ICommand GetCommand(String id);
+    
+        void InitializeWithHost(IExtensionHost host);
+    };
+    
+
+}

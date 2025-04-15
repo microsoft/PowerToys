@@ -14,6 +14,8 @@ namespace newplus::constants::non_localizable
 
     constexpr WCHAR settings_json_key_hide_starting_digits[] = L"HideStartingDigits";
 
+    constexpr WCHAR settings_json_key_replace_variables[] = L"ReplaceVariables";
+    
     constexpr WCHAR settings_json_key_template_location[] = L"TemplateLocation";
 
     constexpr WCHAR context_menu_package_name[] = L"NewPlusContextMenu";
@@ -30,5 +32,5 @@ namespace newplus::constants::non_localizable
 
     constexpr WCHAR open_templates_icon_dark_resource_relative_path[] = L"\\Assets\\NewPlus\\Open_templates_dark.ico";
 
-    constexpr WCHAR desktop_ini_filename[] = L"desktop.ini";
+    constexpr WCHAR parent_folder_name_variable[] = L"$PARENT_FOLDER_NAME";
 }

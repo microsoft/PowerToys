@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 {
-    internal class AvailableResult
+    internal sealed class AvailableResult
     {
         /// <summary>
         /// Gets or sets the time/date value
@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         internal string Label { get; set; }
 
         /// <summary>
-        /// Gets or sets an an alternative search tag that will be evaluated if label doesn't match. For example we like to show the era on searches for 'year' too.
+        /// Gets or sets an alternative search tag that will be evaluated if label doesn't match. For example we like to show the era on searches for 'year' too.
         /// </summary>
         internal string AlternativeSearchTag { get; set; }
 
@@ -41,6 +41,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                 ResultIconType.Time => $"Images\\time.{theme}.png",
                 ResultIconType.Date => $"Images\\calendar.{theme}.png",
                 ResultIconType.DateTime => $"Images\\timeDate.{theme}.png",
+                ResultIconType.Error => $"Images\\Warning.{theme}.png",
                 _ => string.Empty,
             };
         }
@@ -51,5 +52,6 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         Time,
         Date,
         DateTime,
+        Error,
     }
 }

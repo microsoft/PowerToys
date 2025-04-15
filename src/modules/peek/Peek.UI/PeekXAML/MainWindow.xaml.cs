@@ -3,12 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Peek.Common.Constants;
 using Peek.Common.Extensions;
@@ -30,6 +32,12 @@ namespace Peek.UI
 
         private readonly ThemeListener? themeListener;
 
+        /// <summary>
+        /// Whether the delete confirmation dialog is currently open. Used to ensure only one
+        /// dialog is open at a time.
+        /// </summary>
+        private bool _isDeleteInProgress;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -48,11 +56,60 @@ namespace Peek.UI
             ViewModel = Application.Current.GetService<MainWindowViewModel>();
 
             TitleBarControl.SetTitleBarToWindow(this);
-            AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+            ExtendsContentIntoTitleBar = true;
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
             AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
             AppWindow.SetIcon("Assets/Peek/Icon.ico");
 
             AppWindow.Closing += AppWindow_Closing;
+        }
+
+        private async void Content_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Delete)
+            {
+                e.Handled = true;
+                await DeleteItem();
+            }
+        }
+
+        private async Task DeleteItem()
+        {
+            if (ViewModel.CurrentItem == null || _isDeleteInProgress)
+            {
+                return;
+            }
+
+            try
+            {
+                _isDeleteInProgress = true;
+
+                if (Application.Current.GetService<IUserSettings>().ConfirmFileDelete)
+                {
+                    if (await ShowDeleteConfirmationDialogAsync() == ContentDialogResult.Primary)
+                    {
+                        // Delete after asking for confirmation. Persist the "Don't warn again" choice if set.
+                        ViewModel.DeleteItem(DeleteDontWarnCheckbox.IsChecked, this.GetWindowHandle());
+                    }
+                }
+                else
+                {
+                    // Delete without confirmation.
+                    ViewModel.DeleteItem(true, this.GetWindowHandle());
+                }
+            }
+            finally
+            {
+                _isDeleteInProgress = false;
+            }
+        }
+
+        private async Task<ContentDialogResult> ShowDeleteConfirmationDialogAsync()
+        {
+            DeleteDontWarnCheckbox.IsChecked = false;
+            DeleteConfirmationDialog.XamlRoot = Content.XamlRoot;
+
+            return await DeleteConfirmationDialog.ShowAsync();
         }
 
         /// <summary>
@@ -67,11 +124,17 @@ namespace Peek.UI
                 return;
             }
 
+            if (DeleteConfirmationDialog.Visibility == Visibility.Visible)
+            {
+                DeleteConfirmationDialog.Hide();
+            }
+
             if (AppWindow.IsVisible)
             {
                 if (IsNewSingleSelectedItem(foregroundWindowHandle))
                 {
                     Initialize(foregroundWindowHandle);
+                    Activate(); // Brings existing window into focus in case it was previously minimized
                 }
                 else
                 {
@@ -125,6 +188,7 @@ namespace Peek.UI
 
             ViewModel.Initialize(foregroundWindowHandle);
             ViewModel.ScalingFactor = this.GetMonitorScale();
+            this.Content.KeyUp += Content_KeyUp;
 
             bootTime.Stop();
 
@@ -138,6 +202,8 @@ namespace Peek.UI
 
             ViewModel.Uninitialize();
             ViewModel.ScalingFactor = 1;
+
+            this.Content.KeyUp -= Content_KeyUp;
         }
 
         /// <summary>

@@ -2,10 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Hosts.Helpers;
+using HostsEditor.Telemetry;
 using HostsUILib.Helpers;
 using HostsUILib.Views;
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -39,10 +42,13 @@ namespace Hosts
 
             var handle = this.GetWindowHandle();
 
+            WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(handle);
             WindowHelpers.BringToForeground(handle);
             Activated += MainWindow_Activated;
 
             MainPage = Host.GetService<HostsMainPage>();
+
+            PowerToysTelemetry.Log.WriteEvent(new HostEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -61,6 +67,11 @@ namespace Hosts
         {
             MainGrid.Children.Add(MainPage);
             Grid.SetRow(MainPage, 1);
+        }
+
+        private void WindowEx_Closed(object sender, WindowEventArgs args)
+        {
+            (Application.Current as App).EtwTrace?.Dispose();
         }
     }
 }

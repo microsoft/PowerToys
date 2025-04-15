@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <CmdPalAssetSuffix Condition="'$(CommandPaletteBranding)'=='Release'">Stable</CmdPalAssetSuffix>
+    <CmdPalAssetSuffix Condition="'$(CommandPaletteBranding)'=='Preview'">Stable</CmdPalAssetSuffix>
+    <CmdPalAssetSuffix Condition="'$(CommandPaletteBranding)'=='Canary'">Stable</CmdPalAssetSuffix>
+    <CmdPalAssetSuffix Condition="'$(CommandPaletteBranding)'=='' or '$(CommandPaletteBranding)'=='Dev'">Dev</CmdPalAssetSuffix>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(CommandPaletteBranding)'=='Release'">
+    <ApplicationIcon>Assets\Stable\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CommandPaletteBranding)'=='Preview'">
+    <ApplicationIcon>Assets\Stable\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CommandPaletteBranding)'=='Canary'">
+    <ApplicationIcon>Assets\Stable\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(CommandPaletteBranding)'=='' or '$(CommandPaletteBranding)'=='Dev'">
+    <ApplicationIcon>Assets\Dev\icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <!-- Images -->
+    <Content Include="$(SolutionDir)\src\modules\cmdpal\Microsoft.CmdPal.UI\Assets\$(CmdPalAssetSuffix)\**\*">
+      <DeploymentContent>true</DeploymentContent>
+      <Link>Assets\%(RecursiveDir)%(FileName)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
+
+    <!-- In the future, when we actually want to support "preview" and "canary",
+         add a Package-Pre.appxmanifest, etc. -->
+    <AppxManifest Include="Package.appxmanifest"
+                  Condition="'$(CommandPaletteBranding)'=='Release'" />
+    <AppxManifest Include="Package.appxmanifest"
+                  Condition="'$(CommandPaletteBranding)'=='Preview'" />
+    <AppxManifest Include="Package.appxmanifest"
+                  Condition="'$(CommandPaletteBranding)'=='Canary'" />
+    <AppxManifest Include="Package-Dev.appxmanifest"
+                  Condition="'$(CommandPaletteBranding)'=='' or '$(CommandPaletteBranding)'=='Dev'" />
+  </ItemGroup>
+
+</Project>

@@ -13,7 +13,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <UseWinUI>true</UseWinUI>
     <Platforms>x64;ARM64</Platforms>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>    
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
@@ -55,6 +55,8 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="WinUIEx" />
+    <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
+    <PackageReference Include="Microsoft.Web.WebView2" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

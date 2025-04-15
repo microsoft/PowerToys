@@ -8,6 +8,7 @@
 #include <keyboardmanager/dll/trace.h>
 #include <shellapi.h>
 #include <common/utils/logger_helper.h>
+#include <common/interop/shared_constants.h>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
 {
@@ -42,6 +43,8 @@ private:
 
     HANDLE m_hProcess = nullptr;
 
+    HANDLE m_hTerminateEngineEvent = nullptr;
+
 public:
     // Constructor
     KeyboardManager()
@@ -51,6 +54,17 @@ public:
         std::filesystem::path oldLogPath(PTSettingsHelper::get_module_save_folder_location(app_key));
         oldLogPath.append("Logs");
         LoggerHelpers::delete_old_log_folder(oldLogPath);
+
+        m_hTerminateEngineEvent = CreateDefaultEvent(CommonSharedConstants::TERMINATE_KBM_SHARED_EVENT);
+        if (!m_hTerminateEngineEvent)
+        {
+            Logger::error(L"Failed to create terminate Engine event");
+            auto message = get_last_error_message(GetLastError());
+            if (message.has_value())
+            {
+                Logger::error(message.value());
+            }
+        }
     };
 
     // Destroy the powertoy and free memory
@@ -158,6 +172,9 @@ public:
 
         if (m_hProcess)
         {
+            SetEvent(m_hTerminateEngineEvent);
+            WaitForSingleObject(m_hProcess, 1500);
+
             TerminateProcess(m_hProcess, 0);
             m_hProcess = nullptr;
         }

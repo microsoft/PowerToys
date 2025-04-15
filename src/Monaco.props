@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Include Monaco Editor source code -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)\Monaco\customTokenThemeRules.js">
+      <Link>Assets\Monaco\customTokenThemeRules.js</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)\Monaco\monacoSpecialLanguages.js">
+      <Link>Assets\Monaco\monacoSpecialLanguages.js</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)\Monaco\index.html">
+      <Link>Assets\Monaco\index.html</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)\Monaco\monaco_languages.json">
+      <Link>Assets\Monaco\monaco_languages.json</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)\Monaco\monacoSRC\**">
+      <Link>Assets\Monaco\monacoSRC\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+   <None Include="$(MSBuildThisFileDirectory)\Monaco\customLanguages\**">
+      <Link>Assets\Monaco\customLanguages\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

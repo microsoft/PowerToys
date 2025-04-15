@@ -106,5 +106,8 @@ namespace Awake.Core.Native
 
         [DllImport("ntdll.dll")]
         internal static extern int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, ref ProcessBasicInformation processInformation, int processInformationLength, out int returnLength);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        internal static extern int RegisterWindowMessage(string lpString);
     }
 }

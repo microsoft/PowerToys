@@ -97,7 +97,7 @@ if (-not $Passive)
 
     if ($files.count -gt 0)
     {
-        dotnet tool run xstyler -c "$PSScriptRoot\..\Settings.XamlStyler" -f $files
+        dotnet tool run xstyler -c "$PSScriptRoot\..\src\Settings.XamlStyler" -f $files
     }
     else
     {
@@ -111,13 +111,16 @@ else
 
     if ($files.count -gt 0)
     {
-        dotnet tool run xstyler -p -c "$PSScriptRoot\..\Settings.XamlStyler" -f $files
+        dotnet tool run xstyler -p -c "$PSScriptRoot\..\src\Settings.XamlStyler" -f $files
 
         if ($lastExitCode -eq 1)
         {
             Write-Error 'XAML Styling is incorrect, please run `.\.pipelines\applyXamlStyling.ps1 -Main` locally.'
         }
-
+        if ($lastExitCode -lt 0)
+        {
+            Write-Error "Error running dotnet tool run, with the exit code $lastExitCode. Please verify logs and running environment."
+        }
         # Return XAML Styler Status
         exit $lastExitCode
     }

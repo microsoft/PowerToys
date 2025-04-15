@@ -1,5 +1,6 @@
 name: "🌐 Localization/Translation issue"
 description: Report incorrect translations.
+type: Bug
 labels:
 - Issue-Bug
 - Area-Localization
@@ -50,9 +51,9 @@ body:
     - Shortcut Guide
     - System tray interaction
     - TextExtractor
-    - Video Conference Mute
     - Workspaces
     - Welcome / PowerToys Tour window
+    - ZoomIt
   validations:
     required: true
 - type: input

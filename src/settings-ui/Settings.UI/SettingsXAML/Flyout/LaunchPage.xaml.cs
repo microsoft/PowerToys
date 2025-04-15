@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 using System;
 using System.Threading;
+
 using global::Windows.System;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Controls;
@@ -126,6 +127,14 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                 case ModuleType.ShortcutGuide: // Launch Shortcut Guide
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShortcutGuideTriggerEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    break;
+
+                case ModuleType.CmdPal: // Show CmdPal
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowCmdPalEvent()))
                     {
                         eventHandle.Set();
                     }

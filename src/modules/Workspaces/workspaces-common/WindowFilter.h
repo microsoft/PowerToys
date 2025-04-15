@@ -50,11 +50,6 @@ namespace WindowFilter
             return false;
         }
 
-        if (WindowFilter::FilterPopup(window))
-        {
-            return false;
-        }
-
         if (!VirtualDesktop::instance().IsWindowOnCurrentDesktop(window))
         {
             return false;
