@@ -29,7 +29,7 @@
     <PackageVersion Include="Mages" Version="3.0.0" />
     <PackageVersion Include="Markdig.Signed" Version="0.34.0" />
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
-    <PackageVersion Include="MessagePack" Version="2.5.187" />
+    <PackageVersion Include="MessagePack" Version="3.1.3" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="9.0.4" />
     <!-- Including Microsoft.Bcl.AsyncInterfaces to force version, since it's used by Microsoft.SemanticKernel. -->
@@ -61,7 +61,7 @@
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
     <!-- Moq to stay below v4.20 due to behavior change. need to be sure fixed -->
     <PackageVersion Include="Moq" Version="4.18.4" />
-    <PackageVersion Include="MSTest" Version="3.6.3" />
+    <PackageVersion Include="MSTest" Version="3.8.3" />
     <PackageVersion Include="NLog" Version="5.0.4" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
@@ -69,7 +69,7 @@
     <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="SharpCompress" Version="0.37.2" />
-    <PackageVersion Include="StreamJsonRpc" Version="2.19.27" />
+    <PackageVersion Include="StreamJsonRpc" Version="2.21.69" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
     <!-- Package System.CodeDom added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Management but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="System.CodeDom" Version="9.0.4" />
@@ -84,14 +84,17 @@
     <!-- Package System.Diagnostics.PerformanceCounter added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.11. -->
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="9.0.4" />
     <PackageVersion Include="System.Drawing.Common" Version="9.0.4" />
-    <PackageVersion Include="System.IO.Abstractions" Version="21.0.29" />
-    <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="21.0.29" />
+    <PackageVersion Include="System.IO.Abstractions" Version="22.0.13" />
+    <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
     <PackageVersion Include="System.Management" Version="9.0.4" />
+    <PackageVersion Include="System.Net.Http" Version="4.3.4" />
+    <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Caching" Version="9.0.4" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="9.0.4" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="9.0.4" />
     <PackageVersion Include="System.Text.Json" Version="9.0.4" />
+    <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageVersion Include="UnicodeInformation" Version="2.6.0" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.5.1" />

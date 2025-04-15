@@ -1393,7 +1393,6 @@ SOFTWARE.
 
 ## NuGet Packages used by PowerToys
 
-
 - AdaptiveCards.ObjectModel.WinUI3 2.0.0-beta
 - AdaptiveCards.Rendering.WinUI3 2.1.0-beta
 - AdaptiveCards.Templating 2.0.2
@@ -1419,7 +1418,7 @@ SOFTWARE.
 - LazyCache 2.4.0
 - Mages 3.0.0
 - Markdig.Signed 0.34.0
-- MessagePack 2.5.187
+- MessagePack 3.1.3
 - Microsoft.Bcl.AsyncInterfaces 9.0.4
 - Microsoft.CodeAnalysis.NetAnalyzers 9.0.0
 - Microsoft.Data.Sqlite 9.0.4
@@ -1445,14 +1444,14 @@ SOFTWARE.
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
 - Moq 4.18.4
-- MSTest 3.6.3
+- MSTest 3.8.3
 - NLog.Extensions.Logging 5.3.8
 - NLog.Schema 5.2.8
 - OpenAI 2.0.0
 - ReverseMarkdown 4.1.0
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.37.2
-- StreamJsonRpc 2.19.27
+- StreamJsonRpc 2.21.69
 - StyleCop.Analyzers 1.2.0-beta.556
 - System.CodeDom 9.0.4
 - System.CommandLine 2.0.0-beta4.22272.1
@@ -1463,17 +1462,21 @@ SOFTWARE.
 - System.Diagnostics.EventLog 9.0.4
 - System.Diagnostics.PerformanceCounter 9.0.4
 - System.Drawing.Common 9.0.4
-- System.IO.Abstractions 21.0.29
-- System.IO.Abstractions.TestingHelpers 21.0.29
+- System.IO.Abstractions 22.0.13
+- System.IO.Abstractions.TestingHelpers 22.0.13
 - System.Management 9.0.4
+- System.Net.Http 4.3.4
+- System.Private.Uri 4.3.2
 - System.Reactive 6.0.1
 - System.Runtime.Caching 9.0.4
 - System.ServiceProcess.ServiceController 9.0.4
 - System.Text.Encoding.CodePages 9.0.4
 - System.Text.Json 9.0.4
+- System.Text.RegularExpressions 4.3.1
 - UnicodeInformation 2.6.0
 - UnitsNet 5.56.0
 - UTF.Unknown 2.5.1
 - WinUIEx 2.2.0
 - WPF-UI 3.0.5
 - WyHash 1.0.5
+
