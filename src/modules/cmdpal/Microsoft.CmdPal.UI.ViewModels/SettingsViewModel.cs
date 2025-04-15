@@ -87,6 +87,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool ShowSystemTrayIcon
+    {
+        get => _settings.ShowSystemTrayIcon;
+        set
+        {
+            _settings.ShowSystemTrayIcon = value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)
