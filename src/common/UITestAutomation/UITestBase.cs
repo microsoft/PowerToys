@@ -6,11 +6,15 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
+using Windows.Devices.Display.Core;
+using Windows.Foundation.Metadata;
+using static Microsoft.PowerToys.UITest.UITestBase.NativeMethods;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -24,18 +28,31 @@ namespace Microsoft.PowerToys.UITest
 
         public required Session Session { get; set; }
 
+        private readonly bool isInPipeline;
         private readonly PowerToysModule scope;
         private readonly WindowSize size;
         private SessionHelper? sessionHelper;
+        private System.Threading.Timer? screenshotTimer;
+        private string? screenshotDirectory;
 
         // private System.Threading.Timer? screenshotTimer;
         // private string? screenshotDirectory;
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
         {
+            this.isInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
+            Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
+            if (isInPipeline)
+            {
+                NativeMethods.ChangeDispalyResolution();
+                NativeMethods.CreateNewMonitor();
+                NativeMethods.GetMonitorInfo();
+
+                // Escape Popups before starting
+                System.Windows.Forms.SendKeys.SendWait("{ESC}");
+            }
+
             this.scope = scope;
             this.size = size;
-            this.sessionHelper = new SessionHelper(scope).Init();
-            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
         }
 
         /// <summary>
@@ -44,14 +61,14 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
-            /*screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
-            Directory.CreateDirectory(screenshotDirectory);
+            if (isInPipeline)
+            {
+                screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
+                Directory.CreateDirectory(screenshotDirectory);
 
-            // Take screenshot every 1 second
-            screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));*/
-
-            // Escape Popups before starting
-            SendKeys.SendWait("{ESC}");
+                // Take screenshot every 1 second
+                screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
+            }
 
             this.sessionHelper = new SessionHelper(scope).Init();
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
@@ -73,21 +90,18 @@ namespace Microsoft.PowerToys.UITest
         [TestCleanup]
         public void TestCleanup()
         {
-            // screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
-            // Dispose();
-            // Task.Delay(1000).Wait();
-            // if (TestContext.CurrentTestOutcome is UnitTestOutcome.Failed
-            //    or UnitTestOutcome.Error
-            //    or UnitTestOutcome.Unknown)
-            // {
-            //    this.CaptureLastScreenshot();
-
-            // AddScreenShotsToTestResultsDirectory();
-            // }
-            // else
-            // {
-            //    // Directory.Delete(screenshotDirectory!, true);
-            // }
+            if (isInPipeline)
+            {
+                screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+                Dispose();
+                if (TestContext.CurrentTestOutcome is UnitTestOutcome.Failed
+                    or UnitTestOutcome.Error
+                    or UnitTestOutcome.Unknown)
+                {
+                    Task.Delay(1000).Wait();
+                    AddScreenShotsToTestResultsDirectory();
+                }
+            }
 
             // this.Session.Cleanup();
             // this.sessionHelper!.Cleanup();
@@ -95,7 +109,7 @@ namespace Microsoft.PowerToys.UITest
 
         public void Dispose()
         {
-            // screenshotTimer?.Dispose();
+            screenshotTimer?.Dispose();
             GC.SuppressFinalize(this);
         }
 
@@ -311,7 +325,66 @@ namespace Microsoft.PowerToys.UITest
             this.TestContext.AddResultFile(screenshotPath);
         }
 
-        /*protected void AddScreenShotsToTestResultsDirectory()
+        /// <summary>
+        /// Retrieves the color of the pixel at the specified screen coordinates.
+        /// </summary>
+        /// <param name="x">The X coordinate on the screen.</param>
+        /// <param name="y">The Y coordinate on the screen.</param>
+        /// <returns>The color of the pixel at the specified coordinates.</returns>
+        public Color GetPixelColor(int x, int y)
+        {
+            return this.Session.GetPixelColor(x, y);
+        }
+
+        /// <summary>
+        /// Gets the size of the display.
+        /// </summary>
+        /// <returns>
+        /// A tuple containing the width and height of the display.
+        /// </returns
+        public Tuple<int, int> GetDisplaySize()
+        {
+            return this.Session.GetDisplaySize();
+        }
+
+        /// <summary>
+        /// Sends a combination of keys.
+        /// </summary>
+        /// <param name="keys">The keys to send.</param>
+        public void SendKeys(params Key[] keys)
+        {
+            this.Session.SendKeys(keys);
+        }
+
+        /// <summary>
+        /// Sends a sequence of keys.
+        /// </summary>
+        /// <param name="keys">An array of keys to send.</param>
+        public void SendKeySequence(params Key[] keys)
+        {
+            this.Session.SendKeySequence(keys);
+        }
+
+        /// <summary>
+        /// Gets the current position of the mouse cursor as a tuple.
+        /// </summary>
+        /// <returns>A tuple containing the X and Y coordinates of the cursor.</returns>
+        public Tuple<int, int> GetMousePosition()
+        {
+            return this.Session.GetMousePosition();
+        }
+
+        /// <summary>
+        /// Moves the mouse cursor to the specified screen coordinates.
+        /// </summary>
+        /// <param name="x">The new x-coordinate of the cursor.</param>
+        /// <param name="y">The new y-coordinate of the cursor.</param
+        public void MoveMouseTo(int x, int y)
+        {
+            this.Session.MoveMouseTo(x, y);
+        }
+
+        protected void AddScreenShotsToTestResultsDirectory()
         {
             if (screenshotDirectory != null)
             {
@@ -320,7 +393,7 @@ namespace Microsoft.PowerToys.UITest
                     this.TestContext.AddResultFile(file);
                 }
             }
-        }*/
+        }
 
         /// <summary>
         /// Restart scope exe.
@@ -339,6 +412,182 @@ namespace Microsoft.PowerToys.UITest
         {
             this.sessionHelper!.ExitScopeExe();
             return;
+        }
+
+        public class NativeMethods
+        {
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+            public struct DISPLAY_DEVICE
+            {
+                public int cb;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+                public string DeviceName;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+                public string DeviceString;
+                public int StateFlags;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+                public string DeviceID;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+                public string DeviceKey;
+            }
+
+            [DllImport("user32.dll")]
+            private static extern int EnumDisplaySettings(IntPtr deviceName, int modeNum, ref DEVMODE devMode);
+
+            [DllImport("user32.dll")]
+            private static extern int EnumDisplaySettings(string deviceName, int modeNum, ref DEVMODE devMode);
+
+            [DllImport("user32.dll", CharSet = CharSet.Ansi)]
+            private static extern bool EnumDisplayDevices(IntPtr lpDevice, int iDevNum, ref DISPLAY_DEVICE lpDisplayDevice, int dwFlags);
+
+            [DllImport("user32.dll")]
+            private static extern int ChangeDisplaySettings(ref DEVMODE devMode, int flags);
+
+            [DllImport("user32.dll", CharSet = CharSet.Ansi)]
+            private static extern int ChangeDisplaySettingsEx(IntPtr lpszDeviceName, ref DEVMODE lpDevMode, IntPtr hwnd, uint dwflags, IntPtr lParam);
+
+            private const int DM_PELSWIDTH = 0x80000;
+            private const int DM_PELSHEIGHT = 0x100000;
+
+            public const int ENUM_CURRENT_SETTINGS = -1;
+            public const int CDS_TEST = 0x00000002;
+            public const int CDS_UPDATEREGISTRY = 0x01;
+            public const int DISP_CHANGE_SUCCESSFUL = 0;
+            public const int DISP_CHANGE_RESTART = 1;
+            public const int DISP_CHANGE_FAILED = -1;
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct DEVMODE
+            {
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+                public string DmDeviceName;
+                public short DmSpecVersion;
+                public short DmDriverVersion;
+                public short DmSize;
+                public short DmDriverExtra;
+                public int DmFields;
+                public int DmPositionX;
+                public int DmPositionY;
+                public int DmDisplayOrientation;
+                public int DmDisplayFixedOutput;
+                public short DmColor;
+                public short DmDuplex;
+                public short DmYResolution;
+                public short DmTTOption;
+                public short DmCollate;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+                public string DmFormName;
+                public short DmLogPixels;
+                public int DmBitsPerPel;
+                public int DmPelsWidth;
+                public int DmPelsHeight;
+                public int DmDisplayFlags;
+                public int DmDisplayFrequency;
+                public int DmICMMethod;
+                public int DmICMIntent;
+                public int DmMediaType;
+                public int DmDitherType;
+                public int DmReserved1;
+                public int DmReserved2;
+                public int DmPanningWidth;
+                public int DmPanningHeight;
+            }
+
+            public static void GetMonitorInfo()
+            {
+                int deviceIndex = 0;
+                DISPLAY_DEVICE d = default(DISPLAY_DEVICE);
+                d.cb = Marshal.SizeOf(d);
+
+                Console.WriteLine("monitor list :");
+                while (EnumDisplayDevices(IntPtr.Zero, deviceIndex, ref d, 0))
+                {
+                    Console.WriteLine($"monitor {deviceIndex + 1}:");
+                    Console.WriteLine($"  name: {d.DeviceName}");
+                    Console.WriteLine($"  string: {d.DeviceString}");
+                    Console.WriteLine($"  ID: {d.DeviceID}");
+                    Console.WriteLine($"  key: {d.DeviceKey}");
+                    Console.WriteLine();
+
+                    DEVMODE dm = default(DEVMODE);
+                    dm.DmSize = (short)Marshal.SizeOf<DEVMODE>();
+                    int modeNum = 0;
+                    while (EnumDisplaySettings(d.DeviceName, modeNum, ref dm) > 0)
+                    {
+                        Console.WriteLine($"  mode {modeNum}: {dm.DmPelsWidth}x{dm.DmPelsHeight} @ {dm.DmDisplayFrequency}Hz");
+                        modeNum++;
+                    }
+
+                    deviceIndex++;
+                    d.cb = Marshal.SizeOf(d); // Reset the size for the next device
+                }
+            }
+
+            public static void CreateNewMonitor()
+            {
+                DEVMODE newMode = default(DEVMODE);
+                newMode.DmSize = (short)Marshal.SizeOf<DEVMODE>();
+                newMode.DmPelsWidth = 1920;
+                newMode.DmPelsHeight = 1080;
+                newMode.DmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+
+                int result = ChangeDisplaySettingsEx(IntPtr.Zero, ref newMode, IntPtr.Zero, CDS_UPDATEREGISTRY, IntPtr.Zero);
+                if (result == DISP_CHANGE_SUCCESSFUL)
+                {
+                    Console.WriteLine("virtual monitor create success");
+                }
+                else
+                {
+                    Console.WriteLine("virtual monitor create faild");
+                }
+            }
+
+            public static void ChangeDispalyResolution()
+            {
+                Screen screen = Screen.PrimaryScreen!;
+                if (screen.Bounds.Width == 1920 && screen.Bounds.Height == 1080)
+                {
+                    return;
+                }
+
+                DEVMODE devMode = default(DEVMODE);
+                devMode.DmDeviceName = new string(new char[32]);
+                devMode.DmFormName = new string(new char[32]);
+                devMode.DmSize = (short)Marshal.SizeOf<DEVMODE>();
+
+                int modeNum = 0;
+                while (EnumDisplaySettings(IntPtr.Zero, modeNum, ref devMode) > 0)
+                {
+                    Console.WriteLine($"Mode {modeNum}: {devMode.DmPelsWidth}x{devMode.DmPelsHeight} @ {devMode.DmDisplayFrequency}Hz");
+                    modeNum++;
+                }
+
+                devMode.DmPelsWidth = 1920;
+                devMode.DmPelsHeight = 1080;
+
+                int result = NativeMethods.ChangeDisplaySettings(ref devMode, NativeMethods.CDS_TEST);
+
+                if (result == DISP_CHANGE_SUCCESSFUL)
+                {
+                    result = ChangeDisplaySettings(ref devMode, CDS_UPDATEREGISTRY);
+                    if (result == DISP_CHANGE_SUCCESSFUL)
+                    {
+                        Console.WriteLine($"Changing display resolution to {devMode.DmPelsWidth}x{devMode.DmPelsHeight}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Failed to change display resolution. Error code: {result}");
+                    }
+                }
+                else if (result == DISP_CHANGE_RESTART)
+                {
+                    Console.WriteLine($"Changing display resolution to {devMode.DmPelsWidth}x{devMode.DmPelsHeight} requires a restart");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to change display resolution. Error code: {result}");
+                }
+            }
         }
     }
 }

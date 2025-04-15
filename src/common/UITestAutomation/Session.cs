@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.UITest
             this.WindowsDriver = windowsDriver;
 
             // Attach to the scope & reset MainWindowHandler
-            this.Attach(scope, size);
+            // this.Attach(scope, size);
         }
 
         /// <summary>
@@ -381,36 +381,87 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Keyboard Action key.
+        /// Retrieves the color of the pixel at the specified screen coordinates.
         /// </summary>
-        /// <param name="key1">The Keys1 to click.</param>
-        /// <param name="key2">The Keys2 to click.</param>
-        /// <param name="key3">The Keys3 to click.</param>
-        /// <param name="key4">The Keys4 to click.</param>
-        public void KeyboardAction(string key1, string key2 = "", string key3 = "", string key4 = "")
+        /// <param name="x">The X coordinate on the screen.</param>
+        /// <param name="y">The Y coordinate on the screen.</param>
+        /// <returns>The color of the pixel at the specified coordinates.</returns>
+        public Color GetPixelColor(int x, int y)
         {
-            PerformAction((actions, windowElement) =>
-            {
-                if (string.IsNullOrEmpty(key2))
-                {
-                    actions.SendKeys(key1);
-                }
-                else if (string.IsNullOrEmpty(key3))
-                {
-                    actions.SendKeys(key1).SendKeys(key2);
-                }
-                else if (string.IsNullOrEmpty(key4))
-                {
-                    actions.SendKeys(key1).SendKeys(key2).SendKeys(key3);
-                }
-                else
-                {
-                    actions.SendKeys(key1).SendKeys(key2).SendKeys(key3).SendKeys(key4);
-                }
+            IntPtr hdc = ApiHelper.GetDC(IntPtr.Zero);
+            uint pixel = ApiHelper.GetPixel(hdc, x, y);
+            _ = ApiHelper.ReleaseDC(IntPtr.Zero, hdc);
 
-                actions.Release();
-                actions.Build().Perform();
+            int r = (int)(pixel & 0x000000FF);
+            int g = (int)((pixel & 0x0000FF00) >> 8);
+            int b = (int)((pixel & 0x00FF0000) >> 16);
+
+            return Color.FromArgb(r, g, b);
+        }
+
+        /// <summary>
+        /// Gets the size of the display.
+        /// </summary>
+        /// <returns>
+        /// A tuple containing the width and height of the display.
+        /// </returns
+        public Tuple<int, int> GetDisplaySize()
+        {
+            IntPtr hdc = ApiHelper.GetDC(IntPtr.Zero);
+            int screenWidth = ApiHelper.GetDeviceCaps(hdc, ApiHelper.DESKTOPHORZRES);
+            int screenHeight = ApiHelper.GetDeviceCaps(hdc, ApiHelper.DESKTOPVERTRES);
+            _ = ApiHelper.ReleaseDC(IntPtr.Zero, hdc);
+
+            return Tuple.Create(screenWidth, screenHeight);
+        }
+
+        /// <summary>
+        /// Sends a combination of keys.
+        /// </summary>
+        /// <param name="keys">The keys to send.</param>
+        public void SendKeys(params Key[] keys)
+        {
+            PerformAction(() =>
+            {
+                KeyboardHelper.SendKeys(keys);
             });
+        }
+
+        /// <summary>
+        /// Sends a sequence of keys.
+        /// </summary>
+        /// <param name="keys">An array of keys to send.</param>
+        public void SendKeySequence(params Key[] keys)
+        {
+            PerformAction(() =>
+            {
+                foreach (var key in keys)
+                {
+                    KeyboardHelper.SendKeys(key);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Gets the current position of the mouse cursor as a tuple.
+        /// </summary>
+        /// <returns>A tuple containing the X and Y coordinates of the cursor.</returns>
+        public Tuple<int, int> GetMousePosition()
+        {
+            return MouseHelper.GetMousePosition();
+        }
+
+        /// <summary>
+        /// Moves the mouse cursor to the specified screen coordinates.
+        /// </summary>
+        /// <param name="x">The new x-coordinate of the cursor.</param>
+        /// <param name="y">The new y-coordinate of the cursor.</param
+        public void MoveMouseTo(int x, int y)
+        {
+            PerformAction(() =>
+         {
+             MouseHelper.MoveMouseTo(x, y);
+         });
         }
 
         /// <summary>
@@ -505,6 +556,21 @@ namespace Microsoft.PowerToys.UITest
             [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
             private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
+            [DllImport("user32.dll")]
+            public static extern IntPtr GetDC(IntPtr hWnd);
+
+            [DllImport("gdi32.dll")]
+            public static extern uint GetPixel(IntPtr hdc, int x, int y);
+
+            [DllImport("gdi32.dll")]
+            public static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
+
+            public const int DESKTOPHORZRES = 118;
+            public const int DESKTOPVERTRES = 117;
+
+            [DllImport("user32.dll")]
+            public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
             public static List<(IntPtr HWnd, string Title)> FindDesktopWindowHandler(string[] matchingWindowsTitles)
             {
                 var windows = new List<(IntPtr HWnd, string Title)>();
@@ -549,6 +615,27 @@ namespace Microsoft.PowerToys.UITest
             var windowsDriver = this.WindowsDriver;
             Actions actions = new Actions(this.WindowsDriver);
             action(actions, windowsDriver);
+
+            if (msPostAction > 0)
+            {
+                Task.Delay(msPostAction).Wait();
+            }
+        }
+
+        /// <summary>
+        /// Simulates a manual operation on the element.
+        /// </summary>
+        /// <param name="action">The action to perform on the element.</param>
+        /// <param name="msPreAction">The number of milliseconds to wait before the action. Default value is 500 ms</param>
+        /// <param name="msPostAction">The number of milliseconds to wait after the action. Default value is 500 ms</param>
+        protected void PerformAction(Action action, int msPreAction = 500, int msPostAction = 500)
+        {
+            if (msPreAction > 0)
+            {
+                Task.Delay(msPreAction).Wait();
+            }
+
+            action();
 
             if (msPostAction > 0)
             {
