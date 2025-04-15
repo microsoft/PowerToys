@@ -54,6 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         [DllImport("user32.dll")]
         internal static extern IntPtr SendMessage(IntPtr hWnd, IntPtr msg, UIntPtr wParam, UIntPtr lParam);
+
         [DllImport("comdlg32.dll", CharSet = CharSet.Auto, EntryPoint = "ChooseFont", SetLastError = true)]
         internal static extern bool ChooseFont(IntPtr lpChooseFont);
 
