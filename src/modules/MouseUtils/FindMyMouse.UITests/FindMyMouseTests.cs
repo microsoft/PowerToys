@@ -213,18 +213,18 @@ namespace FindMyMouse.UITests
 
         private void VerifySpotlightAppears(ref FindMyMouseSettings settings)
         {
-            Task.Delay(2000).Wait();
+            Task.Delay(1000).Wait();
 
             var location = Session.GetMousePosition();
             int radius = int.Parse(settings.Radius, CultureInfo.InvariantCulture);
             var colorSpotlight = Session.GetPixelColorString(location.Item1, location.Item2);
             Assert.AreEqual("#" + settings.SpotlightColor, colorSpotlight);
 
-            var colorSpotlight2 = Session.GetPixelColorString(location.Item1 + 5, location.Item2);
+            var colorSpotlight2 = Session.GetPixelColorString(location.Item1 + radius - 1, location.Item2);
 
             // Session.MoveMouseTo(location.Item1 + radius - 10, location.Item2);
-            // Assert.AreEqual("#" + settings.SpotlightColor, colorSpotlight2);
-            Task.Delay(1000).Wait();
+            Assert.AreEqual("#" + settings.SpotlightColor, colorSpotlight2);
+            Task.Delay(100).Wait();
 
             var colorBackground = Session.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
             Assert.AreEqual("#" + settings.BackgroundColor, colorBackground);

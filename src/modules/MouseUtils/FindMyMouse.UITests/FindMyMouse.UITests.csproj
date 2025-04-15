@@ -4,8 +4,8 @@
 
   <PropertyGroup>
     <ProjectGuid>{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1}</ProjectGuid>
-      <RootNamespace>PowerToys.Hosts.UITestss</RootNamespace>
-      <AssemblyName>PowerToys.Hosts.UITestss</AssemblyName>
+      <RootNamespace>PowerToys.FindMyMouse.UITests</RootNamespace>
+      <AssemblyName>PowerToys.FindMyMouse.UITests</AssemblyName>
       <IsPackable>false</IsPackable>
       <IsTestProject>true</IsTestProject>
       <Nullable>enable</Nullable>
@@ -15,7 +15,7 @@
       <RunVSTest>false</RunVSTest>
     </PropertyGroup>
     <PropertyGroup>
-      <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\Hosts.UITestss\</OutputPath>
+      <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\FindMyMouse.UITests\</OutputPath>
     </PropertyGroup>
 
     <ItemGroup>

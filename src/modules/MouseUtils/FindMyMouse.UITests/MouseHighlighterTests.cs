@@ -1,0 +1,459 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Globalization;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using Microsoft.PowerToys.UITest;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.Devices.Printers;
+
+namespace FindMyMouse.UITests
+{
+    [TestClass]
+    public class MouseHighlighterTests : UITestBase
+    {
+        [TestMethod]
+        public void TestEnableMouseHighlighter()
+        {
+            LaunchFromSetting();
+            var foundCustom0 = this.Find<Custom>("Find My Mouse");
+            if (foundCustom0 != null)
+            {
+                foundCustom0.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+            }
+            else
+            {
+                Assert.Fail("Find My Mouse custom not found.");
+            }
+
+            var settings = new MouseHighlighterSettings();
+            settings.PrimaryButtonHighlightColor = "FFFF0000";
+            settings.SecondaryButtonHighlightColor = "FF00FF00";
+            settings.AlwaysHighlightColor = "004cFF71";
+            settings.Radius = "50";
+            settings.FadeDelay = "0";
+            settings.FadeDuration = "90";
+
+            var foundCustom = this.Find<Custom>("Mouse Highlighter");
+            if (foundCustom != null)
+            {
+                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(false);
+
+                Task.Delay(1000).Wait();
+                var xy = Session.GetMousePosition();
+                Session.MoveMouseTo(xy.Item1, xy.Item2 - 100);
+                Task.Delay(1000).Wait();
+                MouseSimulator.ScrollDown();
+                MouseSimulator.ScrollDown();
+                MouseSimulator.ScrollDown();
+                Task.Delay(1000).Wait();
+                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
+
+                // Change the shortcut key for ouseHighlighter
+                // [TestCase]Change activation shortcut and test it
+                var activationShortcutButton = foundCustom.Find<Button>("Activation shortcut");
+                Assert.IsNotNull(activationShortcutButton);
+
+                activationShortcutButton.Click();
+                var activationShortcutWindow = Session.Find<Window>("Activation shortcut");
+                Assert.IsNotNull(activationShortcutWindow);
+
+                // Invalid shortcut key
+                // Session.SendKeySequence(Key.H);
+                IOUtil.SimulateKeyPress(0x41);
+                Task.Delay(100).Wait();
+                var invalidShortcutText = activationShortcutWindow.Find<TextBlock>("Invalid shortcut");
+                Assert.IsNotNull(invalidShortcutText);
+
+                // IOUtil.SimulateShortcut(0x5B, 0x10, 0x45)
+                Session.SendKeys(Key.Win, Key.Shift, Key.H);
+
+                // Assert.IsNull(activationShortcutWindow.Find<TextBlock>("Invalid shortcut"));
+                var saveButton = activationShortcutWindow.Find<Button>("Save");
+                Assert.IsNotNull(saveButton);
+                saveButton.Click();
+
+                Task.Delay(2000).Wait();
+
+                SetMouseHighlighterAppearanceBehavior(ref foundCustom, ref settings);
+
+                // Check the mouse highlighter is enabled
+                Session.SendKeys(Key.Win, Key.Shift, Key.H);
+
+                // IOUtil.SimulateShortcut(0x5B, 0x10, 0x45);
+                Task.Delay(2000).Wait();
+                for (int i = 0; i < 10; i++)
+                {
+                    var xy0 = Session.GetMousePosition();
+                    Session.MoveMouseTo(xy0.Item1 - 10, xy0.Item2);
+                    Task.Delay(50).Wait();
+                }
+
+                // MouseSimulator.LeftClick();
+                // [Test Case] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
+                // [Test Case] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
+                VerifyMouseHighlighterAppears(ref settings, "leftClick");
+                Task.Delay(1000).Wait();
+                VerifyMouseHighlighterAppears(ref settings, "rightClick");
+
+                // Disable mouse highlighter
+                Session.SendKeys(Key.Win, Key.Shift, Key.H);
+                Task.Delay(2000).Wait();
+
+                VerifyMouseHighlighterNotAppears(ref settings, "leftClick");
+                Task.Delay(1000).Wait();
+                VerifyMouseHighlighterNotAppears(ref settings, "rightClick");
+
+                Task.Delay(100).Wait();
+
+                // [Test Case] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
+                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(false);
+                xy = Session.GetMousePosition();
+                Session.MoveMouseTo(xy.Item1 - 100, xy.Item2);
+                Task.Delay(500).Wait();
+                Session.SendKeys(Key.Win, Key.Shift, Key.H);
+                Task.Delay(2000).Wait();
+                VerifyMouseHighlighterNotAppears(ref settings, "leftClick");
+                Task.Delay(1000).Wait();
+                VerifyMouseHighlighterNotAppears(ref settings, "rightClick");
+
+                Task.Delay(100).Wait();
+                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
+                xy = Session.GetMousePosition();
+                Session.MoveMouseTo(xy.Item1 - 100, xy.Item2);
+                Session.SendKeys(Key.Win, Key.Shift, Key.H);
+                Task.Delay(2000).Wait();
+                VerifyMouseHighlighterDrag(ref settings, "leftClick");
+                Task.Delay(1000).Wait();
+                VerifyMouseHighlighterDrag(ref settings, "rightClick");
+
+                Task.Delay(100).Wait();
+            }
+            else
+            {
+                Assert.Fail("Mouse Highlighter Custom not found.");
+            }
+
+            Task.Delay(10000).Wait();
+        }
+
+        private void VerifyMouseHighlighterDrag(ref MouseHighlighterSettings settings, string action = "leftClick")
+        {
+            Task.Delay(1000).Wait();
+            string expectedColor = string.Empty;
+            if (action == "leftClick")
+            {
+                MouseSimulator.LeftDown();
+                expectedColor = settings.PrimaryButtonHighlightColor.Substring(2);
+            }
+            else if (action == "rightClick")
+            {
+                MouseSimulator.RightDown();
+                expectedColor = settings.SecondaryButtonHighlightColor.Substring(2);
+            }
+            else
+            {
+                Assert.Fail("Invalid action specified.");
+            }
+
+            expectedColor = "#" + expectedColor;
+
+            var location = Session.GetMousePosition();
+            int radius = int.Parse(settings.Radius, CultureInfo.InvariantCulture);
+            var colorLeftClick = Session.GetPixelColorString(location.Item1, location.Item2);
+            Assert.AreEqual(expectedColor, colorLeftClick);
+
+            var colorLeftClick2 = Session.GetPixelColorString(location.Item1 + radius - 1, location.Item2);
+
+            Assert.AreEqual(expectedColor, colorLeftClick2);
+            Task.Delay(1000).Wait();
+
+            var colorBackground = Session.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
+            Assert.AreNotEqual(expectedColor, colorBackground);
+
+            Session.MoveMouseTo(location.Item1 - 300, location.Item2);
+            Task.Delay(1000).Wait();
+
+            location = Session.GetMousePosition();
+            colorLeftClick = Session.GetPixelColorString(location.Item1, location.Item2);
+            Assert.AreEqual(expectedColor, colorLeftClick);
+
+            colorLeftClick2 = Session.GetPixelColorString(location.Item1 + radius - 1, location.Item2);
+
+            Assert.AreEqual(expectedColor, colorLeftClick2);
+            Task.Delay(1000).Wait();
+
+            colorBackground = Session.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
+            Assert.AreNotEqual(expectedColor, colorBackground);
+
+            if (action == "leftClick")
+            {
+                MouseSimulator.LeftUp();
+            }
+            else if (action == "rightClick")
+            {
+                MouseSimulator.RightUp();
+            }
+
+            int duration = int.Parse(settings.FadeDuration, CultureInfo.InvariantCulture);
+            Task.Delay(duration + 100).Wait();
+            colorLeftClick = Session.GetPixelColorString(location.Item1, location.Item2);
+            Assert.AreNotEqual("#" + settings.PrimaryButtonHighlightColor, colorLeftClick);
+        }
+
+        private void VerifyMouseHighlighterNotAppears(ref MouseHighlighterSettings settings, string action = "leftClick")
+        {
+            Task.Delay(2000).Wait();
+            string expectedColor = string.Empty;
+            if (action == "leftClick")
+            {
+                MouseSimulator.LeftDown();
+                expectedColor = settings.PrimaryButtonHighlightColor.Substring(2);
+            }
+            else if (action == "rightClick")
+            {
+                MouseSimulator.RightDown();
+                expectedColor = settings.SecondaryButtonHighlightColor.Substring(2);
+            }
+            else
+            {
+                Assert.Fail("Invalid action specified.");
+            }
+
+            expectedColor = "#" + expectedColor;
+            var location = Session.GetMousePosition();
+            int radius = int.Parse(settings.Radius, CultureInfo.InvariantCulture);
+            var colorLeftClick = Session.GetPixelColorString(location.Item1, location.Item2);
+            Assert.AreNotEqual(expectedColor, colorLeftClick);
+            var colorLeftClick2 = Session.GetPixelColorString(location.Item1 + radius - 1, location.Item2);
+            Assert.AreNotEqual(expectedColor, colorLeftClick2);
+            if (action == "leftClick")
+            {
+                MouseSimulator.LeftUp();
+            }
+            else if (action == "rightClick")
+            {
+                MouseSimulator.RightUp();
+            }
+        }
+
+        private void VerifyMouseHighlighterAppears(ref MouseHighlighterSettings settings, string action = "leftClick")
+        {
+            Task.Delay(2000).Wait();
+            string expectedColor = string.Empty;
+            if (action == "leftClick")
+            {
+                MouseSimulator.LeftDown();
+                expectedColor = settings.PrimaryButtonHighlightColor.Substring(2);
+            }
+            else if (action == "rightClick")
+            {
+                MouseSimulator.RightDown();
+                expectedColor = settings.SecondaryButtonHighlightColor.Substring(2);
+            }
+            else
+            {
+                Assert.Fail("Invalid action specified.");
+            }
+
+            expectedColor = "#" + expectedColor;
+
+            var location = Session.GetMousePosition();
+            int radius = int.Parse(settings.Radius, CultureInfo.InvariantCulture);
+            var colorLeftClick = Session.GetPixelColorString(location.Item1, location.Item2);
+            Assert.AreEqual(expectedColor, colorLeftClick);
+
+            var colorLeftClick2 = Session.GetPixelColorString(location.Item1 + radius - 1, location.Item2);
+
+            Assert.AreEqual(expectedColor, colorLeftClick2);
+            Task.Delay(1000).Wait();
+
+            var colorBackground = Session.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
+            Assert.AreNotEqual(expectedColor, colorBackground);
+            if (action == "leftClick")
+            {
+                MouseSimulator.LeftUp();
+            }
+            else if (action == "rightClick")
+            {
+                MouseSimulator.RightUp();
+            }
+
+            int duration = int.Parse(settings.FadeDuration, CultureInfo.InvariantCulture);
+            Task.Delay(duration + 100).Wait();
+            colorLeftClick = Session.GetPixelColorString(location.Item1, location.Item2);
+            Assert.AreNotEqual("#" + settings.PrimaryButtonHighlightColor, colorLeftClick);
+        }
+
+        private void SetColor(ref Custom foundCustom, string colorName = "Primary button highlight color", string colorValue = "000000", string opacity = "0")
+        {
+            Assert.IsNotNull(foundCustom);
+            var groupAppearanceBehavior = foundCustom.Find<TextBlock>("Appearance & behavior");
+            if (groupAppearanceBehavior != null)
+            {
+                // groupAppearanceBehavior.Click();
+                if (foundCustom.FindAll<TextBox>("Fade duration (ms) Minimum0").Count == 0)
+                {
+                    groupAppearanceBehavior.Click();
+                }
+
+                // Set primary button highlight color
+                var primaryButtonHighlightColor = foundCustom.Find<Group>(colorName);
+                Assert.IsNotNull(primaryButtonHighlightColor);
+
+                var button = primaryButtonHighlightColor.Find<Button>(By.XPath(".//Button"));
+                Assert.IsNotNull(button);
+                button.Click();
+
+                var popupWindow = Session.Find<Window>("Popup");
+                Assert.IsNotNull(popupWindow);
+                Task.Delay(1000).Wait();
+                var colorModelComboBox = this.Find<ComboBox>("Color model");
+                Assert.IsNotNull(colorModelComboBox);
+                colorModelComboBox.Click();
+                var selectedItem = colorModelComboBox.Find<NavigationViewItem>("RGB");
+                selectedItem.Click();
+                Task.Delay(100).Wait();
+                var rgbHexEdit = this.Find<TextBox>("RGB hex");
+                Assert.IsNotNull(rgbHexEdit);
+                Task.Delay(100).Wait();
+                rgbHexEdit.SetText(colorValue);
+                Task.Delay(100).Wait();
+
+                // Set the opacity to 100%
+                // var opacityEdit = this.Find<TextBox>("Opacity");
+                // Assert.IsNotNull(opacityEdit);
+                // Task.Delay(1000).Wait();
+                // opacityEdit.SetText(opacity);
+                // Assert.AreEqual(opacity + "%", opacityEdit.Text);
+                button.Click();
+            }
+        }
+
+        private void SetMouseHighlighterAppearanceBehavior(ref Custom foundCustom, ref MouseHighlighterSettings settings)
+        {
+            Assert.IsNotNull(foundCustom);
+            var groupAppearanceBehavior = foundCustom.Find<TextBlock>("Appearance & behavior");
+            if (groupAppearanceBehavior != null)
+            {
+                // groupAppearanceBehavior.Click();
+                if (foundCustom.FindAll<TextBox>(settings.GetElementName(MouseHighlighterSettings.SettingsUIElements.FadeDurationEdit)).Count == 0)
+                {
+                    groupAppearanceBehavior.Click();
+                }
+
+                // Set primary button highlight color
+                SetColor(ref foundCustom, settings.GetElementName(MouseHighlighterSettings.SettingsUIElements.PrimaryButtonHighlightColorGroup), settings.PrimaryButtonHighlightColor);
+                Task.Delay(200).Wait();
+
+                // Set secondary button highlight color
+                SetColor(ref foundCustom, settings.GetElementName(MouseHighlighterSettings.SettingsUIElements.SecondaryButtonHighlightColorGroup), settings.SecondaryButtonHighlightColor);
+
+                // Set always highlight color
+                SetColor(ref foundCustom, settings.GetElementName(MouseHighlighterSettings.SettingsUIElements.AlwaysHighlightColorGroup), settings.AlwaysHighlightColor);
+
+                // Set the duration to duration ms
+                var fadeDurationEdit = foundCustom.Find<TextBox>(settings.GetElementName(MouseHighlighterSettings.SettingsUIElements.FadeDurationEdit));
+                Assert.IsNotNull(fadeDurationEdit);
+                Task.Delay(200).Wait();
+                fadeDurationEdit.SetText(settings.FadeDuration);
+                Assert.AreEqual(settings.FadeDuration, fadeDurationEdit.Text);
+
+                // Set Fade delay(ms)
+                var fadeDelayEdit = foundCustom.Find<TextBox>(settings.GetElementName(MouseHighlighterSettings.SettingsUIElements.FadeDelayEdit));
+                Assert.IsNotNull(fadeDelayEdit);
+                Task.Delay(200).Wait();
+                fadeDelayEdit.SetText(settings.FadeDelay);
+                Assert.AreEqual(settings.FadeDelay, fadeDelayEdit.Text);
+
+                // Set the fade radius (px)
+                var fadeRadiusEdit = foundCustom.Find<TextBox>(settings.GetElementName(MouseHighlighterSettings.SettingsUIElements.RadiusEdit));
+                Assert.IsNotNull(fadeRadiusEdit);
+                Task.Delay(1000).Wait();
+                fadeRadiusEdit.SetText(settings.Radius);
+                Assert.AreEqual(settings.Radius, fadeRadiusEdit.Text);
+            }
+            else
+            {
+                Assert.Fail("Appearance & behavior group not found.");
+            }
+        }
+
+        private bool FindGroup(string groupName)
+        {
+            try
+            {
+                var foundElements = this.FindAll<Element>(groupName);
+                foreach (var element in foundElements)
+                {
+                    string className = element.ClassName;
+                    string name = element.Name;
+                    string text = element.Text;
+                    string helptext = element.HelpText;
+                    string controlType = element.ControlType;
+                }
+
+                if (foundElements.Count == 0)
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Validate if group is not found by checking exception.Message
+                return ex.Message.Contains("No element found");
+            }
+
+            return true;
+        }
+
+        private bool IsHostsFileEditorClosed()
+        {
+            try
+            {
+                this.Session.FindAll<Window>("Hosts File Editor");
+            }
+            catch (Exception ex)
+            {
+                // Validate if editor window closed by checking exception.Message
+                return ex.Message.Contains("Currently selected window has been closed");
+            }
+
+            return false;
+        }
+
+        private bool MaxmizePowerToysSettingsWindow()
+        {
+            try
+            {
+                var powerToysSettingsWindow = this.Session.Find<Window>("PowerToysSettings");
+                Assert.IsNotNull(powerToysSettingsWindow);
+                powerToysSettingsWindow.Maximize();
+            }
+            catch (Exception ex)
+            {
+                // Validate if editor window closed by checking exception.Message
+                return ex.Message.Contains("Currently selected window has been closed");
+            }
+
+            return true;
+        }
+
+        private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
+        {
+            Session.SetMainWindowSize(WindowSize.Large);
+
+            // Goto Hosts File Editor setting page
+            if (this.FindAll<NavigationViewItem>("Mouse utilities").Count == 0)
+            {
+                // Expand Advanced list-group if needed
+                this.Find<NavigationViewItem>("Input / Output").Click();
+            }
+
+            this.Find<NavigationViewItem>("Mouse utilities").Click();
+        }
+    }
+}
