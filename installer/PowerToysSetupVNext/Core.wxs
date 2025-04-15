@@ -18,7 +18,7 @@
         </RegistryKey>
       </Component>
       <Component Id="powertoys_exe" Guid="30261594-41A6-4509-AD09-FBC4E692F441" Bitness="always64">
-        <File Id="PowerToys.exe" Checksum="yes" />
+        <File Id="PowerToys.exe" Name="PowerToys.exe" Checksum="yes" />
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys">
           <RegistryValue Type="string" Name="URL Protocol" Value="" KeyPath="yes" />
           <RegistryValue Type="string" Value="URL:PowerToys custom internal URI protocol" />

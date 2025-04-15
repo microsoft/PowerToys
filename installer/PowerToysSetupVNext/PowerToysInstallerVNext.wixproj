@@ -173,9 +173,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
   </Target>
-  <Target Name="BeforeBuild">
-    <HarvestDirectory Directory="..\..\src\Monaco\monacoSRC" PreprocessorVariable="var.MonacoSRCHarvestPath" OutputFile="MonacoSRC.wxs" ComponentGroupName="MonacoSRCHeatGenerated" DirectoryRefId="MonacoPreviewHandlerMonacoSRCFolder" AutogenerateGuids="false" GenerateGuidsNow="true" SuppressFragments="false" SuppressRegistry="false" SuppressRootDirectory="true" />
-  </Target>
   <!-- Prevents NU1503 -->
   <Target Name="_IsProjectRestoreSupported" Returns="@(_ValidProjectsForRestore)">
     <ItemGroup>

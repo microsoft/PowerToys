@@ -116,7 +116,7 @@
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="CheckGPO" After="InstallInitialize" Condition="NOT Installed" />
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
-      <Custom Action="WixCloseApplications_x64" Before="RemoveFiles" />
+      <Custom Action="override Wix4CloseApplications_$(sys.BUILDARCHSHORT)" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
       <!-- TODO: Use to activate embedded MSIX -->
       <!--<Custom Action="InstallEmbeddedMSIXTask" After="InstallFinalize">

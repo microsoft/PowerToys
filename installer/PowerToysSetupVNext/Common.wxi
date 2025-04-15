@@ -47,7 +47,7 @@
         <?define PerMachineYesNo="yes"?>
         <?define MSIPath="MachineSetup"?>
         <?define MSIName="PowerToysSetupVNext-$(var.Version)-$(var.PowerToysPlatform).msi"?>
-        <?define DefaultInstallDir="ProgramFiles64Folder" ?>
+        <?define DefaultInstallDir="CustomProgramFiles64Folder" ?>
         <?define RegistryScope="HKLM" ?>
         <?define InstallScope="perMachine" ?>
         <?define InstallPrivileges="elevated" ?>
