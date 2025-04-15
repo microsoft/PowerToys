@@ -104,18 +104,16 @@
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
     <PackageVersion Include="WyHash" Version="1.0.5" />
+    <PackageVersion Include="WixToolset.Heat" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.Firewall.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.Util.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.UI.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.NetFx.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.Bal.wixext" Version="5.0.2" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->
     <PackageVersion Include="Microsoft.VariantAssignment.Client" Version="2.4.17140001" />
     <PackageVersion Include="Microsoft.VariantAssignment.Contract" Version="3.0.16990001" />
   </ItemGroup>
-  <ItemGroup>
-     <PackageVersion Include="WixToolset.Heat" Version="5.0.2" />
-     <PackageVersion Include="WixToolset.Firewall.wixext" Version="5.0.2" />
-     <PackageVersion Include="WixToolset.Util.wixext" Version="5.0.2" />
-     <PackageVersion Include="WixToolset.UI.wixext" Version="5.0.2" />
-     <PackageVersion Include="WixToolset.NetFx.wixext" Version="5.0.2" />
-     <PackageVersion Include="WixToolset.Bal.wixext" Version="5.0.2" />
-   </ItemGroup>
 </Project>
