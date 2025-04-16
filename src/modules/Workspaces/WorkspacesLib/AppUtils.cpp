@@ -428,5 +428,10 @@ namespace Utils
         {
             return installPath.ends_with(NonLocalizable::ChromeFilename);
         }
+
+        bool AppData::IsSteamGame() const
+        {
+            return protocolPath.rfind(NonLocalizable::SteamUrlProtocol, 0) == 0;
+        }
     }
 }

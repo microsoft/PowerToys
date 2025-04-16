@@ -18,6 +18,7 @@ namespace Utils
 
             bool IsEdge() const;
             bool IsChrome() const;
+            bool AppData::IsSteamGame() const;
         };
 
         using AppList = std::vector<AppData>;

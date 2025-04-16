@@ -124,6 +124,12 @@ namespace SnapshotUtils
                 continue;
             }
 
+            if (!data->IsSteamGame() && !WindowFilter::HasThickFrame(window))
+            {
+                // Only care about steam games without thick frame.
+                continue;
+            }
+
             Logger::info(L"Found app for window:{},{}", reinterpret_cast<void*>(window), processPath);
 
             auto appData = data.value();
