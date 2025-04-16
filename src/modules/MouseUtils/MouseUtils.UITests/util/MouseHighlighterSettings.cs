@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FindMyMouse.UITests
+namespace MouseUtils.UITests
 {
     public class MouseHighlighterSettings
     {

@@ -10,7 +10,7 @@ using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Devices.Printers;
 
-namespace FindMyMouse.UITests
+namespace MouseUtils.UITests
 {
     [TestClass]
     public class MouseHighlighterTests : UITestBase
@@ -47,9 +47,6 @@ namespace FindMyMouse.UITests
                 Session.MoveMouseTo(xy.Item1, xy.Item2 - 100);
                 Task.Delay(1000).Wait();
 
-                // MouseSimulator.ScrollDown();
-                // MouseSimulator.ScrollDown();
-                // MouseSimulator.ScrollDown();
                 Session.PerformMouseAction(MouseActionType.ScrollDown);
                 Session.PerformMouseAction(MouseActionType.ScrollDown);
                 Session.PerformMouseAction(MouseActionType.ScrollDown);
@@ -66,8 +63,9 @@ namespace FindMyMouse.UITests
                 Assert.IsNotNull(activationShortcutWindow);
 
                 // Invalid shortcut key
-                // Session.SendKeySequence(Key.H);
-                IOUtil.SimulateKeyPress(0x41);
+                Session.SendKeySequence(Key.H);
+
+                // IOUtil.SimulateKeyPress(0x41);
                 Task.Delay(100).Wait();
                 var invalidShortcutText = activationShortcutWindow.Find<TextBlock>("Invalid shortcut");
                 Assert.IsNotNull(invalidShortcutText);

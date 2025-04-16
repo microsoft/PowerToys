@@ -10,7 +10,7 @@ using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Devices.Printers;
 
-namespace FindMyMouse.UITests
+namespace MouseUtils.UITests
 {
     [TestClass]
     public class FindMyMouseTests : UITestBase

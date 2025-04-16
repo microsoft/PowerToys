@@ -706,7 +706,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegistryPreview.FuzzTests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.System", "src\modules\cmdpal\Exts\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj", "{64B88F02-CD88-4ED8-9624-989A800230F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FindMyMouse.UITests", "src\modules\MouseUtils\FindMyMouse.UITests\FindMyMouse.UITests.csproj", "{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MouseUtils.UITests", "src\modules\MouseUtils\MouseUtils.UITests\MouseUtils.UITests.csproj", "{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -2576,14 +2576,10 @@ Global
 		{64B88F02-CD88-4ED8-9624-989A800230F9}.Debug|ARM64.Build.0 = Debug|ARM64
 		{64B88F02-CD88-4ED8-9624-989A800230F9}.Debug|x64.ActiveCfg = Debug|x64
 		{64B88F02-CD88-4ED8-9624-989A800230F9}.Debug|x64.Build.0 = Debug|x64
-		{64B88F02-CD88-4ED8-9624-989A800230F9}.Debug|x86.ActiveCfg = Debug|x64
-		{64B88F02-CD88-4ED8-9624-989A800230F9}.Debug|x86.Build.0 = Debug|x64
 		{64B88F02-CD88-4ED8-9624-989A800230F9}.Release|ARM64.ActiveCfg = Release|ARM64
 		{64B88F02-CD88-4ED8-9624-989A800230F9}.Release|ARM64.Build.0 = Release|ARM64
 		{64B88F02-CD88-4ED8-9624-989A800230F9}.Release|x64.ActiveCfg = Release|x64
 		{64B88F02-CD88-4ED8-9624-989A800230F9}.Release|x64.Build.0 = Release|x64
-		{64B88F02-CD88-4ED8-9624-989A800230F9}.Release|x86.ActiveCfg = Release|x64
-		{64B88F02-CD88-4ED8-9624-989A800230F9}.Release|x86.Build.0 = Release|x64
 		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1}.Debug|ARM64.ActiveCfg = Debug|ARM64
 		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1}.Debug|ARM64.Build.0 = Debug|ARM64
 		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1}.Debug|x64.ActiveCfg = Debug|x64
