@@ -30,6 +30,13 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
 
     public override void UpdateQuery(string query)
     {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            Title = string.Empty;
+            Subtitle = string.Empty;
+            return;
+        }
+
         IListItem? result = null;
         var resultScore = 0;
 
