@@ -106,7 +106,7 @@ namespace Utils
                 return {};
             }
 
-            return GetSteamBasePath() / L"steamapps" / L"common" / gameFolderName;
+            return GetSteamBasePath() / L"common" / gameFolderName;
         }
 
         static unordered_map<wstring, wstring> ParseAcfFile(const fs::path& acfPath)
