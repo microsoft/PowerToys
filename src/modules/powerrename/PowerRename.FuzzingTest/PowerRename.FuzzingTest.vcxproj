@@ -6,6 +6,10 @@
       <Configuration>Fuzzing</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Fuzzing|ARM64">
+      <Configuration>Fuzzing</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -23,7 +27,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Fuzzing|x64'">
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Fuzzing'">
     <EnableASAN>true</EnableASAN>
     <EnableFuzzer>true</EnableFuzzer>
   </PropertyGroup>
@@ -37,10 +41,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.43.34808\lib\x64</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VCToolsInstallDir)\lib\$(Platform)</LibraryPath>
     <OutDir>..\..\..\..\$(Platform)\Release\tests\PowerRename.FuzzTests\</OutDir>
   </PropertyGroup>
-  <ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Fuzzing'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -61,10 +65,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(OutDir)\..\..\WinUI3Apps\PowerRenameLib.lib;legacy_stdio_definitions.lib;$(VCToolsInstallDir)lib\$(Platform)\libsancov.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
+    <PostBuildEvent Condition="'$(Configuration)|$(Platform)'=='Fuzzing|x64'">
       <Command>xcopy /y "$(VCToolsInstallDir)bin\Hostx64\x64\clang_rt.asan_dynamic-x86_64.dll" "$(OutDir)"</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
       <Message>Copy the required ASan runtime DLL to the output directory.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

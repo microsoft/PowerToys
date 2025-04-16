@@ -6,6 +6,10 @@
       <Configuration>Fuzzing</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Fuzzing|ARM64">
+      <Configuration>Fuzzing</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|ARM64">
       <Configuration>Release</Configuration>
       <Platform>ARM64</Platform>
@@ -35,7 +39,7 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Fuzzing|x64'">
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Fuzzing'">
     <EnableASAN>true</EnableASAN>
     <EnableFuzzer>true</EnableFuzzer>
   </PropertyGroup>
@@ -45,14 +49,14 @@
   <ImportGroup Label="Shared">
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Fuzzing|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Fuzzing'">
     <ClCompile>
       <AdditionalIncludeDirectories>..\;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_LIB;_DISABLE_VECTOR_ANNOTATION;_DISABLE_STRING_ANNOTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'!='Fuzzing|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)'!='Fuzzing'">
     <ClCompile>
       <AdditionalIncludeDirectories>..\;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
