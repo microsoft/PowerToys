@@ -2001,8 +2001,6 @@ ACIE
 AOklab
 BCIE
 BOklab
-cielch
-lch
 culori
 Evercoder
 LCh
