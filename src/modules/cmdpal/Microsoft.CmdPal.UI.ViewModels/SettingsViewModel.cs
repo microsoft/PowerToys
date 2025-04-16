@@ -97,6 +97,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool IgnoreShortcutWhenFullscreen
+    {
+        get => _settings.IgnoreShortcutWhenFullscreen;
+        set
+        {
+            _settings.IgnoreShortcutWhenFullscreen = value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)
