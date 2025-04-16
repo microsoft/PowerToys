@@ -203,7 +203,8 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 
         if (!data->IsSteamGame() && !WindowUtils::HasThickFrame(window))
         {
-            // Only care about steam games without thick frame.
+            // Only care about steam games if it has no thick frame to remain consistent with 
+            // the behavior as before.
             continue;
         }
 
