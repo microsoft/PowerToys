@@ -38,10 +38,11 @@ stages:
               demands: ImageOverride -equals SHINE-VS17-Preview
           buildPlatforms:
             - ${{ parameters.platform }}
-          buildConfigurations: [Fuzzing]
+          buildConfigurations: [Release]
           enablePackageCaching: true
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           runTests: true
+          fuzzingBuild: true
           useVSPreview: ${{ parameters.useVSPreview }}
 
   - stage: OneFuzz
