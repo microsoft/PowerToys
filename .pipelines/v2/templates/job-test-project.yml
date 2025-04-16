@@ -11,6 +11,9 @@ parameters:
   - name: useLatestWebView2
     type: boolean
     default: false
+  - name: isUIAutomationPipeline
+    type: boolean
+    default: false
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}
@@ -101,7 +104,16 @@ jobs:
       vsTestVersion: 'toolsInstaller'
       uiTests: true
       rerunFailedTests: true
-      testAssemblyVer2: |
-        **\*UITest*.dll
-        !**\obj\**
-        !**\ref\**
+      ${{ if eq(parameters.isUIAutomationPipeline, true) }}:
+        testAssemblyVer2: |
+          **\*UITest*.dll
+          !**\obj\**
+          !**\ref\**
+      ${{ else }}:
+        testAssemblyVer2: |
+          **\UITests-FancyZones.dll
+          **\UITests-FancyZonesEditor.dll
+          !**\obj\**
+          !**\ref\**
+    env:
+      platform: '$(BuildPlatform)'

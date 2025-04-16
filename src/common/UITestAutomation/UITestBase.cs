@@ -6,12 +6,15 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
+using Windows.Devices.Display.Core;
 using Windows.Foundation.Metadata;
+using static Microsoft.PowerToys.UITest.UITestBase.NativeMethods;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -40,8 +43,12 @@ namespace Microsoft.PowerToys.UITest
             Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
             if (isInPipeline)
             {
+                NativeMethods.ChangeDispalyResolution();
+                NativeMethods.CreateNewMonitor();
+                NativeMethods.GetMonitorInfo();
+
                 // Escape Popups before starting
-                this.SendKeys(Key.Esc);
+                System.Windows.Forms.SendKeys.SendWait("{ESC}");
             }
 
             this.scope = scope;
@@ -405,6 +412,182 @@ namespace Microsoft.PowerToys.UITest
         {
             this.sessionHelper!.ExitScopeExe();
             return;
+        }
+
+        public class NativeMethods
+        {
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+            public struct DISPLAY_DEVICE
+            {
+                public int cb;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+                public string DeviceName;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+                public string DeviceString;
+                public int StateFlags;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+                public string DeviceID;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+                public string DeviceKey;
+            }
+
+            [DllImport("user32.dll")]
+            private static extern int EnumDisplaySettings(IntPtr deviceName, int modeNum, ref DEVMODE devMode);
+
+            [DllImport("user32.dll")]
+            private static extern int EnumDisplaySettings(string deviceName, int modeNum, ref DEVMODE devMode);
+
+            [DllImport("user32.dll", CharSet = CharSet.Ansi)]
+            private static extern bool EnumDisplayDevices(IntPtr lpDevice, int iDevNum, ref DISPLAY_DEVICE lpDisplayDevice, int dwFlags);
+
+            [DllImport("user32.dll")]
+            private static extern int ChangeDisplaySettings(ref DEVMODE devMode, int flags);
+
+            [DllImport("user32.dll", CharSet = CharSet.Ansi)]
+            private static extern int ChangeDisplaySettingsEx(IntPtr lpszDeviceName, ref DEVMODE lpDevMode, IntPtr hwnd, uint dwflags, IntPtr lParam);
+
+            private const int DM_PELSWIDTH = 0x80000;
+            private const int DM_PELSHEIGHT = 0x100000;
+
+            public const int ENUM_CURRENT_SETTINGS = -1;
+            public const int CDS_TEST = 0x00000002;
+            public const int CDS_UPDATEREGISTRY = 0x01;
+            public const int DISP_CHANGE_SUCCESSFUL = 0;
+            public const int DISP_CHANGE_RESTART = 1;
+            public const int DISP_CHANGE_FAILED = -1;
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct DEVMODE
+            {
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+                public string DmDeviceName;
+                public short DmSpecVersion;
+                public short DmDriverVersion;
+                public short DmSize;
+                public short DmDriverExtra;
+                public int DmFields;
+                public int DmPositionX;
+                public int DmPositionY;
+                public int DmDisplayOrientation;
+                public int DmDisplayFixedOutput;
+                public short DmColor;
+                public short DmDuplex;
+                public short DmYResolution;
+                public short DmTTOption;
+                public short DmCollate;
+                [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+                public string DmFormName;
+                public short DmLogPixels;
+                public int DmBitsPerPel;
+                public int DmPelsWidth;
+                public int DmPelsHeight;
+                public int DmDisplayFlags;
+                public int DmDisplayFrequency;
+                public int DmICMMethod;
+                public int DmICMIntent;
+                public int DmMediaType;
+                public int DmDitherType;
+                public int DmReserved1;
+                public int DmReserved2;
+                public int DmPanningWidth;
+                public int DmPanningHeight;
+            }
+
+            public static void GetMonitorInfo()
+            {
+                int deviceIndex = 0;
+                DISPLAY_DEVICE d = default(DISPLAY_DEVICE);
+                d.cb = Marshal.SizeOf(d);
+
+                Console.WriteLine("monitor list :");
+                while (EnumDisplayDevices(IntPtr.Zero, deviceIndex, ref d, 0))
+                {
+                    Console.WriteLine($"monitor {deviceIndex + 1}:");
+                    Console.WriteLine($"  name: {d.DeviceName}");
+                    Console.WriteLine($"  string: {d.DeviceString}");
+                    Console.WriteLine($"  ID: {d.DeviceID}");
+                    Console.WriteLine($"  key: {d.DeviceKey}");
+                    Console.WriteLine();
+
+                    DEVMODE dm = default(DEVMODE);
+                    dm.DmSize = (short)Marshal.SizeOf<DEVMODE>();
+                    int modeNum = 0;
+                    while (EnumDisplaySettings(d.DeviceName, modeNum, ref dm) > 0)
+                    {
+                        Console.WriteLine($"  mode {modeNum}: {dm.DmPelsWidth}x{dm.DmPelsHeight} @ {dm.DmDisplayFrequency}Hz");
+                        modeNum++;
+                    }
+
+                    deviceIndex++;
+                    d.cb = Marshal.SizeOf(d); // Reset the size for the next device
+                }
+            }
+
+            public static void CreateNewMonitor()
+            {
+                DEVMODE newMode = default(DEVMODE);
+                newMode.DmSize = (short)Marshal.SizeOf<DEVMODE>();
+                newMode.DmPelsWidth = 1920;
+                newMode.DmPelsHeight = 1080;
+                newMode.DmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+
+                int result = ChangeDisplaySettingsEx(IntPtr.Zero, ref newMode, IntPtr.Zero, CDS_UPDATEREGISTRY, IntPtr.Zero);
+                if (result == DISP_CHANGE_SUCCESSFUL)
+                {
+                    Console.WriteLine("virtual monitor create success");
+                }
+                else
+                {
+                    Console.WriteLine("virtual monitor create faild");
+                }
+            }
+
+            public static void ChangeDispalyResolution()
+            {
+                Screen screen = Screen.PrimaryScreen!;
+                if (screen.Bounds.Width == 1920 && screen.Bounds.Height == 1080)
+                {
+                    return;
+                }
+
+                DEVMODE devMode = default(DEVMODE);
+                devMode.DmDeviceName = new string(new char[32]);
+                devMode.DmFormName = new string(new char[32]);
+                devMode.DmSize = (short)Marshal.SizeOf<DEVMODE>();
+
+                int modeNum = 0;
+                while (EnumDisplaySettings(IntPtr.Zero, modeNum, ref devMode) > 0)
+                {
+                    Console.WriteLine($"Mode {modeNum}: {devMode.DmPelsWidth}x{devMode.DmPelsHeight} @ {devMode.DmDisplayFrequency}Hz");
+                    modeNum++;
+                }
+
+                devMode.DmPelsWidth = 1920;
+                devMode.DmPelsHeight = 1080;
+
+                int result = NativeMethods.ChangeDisplaySettings(ref devMode, NativeMethods.CDS_TEST);
+
+                if (result == DISP_CHANGE_SUCCESSFUL)
+                {
+                    result = ChangeDisplaySettings(ref devMode, CDS_UPDATEREGISTRY);
+                    if (result == DISP_CHANGE_SUCCESSFUL)
+                    {
+                        Console.WriteLine($"Changing display resolution to {devMode.DmPelsWidth}x{devMode.DmPelsHeight}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Failed to change display resolution. Error code: {result}");
+                    }
+                }
+                else if (result == DISP_CHANGE_RESTART)
+                {
+                    Console.WriteLine($"Changing display resolution to {devMode.DmPelsWidth}x{devMode.DmPelsHeight} requires a restart");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to change display resolution. Error code: {result}");
+                }
+            }
         }
     }
 }
