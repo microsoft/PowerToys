@@ -286,16 +286,12 @@ public sealed partial class MainWindow : Window,
         ShowHwnd(message.Hwnd, settings.SummonOn);
     }
 
-    public void Receive(HideWindowMessage message)
-    {
-        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
-    }
+    public void Receive(HideWindowMessage message) => PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
-    public void Receive(QuitMessage message)
-    {
+    public void Receive(QuitMessage message) =>
+
         // This might come in on a background thread
         DispatcherQueue.TryEnqueue(() => Close());
-    }
 
     public void Receive(DismissMessage message) =>
         PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
@@ -378,12 +374,17 @@ public sealed partial class MainWindow : Window,
                 // ... then don't hide the window when it loses focus.
                 return;
             }
-            else
-            {
-                PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
-                PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
+            // Are we disabled? If we are, then we don't want to dismiss on focus lost.
+            // This can happen if an extension wanted to show a modal dialog on top of our
+            // window i.e. in the case of an MSAL auth window.
+            if (PInvoke.IsWindowEnabled(_hwnd) == 0)
+            {
+                return;
             }
+
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+            PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
         }
 
         if (_configurationSource != null)
@@ -392,14 +393,13 @@ public sealed partial class MainWindow : Window,
         }
     }
 
-    public void Summon(string commandId)
-    {
+    public void Summon(string commandId) =>
+
         // The actual showing and hiding of the window will be done by the
         // ShellPage. This is because we don't want to show the window if the
         // user bound a hotkey to just an invokable command, which we can't
         // know till the message is being handled.
         WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(commandId, _hwnd));
-    }
 
 #pragma warning disable SA1310 // Field names should not contain underscore
     private const uint DOT_KEY = 0xBE;
