@@ -1,8 +1,8 @@
-// PowerRename.FuzzTests.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// Test.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-#include "pch.h"
+
 #include <iostream>
-#include "../../lib/PowerRenameRegEx.h"
+#include <PowerRenameRegEx.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
@@ -54,10 +54,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     if (result)
         SysFreeString(result);
 
-    return 0;
-}
-
-int main()
-{
     return 0;
 }

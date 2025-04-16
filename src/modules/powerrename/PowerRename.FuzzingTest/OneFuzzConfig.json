@@ -4,7 +4,7 @@
     {
       "Fuzzer": {
         "$type": "libfuzzer",
-        "FuzzingHarnessExecutableName": "PowerRenameFuzzingTest.exe"
+        "FuzzingHarnessExecutableName": "PowerRename.FuzzingTest.exe"
       },
       "adoTemplate": {
         // supply the values appropriate to your
@@ -30,10 +30,11 @@
         // the DLL and PDB files
         // you will need to add any other files required
         // (globs are supported)
-        "PowerRenameFuzzingTest.exe",
-        "PowerRenameFuzzingTest.pdb"
+        "PowerRename.FuzzingTest.exe",
+        "PowerRename.FuzzingTest.pdb",
+        "PowerRename.FuzzingTest.lib",
+        "clang_rt.asan_dynamic-x86_64.dll"
       ]
     }
   ]
 }
-  

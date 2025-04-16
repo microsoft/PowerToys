@@ -38,7 +38,7 @@ stages:
               demands: ImageOverride -equals SHINE-VS17-Preview
           buildPlatforms:
             - ${{ parameters.platform }}
-          buildConfigurations: [Release]
+          buildConfigurations: [Fuzzing]
           enablePackageCaching: true
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           runTests: true
