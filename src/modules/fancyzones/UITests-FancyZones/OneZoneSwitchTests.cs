@@ -13,6 +13,8 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using FancyZonesEditor.Models;
 using FancyZonesEditorCommon.Data;
+using Microsoft.FancyZones.UITests.Utils;
+using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -26,6 +28,7 @@ namespace UITests_FancyZones
     public class OneZoneSwitchTests : UITestBase
     {
         private static readonly int SubZones = 2;
+        private static readonly IOTestHelper AppZoneHistory = new FancyZonesEditorFiles().AppZoneHistoryIOHelper;
 
         public OneZoneSwitchTests()
             : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
@@ -35,48 +38,65 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
+            // set a custom layout with 2 subzones
             CustomLayouts customLayouts = new CustomLayouts();
-
             CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = CustomLayoutsList;
-
             Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+
+            // clear the app zone history
+            AppZoneHistory.DeleteFile();
+            string data = AppZoneHistory.GetData();
+            Console.WriteLine($"1App zone history data: {data}");
+
             this.RestartScopeExe();
         }
 
         [TestMethod]
         public void TestLaunchFileExplore()
         {
-            KillAllExplorerWindows();
+            // assert the appzonehistory layout is set
+            ZoneSwitchHelper.KillAllExplorerWindows();
 
             // Start Windows Explorer process
-            LaunchExplorer("C:\\");
+            ZoneSwitchHelper.LaunchExplorer("C:\\");
             string windowName = "Windows (C:) - File Explorer";
-            this.Session.Attach(windowName, WindowSize.Large); // display window1
-            var tabView = this.Find<Element>(Microsoft.PowerToys.UITest.By.AccessibilityId("TabView"));
+            Session.Attach(windowName, WindowSize.UnSpecified); // display window1
+            var tabView = Find<Element>(Microsoft.PowerToys.UITest.By.AccessibilityId("TabView"));
+            tabView.DoubleClick(); // maximize the window
 
+            // Set drag position of target zone
             int screenWidth = Screen.PrimaryScreen?.Bounds.Width ?? 1920;  // default 1920
             int screenHeight = Screen.PrimaryScreen?.Bounds.Height ?? 1080;
 
             int targetX = screenWidth / SubZones / 3;
             int targetY = screenWidth / SubZones / 2;
 
-            DragTabViewWithShift(tabView, targetX, targetY);
+            // Drag the tab view to the target zone
+            tabView.KeyDownAndDrag(Key.Shift, targetX, targetY);
 
             string windowName_setting = "PowerToys Settings";
-            this.Session.Attach(windowName_setting, WindowSize.Large);
+            Session.Attach(windowName_setting, WindowSize.UnSpecified);
 
+            // Attach the PowerToys settings window to the front
             string name = "Non Client Input Sink Window";
-            Element settingsView = this.Find<Element>(Microsoft.PowerToys.UITest.By.Name(name));
-            settingsView = DragTabViewWithShift(settingsView, targetX, targetY);
+            Element settingsView = Find<Element>(Microsoft.PowerToys.UITest.By.Name(name));
+            settingsView.DoubleClick(); // maximize the window
+            settingsView.KeyDownAndDrag(Key.Shift, targetX, targetY);
 
-            string? activeWindowTitle = GetActiveWindowTitle();
+            // check the appzonehistory layout is set and in the same zone
+            string appZoneHistoryJson = AppZoneHistory.GetData();
+            Assert.AreEqual(
+                ZoneSwitchHelper.GetZoneSetUuidByAppName(windowName, appZoneHistoryJson),
+                ZoneSwitchHelper.GetZoneSetUuidByAppName(windowName_setting, appZoneHistoryJson));
+
+            string? activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(windowName_setting, activeWindowTitle);
 
+            // switch to the previous window by shortcut win+page down
             SendKeys(Key.Win, Key.PageDown);
             Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure window switch
 
-            activeWindowTitle = GetActiveWindowTitle();
-            Console.WriteLine($"Active Window Title: {activeWindowTitle}");
+            activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(windowName, activeWindowTitle);
         }
 
@@ -103,67 +123,5 @@ namespace UITests_FancyZones
                 },
             },
         };
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
-
-        private static string? GetActiveWindowTitle()
-        {
-            const int nChars = 256;
-            StringBuilder buff = new StringBuilder(nChars);
-            IntPtr handle = GetForegroundWindow();
-
-            if (GetWindowText(handle, buff, nChars) > 0)
-            {
-                return buff.ToString();
-            }
-
-            return null;
-        }
-
-        private static void KillAllExplorerWindows()
-        {
-            foreach (var process in Process.GetProcessesByName("explorer"))
-            {
-                try
-                {
-                    process.Kill();
-                    process.WaitForExit();
-                    Console.WriteLine($"Killed explorer.exe (PID: {process.Id})");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to kill explorer.exe (PID: {process.Id}): {ex.Message}");
-                }
-            }
-        }
-
-        private void LaunchExplorer(string path)
-        {
-            var explorerProcessInfo = new ProcessStartInfo
-            {
-                FileName = "explorer.exe",
-                Arguments = path,
-            };
-
-            Process.Start(explorerProcessInfo);
-            Task.Delay(2000).Wait(); // Wait for the Explorer window to fully launch
-        }
-
-        private Element DragTabViewWithShift(Element tabView, int targetX = 50, int targetY = 50)
-        {
-            Assert.IsTrue(tabView.Rect.HasValue, "TabView rectangle should have a value.");
-
-            int dx = targetX - tabView.Rect.Value.X;
-            int dy = targetY - tabView.Rect.Value.Y;
-            Console.WriteLine($"dx: {dx}, dy: {dy}");
-
-            tabView.KeyDownAndDrag(Key.Shift, dx, dy);
-
-            return tabView;
-        }
     }
 }

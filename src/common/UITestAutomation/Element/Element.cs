@@ -200,18 +200,23 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
-        public void KeyDownAndDrag(Key key, int offsetX, int offsetY)
+        public void KeyDownAndDrag(Key key, int targetX, int targetY)
         {
             PerformAction((actions, windowElement) =>
             {
                 KeyboardHelper.PressVirtualKey(key);
+                Thread.Sleep(2000);
+
                 actions.MoveToElement(windowsElement)
                 .ClickAndHold()
                 .Perform();
 
+                int dx = targetX - windowElement.Rect.X;
+                int dy = targetY - windowElement.Rect.Y;
+
                 int stepCount = 10;
-                int stepX = offsetX / stepCount;
-                int stepY = offsetY / stepCount;
+                int stepX = dx / stepCount;
+                int stepY = dy / stepCount;
 
                 for (int i = 0; i < stepCount; i++)
                 {
@@ -219,6 +224,9 @@ namespace Microsoft.PowerToys.UITest
                     stepAction.MoveByOffset(stepX, stepY).Perform();
                     Thread.Sleep(10);
                 }
+
+                var releaseAction = new Actions(driver);
+                releaseAction.Release().Perform();
 
                 KeyboardHelper.ReleaseVirtualKey(key);
             });
