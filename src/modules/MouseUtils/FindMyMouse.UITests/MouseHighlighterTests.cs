@@ -46,9 +46,13 @@ namespace FindMyMouse.UITests
                 var xy = Session.GetMousePosition();
                 Session.MoveMouseTo(xy.Item1, xy.Item2 - 100);
                 Task.Delay(1000).Wait();
-                MouseSimulator.ScrollDown();
-                MouseSimulator.ScrollDown();
-                MouseSimulator.ScrollDown();
+
+                // MouseSimulator.ScrollDown();
+                // MouseSimulator.ScrollDown();
+                // MouseSimulator.ScrollDown();
+                Session.PerformMouseAction(MouseActionType.ScrollDown);
+                Session.PerformMouseAction(MouseActionType.ScrollDown);
+                Session.PerformMouseAction(MouseActionType.ScrollDown);
                 Task.Delay(1000).Wait();
                 foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
 
@@ -146,12 +150,14 @@ namespace FindMyMouse.UITests
             string expectedColor = string.Empty;
             if (action == "leftClick")
             {
-                MouseSimulator.LeftDown();
+                // MouseSimulator.LeftDown();
+                Session.PerformMouseAction(MouseActionType.LeftDown);
                 expectedColor = settings.PrimaryButtonHighlightColor.Substring(2);
             }
             else if (action == "rightClick")
             {
-                MouseSimulator.RightDown();
+                // MouseSimulator.RightDown();
+                Session.PerformMouseAction(MouseActionType.RightDown);
                 expectedColor = settings.SecondaryButtonHighlightColor.Substring(2);
             }
             else
@@ -191,11 +197,13 @@ namespace FindMyMouse.UITests
 
             if (action == "leftClick")
             {
-                MouseSimulator.LeftUp();
+                // MouseSimulator.LeftUp();
+                Session.PerformMouseAction(MouseActionType.LeftUp);
             }
             else if (action == "rightClick")
             {
-                MouseSimulator.RightUp();
+                // MouseSimulator.RightUp();
+                Session.PerformMouseAction(MouseActionType.RightUp);
             }
 
             int duration = int.Parse(settings.FadeDuration, CultureInfo.InvariantCulture);
@@ -210,12 +218,14 @@ namespace FindMyMouse.UITests
             string expectedColor = string.Empty;
             if (action == "leftClick")
             {
-                MouseSimulator.LeftDown();
+                // MouseSimulator.LeftDown();
+                Session.PerformMouseAction(MouseActionType.LeftDown);
                 expectedColor = settings.PrimaryButtonHighlightColor.Substring(2);
             }
             else if (action == "rightClick")
             {
-                MouseSimulator.RightDown();
+                // MouseSimulator.RightDown();
+                Session.PerformMouseAction(MouseActionType.RightDown);
                 expectedColor = settings.SecondaryButtonHighlightColor.Substring(2);
             }
             else
@@ -232,11 +242,11 @@ namespace FindMyMouse.UITests
             Assert.AreNotEqual(expectedColor, colorLeftClick2);
             if (action == "leftClick")
             {
-                MouseSimulator.LeftUp();
+                Session.PerformMouseAction(MouseActionType.LeftUp);
             }
             else if (action == "rightClick")
             {
-                MouseSimulator.RightUp();
+                Session.PerformMouseAction(MouseActionType.RightUp);
             }
         }
 
@@ -246,12 +256,14 @@ namespace FindMyMouse.UITests
             string expectedColor = string.Empty;
             if (action == "leftClick")
             {
-                MouseSimulator.LeftDown();
+                // MouseSimulator.LeftDown();
+                Session.PerformMouseAction(MouseActionType.LeftDown);
                 expectedColor = settings.PrimaryButtonHighlightColor.Substring(2);
             }
             else if (action == "rightClick")
             {
-                MouseSimulator.RightDown();
+                // MouseSimulator.RightDown();
+                Session.PerformMouseAction(MouseActionType.RightDown);
                 expectedColor = settings.SecondaryButtonHighlightColor.Substring(2);
             }
             else
@@ -275,11 +287,13 @@ namespace FindMyMouse.UITests
             Assert.AreNotEqual(expectedColor, colorBackground);
             if (action == "leftClick")
             {
-                MouseSimulator.LeftUp();
+                // MouseSimulator.LeftUp();
+                Session.PerformMouseAction(MouseActionType.LeftUp);
             }
             else if (action == "rightClick")
             {
-                MouseSimulator.RightUp();
+                // MouseSimulator.RightUp();
+                Session.PerformMouseAction(MouseActionType.RightUp);
             }
 
             int duration = int.Parse(settings.FadeDuration, CultureInfo.InvariantCulture);
@@ -408,21 +422,6 @@ namespace FindMyMouse.UITests
             }
 
             return true;
-        }
-
-        private bool IsHostsFileEditorClosed()
-        {
-            try
-            {
-                this.Session.FindAll<Window>("Hosts File Editor");
-            }
-            catch (Exception ex)
-            {
-                // Validate if editor window closed by checking exception.Message
-                return ex.Message.Contains("Currently selected window has been closed");
-            }
-
-            return false;
         }
 
         private bool MaxmizePowerToysSettingsWindow()

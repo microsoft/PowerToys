@@ -83,7 +83,9 @@ namespace FindMyMouse.UITests
 
             // [Test Case]Enable FindMyMouse. Then, without moving your mouse: Press a mouse button and verify the overlay disappears.
             Task.Delay(1000).Wait();
-            MouseSimulator.LeftClick();
+
+            // MouseSimulator.LeftClick();
+            Session.PerformMouseAction(MouseActionType.LeftClick);
             Task.Delay(1000).Wait();
 
             VerifySpotlightDisappears(ref settings);
@@ -238,7 +240,9 @@ namespace FindMyMouse.UITests
             var xy = Session.GetMousePosition();
             Session.MoveMouseTo(xy.Item1 - 200, xy.Item2 - 100);
             Task.Delay(1000).Wait();
-            MouseSimulator.LeftClick();
+
+            // MouseSimulator.LeftClick();
+            Session.PerformMouseAction(MouseActionType.LeftClick);
             Task.Delay(5000).Wait();
             if (settings.SelectedActivationMethod == FindMyMouseSettings.ActivationMethod.PressLeftControlTwice)
             {
@@ -487,6 +491,7 @@ namespace FindMyMouse.UITests
 
         private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
         {
+            this.Session.Attach(PowerToysModule.PowerToysSettings);
             Session.SetMainWindowSize(WindowSize.Large);
 
             // Goto Hosts File Editor setting page
