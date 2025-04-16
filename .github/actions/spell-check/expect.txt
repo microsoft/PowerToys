@@ -1985,3 +1985,7 @@ BCIE
 BOklab
 cielch
 lch
+culori
+Evercoder
+LCh
+CIELCh
