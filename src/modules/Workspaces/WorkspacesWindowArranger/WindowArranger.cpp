@@ -200,6 +200,13 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
         }
 
         auto data = Utils::Apps::GetApp(processPath, pid, m_installedApps);
+
+        if (!data->IsSteamGame() && !WindowUtils::HasThickFrame(window))
+        {
+            // Only care about steam games without thick frame.
+            continue;
+        }
+
         if (!data.has_value())
         {
             continue;

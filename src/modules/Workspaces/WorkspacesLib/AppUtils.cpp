@@ -148,7 +148,7 @@ namespace Utils
 
                                         if (isSteamProtocol)
                                         {
-                                            Logger::info(L"Found steam game: {}", data.installPath);
+                                            Logger::info(L"Found steam game: protocol path: {}", data.installPath);
                                             data.protocolPath = data.installPath;
 
                                             try
@@ -158,8 +158,8 @@ namespace Utils
 
                                                 if (gameFolder)
                                                 {
-                                                    Logger::info(L"Found steam game: {}", data.installPath);
                                                     data.installPath = gameFolder->gameInstallationPath;
+                                                    Logger::info(L"Found steam game: physical path: {}", data.installPath);
                                                 }
                                             }
                                             catch (std::exception ex)

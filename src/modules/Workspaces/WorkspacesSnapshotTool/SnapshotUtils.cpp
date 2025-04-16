@@ -124,7 +124,7 @@ namespace SnapshotUtils
                 continue;
             }
 
-            if (!data->IsSteamGame() && !WindowFilter::HasThickFrame(window))
+            if (!data->IsSteamGame() && !WindowUtils::HasThickFrame(window))
             {
                 // Only care about steam games without thick frame.
                 continue;
