@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using ABI.Windows.Foundation;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
@@ -199,28 +200,12 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
-        /// <param name="key1">The first Key to send (e.g., "Control").</param>
-        /// <param name="key2">The second Key to send (e.g., "C").</param>
-        public void SendKeys(string key1, string key2)
+        public void KeyDownAndDrag(Key key, int offsetX, int offsetY)
         {
             PerformAction((actions, windowElement) =>
             {
-                // Send the first key (e.g., Ctrl)
-                actions.KeyDown(key1).Perform();
-
-                // Send the second key (e.g., C)
-                windowElement.SendKeys(key2);
-
-                // Release the firyst key (e.g., Ctrl)
-                actions.KeyUp(key1).Perform();
-            });
-        }
-
-        public void KeyDownAndDrag(string key, int offsetX, int offsetY)
-        {
-            PerformAction((actions, windowElement) =>
-            {
-                actions.KeyDown(key).MoveToElement(windowsElement)
+                KeyboardHelper.PressVirtualKey(key);
+                actions.MoveToElement(windowsElement)
                 .ClickAndHold()
                 .Perform();
 
@@ -235,10 +220,7 @@ namespace Microsoft.PowerToys.UITest
                     Thread.Sleep(10);
                 }
 
-                new Actions(driver)
-                .Release()
-                .KeyUp(key)
-                .Perform();
+                KeyboardHelper.ReleaseVirtualKey(key);
             });
         }
 

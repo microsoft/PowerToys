@@ -52,6 +52,7 @@ namespace UITests_FancyZones
             LaunchExplorer("C:\\");
             string windowName = "Windows (C:) - File Explorer";
             this.Session.Attach(windowName, WindowSize.Large); // display window1
+            var tabView = this.Find<Element>(Microsoft.PowerToys.UITest.By.AccessibilityId("TabView"));
 
             int screenWidth = Screen.PrimaryScreen?.Bounds.Width ?? 1920;  // default 1920
             int screenHeight = Screen.PrimaryScreen?.Bounds.Height ?? 1080;
@@ -59,21 +60,24 @@ namespace UITests_FancyZones
             int targetX = screenWidth / SubZones / 3;
             int targetY = screenWidth / SubZones / 2;
 
-            var tabView = DragTabViewWithShift(targetX, targetY);
+            DragTabViewWithShift(tabView, targetX, targetY);
 
-            // Start Windows Explorer process
-            LaunchExplorer("C:\\Program Files (x86)");
+            string windowName_setting = "PowerToys Settings";
+            this.Session.Attach(windowName_setting, WindowSize.Large);
 
-            string windowName_file = "Program Files (x86) - File Explorer";
-            this.Session.Attach(windowName_file, WindowSize.Large);
-
-            var filetabView = DragTabViewWithShift(targetX, targetY);
-            this.Session.KeyboardAction(OpenQA.Selenium.Keys.LeftControl, OpenQA.Selenium.Keys.Escape, OpenQA.Selenium.Keys.PageDown);
-            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure window switch
+            string name = "Non Client Input Sink Window";
+            Element settingsView = this.Find<Element>(Microsoft.PowerToys.UITest.By.Name(name));
+            settingsView = DragTabViewWithShift(settingsView, targetX, targetY);
 
             string? activeWindowTitle = GetActiveWindowTitle();
+            Assert.AreEqual(windowName_setting, activeWindowTitle);
+
+            SendKeys(Key.Win, Key.PageDown);
+            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure window switch
+
+            activeWindowTitle = GetActiveWindowTitle();
             Console.WriteLine($"Active Window Title: {activeWindowTitle}");
-            Assert.AreEqual("Windows (C:) - File Explorer", activeWindowTitle);
+            Assert.AreEqual(windowName, activeWindowTitle);
         }
 
         private static readonly CustomLayouts.CustomLayoutListWrapper CustomLayoutsList = new CustomLayouts.CustomLayoutListWrapper
@@ -149,16 +153,15 @@ namespace UITests_FancyZones
             Task.Delay(2000).Wait(); // Wait for the Explorer window to fully launch
         }
 
-        private Element DragTabViewWithShift(int targetX = 50, int targetY = 50)
+        private Element DragTabViewWithShift(Element tabView, int targetX = 50, int targetY = 50)
         {
-            var tabView = this.Find<Element>(Microsoft.PowerToys.UITest.By.AccessibilityId("TabView"));
             Assert.IsTrue(tabView.Rect.HasValue, "TabView rectangle should have a value.");
 
             int dx = targetX - tabView.Rect.Value.X;
             int dy = targetY - tabView.Rect.Value.Y;
             Console.WriteLine($"dx: {dx}, dy: {dy}");
 
-            tabView.KeyDownAndDrag(OpenQA.Selenium.Keys.Shift, dx, dy);
+            tabView.KeyDownAndDrag(Key.Shift, dx, dy);
 
             return tabView;
         }
