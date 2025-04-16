@@ -11,7 +11,7 @@ namespace Microsoft.CmdPal.Ext.Calc.Pages;
 public sealed partial class FallbackCalculatorItem : FallbackCommandItem
 {
     private readonly CopyTextCommand _copyCommand = new(string.Empty);
-    private SettingsManager _settings;
+    private readonly SettingsManager _settings;
 
     public FallbackCalculatorItem(SettingsManager settings)
         : base(new NoOpCommand(), Resources.calculator_title)
@@ -34,7 +34,7 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
             _copyCommand.Name = string.Empty;
             Title = string.Empty;
             Subtitle = string.Empty;
-
+            MoreCommands = [];
             return;
         }
 
@@ -46,5 +46,7 @@ public sealed partial class FallbackCalculatorItem : FallbackCommandItem
         // so that we will still string match the original query
         // Otherwise, something like 1+2 will have a title of "3" and not match
         Subtitle = query;
+
+        MoreCommands = result.MoreCommands;
     }
 }

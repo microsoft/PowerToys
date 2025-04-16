@@ -2,7 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
@@ -25,6 +28,8 @@ public static class ResultHelper
         var saveCommand = new SaveCommand(result);
         saveCommand.SaveRequested += handleSave;
 
+        var copyCommandItem = CreateResult(roundedResult, inputCulture, outputCulture, query);
+
         return new ListItem(saveCommand)
         {
             // Using CurrentCulture since this is user facing
@@ -32,7 +37,15 @@ public static class ResultHelper
             Title = result,
             Subtitle = query,
             TextToSuggest = result,
-            MoreCommands = [new CommandContextItem(new CopyTextCommand(result))],
+            MoreCommands = [
+                new CommandContextItem(copyCommandItem.Command)
+                {
+                    Icon = copyCommandItem.Icon,
+                    Title = copyCommandItem.Title,
+                    Subtitle = copyCommandItem.Subtitle,
+                },
+                ..copyCommandItem.MoreCommands,
+            ],
         };
     }
 
@@ -44,15 +57,47 @@ public static class ResultHelper
             return null;
         }
 
-        var result = roundedResult?.ToString(outputCulture);
+        var decimalResult = roundedResult?.ToString(outputCulture);
 
-        return new ListItem(new CopyTextCommand(result))
+        List<CommandContextItem> context = [];
+
+        if (decimal.IsInteger((decimal)roundedResult))
+        {
+            var i = decimal.ToInt64((decimal)roundedResult);
+            try
+            {
+                var hexResult = "0x" + i.ToString("X", outputCulture);
+                context.Add(new CommandContextItem(new CopyTextCommand(hexResult) { Name = Properties.Resources.calculator_copy_hex })
+                {
+                    Title = hexResult,
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error parsing hex format", ex);
+            }
+
+            try
+            {
+                var binaryResult = "0b" + i.ToString("B", outputCulture);
+                context.Add(new CommandContextItem(new CopyTextCommand(binaryResult) { Name = Properties.Resources.calculator_copy_binary })
+                {
+                    Title = binaryResult,
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error parsing binary format", ex);
+            }
+        }
+
+        return new ListItem(new CopyTextCommand(decimalResult))
         {
             // Using CurrentCulture since this is user facing
-            Icon = CalculatorIcons.ResultIcon,
-            Title = result,
+            Title = decimalResult,
             Subtitle = query,
-            TextToSuggest = result,
+            TextToSuggest = decimalResult,
+            MoreCommands = context.ToArray(),
         };
     }
 }

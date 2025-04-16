@@ -8,9 +8,11 @@ namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
 public static class CalculatorIcons
 {
-    public static IconInfo ResultIcon => new IconInfo("\uE94E");
+    public static IconInfo ResultIcon => new("\uE94E");
 
-    public static IconInfo ErrorIcon => new IconInfo("\uE783");
+    public static IconInfo SaveIcon => new("\uE74E");
+
+    public static IconInfo ErrorIcon => new("\uE783");
 
     public static IconInfo ProviderIcon => IconHelpers.FromRelativePath("Assets\\Calculator.svg");
 }

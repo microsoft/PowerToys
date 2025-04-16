@@ -23,9 +23,10 @@ namespace Microsoft.CmdPal.Ext.Calc.Pages;
 public sealed partial class CalculatorListPage : DynamicListPage
 {
     private readonly Lock _resultsLock = new();
-    private SettingsManager _settingsManager;
-    private List<ListItem> _items = [];
-    private List<ListItem> history = [];
+    private readonly SettingsManager _settingsManager;
+    private readonly List<ListItem> _items = [];
+    private readonly List<ListItem> history = [];
+    private readonly ListItem _emptyItem;
 
     // This is the text that saved when the user click the result.
     // We need to avoid the double calculation. This may cause some wierd behaviors.
@@ -38,6 +39,17 @@ public sealed partial class CalculatorListPage : DynamicListPage
         Name = Resources.calculator_title;
         PlaceholderText = Resources.calculator_placeholder_text;
         Id = "com.microsoft.cmdpal.calculator";
+
+        _emptyItem = new ListItem(new NoOpCommand())
+        {
+            Title = Resources.calculator_placeholder_text,
+            Icon = CalculatorIcons.ResultIcon,
+        };
+        EmptyContent = new CommandItem(new NoOpCommand())
+        {
+            Icon = CalculatorIcons.ProviderIcon,
+            Title = Resources.calculator_placeholder_text,
+        };
 
         UpdateSearchText(string.Empty, string.Empty);
     }
@@ -57,6 +69,9 @@ public sealed partial class CalculatorListPage : DynamicListPage
         }
 
         skipQuerySearchText = string.Empty;
+
+        _emptyItem.Subtitle = newSearch;
+
         var result = QueryHelper.Query(newSearch, _settingsManager, false, HandleSave);
         UpdateResult(result);
     }
@@ -70,8 +85,13 @@ public sealed partial class CalculatorListPage : DynamicListPage
             if (result != null)
             {
                 this._items.Add(result);
-                this._items.AddRange(history);
             }
+            else
+            {
+                _items.Add(_emptyItem);
+            }
+
+            this._items.AddRange(history);
         }
 
         RaiseItemsChanged(this._items.Count);
