@@ -331,6 +331,15 @@ namespace Microsoft.CmdPal.Ext.WinGet.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Update.
+        /// </summary>
+        public static string winget_update_name {
+            get {
+                return ResourceManager.GetString("winget_update_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to View online.
         /// </summary>
         public static string winget_view_online {
