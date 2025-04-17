@@ -8,8 +8,6 @@ using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
-using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -23,7 +21,6 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class SearchBar : UserControl,
     IRecipient<GoHomeMessage>,
     IRecipient<FocusSearchBoxMessage>,
-    IRecipient<UpdateItemKeybindingsMessage>,
     ICurrentPageAware
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -33,8 +30,6 @@ public sealed partial class SearchBar : UserControl,
     /// </summary>
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
     private bool _isBackspaceHeld;
-
-    private Dictionary<KeyChord, CommandContextItemViewModel>? _keyBindings;
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -74,7 +69,6 @@ public sealed partial class SearchBar : UserControl,
         this.InitializeComponent();
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
-        WeakReferenceMessenger.Default.Register<UpdateItemKeybindingsMessage>(this);
     }
 
     public void ClearSearch()
@@ -173,17 +167,14 @@ public sealed partial class SearchBar : UserControl,
             WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
         }
 
-        if (_keyBindings != null)
+        if (!e.Handled)
         {
-            // Does the pressed key match any of the keybindings?
-            var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrlPressed, altPressed, shiftPressed, winPressed, (int)e.Key, 0);
-            if (_keyBindings.TryGetValue(pressedKeyChord, out var item))
-            {
-                // TODO GH #245: This is a bit of a hack, but we need to make sure that the keybindings are updated before we send the message
-                // so that the correct item is activated.
-                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item));
-                e.Handled = true;
-            }
+            // The CommandBar is responsible for handling all the item keybindings,
+            // since the bound context item may need to then show another
+            // context menu
+            TryCommandKeybindingMessage msg = new(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+            WeakReferenceMessenger.Default.Send(msg);
+            e.Handled = msg.Handled;
         }
     }
 
@@ -302,10 +293,5 @@ public sealed partial class SearchBar : UserControl,
 
     public void Receive(GoHomeMessage message) => ClearSearch();
 
-    public void Receive(FocusSearchBoxMessage message) => this.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
-
-    public void Receive(UpdateItemKeybindingsMessage message)
-    {
-        _keyBindings = message.Keys;
-    }
+    public void Receive(FocusSearchBoxMessage message) => FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
 }
