@@ -433,4 +433,7 @@
   <data name="Microsoft_plugin_timedate_DaysInMonth" xml:space="preserve">
     <value>Days in month</value>
   </data>
+  <data name="Microsoft_plugin_timedate_fallback_display_title" xml:space="preserve">
+    <value>Open Time Data Command</value>
+  </data>
 </root>
