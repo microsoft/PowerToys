@@ -43,6 +43,7 @@ public sealed partial class MainWindow : Window,
     private readonly WNDPROC? _hotkeyWndProc;
     private readonly WNDPROC? _originalWndProc;
     private readonly List<TopLevelHotkey> _hotkeys = [];
+    private bool _ignoreHotKeyWhenFullScreen = true;
 
     // Stylistically, window messages are WM_*
 #pragma warning disable SA1310 // Field names should not contain underscore
@@ -156,6 +157,8 @@ public sealed partial class MainWindow : Window,
 
         SetupHotkey(settings);
         SetupTrayIcon(settings.ShowSystemTrayIcon);
+
+        _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
 
         // This will prevent our window from appearing in alt+tab or the taskbar.
         // You'll _need_ to use the hotkey to summon it.
@@ -504,6 +507,15 @@ public sealed partial class MainWindow : Window,
                     var hotkeyIndex = (int)wParam.Value;
                     if (hotkeyIndex < _hotkeys.Count)
                     {
+                        if (_ignoreHotKeyWhenFullScreen)
+                        {
+                            // If we're in full screen mode, ignore the hotkey
+                            if (WindowHelper.IsWindowFullscreen())
+                            {
+                                return (LRESULT)IntPtr.Zero;
+                            }
+                        }
+
                         var hotkey = _hotkeys[hotkeyIndex];
                         HandleSummon(hotkey.CommandId);
 
