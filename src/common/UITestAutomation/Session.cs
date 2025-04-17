@@ -428,6 +428,30 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// release the key (after the hold key and drag is completed.)
+        /// </summary>
+        /// <param name="key">The key release.</param>
+        public void PressKey(Key key)
+        {
+            PerformAction(() =>
+            {
+                KeyboardHelper.PressKey(key);
+            });
+        }
+
+        /// <summary>
+        /// press and hold the specified key.
+        /// </summary>
+        /// <param name="key">The key to press and hold .</param>
+        public void ReleaseKey(Key key)
+        {
+            PerformAction(() =>
+            {
+                KeyboardHelper.ReleaseKey(key);
+            });
+        }
+
+        /// <summary>
         /// Sends a sequence of keys.
         /// </summary>
         /// <param name="keys">An array of keys to send.</param>
