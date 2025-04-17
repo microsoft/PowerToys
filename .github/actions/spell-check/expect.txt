@@ -1299,6 +1299,7 @@ QUNS
 QXZ
 RAII
 RAlt
+Rappl
 randi
 Rasterization
 Rasterize
