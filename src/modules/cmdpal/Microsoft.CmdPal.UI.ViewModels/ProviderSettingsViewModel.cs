@@ -19,6 +19,7 @@ public partial class ProviderSettingsViewModel(
 {
     private readonly SettingsModel _settings = _serviceProvider.GetService<SettingsModel>()!;
     private readonly Lock _initializeSettingsLock = new();
+    private Task? _initializeSettingsTask;
 
     public string DisplayName => _provider.DisplayName;
 
@@ -34,6 +35,9 @@ public partial class ProviderSettingsViewModel(
     public string ExtensionVersion => IsFromExtension ? $"{Extension.Version.Major}.{Extension.Version.Minor}.{Extension.Version.Build}.{Extension.Version.Revision}" : string.Empty;
 
     public IconInfoViewModel Icon => _provider.Icon;
+
+    [ObservableProperty]
+    public partial bool LoadingSettings { get; set; } = _provider.Settings?.HasSettings ?? false;
 
     public bool IsEnabled
     {
@@ -55,12 +59,6 @@ public partial class ProviderSettingsViewModel(
                 _provider.CommandsChanged += Provider_CommandsChanged;
             }
         }
-    }
-
-    private void Provider_CommandsChanged(CommandProviderWrapper sender, CommandPalette.Extensions.IItemsChangedEventArgs args)
-    {
-        OnPropertyChanged(nameof(ExtensionSubtext));
-        OnPropertyChanged(nameof(TopLevelCommands));
     }
 
     /// <summary>
@@ -118,11 +116,6 @@ public partial class ProviderSettingsViewModel(
         }
     }
 
-    private Task? _initializeSettingsTask;
-
-    [ObservableProperty]
-    public partial bool LoadingSettings { get; set; } = _provider.Settings?.HasSettings ?? false;
-
     [field: AllowNull]
     public List<TopLevelViewModel> TopLevelCommands
     {
@@ -158,10 +151,19 @@ public partial class ProviderSettingsViewModel(
         _provider.Settings.SafeInitializeProperties();
         _provider.Settings.DoOnUiThread(() =>
         {
+            // Changing these properties will try to update XAML, and that has
+            // to be handled on the UI thread, so we need to raise them on the
+            // UI thread
             LoadingSettings = false;
             OnPropertyChanged(nameof(HasSettings));
             OnPropertyChanged(nameof(LoadingSettings));
             OnPropertyChanged(nameof(SettingsPage));
         });
+    }
+
+    private void Provider_CommandsChanged(CommandProviderWrapper sender, CommandPalette.Extensions.IItemsChangedEventArgs args)
+    {
+        OnPropertyChanged(nameof(ExtensionSubtext));
+        OnPropertyChanged(nameof(TopLevelCommands));
     }
 }
