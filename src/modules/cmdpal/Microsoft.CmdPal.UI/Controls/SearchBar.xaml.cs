@@ -250,18 +250,31 @@ public sealed partial class SearchBar : UserControl,
     private void Page_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var property = e.PropertyName;
-        if (CurrentPageViewModel is ListViewModel list &&
-            property == nameof(ListViewModel.SearchText))
-        {
-            // Only if the text actually changed...
-            // (sometimes this triggers on a round-trip of the SearchText)
-            if (FilterBox.Text != list.SearchText)
-            {
-                // ... Update our displayed text, and...
-                FilterBox.Text = list.SearchText;
 
-                // ... Move the cursor to the end of the input
-                FilterBox.Select(FilterBox.Text.Length, 0);
+        if (CurrentPageViewModel is ListViewModel list)
+        {
+            if (property == nameof(ListViewModel.SearchText))
+            {
+                // Only if the text actually changed...
+                // (sometimes this triggers on a round-trip of the SearchText)
+                if (FilterBox.Text != list.SearchText)
+                {
+                    // ... Update our displayed text, and...
+                    FilterBox.Text = list.SearchText;
+
+                    // ... Move the cursor to the end of the input
+                    FilterBox.Select(FilterBox.Text.Length, 0);
+                }
+            }
+            else if (property == nameof(ListViewModel.InitialSearchText))
+            {
+                // GH #38712:
+                // The ListPage will notify us of the `InitialSearchText` when
+                // we first load the viewmodel. We can use that as an
+                // opportunity to immediately select the search text. That lets
+                // the user start typing a new search without manually
+                // selecting the old one.
+                SelectSearch();
             }
         }
     }
