@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
-using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
@@ -507,6 +506,15 @@ public sealed partial class MainWindow : Window,
                     var hotkeyIndex = (int)wParam.Value;
                     if (hotkeyIndex < _hotkeys.Count)
                     {
+                        if (_ignoreHotKeyWhenFullScreen)
+                        {
+                            // If we're in full screen mode, ignore the hotkey
+                            if (WindowHelper.IsWindowFullscreen())
+                            {
+                                return (LRESULT)IntPtr.Zero;
+                            }
+                        }
+
                         var hotkey = _hotkeys[hotkeyIndex];
                         HandleSummon(hotkey.CommandId);
 
@@ -518,21 +526,6 @@ public sealed partial class MainWindow : Window,
                         // if (!this.Visible || !isRootHotkey)
                         // {
                         //     Activate();
-                        // Note to future us: the wParam will have the index of the hotkey we registered.
-                        // We can use that in the future to differentiate the hotkeys we've pressed
-                        // so that we can bind hotkeys to individual commands
-                        if (!this.Visible || !isRootHotkey)
-                        {
-                            if (_ignoreHotKeyWhenFullScreen)
-                            {
-                                // If we're in full screen mode, ignore the hotkey
-                                if (WindowHelper.IsWindowFullscreen())
-                                {
-                                    return (LRESULT)IntPtr.Zero;
-                                }
-                            }
-
-                            Activate();
 
                         // Summon(hotkey.CommandId);
                         // }
