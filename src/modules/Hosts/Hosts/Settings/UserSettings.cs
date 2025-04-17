@@ -43,17 +43,34 @@ namespace Hosts.Settings
         public HostsAdditionalLinesPosition AdditionalLinesPosition { get; private set; }
 
         // Moved from Settings.UI.Library
-        public HostsEncoding Encoding { get; set; }
+        public HostsEncoding Encoding { get; private set; }
+
+        public bool BackupHosts { get; private set; }
+
+        public string BackupPath { get; private set; }
+
+        // Moved from Settings.UI.Library
+        public HostsDeleteBackupMode DeleteBackupsMode { get; private set; }
+
+        public int DeleteBackupsDays { get; private set; }
+
+        public int DeleteBackupsCount { get; private set; }
 
         public event EventHandler LoopbackDuplicatesChanged;
 
         public UserSettings()
         {
             _settingsUtils = new SettingsUtils();
-            ShowStartupWarning = true;
-            LoopbackDuplicates = false;
-            AdditionalLinesPosition = HostsAdditionalLinesPosition.Top;
-            Encoding = HostsEncoding.Utf8;
+            var defaultSettings = new HostsProperties();
+            ShowStartupWarning = defaultSettings.ShowStartupWarning;
+            LoopbackDuplicates = defaultSettings.LoopbackDuplicates;
+            AdditionalLinesPosition = (HostsAdditionalLinesPosition)defaultSettings.AdditionalLinesPosition;
+            Encoding = (HostsEncoding)defaultSettings.Encoding;
+            BackupHosts = defaultSettings.BackupHosts;
+            BackupPath = defaultSettings.BackupPath;
+            DeleteBackupsMode = (HostsDeleteBackupMode)defaultSettings.DeleteBackupsMode;
+            DeleteBackupsDays = defaultSettings.DeleteBackupsDays;
+            DeleteBackupsCount = defaultSettings.DeleteBackupsCount;
 
             LoadSettingsFromJson();
 
@@ -88,6 +105,11 @@ namespace Hosts.Settings
                             AdditionalLinesPosition = (HostsAdditionalLinesPosition)settings.Properties.AdditionalLinesPosition;
                             Encoding = (HostsEncoding)settings.Properties.Encoding;
                             LoopbackDuplicates = settings.Properties.LoopbackDuplicates;
+                            BackupHosts = settings.Properties.BackupHosts;
+                            BackupPath = settings.Properties.BackupPath;
+                            DeleteBackupsMode = (HostsDeleteBackupMode)settings.Properties.DeleteBackupsMode;
+                            DeleteBackupsDays = settings.Properties.DeleteBackupsDays;
+                            DeleteBackupsCount = settings.Properties.DeleteBackupsCount;
                         }
 
                         retry = false;
