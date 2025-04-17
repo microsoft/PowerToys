@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.UITest
@@ -20,7 +21,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="element">Element object</param>
         /// <param name="scenarioSubname">additional scenario name if two or more scenarios in one test</param>
         [RequiresUnreferencedCode("This method uses reflection which may not be compatible with trimming.")]
-        public static void AreEqual(TestContext? testContext, Element element, System.Reflection.Assembly callerAssembly, string scenarioSubname = "")
+        public static void AreEqual(TestContext? testContext, Element element, string scenarioSubname = "")
         {
             if (element == null)
             {
@@ -52,8 +53,7 @@ namespace Microsoft.PowerToys.UITest
 
             var tempTestImagePath = GetTempFilePath(scenarioSubname, "test", ".png");
 
-            // Save the image with the user preference color erased
-            element.SaveToPngFile(tempTestImagePath, true);
+            element.SaveToPngFile(tempTestImagePath);
 
             if (string.IsNullOrEmpty(baselineImageResourceName)
                 || !Path.GetFileNameWithoutExtension(baselineImageResourceName).EndsWith(scenarioSubname))
@@ -65,21 +65,27 @@ namespace Microsoft.PowerToys.UITest
 
             bool isSame = false;
 
-#pragma warning disable CS8604 // Possible null reference argument.
-            using (var baselineImage = new Bitmap(callerMethod!.DeclaringType!.Assembly.GetManifestResourceStream(baselineImageResourceName)))
+            using (var stream = callerMethod!.DeclaringType!.Assembly.GetManifestResourceStream(baselineImageResourceName))
             {
-                using (var testImage = new Bitmap(tempTestImagePath))
+                if (stream == null)
                 {
-                    isSame = VisualAssert.AreEqual(baselineImage, testImage);
+                    Assert.Fail($"Resource stream '{baselineImageResourceName}' is null.");
+                }
 
-                    if (!isSame)
+                using (var baselineImage = new Bitmap(stream))
+                {
+                    using (var testImage = new Bitmap(tempTestImagePath))
                     {
-                        // Copy baseline image to temp folder as well
-                        baselineImage.Save(tempBaselineImagePath);
+                        isSame = VisualAssert.AreEqual(baselineImage, testImage);
+
+                        if (!isSame)
+                        {
+                            // Copy baseline image to temp folder as well
+                            baselineImage.Save(tempBaselineImagePath);
+                        }
                     }
                 }
             }
-#pragma warning restore CS8604 // Possible null reference argument.
 
             if (!isSame)
             {

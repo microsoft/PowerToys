@@ -57,3 +57,4 @@ stages:
             platform: ${{ platform }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+            isUIAutomationPipeline: true
