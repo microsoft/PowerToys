@@ -200,6 +200,12 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
+        /// <summary>
+        /// Simulates holding a key, clicking and dragging a UI element to the specified screen coordinates.
+        /// </summary>
+        /// <param name="key">The keyboard key to press and hold during the drag operation.</param>
+        /// <param name="targetX">The target X-coordinate to drag the element to.</param>
+        /// <param name="targetY">The target Y-coordinate to drag the element to.</param>
         public void KeyDownAndDrag(Key key, int targetX, int targetY)
         {
             PerformAction((actions, windowElement) =>
