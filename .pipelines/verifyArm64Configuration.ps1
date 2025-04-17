@@ -22,7 +22,7 @@ catch {
 
 $solutionFile = [Microsoft.Build.Construction.SolutionFile]::Parse($solution);
 $arm64SlnConfigs = $solutionFile.SolutionConfigurations | Where-Object {
-    $_.PlatformName -ceq "ARM64"
+    $_.PlatformName -ceq "ARM64" -and $_.ConfigurationName -notmatch "Fuzzing"
 };
 
 # Should have two configurations. Debug and Release.

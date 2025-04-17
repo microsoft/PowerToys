@@ -42,6 +42,7 @@ stages:
           enablePackageCaching: true
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           runTests: true
+          fuzzingBuild: true
           useVSPreview: ${{ parameters.useVSPreview }}
 
   - stage: OneFuzz
