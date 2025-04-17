@@ -517,6 +517,7 @@ FRAMECHANGED
 frm
 Froml
 FROMTOUCH
+fsanitize
 fsmgmt
 FZE
 gacutil
@@ -628,6 +629,7 @@ HOTKEYF
 hotkeys
 hotlight
 hotspot
+Hostx
 HPAINTBUFFER
 HRAWINPUT
 HREDRAW
@@ -1075,6 +1077,7 @@ NOTRACK
 NOTSRCCOPY
 NOTSRCERASE
 NOTXORPEN
+notwindows
 NOZORDER
 NPH
 npmjs
@@ -1395,6 +1398,7 @@ sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
+sancov
 SAVEFAILED
 scanled
 schedtasks
@@ -1928,6 +1932,7 @@ WUX
 Wwanpp
 XAxis
 xclip
+xcopy
 XDocument
 XElement
 xfd
