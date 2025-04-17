@@ -193,5 +193,32 @@
                 <styles:InputControl x:Name="RemappingControl" />
             </Grid>
         </ContentDialog>
+        <TeachingTip
+            x:Name="OrphanedKeysTeachingTip"
+            Title="Orphaned Keys Warning"
+            ActionButtonClick="OrphanedKeysTeachingTip_ActionButtonClick"
+            ActionButtonContent="Continue anyway"
+            ActionButtonStyle="{StaticResource AccentButtonStyle}"
+            CloseButtonClick="OrphanedKeysTeachingTip_CloseButtonClick"
+            CloseButtonContent="Cancel"
+            IsLightDismissEnabled="False"
+            PreferredPlacement="Center"
+            Subtitle="The following keys will become orphaned (inaccessible) after remapping:">
+            <TeachingTip.IconSource>
+                <SymbolIconSource Symbol="Important" />
+            </TeachingTip.IconSource>
+        </TeachingTip>
+        <TeachingTip
+            x:Name="IllegalShortcutTeachingTip"
+            Title="Reserved System Shortcut"
+            CloseButtonClick="IllegalShortcutTeachingTip_CloseButtonClick"
+            CloseButtonContent="OK"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Center"
+            Subtitle="Win+L and Ctrl+Alt+Delete are reserved system shortcuts and cannot be remapped.">
+            <TeachingTip.IconSource>
+                <SymbolIconSource Symbol="Important" />
+            </TeachingTip.IconSource>
+        </TeachingTip>
     </Grid>
 </Page>

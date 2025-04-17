@@ -69,6 +69,8 @@ extern "C"
     __declspec(dllexport) void FreeString(wchar_t* str);
     __declspec(dllexport) int GetKeyType(int keyCode);
 
+    __declspec(dllexport) bool IsShortcutIllegal(const wchar_t* shortcutKeys);
+
     __declspec(dllexport) bool DeleteSingleKeyRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp);
 }

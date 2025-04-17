@@ -8,6 +8,7 @@
 
 #include <common/utils/logger_helper.h>
 #include <keyboardmanager/KeyboardManagerEditor/KeyboardManagerEditor.h>
+#include <keyboardmanager/KeyboardManagerEditorLibrary/EditorHelpers.h>
 #include <common/interop/keyboard_layout.h>
 
 extern "C"
@@ -560,6 +561,22 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
     int GetKeyType(int key)
     {
         return static_cast<int>(Helpers::GetKeyType(static_cast<DWORD>(key)));
+    }
+
+    // Function to check if a shortcut is illegal
+    bool IsShortcutIllegal(const wchar_t* shortcutKeys)
+    {
+        if (!shortcutKeys)
+        {
+            return false;
+        }
+
+        Shortcut shortcut(shortcutKeys);
+
+        ShortcutErrorType result = EditorHelpers::IsShortcutIllegal(shortcut);
+
+        // Return true if an error was detected (anything other than NoError)
+        return result != ShortcutErrorType::NoError;
     }
 
     // Function to delete a single key remapping

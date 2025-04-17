@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
+using System.Threading.Tasks;
 using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
 using ManagedCommon;
@@ -213,8 +214,56 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void KeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            SaveCurrentMapping();
-            LoadMappings();
+            List<string> originalKeys = RemappingControl.GetOriginalKeys();
+
+            // Check if this is a shortcut (multiple keys) and if it's an illegal combination
+            if (originalKeys.Count > 1)
+            {
+                string shortcutKeysString = string.Join(";", originalKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
+
+                if (KeyboardManagerInterop.IsShortcutIllegal(shortcutKeysString))
+                {
+                    IllegalShortcutTeachingTip.Target = RemappingControl;
+                    IllegalShortcutTeachingTip.Tag = args;
+
+                    // Show the teaching tip
+                    IllegalShortcutTeachingTip.IsOpen = true;
+
+                    // Cancel the dialog closing for now since it will be handled by teaching tip actions
+                    args.Cancel = true;
+                    return;
+                }
+            }
+
+            bool saved = SaveCurrentMapping();
+            if (saved)
+            {
+                LoadMappings();
+            }
+        }
+
+        private void IllegalShortcutTeachingTip_CloseButtonClick(TeachingTip sender, object args)
+        {
+            sender.IsOpen = false;
+        }
+
+        private void OrphanedKeysTeachingTip_ActionButtonClick(TeachingTip sender, object args)
+        {
+            // User pressed continue anyway button
+            sender.IsOpen = false;
+
+            bool saved = SaveCurrentMapping();
+            if (saved)
+            {
+                KeyDialog.Hide();
+                LoadMappings();
+            }
+        }
+
+        private void OrphanedKeysTeachingTip_CloseButtonClick(TeachingTip sender, object args)
+        {
+            // User canceled - just close the teaching tip
+            sender.IsOpen = false;
         }
 
         private async void ListView_ItemClick(object sender, ItemClickEventArgs e)
@@ -243,11 +292,11 @@ namespace KeyboardManagerEditorUI.Pages
             return KeyboardManagerInterop.GetKeyCodeFromName(keyName);
         }
 
-        private void SaveCurrentMapping()
+        private bool SaveCurrentMapping()
         {
             if (_mappingService == null)
             {
-                return;
+                return false;
             }
 
             try
@@ -262,7 +311,7 @@ namespace KeyboardManagerEditorUI.Pages
                 // remappedKeys = ["B"];
                 if (originalKeys == null || originalKeys.Count == 0 || remappedKeys == null || remappedKeys.Count == 0)
                 {
-                    return;
+                    return false;
                 }
 
                 if (originalKeys.Count == 1)
@@ -301,10 +350,12 @@ namespace KeyboardManagerEditorUI.Pages
                 }
 
                 _mappingService.SaveSettings();
+                return true;
             }
             catch (Exception ex)
             {
                 Logger.LogError("Error saving shortcut mapping: " + ex.Message);
+                return false;
             }
         }
 
