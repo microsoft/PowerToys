@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
@@ -52,6 +53,8 @@ public sealed partial class MainWindow : Window,
 #pragma warning restore SA1306 // Field names should begin with lower-case letter
 #pragma warning restore SA1310 // Field names should not contain underscore
 
+    private readonly KeyboardListener _keyboardListener;
+
     // Notification Area ("Tray") icon data
     private NOTIFYICONDATAW? _trayIconData;
     private DestroyIconSafeHandle? _largeIcon;
@@ -65,6 +68,11 @@ public sealed partial class MainWindow : Window,
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
         CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
+
+        _keyboardListener = new KeyboardListener();
+        _keyboardListener.Start();
+
+        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
 
         // TaskbarCreated is the message that's broadcast when explorer.exe
         // restarts. We need to know when that happens to be able to bring our
@@ -278,16 +286,12 @@ public sealed partial class MainWindow : Window,
         ShowHwnd(message.Hwnd, settings.SummonOn);
     }
 
-    public void Receive(HideWindowMessage message)
-    {
-        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
-    }
+    public void Receive(HideWindowMessage message) => PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
-    public void Receive(QuitMessage message)
-    {
+    public void Receive(QuitMessage message) =>
+
         // This might come in on a background thread
         DispatcherQueue.TryEnqueue(() => Close());
-    }
 
     public void Receive(DismissMessage message) =>
         PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
@@ -304,6 +308,8 @@ public sealed partial class MainWindow : Window,
         // Workaround by turning it off before shutdown.
         App.Current.DebugSettings.FailFastOnErrors = false;
         DisposeAcrylic();
+
+        _keyboardListener.Stop();
     }
 
     private void DisposeAcrylic()
@@ -368,12 +374,17 @@ public sealed partial class MainWindow : Window,
                 // ... then don't hide the window when it loses focus.
                 return;
             }
-            else
-            {
-                PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
 
-                PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
+            // Are we disabled? If we are, then we don't want to dismiss on focus lost.
+            // This can happen if an extension wanted to show a modal dialog on top of our
+            // window i.e. in the case of an MSAL auth window.
+            if (PInvoke.IsWindowEnabled(_hwnd) == 0)
+            {
+                return;
             }
+
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+            PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
         }
 
         if (_configurationSource != null)
@@ -382,14 +393,13 @@ public sealed partial class MainWindow : Window,
         }
     }
 
-    public void Summon(string commandId)
-    {
+    public void Summon(string commandId) =>
+
         // The actual showing and hiding of the window will be done by the
         // ShellPage. This is because we don't want to show the window if the
         // user bound a hotkey to just an invokable command, which we can't
         // know till the message is being handled.
         WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(commandId, _hwnd));
-    }
 
 #pragma warning disable SA1310 // Field names should not contain underscore
     private const uint DOT_KEY = 0xBE;
@@ -398,6 +408,8 @@ public sealed partial class MainWindow : Window,
 
     private void UnregisterHotkeys()
     {
+        _keyboardListener.ClearHotkeys();
+
         while (_hotkeys.Count > 0)
         {
             PInvoke.UnregisterHotKey(_hwnd, _hotkeys.Count - 1);
@@ -412,18 +424,27 @@ public sealed partial class MainWindow : Window,
         var globalHotkey = settings.Hotkey;
         if (globalHotkey != null)
         {
-            var vk = globalHotkey.Code;
-            var modifiers =
-                (globalHotkey.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                (globalHotkey.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                (globalHotkey.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                ;
-
-            var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-            if (success)
+            if (settings.UseLowLevelGlobalHotkey)
             {
+                _keyboardListener.SetHotkeyAction(globalHotkey.Win, globalHotkey.Ctrl, globalHotkey.Shift, globalHotkey.Alt, (byte)globalHotkey.Code, string.Empty);
+
                 _hotkeys.Add(new(globalHotkey, string.Empty));
+            }
+            else
+            {
+                var vk = globalHotkey.Code;
+                var modifiers =
+                                (globalHotkey.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
+                                (globalHotkey.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
+                                (globalHotkey.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
+                                (globalHotkey.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
+                                ;
+
+                var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
+                if (success)
+                {
+                    _hotkeys.Add(new(globalHotkey, string.Empty));
+                }
             }
         }
 
@@ -450,6 +471,26 @@ public sealed partial class MainWindow : Window,
         }
     }
 
+    private void HandleSummon(string commandId)
+    {
+        var isRootHotkey = string.IsNullOrEmpty(commandId);
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
+
+        // Note to future us: the wParam will have the index of the hotkey we registered.
+        // We can use that in the future to differentiate the hotkeys we've pressed
+        // so that we can bind hotkeys to individual commands
+        if (!this.Visible || !isRootHotkey)
+        {
+            Activate();
+
+            Summon(commandId);
+        }
+        else if (isRootHotkey)
+        {
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+        }
+    }
+
     private LRESULT HotKeyPrc(
         HWND hwnd,
         uint uMsg,
@@ -464,22 +505,23 @@ public sealed partial class MainWindow : Window,
                     if (hotkeyIndex < _hotkeys.Count)
                     {
                         var hotkey = _hotkeys[hotkeyIndex];
-                        var isRootHotkey = string.IsNullOrEmpty(hotkey.CommandId);
-                        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
+                        HandleSummon(hotkey.CommandId);
 
-                        // Note to future us: the wParam will have the index of the hotkey we registered.
-                        // We can use that in the future to differentiate the hotkeys we've pressed
-                        // so that we can bind hotkeys to individual commands
-                        if (!this.Visible || !isRootHotkey)
-                        {
-                            Activate();
+                        // var isRootHotkey = string.IsNullOrEmpty(hotkey.CommandId);
 
-                            Summon(hotkey.CommandId);
-                        }
-                        else if (isRootHotkey)
-                        {
-                            PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
-                        }
+                        // // Note to future us: the wParam will have the index of the hotkey we registered.
+                        // // We can use that in the future to differentiate the hotkeys we've pressed
+                        // // so that we can bind hotkeys to individual commands
+                        // if (!this.Visible || !isRootHotkey)
+                        // {
+                        //     Activate();
+
+                        // Summon(hotkey.CommandId);
+                        // }
+                        // else if (isRootHotkey)
+                        // {
+                        //     PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+                        // }
                     }
 
                     return (LRESULT)IntPtr.Zero;
