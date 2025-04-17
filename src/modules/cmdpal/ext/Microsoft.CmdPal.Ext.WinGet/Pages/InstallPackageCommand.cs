@@ -67,7 +67,6 @@ public partial class InstallPackageCommand : InvokableCommand
 
     private void UpdateAppearance()
     {
-        // Icon = IsInstalled ? CompletedIcon : DownloadIcon;
         Icon = InstallCommandState switch
         {
             PackageInstallCommandState.Install => DownloadIcon,
@@ -78,7 +77,7 @@ public partial class InstallPackageCommand : InvokableCommand
         Name = InstallCommandState switch
         {
             PackageInstallCommandState.Install => Properties.Resources.winget_install_name,
-            PackageInstallCommandState.Update => Properties.Resources.winget_install_name,
+            PackageInstallCommandState.Update => Properties.Resources.winget_update_name,
             PackageInstallCommandState.Uninstall => Properties.Resources.winget_uninstall_name,
             _ => throw new NotImplementedException(),
         };
@@ -148,9 +147,10 @@ public partial class InstallPackageCommand : InvokableCommand
             _installBanner.State = MessageState.Success;
             _installTask = null;
 
-            _ = Task.Run(() =>
+            _ = Task.Run(async () =>
             {
-                Thread.Sleep(2500);
+                await Task.Delay(2500).ConfigureAwait(false);
+
                 if (_installTask == null)
                 {
                     WinGetExtensionHost.Instance.HideStatus(_installBanner);
