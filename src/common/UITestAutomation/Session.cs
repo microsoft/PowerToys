@@ -433,7 +433,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="key">The key release.</param>
         public void PressKey(Key key)
         {
-            KeyboardHelper.PressKey(key);
+            PerformAction(() =>
+            {
+                KeyboardHelper.PressKey(key);
+            });
         }
 
         /// <summary>
@@ -442,7 +445,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="key">The key to press and hold .</param>
         public void ReleaseKey(Key key)
         {
-            KeyboardHelper.ReleaseKey(key);
+            PerformAction(() =>
+            {
+                KeyboardHelper.ReleaseKey(key);
+            });
         }
 
         /// <summary>
