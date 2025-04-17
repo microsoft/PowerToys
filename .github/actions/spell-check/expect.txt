@@ -188,6 +188,7 @@ CImage
 cla
 CLASSDC
 CLASSNOTAVAILABLE
+claude
 clickable
 clickonce
 CLIENTEDGE
@@ -495,6 +496,7 @@ FILEVERSION
 Filterkeyboard
 FILTERMODE
 findfast
+finetune
 Fira
 FIXEDFILEINFO
 FIXEDSYS
@@ -529,6 +531,7 @@ gdiplus
 GDIPVER
 GDISCALED
 GEmoji
+generativelanguage
 GETCLIENTAREAANIMATION
 GETCURSEL
 GETDESKWALLPAPER
