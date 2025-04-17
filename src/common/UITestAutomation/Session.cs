@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.UITest
             this.WindowsDriver = windowsDriver;
 
             // Attach to the scope & reset MainWindowHandler
-            // this.Attach(scope, size);
+            this.Attach(scope, size);
         }
 
         /// <summary>

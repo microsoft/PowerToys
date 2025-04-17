@@ -402,15 +402,10 @@ namespace Microsoft.PowerToys.UITest
         /// Save UI Element to a PNG file.
         /// </summary>
         /// <param name="path">the full path</param>
-        internal void SaveToPngFile(string path, bool eraseUserPreferenceColor)
+        internal void SaveToPngFile(string path)
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method SaveToFile with parameter: path = {path}");
             this.windowsElement.GetScreenshot().SaveAsFile(path);
-
-            if (eraseUserPreferenceColor)
-            {
-                VisualHelper.EraseUserPreferenceColor(path);
-            }
         }
     }
 }

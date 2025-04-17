@@ -53,8 +53,7 @@ namespace Microsoft.PowerToys.UITest
 
             var tempTestImagePath = GetTempFilePath(scenarioSubname, "test", ".png");
 
-            // Save the image with the user preference color erased
-            element.SaveToPngFile(tempTestImagePath, true);
+            element.SaveToPngFile(tempTestImagePath);
 
             if (string.IsNullOrEmpty(baselineImageResourceName)
                 || !Path.GetFileNameWithoutExtension(baselineImageResourceName).EndsWith(scenarioSubname))
