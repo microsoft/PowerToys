@@ -112,14 +112,14 @@ namespace Microsoft.PowerToys.UITest
             SendWinKeyCombination(keysToSend);
         }
 
-        public static void PressVirtualKey(Key key)
+        public static void PressKey(Key key)
         {
-            PressKey(TranslateKeyHex(key));
+            PressVirtualKey(TranslateKeyHex(key));
         }
 
-        public static void ReleaseVirtualKey(Key key)
+        public static void ReleaseKey(Key key)
         {
-            ReleaseKey(TranslateKeyHex(key));
+            ReleaseVirtualKey(TranslateKeyHex(key));
         }
 
         /// <summary>
@@ -317,7 +317,7 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Just press the key.(no release)
         /// </summary>
-        private static void PressKey(byte key)
+        private static void PressVirtualKey(byte key)
         {
             keybd_event(key, 0, KEYEVENTF_KEYDOWN, UIntPtr.Zero);
         }
@@ -325,7 +325,7 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Release only the button (if pressed first)
         /// </summary>
-        private static void ReleaseKey(byte key)
+        private static void ReleaseVirtualKey(byte key)
         {
             keybd_event(key, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
         }
