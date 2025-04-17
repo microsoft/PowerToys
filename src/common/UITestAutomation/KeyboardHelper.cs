@@ -102,9 +102,6 @@ namespace Microsoft.PowerToys.UITest
         private const uint KEYEVENTF_KEYUP = 0x0002;
 #pragma warning restore SA1310 // Field names should not contain underscore
 
-        [DllImport("user32.dll")]
-        public static extern short GetAsyncKeyState(int vKey);
-
         /// <summary>
         /// Sends a combination of keys.
         /// </summary>
