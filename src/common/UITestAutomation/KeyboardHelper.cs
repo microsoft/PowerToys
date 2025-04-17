@@ -112,6 +112,16 @@ namespace Microsoft.PowerToys.UITest
             SendWinKeyCombination(keysToSend);
         }
 
+        public static void PressKey(Key key)
+        {
+            PressVirtualKey(TranslateKeyHex(key));
+        }
+
+        public static void ReleaseKey(Key key)
+        {
+            ReleaseVirtualKey(TranslateKeyHex(key));
+        }
+
         /// <summary>
         /// Translates a key to its corresponding SendKeys representation.
         /// </summary>
@@ -261,6 +271,26 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// map the virtual key codes to the corresponding keys.
+        /// </summary>
+        private static byte TranslateKeyHex(Key key)
+        {
+            switch (key)
+            {
+                case Key.Win:
+                    return 0x5B;  // Windows Key - 0x5B in hex
+                case Key.Ctrl:
+                    return 0x11;  // Ctrl Key - 0x11 in hex
+                case Key.Alt:
+                    return 0x12;  // Alt Key - 0x12 in hex
+                case Key.Shift:
+                    return 0x10;  // Shift Key - 0x10 in hex
+                default:
+                    throw new ArgumentException($"Key {key} is not supported, Please add your key at TranslateKeyHex for translation to hex.");
+            }
+        }
+
+        /// <summary>
         /// Sends a combination of keys, including the Windows key, to the system.
         /// </summary>
         /// <param name="keys">The keys to send.</param>
@@ -282,6 +312,22 @@ namespace Microsoft.PowerToys.UITest
             {
                 keybd_event(VK_LWIN, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
             }
+        }
+
+        /// <summary>
+        /// Just press the key.(no release)
+        /// </summary>
+        private static void PressVirtualKey(byte key)
+        {
+            keybd_event(key, 0, KEYEVENTF_KEYDOWN, UIntPtr.Zero);
+        }
+
+        /// <summary>
+        /// Release only the button (if pressed first)
+        /// </summary>
+        private static void ReleaseVirtualKey(byte key)
+        {
+            keybd_event(key, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
         }
     }
 }
