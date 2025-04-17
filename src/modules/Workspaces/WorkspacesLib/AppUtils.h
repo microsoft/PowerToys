@@ -13,10 +13,12 @@ namespace Utils
             std::wstring packageFullName;
             std::wstring appUserModelId;
             std::wstring pwaAppId;
+            std::wstring protocolPath;
             bool canLaunchElevated = false;
 
             bool IsEdge() const;
             bool IsChrome() const;
+            bool IsSteamGame() const;
         };
 
         using AppList = std::vector<AppData>;

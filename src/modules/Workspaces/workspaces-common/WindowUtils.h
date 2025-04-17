@@ -121,4 +121,11 @@ namespace WindowUtils
 
         return std::wstring(title);
     }
+
+    
+    inline bool HasThickFrame(HWND window)
+    {
+        auto style = GetWindowLong(window, GWL_STYLE);
+        return WindowUtils::HasStyle(style, WS_THICKFRAME);
+    }
 }
