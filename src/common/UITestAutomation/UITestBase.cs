@@ -538,7 +538,7 @@ namespace Microsoft.PowerToys.UITest
                 }
                 else
                 {
-                    Console.WriteLine("virtual monitor create Faild");
+                    Console.WriteLine("virtual monitor create failed");
                 }
             }
 

@@ -230,14 +230,6 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
-        public void KeyUp(string key)
-        {
-            PerformAction((actions, windowElement) =>
-            {
-                actions.KeyUp(key).Build().Perform();
-            });
-        }
-
         /// <summary>
         /// Gets the attribute value of the UI element.
         /// </summary>
