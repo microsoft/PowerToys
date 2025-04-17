@@ -56,7 +56,7 @@ namespace UITests_FancyZones
         [TestMethod]
         public void TestLaunchFileExplore()
         {
-            SnapWindowstoOneZone();
+            SnaptoOneZone();
 
             string? activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(PowertoysWindowName, activeWindowTitle);
@@ -69,7 +69,7 @@ namespace UITests_FancyZones
             Assert.AreEqual(WindowName, activeWindowTitle);
         }
 
-        private void SnapWindowstoOneZone()
+        private void SnaptoOneZone()
         {
             // assert the appzonehistory layout is set
             ZoneSwitchHelper.KillAllExplorerWindows();
