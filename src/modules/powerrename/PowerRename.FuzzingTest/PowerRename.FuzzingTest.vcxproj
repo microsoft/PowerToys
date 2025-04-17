@@ -79,7 +79,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(OutDir)\..\..\WinUI3Apps\PowerRenameLib.lib;legacy_stdio_definitions.lib;$(VCToolsInstallDir)lib\$(Platform)\libsancov.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>legacy_stdio_definitions.lib;$(VCToolsInstallDir)lib\$(Platform)\libsancov.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent Condition="'$(Configuration)|$(Platform)'=='Fuzzing|x64'">
       <Command>xcopy /y "$(VCToolsInstallDir)bin\Hostx64\x64\clang_rt.asan_dynamic-x86_64.dll" "$(OutDir)"</Command>
@@ -93,8 +93,8 @@
     <CopyFileToFolders Include="OneFuzzConfig.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\SettingsAPI\SettingsAPI.vcxproj">
-      <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    <ProjectReference Include="..\lib\PowerRenameLib.vcxproj">
+      <Project>{51920f1f-c28c-4adf-8660-4238766796c2}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
