@@ -193,4 +193,10 @@
   <data name="calculator_not_covert_to_decimal" xml:space="preserve">
     <value>Result value was either too large or too small for a decimal number</value>
   </data>
+  <data name="calculator_copy_hex" xml:space="preserve">
+    <value>Copy hexadecimal</value>
+  </data>
+  <data name="calculator_copy_binary" xml:space="preserve">
+    <value>Copy binary</value>
+  </data>
 </root>

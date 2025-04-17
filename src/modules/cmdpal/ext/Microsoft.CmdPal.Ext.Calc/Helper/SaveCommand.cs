@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.Calc.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -19,6 +18,7 @@ public sealed partial class SaveCommand : InvokableCommand
     public SaveCommand(string result)
     {
         Name = Resources.calculator_save_command_name;
+        Icon = CalculatorIcons.SaveIcon;
         _result = result;
     }
 

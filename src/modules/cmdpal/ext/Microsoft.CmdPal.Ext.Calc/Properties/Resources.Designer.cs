@@ -70,11 +70,29 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy binary.
+        /// </summary>
+        public static string calculator_copy_binary {
+            get {
+                return ResourceManager.GetString("calculator_copy_binary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy.
         /// </summary>
         public static string calculator_copy_command_name {
             get {
                 return ResourceManager.GetString("calculator_copy_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy hexadecimal.
+        /// </summary>
+        public static string calculator_copy_hex {
+            get {
+                return ResourceManager.GetString("calculator_copy_hex", resourceCulture);
             }
         }
         
