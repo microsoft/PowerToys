@@ -52,6 +52,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public string SearchText { get; private set; } = string.Empty;
 
+    public string InitialSearchText { get; private set; } = string.Empty;
+
     public CommandItemViewModel EmptyContent { get; private set; }
 
     private bool _isDynamic;
@@ -375,8 +377,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _modelPlaceholderText = model.PlaceholderText;
         UpdateProperty(nameof(PlaceholderText));
 
-        SearchText = model.SearchText;
+        InitialSearchText = SearchText = model.SearchText;
         UpdateProperty(nameof(SearchText));
+        UpdateProperty(nameof(InitialSearchText));
 
         EmptyContent = new(new(model.EmptyContent), PageContext);
         EmptyContent.SlowInitializeProperties();
