@@ -26,7 +26,6 @@
       </Component>
     </DirectoryRef>
 
-
     <ComponentGroup Id="CmdPalComponentGroup">
       <Component Id="RemoveCmdPalFolder" Guid="2DF90C08-CC75-4245-A14E-B82904636C53" Directory="INSTALLFOLDER">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">

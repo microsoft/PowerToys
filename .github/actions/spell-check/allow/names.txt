@@ -188,6 +188,8 @@ zhaoqpcn
 Zoltan
 Zykova
 Sameerjs
+ruslanlap
+vednig
 
 # OTHERS
 
