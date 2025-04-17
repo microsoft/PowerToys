@@ -90,6 +90,10 @@ namespace KeyboardManagerEditorUI.Interop
         internal static extern bool IsShortcutIllegal([MarshalAs(UnmanagedType.LPWStr)] string shortcutKeys);
 
         [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AreShortcutsEqual([MarshalAs(UnmanagedType.LPWStr)] string lShort, [MarshalAs(UnmanagedType.LPWStr)] string rShortcut);
+
+        [DllImport(DllName)]
         internal static extern bool DeleteSingleKeyRemap(IntPtr mappingConfiguration, int originalKey);
 
         [DllImport(DllName)]

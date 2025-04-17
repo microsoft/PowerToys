@@ -519,18 +519,18 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
-        Shortcut origShortcut(originalKeys);
+        Shortcut originalShortcut(originalKeys);
         Shortcut targetShortcut(targetKeys);
 
         std::wstring app(targetApp ? targetApp : L"");
 
         if (app.empty())
         {
-            return mappingConfig->AddOSLevelShortcut(origShortcut, targetShortcut);
+            return mappingConfig->AddOSLevelShortcut(originalShortcut, targetShortcut);
         }
         else
         {
-            return mappingConfig->AddAppSpecificShortcut(app, origShortcut, targetShortcut);
+            return mappingConfig->AddAppSpecificShortcut(app, originalShortcut, targetShortcut);
         }
     }
 
@@ -577,6 +577,20 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
         // Return true if an error was detected (anything other than NoError)
         return result != ShortcutErrorType::NoError;
+    }
+
+    // Function to check if two shortcuts are equal
+    bool AreShortcutsEqual(const wchar_t* lShort, const wchar_t* rShort)
+    {
+        if (!lShort || !rShort)
+        {
+            return false;
+        }
+
+        Shortcut lhs(lShort);
+        Shortcut rhs(rShort);
+
+        return lhs == rhs;
     }
 
     // Function to delete a single key remapping

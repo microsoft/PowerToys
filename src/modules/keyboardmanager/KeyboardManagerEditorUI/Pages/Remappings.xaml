@@ -220,5 +220,17 @@
                 <SymbolIconSource Symbol="Important" />
             </TeachingTip.IconSource>
         </TeachingTip>
+        <TeachingTip
+            x:Name="DuplicateRemappingTeachingTip"
+            Title="Duplicate Remapping"
+            CloseButtonClick="DuplicateRemappingTeachingTip_CloseButtonClick"
+            CloseButtonContent="OK"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Center"
+            Subtitle="This key or shortcut is already remapped for this application context. Each key or shortcut can only be remapped once per application.">
+            <TeachingTip.IconSource>
+                <SymbolIconSource Symbol="Important" />
+            </TeachingTip.IconSource>
+        </TeachingTip>
     </Grid>
 </Page>

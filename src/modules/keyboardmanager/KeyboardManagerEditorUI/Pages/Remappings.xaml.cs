@@ -215,6 +215,8 @@ namespace KeyboardManagerEditorUI.Pages
         private void KeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             List<string> originalKeys = RemappingControl.GetOriginalKeys();
+            bool isAppSpecific = RemappingControl.GetIsAppSpecific();
+            string appName = RemappingControl.GetAppName();
 
             // Check if this is a shortcut (multiple keys) and if it's an illegal combination
             if (originalKeys.Count > 1)
@@ -235,6 +237,20 @@ namespace KeyboardManagerEditorUI.Pages
                 }
             }
 
+            // Check for duplicate mappings
+            if (IsDuplicateMapping(originalKeys, isAppSpecific, appName))
+            {
+                DuplicateRemappingTeachingTip.Target = RemappingControl;
+                DuplicateRemappingTeachingTip.Tag = args;
+
+                // Show the teaching tip
+                DuplicateRemappingTeachingTip.IsOpen = true;
+
+                // Cancel the dialog closing for now since it will be handled by teaching tip actions
+                args.Cancel = true;
+                return;
+            }
+
             bool saved = SaveCurrentMapping();
             if (saved)
             {
@@ -245,6 +261,66 @@ namespace KeyboardManagerEditorUI.Pages
         private void IllegalShortcutTeachingTip_CloseButtonClick(TeachingTip sender, object args)
         {
             sender.IsOpen = false;
+        }
+
+        private void DuplicateRemappingTeachingTip_CloseButtonClick(TeachingTip sender, object args)
+        {
+            sender.IsOpen = false;
+        }
+
+        private bool IsDuplicateMapping(List<string> originalKeys, bool isAppSpecific, string appName)
+        {
+            if (_mappingService == null || originalKeys == null || originalKeys.Count == 0)
+            {
+                return false;
+            }
+
+            // For single key remapping
+            if (originalKeys.Count == 1)
+            {
+                int originalKeyCode = GetKeyCode(originalKeys[0]);
+                if (originalKeyCode == 0)
+                {
+                    return false;
+                }
+
+                // Check if the key is already remapped
+                foreach (var mapping in _mappingService.GetSingleKeyMappings())
+                {
+                    if (mapping.OriginalKey == originalKeyCode)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            // For shortcut remapping
+            else
+            {
+                string originalKeysString = string.Join(";", originalKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
+
+                // Check if the shortcut is already remapped in the same app context
+                foreach (var mapping in _mappingService.GetShortcutMappingsByType(ShortcutOperationType.RemapShortcut))
+                {
+                    // Same shortcut in the same app context
+                    if (KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, mapping.OriginalKeys))
+                    {
+                        // If both are global (all apps)
+                        if (!isAppSpecific && string.IsNullOrEmpty(mapping.TargetApp))
+                        {
+                            return true;
+                        }
+
+                        // If both are for the same specific app
+                        else if (isAppSpecific && !string.IsNullOrEmpty(mapping.TargetApp) && string.Equals(mapping.TargetApp, appName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         private void OrphanedKeysTeachingTip_ActionButtonClick(TeachingTip sender, object args)
