@@ -204,7 +204,7 @@ namespace Microsoft.PowerToys.UITest
         {
             PerformAction((actions, windowElement) =>
             {
-                KeyboardHelper.PressVirtualKey(key);
+                KeyboardHelper.PressKey(key);
 
                 actions.MoveToElement(windowsElement)
                 .ClickAndHold()
@@ -226,7 +226,7 @@ namespace Microsoft.PowerToys.UITest
                 var releaseAction = new Actions(driver);
                 releaseAction.Release().Perform();
 
-                KeyboardHelper.ReleaseVirtualKey(key);
+                KeyboardHelper.ReleaseKey(key);
             });
         }
 
