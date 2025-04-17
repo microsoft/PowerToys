@@ -114,9 +114,9 @@ jobs:
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
     ${{ if eq(parameters.fuzzingBuild, true) }}:
-      FuzzingBuildConfiguration: Fuzzing
+      FinalBuildConfiguration: Fuzzing
     ${{ else }}:
-      FuzzingBuildConfiguration: ${{ parameters.BuildConfiguration }}
+      FinalBuildConfiguration: ${{ parameters.BuildConfiguration }}
     ${{ if eq(parameters.runTests, true) }}:
       MSBuildMainBuildTargets: Build;Test
     ${{ else }}:
@@ -246,7 +246,7 @@ jobs:
         /t:$(MSBuildMainBuildTargets)
         $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
-      configuration: $(FuzzingBuildConfiguration)
+      configuration: $(FinalBuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:

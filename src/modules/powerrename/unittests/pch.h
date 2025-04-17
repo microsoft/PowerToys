@@ -1,6 +1,7 @@
 #pragma once
 
-#include <windows.h>
-#include <string>
-#include <vector>
-#include <iostream>
+#define NOMINMAX
+#include "targetver.h"
+
+#include <atlbase.h>
+#include "CppUnitTestInclude.h"
