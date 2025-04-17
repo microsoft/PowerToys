@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.Ext.System.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
