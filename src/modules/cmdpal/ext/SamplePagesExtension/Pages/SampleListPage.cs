@@ -92,7 +92,7 @@ internal sealed partial class SampleListPage : ListPage
                                 new ToastCommand("Nested A invoked") { Name = "Do it", Icon = new IconInfo("A") })
                             {
                                 Title = "Nested A",
-                                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.A),
+                                RequestedShortcut = KeyChordHelpers.FromModifiers(alt: true, vkey: VirtualKey.A),
                             },
 
                             new CommandContextItem(
