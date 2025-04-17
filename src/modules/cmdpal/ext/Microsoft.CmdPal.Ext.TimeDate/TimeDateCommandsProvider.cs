@@ -18,6 +18,7 @@ public partial class TimeDateCommandsProvider : CommandProvider
     private static readonly SettingsManager _settingsManager = new();
     private static readonly CompositeFormat MicrosoftPluginTimedatePluginDescription = System.Text.CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_plugin_description);
     private static readonly TimeDateExtensionPage _timeDateExtensionPage = new(_settingsManager);
+    private readonly FallbackTimeDateItem _fallbackTimeDateItem = new(_settingsManager);
 
     public TimeDateCommandsProvider()
     {
@@ -45,4 +46,6 @@ public partial class TimeDateCommandsProvider : CommandProvider
     }
 
     public override ICommandItem[] TopLevelCommands() => [_command];
+
+    public override IFallbackCommandItem[] FallbackCommands() => [_fallbackTimeDateItem];
 }

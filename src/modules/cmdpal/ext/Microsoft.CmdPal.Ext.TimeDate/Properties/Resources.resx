@@ -375,4 +375,7 @@
   <data name="Microsoft_plugin_timedate_InvalidInput_ErrorMessageSubTitle" xml:space="preserve">
     <value>Valid prefixes: 'u' for Unix Timestamp, 'ums' for Unix Timestamp in milliseconds, 'ft' for Windows file time</value>
   </data>
+  <data name="Microsoft_plugin_timedate_fallback_display_title" xml:space="preserve">
+    <value>Open Time Data Command</value>
+  </data>
 </root>

@@ -95,7 +95,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_DateAndTime", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Date and time UTC.
         /// </summary>
@@ -183,6 +183,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_ErrorResultTitle {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorResultTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open Time Data Command.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_fallback_display_title {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_fallback_display_title", resourceCulture);
             }
         }
         
