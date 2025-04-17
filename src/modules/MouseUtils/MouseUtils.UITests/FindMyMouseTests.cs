@@ -145,6 +145,8 @@ namespace MouseUtils.UITests
             foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
             ActivateSpotlight(ref settings);
             VerifySpotlightAppears(ref settings);
+
+            Session.PerformMouseAction(MouseActionType.LeftClick);
         }
 
         [TestMethod]
@@ -280,11 +282,11 @@ namespace MouseUtils.UITests
             if (groupActivation != null)
             {
                 groupActivation.Click();
-                string findMyMouseComboxKey = "Activation method";
-                var foundElements = foundCustom.FindAll<ComboBox>(findMyMouseComboxKey);
+                string findMyMouseComboBoxKey = "Activation method";
+                var foundElements = foundCustom.FindAll<ComboBox>(findMyMouseComboBoxKey);
                 if (foundElements.Count != 0)
                 {
-                    var myMouseCombox = foundCustom.Find<ComboBox>(findMyMouseComboxKey);
+                    var myMouseCombox = foundCustom.Find<ComboBox>(findMyMouseComboBoxKey);
                     Assert.IsNotNull(myMouseCombox);
                     myMouseCombox.Click();
                     var selectedItem = myMouseCombox.Find<NavigationViewItem>(method);
@@ -314,7 +316,7 @@ namespace MouseUtils.UITests
                     groupAppearanceBehavior.Click();
                 }
 
-                // Set the BackGroud color
+                // Set the BackGround color
                 var backgroundColor = foundCustom.Find<Group>("Background color");
                 Assert.IsNotNull(backgroundColor);
 
@@ -380,7 +382,7 @@ namespace MouseUtils.UITests
                 Assert.AreEqual(settings.InitialZoom, spotlightInitialZoomSlider.Text);
                 Task.Delay(1000).Wait();
 
-                //// Changge the edit value
+                //// Change the edit value
                 var spotlightRadiusEdit = foundCustom.Find<TextBox>("Spotlight radius (px) Minimum5");
                 Assert.IsNotNull(spotlightRadiusEdit);
                 Task.Delay(1000).Wait();
@@ -397,31 +399,6 @@ namespace MouseUtils.UITests
                 Task.Delay(1000).Wait();
 
                 // groupAppearanceBehavior.Click();
-            }
-            else
-            {
-                Assert.Fail("Appearance & behavior group not found.");
-            }
-        }
-
-        private void SetMouseHighlighterFadeduration(ref Custom foundCustom, string duration)
-        {
-            Assert.IsNotNull(foundCustom);
-            var groupAppearanceBehavior = foundCustom.Find<TextBlock>("Appearance & behavior");
-            if (groupAppearanceBehavior != null)
-            {
-                // groupAppearanceBehavior.Click();
-                if (foundCustom.FindAll<TextBox>("Fade duration (ms) Minimum0").Count == 0)
-                {
-                    groupAppearanceBehavior.Click();
-                }
-
-                // Set the duration to duration ms
-                var fadeDurationEdit = foundCustom.Find<TextBox>("Fade duration (ms) Minimum0");
-                Assert.IsNotNull(fadeDurationEdit);
-                Task.Delay(1000).Wait();
-                fadeDurationEdit.SetText(duration);
-                Assert.AreEqual(duration, fadeDurationEdit.Text);
             }
             else
             {
@@ -457,61 +434,19 @@ namespace MouseUtils.UITests
             return true;
         }
 
-        private bool IsHostsFileEditorClosed()
-        {
-            try
-            {
-                this.Session.FindAll<Window>("Hosts File Editor");
-            }
-            catch (Exception ex)
-            {
-                // Validate if editor window closed by checking exception.Message
-                return ex.Message.Contains("Currently selected window has been closed");
-            }
-
-            return false;
-        }
-
-        private bool MaxmizePowerToysSettingsWindow()
-        {
-            try
-            {
-                var powerToysSettingsWindow = this.Session.Find<Window>("PowerToysSettings");
-                Assert.IsNotNull(powerToysSettingsWindow);
-                powerToysSettingsWindow.Maximize();
-            }
-            catch (Exception ex)
-            {
-                // Validate if editor window closed by checking exception.Message
-                return ex.Message.Contains("Currently selected window has been closed");
-            }
-
-            return true;
-        }
-
         private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
         {
-            this.Session.Attach(PowerToysModule.PowerToysSettings);
+            // this.Session.Attach(PowerToysModule.PowerToysSettings);
             Session.SetMainWindowSize(WindowSize.Large);
 
             // Goto Hosts File Editor setting page
-            if (this.FindAll<NavigationViewItem>("Mouse utilities").Count == 0)
+            if (this.FindAll<NavigationViewItem>("Mouse utilities", 10000).Count == 0)
             {
                 // Expand Advanced list-group if needed
                 this.Find<NavigationViewItem>("Input / Output").Click();
             }
 
             this.Find<NavigationViewItem>("Mouse utilities").Click();
-
-            // this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
-            // this.Find<ToggleSwitch>("Launch as administrator").Toggle(launchAsAdmin);
-            // this.Find<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
-
-            // launch Hosts File Editor
-
-            // Task.Delay(500).Wait();
-
-            // this.Session.Attach(PowerToysModule.Hosts);
         }
     }
 }

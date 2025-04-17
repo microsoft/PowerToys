@@ -20,6 +20,15 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Gets the value of a Slider (WindowsElement)
+        /// </summary>
+        /// <returns>The integer value of the silder</returns>
+        public int GetValue()
+        {
+            return this.Text == string.Empty ? 0 : int.Parse(this.Text);
+        }
+
+        /// <summary>
         /// Sets the value of a Slider (WindowsElement) to the specified integer value.
         /// Throws an exception if the value is out of the slider's valid range.
         /// </summary>

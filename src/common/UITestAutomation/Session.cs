@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.UITest
             this.WindowsDriver = windowsDriver;
 
             // Attach to the scope & reset MainWindowHandler
-            // this.Attach(scope, size);
+            this.Attach(scope, size);
         }
 
         /// <summary>
@@ -362,7 +362,6 @@ namespace Microsoft.PowerToys.UITest
                 return;
             }
 
-            Console.WriteLine("SetMainWindowSize: " + width + "x" + height);
             ApiHelper.SetWindowPos(this.MainWindowHandler, IntPtr.Zero, 0, 0, width, height, ApiHelper.SetWindowPosNoZorder | ApiHelper.SetWindowPosShowWindow);
 
             // Wait for 1000ms after resize
@@ -483,50 +482,53 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="action">The mouse action to perform.</param>
         public void PerformMouseAction(MouseActionType action)
         {
-            switch (action)
+            PerformAction(() =>
             {
-                case MouseActionType.LeftClick:
-                    MouseHelper.LeftClick();
-                    break;
-                case MouseActionType.RightClick:
-                    MouseHelper.RightClick();
-                    break;
-                case MouseActionType.MiddleClick:
-                    MouseHelper.MiddleClick();
-                    break;
-                case MouseActionType.LeftDoubleClick:
-                    MouseHelper.LeftDoubleClick();
-                    break;
-                case MouseActionType.RightDoubleClick:
-                    MouseHelper.RightDoubleClick();
-                    break;
-                case MouseActionType.LeftDown:
-                    MouseHelper.LeftDown();
-                    break;
-                case MouseActionType.LeftUp:
-                    MouseHelper.LeftUp();
-                    break;
-                case MouseActionType.RightDown:
-                    MouseHelper.RightDown();
-                    break;
-                case MouseActionType.RightUp:
-                    MouseHelper.RightUp();
-                    break;
-                case MouseActionType.MiddleDown:
-                    MouseHelper.MiddleDown();
-                    break;
-                case MouseActionType.MiddleUp:
-                    MouseHelper.MiddleUp();
-                    break;
-                case MouseActionType.ScrollUp:
-                    MouseHelper.ScrollUp();
-                    break;
-                case MouseActionType.ScrollDown:
-                    MouseHelper.ScrollDown();
-                    break;
-                default:
-                    throw new ArgumentException("Unsupported mouse action.", nameof(action));
-            }
+                switch (action)
+                {
+                    case MouseActionType.LeftClick:
+                        MouseHelper.LeftClick();
+                        break;
+                    case MouseActionType.RightClick:
+                        MouseHelper.RightClick();
+                        break;
+                    case MouseActionType.MiddleClick:
+                        MouseHelper.MiddleClick();
+                        break;
+                    case MouseActionType.LeftDoubleClick:
+                        MouseHelper.LeftDoubleClick();
+                        break;
+                    case MouseActionType.RightDoubleClick:
+                        MouseHelper.RightDoubleClick();
+                        break;
+                    case MouseActionType.LeftDown:
+                        MouseHelper.LeftDown();
+                        break;
+                    case MouseActionType.LeftUp:
+                        MouseHelper.LeftUp();
+                        break;
+                    case MouseActionType.RightDown:
+                        MouseHelper.RightDown();
+                        break;
+                    case MouseActionType.RightUp:
+                        MouseHelper.RightUp();
+                        break;
+                    case MouseActionType.MiddleDown:
+                        MouseHelper.MiddleDown();
+                        break;
+                    case MouseActionType.MiddleUp:
+                        MouseHelper.MiddleUp();
+                        break;
+                    case MouseActionType.ScrollUp:
+                        MouseHelper.ScrollUp();
+                        break;
+                    case MouseActionType.ScrollDown:
+                        MouseHelper.ScrollDown();
+                        break;
+                    default:
+                        throw new ArgumentException("Unsupported mouse action.", nameof(action));
+                }
+            });
         }
 
         /// <summary>
