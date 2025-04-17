@@ -13,6 +13,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate;
 
 internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
 {
+    private readonly HashSet<string> _validOptions;
     private SettingsManager _settingsManager;
 
     public FallbackTimeDateItem(SettingsManager settings)
@@ -21,11 +22,15 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
         Title = string.Empty;
         Subtitle = string.Empty;
         _settingsManager = settings;
+        _validOptions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "week", "year", "now", "time",
+        };
     }
 
     public override void UpdateQuery(string query)
     {
-        if (string.IsNullOrWhiteSpace(query))
+        if (string.IsNullOrWhiteSpace(query) || !_validOptions.Contains(query))
         {
             Title = string.Empty;
             Subtitle = string.Empty;
@@ -33,15 +38,25 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
             return;
         }
 
-        var items = TimeDateCalculator.ExecuteSearch(_settingsManager, query);
+        var availableResults = AvailableResultsList.GetList(true, _settingsManager);
+        ListItem result = null;
+        var maxScore = 0;
 
-        if (items.Count > 0 &&
-            items[0].Title != Resources.Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle &&
-            items[0].Title != Resources.Microsoft_plugin_timedate_ErrorResultTitle)
+        foreach (var f in availableResults)
         {
-            Title = items[0].Title;
-            Subtitle = items[0].Subtitle;
-            Icon = items[0].Icon;
+            var score = f.Score(query, f.Label, f.AlternativeSearchTag);
+            if (score > maxScore)
+            {
+                maxScore = score;
+                result = f.ToListItem();
+            }
+        }
+
+        if (result != null)
+        {
+            Title = result.Title;
+            Subtitle = result.Subtitle;
+            Icon = result.Icon;
         }
         else
         {
