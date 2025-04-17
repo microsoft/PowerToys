@@ -57,7 +57,7 @@ public sealed partial class AllAppsPage : ListPage
         Stopwatch stopwatch = new();
         stopwatch.Start();
 
-        List<AppItem> apps = GetPrograms();
+        var apps = GetPrograms();
 
         this.allAppsSection = apps
                         .Select((app) => new AppListItem(app, true))
@@ -73,26 +73,15 @@ public sealed partial class AllAppsPage : ListPage
 
     internal List<AppItem> GetPrograms()
     {
-        IEnumerable<AppItem> uwpResults = AppCache.Instance.Value.UWPs
+        var uwpResults = AppCache.Instance.Value.UWPs
             .Where((application) => application.Enabled)
-            .Select(app =>
-                new AppItem()
-                {
-                    Name = app.Name,
-                    Subtitle = app.Description,
-                    Type = UWPApplication.Type(),
-                    IcoPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty,
-                    DirPath = app.Location,
-                    UserModelId = app.UserModelId,
-                    IsPackaged = true,
-                    Commands = app.GetCommands(),
-                });
+            .Select(UwpToAppItem);
 
-        IEnumerable<AppItem> win32Results = AppCache.Instance.Value.Win32s
+        var win32Results = AppCache.Instance.Value.Win32s
             .Where((application) => application.Enabled && application.Valid)
             .Select(app =>
             {
-                string icoPath = string.IsNullOrEmpty(app.IcoPath) ?
+                var icoPath = string.IsNullOrEmpty(app.IcoPath) ?
                     (app.AppType == Win32Program.ApplicationType.InternetShortcutApplication ?
                         app.IcoPath :
                         app.FullPath) :
@@ -115,5 +104,22 @@ public sealed partial class AllAppsPage : ListPage
             });
 
         return uwpResults.Concat(win32Results).OrderBy(app => app.Name).ToList();
+    }
+
+    private AppItem UwpToAppItem(UWPApplication app)
+    {
+        var iconPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty;
+        var item = new AppItem()
+        {
+            Name = app.Name,
+            Subtitle = app.Description,
+            Type = UWPApplication.Type(),
+            IcoPath = iconPath,
+            DirPath = app.Location,
+            UserModelId = app.UserModelId,
+            IsPackaged = true,
+            Commands = app.GetCommands(),
+        };
+        return item;
     }
 }
