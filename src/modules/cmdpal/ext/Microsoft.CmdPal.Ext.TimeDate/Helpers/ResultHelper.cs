@@ -32,7 +32,7 @@ internal static class ResultHelper
 
     public static IconInfo TimeDateIcon { get; } = new IconInfo("\uEC92");
 
-	public static IconInfo ErrorIcon { get; } = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.light.png", "Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.dark.png");
+    public static IconInfo ErrorIcon { get; } = IconHelpers.FromRelativePaths("Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.light.png", "Microsoft.CmdPal.Ext.TimeDate\\Assets\\Warning.dark.png");
 
     /// <summary>
     /// Gets a result with an error message that input can't be parsed

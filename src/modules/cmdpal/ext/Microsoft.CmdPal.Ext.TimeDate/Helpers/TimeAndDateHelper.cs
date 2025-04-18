@@ -11,7 +11,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
 internal static class TimeAndDateHelper
 {
-	/* htcfreek:Currently not used.
+    /* htcfreek:Currently not used.
      * private static readonly Regex _regexSpecialInputFormats = new Regex(@"^.*(u|ums|ft|oa|exc|exf)\d"); */
 
     private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|DIM|WOM|WOY|EAB|WFT|UXT|UMS|OAD|EXC|EXF)");
@@ -370,7 +370,7 @@ internal static class TimeAndDateHelper
     {
         return _regexCustomDateTimeFormats.IsMatch(str);
     }
-	
+
     /// <summary>
     /// Returns a CalendarWeekRule enum value based on the plugin setting.
     /// </summary>

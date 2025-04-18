@@ -38,7 +38,7 @@ public sealed partial class TimeDateCalculator
 
         // Last input parsing error
         var lastInputParsingErrorMsg = string.Empty;
-		
+
         // Switch search type
         if (isEmptySearchInput || (!isKeywordSearch && settings.OnlyDateTimeNowGlobal))
         {

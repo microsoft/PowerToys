@@ -13,11 +13,11 @@ namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
 public class SettingsManager : JsonSettingsManager
 {
-	// Line break character used in WinUI3 TextBox and TextBlock.
+    // Line break character used in WinUI3 TextBox and TextBlock.
     private const char TEXTBOXNEWLINE = '\r';
 
     private const string CUSTOMFORMATPLACEHOLDER = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)\rMyUtcFormat=UTC:hh:mm:ss";
-	
+
     private static readonly string _namespace = "timeDate";
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
