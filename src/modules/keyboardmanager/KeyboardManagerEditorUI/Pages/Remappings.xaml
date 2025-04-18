@@ -269,7 +269,6 @@
                 <SymbolIconSource Symbol="Important" />
             </TeachingTip.IconSource>
         </TeachingTip>
-
         <TeachingTip
             x:Name="EmptyAppNameTeachingTip"
             Title="Missing Application Name"
@@ -278,6 +277,18 @@
             IsLightDismissEnabled="True"
             PreferredPlacement="Center"
             Subtitle="You've selected app-specific remapping but haven't specified an application name. Please enter the application name.">
+            <TeachingTip.IconSource>
+                <SymbolIconSource Symbol="Important" />
+            </TeachingTip.IconSource>
+        </TeachingTip>
+        <TeachingTip
+            x:Name="ModifierOnlyTeachingTip"
+            Title="Invalid Shortcut"
+            CloseButtonClick="ModifierOnlyTeachingTip_CloseButtonClick"
+            CloseButtonContent="OK"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Center"
+            Subtitle="Shortcuts must contain at least one action key in addition to modifier keys (Ctrl, Alt, Shift, Win).">
             <TeachingTip.IconSource>
                 <SymbolIconSource Symbol="Important" />
             </TeachingTip.IconSource>

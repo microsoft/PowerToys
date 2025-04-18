@@ -239,6 +239,17 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            // Check if shortcut contains only modifier keys
+            if ((originalKeys.Count > 1 && ContainsOnlyModifierKeys(originalKeys)) ||
+                (remappedKeys.Count > 1 && ContainsOnlyModifierKeys(remappedKeys)))
+            {
+                ModifierOnlyTeachingTip.Target = RemappingControl;
+                ModifierOnlyTeachingTip.Tag = args;
+                ModifierOnlyTeachingTip.IsOpen = true;
+                args.Cancel = true;
+                return;
+            }
+
             // Check if app specific is checked but no app name is provided
             if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
             {
@@ -378,6 +389,29 @@ namespace KeyboardManagerEditorUI.Pages
             return KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, remappedKeysString);
         }
 
+        private bool ContainsOnlyModifierKeys(List<string> keys)
+        {
+            if (keys == null || keys.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (string key in keys)
+            {
+                int keyCode = GetKeyCode(key);
+                var keyType = (KeyType)KeyboardManagerInterop.GetKeyType(keyCode);
+
+                // If any key is an action key, return false
+                if (keyType == KeyType.Action)
+                {
+                    return false;
+                }
+            }
+
+            // All keys are modifier keys
+            return true;
+        }
+
         private void SelfMappingTeachingTip_CloseButtonClick(TeachingTip sender, object args)
         {
             sender.IsOpen = false;
@@ -394,6 +428,11 @@ namespace KeyboardManagerEditorUI.Pages
         }
 
         private void EmptyAppNameTeachingTip_CloseButtonClick(TeachingTip sender, object args)
+        {
+            sender.IsOpen = false;
+        }
+
+        private void ModifierOnlyTeachingTip_CloseButtonClick(TeachingTip sender, object args)
         {
             sender.IsOpen = false;
         }
