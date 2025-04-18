@@ -151,6 +151,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Days in month.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_DaysInMonth {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_DaysInMonth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Era.
         /// </summary>
         public static string Microsoft_plugin_timedate_Era {
@@ -169,20 +178,38 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Valid prefixes: &apos;u&apos; for Unix Timestamp, &apos;ums&apos; for Unix Timestamp in milliseconds, &apos;ft&apos; for Windows file time.
+        ///   Looks up a localized string similar to Failed to convert into custom format.
         /// </summary>
-        public static string Microsoft_plugin_timedate_ErrorResultSubTitle {
+        public static string Microsoft_plugin_timedate_ErrorConvertCustomFormat {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorResultSubTitle", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorConvertCustomFormat", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error: Invalid number input.
+        ///   Looks up a localized string similar to Not a valid Windows file time.
         /// </summary>
-        public static string Microsoft_plugin_timedate_ErrorResultTitle {
+        public static string Microsoft_plugin_timedate_ErrorConvertWft {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorResultTitle", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_ErrorConvertWft", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Excel&apos;s 1900 date value.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Excel1900 {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Excel1900", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Excel&apos;s 1904 date value.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Excel1904 {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Excel1904", resourceCulture);
             }
         }
         
@@ -205,11 +232,20 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Valid prefixes: &apos;u&apos; for Unix Timestamp, &apos;ums&apos; for Unix Timestamp in milliseconds, &apos;ft&apos; for Windows file time.
+        ///   Looks up a localized string similar to Invalid custom format:.
         /// </summary>
-        public static string Microsoft_plugin_timedate_InvalidInput_ErrorMessageSubTitle {
+        public static string Microsoft_plugin_timedate_InvalidCustomFormat {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_ErrorMessageSubTitle", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidCustomFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Supported input.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_InvalidInput_DetailsHeader {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_DetailsHeader", resourceCulture);
             }
         }
         
@@ -219,6 +255,33 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_ErrorMessageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot parse the input as Excel&apos;s 1900 date value because it is a fake date. (In Excel 0 stands for 0/1/1900 and this date doesn&apos;t exist. And 60 stands for 2/29/1900 and this date only exists in Excel for compatibility with Lotus 123.).
+        /// </summary>
+        public static string Microsoft_plugin_timedate_InvalidInput_FakeExcel1900 {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_FakeExcel1900", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A {0}format name{0}, a {0}valid date or time value{0}, or a {0}prefixed number{0}. To search for a format in a specific date/time please use the syntax {0}format::date/time/number{0}.{1}Supported prefixes:{2}&apos;{0}u{0}&apos; for Unix Timestamp{2}&apos;{0}ums{0}&apos; for Unix Timestamp in milliseconds{2}&apos;{0}ft{0}&apos; for Windows file time{2}&apos;{0}oa{0}&apos; for OLE Automation Date{2}&apos;{0}exc{0}&apos; for Excel&apos;s 1900 date value{2}&apos;{0}exf{0}&apos; for Excel&apos;s 1904 date value.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_InvalidInput_SupportedInput {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_SupportedInput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Your input for {0} is outside the range **from {1} to {2}**..
+        /// </summary>
+        public static string Microsoft_plugin_timedate_InvalidInput_SupportedRange {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_InvalidInput_SupportedRange", resourceCulture);
             }
         }
         
@@ -255,6 +318,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_Iso8601ZoneUtc {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_Iso8601ZoneUtc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Leap year.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_LeapYear {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_LeapYear", resourceCulture);
             }
         }
         
@@ -322,6 +394,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Not a leap year.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_NoLeapYear {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_NoLeapYear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Now.
         /// </summary>
         public static string Microsoft_plugin_timedate_Now {
@@ -336,6 +417,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_NowUtc {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_NowUtc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OLE Automation Date.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_OADate {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_OADate", resourceCulture);
             }
         }
         
@@ -408,6 +498,42 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_Search_ConjunctionList {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_Search_ConjunctionList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date and time; Time and Date; Custom format.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SearchTagCustom {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagCustom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current date and time; Current time and date; Now; Custom format.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SearchTagCustomNow {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagCustomNow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date and time UTC; Time UTC and Date; Custom UTC format.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SearchTagCustomUtc {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagCustomUtc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Current date and time UTC; Current time UTC and date; Now UTC; Custom UTC format.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SearchTagCustomUtcNow {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagCustomUtcNow", resourceCulture);
             }
         }
         
@@ -489,6 +615,24 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_Second {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_Second", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom formats.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Setting_CustomFormats {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Setting_CustomFormats", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use date and time string format syntax and {0} (Day of Week), {1} (Days in Month), {2} (Week of Month), {3} (Week of the year), {4} (Era abbreviation), {5} (Windows File Time), {6} (Unix Time), {7} (Unix Time in milliseconds), {8} (OLE Automation date), {9} (Excel&apos;s 1900 based date value), {10} (Excel&apos;s 1904 based date value). If the format starts with {11}, then Universal Time (UTC) is used. (Use a backslash to escape format sequences and the backslash character as text.).
+        /// </summary>
+        public static string Microsoft_plugin_timedate_Setting_CustomFormatsDescription {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_Setting_CustomFormatsDescription", resourceCulture);
             }
         }
         
@@ -678,6 +822,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_SettingTimeWithSeconds_Description {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_SettingTimeWithSeconds_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select for more details..
+        /// </summary>
+        public static string Microsoft_plugin_timedate_show_details {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_show_details", resourceCulture);
             }
         }
         

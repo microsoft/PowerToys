@@ -13,6 +13,11 @@ namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
 public class SettingsManager : JsonSettingsManager
 {
+    // Line break character used in WinUI3 TextBox and TextBlock.
+    private const char TEXTBOXNEWLINE = '\r';
+
+    private const string CUSTOMFORMATPLACEHOLDER = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)\rMyUtcFormat=UTC:hh:mm:ss";
+
     private static readonly string _namespace = "timeDate";
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
@@ -94,6 +99,12 @@ public class SettingsManager : JsonSettingsManager
         Resources.Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery,
         true); // TODO -- double check default value
 
+    private readonly TextSetting _customFormats = new(
+        Namespaced(nameof(CustomFormats)),
+        Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
+        Resources.Microsoft_plugin_timedate_Setting_CustomFormats + TEXTBOXNEWLINE + string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "DIM", "WOM", "WOY", "EAB", "WFT", "UXT", "UMS", "OAD", "EXC", "EXF", "UTC:"),
+        string.Empty);
+
     public int FirstWeekOfYear
     {
         get
@@ -142,6 +153,8 @@ public class SettingsManager : JsonSettingsManager
 
     public bool HideNumberMessageOnGlobalQuery => _hideNumberMessageOnGlobalQuery.Value;
 
+    public List<string> CustomFormats => _customFormats.Value.Split(TEXTBOXNEWLINE).ToList();
+
     internal static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
@@ -155,12 +168,18 @@ public class SettingsManager : JsonSettingsManager
     {
         FilePath = SettingsJsonPath();
 
-        Settings.Add(_firstWeekOfYear);
-        Settings.Add(_firstDayOfWeek);
+        /* The following two settings make no sense with current CmdPal behavior.
         Settings.Add(_onlyDateTimeNowGlobal);
+        Settings.Add(_hideNumberMessageOnGlobalQuery); */
+
         Settings.Add(_timeWithSeconds);
         Settings.Add(_dateWithWeekday);
-        Settings.Add(_hideNumberMessageOnGlobalQuery);
+        Settings.Add(_firstWeekOfYear);
+        Settings.Add(_firstDayOfWeek);
+
+        _customFormats.Multiline = true;
+        _customFormats.Placeholder = CUSTOMFORMATPLACEHOLDER;
+        Settings.Add(_customFormats);
 
         // Load settings from file upon initialization
         LoadSettings();
