@@ -32,6 +32,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestInitialize]
         public void TestInitialize()
         {
+            FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -139,12 +140,6 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             // verify editor opens without errors
             this.RestartScopeExe();
-        }
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            FancyZonesEditorHelper.Files.Restore();
         }
 
         [TestMethod]

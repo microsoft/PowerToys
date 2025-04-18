@@ -135,6 +135,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestInitialize]
         public void TestInitialize()
         {
+            FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(Parameters));
 
@@ -193,12 +194,6 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
 
             this.RestartScopeExe();
-        }
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            FancyZonesEditorHelper.Files.Restore();
         }
 
         [TestMethod]

@@ -104,6 +104,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestInitialize]
         public void TestInitialize()
         {
+            FancyZonesEditorHelper.Files.Restore();
             CustomLayouts customLayouts = new CustomLayouts();
             FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(Layouts));
 
@@ -206,12 +207,6 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
 
             this.RestartScopeExe();
-        }
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            FancyZonesEditorHelper.Files.Restore();
         }
 
         [TestMethod]
