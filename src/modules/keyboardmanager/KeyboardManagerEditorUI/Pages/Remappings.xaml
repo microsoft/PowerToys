@@ -232,5 +232,17 @@
                 <SymbolIconSource Symbol="Important" />
             </TeachingTip.IconSource>
         </TeachingTip>
+        <TeachingTip
+            x:Name="SelfMappingTeachingTip"
+            Title="Invalid Remapping"
+            CloseButtonClick="SelfMappingTeachingTip_CloseButtonClick"
+            CloseButtonContent="OK"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Center"
+            Subtitle="A key or shortcut cannot be remapped to itself. Please choose a different target.">
+            <TeachingTip.IconSource>
+                <SymbolIconSource Symbol="Important" />
+            </TeachingTip.IconSource>
+        </TeachingTip>
     </Grid>
 </Page>

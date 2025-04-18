@@ -215,6 +215,7 @@ namespace KeyboardManagerEditorUI.Pages
         private void KeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             List<string> originalKeys = RemappingControl.GetOriginalKeys();
+            List<string> remappedKeys = RemappingControl.GetRemappedKeys();
             bool isAppSpecific = RemappingControl.GetIsAppSpecific();
             string appName = RemappingControl.GetAppName();
 
@@ -246,7 +247,16 @@ namespace KeyboardManagerEditorUI.Pages
                 // Show the teaching tip
                 DuplicateRemappingTeachingTip.IsOpen = true;
 
-                // Cancel the dialog closing for now since it will be handled by teaching tip actions
+                args.Cancel = true;
+                return;
+            }
+
+            // Check for self-mapping
+            if (IsSelfMapping(originalKeys, remappedKeys))
+            {
+                SelfMappingTeachingTip.Target = RemappingControl;
+                SelfMappingTeachingTip.Tag = args;
+                SelfMappingTeachingTip.IsOpen = true;
                 args.Cancel = true;
                 return;
             }
@@ -321,6 +331,26 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             return false;
+        }
+
+        private bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys)
+        {
+            // If either list is empty, it's not a self-mapping
+            if (originalKeys == null || remappedKeys == null ||
+                originalKeys.Count == 0 || remappedKeys.Count == 0)
+            {
+                return false;
+            }
+
+            string originalKeysString = string.Join(";", originalKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
+            string remappedKeysString = string.Join(";", remappedKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
+
+            return KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, remappedKeysString);
+        }
+
+        private void SelfMappingTeachingTip_CloseButtonClick(TeachingTip sender, object args)
+        {
+            sender.IsOpen = false;
         }
 
         private void OrphanedKeysTeachingTip_ActionButtonClick(TeachingTip sender, object args)
