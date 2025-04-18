@@ -112,6 +112,16 @@ namespace Microsoft.PowerToys.UITest
             SendWinKeyCombination(keysToSend);
         }
 
+        public static void PressKey(Key key)
+        {
+            PressVirtualKey(TranslateKeyHex(key));
+        }
+
+        public static void ReleaseKey(Key key)
+        {
+            ReleaseVirtualKey(TranslateKeyHex(key));
+        }
+
         /// <summary>
         /// Translates a key to its corresponding SendKeys representation.
         /// </summary>
@@ -184,57 +194,57 @@ namespace Microsoft.PowerToys.UITest
                 case Key.F12:
                     return "{F12}";
                 case Key.A:
-                    return "A";
+                    return "a";
                 case Key.B:
-                    return "B";
+                    return "b";
                 case Key.C:
-                    return "C";
+                    return "c";
                 case Key.D:
-                    return "D";
+                    return "d";
                 case Key.E:
-                    return "E";
+                    return "e";
                 case Key.F:
-                    return "F";
+                    return "f";
                 case Key.G:
-                    return "G";
+                    return "g";
                 case Key.H:
-                    return "H";
+                    return "h";
                 case Key.I:
-                    return "I";
+                    return "i";
                 case Key.J:
-                    return "J";
+                    return "j";
                 case Key.K:
-                    return "K";
+                    return "k";
                 case Key.L:
-                    return "L";
+                    return "l";
                 case Key.M:
-                    return "M";
+                    return "m";
                 case Key.N:
-                    return "N";
+                    return "n";
                 case Key.O:
-                    return "O";
+                    return "o";
                 case Key.P:
-                    return "P";
+                    return "p";
                 case Key.Q:
-                    return "Q";
+                    return "q";
                 case Key.R:
-                    return "R";
+                    return "r";
                 case Key.S:
-                    return "S";
+                    return "s";
                 case Key.T:
-                    return "T";
+                    return "t";
                 case Key.U:
-                    return "U";
+                    return "u";
                 case Key.V:
-                    return "V";
+                    return "v";
                 case Key.W:
-                    return "W";
+                    return "w";
                 case Key.X:
-                    return "X";
+                    return "x";
                 case Key.Y:
-                    return "Y";
+                    return "y";
                 case Key.Z:
-                    return "Z";
+                    return "z";
                 case Key.Num0:
                     return "0";
                 case Key.Num1:
@@ -261,6 +271,26 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// map the virtual key codes to the corresponding keys.
+        /// </summary>
+        private static byte TranslateKeyHex(Key key)
+        {
+            switch (key)
+            {
+                case Key.Win:
+                    return 0x5B;  // Windows Key - 0x5B in hex
+                case Key.Ctrl:
+                    return 0x11;  // Ctrl Key - 0x11 in hex
+                case Key.Alt:
+                    return 0x12;  // Alt Key - 0x12 in hex
+                case Key.Shift:
+                    return 0x10;  // Shift Key - 0x10 in hex
+                default:
+                    throw new ArgumentException($"Key {key} is not supported, Please add your key at TranslateKeyHex for translation to hex.");
+            }
+        }
+
+        /// <summary>
         /// Sends a combination of keys, including the Windows key, to the system.
         /// </summary>
         /// <param name="keys">The keys to send.</param>
@@ -282,6 +312,22 @@ namespace Microsoft.PowerToys.UITest
             {
                 keybd_event(VK_LWIN, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
             }
+        }
+
+        /// <summary>
+        /// Just press the key.(no release)
+        /// </summary>
+        private static void PressVirtualKey(byte key)
+        {
+            keybd_event(key, 0, KEYEVENTF_KEYDOWN, UIntPtr.Zero);
+        }
+
+        /// <summary>
+        /// Release only the button (if pressed first)
+        /// </summary>
+        private static void ReleaseVirtualKey(byte key)
+        {
+            keybd_event(key, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
         }
     }
 }

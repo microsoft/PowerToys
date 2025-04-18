@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using ABI.Windows.Foundation;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
@@ -200,6 +201,42 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Simulates holding a key, clicking and dragging a UI element to the specified screen coordinates.
+        /// </summary>
+        /// <param name="key">The keyboard key to press and hold during the drag operation.</param>
+        /// <param name="targetX">The target X-coordinate to drag the element to.</param>
+        /// <param name="targetY">The target Y-coordinate to drag the element to.</param>
+        public void KeyDownAndDrag(Key key, int targetX, int targetY)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                KeyboardHelper.PressKey(key);
+
+                actions.MoveToElement(windowsElement)
+                .ClickAndHold()
+                .Perform();
+
+                int dx = targetX - windowElement.Rect.X;
+                int dy = targetY - windowElement.Rect.Y;
+
+                int stepCount = 10;
+                int stepX = dx / stepCount;
+                int stepY = dy / stepCount;
+
+                for (int i = 0; i < stepCount; i++)
+                {
+                    var stepAction = new Actions(driver);
+                    stepAction.MoveByOffset(stepX, stepY).Perform();
+                }
+
+                var releaseAction = new Actions(driver);
+                releaseAction.Release().Perform();
+
+                KeyboardHelper.ReleaseKey(key);
+            });
+        }
+
+        /// <summary>
         /// Gets the attribute value of the UI element.
         /// </summary>
         /// <param name="attributeName">The name of the attribute to get.</param>
@@ -365,15 +402,10 @@ namespace Microsoft.PowerToys.UITest
         /// Save UI Element to a PNG file.
         /// </summary>
         /// <param name="path">the full path</param>
-        internal void SaveToPngFile(string path, bool eraseUserPreferenceColor)
+        internal void SaveToPngFile(string path)
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method SaveToFile with parameter: path = {path}");
             this.windowsElement.GetScreenshot().SaveAsFile(path);
-
-            if (eraseUserPreferenceColor)
-            {
-                VisualHelper.EraseUserPreferenceColor(path);
-            }
         }
     }
 }

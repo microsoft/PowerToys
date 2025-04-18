@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.UITest
             this.WindowsDriver = windowsDriver;
 
             // Attach to the scope & reset MainWindowHandler
-            // this.Attach(scope, size);
+            this.Attach(scope, size);
         }
 
         /// <summary>
@@ -424,6 +424,30 @@ namespace Microsoft.PowerToys.UITest
             PerformAction(() =>
             {
                 KeyboardHelper.SendKeys(keys);
+            });
+        }
+
+        /// <summary>
+        /// release the key (after the hold key and drag is completed.)
+        /// </summary>
+        /// <param name="key">The key release.</param>
+        public void PressKey(Key key)
+        {
+            PerformAction(() =>
+            {
+                KeyboardHelper.PressKey(key);
+            });
+        }
+
+        /// <summary>
+        /// press and hold the specified key.
+        /// </summary>
+        /// <param name="key">The key to press and hold .</param>
+        public void ReleaseKey(Key key)
+        {
+            PerformAction(() =>
+            {
+                KeyboardHelper.ReleaseKey(key);
             });
         }
 
