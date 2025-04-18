@@ -39,7 +39,7 @@ public sealed partial class TimeDateCalculator
         // Last input parsing error
         var lastInputParsingErrorMsg = string.Empty;
 		
-		// Switch search type
+        // Switch search type
         if (isEmptySearchInput || (!isKeywordSearch && settings.OnlyDateTimeNowGlobal))
         {
             // Return all results for system time/date on empty keyword search
@@ -103,6 +103,7 @@ public sealed partial class TimeDateCalculator
                 {
                     er.Details = new Details() { Body = lastInputParsingErrorMsg };
                 }
+
                 results.Add(er);
             }
         } */

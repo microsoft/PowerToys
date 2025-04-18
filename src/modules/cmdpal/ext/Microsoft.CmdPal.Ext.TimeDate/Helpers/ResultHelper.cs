@@ -53,4 +53,3 @@ internal static class ResultHelper
     };
 #pragma warning restore CA1863 // Use 'CompositeFormat'
 }
-}
