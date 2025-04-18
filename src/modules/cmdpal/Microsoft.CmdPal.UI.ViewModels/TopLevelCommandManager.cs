@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -44,6 +45,9 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     public async Task<bool> LoadBuiltinsAsync()
     {
+        var s = new Stopwatch();
+        s.Start();
+
         _builtInCommands.Clear();
 
         // Load built-In commands first. These are all in-proc, and
@@ -55,6 +59,10 @@ public partial class TopLevelCommandManager : ObservableObject,
             _builtInCommands.Add(wrapper);
             await LoadTopLevelCommandsFromProvider(wrapper);
         }
+
+        s.Stop();
+
+        Logger.LogDebug($"Loading built-ins took {s.ElapsedMilliseconds}ms");
 
         return true;
     }
@@ -239,6 +247,9 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions)
     {
+        var s = new Stopwatch();
+        s.Start();
+
         // TODO This most definitely needs a lock
         foreach (var extension in extensions)
         {
@@ -258,6 +269,10 @@ public partial class TopLevelCommandManager : ObservableObject,
                 Logger.LogError(ex.ToString());
             }
         }
+
+        s.Stop();
+
+        Logger.LogDebug($"Loading extensions took {s.ElapsedMilliseconds}ms");
     }
 
     private void ExtensionService_OnExtensionRemoved(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
