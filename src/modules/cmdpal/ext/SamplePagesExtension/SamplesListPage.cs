@@ -79,11 +79,18 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Evil samples",
             Subtitle = "Samples designed to break the palette in many different evil ways",
-        }
+        },
+
+        new ListItem(new SampleGoToPage(0))
+        {
+            Title = "Sample GoTo Page",
+            Subtitle = "A list of items",
+        },
     ];
 
     public SamplesListPage()
     {
+        Id = "com.microsoft.SamplePages";
         Name = "Samples";
         Icon = new IconInfo("\ue946"); // Info
     }
