@@ -3609,6 +3609,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Hosts_Toggle_ShowStartupWarning.Header" xml:space="preserve">
     <value>Show a warning at startup</value>
   </data>
+    <data name="Hosts_Toggle_NoWhiteSpace.Header" xml:space="preserve">
+    <value>Entry starts without white spaces</value>
+  </data>
   <data name="Hosts_Activation_GroupSettings.Header" xml:space="preserve">
     <value>Activation</value>
   </data>
@@ -4460,7 +4463,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="NewPlus_Behaviour_Replace_Variables_Info_Card_Title.Text" xml:space="preserve">
     <value>Commonly used variables</value>
     <comment>New+ commonly used variables header in the flyout info card</comment>
-  </data>   
+  </data>
   <data name="NewPlus_Year_YYYY_Variable_Description.Text" xml:space="preserve">
     <value>Year, represented by a full four or five digits, depending on the calendar used.</value>
     <comment>New+ description of the year $YYYY variable - casing of $YYYY is important</comment>
