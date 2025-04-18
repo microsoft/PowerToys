@@ -202,8 +202,7 @@
             CloseButtonClick="OrphanedKeysTeachingTip_CloseButtonClick"
             CloseButtonContent="Cancel"
             IsLightDismissEnabled="False"
-            PreferredPlacement="Center"
-            Subtitle="The following keys will become orphaned (inaccessible) after remapping:">
+            PreferredPlacement="Center">
             <TeachingTip.IconSource>
                 <SymbolIconSource Symbol="Important" />
             </TeachingTip.IconSource>

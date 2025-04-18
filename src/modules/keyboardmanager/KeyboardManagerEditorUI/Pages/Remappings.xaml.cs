@@ -302,6 +302,25 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            // Check for orphaned keys
+            if (originalKeys.Count == 1 && _mappingService != null)
+            {
+                int originalKeyCode = GetKeyCode(originalKeys[0]);
+
+                if (IsKeyOrphaned(originalKeyCode, _mappingService))
+                {
+                    string keyName = _mappingService.GetKeyDisplayName(originalKeyCode);
+
+                    OrphanedKeysTeachingTip.Target = RemappingControl;
+                    OrphanedKeysTeachingTip.Subtitle = $"The key {keyName} will become orphaned (inaccessible) after remapping. Please confirm if you want to proceed.";
+                    OrphanedKeysTeachingTip.Tag = args;
+                    OrphanedKeysTeachingTip.IsOpen = true;
+
+                    args.Cancel = true;
+                    return;
+                }
+            }
+
             bool saved = SaveCurrentMapping();
             if (saved)
             {
@@ -409,6 +428,31 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             // All keys are modifier keys
+            return true;
+        }
+
+        private bool IsKeyOrphaned(int originalKey, KeyboardMappingService mappingService)
+        {
+            // Check all single key mappings
+            foreach (var mapping in mappingService.GetSingleKeyMappings())
+            {
+                if (!mapping.IsShortcut && int.TryParse(mapping.TargetKey, out int targetKey) && targetKey == originalKey)
+                {
+                    return false;
+                }
+            }
+
+            // Check all shortcut mappings
+            foreach (var mapping in mappingService.GetShortcutMappings())
+            {
+                string[] targetKeys = mapping.TargetKeys.Split(';');
+                if (targetKeys.Length == 1 && int.TryParse(targetKeys[0], out int shortcutTargetKey) && shortcutTargetKey == originalKey)
+                {
+                    return false;
+                }
+            }
+
+            // No mapping found for the original key
             return true;
         }
 
