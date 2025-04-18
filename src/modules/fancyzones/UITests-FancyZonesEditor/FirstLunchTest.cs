@@ -25,7 +25,7 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class FirstLunchTest : UITestBase
     {
         public FirstLunchTest()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 

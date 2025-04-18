@@ -207,12 +207,16 @@ public:
 
         try
         {
-            if (!package::GetRegisteredPackage(L"Microsoft.CommandPalette", false).has_value())
+            std::wstring packageName = L"Microsoft.CommandPalette";
+#ifdef _DEBUG
+            packageName = L"Microsoft.CommandPalette.Dev";
+#endif
+            if (!package::GetRegisteredPackage(packageName, false).has_value())
             {
                 Logger::info(L"CmdPal not installed. Installing...");
 
                 std::wstring installationFolder = get_module_folderpath();
-#if _DEBUG
+#ifdef _DEBUG
                 std::wstring archSubdir = L"x64";
 #ifdef _M_ARM64
                 archSubdir = L"ARM64";

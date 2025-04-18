@@ -23,7 +23,7 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class UIInitializeTest : UITestBase
     {
         public UIInitializeTest()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 

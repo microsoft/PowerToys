@@ -23,7 +23,7 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class LayoutHotkeysTests : UITestBase
     {
         public LayoutHotkeysTests()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 

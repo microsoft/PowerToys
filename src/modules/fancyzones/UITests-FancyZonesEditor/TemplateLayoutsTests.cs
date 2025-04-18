@@ -73,7 +73,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         };
 
         public TemplateLayoutsTests()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 

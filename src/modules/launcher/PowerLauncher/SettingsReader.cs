@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -252,7 +251,7 @@ namespace PowerLauncher
                 Id = x.Metadata.ID,
                 Name = x.Plugin == null ? x.Metadata.Name : x.Plugin.Name,
                 Description = x.Plugin?.Description,
-                Version = FileVersionInfo.GetVersionInfo(x.Metadata.ExecuteFilePath).FileVersion,
+                Version = x.Metadata.ExecuteFileVersion,
                 Author = x.Metadata.Author,
                 Website = x.Metadata.Website,
                 Disabled = x.Metadata.Disabled,

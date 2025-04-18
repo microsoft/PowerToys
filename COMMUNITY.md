@@ -188,6 +188,7 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
 - [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
 - [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
+- [@zhiwei-ms](https://github.com/zhiwei-ms) - Zhiwei Yu - Product Manager
 - [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
 - [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
 - [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev lead

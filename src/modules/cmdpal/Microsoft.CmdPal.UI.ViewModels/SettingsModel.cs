@@ -26,6 +26,8 @@ public partial class SettingsModel : ObservableObject
 
     public HotkeySettings? Hotkey { get; set; } = DefaultActivationShortcut;
 
+    public bool UseLowLevelGlobalHotkey { get; set; }
+
     public bool ShowAppDetails { get; set; }
 
     public bool HotkeyGoesHome { get; set; }
@@ -35,6 +37,8 @@ public partial class SettingsModel : ObservableObject
     public bool SingleClickActivates { get; set; }
 
     public bool HighlightSearchOnActivate { get; set; } = true;
+
+    public bool ShowSystemTrayIcon { get; set; } = true;
 
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
