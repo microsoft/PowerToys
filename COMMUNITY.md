@@ -76,7 +76,7 @@ Jeremy has helped drive large sums of the ARM64 support inside PowerToys
 Tobias Sekan has helped out contributing features to PowerToys Run such as Settings plugin, Registry plugin
 
 ### [@ThiefZero](https://github.com/ThiefZero)
-ThiefZero has helped out contributing a features to PowerToys Run such as the unit converter plugin
+ThiefZero has helped out contributing some features to PowerToys Run such as the unit converter plugin
 
 ## Open source projects
 
