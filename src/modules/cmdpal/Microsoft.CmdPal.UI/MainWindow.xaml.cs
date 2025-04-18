@@ -327,11 +327,8 @@ public sealed partial class MainWindow : Window,
         // This might come in on a background thread
         DispatcherQueue.TryEnqueue(() => Close());
 
-    public void Receive(DismissMessage message)
-    {
-        UpdateWindowPositionInMemory();
+    public void Receive(DismissMessage message) =>
         PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
-    }
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
