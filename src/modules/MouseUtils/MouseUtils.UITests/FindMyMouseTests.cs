@@ -74,8 +74,7 @@ namespace MouseUtils.UITests
             VerifySpotlightSettings(ref settings);
 
             // [Test Case]Enable FindMyMouse. Then, without moving your mouse: Press any other key and verify the overlay disappears.
-            IOUtil.SimulateKeyPress(0x41);
-            Task.Delay(1000).Wait();
+            Session.SendKeys(Key.A);
             VerifySpotlightDisappears(ref settings);
 
             // [Test Case]Enable FindMyMouse. Then, without moving your mouse: Press Left Ctrl twice and verify the overlay appears.
@@ -192,9 +191,9 @@ namespace MouseUtils.UITests
             // [Test Case] Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice
             foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
             Task.Delay(2000).Wait();
-            IOUtil.SimulateKeyPress(0xA2);
+            Session.SendKey(Key.LCtrl, 0, 0);
             Task.Delay(100).Wait();
-            IOUtil.SimulateKeyPress(0xA2);
+            Session.SendKey(Key.LCtrl, 0, 0);
 
             VerifySpotlightDisappears(ref settings);
         }
@@ -243,20 +242,19 @@ namespace MouseUtils.UITests
             Session.MoveMouseTo(xy.Item1 - 200, xy.Item2 - 100);
             Task.Delay(1000).Wait();
 
-            // MouseSimulator.LeftClick();
             Session.PerformMouseAction(MouseActionType.LeftClick);
             Task.Delay(5000).Wait();
             if (settings.SelectedActivationMethod == FindMyMouseSettings.ActivationMethod.PressLeftControlTwice)
             {
-                IOUtil.SimulateKeyPress(0xA2);
+                Session.SendKey(Key.LCtrl, 0, 0);
                 Task.Delay(100).Wait();
-                IOUtil.SimulateKeyPress(0xA2);
+                Session.SendKey(Key.LCtrl, 0, 0);
             }
             else if (settings.SelectedActivationMethod == FindMyMouseSettings.ActivationMethod.PressRightControlTwice)
             {
-                IOUtil.SimulateKeyPress(0xA3);
+                Session.SendKey(Key.RCtrl, 0, 0);
                 Task.Delay(100).Wait();
-                IOUtil.SimulateKeyPress(0xA3);
+                Session.SendKey(Key.RCtrl, 0, 0);
             }
             else if (settings.SelectedActivationMethod == FindMyMouseSettings.ActivationMethod.ShakeMouse)
             {
@@ -286,10 +284,10 @@ namespace MouseUtils.UITests
                 var foundElements = foundCustom.FindAll<ComboBox>(findMyMouseComboBoxKey);
                 if (foundElements.Count != 0)
                 {
-                    var myMouseCombox = foundCustom.Find<ComboBox>(findMyMouseComboBoxKey);
-                    Assert.IsNotNull(myMouseCombox);
-                    myMouseCombox.Click();
-                    var selectedItem = myMouseCombox.Find<NavigationViewItem>(method);
+                    var myMouseComboBox = foundCustom.Find<ComboBox>(findMyMouseComboBoxKey);
+                    Assert.IsNotNull(myMouseComboBox);
+                    myMouseComboBox.Click();
+                    var selectedItem = myMouseComboBox.Find<NavigationViewItem>(method);
                     Assert.IsNotNull(selectedItem);
                     selectedItem.Click();
                 }

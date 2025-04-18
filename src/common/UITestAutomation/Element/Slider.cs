@@ -22,7 +22,7 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Gets the value of a Slider (WindowsElement)
         /// </summary>
-        /// <returns>The integer value of the silder</returns>
+        /// <returns>The integer value of the slider</returns>
         public int GetValue()
         {
             return this.Text == string.Empty ? 0 : int.Parse(this.Text);

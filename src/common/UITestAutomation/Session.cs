@@ -464,6 +464,21 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// press and hold the specified key.
+        /// </summary>
+        /// <param name="key">The key to press and release .</param>
+        public void SendKey(Key key, int msPreAction = 500, int msPostAction = 500)
+        {
+            PerformAction(
+                () =>
+            {
+                KeyboardHelper.SendKey(key);
+            },
+                msPreAction,
+                msPostAction);
+        }
+
+        /// <summary>
         /// Sends a sequence of keys.
         /// </summary>
         /// <param name="keys">An array of keys to send.</param>
