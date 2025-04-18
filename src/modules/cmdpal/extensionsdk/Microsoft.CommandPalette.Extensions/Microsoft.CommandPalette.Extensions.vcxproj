@@ -69,31 +69,13 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
-    <ClCompile>
-      <!-- We use MultiThreadedDebug, rather than MultiThreadedDebugDLL, to avoid DLL dependencies on VCRUNTIME140d.dll and MSVCP140d.dll. -->
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-    </ClCompile>
     <Link>
-      <!-- Link statically against the runtime and STL, but link dynamically against the CRT by ignoring the static CRT
-           lib and instead linking against the Universal CRT DLL import library. This "hybrid" linking mechanism is
-           supported according to the CRT maintainer. Dynamic linking against the CRT makes the binaries a bit smaller
-           than they would otherwise be if the CRT, runtime, and STL were all statically linked in. -->
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries);libucrtd.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalOptions>%(AdditionalOptions) /defaultlib:ucrtd.lib /profile /opt:ref /opt:icf</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /profile /opt:ref /opt:icf</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
-    <ClCompile>
-      <!-- We use MultiThreaded, rather than MultiThreadedDLL, to avoid DLL dependencies on VCRUNTIME140.dll and MSVCP140.dll. -->
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-    </ClCompile>
     <Link>
-      <!-- Link statically against the runtime and STL, but link dynamically against the CRT by ignoring the static CRT
-           lib and instead linking against the Universal CRT DLL import library. This "hybrid" linking mechanism is
-           supported according to the CRT maintainer. Dynamic linking against the CRT makes the binaries a bit smaller
-           than they would otherwise be if the CRT, runtime, and STL were all statically linked in. -->
-      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries);libucrt.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalOptions>%(AdditionalOptions) /defaultlib:ucrt.lib /profile /opt:ref /opt:icf</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /profile /opt:ref /opt:icf</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -167,6 +149,9 @@
     <Import Project="$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(CppWinRTNuget)\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.targets')" />
     <Import Project="$(WebView2Nuget)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(WebView2Nuget)\build\native\Microsoft.Web.WebView2.targets')" />
+  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\..\..\hybridcrt.targets" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
