@@ -219,6 +219,36 @@ namespace KeyboardManagerEditorUI.Pages
             bool isAppSpecific = RemappingControl.GetIsAppSpecific();
             string appName = RemappingControl.GetAppName();
 
+            // Check if original keys are empty
+            if (originalKeys == null || originalKeys.Count == 0)
+            {
+                EmptyOriginalKeysTeachingTip.Target = RemappingControl;
+                EmptyOriginalKeysTeachingTip.Tag = args;
+                EmptyOriginalKeysTeachingTip.IsOpen = true;
+                args.Cancel = true;
+                return;
+            }
+
+            // Check if remapped keys are empty
+            if (remappedKeys == null || remappedKeys.Count == 0)
+            {
+                EmptyRemappedKeysTeachingTip.Target = RemappingControl;
+                EmptyRemappedKeysTeachingTip.Tag = args;
+                EmptyRemappedKeysTeachingTip.IsOpen = true;
+                args.Cancel = true;
+                return;
+            }
+
+            // Check if app specific is checked but no app name is provided
+            if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
+            {
+                EmptyAppNameTeachingTip.Target = RemappingControl;
+                EmptyAppNameTeachingTip.Tag = args;
+                EmptyAppNameTeachingTip.IsOpen = true;
+                args.Cancel = true;
+                return;
+            }
+
             // Check if this is a shortcut (multiple keys) and if it's an illegal combination
             if (originalKeys.Count > 1)
             {
@@ -349,6 +379,21 @@ namespace KeyboardManagerEditorUI.Pages
         }
 
         private void SelfMappingTeachingTip_CloseButtonClick(TeachingTip sender, object args)
+        {
+            sender.IsOpen = false;
+        }
+
+        private void EmptyOriginalKeysTeachingTip_CloseButtonClick(TeachingTip sender, object args)
+        {
+            sender.IsOpen = false;
+        }
+
+        private void EmptyRemappedKeysTeachingTip_CloseButtonClick(TeachingTip sender, object args)
+        {
+            sender.IsOpen = false;
+        }
+
+        private void EmptyAppNameTeachingTip_CloseButtonClick(TeachingTip sender, object args)
         {
             sender.IsOpen = false;
         }

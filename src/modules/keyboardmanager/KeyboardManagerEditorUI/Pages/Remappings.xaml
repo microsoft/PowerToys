@@ -244,5 +244,43 @@
                 <SymbolIconSource Symbol="Important" />
             </TeachingTip.IconSource>
         </TeachingTip>
+        <TeachingTip
+            x:Name="EmptyOriginalKeysTeachingTip"
+            Title="Missing Original Keys"
+            CloseButtonClick="EmptyOriginalKeysTeachingTip_CloseButtonClick"
+            CloseButtonContent="OK"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Center"
+            Subtitle="Please enter at least one original key to create a remapping.">
+            <TeachingTip.IconSource>
+                <SymbolIconSource Symbol="Important" />
+            </TeachingTip.IconSource>
+        </TeachingTip>
+
+        <TeachingTip
+            x:Name="EmptyRemappedKeysTeachingTip"
+            Title="Missing Target Keys"
+            CloseButtonClick="EmptyRemappedKeysTeachingTip_CloseButtonClick"
+            CloseButtonContent="OK"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Center"
+            Subtitle="Please enter at least one target key to create a remapping.">
+            <TeachingTip.IconSource>
+                <SymbolIconSource Symbol="Important" />
+            </TeachingTip.IconSource>
+        </TeachingTip>
+
+        <TeachingTip
+            x:Name="EmptyAppNameTeachingTip"
+            Title="Missing Application Name"
+            CloseButtonClick="EmptyAppNameTeachingTip_CloseButtonClick"
+            CloseButtonContent="OK"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Center"
+            Subtitle="You've selected app-specific remapping but haven't specified an application name. Please enter the application name.">
+            <TeachingTip.IconSource>
+                <SymbolIconSource Symbol="Important" />
+            </TeachingTip.IconSource>
+        </TeachingTip>
     </Grid>
 </Page>
