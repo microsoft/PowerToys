@@ -160,7 +160,7 @@ namespace PowerLauncher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PowerToys Run - Plugin Initialization Error.
+        ///   Looks up a localized string similar to PowerToys Run {0} - Plugin Initialization Error.
         /// </summary>
         public static string FailedToInitializePluginsTitle {
             get {
