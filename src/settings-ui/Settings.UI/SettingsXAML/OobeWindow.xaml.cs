@@ -31,7 +31,6 @@ namespace Microsoft.PowerToys.Settings.UI
         private WindowId _windowId;
         private IntPtr _hWnd;
         private AppWindow _appWindow;
-        private WindowMessageMonitor _msgMonitor;
         private bool disposedValue;
 
         public OobeWindow(PowerToysModules initialModule)
@@ -46,10 +45,6 @@ namespace Microsoft.PowerToys.Settings.UI
             _appWindow = AppWindow.GetFromWindowId(_windowId);
             this.Activated += Window_Activated_SetIcon;
 
-            OverlappedPresenter presenter = _appWindow.Presenter as OverlappedPresenter;
-            presenter.IsMinimizable = false;
-            presenter.IsMaximizable = false;
-
             var dpi = NativeMethods.GetDpiForWindow(_hWnd);
             _currentDPI = dpi;
             float scalingFactor = (float)dpi / DefaultDPI;
@@ -62,18 +57,6 @@ namespace Microsoft.PowerToys.Settings.UI
             _appWindow.Resize(size);
 
             this.initialModule = initialModule;
-
-            _msgMonitor = new WindowMessageMonitor(this);
-            _msgMonitor.WindowMessageReceived += (_, e) =>
-            {
-                const int WM_NCLBUTTONDBLCLK = 0x00A3;
-                if (e.Message.MessageId == WM_NCLBUTTONDBLCLK)
-                {
-                    // Disable double click on title bar to maximize window
-                    e.Result = 0;
-                    e.Handled = true;
-                }
-            };
 
             this.SizeChanged += OobeWindow_SizeChanged;
 
@@ -154,8 +137,6 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             if (!disposedValue)
             {
-                _msgMonitor?.Dispose();
-
                 disposedValue = true;
             }
         }

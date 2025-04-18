@@ -8,6 +8,8 @@ using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -21,6 +23,7 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class SearchBar : UserControl,
     IRecipient<GoHomeMessage>,
     IRecipient<FocusSearchBoxMessage>,
+    IRecipient<UpdateItemKeybindingsMessage>,
     ICurrentPageAware
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -30,6 +33,8 @@ public sealed partial class SearchBar : UserControl,
     /// </summary>
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
     private bool _isBackspaceHeld;
+
+    private Dictionary<KeyChord, CommandContextItemViewModel>? _keyBindings;
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -69,6 +74,7 @@ public sealed partial class SearchBar : UserControl,
         this.InitializeComponent();
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
+        WeakReferenceMessenger.Default.Register<UpdateItemKeybindingsMessage>(this);
     }
 
     public void ClearSearch()
@@ -105,7 +111,9 @@ public sealed partial class SearchBar : UserControl,
 
         var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
         var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-
+        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
+        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
+            InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
         if (ctrlPressed && e.Key == VirtualKey.Enter)
         {
             // ctrl+enter
@@ -163,6 +171,19 @@ public sealed partial class SearchBar : UserControl,
         else if (e.Key == VirtualKey.Left && altPressed)
         {
             WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
+        }
+
+        if (_keyBindings != null)
+        {
+            // Does the pressed key match any of the keybindings?
+            var pressedKeyChord = KeyChordHelpers.FromModifiers(ctrlPressed, altPressed, shiftPressed, winPressed, (int)e.Key, 0);
+            if (_keyBindings.TryGetValue(pressedKeyChord, out var item))
+            {
+                // TODO GH #245: This is a bit of a hack, but we need to make sure that the keybindings are updated before we send the message
+                // so that the correct item is activated.
+                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item));
+                e.Handled = true;
+            }
         }
     }
 
@@ -250,18 +271,31 @@ public sealed partial class SearchBar : UserControl,
     private void Page_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var property = e.PropertyName;
-        if (CurrentPageViewModel is ListViewModel list &&
-            property == nameof(ListViewModel.SearchText))
-        {
-            // Only if the text actually changed...
-            // (sometimes this triggers on a round-trip of the SearchText)
-            if (FilterBox.Text != list.SearchText)
-            {
-                // ... Update our displayed text, and...
-                FilterBox.Text = list.SearchText;
 
-                // ... Move the cursor to the end of the input
-                FilterBox.Select(FilterBox.Text.Length, 0);
+        if (CurrentPageViewModel is ListViewModel list)
+        {
+            if (property == nameof(ListViewModel.SearchText))
+            {
+                // Only if the text actually changed...
+                // (sometimes this triggers on a round-trip of the SearchText)
+                if (FilterBox.Text != list.SearchText)
+                {
+                    // ... Update our displayed text, and...
+                    FilterBox.Text = list.SearchText;
+
+                    // ... Move the cursor to the end of the input
+                    FilterBox.Select(FilterBox.Text.Length, 0);
+                }
+            }
+            else if (property == nameof(ListViewModel.InitialSearchText))
+            {
+                // GH #38712:
+                // The ListPage will notify us of the `InitialSearchText` when
+                // we first load the viewmodel. We can use that as an
+                // opportunity to immediately select the search text. That lets
+                // the user start typing a new search without manually
+                // selecting the old one.
+                SelectSearch();
             }
         }
     }
@@ -269,4 +303,9 @@ public sealed partial class SearchBar : UserControl,
     public void Receive(GoHomeMessage message) => ClearSearch();
 
     public void Receive(FocusSearchBoxMessage message) => this.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+
+    public void Receive(UpdateItemKeybindingsMessage message)
+    {
+        _keyBindings = message.Keys;
+    }
 }

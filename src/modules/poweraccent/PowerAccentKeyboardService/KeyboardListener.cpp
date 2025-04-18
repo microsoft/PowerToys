@@ -169,6 +169,14 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
         if (std::find(letters.begin(), letters.end(), letterKey) != cend(letters) && m_isLanguageLetterCb(letterKey))
         {
+            if (m_toolbarVisible && letterPressed == letterKey)
+            {
+                // On-screen keyboard continuously sends WM_KEYDOWN when a key is held down
+                // If Quick Accent is visible, prevent the letter key from being processed
+                // https://github.com/microsoft/PowerToys/issues/36853
+                return true;
+            }
+
             m_stopwatch.reset();
             letterPressed = letterKey;
         }
@@ -282,12 +290,11 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     LRESULT KeyboardListener::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
+        if (nCode == HC_ACTION && s_instance != nullptr)
         {
-            if (nCode == HC_ACTION && s_instance != nullptr)
+            KBDLLHOOKSTRUCT* key = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+            switch (wParam)
             {
-                KBDLLHOOKSTRUCT* key = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-                switch (wParam)
-                {
                 case WM_KEYDOWN:
                 {
                     if (s_instance->OnKeyDown(*key))
@@ -304,10 +311,9 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                     }
                 }
                 break;
-                }
             }
-
-            return CallNextHookEx(NULL, nCode, wParam, lParam);
         }
+
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
 }

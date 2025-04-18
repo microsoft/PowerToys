@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Apps;
@@ -78,7 +79,7 @@ public partial class App : Application
 
         var cmdArgs = Environment.GetCommandLineArgs();
 
-        bool runFromPT = false;
+        var runFromPT = false;
         foreach (var arg in cmdArgs)
         {
             if (arg == "RunFromPT")
@@ -107,9 +108,6 @@ public partial class App : Application
 
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
-        var winget = new WinGetExtensionCommandsProvider();
-        var callback = allApps.LookupApp;
-        winget.SetAllLookup(callback);
         services.AddSingleton<ICommandProvider>(allApps);
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
@@ -120,7 +118,25 @@ public partial class App : Application
         // services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
-        services.AddSingleton<ICommandProvider>(winget);
+
+        // GH #38440: Users might not have WinGet installed! Or they might have
+        // a ridiculously old version. Or might be running as admin.
+        // We shouldn't explode in the App ctor if we fail to instantiate an
+        // instance of PackageManager, which will happen in the static ctor
+        // for WinGetStatics
+        try
+        {
+            var winget = new WinGetExtensionCommandsProvider();
+            var callback = allApps.LookupApp;
+            winget.SetAllLookup(callback);
+            services.AddSingleton<ICommandProvider>(winget);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Couldn't load winget");
+            Logger.LogError(ex.ToString());
+        }
+
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
         services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();

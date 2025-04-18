@@ -222,7 +222,7 @@ namespace ColorPicker.Helpers
 
         public bool HandleEnterPressed()
         {
-            if (!IsColorPickerVisible())
+            if (!_colorPickerShown)
             {
                 return false;
             }
@@ -233,14 +233,13 @@ namespace ColorPicker.Helpers
 
         public bool HandleEscPressed()
         {
-            if (!BlockEscapeKeyClosingColorPickerEditor)
+            if (!BlockEscapeKeyClosingColorPickerEditor
+                && (_colorPickerShown || (_colorEditorWindow != null && _colorEditorWindow.IsActive)))
             {
                 return EndUserSession();
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         internal void MoveCursor(int xOffset, int yOffset)

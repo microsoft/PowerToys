@@ -152,7 +152,7 @@ We've made it easy to build a new extension. Just follow these steps:
 2. Run the following PowerShell script, replacing "MastodonExtension" with the `Name` of your extension and "Mastodon extension for cmdpal" with the `DisplayName` of the [command that will show up in the root view](#root-view) of the Command Palette:
     
 ```powershell
-.\Exts\NewExtension.ps1 -name MastodonExtension -DisplayName "Mastodon extension for cmdpal"
+.\ext\NewExtension.ps1 -name MastodonExtension -DisplayName "Mastodon extension for cmdpal"
 ```
 
 3. Open the solution in Visual Studio.
