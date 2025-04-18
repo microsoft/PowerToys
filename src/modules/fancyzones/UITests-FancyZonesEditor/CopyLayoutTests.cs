@@ -17,7 +17,7 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class CopyLayoutTests : UITestBase
     {
         public CopyLayoutTests()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 

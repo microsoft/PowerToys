@@ -4,6 +4,8 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 using FancyZonesEditor.Models;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
@@ -11,15 +13,18 @@ using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModernWpf.Controls;
 using OpenQA.Selenium;
+using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
+using NavigationViewItem = Microsoft.PowerToys.UITest.NavigationViewItem;
+using ToggleSwitch = Microsoft.PowerToys.UITest.ToggleSwitch;
 
-namespace Microsoft.FancyZonesEditor.UITests
+namespace Microsoft.FancyZones.UITests
 {
     [TestClass]
-    public class ApplyLayoutTests : UITestBase
+    public class LayoutApplyHotKeyTests : UITestBase
     {
-        public ApplyLayoutTests()
-            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
+        public LayoutApplyHotKeyTests()
+            : base(PowerToysModule.PowerToysSettings)
         {
         }
 
@@ -68,18 +73,97 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>
             {
-                new CustomLayouts.CustomLayoutWrapper
+                new CustomLayoutWrapper
+                {
+                    Uuid = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
+                    Type = CustomLayout.Grid.TypeToString(),
+                    Name = "Grid custom layout",
+                    Info = new CustomLayouts().ToJsonElement(new GridInfoWrapper
+                    {
+                        Rows = 2,
+                        Columns = 2,
+                        RowsPercentage = new List<int> { 5000, 5000 },
+                        ColumnsPercentage = new List<int> { 5000, 5000 },
+                        CellChildMap = new int[][] { [0, 1], [2, 3] },
+                        SensitivityRadius = 30,
+                        Spacing = 26,
+                        ShowSpacing = false,
+                    }),
+                },
+                new CustomLayoutWrapper
+                {
+                    Uuid = "{0EB9BF3E-010E-46D7-8681-1879D1E111E1}",
+                    Type = CustomLayout.Grid.TypeToString(),
+                    Name = "Grid-9",
+                    Info = new CustomLayouts().ToJsonElement(new GridInfoWrapper
+                    {
+                        Rows = 3,
+                        Columns = 3,
+                        RowsPercentage = new List<int> { 2333, 3333, 4334 },
+                        ColumnsPercentage = new List<int> { 2333, 3333, 4334 },
+                        CellChildMap = new int[][] { [0, 1, 2], [3, 4, 5], [6, 7, 8] },
+                        SensitivityRadius = 20,
+                        Spacing = 3,
+                        ShowSpacing = false,
+                    }),
+                },
+                new CustomLayoutWrapper
                 {
                     Uuid = "{E7807D0D-6223-4883-B15B-1F3883944C09}",
                     Type = CustomLayout.Canvas.TypeToString(),
-                    Name = "Custom layout",
-                    Info = new CustomLayouts().ToJsonElement(new CustomLayouts.CanvasInfoWrapper
+                    Name = "Canvas custom layout",
+                    Info = new CustomLayouts().ToJsonElement(new CanvasInfoWrapper
                     {
-                        RefHeight = 952,
-                        RefWidth = 1500,
+                        RefHeight = 1040,
+                        RefWidth = 1920,
                         SensitivityRadius = 10,
-                        Zones = new List<CustomLayouts.CanvasInfoWrapper.CanvasZoneWrapper> { },
+                        Zones = new List<CanvasInfoWrapper.CanvasZoneWrapper>
+                        {
+                            new CanvasInfoWrapper.CanvasZoneWrapper
+                            {
+                                X = 0,
+                                Y = 0,
+                                Width = 500,
+                                Height = 250,
+                            },
+                            new CanvasInfoWrapper.CanvasZoneWrapper
+                            {
+                                X = 500,
+                                Y = 0,
+                                Width = 1420,
+                                Height = 500,
+                            },
+                            new CanvasInfoWrapper.CanvasZoneWrapper
+                            {
+                                X = 0,
+                                Y = 250,
+                                Width = 1920,
+                                Height = 500,
+                            },
+                        },
                     }),
+                },
+            },
+        };
+
+        private static readonly LayoutHotkeys.LayoutHotkeysWrapper LayoutHotkeysList = new LayoutHotkeys.LayoutHotkeysWrapper
+        {
+            LayoutHotkeys = new List<LayoutHotkeys.LayoutHotkeyWrapper>
+            {
+                new LayoutHotkeys.LayoutHotkeyWrapper
+                {
+                    Key = 0,
+                    LayoutId = "{0D6D2F58-9184-4804-81E4-4E4CC3476DC1}",
+                },
+                new LayoutHotkeys.LayoutHotkeyWrapper
+                {
+                    Key = 1,
+                    LayoutId = "{0EB9BF3E-010E-46D7-8681-1879D1E111E1}",
+                },
+                new LayoutHotkeys.LayoutHotkeyWrapper
+                {
+                    Key = 2,
+                    LayoutId = "{E7807D0D-6223-4883-B15B-1F3883944C09}",
                 },
             },
         };
@@ -180,11 +264,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(defaultLayoutsListWrapper));
 
             LayoutHotkeys layoutHotkeys = new LayoutHotkeys();
-            LayoutHotkeys.LayoutHotkeysWrapper layoutHotkeysWrapper = new LayoutHotkeys.LayoutHotkeysWrapper
-            {
-                LayoutHotkeys = new List<LayoutHotkeys.LayoutHotkeyWrapper> { },
-            };
-            FancyZonesEditorHelper.Files.LayoutHotkeysIOHelper.WriteData(layoutHotkeys.Serialize(layoutHotkeysWrapper));
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(layoutHotkeys.Serialize(LayoutHotkeysList));
 
             AppliedLayouts appliedLayouts = new AppliedLayouts();
             AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
@@ -197,107 +277,30 @@ namespace Microsoft.FancyZonesEditor.UITests
         }
 
         [TestMethod]
-        public void ApplyCustomLayout()
+        public void TestApplyHotKey()
         {
-            var layout = CustomLayoutsList.CustomLayouts[0];
-            Assert.IsFalse(Session.Find<Element>(layout.Name).Selected);
-            Session.Find<Element>(layout.Name).Click();
+            this.OpenFancyZonesPanel();
 
-            Assert.IsTrue(Session.Find<Element>(layout.Name).Selected);
-
-            AppliedLayouts appliedLayouts = new AppliedLayouts();
-            var data = appliedLayouts.Read(appliedLayouts.File);
-            Assert.AreEqual(Parameters.Monitors.Count, data.AppliedLayouts.Count);
-            Assert.AreEqual(layout.Uuid, data.AppliedLayouts[0].AppliedLayout.Uuid);
-            Assert.AreEqual(Parameters.Monitors[0].MonitorNumber, data.AppliedLayouts[0].Device.MonitorNumber);
+            // this.Find<ToggleSwitch>("Enable quick layout switch").Toggle(true);
         }
 
-        [TestMethod]
-        public void ApplyTemplateLayout()
+        private void OpenFancyZonesPanel(bool launchAsAdmin = false)
         {
-            var layoutType = LayoutType.Columns;
-            var layout = TestConstants.TemplateLayoutNames[layoutType];
-            Assert.IsFalse(Session.Find<Element>(layout).Selected);
-            Session.Find<Element>(layout).Click();
+            // Goto FancyZones Editor setting page
+            if (this.FindAll<NavigationViewItem>("FancyZones").Count == 0)
+            {
+                // Expand Advanced list-group if needed
+                this.Find<NavigationViewItem>("Windowing & Layouts").Click();
+            }
 
-            Assert.IsTrue(Session.Find<Element>(layout).Selected);
+            this.Find<NavigationViewItem>("FancyZones").Click();
 
-            AppliedLayouts appliedLayouts = new AppliedLayouts();
-            var data = appliedLayouts.Read(appliedLayouts.File);
-            Assert.AreEqual(Parameters.Monitors.Count, data.AppliedLayouts.Count);
-            Assert.AreEqual(layoutType.TypeToString(), data.AppliedLayouts[0].AppliedLayout.Type);
-            Assert.AreEqual(Parameters.Monitors[0].MonitorNumber, data.AppliedLayouts[0].Device.MonitorNumber);
-        }
+            // launch Hosts File Editor
+            // this.Find<Button>("Launch layout editor").Click();
 
-        [TestMethod]
-        public void ApplyLayoutsOnEachMonitor()
-        {
-            // apply the layout on the first monitor
-            var firstLayoutType = LayoutType.Columns;
-            var firstLayoutName = TestConstants.TemplateLayoutNames[firstLayoutType];
-            Session.Find<Element>(firstLayoutName).Click();
-            Assert.IsTrue(Session.Find<Element>(firstLayoutName)!.Selected);
+            // Task.Delay(500).Wait();
 
-            // apply the layout on the second monitor
-            Session.Find<Element>(PowerToys.UITest.By.AccessibilityId("Monitors")).Find<Element>("Monitor 2").Click();
-            var secondLayout = CustomLayoutsList.CustomLayouts[0];
-            Session.Find<Element>(secondLayout.Name).Click();
-            Assert.IsTrue(Session.Find<Element>(secondLayout.Name)!.Selected);
-
-            // verify the layout on the first monitor wasn't changed
-            Session.Find<Element>(PowerToys.UITest.By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Click();
-            Assert.IsTrue(Session.Find<Element>(firstLayoutName)!.Selected);
-
-            // verify the file
-            var appliedLayouts = new AppliedLayouts();
-            var data = appliedLayouts.Read(appliedLayouts.File);
-            Assert.AreEqual(Parameters.Monitors.Count, data.AppliedLayouts.Count);
-            Assert.AreEqual(firstLayoutType.TypeToString(), data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 1).AppliedLayout.Type);
-            Assert.AreEqual(secondLayout.Uuid, data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 2).AppliedLayout.Uuid);
-        }
-
-        [TestMethod]
-        public void ApplyTemplateWithDifferentParametersOnEachMonitor()
-        {
-            var layoutType = LayoutType.Columns;
-            var layoutName = TestConstants.TemplateLayoutNames[layoutType];
-
-            // apply the layout on the first monitor, set parameters
-            Session.Find<Element>(layoutName).Click();
-            Session.Find<Element>(layoutName).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
-            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
-            Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
-            slider.SendKeys(Keys.Right);
-            var expectedFirstLayoutZoneCount = int.Parse(slider.Text!, CultureInfo.InvariantCulture);
-            Session.Find<Button>(ElementName.Save).Click();
-
-            // apply the layout on the second monitor, set different parameters
-            Session.Find<Element>(PowerToys.UITest.By.AccessibilityId("Monitors")).Find<Element>("Monitor 2").Click();
-            Session.Find<Element>(layoutName).Click();
-            Session.Find<Element>(layoutName).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
-            slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
-            Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Left);
-            var expectedSecondLayoutZoneCount = int.Parse(slider.Text!, CultureInfo.InvariantCulture);
-            Session.Find<Button>(ElementName.Save).Click();
-
-            // verify the layout on the first monitor wasn't changed
-            Session.Find<Element>(PowerToys.UITest.By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Click();
-            Session.Find<Element>(layoutName).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
-            slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
-            Assert.IsNotNull(slider);
-            Assert.AreEqual(expectedFirstLayoutZoneCount, int.Parse(slider.Text!, CultureInfo.InvariantCulture));
-            Session.Find<Button>(ElementName.Cancel).Click();
-
-            // check the file
-            var appliedLayouts = new AppliedLayouts();
-            var data = appliedLayouts.Read(appliedLayouts.File);
-            Assert.AreEqual(Parameters.Monitors.Count, data.AppliedLayouts.Count);
-            Assert.AreEqual(layoutType.TypeToString(), data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 1).AppliedLayout.Type);
-            Assert.AreEqual(expectedFirstLayoutZoneCount, data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 1).AppliedLayout.ZoneCount);
-            Assert.AreEqual(layoutType.TypeToString(), data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 2).AppliedLayout.Type);
-            Assert.AreEqual(expectedSecondLayoutZoneCount, data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 2).AppliedLayout.ZoneCount);
+            // this.Session.Attach(PowerToysModule.FancyZone);
         }
     }
 }
