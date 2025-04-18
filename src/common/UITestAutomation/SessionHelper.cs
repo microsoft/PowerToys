@@ -54,6 +54,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="scope">The PowerToys module to start.</param>
         public SessionHelper Init()
         {
+            // Exit setting exe to fix CommandPalette error, remove after fixing the issue
+            this.ExitExe(this.locationPath + ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings));
+
             this.ExitExe(this.locationPath + this.sessionPath);
             this.StartExe(this.locationPath + this.sessionPath);
 
@@ -89,7 +92,6 @@ namespace Microsoft.PowerToys.UITest
             // Exit Exe
             string exeName = Path.GetFileNameWithoutExtension(appPath);
 
-            // PowerToys.FancyZonesEditor
             Process[] processes = Process.GetProcessesByName(exeName);
             foreach (Process process in processes)
             {
