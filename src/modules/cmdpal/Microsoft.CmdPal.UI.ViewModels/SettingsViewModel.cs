@@ -108,6 +108,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool RecenterWindow
+    {
+        get => _settings.RecenterWindow;
+        set
+        {
+            _settings.RecenterWindow = value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)
