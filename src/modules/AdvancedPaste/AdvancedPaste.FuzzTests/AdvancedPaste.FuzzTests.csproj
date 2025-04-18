@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+	<!-- Look at Directory.Build.props in root for common stuff as well -->
+	<Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="..\..\..\Common.Dotnet.FuzzTest.props" />
 	<PropertyGroup>
-		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
