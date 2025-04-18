@@ -27,6 +27,17 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool UseLowLevelGlobalHotkey
+    {
+        get => _settings.UseLowLevelGlobalHotkey;
+        set
+        {
+            _settings.UseLowLevelGlobalHotkey = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
+            Save();
+        }
+    }
+
     public bool ShowAppDetails
     {
         get => _settings.ShowAppDetails;
@@ -83,6 +94,16 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         set
         {
             _settings.SummonOn = (MonitorBehavior)value;
+            Save();
+        }
+    }
+
+    public bool ShowSystemTrayIcon
+    {
+        get => _settings.ShowSystemTrayIcon;
+        set
+        {
+            _settings.ShowSystemTrayIcon = value;
             Save();
         }
     }

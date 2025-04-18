@@ -36,7 +36,7 @@
 
             <!--  Template for actions in the mode actions dropdown button  -->
             <DataTemplate x:Key="ContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
-                <Grid>
+                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
                         <ColumnDefinition Width="*" />
@@ -53,37 +53,16 @@
                         Grid.Column="1"
                         VerticalAlignment="Center"
                         Text="{x:Bind Title, Mode=OneWay}" />
-                    <!--<TextBlock
+                    <TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />-->
+                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
                 </Grid>
             </DataTemplate>
-
-            <animations:ImplicitAnimationSet x:Name="ShowAnimations">
-                <animations:OpacityAnimation
-                    From="0"
-                    To="1.0"
-                    Duration="0:0:0.340" />
-                <animations:ScaleAnimation
-                    From="0.85"
-                    To="1"
-                    Duration="0:0:0.350" />
-            </animations:ImplicitAnimationSet>
-            <animations:ImplicitAnimationSet x:Name="HideAnimations">
-                <animations:OpacityAnimation
-                    From="1.0"
-                    To="0"
-                    Duration="0:0:0.240" />
-                <animations:ScaleAnimation
-                    From="1"
-                    To="0.85"
-                    Duration="0:0:0.350" />
-            </animations:ImplicitAnimationSet>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -135,9 +114,6 @@
         <Button
             x:Name="SettingsIconButton"
             x:Uid="SettingsButton"
-            animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
-            animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
-            ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
             Style="{StaticResource SubtleButtonStyle}"
             Tapped="SettingsIcon_Tapped"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
@@ -167,10 +143,8 @@
             <Button
                 x:Name="PrimaryButton"
                 Padding="6,4,4,4"
-                animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
-                animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
-                ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                AutomationProperties.Name="{x:Bind ViewModel.PrimaryCommand.Name, Mode=OneWay}"
                 Background="Transparent"
                 Style="{StaticResource SubtleButtonStyle}"
                 Tapped="PrimaryButton_Tapped"
@@ -198,10 +172,8 @@
             <Button
                 x:Name="SecondaryButton"
                 Padding="6,4,4,4"
-                animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
-                animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
-                ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                 x:Load="{x:Bind IsLoaded, Mode=OneWay}"
+                AutomationProperties.Name="{x:Bind ViewModel.SecondaryCommand.Name, Mode=OneWay}"
                 Style="{StaticResource SubtleButtonStyle}"
                 Tapped="SecondaryButton_Tapped"
                 Visibility="{x:Bind ViewModel.HasSecondaryCommand, Mode=OneWay}">
@@ -245,13 +217,10 @@
                 x:Name="MoreCommandsButton"
                 x:Uid="MoreCommandsButton"
                 Padding="4"
-                animations:Implicit.HideAnimations="{StaticResource HideAnimations}"
-                animations:Implicit.ShowAnimations="{StaticResource ShowAnimations}"
-                ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
                 Content="{ui:FontIcon Glyph=&#xE712;,
                                       FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}"
-                ToolTipService.ToolTip="Ctrl+k"
+                ToolTipService.ToolTip="Ctrl+K"
                 Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
                 <Button.Flyout>
                     <Flyout Placement="TopEdgeAlignedRight">
@@ -263,6 +232,7 @@
                             ItemClick="CommandsDropdown_ItemClick"
                             ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
                             ItemsSource="{x:Bind ViewModel.ContextCommands, Mode=OneWay}"
+                            KeyDown="CommandsDropdown_KeyDown"
                             SelectionMode="None">
                             <ListView.ItemContainerStyle>
                                 <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
