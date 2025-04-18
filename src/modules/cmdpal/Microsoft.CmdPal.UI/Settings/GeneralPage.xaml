@@ -63,6 +63,10 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_RecenterWindow_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE9A9;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.RecenterWindow, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
@@ -79,10 +83,6 @@
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
-                    </controls:SettingsCard>
-
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_RecenterWindow_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE9A9;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.RecenterWindow, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <!--  Example 'About' section  -->
