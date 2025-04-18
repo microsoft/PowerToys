@@ -8,11 +8,12 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ManagedCommon;
 using Settings.UI.Library.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Library;
 
-public partial class ImageSize : INotifyPropertyChanged
+public partial class ImageSize : INotifyPropertyChanged, IHasId
 {
     public event PropertyChangedEventHandler PropertyChanged;
 
