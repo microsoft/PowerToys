@@ -62,6 +62,9 @@ public sealed partial class MainWindow : Window,
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
 
+    private WindowPosition _currentWindowPosition = new();
+    private bool _recenterWindow = true;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -83,6 +86,8 @@ public sealed partial class MainWindow : Window,
         AppWindow.Title = RS_.GetString("AppName");
         AppWindow.Resize(new SizeInt32 { Width = 1000, Height = 620 });
         PositionCentered();
+        UpdateWindowPositionInMemory();
+
         SetAcrylic();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
@@ -98,6 +103,7 @@ public sealed partial class MainWindow : Window,
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         SizeChanged += WindowSizeChanged;
         RootShellPage.Loaded += RootShellPage_Loaded;
+        AppWindow.Changed += AppWindow_Changed;
 
         // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
         // member (and instead like, use a local), then the pointer we marshal
@@ -128,6 +134,14 @@ public sealed partial class MainWindow : Window,
         // Now that our content has loaded, we can update our draggable regions
         UpdateRegionsForCustomTitleBar();
 
+    private void AppWindow_Changed(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowChangedEventArgs args)
+    {
+        if (args.DidPositionChange || args.DidSizeChange)
+        {
+            UpdateWindowPositionInMemory();
+        }
+    }
+
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
     private void PositionCentered()
@@ -150,12 +164,24 @@ public sealed partial class MainWindow : Window,
         }
     }
 
+    private void UpdateWindowPositionInMemory()
+    {
+        _currentWindowPosition = new WindowPosition
+        {
+            X = AppWindow.Position.X,
+            Y = AppWindow.Position.Y,
+            Width = AppWindow.Size.Width,
+            Height = AppWindow.Size.Height,
+        };
+    }
+
     private void HotReloadSettings()
     {
         var settings = App.Current.Services.GetService<SettingsModel>()!;
 
         SetupHotkey(settings);
         SetupTrayIcon(settings.ShowSystemTrayIcon);
+        _recenterWindow = settings.RecenterWindow;
 
         // This will prevent our window from appearing in alt+tab or the taskbar.
         // You'll _need_ to use the hotkey to summon it.
@@ -225,8 +251,16 @@ public sealed partial class MainWindow : Window,
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
-        var display = GetScreen(hwnd, target);
-        PositionCentered(display);
+        if (_recenterWindow)
+        {
+            var display = GetScreen(hwnd, target);
+            PositionCentered(display);
+        }
+        else
+        {
+            AppWindow.Resize(new SizeInt32 { Width = _currentWindowPosition.Width, Height = _currentWindowPosition.Height });
+            AppWindow.Move(new PointInt32 { X = _currentWindowPosition.X, Y = _currentWindowPosition.Y });
+        }
 
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
         PInvoke.SetForegroundWindow(hwnd);
@@ -293,8 +327,11 @@ public sealed partial class MainWindow : Window,
         // This might come in on a background thread
         DispatcherQueue.TryEnqueue(() => Close());
 
-    public void Receive(DismissMessage message) =>
+    public void Receive(DismissMessage message)
+    {
+        UpdateWindowPositionInMemory();
         PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+    }
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
