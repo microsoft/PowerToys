@@ -14,7 +14,6 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 internal sealed partial class AppListItem : ListItem
 {
     private readonly AppItem _app;
-    private static readonly Tag _appTag = new("App");
 
     private readonly Lazy<Details> _details;
     private readonly Lazy<IconInfo> _icon;
@@ -29,7 +28,6 @@ internal sealed partial class AppListItem : ListItem
         _app = app;
         Title = app.Name;
         Subtitle = app.Subtitle;
-        Tags = [_appTag];
         MoreCommands = _app.Commands!.ToArray();
 
         _details = new Lazy<Details>(() =>
