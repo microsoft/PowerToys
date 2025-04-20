@@ -25,7 +25,13 @@ public sealed partial class ContentFormControl : UserControl
     static ContentFormControl()
     {
         // We can't use `CardOverrideStyles` here yet, because we haven't called InitializeComponent once.
-        // But also, the default value isn't `null` here. It's... some other default empty value.
+        // But also, the default value isn't `null` here. It's... some other default
+        //
+        //
+        //
+        //
+        //
+        // value.
         // So clear it out so that we know when the first time we get created is
         _renderer = new AdaptiveCardRenderer()
         {
