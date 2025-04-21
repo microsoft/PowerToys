@@ -216,5 +216,29 @@
     </Page>
   </ItemGroup>
   <!-- </AdaptiveCardsWorkaround> -->
+  <!--
+    Some of our dependencies still require a CRT, so we're going to ship the forwarders in our package and
+    depend on the desktop CRT. This lets us unify the Windows 10 and Windows 11 builds around a common CRT.
+  -->
+  <!-- This target removes the FrameworkSdkReferences from before the AppX package targets manifest generation happens.
+       This is part of the generic machinery that applies to every AppX. -->
+  <Target Name="_OpenConsoleStripAllDependenciesFromPackageFirstManifest" BeforeTargets="_GenerateCurrentProjectAppxManifest">
+    <ItemGroup>
+      <FrameworkSdkReference Remove="@(FrameworkSdkReference)" Condition="'%(FrameworkSdkReference.SimpleName)'=='Microsoft.VCLibs'" />
+      <FrameworkSdkPackage Remove="@(FrameworkSdkPackage)" Condition="'%(FrameworkSdkPackage.Name)'=='Microsoft.VCLibs.140.00' or '%(FrameworkSdkPackage.Name)'=='Microsoft.VCLibs.140.00.Debug'" />
+      <FrameworkSdkReference Remove="@(FrameworkSdkReference)" Condition="'%(FrameworkSdkReference.SimpleName)'=='Microsoft.VCLibs.Desktop'" />
+      <FrameworkSdkPackage Remove="@(FrameworkSdkPackage)" Condition="'%(FrameworkSdkPackage.Name)'=='Microsoft.VCLibs.140.00.UWPDesktop' or '%(FrameworkSdkPackage.Name)'=='Microsoft.VCLibs.140.00.Debug.UWPDesktop'" />
+    </ItemGroup>
+  </Target>
+
+  <!-- This target removes the FrameworkSdkPackages from before the *desktop bridge* manifest generation happens. -->
+  <Target Name="_OpenConsoleStripAllDependenciesFromPackageSecondManifest" BeforeTargets="_GenerateDesktopBridgeAppxManifest" DependsOnTargets="_ResolveVCLibDependencies">
+    <ItemGroup>
+      <FrameworkSdkReference Remove="@(FrameworkSdkReference)" Condition="'%(FrameworkSdkReference.SimpleName)'=='Microsoft.VCLibs'" />
+      <FrameworkSdkPackage Remove="@(FrameworkSdkPackage)" Condition="'%(FrameworkSdkPackage.Name)'=='Microsoft.VCLibs.140.00' or '%(FrameworkSdkPackage.Name)'=='Microsoft.VCLibs.140.00.Debug'" />
+      <FrameworkSdkReference Remove="@(FrameworkSdkReference)" Condition="'%(FrameworkSdkReference.SimpleName)'=='Microsoft.VCLibs.Desktop'" />
+      <FrameworkSdkPackage Remove="@(FrameworkSdkPackage)" Condition="'%(FrameworkSdkPackage.Name)'=='Microsoft.VCLibs.140.00.UWPDesktop' or '%(FrameworkSdkPackage.Name)'=='Microsoft.VCLibs.140.00.Debug.UWPDesktop'" />
+    </ItemGroup>
+  </Target>
 
 </Project>

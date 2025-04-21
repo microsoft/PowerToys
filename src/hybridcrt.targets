@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DisableVCLibsReference>true</DisableVCLibsReference>
+    <UseCrtSDKReference>false</UseCrtSDKReference>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition="'$(HybridCrtConfiguration)'=='Debug'">
@@ -38,13 +38,4 @@
       <AdditionalOptions>%(AdditionalOptions) /defaultlib:ucrt.lib</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
-
-
-  <ItemGroup>
-    <SDKReference Remove="Microsoft.VCLibs.Desktop" />
-    <SDKReference Remove="Microsoft.VCLibs" />
-    <SDKReference Remove="Microsoft.UniversalCRT.Debug" />
-    <SDKReference Remove="Microsoft.UniversalCRT" />
-  </ItemGroup>
-  
 </Project>
