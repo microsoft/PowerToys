@@ -362,7 +362,7 @@ namespace Microsoft.PowerToys.UITest
                 return;
             }
 
-            ApiHelper.SetWindowPos(this.MainWindowHandler, IntPtr.Zero, 0, 0, width, height, ApiHelper.SetWindowPosNoMove | ApiHelper.SetWindowPosNoZorder | ApiHelper.SetWindowPosShowWindow);
+            ApiHelper.SetWindowPos(this.MainWindowHandler, IntPtr.Zero, 0, 0, width, height, ApiHelper.SetWindowPosNoZorder | ApiHelper.SetWindowPosShowWindow);
 
             // Wait for 1000ms after resize
             Task.Delay(1000).Wait();
@@ -397,6 +397,18 @@ namespace Microsoft.PowerToys.UITest
             int b = (int)((pixel & 0x00FF0000) >> 16);
 
             return Color.FromArgb(r, g, b);
+        }
+
+        /// <summary>
+        /// Retrieves the color of the pixel at the specified screen coordinates as a string.
+        /// </summary>
+        /// <param name="x">The X coordinate on the screen.</param>
+        /// <param name="y">The Y coordinate on the screen.</param>
+        /// <returns>The color of the pixel at the specified coordinates.</returns>
+        public string GetPixelColorString(int x, int y)
+        {
+            Color color = this.GetPixelColor(x, y);
+            return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
         }
 
         /// <summary>
@@ -452,6 +464,21 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// press and hold the specified key.
+        /// </summary>
+        /// <param name="key">The key to press and release .</param>
+        public void SendKey(Key key, int msPreAction = 500, int msPostAction = 500)
+        {
+            PerformAction(
+                () =>
+            {
+                KeyboardHelper.SendKey(key);
+            },
+                msPreAction,
+                msPostAction);
+        }
+
+        /// <summary>
         /// Sends a sequence of keys.
         /// </summary>
         /// <param name="keys">An array of keys to send.</param>
@@ -486,6 +513,66 @@ namespace Microsoft.PowerToys.UITest
          {
              MouseHelper.MoveMouseTo(x, y);
          });
+        }
+
+        /// <summary>
+        /// Performs a mouse action based on the specified action type.
+        /// </summary>
+        /// <param name="action">The mouse action to perform.</param>
+        /// <param name="msPreAction">Pre-action delay in milliseconds.</param>
+        /// <param name="msPostAction">Post-action delay in milliseconds.</param>
+        public void PerformMouseAction(MouseActionType action, int msPreAction = 500, int msPostAction = 500)
+        {
+            PerformAction(
+                () =>
+            {
+                switch (action)
+                {
+                    case MouseActionType.LeftClick:
+                        MouseHelper.LeftClick();
+                        break;
+                    case MouseActionType.RightClick:
+                        MouseHelper.RightClick();
+                        break;
+                    case MouseActionType.MiddleClick:
+                        MouseHelper.MiddleClick();
+                        break;
+                    case MouseActionType.LeftDoubleClick:
+                        MouseHelper.LeftDoubleClick();
+                        break;
+                    case MouseActionType.RightDoubleClick:
+                        MouseHelper.RightDoubleClick();
+                        break;
+                    case MouseActionType.LeftDown:
+                        MouseHelper.LeftDown();
+                        break;
+                    case MouseActionType.LeftUp:
+                        MouseHelper.LeftUp();
+                        break;
+                    case MouseActionType.RightDown:
+                        MouseHelper.RightDown();
+                        break;
+                    case MouseActionType.RightUp:
+                        MouseHelper.RightUp();
+                        break;
+                    case MouseActionType.MiddleDown:
+                        MouseHelper.MiddleDown();
+                        break;
+                    case MouseActionType.MiddleUp:
+                        MouseHelper.MiddleUp();
+                        break;
+                    case MouseActionType.ScrollUp:
+                        MouseHelper.ScrollUp();
+                        break;
+                    case MouseActionType.ScrollDown:
+                        MouseHelper.ScrollDown();
+                        break;
+                    default:
+                        throw new ArgumentException("Unsupported mouse action.", nameof(action));
+                }
+            },
+                msPreAction,
+                msPostAction);
         }
 
         /// <summary>
