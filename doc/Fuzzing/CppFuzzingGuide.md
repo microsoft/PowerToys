@@ -14,11 +14,9 @@ This guide walks you through setting up a **fuzzing test** project for a C++ mod
 
 ---
 
-### 2. Add "Fuzzing" Build Configuration
+### 2. Update Build Configuration
 
-- In **Configuration Manager**, duplicate `Release`.
-- Name the new configuration: `Fuzzing`.
-- Uncheck Build for both Release and Debug configurations.
+- In **Configuration Manager**, Uncheck Build for both Release|ARM64, Debug|ARM64 and Debug|x64 configurations.
 - Note: ARM64 is not supported in this case, so leave ARM64 configurations build disabled.
 ---
 
@@ -27,7 +25,7 @@ This guide walks you through setting up a **fuzzing test** project for a C++ mod
 Edit the project file to enable fuzzing:
 
 ```xml
-<PropertyGroup Condition="'$(Configuration)'=='Fuzzing'">
+<PropertyGroup>
   <EnableASAN>true</EnableASAN>
   <EnableFuzzer>true</EnableFuzzer>
 </PropertyGroup>

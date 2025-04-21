@@ -50,9 +50,6 @@ parameters:
   - name: runTests
     type: boolean
     default: true
-  - name: fuzzingBuild
-    type: boolean
-    default: false
   - name: useVSPreview
     type: boolean
     default: false
@@ -113,10 +110,6 @@ jobs:
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    ${{ if eq(parameters.fuzzingBuild, true) }}:
-      FinalBuildConfiguration: Fuzzing
-    ${{ else }}:
-      FinalBuildConfiguration: ${{ parameters.BuildConfiguration }}
     ${{ if eq(parameters.runTests, true) }}:
       MSBuildMainBuildTargets: Build;Test
     ${{ else }}:
@@ -246,7 +239,7 @@ jobs:
         /t:$(MSBuildMainBuildTargets)
         $(RestoreAdditionalProjectSourcesArg)
       platform: $(BuildPlatform)
-      configuration: $(FinalBuildConfiguration)
+      configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
       maximumCpuCount: true
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
