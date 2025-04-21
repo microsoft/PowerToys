@@ -1,32 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Fuzzing|x64">
-      <Configuration>Fuzzing</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Fuzzing|ARM64">
-      <Configuration>Fuzzing</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|ARM64">
-      <Configuration>Release</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|ARM64">
-      <Configuration>Debug</Configuration>
-      <Platform>ARM64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
+  
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <ProjectGuid>{6955446D-23F7-4023-9BB3-8657F904AF99}</ProjectGuid>
@@ -39,24 +14,13 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)'=='Fuzzing'">
-    <EnableASAN>true</EnableASAN>
-    <EnableFuzzer>true</EnableFuzzer>
-  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <ItemDefinitionGroup Condition="'$(Configuration)'=='Fuzzing'">
-    <ClCompile>
-      <AdditionalIncludeDirectories>..\;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_LIB;_DISABLE_VECTOR_ANNOTATION;_DISABLE_STRING_ANNOTATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-
-  <ItemDefinitionGroup Condition="'$(Configuration)'!='Fuzzing'">
+  <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>..\;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
