@@ -102,8 +102,8 @@ namespace Microsoft.PowerToys.UITest
                 }
             }
 
-            // this.Session.Cleanup();
-            // this.sessionHelper!.Cleanup();
+            this.Session.Cleanup();
+            this.sessionHelper!.Cleanup();
         }
 
         public void Dispose()
