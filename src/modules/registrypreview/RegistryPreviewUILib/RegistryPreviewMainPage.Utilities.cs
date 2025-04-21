@@ -25,7 +25,7 @@ namespace RegistryPreviewUILib
     {
         private static readonly string _unsavedFileIndicator = "* ";
         private static readonly char[] _unsavedFileIndicatorChars = [' ', '*'];
-        
+
         private const string NEWFILEHEADER = "Windows Registry Editor Version 5.00\r\n\r\n";
 
         private static SemaphoreSlim _dialogSemaphore = new(1);
