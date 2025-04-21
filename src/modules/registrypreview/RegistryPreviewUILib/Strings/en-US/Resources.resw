@@ -370,6 +370,6 @@
     <value>New</value>
   </data>
   <data name="ReloadDialogContent" xml:space="preserve">
-    <value>Unsaved changes. Reload anyway?</value>
+    <value>You lose any unsaved changes. Reload anyway?</value>
   </data>
 </root>
