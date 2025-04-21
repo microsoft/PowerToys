@@ -96,7 +96,7 @@ namespace UITests_FancyZones
         }
 
         [TestMethod]
-        public void TestSwitchafterDesktopChange()
+        public void TestSwitchAfterDesktopChange()
         {
             SnaptoOneZone();
 
@@ -156,7 +156,7 @@ namespace UITests_FancyZones
             int targetX = screenWidth / SubZones / 3;
             int targetY = screenWidth / SubZones / 2;
 
-            // assert the appzonehistory layout is set
+            // assert the AppZoneHistory layout is set
             ZoneSwitchHelper.KillAllExplorerWindows();
 
             // Start Windows Explorer process
@@ -173,7 +173,7 @@ namespace UITests_FancyZones
             settingsView.DoubleClick(); // maximize the window
             settingsView.KeyDownAndDrag(Key.Shift, targetX, targetY);
 
-            // check the appzonehistory layout is set and in the same zone
+            // check the AppZoneHistory layout is set and in the same zone
             string appZoneHistoryJson = AppZoneHistory.GetData();
             Console.WriteLine($"{ZoneSwitchHelper.GetZoneIndexSetByAppName(WindowName, appZoneHistoryJson)},{ZoneSwitchHelper.GetZoneIndexSetByAppName(WindowName, appZoneHistoryJson)}");
             Assert.AreEqual(

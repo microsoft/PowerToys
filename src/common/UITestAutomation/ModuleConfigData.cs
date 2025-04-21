@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("UITestBase")]
 [assembly: InternalsVisibleTo("Session")]
-[assembly: InternalsVisibleTo("Microsoft.FancyZones.UITests")]
 
 namespace Microsoft.PowerToys.UITest
 {

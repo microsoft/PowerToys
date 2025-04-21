@@ -18,10 +18,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="HostModuleTests_TestEmptyView_EmptyView.png" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Appium.WebDriver" />
     <PackageReference Include="MSTest" />
     <PackageReference Include="System.IO.Abstractions" />

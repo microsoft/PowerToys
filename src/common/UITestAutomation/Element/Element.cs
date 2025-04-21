@@ -214,7 +214,6 @@ namespace Microsoft.PowerToys.UITest
             PerformAction((actions, windowElement) =>
             {
                 KeyboardHelper.PressKey(key);
-                Thread.Sleep(2000);
 
                 actions.MoveToElement(windowsElement)
                 .ClickAndHold()
@@ -231,7 +230,6 @@ namespace Microsoft.PowerToys.UITest
                 {
                     var stepAction = new Actions(driver);
                     stepAction.MoveByOffset(stepX, stepY).Perform();
-                    Thread.Sleep(10);
                 }
 
                 var releaseAction = new Actions(driver);

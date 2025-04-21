@@ -67,11 +67,6 @@ namespace Microsoft.FancyZones.UITests.Utils
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
-        public static IntPtr GetForegroundWindowp()
-        {
-            return GetForegroundWindow();
-        }
-
         public static string? GetActiveWindowTitle()
         {
             const int nChars = 256;
