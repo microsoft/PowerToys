@@ -4,25 +4,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using KeyboardManagerEditorUI.Interop;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
     public static class ValidationHelper
     {
-        public enum ValidationErrorType
-        {
-            EmptyOriginalKeys,
-            EmptyRemappedKeys,
-            ModifierOnly,
-            EmptyAppName,
-            IllegalShortcut,
-            DuplicateMapping,
-            SelfMapping,
-        }
-
         public static readonly Dictionary<ValidationErrorType, (string Title, string Message)> ValidationMessages = new()
         {
             { ValidationErrorType.EmptyOriginalKeys, ("Missing Original Keys", "Please enter at least one original key to create a remapping.") },
@@ -33,5 +24,181 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.DuplicateMapping, ("Duplicate Remapping", "This key or shortcut is already remapped.") },
             { ValidationErrorType.SelfMapping, ("Invalid Remapping", "A key or shortcut cannot be remapped to itself. Please choose a different target.") },
         };
+
+        public static ValidationErrorType ValidateKeyMapping(
+            List<string> originalKeys,
+            List<string> remappedKeys,
+            bool isAppSpecific,
+            string appName,
+            KeyboardMappingService mappingService)
+        {
+            // Check if original keys are empty
+            if (originalKeys == null || originalKeys.Count == 0)
+            {
+                return ValidationErrorType.EmptyOriginalKeys;
+            }
+
+            // Check if remapped keys are empty
+            if (remappedKeys == null || remappedKeys.Count == 0)
+            {
+                return ValidationErrorType.EmptyRemappedKeys;
+            }
+
+            // Check if shortcut contains only modifier keys
+            if ((originalKeys.Count > 1 && ContainsOnlyModifierKeys(originalKeys)) ||
+                (remappedKeys.Count > 1 && ContainsOnlyModifierKeys(remappedKeys)))
+            {
+                return ValidationErrorType.ModifierOnly;
+            }
+
+            // Check if app specific is checked but no app name is provided
+            if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
+            {
+                return ValidationErrorType.EmptyAppName;
+            }
+
+            // Check if this is a shortcut (multiple keys) and if it's an illegal combination
+            if (originalKeys.Count > 1)
+            {
+                string shortcutKeysString = string.Join(";", originalKeys.Select(k => KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+
+                if (KeyboardManagerInterop.IsShortcutIllegal(shortcutKeysString))
+                {
+                    return ValidationErrorType.IllegalShortcut;
+                }
+            }
+
+            // Check for duplicate mappings
+            if (IsDuplicateMapping(originalKeys, isAppSpecific, appName, mappingService))
+            {
+                return ValidationErrorType.DuplicateMapping;
+            }
+
+            // Check for self-mapping
+            if (IsSelfMapping(originalKeys, remappedKeys))
+            {
+                return ValidationErrorType.SelfMapping;
+            }
+
+            return ValidationErrorType.NoError;
+        }
+
+        public static bool IsDuplicateMapping(List<string> originalKeys, bool isAppSpecific, string appName, KeyboardMappingService mappingService)
+        {
+            if (mappingService == null || originalKeys == null || originalKeys.Count == 0)
+            {
+                return false;
+            }
+
+            // For single key remapping
+            if (originalKeys.Count == 1)
+            {
+                int originalKeyCode = KeyboardManagerInterop.GetKeyCodeFromName(originalKeys[0]);
+                if (originalKeyCode == 0)
+                {
+                    return false;
+                }
+
+                // Check if the key is already remapped
+                foreach (var mapping in mappingService.GetSingleKeyMappings())
+                {
+                    if (mapping.OriginalKey == originalKeyCode)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            // For shortcut remapping
+            else
+            {
+                string originalKeysString = string.Join(";", originalKeys.Select(k => KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+
+                // Check if the shortcut is already remapped in the same app context
+                foreach (var mapping in mappingService.GetShortcutMappingsByType(ShortcutOperationType.RemapShortcut))
+                {
+                    // Same shortcut in the same app context
+                    if (KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, mapping.OriginalKeys))
+                    {
+                        // If both are global (all apps)
+                        if (!isAppSpecific && string.IsNullOrEmpty(mapping.TargetApp))
+                        {
+                            return true;
+                        }
+
+                        // If both are for the same specific app
+                        else if (isAppSpecific && !string.IsNullOrEmpty(mapping.TargetApp) && string.Equals(mapping.TargetApp, appName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys)
+        {
+            // If either list is empty, it's not a self-mapping
+            if (originalKeys == null || remappedKeys == null ||
+                originalKeys.Count == 0 || remappedKeys.Count == 0)
+            {
+                return false;
+            }
+
+            string originalKeysString = string.Join(";", originalKeys.Select(k => KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+            string remappedKeysString = string.Join(";", remappedKeys.Select(k => KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+
+            return KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, remappedKeysString);
+        }
+
+        public static bool ContainsOnlyModifierKeys(List<string> keys)
+        {
+            if (keys == null || keys.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (string key in keys)
+            {
+                int keyCode = KeyboardManagerInterop.GetKeyCodeFromName(key);
+                var keyType = (KeyType)KeyboardManagerInterop.GetKeyType(keyCode);
+
+                // If any key is an action key, return false
+                if (keyType == KeyType.Action)
+                {
+                    return false;
+                }
+            }
+
+            // All keys are modifier keys
+            return true;
+        }
+
+        public static bool IsKeyOrphaned(int originalKey, KeyboardMappingService mappingService)
+        {
+            // Check all single key mappings
+            foreach (var mapping in mappingService.GetSingleKeyMappings())
+            {
+                if (!mapping.IsShortcut && int.TryParse(mapping.TargetKey, out int targetKey) && targetKey == originalKey)
+                {
+                    return false;
+                }
+            }
+
+            // Check all shortcut mappings
+            foreach (var mapping in mappingService.GetShortcutMappings())
+            {
+                string[] targetKeys = mapping.TargetKeys.Split(';');
+                if (targetKeys.Length == 1 && int.TryParse(targetKeys[0], out int shortcutTargetKey) && shortcutTargetKey == originalKey)
+                {
+                    return false;
+                }
+            }
+
+            // No mapping found for the original key
+            return true;
+        }
     }
 }

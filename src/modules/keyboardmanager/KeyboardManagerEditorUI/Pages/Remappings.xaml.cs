@@ -220,58 +220,20 @@ namespace KeyboardManagerEditorUI.Pages
             bool isAppSpecific = RemappingControl.GetIsAppSpecific();
             string appName = RemappingControl.GetAppName();
 
-            // Check if original keys are empty
-            if (originalKeys == null || originalKeys.Count == 0)
+            // Make sure _mappingService is not null before validating and saving
+            if (_mappingService == null)
             {
-                ShowValidationError(ValidationErrorType.EmptyOriginalKeys, args);
+                Logger.LogError("Mapping service is null, cannot validate mapping");
                 return;
             }
 
-            // Check if remapped keys are empty
-            if (remappedKeys == null || remappedKeys.Count == 0)
-            {
-                ShowValidationError(ValidationErrorType.EmptyRemappedKeys, args);
-                return;
-            }
+            // Validate the remapping
+            ValidationErrorType errorType = ValidationHelper.ValidateKeyMapping(
+                originalKeys, remappedKeys, isAppSpecific, appName, _mappingService);
 
-            // Check if shortcut contains only modifier keys
-            if ((originalKeys.Count > 1 && ContainsOnlyModifierKeys(originalKeys)) ||
-                (remappedKeys.Count > 1 && ContainsOnlyModifierKeys(remappedKeys)))
+            if (errorType != ValidationErrorType.NoError)
             {
-                ShowValidationError(ValidationErrorType.ModifierOnly, args);
-                return;
-            }
-
-            // Check if app specific is checked but no app name is provided
-            if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
-            {
-                ShowValidationError(ValidationErrorType.EmptyAppName, args);
-                return;
-            }
-
-            // Check if this is a shortcut (multiple keys) and if it's an illegal combination
-            if (originalKeys.Count > 1)
-            {
-                string shortcutKeysString = string.Join(";", originalKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
-
-                if (KeyboardManagerInterop.IsShortcutIllegal(shortcutKeysString))
-                {
-                    ShowValidationError(ValidationErrorType.IllegalShortcut, args);
-                    return;
-                }
-            }
-
-            // Check for duplicate mappings
-            if (IsDuplicateMapping(originalKeys, isAppSpecific, appName))
-            {
-                ShowValidationError(ValidationErrorType.DuplicateMapping, args);
-                return;
-            }
-
-            // Check for self-mapping
-            if (IsSelfMapping(originalKeys, remappedKeys))
-            {
-                ShowValidationError(ValidationErrorType.SelfMapping, args);
+                ShowValidationError(errorType, args);
                 return;
             }
 
@@ -294,9 +256,11 @@ namespace KeyboardManagerEditorUI.Pages
                 }
             }
 
+            // If no errors, proceed to save the remapping
             bool saved = SaveCurrentMapping();
             if (saved)
             {
+                // Display the remapping in the list after saving
                 LoadMappings();
             }
         }
@@ -317,124 +281,6 @@ namespace KeyboardManagerEditorUI.Pages
         private void ValidationTeachingTip_CloseButtonClick(TeachingTip sender, object args)
         {
             sender.IsOpen = false;
-        }
-
-        private bool IsDuplicateMapping(List<string> originalKeys, bool isAppSpecific, string appName)
-        {
-            if (_mappingService == null || originalKeys == null || originalKeys.Count == 0)
-            {
-                return false;
-            }
-
-            // For single key remapping
-            if (originalKeys.Count == 1)
-            {
-                int originalKeyCode = GetKeyCode(originalKeys[0]);
-                if (originalKeyCode == 0)
-                {
-                    return false;
-                }
-
-                // Check if the key is already remapped
-                foreach (var mapping in _mappingService.GetSingleKeyMappings())
-                {
-                    if (mapping.OriginalKey == originalKeyCode)
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            // For shortcut remapping
-            else
-            {
-                string originalKeysString = string.Join(";", originalKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
-
-                // Check if the shortcut is already remapped in the same app context
-                foreach (var mapping in _mappingService.GetShortcutMappingsByType(ShortcutOperationType.RemapShortcut))
-                {
-                    // Same shortcut in the same app context
-                    if (KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, mapping.OriginalKeys))
-                    {
-                        // If both are global (all apps)
-                        if (!isAppSpecific && string.IsNullOrEmpty(mapping.TargetApp))
-                        {
-                            return true;
-                        }
-
-                        // If both are for the same specific app
-                        else if (isAppSpecific && !string.IsNullOrEmpty(mapping.TargetApp) && string.Equals(mapping.TargetApp, appName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys)
-        {
-            // If either list is empty, it's not a self-mapping
-            if (originalKeys == null || remappedKeys == null ||
-                originalKeys.Count == 0 || remappedKeys.Count == 0)
-            {
-                return false;
-            }
-
-            string originalKeysString = string.Join(";", originalKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
-            string remappedKeysString = string.Join(";", remappedKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
-
-            return KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, remappedKeysString);
-        }
-
-        private bool ContainsOnlyModifierKeys(List<string> keys)
-        {
-            if (keys == null || keys.Count == 0)
-            {
-                return false;
-            }
-
-            foreach (string key in keys)
-            {
-                int keyCode = GetKeyCode(key);
-                var keyType = (KeyType)KeyboardManagerInterop.GetKeyType(keyCode);
-
-                // If any key is an action key, return false
-                if (keyType == KeyType.Action)
-                {
-                    return false;
-                }
-            }
-
-            // All keys are modifier keys
-            return true;
-        }
-
-        private bool IsKeyOrphaned(int originalKey, KeyboardMappingService mappingService)
-        {
-            // Check all single key mappings
-            foreach (var mapping in mappingService.GetSingleKeyMappings())
-            {
-                if (!mapping.IsShortcut && int.TryParse(mapping.TargetKey, out int targetKey) && targetKey == originalKey)
-                {
-                    return false;
-                }
-            }
-
-            // Check all shortcut mappings
-            foreach (var mapping in mappingService.GetShortcutMappings())
-            {
-                string[] targetKeys = mapping.TargetKeys.Split(';');
-                if (targetKeys.Length == 1 && int.TryParse(targetKeys[0], out int shortcutTargetKey) && shortcutTargetKey == originalKey)
-                {
-                    return false;
-                }
-            }
-
-            // No mapping found for the original key
-            return true;
         }
 
         private void OrphanedKeysTeachingTip_ActionButtonClick(TeachingTip sender, object args)
