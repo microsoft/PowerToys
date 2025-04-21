@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Devices.Printers;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace MouseUtils.UITests
 {
@@ -48,10 +49,11 @@ namespace MouseUtils.UITests
             if (foundCustom != null)
             {
                 foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+                CheckAnimationEnable(ref foundCustom);
 
                 // foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
                 SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
-
+                Assert.IsNotNull(foundCustom, "Find My Mouse group not found.");
                 SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
 
                 var excludedApps = foundCustom.Find<TextBlock>("Excluded apps");
@@ -84,8 +86,7 @@ namespace MouseUtils.UITests
             Task.Delay(1000).Wait();
 
             // MouseSimulator.LeftClick();
-            Session.PerformMouseAction(MouseActionType.LeftClick);
-            Task.Delay(1000).Wait();
+            Session.PerformMouseAction(MouseActionType.LeftClick, 500, 1000);
 
             VerifySpotlightDisappears(ref settings);
         }
@@ -109,7 +110,7 @@ namespace MouseUtils.UITests
 
                 // foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
                 SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
-
+                Assert.IsNotNull(foundCustom);
                 SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
 
                 var excludedApps = foundCustom.Find<TextBlock>("Excluded apps");
@@ -167,6 +168,7 @@ namespace MouseUtils.UITests
 
                 // foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
                 SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
+                Assert.IsNotNull(foundCustom, "Find My Mouse group not found.");
 
                 // SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
                 var excludedApps = foundCustom.Find<TextBlock>("Excluded apps");
@@ -273,7 +275,7 @@ namespace MouseUtils.UITests
             VerifySpotlightAppears(ref settings);
         }
 
-        private void SetFindMyMouseActivationMethod(ref Custom foundCustom, string method)
+        private void SetFindMyMouseActivationMethod(ref Custom? foundCustom, string method)
         {
             Assert.IsNotNull(foundCustom);
             var groupActivation = foundCustom.Find<TextBlock>("Activation method");
@@ -360,8 +362,7 @@ namespace MouseUtils.UITests
                 Task.Delay(100).Wait();
                 rgbHexEdit2.SetText(settings.SpotlightColor);
                 Task.Delay(100).Wait();
-                spotlightColorButton.Click();
-                Task.Delay(1000).Wait();
+                spotlightColorButton.Click(false, 500, 1500);
 
                 // Set the overlay opacity to overlayOpacity%
                 var overlayOpacitySlider = foundCustom.Find<Slider>("Overlay opacity (%)");
@@ -430,6 +431,13 @@ namespace MouseUtils.UITests
             }
 
             return true;
+        }
+
+        private void CheckAnimationEnable(ref Custom? foundCustom)
+        {
+            Assert.IsNotNull(foundCustom, "Find My Mouse group not found.");
+            var animationDisabledWarning = foundCustom.Find<TextBlock>("Animations are disabled in your system settings");
+            Assert.IsNull(animationDisabledWarning);
         }
 
         private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)

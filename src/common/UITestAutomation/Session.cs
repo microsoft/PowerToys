@@ -519,9 +519,12 @@ namespace Microsoft.PowerToys.UITest
         /// Performs a mouse action based on the specified action type.
         /// </summary>
         /// <param name="action">The mouse action to perform.</param>
-        public void PerformMouseAction(MouseActionType action)
+        /// <param name="msPreAction">Pre-action delay in milliseconds.</param>
+        /// <param name="msPostAction">Post-action delay in milliseconds.</param>
+        public void PerformMouseAction(MouseActionType action, int msPreAction = 500, int msPostAction = 500)
         {
-            PerformAction(() =>
+            PerformAction(
+                () =>
             {
                 switch (action)
                 {
@@ -567,7 +570,9 @@ namespace Microsoft.PowerToys.UITest
                     default:
                         throw new ArgumentException("Unsupported mouse action.", nameof(action));
                 }
-            });
+            },
+                msPreAction,
+                msPostAction);
         }
 
         /// <summary>

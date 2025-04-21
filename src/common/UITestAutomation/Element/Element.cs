@@ -113,9 +113,10 @@ namespace Microsoft.PowerToys.UITest
         /// Click the UI element.
         /// </summary>
         /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
-        public virtual void Click(bool rightClick = false)
+        public virtual void Click(bool rightClick = false, int msPreAction = 500, int msPostAction = 500)
         {
-            PerformAction((actions, windowElement) =>
+            PerformAction(
+                (actions, windowElement) =>
             {
                 actions.MoveToElement(windowElement);
 
@@ -132,7 +133,9 @@ namespace Microsoft.PowerToys.UITest
                 }
 
                 actions.Build().Perform();
-            });
+            },
+                msPreAction,
+                msPostAction);
         }
 
         /// <summary>
