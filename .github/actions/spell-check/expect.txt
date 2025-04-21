@@ -273,6 +273,7 @@ CURSORINFO
 cursorpos
 customaction
 CUSTOMACTIONTEST
+CUSTOMFORMATPLACEHOLDER
 CVal
 cvd
 CVirtual
@@ -1648,6 +1649,7 @@ telephon
 templatenamespace
 testprocess
 TEXCOORD
+TEXTBOXNEWLINE
 TEXTEXTRACTOR
 TEXTINCLUDE
 tfopen
