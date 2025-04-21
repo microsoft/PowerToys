@@ -18,9 +18,11 @@
       <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\Hosts.UITests\</OutputPath>
     </PropertyGroup>
     <ItemGroup>
-      <EmbeddedResource Include="Baseline\HostModuleTests_TestAddingEntry.png" />
-      <EmbeddedResource Include="Baseline\HostModuleTests_TestEmptyView_EmptyView.png" />
-      <EmbeddedResource Include="Baseline\HostModuleTests_TestEmptyView_NonEmptyView.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestAddingEntry_arm64.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestEmptyView_EmptyView_arm64.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestEmptyView_NonEmptyView_arm64.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestAddingEntry_x64.png" />
+      <EmbeddedResource Include="Baseline\HostModuleTests_TestEmptyView_EmptyView_x64.png" />
     </ItemGroup>
 
     <ItemGroup>
