@@ -9,7 +9,6 @@ using System.Xml.Linq;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Devices.Printers;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace MouseUtils.UITests
 {
@@ -45,11 +44,18 @@ namespace MouseUtils.UITests
             settings.AnimationDuration = "0";
             settings.BackgroundColor = "000000";
             settings.SpotlightColor = "FFFFFF";
+
             var foundCustom = this.Find<Custom>("Find My Mouse");
+            Assert.IsNotNull(foundCustom);
+
+            if (CheckAnimationEnable(ref foundCustom))
+            {
+                foundCustom = this.Find<Custom>("Find My Mouse");
+            }
+
             if (foundCustom != null)
             {
                 foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
-                CheckAnimationEnable(ref foundCustom);
 
                 // foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
                 SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
@@ -104,6 +110,13 @@ namespace MouseUtils.UITests
             settings.BackgroundColor = "000000";
             settings.SpotlightColor = "FFFFFF";
             var foundCustom = this.Find<Custom>("Find My Mouse");
+            Assert.IsNotNull(foundCustom);
+
+            if (CheckAnimationEnable(ref foundCustom))
+            {
+                foundCustom = this.Find<Custom>("Find My Mouse");
+            }
+
             if (foundCustom != null)
             {
                 foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
@@ -412,11 +425,11 @@ namespace MouseUtils.UITests
                 var foundElements = this.FindAll<Element>(groupName);
                 foreach (var element in foundElements)
                 {
-                  string className = element.ClassName;
-                  string name = element.Name;
-                  string text = element.Text;
-                  string helptext = element.HelpText;
-                  string controlType = element.ControlType;
+                    string className = element.ClassName;
+                    string name = element.Name;
+                    string text = element.Text;
+                    string helptext = element.HelpText;
+                    string controlType = element.ControlType;
                 }
 
                 if (foundElements.Count == 0)
@@ -433,14 +446,38 @@ namespace MouseUtils.UITests
             return true;
         }
 
-        private void CheckAnimationEnable(ref Custom? foundCustom)
+        private bool CheckAnimationEnable(ref Custom? foundCustom)
         {
             Assert.IsNotNull(foundCustom, "Find My Mouse group not found.");
-            var animationDisabledWarning = foundCustom.Find<TextBlock>("Animations are disabled in your system settings");
-            Assert.IsNull(animationDisabledWarning);
+            var foundElements = foundCustom.FindAll<TextBlock>("Animations are disabled in your system settings.");
+
+            // Assert.IsNull(animationDisabledWarning);
+            if (foundElements.Count != 0)
+            {
+                var openSettingsLink = foundCustom.Find<Element>("Open settings");
+                Assert.IsNotNull(openSettingsLink);
+                openSettingsLink.Click(false, 500, 3000);
+
+                string settingsWindow = "Settings";
+                this.Session.Attach(settingsWindow);
+                var animationEffects = this.Find<ToggleSwitch>("Animation effects");
+                Assert.IsNotNull(animationEffects);
+                animationEffects.Toggle(true);
+
+                Task.Delay(2000).Wait();
+                Session.SendKeys(Key.Alt, Key.F4);
+                this.Session.Attach(PowerToysModule.PowerToysSettings);
+                this.LaunchFromSetting(reload: true);
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
         }
 
-        private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
+        private void LaunchFromSetting(bool reload = false, bool launchAsAdmin = false)
         {
             // this.Session.Attach(PowerToysModule.PowerToysSettings);
             Session.SetMainWindowSize(WindowSize.Large);
@@ -452,6 +489,12 @@ namespace MouseUtils.UITests
                 this.Find<NavigationViewItem>("Input / Output").Click();
             }
 
+            if (reload)
+            {
+                this.Find<NavigationViewItem>("Keyboard Manager").Click();
+            }
+
+            Task.Delay(1000).Wait();
             this.Find<NavigationViewItem>("Mouse utilities").Click();
         }
     }
