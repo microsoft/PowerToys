@@ -40,7 +40,7 @@ namespace Hosts.UITests
             // 'Add an entry' button (only show-up when list is empty) should be visible
             Assert.IsTrue(this.HasOne<HyperlinkButton>("Add an entry"), "'Add an entry' button should be visible in the empty view");
 
-            // VisualAssert.AreEqual(this.Find("Entries"), "EmptyView");
+            VisualAssert.AreEqual(this.TestContext, this.Find("Entries"), "EmptyView");
 
             // Click 'Add an entry' from empty-view for adding Host override rule
             this.Find<HyperlinkButton>("Add an entry").Click();
@@ -51,7 +51,7 @@ namespace Hosts.UITests
             Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
             Assert.IsFalse(this.Has<HyperlinkButton>("Add an entry"), "'Add an entry' button should be invisible if not empty view");
 
-            // VisualAssert.AreEqual(this.Find("Entries"), "NonEmptyView");
+            VisualAssert.AreEqual(this.TestContext, this.Find("Entries"), "NonEmptyView");
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Hosts.UITests
 
             Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
 
-            // VisualAssert.AreEqual(this.TestContext, this.Find("Entries"));
+            VisualAssert.AreEqual(this.TestContext, this.Find("Entries"));
         }
 
         /// <summary>

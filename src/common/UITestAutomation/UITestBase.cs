@@ -44,7 +44,6 @@ namespace Microsoft.PowerToys.UITest
             if (isInPipeline)
             {
                 NativeMethods.ChangeDispalyResolution();
-                NativeMethods.CreateNewMonitor();
                 NativeMethods.GetMonitorInfo();
 
                 // Escape Popups before starting
@@ -520,25 +519,6 @@ namespace Microsoft.PowerToys.UITest
 
                     deviceIndex++;
                     d.cb = Marshal.SizeOf(d); // Reset the size for the next device
-                }
-            }
-
-            public static void CreateNewMonitor()
-            {
-                DEVMODE newMode = default(DEVMODE);
-                newMode.DmSize = (short)Marshal.SizeOf<DEVMODE>();
-                newMode.DmPelsWidth = 1920;
-                newMode.DmPelsHeight = 1080;
-                newMode.DmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
-
-                int result = ChangeDisplaySettingsEx(IntPtr.Zero, ref newMode, IntPtr.Zero, CDS_UPDATEREGISTRY, IntPtr.Zero);
-                if (result == DISP_CHANGE_SUCCESSFUL)
-                {
-                    Console.WriteLine("virtual monitor create success");
-                }
-                else
-                {
-                    Console.WriteLine("virtual monitor create faild");
                 }
             }
 

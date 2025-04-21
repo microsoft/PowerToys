@@ -17,6 +17,8 @@ namespace Microsoft.PowerToys.UITest
     public enum Key
     {
         Ctrl,
+        LCtrl,
+        RCtrl,
         Alt,
         Shift,
         Tab,
@@ -115,14 +117,20 @@ namespace Microsoft.PowerToys.UITest
             SendWinKeyCombination(keysToSend);
         }
 
-        public static void PressVirtualKey(Key key)
+        public static void PressKey(Key key)
         {
-            PressKey(TranslateKeyHex(key));
+            PressVirtualKey(TranslateKeyHex(key));
         }
 
-        public static void ReleaseVirtualKey(Key key)
+        public static void ReleaseKey(Key key)
         {
-            ReleaseKey(TranslateKeyHex(key));
+            ReleaseVirtualKey(TranslateKeyHex(key));
+        }
+
+        public static void SendKey(Key key)
+        {
+            PressVirtualKey(TranslateKeyHex(key));
+            ReleaseVirtualKey(TranslateKeyHex(key));
         }
 
         /// <summary>
@@ -135,6 +143,10 @@ namespace Microsoft.PowerToys.UITest
             switch (key)
             {
                 case Key.Ctrl:
+                    return "^";
+                case Key.LCtrl:
+                    return "^";
+                case Key.RCtrl:
                     return "^";
                 case Key.Alt:
                     return "%";
@@ -288,6 +300,12 @@ namespace Microsoft.PowerToys.UITest
                     return 0x12;  // Alt Key - 0x12 in hex
                 case Key.Shift:
                     return 0x10;  // Shift Key - 0x10 in hex
+                case Key.LCtrl:
+                    return 0xA2;  // Left Ctrl Key - 0xA2 in hex
+                case Key.RCtrl: // Right Ctrl Key - 0xA3 in hex
+                    return 0xA3;
+                case Key.A:
+                    return 0x41;  // A Key - 0x41 in hex
                 default:
                     throw new ArgumentException($"Key {key} is not supported, Please add your key at TranslateKeyHex for translation to hex.");
             }
@@ -320,7 +338,7 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Just press the key.(no release)
         /// </summary>
-        private static void PressKey(byte key)
+        private static void PressVirtualKey(byte key)
         {
             keybd_event(key, 0, KEYEVENTF_KEYDOWN, UIntPtr.Zero);
         }
@@ -328,7 +346,7 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Release only the button (if pressed first)
         /// </summary>
-        private static void ReleaseKey(byte key)
+        private static void ReleaseVirtualKey(byte key)
         {
             keybd_event(key, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
         }

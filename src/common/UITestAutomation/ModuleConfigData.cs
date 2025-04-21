@@ -30,6 +30,7 @@ namespace Microsoft.PowerToys.UITest
         PowerToysSettings,
         FancyZone,
         Hosts,
+        Runner,
     }
 
     /// <summary>
@@ -94,6 +95,7 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModule.PowerToysSettings] = "PowerToys Settings",
                 [PowerToysModule.FancyZone] = "FancyZones Layout",
                 [PowerToysModule.Hosts] = "Hosts File Editor",
+                [PowerToysModule.Runner] = "PowerToys",
             };
 
             // Exe start path for the module if it exists.
@@ -102,6 +104,7 @@ namespace Microsoft.PowerToys.UITest
                 [PowerToysModule.PowerToysSettings] = @"\..\..\..\WinUI3Apps\PowerToys.Settings.exe",
                 [PowerToysModule.FancyZone] = @"\..\..\..\PowerToys.FancyZonesEditor.exe",
                 [PowerToysModule.Hosts] = @"\..\..\..\WinUI3Apps\PowerToys.Hosts.exe",
+                [PowerToysModule.Runner] = @"\..\..\..\PowerToys.exe",
             };
         }
 

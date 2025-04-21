@@ -20,6 +20,8 @@ namespace Microsoft.PowerToys.UITest
         // Default session path is PowerToys settings dashboard
         private readonly string sessionPath = ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings);
 
+        private readonly string runnerPath = ModuleConfigData.Instance.GetModulePath(PowerToysModule.Runner);
+
         private string? locationPath;
 
         private WindowsDriver<WindowsElement> Root { get; set; }
@@ -27,10 +29,14 @@ namespace Microsoft.PowerToys.UITest
         private WindowsDriver<WindowsElement>? Driver { get; set; }
 
         private Process? appDriver;
+        private Process? runner;
+
+        private PowerToysModule scope;
 
         [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
         public SessionHelper(PowerToysModule scope)
         {
+            this.scope = scope;
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
             this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
@@ -43,6 +49,17 @@ namespace Microsoft.PowerToys.UITest
             this.ExitExe(winAppDriverProcessInfo.FileName);
             this.appDriver = Process.Start(winAppDriverProcessInfo);
 
+            var runnerProcessInfo = new ProcessStartInfo
+            {
+                FileName = locationPath + this.runnerPath,
+                Verb = "runas",
+            };
+
+            if (scope == PowerToysModule.PowerToysSettings)
+            {
+                this.runner = Process.Start(runnerProcessInfo);
+            }
+
             var desktopCapabilities = new AppiumOptions();
             desktopCapabilities.AddAdditionalCapability("app", "Root");
             this.Root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
@@ -54,6 +71,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="scope">The PowerToys module to start.</param>
         public SessionHelper Init()
         {
+            // Exit setting exe to fix CommandPalette error, remove after fixing the issue
+            this.ExitExe(this.locationPath + ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings));
+
             this.ExitExe(this.locationPath + this.sessionPath);
             this.StartExe(this.locationPath + this.sessionPath);
 
@@ -72,6 +92,11 @@ namespace Microsoft.PowerToys.UITest
             {
                 appDriver?.Kill();
                 appDriver?.WaitForExit(); // Optional: Wait for the process to exit
+                if (this.scope == PowerToysModule.PowerToysSettings)
+                {
+                    runner?.Kill();
+                    runner?.WaitForExit(); // Optional: Wait for the process to exit
+                }
             }
             catch (Exception ex)
             {
@@ -89,7 +114,6 @@ namespace Microsoft.PowerToys.UITest
             // Exit Exe
             string exeName = Path.GetFileNameWithoutExtension(appPath);
 
-            // PowerToys.FancyZonesEditor
             Process[] processes = Process.GetProcessesByName(exeName);
             foreach (Process process in processes)
             {
