@@ -4,11 +4,9 @@
 using System.Runtime.CompilerServices;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-[assembly: InternalsVisibleTo("Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests")]
-
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
-internal class AvailableResult
+internal sealed class AvailableResult
 {
     /// <summary>
     /// Gets or sets the time/date value
@@ -31,6 +29,11 @@ internal class AvailableResult
     internal ResultIconType IconType { get; set; }
 
     /// <summary>
+    /// Gets or sets a value to show additional error details
+    /// </summary>
+    internal string ErrorDetails { get; set; } = string.Empty;
+
+    /// <summary>
     /// Returns the path to the icon
     /// </summary>
     /// <param name="theme">Theme</param>
@@ -42,6 +45,7 @@ internal class AvailableResult
             ResultIconType.Time => ResultHelper.TimeIcon,
             ResultIconType.Date => ResultHelper.CalendarIcon,
             ResultIconType.DateTime => ResultHelper.TimeDateIcon,
+            ResultIconType.Error => ResultHelper.ErrorIcon,
             _ => null,
         };
     }
@@ -53,6 +57,7 @@ internal class AvailableResult
             Title = this.Value,
             Subtitle = this.Label,
             Icon = this.GetIconInfo(),
+            Details = string.IsNullOrEmpty(this.ErrorDetails) ? null : new Details() { Body = this.ErrorDetails },
         };
     }
 
@@ -81,4 +86,5 @@ public enum ResultIconType
     Time,
     Date,
     DateTime,
+    Error,
 }

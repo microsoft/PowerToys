@@ -85,7 +85,7 @@ internal static class Commands
         {
             results.AddRange(new[]
             {
-                new ListItem(new OpenInShellCommand(Resources.Microsoft_plugin_command_name_empty, "explorer.exe", "shell:RecycleBinFolder"))
+                new ListItem(new OpenInShellCommand(Resources.Microsoft_plugin_command_name_open, "explorer.exe", "shell:RecycleBinFolder"))
                 {
                     Title = Resources.Microsoft_plugin_sys_RecycleBinOpen,
                     Subtitle = Resources.Microsoft_plugin_sys_RecycleBin_description,
@@ -102,7 +102,7 @@ internal static class Commands
         else
         {
             results.Add(
-                new ListItem(new OpenInShellCommand(Resources.Microsoft_plugin_command_name_empty, "explorer.exe", "shell:RecycleBinFolder"))
+                new ListItem(new OpenInShellCommand(Resources.Microsoft_plugin_command_name_open, "explorer.exe", "shell:RecycleBinFolder"))
                 {
                     Title = Resources.Microsoft_plugin_sys_RecycleBin,
                     Subtitle = Resources.Microsoft_plugin_sys_RecycleBin_description,

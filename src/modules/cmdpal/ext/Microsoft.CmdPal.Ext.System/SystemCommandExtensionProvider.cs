@@ -14,6 +14,7 @@ public partial class SystemCommandExtensionProvider : CommandProvider
     private readonly ICommandItem[] _commands;
     private static readonly SettingsManager _settingsManager = new();
     public static readonly SystemCommandPage Page = new(_settingsManager);
+    private readonly FallbackSystemCommandItem _fallbackFileItem = new(_settingsManager);
 
     public SystemCommandExtensionProvider()
     {
@@ -36,4 +37,6 @@ public partial class SystemCommandExtensionProvider : CommandProvider
     {
         return _commands;
     }
+
+    public override IFallbackCommandItem[] FallbackCommands() => [_fallbackFileItem];
 }
