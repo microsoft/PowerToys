@@ -221,6 +221,9 @@
 
                 "PowerToys.CmdPalModuleInterface.dll",
                 "CmdPalKeyboardService.dll",
+                "Testably.Abstractions.FileSystem.Interface.dll",
+                "WinUI3Apps\\Testably.Abstractions.FileSystem.Interface.dll",
+
                 "*Microsoft.CmdPal.UI_*.msix"
             ],
             "SigningInfo": {
