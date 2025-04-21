@@ -30,6 +30,7 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
         PlaceholderText = Resources.Microsoft_plugin_timedate_placeholder_text;
         Id = "com.microsoft.cmdpal.timedate";
         _settingsManager = settingsManager;
+        ShowDetails = true;
     }
 
     public override IListItem[] GetItems()
