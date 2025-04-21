@@ -109,7 +109,7 @@ public partial class CommandBarViewModel : ObservableObject,
         if (SelectedItem.MoreCommands.Count() > 1)
         {
             ShouldShowContextMenu = true;
-            ContextCommands = [.. SelectedItem.AllCommands];
+            ContextCommands = [.. SelectedItem.AllCommands.Where(c => c.ShouldBeVisible)];
         }
         else
         {
