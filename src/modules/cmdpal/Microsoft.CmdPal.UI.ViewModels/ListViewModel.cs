@@ -454,6 +454,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return;
         }
 
+        UpdateProperty(nameof(EmptyContent));
+
         DoOnUiThread(
            () =>
            {
