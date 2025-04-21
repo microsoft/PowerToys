@@ -203,11 +203,17 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
+        /// <summary>
+        /// Simulates holding a key, clicking and dragging a UI element to the specified screen coordinates.
+        /// </summary>
+        /// <param name="key">The keyboard key to press and hold during the drag operation.</param>
+        /// <param name="targetX">The target X-coordinate to drag the element to.</param>
+        /// <param name="targetY">The target Y-coordinate to drag the element to.</param>
         public void KeyDownAndDrag(Key key, int targetX, int targetY)
         {
             PerformAction((actions, windowElement) =>
             {
-                KeyboardHelper.PressVirtualKey(key);
+                KeyboardHelper.PressKey(key);
                 Thread.Sleep(2000);
 
                 actions.MoveToElement(windowsElement)
@@ -231,7 +237,7 @@ namespace Microsoft.PowerToys.UITest
                 var releaseAction = new Actions(driver);
                 releaseAction.Release().Perform();
 
-                KeyboardHelper.ReleaseVirtualKey(key);
+                KeyboardHelper.ReleaseKey(key);
             });
         }
 
@@ -240,42 +246,6 @@ namespace Microsoft.PowerToys.UITest
             PerformAction((actions, windowElement) =>
             {
                 actions.KeyUp(key).Build().Perform();
-            });
-        }
-
-        /// <summary>
-        /// Simulates holding a key, clicking and dragging a UI element to the specified screen coordinates.
-        /// </summary>
-        /// <param name="key">The keyboard key to press and hold during the drag operation.</param>
-        /// <param name="targetX">The target X-coordinate to drag the element to.</param>
-        /// <param name="targetY">The target Y-coordinate to drag the element to.</param>
-        public void KeyDownAndDrag(Key key, int targetX, int targetY)
-        {
-            PerformAction((actions, windowElement) =>
-            {
-                KeyboardHelper.PressKey(key);
-
-                actions.MoveToElement(windowsElement)
-                .ClickAndHold()
-                .Perform();
-
-                int dx = targetX - windowElement.Rect.X;
-                int dy = targetY - windowElement.Rect.Y;
-
-                int stepCount = 10;
-                int stepX = dx / stepCount;
-                int stepY = dy / stepCount;
-
-                for (int i = 0; i < stepCount; i++)
-                {
-                    var stepAction = new Actions(driver);
-                    stepAction.MoveByOffset(stepX, stepY).Perform();
-                }
-
-                var releaseAction = new Actions(driver);
-                releaseAction.Release().Perform();
-
-                KeyboardHelper.ReleaseKey(key);
             });
         }
 

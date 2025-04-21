@@ -58,23 +58,21 @@ namespace UITests_FancyZones
 
             this.Find<NavigationViewItem>("FancyZones").Click();
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
-            this.Session.SetMainWindowSize(WindowSize.Medium);
+            this.Session.SetMainWindowSize(WindowSize.Large_Vertical);
 
             int tries = 5;
             Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
             bool switchWindowEnable = TestContext.TestName == "TestSwitchShortCutDisable" ? false : true;
 
             this.Find<ToggleSwitch>("Switch between windows in the current zone").Toggle(switchWindowEnable);
+            Task.Delay(500).Wait(); // Wait for the setting to be applied
             Pull(tries, "up"); // Pull the setting page down to make sure the setting is visible
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click();
 
-            // Session.Attach("FancyZones Layout", WindowSize.UnSpecified);
-            // this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
             Task.Delay(1000).Wait();
             this.Session.Attach(PowerToysModule.FancyZone);
-            this.Find<Element>(Microsoft.PowerToys.UITest.By.Name("Custom Column")).Click();
+            this.Find<Element>(By.Name("Custom Column")).Click();
             this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
-            Task.Delay(500).Wait(); // Wait for the FancyZones window to close
             this.RestartScopeExe();
         }
 
@@ -108,13 +106,12 @@ namespace UITests_FancyZones
             // Add virtual desktop
             SendKeys(Key.Ctrl, Key.Win, Key.D);
             string? switchWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle(); // Fixed variable name to start with lower-case letter and removed unnecessary assignment warning by using the variable meaningfully.
-            Console.WriteLine($"Switched window title: {switchWindowTitle}");
 
             // return back
             SendKeys(Key.Ctrl, Key.Win, Key.Left);
+            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
             string? returnWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(PowertoysWindowName, returnWindowTitle);
-            Console.WriteLine($"Returned window title: {returnWindowTitle}");
 
             // check shortcut
             SendKeys(Key.Win, Key.PageDown);
@@ -123,7 +120,9 @@ namespace UITests_FancyZones
 
             // close the virtual desktop
             SendKeys(Key.Ctrl, Key.Win, Key.Right);
+            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
             SendKeys(Key.Ctrl, Key.Win, Key.F4);
+            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
 
             // Clean settings
             Clean();
@@ -150,15 +149,6 @@ namespace UITests_FancyZones
 
         private void SnaptoOneZone()
         {
-            // assert the appzonehistory layout is set
-            ZoneSwitchHelper.KillAllExplorerWindows();
-
-            // Start Windows Explorer process
-            ZoneSwitchHelper.LaunchExplorer("C:\\");
-            Session.Attach(WindowName, WindowSize.UnSpecified); // display window1
-            var tabView = Find<Element>(Microsoft.PowerToys.UITest.By.AccessibilityId("TabView"));
-            tabView.DoubleClick(); // maximize the window
-
             // Set drag position of target zone
             int screenWidth = Screen.PrimaryScreen?.Bounds.Width ?? 1920;  // default 1920
             int screenHeight = Screen.PrimaryScreen?.Bounds.Height ?? 1080;
@@ -166,22 +156,29 @@ namespace UITests_FancyZones
             int targetX = screenWidth / SubZones / 3;
             int targetY = screenWidth / SubZones / 2;
 
-            // Drag the tab view to the target zone
+            // assert the appzonehistory layout is set
+            ZoneSwitchHelper.KillAllExplorerWindows();
+
+            // Start Windows Explorer process
+            ZoneSwitchHelper.LaunchExplorer("C:\\");
+            Session.Attach(WindowName, WindowSize.UnSpecified); // display window1
+            var tabView = Find<Element>(By.AccessibilityId("TabView"));
+            tabView.DoubleClick(); // maximize the window
             tabView.KeyDownAndDrag(Key.Shift, targetX, targetY);
 
-            Session.Attach(PowertoysWindowName, WindowSize.UnSpecified);
-
             // Attach the PowerToys settings window to the front
+            Session.Attach(PowertoysWindowName, WindowSize.UnSpecified);
             string name = "Non Client Input Sink Window";
-            Element settingsView = Find<Element>(Microsoft.PowerToys.UITest.By.Name(name));
+            Element settingsView = Find<Element>(By.Name(name));
             settingsView.DoubleClick(); // maximize the window
             settingsView.KeyDownAndDrag(Key.Shift, targetX, targetY);
 
             // check the appzonehistory layout is set and in the same zone
             string appZoneHistoryJson = AppZoneHistory.GetData();
+            Console.WriteLine($"{ZoneSwitchHelper.GetZoneIndexSetByAppName(WindowName, appZoneHistoryJson)},{ZoneSwitchHelper.GetZoneIndexSetByAppName(WindowName, appZoneHistoryJson)}");
             Assert.AreEqual(
-                ZoneSwitchHelper.GetZoneSetUuidByAppName(WindowName, appZoneHistoryJson),
-                ZoneSwitchHelper.GetZoneSetUuidByAppName(PowertoysWindowName, appZoneHistoryJson));
+                ZoneSwitchHelper.GetZoneIndexSetByAppName(WindowName, appZoneHistoryJson),
+                ZoneSwitchHelper.GetZoneIndexSetByAppName(PowertoysWindowName, appZoneHistoryJson));
         }
 
         private static readonly CustomLayouts.CustomLayoutListWrapper CustomLayoutsList = new CustomLayouts.CustomLayoutListWrapper

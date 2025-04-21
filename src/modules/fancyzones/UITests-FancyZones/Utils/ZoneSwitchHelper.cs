@@ -27,7 +27,7 @@ namespace Microsoft.FancyZones.UITests.Utils
             Task.Delay(2000).Wait(); // Wait for the Explorer window to fully launch
         }
 
-        public static string? GetZoneSetUuidByAppName(string exeName, string json)
+        public static string? GetZoneIndexSetByAppName(string exeName, string json)
         {
             if (string.IsNullOrEmpty(exeName) || string.IsNullOrEmpty(json))
             {
@@ -48,7 +48,7 @@ namespace Microsoft.FancyZones.UITests.Utils
                         var history = item.GetProperty("history");
                         if (history.GetArrayLength() > 0)
                         {
-                            return history[0].GetProperty("zoneset-uuid").GetString();
+                            return history[0].GetProperty("zone-index-set")[0].GetString();
                         }
                     }
                 }
