@@ -79,7 +79,7 @@ namespace UITests_FancyZones
         [TestMethod]
         public void TestSwitchWindow()
         {
-            SnaptoOneZone();
+            SnapToOneZone();
 
             string? activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(PowertoysWindowName, activeWindowTitle);
@@ -98,7 +98,7 @@ namespace UITests_FancyZones
         [TestMethod]
         public void TestSwitchAfterDesktopChange()
         {
-            SnaptoOneZone();
+            SnapToOneZone();
 
             string? windowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(PowertoysWindowName, windowTitle);
@@ -131,7 +131,7 @@ namespace UITests_FancyZones
         [TestMethod]
         public void TestSwitchShortCutDisable()
         {
-            SnaptoOneZone();
+            SnapToOneZone();
 
             string? activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(PowertoysWindowName, activeWindowTitle);
@@ -147,7 +147,7 @@ namespace UITests_FancyZones
             Clean();
         }
 
-        private void SnaptoOneZone()
+        private void SnapToOneZone()
         {
             // Set drag position of target zone
             int screenWidth = Screen.PrimaryScreen?.Bounds.Width ?? 1920;  // default 1920
