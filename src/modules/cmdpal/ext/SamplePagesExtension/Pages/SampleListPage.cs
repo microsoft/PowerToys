@@ -168,22 +168,6 @@ internal sealed partial class SampleListPage : ListPage
             {
                 Title = "Get the name of the Foreground window",
             },
-
         ];
-    }
-
-    private sealed partial class ToastCommand(string message, MessageState state = MessageState.Info) : InvokableCommand
-    {
-        public override ICommandResult Invoke()
-        {
-            var t = new ToastStatusMessage(new StatusMessage()
-            {
-                Message = message,
-                State = state,
-            });
-            t.Show();
-
-            return CommandResult.KeepOpen();
-        }
     }
 }
