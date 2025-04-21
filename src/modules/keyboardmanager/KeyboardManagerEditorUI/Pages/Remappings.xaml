@@ -208,86 +208,11 @@
             </TeachingTip.IconSource>
         </TeachingTip>
         <TeachingTip
-            x:Name="IllegalShortcutTeachingTip"
-            Title="Reserved System Shortcut"
-            CloseButtonClick="IllegalShortcutTeachingTip_CloseButtonClick"
+            x:Name="ValidationTeachingTip"
+            CloseButtonClick="ValidationTeachingTip_CloseButtonClick"
             CloseButtonContent="OK"
             IsLightDismissEnabled="True"
-            PreferredPlacement="Center"
-            Subtitle="Win+L and Ctrl+Alt+Delete are reserved system shortcuts and cannot be remapped.">
-            <TeachingTip.IconSource>
-                <SymbolIconSource Symbol="Important" />
-            </TeachingTip.IconSource>
-        </TeachingTip>
-        <TeachingTip
-            x:Name="DuplicateRemappingTeachingTip"
-            Title="Duplicate Remapping"
-            CloseButtonClick="DuplicateRemappingTeachingTip_CloseButtonClick"
-            CloseButtonContent="OK"
-            IsLightDismissEnabled="True"
-            PreferredPlacement="Center"
-            Subtitle="This key or shortcut is already remapped for this application context. Each key or shortcut can only be remapped once per application.">
-            <TeachingTip.IconSource>
-                <SymbolIconSource Symbol="Important" />
-            </TeachingTip.IconSource>
-        </TeachingTip>
-        <TeachingTip
-            x:Name="SelfMappingTeachingTip"
-            Title="Invalid Remapping"
-            CloseButtonClick="SelfMappingTeachingTip_CloseButtonClick"
-            CloseButtonContent="OK"
-            IsLightDismissEnabled="True"
-            PreferredPlacement="Center"
-            Subtitle="A key or shortcut cannot be remapped to itself. Please choose a different target.">
-            <TeachingTip.IconSource>
-                <SymbolIconSource Symbol="Important" />
-            </TeachingTip.IconSource>
-        </TeachingTip>
-        <TeachingTip
-            x:Name="EmptyOriginalKeysTeachingTip"
-            Title="Missing Original Keys"
-            CloseButtonClick="EmptyOriginalKeysTeachingTip_CloseButtonClick"
-            CloseButtonContent="OK"
-            IsLightDismissEnabled="True"
-            PreferredPlacement="Center"
-            Subtitle="Please enter at least one original key to create a remapping.">
-            <TeachingTip.IconSource>
-                <SymbolIconSource Symbol="Important" />
-            </TeachingTip.IconSource>
-        </TeachingTip>
-
-        <TeachingTip
-            x:Name="EmptyRemappedKeysTeachingTip"
-            Title="Missing Target Keys"
-            CloseButtonClick="EmptyRemappedKeysTeachingTip_CloseButtonClick"
-            CloseButtonContent="OK"
-            IsLightDismissEnabled="True"
-            PreferredPlacement="Center"
-            Subtitle="Please enter at least one target key to create a remapping.">
-            <TeachingTip.IconSource>
-                <SymbolIconSource Symbol="Important" />
-            </TeachingTip.IconSource>
-        </TeachingTip>
-        <TeachingTip
-            x:Name="EmptyAppNameTeachingTip"
-            Title="Missing Application Name"
-            CloseButtonClick="EmptyAppNameTeachingTip_CloseButtonClick"
-            CloseButtonContent="OK"
-            IsLightDismissEnabled="True"
-            PreferredPlacement="Center"
-            Subtitle="You've selected app-specific remapping but haven't specified an application name. Please enter the application name.">
-            <TeachingTip.IconSource>
-                <SymbolIconSource Symbol="Important" />
-            </TeachingTip.IconSource>
-        </TeachingTip>
-        <TeachingTip
-            x:Name="ModifierOnlyTeachingTip"
-            Title="Invalid Shortcut"
-            CloseButtonClick="ModifierOnlyTeachingTip_CloseButtonClick"
-            CloseButtonContent="OK"
-            IsLightDismissEnabled="True"
-            PreferredPlacement="Center"
-            Subtitle="Shortcuts must contain at least one action key in addition to modifier keys (Ctrl, Alt, Shift, Win).">
+            PreferredPlacement="Center">
             <TeachingTip.IconSource>
                 <SymbolIconSource Symbol="Important" />
             </TeachingTip.IconSource>

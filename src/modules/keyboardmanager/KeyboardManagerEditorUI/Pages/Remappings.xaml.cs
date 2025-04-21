@@ -25,6 +25,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using static KeyboardManagerEditorUI.Helpers.ValidationHelper;
 
 namespace KeyboardManagerEditorUI.Pages
 {
@@ -222,20 +223,14 @@ namespace KeyboardManagerEditorUI.Pages
             // Check if original keys are empty
             if (originalKeys == null || originalKeys.Count == 0)
             {
-                EmptyOriginalKeysTeachingTip.Target = RemappingControl;
-                EmptyOriginalKeysTeachingTip.Tag = args;
-                EmptyOriginalKeysTeachingTip.IsOpen = true;
-                args.Cancel = true;
+                ShowValidationError(ValidationErrorType.EmptyOriginalKeys, args);
                 return;
             }
 
             // Check if remapped keys are empty
             if (remappedKeys == null || remappedKeys.Count == 0)
             {
-                EmptyRemappedKeysTeachingTip.Target = RemappingControl;
-                EmptyRemappedKeysTeachingTip.Tag = args;
-                EmptyRemappedKeysTeachingTip.IsOpen = true;
-                args.Cancel = true;
+                ShowValidationError(ValidationErrorType.EmptyRemappedKeys, args);
                 return;
             }
 
@@ -243,20 +238,14 @@ namespace KeyboardManagerEditorUI.Pages
             if ((originalKeys.Count > 1 && ContainsOnlyModifierKeys(originalKeys)) ||
                 (remappedKeys.Count > 1 && ContainsOnlyModifierKeys(remappedKeys)))
             {
-                ModifierOnlyTeachingTip.Target = RemappingControl;
-                ModifierOnlyTeachingTip.Tag = args;
-                ModifierOnlyTeachingTip.IsOpen = true;
-                args.Cancel = true;
+                ShowValidationError(ValidationErrorType.ModifierOnly, args);
                 return;
             }
 
             // Check if app specific is checked but no app name is provided
             if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
             {
-                EmptyAppNameTeachingTip.Target = RemappingControl;
-                EmptyAppNameTeachingTip.Tag = args;
-                EmptyAppNameTeachingTip.IsOpen = true;
-                args.Cancel = true;
+                ShowValidationError(ValidationErrorType.EmptyAppName, args);
                 return;
             }
 
@@ -267,14 +256,7 @@ namespace KeyboardManagerEditorUI.Pages
 
                 if (KeyboardManagerInterop.IsShortcutIllegal(shortcutKeysString))
                 {
-                    IllegalShortcutTeachingTip.Target = RemappingControl;
-                    IllegalShortcutTeachingTip.Tag = args;
-
-                    // Show the teaching tip
-                    IllegalShortcutTeachingTip.IsOpen = true;
-
-                    // Cancel the dialog closing for now since it will be handled by teaching tip actions
-                    args.Cancel = true;
+                    ShowValidationError(ValidationErrorType.IllegalShortcut, args);
                     return;
                 }
             }
@@ -282,23 +264,14 @@ namespace KeyboardManagerEditorUI.Pages
             // Check for duplicate mappings
             if (IsDuplicateMapping(originalKeys, isAppSpecific, appName))
             {
-                DuplicateRemappingTeachingTip.Target = RemappingControl;
-                DuplicateRemappingTeachingTip.Tag = args;
-
-                // Show the teaching tip
-                DuplicateRemappingTeachingTip.IsOpen = true;
-
-                args.Cancel = true;
+                ShowValidationError(ValidationErrorType.DuplicateMapping, args);
                 return;
             }
 
             // Check for self-mapping
             if (IsSelfMapping(originalKeys, remappedKeys))
             {
-                SelfMappingTeachingTip.Target = RemappingControl;
-                SelfMappingTeachingTip.Tag = args;
-                SelfMappingTeachingTip.IsOpen = true;
-                args.Cancel = true;
+                ShowValidationError(ValidationErrorType.SelfMapping, args);
                 return;
             }
 
@@ -328,12 +301,20 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
-        private void IllegalShortcutTeachingTip_CloseButtonClick(TeachingTip sender, object args)
+        private bool ShowValidationError(ValidationErrorType errorType, ContentDialogButtonClickEventArgs args)
         {
-            sender.IsOpen = false;
+            var (title, message) = ValidationMessages[errorType];
+
+            ValidationTeachingTip.Title = title;
+            ValidationTeachingTip.Subtitle = message;
+            ValidationTeachingTip.Target = RemappingControl;
+            ValidationTeachingTip.Tag = args;
+            ValidationTeachingTip.IsOpen = true;
+            args.Cancel = true;
+            return false;
         }
 
-        private void DuplicateRemappingTeachingTip_CloseButtonClick(TeachingTip sender, object args)
+        private void ValidationTeachingTip_CloseButtonClick(TeachingTip sender, object args)
         {
             sender.IsOpen = false;
         }
@@ -454,31 +435,6 @@ namespace KeyboardManagerEditorUI.Pages
 
             // No mapping found for the original key
             return true;
-        }
-
-        private void SelfMappingTeachingTip_CloseButtonClick(TeachingTip sender, object args)
-        {
-            sender.IsOpen = false;
-        }
-
-        private void EmptyOriginalKeysTeachingTip_CloseButtonClick(TeachingTip sender, object args)
-        {
-            sender.IsOpen = false;
-        }
-
-        private void EmptyRemappedKeysTeachingTip_CloseButtonClick(TeachingTip sender, object args)
-        {
-            sender.IsOpen = false;
-        }
-
-        private void EmptyAppNameTeachingTip_CloseButtonClick(TeachingTip sender, object args)
-        {
-            sender.IsOpen = false;
-        }
-
-        private void ModifierOnlyTeachingTip_CloseButtonClick(TeachingTip sender, object args)
-        {
-            sender.IsOpen = false;
         }
 
         private void OrphanedKeysTeachingTip_ActionButtonClick(TeachingTip sender, object args)
