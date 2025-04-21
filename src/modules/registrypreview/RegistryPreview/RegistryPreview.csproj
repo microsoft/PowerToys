@@ -31,7 +31,7 @@
   <ItemGroup>
     <Folder Include="RegistryPreviewXAML\" />
   </ItemGroup>
-
+	
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" />

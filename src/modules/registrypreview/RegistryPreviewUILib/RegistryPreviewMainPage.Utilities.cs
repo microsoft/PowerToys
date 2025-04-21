@@ -479,6 +479,7 @@ namespace RegistryPreviewUILib
                         case "REG_NONE":
                             if (value.Length <= 0)
                             {
+                                registryValue.IsEmptyBinary = true;
                                 value = resourceLoader.GetString("ZeroLength");
                             }
                             else
