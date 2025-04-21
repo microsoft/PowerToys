@@ -220,6 +220,7 @@
                 "WinUI3Apps\\PowerToys.Settings.exe",
 
                 "PowerToys.CmdPalModuleInterface.dll",
+                "CmdPalKeyboardService.dll",
                 "*Microsoft.CmdPal.UI_*.msix"
             ],
             "SigningInfo": {
