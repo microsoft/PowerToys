@@ -1006,6 +1006,7 @@ netsh
 newcolor
 NEWDIALOGSTYLE
 NEWFILE
+NEWFILEHEADER
 newitem
 newpath
 newplus
