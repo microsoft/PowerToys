@@ -1,16 +1,24 @@
 Param(
   # Using the default value of 1.6 for winAppSdkVersionNumber and useExperimentalVersion as false
   [Parameter(Mandatory=$False,Position=1)]
-  [string]$winAppSdkVersionNumber = "1.6",
+  [string]$winAppSdkVersionNumber = "1.7",
 
   # When the pipeline calls the PS1 file, the passed parameters are converted to string type
   [Parameter(Mandatory=$False,Position=2)]
-  [boolean]$useExperimentalVersion = $False
+  [boolean]$useExperimentalVersion = $False,
+
+  # Root folder Path for processing
+  [Parameter(Mandatory=$False,Position=3)]
+  [string]$rootPath = $(Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path))
+
+  # Root folder Path for processing
+  [Parameter(Mandatory=$False,Position=4)]
+  [string]$sourceLink = "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json"
 )
 
 function Update-NugetConfig {
     param (
-        [string]$filePath = "nuget.config"
+        [string]$filePath = [System.IO.Path]::Combine($rootPath, "nuget.config")
     )
 
     Write-Host "Updating nuget.config file"
@@ -35,7 +43,33 @@ function Update-NugetConfig {
     $xml.Save($filePath)
 }
 
-$sourceLink = "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json"
+function Read-FileWithEncoding {
+    param (
+        [string]$Path
+    )
+
+    $reader = New-Object System.IO.StreamReader($Path, $true)  # auto-detect encoding
+    $content = $reader.ReadToEnd()
+    $encoding = $reader.CurrentEncoding
+    $reader.Close()
+
+    return [PSCustomObject]@{
+        Content  = $content
+        Encoding = $encoding
+    }
+}
+
+function Write-FileWithEncoding {
+    param (
+        [string]$Path,
+        [string]$Content,
+        [System.Text.Encoding]$Encoding
+    )
+
+    $writer = New-Object System.IO.StreamWriter($Path, $false, $Encoding)
+    $writer.Write($Content)
+    $writer.Close()
+}
 
 # Execute nuget list and capture the output
 if ($useExperimentalVersion) {
@@ -80,49 +114,53 @@ if ($latestVersion) {
 
 # Update packages.config files
 Get-ChildItem -Recurse packages.config | ForEach-Object {
-    $content = Get-Content $_.FullName -Raw
+    $file = Read-FileWithEncoding -Path $_.FullName
+    $content = $file.Content
     if ($content -match 'package id="Microsoft.WindowsAppSDK"') {
         $newVersionString = 'package id="Microsoft.WindowsAppSDK" version="' + $WinAppSDKVersion + '"'
         $oldVersionString = 'package id="Microsoft.WindowsAppSDK" version="[-.0-9a-zA-Z]*"'
         $content = $content -replace $oldVersionString, $newVersionString
-        Set-Content -Path $_.FullName -Value $content
+        Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
         Write-Host "Modified " $_.FullName 
     }
 }
 
 # Update Directory.Packages.props file
-$propsFile = "Directory.Packages.props"
+$propsFile = [System.IO.Path]::Combine($rootPath,"Directory.Packages.props")
 if (Test-Path $propsFile) {
-    $content = Get-Content $propsFile -Raw
+    $file = Read-FileWithEncoding -Path $propsFile
+    $content = $file.Content
     if ($content -match '<PackageVersion Include="Microsoft.WindowsAppSDK"') {
         $newVersionString = '<PackageVersion Include="Microsoft.WindowsAppSDK" Version="' + $WinAppSDKVersion + '" />'
         $oldVersionString = '<PackageVersion Include="Microsoft.WindowsAppSDK" Version="[-.0-9a-zA-Z]*" />'
         $content = $content -replace $oldVersionString, $newVersionString
-        Set-Content -Path $propsFile -Value $content
+        Write-FileWithEncoding -Path $propsFile -Content $content -Encoding $file.encoding
         Write-Host "Modified " $propsFile
     }
 }
 
 # Update .vcxproj files
 Get-ChildItem -Recurse *.vcxproj | ForEach-Object {
-    $content = Get-Content $_.FullName -Raw
+    $file = Read-FileWithEncoding -Path $_.FullName
+    $content = $file.Content
     if ($content -match '\\Microsoft.WindowsAppSDK.') {
         $newVersionString = '\Microsoft.WindowsAppSDK.' + $WinAppSDKVersion + '\'
         $oldVersionString = '\\Microsoft.WindowsAppSDK.[-.0-9a-zA-Z]*\\'
         $content = $content -replace $oldVersionString, $newVersionString
-        Set-Content -Path $_.FullName -Value $content
+        Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
         Write-Host "Modified " $_.FullName
     }
 }
 
 # Update .csproj files
 Get-ChildItem -Recurse *.csproj | ForEach-Object {
-    $content = Get-Content $_.FullName -Raw
+    $file = Read-FileWithEncoding -Path $_.FullName
+    $content = $file.Content
     if ($content -match 'PackageReference Include="Microsoft.WindowsAppSDK"') {
         $newVersionString = 'PackageReference Include="Microsoft.WindowsAppSDK" Version="'+ $WinAppSDKVersion + '"'
         $oldVersionString = 'PackageReference Include="Microsoft.WindowsAppSDK" Version="[-.0-9a-zA-Z]*"'
         $content = $content -replace $oldVersionString, $newVersionString
-        Set-Content -Path $_.FullName -Value $content
+        Write-FileWithEncoding -Path $_.FullName -Content $content -Encoding $file.encoding
         Write-Host "Modified " $_.FullName 
     }
 }
