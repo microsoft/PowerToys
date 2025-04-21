@@ -81,6 +81,67 @@ namespace RegistryPreviewUILib
         }
 
         /// <summary>
+        /// Resets the editor content
+        /// </summary>
+        private async void NewButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Check to see if the current file has been saved
+            if (saveButton.IsEnabled)
+            {
+                ContentDialog contentDialog = new ContentDialog()
+                {
+                    Title = resourceLoader.GetString("YesNoCancelDialogTitle"),
+                    Content = resourceLoader.GetString("YesNoCancelDialogContent"),
+                    PrimaryButtonText = resourceLoader.GetString("YesNoCancelDialogPrimaryButtonText"),
+                    SecondaryButtonText = resourceLoader.GetString("YesNoCancelDialogSecondaryButtonText"),
+                    CloseButtonText = resourceLoader.GetString("YesNoCancelDialogCloseButtonText"),
+                    DefaultButton = ContentDialogButton.Primary,
+                };
+
+                // Use this code to associate the dialog to the appropriate AppWindow by setting
+                // the dialog's XamlRoot to the same XamlRoot as an element that is already present in the AppWindow.
+                if (ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 8))
+                {
+                    contentDialog.XamlRoot = this.Content.XamlRoot;
+                }
+
+                ContentDialogResult contentDialogResult = await contentDialog.ShowAsync();
+                switch (contentDialogResult)
+                {
+                    case ContentDialogResult.Primary:
+                        // Save, then continue the file open
+                        if (!AskFileName(string.Empty) ||
+                            !SaveFile())
+                        {
+                            return;
+                        }
+
+                        break;
+                    case ContentDialogResult.Secondary:
+                        // Don't save and continue the file open!
+                        break;
+                    default:
+                        // Don't open the new file!
+                        return;
+                }
+            }
+
+            // mute the TextChanged handler to make for clean UI
+            MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
+
+            // reset editor, file info and ui.
+            _appFileName = string.Empty;
+            ResetEditorAndFile();
+
+            // disable buttons that do not make sense
+            UpdateUnsavedFileState(false);
+            refreshButton.IsEnabled = false;
+
+            // restore the TextChanged handler
+            ButtonAction_RestoreTextChangedEvent();
+        }
+
+        /// <summary>
         /// Uses a picker to select a new file to open
         /// </summary>
         private async void OpenButton_Click(object sender, RoutedEventArgs e)
@@ -197,33 +258,15 @@ namespace RegistryPreviewUILib
         /// </summary>
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            // mute the TextChanged handler to make for clean UI
-            MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
-
-            // reload the current Registry file and update the toolbar accordingly.
-            UpdateToolBarAndUI(await OpenRegistryFile(_appFileName), true, true);
-
-            UpdateUnsavedFileState(false);
-
-            // restore the TextChanged handler
-            ButtonAction_RestoreTextChangedEvent();
-        }
-
-        /// <summary>
-        /// Resets the editor content
-        /// </summary>
-        private async void NewButton_Click(object sender, RoutedEventArgs e)
-        {
             // Check to see if the current file has been saved
             if (saveButton.IsEnabled)
             {
                 ContentDialog contentDialog = new ContentDialog()
                 {
                     Title = resourceLoader.GetString("YesNoCancelDialogTitle"),
-                    Content = resourceLoader.GetString("YesNoCancelDialogContent"),
-                    PrimaryButtonText = resourceLoader.GetString("YesNoCancelDialogPrimaryButtonText"),
-                    SecondaryButtonText = resourceLoader.GetString("YesNoCancelDialogSecondaryButtonText"),
-                    CloseButtonText = resourceLoader.GetString("YesNoCancelDialogCloseButtonText"),
+                    Content = resourceLoader.GetString("ReloadDialogContent"),
+                    PrimaryButtonText = resourceLoader.GetString("ReloadDialogPrimaryButtonText"),
+                    CloseButtonText = resourceLoader.GetString("ReloadDialogCloseButtonText"),
                     DefaultButton = ContentDialogButton.Primary,
                 };
 
@@ -238,12 +281,7 @@ namespace RegistryPreviewUILib
                 switch (contentDialogResult)
                 {
                     case ContentDialogResult.Primary:
-                        // Save, then continue the file open
-                        SaveFile();
-                        break;
-                    case ContentDialogResult.Secondary:
                         // Don't save and continue the file open!
-                        saveButton.IsEnabled = false;
                         break;
                     default:
                         // Don't open the new file!
@@ -254,16 +292,14 @@ namespace RegistryPreviewUILib
             // mute the TextChanged handler to make for clean UI
             MonacoEditor.TextChanged -= MonacoEditor_TextChanged;
 
-            // reset editor, file info and ui.
-            _appFileName = string.Empty;
-            ResetEditorAndFile();
+            // reload the current Registry file and update the toolbar accordingly.
+            UpdateToolBarAndUI(await OpenRegistryFile(_appFileName), true, true);
+
+            // disable the Save button as it's a new file
+            UpdateUnsavedFileState(false);
 
             // restore the TextChanged handler
-            MonacoEditor.TextChanged += MonacoEditor_TextChanged;
-
-            // disable buttons that do not make sense
-            saveButton.IsEnabled = false;
-            refreshButton.IsEnabled = false;
+            ButtonAction_RestoreTextChangedEvent();
         }
 
         /// <summary>
