@@ -151,7 +151,7 @@
     <Import Project="$(WebView2Nuget)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(WebView2Nuget)\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\..\hybridcrt.targets" />
+    <Import Project="..\..\..\..\hybridcrt.targets" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

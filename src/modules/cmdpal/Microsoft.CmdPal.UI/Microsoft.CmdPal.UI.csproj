@@ -171,6 +171,12 @@
   <PropertyGroup>
     <AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateVCLibsAppxPackage>false</GenerateVCLibsAppxPackage>
+    <DisableVCLibsReference>true</DisableVCLibsReference>
+  </PropertyGroup>
+
   <ItemGroup>
     <Content Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.ObjectModel.WinUI3.dll" Link="AdaptiveCards.ObjectModel.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" Link="AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
@@ -179,6 +185,10 @@
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <SDKReference Remove="Microsoft.VCLibs.Desktop" />
+    <SDKReference Remove="Microsoft.VCLibs" />
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\Colors.xaml">
