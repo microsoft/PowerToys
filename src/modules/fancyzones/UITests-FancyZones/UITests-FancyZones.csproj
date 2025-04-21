@@ -20,6 +20,7 @@
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" />
     <PackageReference Include="MSTest" />
+    <PackageReference Include="VirtualDesktop" />
   </ItemGroup>
 
   <ItemGroup>

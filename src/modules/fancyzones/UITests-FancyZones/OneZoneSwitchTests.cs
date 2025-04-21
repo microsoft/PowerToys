@@ -4,10 +4,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
+using System.DirectoryServices;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
@@ -18,8 +21,6 @@ using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Appium.Windows;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace UITests_FancyZones
@@ -47,14 +48,38 @@ namespace UITests_FancyZones
 
             // clear the app zone history
             AppZoneHistory.DeleteFile();
-            string data = AppZoneHistory.GetData();
-            Console.WriteLine($"1App zone history data: {data}");
 
+            // Goto Hosts File Editor setting page
+            if (this.FindAll<NavigationViewItem>("FancyZones").Count == 0)
+            {
+                // Expand Advanced list-group if needed
+                this.Find<NavigationViewItem>("Windowing & Layouts").Click();
+            }
+
+            this.Find<NavigationViewItem>("FancyZones").Click();
+            this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
+            this.Session.SetMainWindowSize(WindowSize.Medium);
+
+            int tries = 5;
+            Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
+            bool switchWindowEnable = TestContext.TestName == "TestSwitchShortCutDisable" ? false : true;
+
+            this.Find<ToggleSwitch>("Switch between windows in the current zone").Toggle(switchWindowEnable);
+            Pull(tries, "up"); // Pull the setting page down to make sure the setting is visible
+            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click();
+
+            // Session.Attach("FancyZones Layout", WindowSize.UnSpecified);
+            // this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
+            Task.Delay(1000).Wait();
+            this.Session.Attach(PowerToysModule.FancyZone);
+            this.Find<Element>(Microsoft.PowerToys.UITest.By.Name("Custom Column")).Click();
+            this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
+            Task.Delay(500).Wait(); // Wait for the FancyZones window to close
             this.RestartScopeExe();
         }
 
         [TestMethod]
-        public void TestLaunchFileExplore()
+        public void TestSwitchWindow()
         {
             SnaptoOneZone();
 
@@ -63,10 +88,64 @@ namespace UITests_FancyZones
 
             // switch to the previous window by shortcut win+page down
             SendKeys(Key.Win, Key.PageDown);
-            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure window switch
+            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
 
             activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(WindowName, activeWindowTitle);
+
+            // Clean settings
+            Clean();
+        }
+
+        [TestMethod]
+        public void TestSwitchafterDesktopChange()
+        {
+            SnaptoOneZone();
+
+            string? windowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
+            Assert.AreEqual(PowertoysWindowName, windowTitle);
+
+            // Add virtual desktop
+            SendKeys(Key.Ctrl, Key.Win, Key.D);
+            string? switchWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle(); // Fixed variable name to start with lower-case letter and removed unnecessary assignment warning by using the variable meaningfully.
+            Console.WriteLine($"Switched window title: {switchWindowTitle}");
+
+            // return back
+            SendKeys(Key.Ctrl, Key.Win, Key.Left);
+            string? returnWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
+            Assert.AreEqual(PowertoysWindowName, returnWindowTitle);
+            Console.WriteLine($"Returned window title: {returnWindowTitle}");
+
+            // check shortcut
+            SendKeys(Key.Win, Key.PageDown);
+            string? activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
+            Assert.AreEqual(WindowName, activeWindowTitle);
+
+            // close the virtual desktop
+            SendKeys(Key.Ctrl, Key.Win, Key.Right);
+            SendKeys(Key.Ctrl, Key.Win, Key.F4);
+
+            // Clean settings
+            Clean();
+        }
+
+        [TestMethod]
+        public void TestSwitchShortCutDisable()
+        {
+            SnaptoOneZone();
+
+            string? activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
+            Assert.AreEqual(PowertoysWindowName, activeWindowTitle);
+
+            // switch to the previous window by shortcut win+page down
+            SendKeys(Key.Win, Key.PageDown);
+            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+
+            activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
+            Assert.AreNotEqual(WindowName, activeWindowTitle);
+
+            // Clean Setting
+            Clean();
         }
 
         private void SnaptoOneZone()
@@ -128,5 +207,19 @@ namespace UITests_FancyZones
                 },
             },
         };
+
+        private void Pull(int tries = 5, string direction = "up")
+        {
+            Key keyToSend = direction == "up" ? Key.Up : Key.Down;
+            for (int i = 0; i < tries; i++)
+            {
+               SendKeys(keyToSend);
+            }
+        }
+
+        private void Clean()
+        {
+            ZoneSwitchHelper.KillAllExplorerWindows();
+        }
     }
 }
