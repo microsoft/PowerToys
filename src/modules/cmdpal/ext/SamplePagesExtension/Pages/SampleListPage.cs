@@ -4,6 +4,8 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.System;
+using Windows.Win32;
 
 namespace SamplePagesExtension;
 
@@ -65,6 +67,68 @@ internal sealed partial class SampleListPage : ListPage
                 Subtitle = "and I'll take you to a page with markdown content",
                 Tags = [new Tag("Sample Tag")],
             },
+
+            new ListItem(
+                new AnonymousCommand(() =>
+                {
+                    var t = new ToastStatusMessage(new StatusMessage()
+                    {
+                        Message = "Primary command invoked",
+                        State = MessageState.Info,
+                    });
+                    t.Show();
+                })
+                {
+                    Result = CommandResult.KeepOpen(),
+                    Icon = new IconInfo("\uE712"),
+                })
+            {
+                Title = "You can add context menu items too. Press Ctrl+k",
+                Subtitle = "Try pressing Ctrl+1 with me selected",
+                Icon = new IconInfo("\uE712"),
+                MoreCommands = [
+                    new CommandContextItem(
+                        new AnonymousCommand(() =>
+                        {
+                            var t = new ToastStatusMessage(new StatusMessage()
+                            {
+                                Message = "Secondary command invoked",
+                                State = MessageState.Warning,
+                            });
+                            t.Show();
+                        })
+                        {
+                            Name = "Secondary command",
+                            Icon = new IconInfo("\uF147"), // Dial 2
+                            Result = CommandResult.KeepOpen(),
+                        })
+                    {
+                        Title = "I'm a second command",
+                        RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number1),
+                    },
+                    new CommandContextItem(
+                        new AnonymousCommand(() =>
+                        {
+                            var t = new ToastStatusMessage(new StatusMessage()
+                            {
+                                Message = "Third command invoked",
+                                State = MessageState.Error,
+                            });
+                            t.Show();
+                        })
+                        {
+                            Name = "Do it",
+                            Icon = new IconInfo("\uF148"), // dial 3
+                            Result = CommandResult.KeepOpen(),
+                        })
+                    {
+                        Title = "A third command too",
+                        Icon = new IconInfo("\uF148"),
+                        RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.Number2),
+                    }
+                ],
+            },
+
             new ListItem(new SendMessageCommand())
             {
                 Title = "I send lots of messages",
@@ -91,7 +155,35 @@ internal sealed partial class SampleListPage : ListPage
                 })
             {
                 Title = "Confirm twice before doing something",
-            }
+            },
+            new ListItem(
+                new AnonymousCommand(() =>
+                {
+                    var fg = PInvoke.GetForegroundWindow();
+                    var bufferSize = PInvoke.GetWindowTextLength(fg) + 1;
+                    unsafe
+                   {
+                       fixed (char* windowNameChars = new char[bufferSize])
+                       {
+                           if (PInvoke.GetWindowText(fg, windowNameChars, bufferSize) == 0)
+                           {
+                                var emptyToast = new ToastStatusMessage(new StatusMessage() { Message = "FG Window didn't have a title",  State = MessageState.Warning });
+                                emptyToast.Show();
+                           }
+
+                           var windowName = new string(windowNameChars);
+                           var nameToast = new ToastStatusMessage(new StatusMessage() { Message = $"FG Window is {windowName}", State = MessageState.Success });
+                           nameToast.Show();
+                       }
+                   }
+                })
+                {
+                    Result = CommandResult.KeepOpen(),
+                })
+            {
+                Title = "Get the name of the Foreground window",
+            },
+
         ];
     }
 }
