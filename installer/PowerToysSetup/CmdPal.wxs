@@ -40,7 +40,6 @@
           <RegistryValue Type="string" Name="Module_CmdPal_Deps" Value="" KeyPath="yes"/>
         </RegistryKey>
         <File Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test\Dependencies\x64\Microsoft.VCLibs.x64.14.00.Desktop.appx" />
-        <File Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test\Dependencies\x64\Microsoft.WindowsAppRuntime.1.6.msix" />
       </Component>
     </DirectoryRef>
     <?else ?>
@@ -50,7 +49,6 @@
           <RegistryValue Type="string" Name="Module_CmdPal_Deps" Value="" KeyPath="yes"/>
         </RegistryKey>
         <File Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test\Dependencies\arm64\Microsoft.VCLibs.ARM64.14.00.Desktop.appx" />
-        <File Source="$(var.CmdPalBuildDir)AppPackages\Microsoft.CmdPal.UI_$(var.CmdPalVersion).0_Test\Dependencies\arm64\Microsoft.WindowsAppRuntime.1.6.msix" />
       </Component>
     </DirectoryRef>
     <?endif ?>
