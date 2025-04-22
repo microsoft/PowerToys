@@ -789,13 +789,19 @@ namespace Microsoft.PowerToys.UITest
             [DllImport("user32.dll")]
             public static extern int GetSystemMetrics(int nIndex);
 
-            private const int SMCXSCREEN = 0;
-            private const int SMCYSCREEN = 1;
+            public enum SystemMetric
+            {
+                ScreenWidth = 0,            // Width of the primary screen in pixels (SM_CXSCREEN)
+                ScreenHeight = 1,           // Height of the primary screen in pixels (SM_CYSCREEN)
+                VirtualScreenWidth = 78,    // Width of the virtual screen that includes all monitors (SM_CXVIRTUALSCREEN)
+                VirtualScreenHeight = 79,   // Height of the virtual screen that includes all monitors (SM_CYVIRTUALSCREEN)
+                MonitorCount = 80,          // Number of display monitors (SM_CMONITORS, available on Windows XP+)
+            }
 
             public static (int CenterX, int CenterY) GetScreenCenter()
             {
-                int width = GetSystemMetrics(SMCXSCREEN);
-                int height = GetSystemMetrics(SMCYSCREEN);
+                int width = GetSystemMetrics((int)SystemMetric.ScreenWidth);
+                int height = GetSystemMetrics((int)SystemMetric.ScreenHeight);
 
                 return (width / 2, height / 2);
             }
