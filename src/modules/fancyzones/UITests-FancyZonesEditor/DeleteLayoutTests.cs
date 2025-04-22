@@ -22,7 +22,7 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class DeleteLayoutTests : UITestBase
     {
         public DeleteLayoutTests()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 

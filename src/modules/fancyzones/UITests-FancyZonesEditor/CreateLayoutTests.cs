@@ -16,7 +16,7 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class CreateLayoutTests : UITestBase
     {
         public CreateLayoutTests()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 
