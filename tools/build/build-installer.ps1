@@ -55,16 +55,17 @@ RestoreThenBuild '.\PowerToys.sln'
 
 $msixSearchRoot = Join-Path $repoRoot "$Platform\$Configuration"
 $msixFiles = Get-ChildItem -Path $msixSearchRoot -Recurse -Filter *.msix |
-             Select-Object -ExpandProperty FullName
+Select-Object -ExpandProperty FullName
 
 if ($msixFiles.Count) {
-    Write-Host ("[SIGN] {0} .msix file(s)" -f $msixFiles.Count)
+    Write-Host ("[SIGN] .msix file(s): {0}" -f ($msixFiles -join '; '))
     & "$PSScriptRoot\cert-sign-package.ps1" -TargetPaths $msixFiles
 }
 else {
     Write-Warning "[SIGN] No .msix files found in $msixSearchRoot"
 }
 
+exit 0
 
 RestoreThenBuild '.\tools\BugReportTool\BugReportTool.sln'
 RestoreThenBuild '.\tools\StylesReportTool\StylesReportTool.sln'
