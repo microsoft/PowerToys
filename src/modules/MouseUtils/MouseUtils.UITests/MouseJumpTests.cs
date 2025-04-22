@@ -45,8 +45,7 @@ namespace MouseUtils.UITests
                 var activationShortcutButton = foundCustom.Find<Button>("Activation shortcut");
                 Assert.IsNotNull(activationShortcutButton);
 
-                activationShortcutButton.Click();
-                Task.Delay(500).Wait();
+                activationShortcutButton.Click(false, 500, 1000);
                 var activationShortcutWindow = Session.Find<Window>("Activation shortcut");
                 Assert.IsNotNull(activationShortcutWindow);
 
@@ -63,26 +62,21 @@ namespace MouseUtils.UITests
                 // Assert.IsNull(activationShortcutWindow.Find<TextBlock>("Invalid shortcut"));
                 var saveButton = activationShortcutWindow.Find<Button>("Save");
                 Assert.IsNotNull(saveButton);
-                saveButton.Click();
+                saveButton.Click(false, 500, 1500);
 
-                Task.Delay(1000).Wait();
                 var screenCenter = this.Session.GetScreenCenter();
-                Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY);
-                Task.Delay(1000).Wait();
-                Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY - 300);
-                Task.Delay(1000).Wait();
+                Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY, 500, 1000);
+                Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY - 300, 500, 1000);
 
                 Session.SendKeys(Key.Win, Key.Shift, Key.Z);
                 VerifyWindowAppears();
 
                 Task.Delay(1000).Wait();
                 foundCustom.Find<ToggleSwitch>("Enable Mouse Jump").Toggle(false);
-                Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY - 300);
-                Task.Delay(1000).Wait();
+                Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY - 300, 500, 1000);
                 Session.SendKeys(Key.Win, Key.Shift, Key.Z);
-                Task.Delay(1000).Wait();
+                Task.Delay(500).Wait();
                 VerifyWindowNotAppears();
-                Task.Delay(1000).Wait();
             }
             else
             {

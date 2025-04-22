@@ -533,12 +533,15 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="x">The new x-coordinate of the cursor.</param>
         /// <param name="y">The new y-coordinate of the cursor.</param
-        public void MoveMouseTo(int x, int y)
+        public void MoveMouseTo(int x, int y, int msPreAction = 500, int msPostAction = 500)
         {
-            PerformAction(() =>
+            PerformAction(
+                () =>
          {
              MouseHelper.MoveMouseTo(x, y);
-         });
+         },
+                msPreAction,
+                msPostAction);
         }
 
         /// <summary>

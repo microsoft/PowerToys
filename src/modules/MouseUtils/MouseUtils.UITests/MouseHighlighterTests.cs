@@ -74,9 +74,7 @@ namespace MouseUtils.UITests
                 // Assert.IsNull(activationShortcutWindow.Find<TextBlock>("Invalid shortcut"));
                 var saveButton = activationShortcutWindow.Find<Button>("Save");
                 Assert.IsNotNull(saveButton);
-                saveButton.Click();
-
-                Task.Delay(1000).Wait();
+                saveButton.Click(false, 500, 1000);
 
                 SetMouseHighlighterAppearanceBehavior(ref foundCustom, ref settings);
 
@@ -122,8 +120,6 @@ namespace MouseUtils.UITests
                 Task.Delay(1000).Wait();
                 VerifyMouseHighlighterDrag(ref settings, "leftClick");
                 VerifyMouseHighlighterDrag(ref settings, "rightClick");
-
-                Task.Delay(100).Wait();
             }
             else
             {
@@ -294,7 +290,6 @@ namespace MouseUtils.UITests
             var groupAppearanceBehavior = foundCustom.Find<TextBlock>("Appearance & behavior");
             if (groupAppearanceBehavior != null)
             {
-                // groupAppearanceBehavior.Click();
                 if (foundCustom.FindAll<TextBox>("Fade duration (ms) Minimum0").Count == 0)
                 {
                     groupAppearanceBehavior.Click();
@@ -306,30 +301,19 @@ namespace MouseUtils.UITests
 
                 var button = primaryButtonHighlightColor.Find<Button>(By.XPath(".//Button"));
                 Assert.IsNotNull(button);
-                button.Click();
+                button.Click(false, 500, 700);
 
-                Task.Delay(500).Wait();
                 var popupWindow = Session.Find<Window>("Popup");
                 Assert.IsNotNull(popupWindow);
                 var colorModelComboBox = this.Find<ComboBox>("Color model");
                 Assert.IsNotNull(colorModelComboBox);
-                colorModelComboBox.Click();
-                Task.Delay(500).Wait();
+                colorModelComboBox.Click(false, 500, 700);
                 var selectedItem = colorModelComboBox.Find<NavigationViewItem>("RGB");
                 selectedItem.Click();
-                Task.Delay(100).Wait();
                 var rgbHexEdit = this.Find<TextBox>("RGB hex");
                 Assert.IsNotNull(rgbHexEdit);
-                Task.Delay(100).Wait();
                 rgbHexEdit.SetText(colorValue);
-                Task.Delay(100).Wait();
 
-                // Set the opacity to 100%
-                // var opacityEdit = this.Find<TextBox>("Opacity");
-                // Assert.IsNotNull(opacityEdit);
-                // Task.Delay(1000).Wait();
-                // opacityEdit.SetText(opacity);
-                // Assert.AreEqual(opacity + "%", opacityEdit.Text);
                 button.Click();
             }
         }
@@ -377,34 +361,6 @@ namespace MouseUtils.UITests
             {
                 Assert.Fail("Appearance & behavior group not found.");
             }
-        }
-
-        private bool FindGroup(string groupName)
-        {
-            try
-            {
-                var foundElements = this.FindAll<Element>(groupName);
-                foreach (var element in foundElements)
-                {
-                    string className = element.ClassName;
-                    string name = element.Name;
-                    string text = element.Text;
-                    string helptext = element.HelpText;
-                    string controlType = element.ControlType;
-                }
-
-                if (foundElements.Count == 0)
-                {
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Validate if group is not found by checking exception.Message
-                return ex.Message.Contains("No element found");
-            }
-
-            return true;
         }
 
         private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
