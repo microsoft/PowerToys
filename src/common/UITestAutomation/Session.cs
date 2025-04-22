@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -569,6 +570,7 @@ namespace Microsoft.PowerToys.UITest
                         break;
                     default:
                         throw new ArgumentException("Unsupported mouse action.", nameof(action));
+                        throw new ArgumentException("Unsupported mouse action.", nameof(action));
                 }
             },
                 msPreAction,
@@ -707,6 +709,37 @@ namespace Microsoft.PowerToys.UITest
                     IntPtr.Zero);
 
                 return windows;
+            }
+        }
+
+        public void StartExe(string executablePath, string arguments = "", int msPreAction = 0, int msPostAction = 2000)
+        {
+            PerformAction(
+                () =>
+            {
+                StartExeInternal(executablePath, arguments);
+            },
+                msPreAction,
+                msPostAction);
+        }
+
+        private void StartExeInternal(string executablePath, string arguments = "")
+        {
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = executablePath,
+                Arguments = arguments,
+                UseShellExecute = true,
+            };
+            Process.Start(processInfo);
+        }
+
+        public void KillAllProcessesByName(string processName)
+        {
+            foreach (var process in Process.GetProcessesByName(processName))
+            {
+                process.Kill();
+                process.WaitForExit();
             }
         }
 
