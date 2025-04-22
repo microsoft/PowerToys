@@ -245,12 +245,21 @@ public:
             errorMessage += e.what();
             Logger::error(errorMessage);
         }
-
-#if IS_DEV_BRANDING
-        LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App", L"RunFromPT", false);
+        try
+        {
+#ifdef IS_DEV_BRANDING
+            LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App", L"RunFromPT", false);
 #else
-        LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette_8wekyb3d8bbwe!App", L"RunFromPT", false);
+            LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette_8wekyb3d8bbwe!App", L"RunFromPT", false);
 #endif
+        }
+        catch (std::exception& e)
+        {
+            std::string errorMessage{ "Exception thrown while trying to launch CmdPal: " };
+            errorMessage += e.what();
+            Logger::error(errorMessage);
+            throw;
+        }
     }
 
     virtual void disable()
