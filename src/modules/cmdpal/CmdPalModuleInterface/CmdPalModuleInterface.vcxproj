@@ -56,7 +56,7 @@
         $(CommandPaletteBranding)
       </PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(CommandPaletteBranding)'=='' or '$(CommandPaletteBranding)'=='Dev'">
-        IS_DEV_BRANDING;%(PreprocessorDefinitions)
+        IS_DEV_BRANDING;
       </PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\..\common\inc;..\..\..\common\Telemetry;..\..\;..\..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
