@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Some items may be set in Directory.Build.props in root -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project=".\Common.Dotnet.CreateGenerateFolder.targets" />
+  <Import Project=".\Common.Dotnet.PrepareGeneratedFolder.targets" />
 
   <PropertyGroup>
     <WindowsSdkPackageVersion>10.0.22621.57</WindowsSdkPackageVersion>
