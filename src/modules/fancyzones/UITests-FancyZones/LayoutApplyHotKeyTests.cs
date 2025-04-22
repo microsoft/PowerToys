@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using System.Xml.Linq;
 using FancyZonesEditor.Models;
 using FancyZonesEditorCommon.Data;
@@ -15,6 +16,7 @@ using ModernWpf.Controls;
 using OpenQA.Selenium;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
+using Button = Microsoft.PowerToys.UITest.Button;
 using NavigationViewItem = Microsoft.PowerToys.UITest.NavigationViewItem;
 using ToggleSwitch = Microsoft.PowerToys.UITest.ToggleSwitch;
 
@@ -23,6 +25,8 @@ namespace Microsoft.FancyZones.UITests
     [TestClass]
     public class LayoutApplyHotKeyTests : UITestBase
     {
+        private static readonly string WindowName = "Windows (C:) - File Explorer"; // set launch explorer window name
+
         public LayoutApplyHotKeyTests()
             : base(PowerToysModule.PowerToysSettings)
         {
@@ -299,15 +303,52 @@ namespace Microsoft.FancyZones.UITests
         {
             this.OpenFancyZonesPanel();
 
-            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
+            int screenWidth = Screen.PrimaryScreen?.Bounds.Width ?? 1920;  // default 1920
+            int screenHeight = Screen.PrimaryScreen?.Bounds.Height ?? 1080;
+
+            int targetX = screenWidth / 2 / 3;
+            int targetY = screenWidth / 2 / 2;
+
+            // assert the AppZoneHistory layout is set
+            Session.KillAllProcessesByName("explorer");
+            Session.StartExe("explorer.exe", "C:\\");
+
+            Session.Attach(WindowName, WindowSize.UnSpecified);
+            var tabView = Find<Element>(PowerToys.UITest.By.AccessibilityId("TabView"));
+            tabView.DoubleClick(); // maximize the window
+            tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
+            SendKeys(Key.Num0);
+            tabView.ReleaseAction();
+            tabView.ReleaseKey(Key.Shift);
+
+            // Attach FancyZones Editor
+            this.Session.Attach(PowerToysModule.FancyZone);
             var element = this.Find<Element>("Grid custom layout");
             Assert.IsTrue(element.Selected, "Grid custom layout is not visible");
 
-            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num1);
+            Session.Attach(WindowName, WindowSize.UnSpecified);
+            tabView = Find<Element>(PowerToys.UITest.By.AccessibilityId("TabView"));
+            tabView.DoubleClick(); // maximize the window
+            tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
+            SendKeys(Key.Num1);
+            tabView.ReleaseAction();
+            tabView.ReleaseKey(Key.Shift);
+
+            // Attach FancyZones Editor
+            this.Session.Attach(PowerToysModule.FancyZone);
             element = this.Find<Element>("Grid-9");
             Assert.IsTrue(element.Selected, "Grid-9 is not visible");
 
-            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num2);
+            Session.Attach(WindowName, WindowSize.UnSpecified);
+            tabView = Find<Element>(PowerToys.UITest.By.AccessibilityId("TabView"));
+            tabView.DoubleClick(); // maximize the window
+            tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
+            SendKeys(Key.Num2);
+            tabView.ReleaseAction();
+            tabView.ReleaseKey(Key.Shift);
+
+            // Attach FancyZones Editor
+            this.Session.Attach(PowerToysModule.FancyZone);
             element = this.Find<Element>("Canvas custom layout");
             Assert.IsTrue(element.Selected, "Canvas custom layout is not visible");
         }
