@@ -138,7 +138,7 @@
             </controls:Case>
             <controls:Case Value="True">
                 <StackPanel
-                    Margin="16"
+                    Margin="24"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Orientation="Vertical"
