@@ -157,7 +157,7 @@ namespace UITests_FancyZones
 
             // assert the AppZoneHistory layout is set
             Session.KillAllProcessesByName("explorer");
-            Session.StarteExe("explorer.exe", "C:\\");
+            Session.StartExe("explorer.exe", "C:\\");
 
             // Start Windows Explorer process
             Session.Attach(WindowName, WindowSize.UnSpecified); // display window1

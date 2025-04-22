@@ -712,7 +712,7 @@ namespace Microsoft.PowerToys.UITest
             }
         }
 
-        public void StarteExe(string executablePath, string arguments = "", int msPreAction = 0, int msPostAction = 2000)
+        public void StartExe(string executablePath, string arguments = "", int msPreAction = 0, int msPostAction = 2000)
         {
             PerformAction(
                 () =>
