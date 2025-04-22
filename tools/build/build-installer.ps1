@@ -41,6 +41,9 @@ function RestoreThenBuild {
     RunMSBuild $Solution '/m'
 }
 
+Write-Host ("Make sure wix is installed and available")
+& "$PSScriptRoot\ensure-wix.ps1"
+
 Write-Host ("[PIPELINE] Start | Platform={0} Configuration={1}" -f $Platform, $Configuration)
 Write-Host ''
 
