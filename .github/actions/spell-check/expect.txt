@@ -797,6 +797,7 @@ LCIDTo
 Lclean
 Ldone
 Ldr
+leftclickaction
 LEFTSCROLLBAR
 LEFTTEXT
 LError
@@ -921,6 +922,7 @@ metafile
 mfc
 Mgmt
 Microwaved
+middleclickaction
 midl
 mii
 mindaro
@@ -1391,6 +1393,7 @@ rgh
 rgn
 rgs
 RIDEV
+rightclickaction
 RIGHTSCROLLBAR
 riid
 ringbuffer
