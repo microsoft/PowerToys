@@ -68,8 +68,6 @@ else {
     Write-Warning "[SIGN] No .msix files found in $msixSearchRoot"
 }
 
-exit 0
-
 RestoreThenBuild '.\tools\BugReportTool\BugReportTool.sln'
 RestoreThenBuild '.\tools\StylesReportTool\StylesReportTool.sln'
 
