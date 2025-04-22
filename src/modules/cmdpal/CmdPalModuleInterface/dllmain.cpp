@@ -208,7 +208,7 @@ public:
         try
         {
             std::wstring packageName = L"Microsoft.CommandPalette";
-#ifdef _DEBUG
+#ifdef IS_DEV_BRANDING
             packageName = L"Microsoft.CommandPalette.Dev";
 #endif
             if (!package::GetRegisteredPackage(packageName, false).has_value())
@@ -246,7 +246,7 @@ public:
             Logger::error(errorMessage);
         }
 
-#if _DEBUG
+#if IS_DEV_BRANDING
         LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App", L"RunFromPT", false);
 #else
         LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette_8wekyb3d8bbwe!App", L"RunFromPT", false);

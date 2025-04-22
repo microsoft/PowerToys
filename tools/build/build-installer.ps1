@@ -76,8 +76,8 @@ git clean -xfd -e '*.exe' -- .\installer\ | Out-Null
 
 RunMSBuild  '.\installer\PowerToysSetup.sln' '/t:restore /p:RestorePackagesConfig=true'
 
-RunMSBuild '.\installer\PowerToysSetup.sln' '/m /t:PowerToysInstaller'
+RunMSBuild '.\installer\PowerToysSetup.sln' '/m /t:PowerToysInstaller /p:PerUser=true'
 
-RunMSBuild '.\installer\PowerToysSetup.sln' '/m /t:PowerToysBootstrapper'
+RunMSBuild '.\installer\PowerToysSetup.sln' '/m /t:PowerToysBootstrapper /p:PerUser=true'
 
 Write-Host '[PIPELINE] Completed'
