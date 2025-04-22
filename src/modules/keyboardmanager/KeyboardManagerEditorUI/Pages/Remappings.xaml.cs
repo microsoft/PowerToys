@@ -36,6 +36,10 @@ namespace KeyboardManagerEditorUI.Pages
     {
         private KeyboardMappingService? _mappingService;
 
+        // Flag to indicate if the user is editing an existing remapping
+        private bool _isEditMode;
+        private Remapping? _editingRemapping;
+
         private bool _disposed;
 
         // The list of single key mappings
@@ -196,6 +200,9 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async void NewRemappingBtn_Click(object sender, RoutedEventArgs e)
         {
+            _isEditMode = false;
+            _editingRemapping = null;
+
             RemappingControl.SetOriginalKeys(new List<string>());
             RemappingControl.SetRemappedKeys(new List<string>());
             RemappingControl.SetApp(false, string.Empty);
@@ -256,6 +263,12 @@ namespace KeyboardManagerEditorUI.Pages
                 }
             }
 
+            // If in edit mode, delete the existing remapping before saving the new one
+            if (_isEditMode && _editingRemapping != null)
+            {
+                DeleteRemapping(_editingRemapping);
+            }
+
             // If no errors, proceed to save the remapping
             bool saved = SaveCurrentMapping();
             if (saved)
@@ -288,6 +301,11 @@ namespace KeyboardManagerEditorUI.Pages
             // User pressed continue anyway button
             sender.IsOpen = false;
 
+            if (_isEditMode && _editingRemapping != null)
+            {
+                DeleteRemapping(_editingRemapping);
+            }
+
             bool saved = SaveCurrentMapping();
             if (saved)
             {
@@ -306,6 +324,10 @@ namespace KeyboardManagerEditorUI.Pages
         {
             if (e.ClickedItem is Remapping selectedRemapping && selectedRemapping.IsEnabled)
             {
+                // Set to edit mode
+                _isEditMode = true;
+                _editingRemapping = selectedRemapping;
+
                 RemappingControl.SetOriginalKeys(selectedRemapping.OriginalKeys);
                 RemappingControl.SetRemappedKeys(selectedRemapping.RemappedKeys);
                 RemappingControl.SetApp(!selectedRemapping.IsAllApps, selectedRemapping.AppName);
@@ -320,6 +342,10 @@ namespace KeyboardManagerEditorUI.Pages
                 UnregisterWindowActivationHandler();
 
                 RemappingControl.CleanupKeyboardHook();
+
+                // Reset the edit status
+                _isEditMode = false;
+                _editingRemapping = null;
             }
         }
 
@@ -332,6 +358,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             if (_mappingService == null)
             {
+                Logger.LogError("Mapping service is null, cannot save mapping");
                 return false;
             }
 
@@ -342,9 +369,6 @@ namespace KeyboardManagerEditorUI.Pages
                 bool isAppSpecific = RemappingControl.GetIsAppSpecific();
                 string appName = RemappingControl.GetAppName();
 
-                // mock data
-                // originalKeys = ["A", "Ctrl"];
-                // remappedKeys = ["B"];
                 if (originalKeys == null || originalKeys.Count == 0 || remappedKeys == null || remappedKeys.Count == 0)
                 {
                     return false;
