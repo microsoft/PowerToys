@@ -1,3 +1,49 @@
+<#
+.SYNOPSIS
+Ensures a code signing certificate exists and is trusted in all necessary certificate stores.
+
+.DESCRIPTION
+This script provides two functions:
+
+1. EnsureCertificate:
+   - Searches for an existing code signing certificate by subject name.
+   - If not found, creates a new self-signed certificate.
+   - Exports the certificate and attempts to import it into:
+     - CurrentUser\TrustedPeople
+     - CurrentUser\Root
+     - LocalMachine\Root (admin privileges may be required)
+
+2. ImportAndVerifyCertificate:
+   - Imports a `.cer` file into the specified certificate store if not already present.
+   - Verifies the certificate is successfully imported by checking thumbprint.
+
+This is useful in build or signing pipelines to ensure a valid and trusted certificate is available before signing MSIX or executable files.
+
+.PARAMETER certSubject
+The subject name of the certificate to search for or create. Default is:
+"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+
+.PARAMETER cerPath
+(ImportAndVerifyCertificate only) The file path to a `.cer` certificate file to import.
+
+.PARAMETER storePath
+(ImportAndVerifyCertificate only) The destination certificate store path (e.g. Cert:\CurrentUser\Root).
+
+.EXAMPLE
+$cert = EnsureCertificate
+
+Ensures the default certificate exists and is trusted, and returns the certificate object.
+
+.EXAMPLE
+ImportAndVerifyCertificate -cerPath "$env:TEMP\temp_cert.cer" -storePath "Cert:\CurrentUser\Root"
+
+Imports a certificate into the CurrentUser Root store and verifies its presence.
+
+.NOTES
+- For full trust, administrative privileges may be needed to import into LocalMachine\Root.
+- Certificates are created using RSA and SHA256 and marked as CodeSigningCert.
+#>
+
 function ImportAndVerifyCertificate {
     param (
         [string]$cerPath,
