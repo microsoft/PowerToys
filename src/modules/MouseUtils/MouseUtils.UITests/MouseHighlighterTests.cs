@@ -40,6 +40,7 @@ namespace MouseUtils.UITests
             var foundCustom = this.Find<Custom>("Mouse Highlighter");
             if (foundCustom != null)
             {
+                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
                 foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(false);
 
                 var xy = Session.GetMousePosition();
