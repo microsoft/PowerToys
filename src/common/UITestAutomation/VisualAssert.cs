@@ -67,6 +67,7 @@ namespace Microsoft.PowerToys.UITest
             if (string.IsNullOrEmpty(baselineImageResourceName)
                 || !Path.GetFileNameWithoutExtension(baselineImageResourceName).EndsWith(scenarioSubname))
             {
+                testContext?.AddResultFile(tempTestImagePath);
                 Assert.Fail($"Baseline image for scenario {scenarioSubname} can not be found, test image saved in file://{tempTestImagePath.Replace('\\', '/')}");
             }
 
