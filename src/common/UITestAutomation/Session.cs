@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -352,6 +353,32 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Gets the main window center coordinates.
+        /// </summary>
+        /// <returns>(x, y)</returns>
+        public (int CenterX, int CenterY) GetWindowCenter()
+        {
+            if (this.MainWindowHandler == IntPtr.Zero)
+            {
+                return (0, 0);
+            }
+            else
+            {
+                var rect = ApiHelper.GetWindowCenter(this.MainWindowHandler);
+                return (rect.CenterX, rect.CenterY);
+            }
+        }
+
+        /// <summary>
+        /// Gets the screen center coordinates.
+        /// </summary>
+        /// <returns>(x, y)</returns>
+        public (int CenterX, int CenterY) GetScreenCenter()
+        {
+            return ApiHelper.GetScreenCenter();
+        }
+
+        /// <summary>
         /// Sets the main window size based on Width and Height.
         /// </summary>
         /// <param name="width">the width in pixel</param>
@@ -510,12 +537,15 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         /// <param name="x">The new x-coordinate of the cursor.</param>
         /// <param name="y">The new y-coordinate of the cursor.</param
-        public void MoveMouseTo(int x, int y)
+        public void MoveMouseTo(int x, int y, int msPreAction = 500, int msPostAction = 500)
         {
-            PerformAction(() =>
+            PerformAction(
+                () =>
          {
              MouseHelper.MoveMouseTo(x, y);
-         });
+         },
+                msPreAction,
+                msPostAction);
         }
 
         /// <summary>
@@ -571,6 +601,7 @@ namespace Microsoft.PowerToys.UITest
                         MouseHelper.ScrollDown();
                         break;
                     default:
+                        throw new ArgumentException("Unsupported mouse action.", nameof(action));
                         throw new ArgumentException("Unsupported mouse action.", nameof(action));
                 }
             },
@@ -642,6 +673,12 @@ namespace Microsoft.PowerToys.UITest
             return this;
         }
 
+        public bool IsWindowOpen(string windowName)
+        {
+            var matchingWindows = ApiHelper.FindDesktopWindowHandler([windowName, AdministratorPrefix + windowName]);
+            return matchingWindows.Count > 0;
+        }
+
         private static class ApiHelper
         {
             [DllImport("user32.dll")]
@@ -685,6 +722,20 @@ namespace Microsoft.PowerToys.UITest
             [DllImport("user32.dll")]
             public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
 
+            // Define the Win32 RECT structure
+            [StructLayout(LayoutKind.Sequential)]
+            public struct RECT
+            {
+                public int Left;    // X coordinate of the left edge of the window
+                public int Top;     // Y coordinate of the top edge of the window
+                public int Right;   // X coordinate of the right edge of the window
+                public int Bottom;  // Y coordinate of the bottom edge of the window
+            }
+
+            // Import GetWindowRect API to retrieve window's screen coordinates
+            [DllImport("user32.dll")]
+            public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
             public static List<(IntPtr HWnd, string Title)> FindDesktopWindowHandler(string[] matchingWindowsTitles)
             {
                 var windows = new List<(IntPtr HWnd, string Title)>();
@@ -710,6 +761,85 @@ namespace Microsoft.PowerToys.UITest
                     IntPtr.Zero);
 
                 return windows;
+            }
+
+            /// <summary>
+            /// Get the center point coordinates of a specified window (in screen coordinates)
+            /// </summary>
+            /// <param name="hWnd">The window handle</param>
+            /// <returns>The center point (x, y)</returns>
+            public static (int CenterX, int CenterY) GetWindowCenter(IntPtr hWnd)
+            {
+                if (hWnd == IntPtr.Zero)
+                {
+                    throw new ArgumentException("Invalid window handle");
+                }
+
+                if (GetWindowRect(hWnd, out RECT rect))
+                {
+                    int width = rect.Right - rect.Left;
+                    int height = rect.Bottom - rect.Top;
+
+                    int centerX = rect.Left + (width / 2);
+                    int centerY = rect.Top + (height / 2);
+
+                    return (centerX, centerY);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Failed to retrieve window coordinates");
+                }
+            }
+
+            [DllImport("user32.dll")]
+            public static extern int GetSystemMetrics(int nIndex);
+
+            public enum SystemMetric
+            {
+                ScreenWidth = 0,            // Width of the primary screen in pixels (SM_CXSCREEN)
+                ScreenHeight = 1,           // Height of the primary screen in pixels (SM_CYSCREEN)
+                VirtualScreenWidth = 78,    // Width of the virtual screen that includes all monitors (SM_CXVIRTUALSCREEN)
+                VirtualScreenHeight = 79,   // Height of the virtual screen that includes all monitors (SM_CYVIRTUALSCREEN)
+                MonitorCount = 80,          // Number of display monitors (SM_CMONITORS, available on Windows XP+)
+            }
+
+            public static (int CenterX, int CenterY) GetScreenCenter()
+            {
+                int width = GetSystemMetrics((int)SystemMetric.ScreenWidth);
+                int height = GetSystemMetrics((int)SystemMetric.ScreenHeight);
+
+                return (width / 2, height / 2);
+            }
+        }
+
+        public void StartExe(string executablePath, string arguments = "", int msPreAction = 0, int msPostAction = 2000)
+        {
+            PerformAction(
+                () =>
+            {
+                StartExeInternal(executablePath, arguments);
+            },
+                msPreAction,
+                msPostAction);
+        }
+
+        private void StartExeInternal(string executablePath, string arguments = "")
+        {
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = executablePath,
+                Arguments = arguments,
+                UseShellExecute = true,
+            };
+            Process.Start(processInfo);
+        }
+
+        public void KillAllProcessesByName(string processName)
+        {
+            foreach (var process in Process.GetProcessesByName(processName))
+            {
+                process.Kill();
+                process.WaitForExit();
             }
         }
 

@@ -28,4 +28,11 @@
     <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
     <ProjectReference Include="..\UITests-FancyZonesEditor\UITests-FancyZonesEditor.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\editor\FancyZonesEditor\FancyZonesEditor.csproj" />
+	<ProjectReference Include="..\UITests-FancyZonesEditor\UITests-FancyZonesEditor.csproj" />
+	<ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
+  </ItemGroup>
+
 </Project>
