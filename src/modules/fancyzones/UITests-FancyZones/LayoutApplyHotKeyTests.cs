@@ -303,7 +303,6 @@ namespace Microsoft.FancyZones.UITests
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num2);
             element = this.Find<Element>("Canvas custom layout");
             Assert.IsTrue(element.Selected, "Canvas custom layout is not visible");
-
         }
 
         private void OpenFancyZonesPanel(bool launchAsAdmin = false)
