@@ -33,6 +33,7 @@ Runs the pipeline for x64 Debug.
 - First time run need admin permission to trust the certificate.
 - The built installer will be placed under: installer/PowerToysSetup/[Platform]/[Configuration]/UserSetup 
   relative to the solution root directory.
+- The installer can't be run right after the build, I need to copy it to another file before it can be run.
 #>
 
 
