@@ -23,9 +23,10 @@ namespace ManagedCommon
         {
             var idSet = new HashSet<int>();
             int newId = 0;
+            var sortedItems = items.OrderBy(i => i.Id).ToList(); // Sort items by ID for consistent processing
 
             // Iterate through the list and fix invalid IDs
-            foreach (var item in items)
+            foreach (var item in sortedItems)
             {
                 // If the ID is invalid or already exists in the set (duplicate), assign a new unique ID
                 if (!idSet.Add(item.Id))
