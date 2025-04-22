@@ -56,11 +56,11 @@ namespace ColorPicker.Mouse
 
         public event EventHandler<Tuple<System.Windows.Point, bool>> OnMouseWheel;
 
-        public event MouseUpEventHandler OnMouseDown;
+        public event MouseDownEventHandler OnMouseDown;
 
         public event SecondaryMouseUpEventHandler OnSecondaryMouseUp;
 
-        public event MiddleMouseUpEventHandler OnMiddleMouseDown;
+        public event MiddleMouseDownEventHandler OnMiddleMouseDown;
 
         public System.Windows.Point CurrentPosition
         {

@@ -13,11 +13,11 @@ using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Mouse
 {
-    public delegate void MouseUpEventHandler(object sender, IntPtr wParam);
+    public delegate void MouseDownEventHandler(object sender, IntPtr wParam);
 
     public delegate void SecondaryMouseUpEventHandler(object sender, IntPtr wParam);
 
-    public delegate void MiddleMouseUpEventHandler(object sender, IntPtr wParam);
+    public delegate void MiddleMouseDownEventHandler(object sender, IntPtr wParam);
 
     internal class MouseHook
     {
@@ -37,9 +37,9 @@ namespace ColorPicker.Mouse
         private IntPtr _mouseHookHandle;
         private HookProc _mouseDelegate;
 
-        private event MouseUpEventHandler MouseDown;
+        private event MouseDownEventHandler MouseDown;
 
-        public event MouseUpEventHandler OnMouseDown
+        public event MouseDownEventHandler OnMouseDown
         {
             add
             {
@@ -71,9 +71,9 @@ namespace ColorPicker.Mouse
             }
         }
 
-        private event MiddleMouseUpEventHandler MiddleMouseDown;
+        private event MiddleMouseDownEventHandler MiddleMouseDown;
 
-        public event MiddleMouseUpEventHandler OnMiddleMouseDown
+        public event MiddleMouseDownEventHandler OnMiddleMouseDown
         {
             add
             {
