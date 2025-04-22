@@ -86,7 +86,6 @@ namespace UITests_FancyZones
 
             // switch to the previous window by shortcut win+page down
             SendKeys(Key.Win, Key.PageDown);
-            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
 
             activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(WindowName, activeWindowTitle);
@@ -157,10 +156,10 @@ namespace UITests_FancyZones
             int targetY = screenWidth / SubZones / 2;
 
             // assert the AppZoneHistory layout is set
-            ZoneSwitchHelper.KillAllExplorerWindows();
+            Session.KillAllProcessesByName("explorer");
+            Session.StarteExe("explorer.exe", "C:\\");
 
             // Start Windows Explorer process
-            ZoneSwitchHelper.LaunchExplorer("C:\\");
             Session.Attach(WindowName, WindowSize.UnSpecified); // display window1
             var tabView = Find<Element>(By.AccessibilityId("TabView"));
             tabView.DoubleClick(); // maximize the window
@@ -216,7 +215,7 @@ namespace UITests_FancyZones
 
         private void Clean()
         {
-            ZoneSwitchHelper.KillAllExplorerWindows();
+            Session.KillAllProcessesByName("explorer");
         }
     }
 }

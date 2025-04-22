@@ -80,21 +80,5 @@ namespace Microsoft.FancyZones.UITests.Utils
 
             return null;
         }
-
-        public static void KillAllExplorerWindows()
-        {
-            foreach (var process in Process.GetProcessesByName("explorer"))
-            {
-                try
-                {
-                    process.Kill();
-                    process.WaitForExit();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to kill explorer.exe (PID: {process.Id}): {ex.Message}");
-                }
-            }
-        }
     }
 }
