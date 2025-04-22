@@ -72,7 +72,7 @@ RestoreThenBuild '.\tools\StylesReportTool\StylesReportTool.sln'
 Write-Host '[CLEAN] installer (keep *.exe)'
 git clean -xfd -e '*.exe' -- .\installer\ | Out-Null
 
-RestoreThenBuild '.\installer\PowerToysSetup.sln'
+RunMSBuild  '.\installer\PowerToysSetup.sln' '/t:restore /p:RestorePackagesConfig=true'
 
 RunMSBuild '.\installer\PowerToysSetup.sln' '/m /t:PowerToysInstaller'
 

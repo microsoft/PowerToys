@@ -1,36 +1,72 @@
 param (
-    [string]$certSubject = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
-    [string[]]$TargetPaths
+    [string]$certSubject = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
 )
 
-. "$PSScriptRoot\cert-management.ps1"
-$cert = EnsureCertificate -certSubject $certSubject
+function Import-And-VerifyCertificate {
+    param (
+        [string]$cerPath,
+        [string]$storePath
+    )
+
+    $thumbprint = (Get-PfxCertificate -FilePath $cerPath).Thumbprint
+
+    $existingCert = Get-ChildItem -Path $storePath | Where-Object { $_.Thumbprint -eq $thumbprint }
+    if ($existingCert) {
+        Write-Host "✅ Certificate already exists in $storePath"
+        return $true
+    }
+
+    try {
+        $null = Import-Certificate -FilePath $cerPath -CertStoreLocation $storePath -ErrorAction Stop
+    } catch {
+        Write-Warning "❌ Failed to import certificate to $storePath : $_"
+        return $false
+    }
+
+    $imported = Get-ChildItem -Path $storePath | Where-Object { $_.Thumbprint -eq $thumbprint }
+    if ($imported) {
+        Write-Host "✅ Certificate successfully imported to $storePath"
+        return $true
+    } else {
+        Write-Warning "❌ Certificate not found in $storePath after import"
+        return $false
+    }
+}
+
+$cert = Get-ChildItem -Path Cert:\CurrentUser\My |
+    Where-Object { $_.Subject -eq $certSubject } |
+    Sort-Object NotAfter -Descending |
+    Select-Object -First 1
 
 if (-not $cert) {
-    Write-Error "❌ Failed to prepare certificate."
-    exit 1
-}
+    Write-Host "📜 Certificate not found. Creating a new one..."
 
-Write-Host "✔️ Certificate ready: $($cert.Thumbprint)"
+    $cert = New-SelfSignedCertificate -Subject $certSubject `
+        -CertStoreLocation "Cert:\CurrentUser\My" `
+        -KeyAlgorithm RSA `
+        -Type CodeSigningCert `
+        -HashAlgorithm SHA256
 
-if (-not $TargetPaths -or $TargetPaths.Count -eq 0) {
-    Write-Error "❌ No target files provided to sign."
-    exit 1
-}
-
-foreach ($filePath in $TargetPaths) {
-    if (-not (Test-Path $filePath)) {
-        Write-Warning "⚠️ Skipping: File does not exist - $filePath"
-        continue
+    if (-not $cert) {
+        Write-Error "❌ Failed to create a new certificate."
+        exit 1
     }
 
-    Write-Host "🔏 Signing: $filePath"
-    try {
-        & signtool sign /sha1 $($cert.Thumbprint) /fd SHA256 /t http://timestamp.digicert.com "$filePath"
-    }  
-    catch {
-        Write-Host "Signing file: $($file.FullName)"
-    }
+    Write-Host "✔️ New certificate created with thumbprint: $($cert.Thumbprint)"
+}
+else {
+    Write-Host "📌 Using existing certificate with thumbprint: $($cert.Thumbprint)"
 }
 
-Write-Host "`n✅ Signing process completed."
+# Step 2: Export and trust it in necessary stores
+$cerPath = "$env:TEMP\temp_cert.cer"
+Export-Certificate -Cert $cert -FilePath $cerPath -Force
+
+if (-not (Import-And-VerifyCertificate -cerPath $cerPath -storePath "Cert:\CurrentUser\TrustedPeople")) { exit 1 }
+if (-not (Import-And-VerifyCertificate -cerPath $cerPath -storePath "Cert:\CurrentUser\Root")) { exit 1 }
+if (-not (Import-And-VerifyCertificate -cerPath $cerPath -storePath "Cert:\LocalMachine\Root")) {
+    Write-Warning "⚠️ Failed to import to LocalMachine\Root (admin may be required)"
+}
+
+# Return the certificate object
+return $cert

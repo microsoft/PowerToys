@@ -29,7 +29,8 @@ foreach ($filePath in $TargetPaths) {
         & signtool sign /sha1 $($cert.Thumbprint) /fd SHA256 /t http://timestamp.digicert.com "$filePath"
     }  
     catch {
-        Write-Host "Signing file: $($file.FullName)"
+        Write-Host "`n❌ Failed to sign: $filePath"
+        Write-Host $_    
     }
 }
 
