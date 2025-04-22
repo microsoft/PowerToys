@@ -280,6 +280,30 @@ namespace Microsoft.FancyZones.UITests
         public void TestApplyHotKey()
         {
             this.OpenFancyZonesPanel();
+
+            this.Session.SetMainWindowSize(WindowSize.Large_Vertical);
+            int tries = 10;
+            Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
+            this.Find<ToggleSwitch>("Enable quick layout switch").Toggle(true);
+
+            tries = 10;
+            Pull(tries, "up");
+            this.Find<Button>("Launch layout editor").Click();
+
+            Task.Delay(1000).Wait();
+            this.Session.Attach(PowerToysModule.FancyZone);
+            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
+            var element = this.Find<Element>("Grid custom layout");
+            Assert.IsTrue(element.Selected, "Grid custom layout is not visible");
+
+            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num1);
+            element = this.Find<Element>("Grid-9");
+            Assert.IsTrue(element.Selected, "Grid-9 is not visible");
+
+            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num2);
+            element = this.Find<Element>("Canvas custom layout");
+            Assert.IsTrue(element.Selected, "Canvas custom layout is not visible");
+
         }
 
         private void OpenFancyZonesPanel(bool launchAsAdmin = false)
@@ -294,17 +318,6 @@ namespace Microsoft.FancyZones.UITests
             this.Find<NavigationViewItem>("FancyZones").Click();
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
             this.Session.SetMainWindowSize(WindowSize.Large_Vertical);
-
-            int tries = 5;
-            Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
-            this.Find<ToggleSwitch>("Enable quick layout switch").Toggle(true);
-
-            // launch Hosts File Editor
-            // this.Find<Button>("Launch layout editor").Click();
-
-            // Task.Delay(500).Wait();
-
-            // this.Session.Attach(PowerToysModule.FancyZone);
         }
 
         private void Pull(int tries = 5, string direction = "up")
