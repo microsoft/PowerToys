@@ -35,6 +35,8 @@ namespace Hosts.UITests
         /// </list>
         /// </summary>
         [TestMethod("Hosts.Settings.ShowWarningDialogIfRunAsAdmin")]
+        [TestCategory("Hosts File Editor #1")]
+        [TestCategory("Hosts File Editor #9")]
         public void TestWarningDialog()
         {
             this.LaunchFromSetting(showWarning: true);
