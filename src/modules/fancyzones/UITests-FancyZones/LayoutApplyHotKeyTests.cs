@@ -464,6 +464,43 @@ namespace Microsoft.FancyZones.UITests
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
         }
 
+        [TestMethod]
+        public void TestVirtualDesktopLayoutExt()
+        {
+            this.OpenFancyZonesPanel();
+
+            this.AttachFancyZonesEditor();
+            var element = this.Find<Element>("Grid custom layout");
+            element.Click();
+            this.CloseFancyZonesEditor();
+            this.ExitScopeExe();
+
+            // Add virtual desktop
+            SendKeys(Key.Ctrl, Key.Win, Key.D);
+            this.RestartScopeExe();
+            this.OpenFancyZonesPanel();
+            this.AttachFancyZonesEditor();
+            element = this.Find<Element>("Grid-9");
+            element.Click();
+            this.CloseFancyZonesEditor();
+            this.ExitScopeExe();
+
+            SendKeys(Key.Ctrl, Key.Win, Key.Left);
+            this.RestartScopeExe();
+            this.OpenFancyZonesPanel();
+            this.AttachFancyZonesEditor();
+            element = this.Find<Element>("Grid custom layout");
+            Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
+            this.CloseFancyZonesEditor();
+            this.ExitScopeExe();
+
+            // close the virtual desktop
+            SendKeys(Key.Ctrl, Key.Win, Key.Right);
+            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+            SendKeys(Key.Ctrl, Key.Win, Key.F4);
+            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+        }
+
         private void OpenFancyZonesPanel(bool launchAsAdmin = false)
         {
             var windowingElement = this.Find<NavigationViewItem>("Windowing & Layouts");
