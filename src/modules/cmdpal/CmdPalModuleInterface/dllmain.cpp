@@ -47,7 +47,7 @@ private:
     HANDLE m_hTerminateEvent;
 
     // Track if this is the first call to enable
-    bool firstEnableCall = false;
+    bool firstEnableCall = true;
 
     void LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
     {
@@ -252,7 +252,7 @@ public:
 
         try
         {
-            if (!package::GetRegisteredPackage(packageName, false).has_value())
+            if (package::GetRegisteredPackage(packageName, false).has_value())
             {
                 const int maxRetryTimeInMinutes = 10;
                 const int maxRetryTimeInMilliseconds = firstEnableCall? maxRetryTimeInMinutes * 60 * 1000: 1;
@@ -296,9 +296,9 @@ public:
             Logger::error(L"CmdPal launch failed: {}", e.what());
         }
 
-        if (!firstEnableCall)
+        if (firstEnableCall)
         {
-            firstEnableCall=true;
+            firstEnableCall=false;
         }
     }
 
