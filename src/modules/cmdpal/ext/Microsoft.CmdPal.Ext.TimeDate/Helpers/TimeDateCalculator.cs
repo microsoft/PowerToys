@@ -40,7 +40,7 @@ public sealed partial class TimeDateCalculator
         var lastInputParsingErrorMsg = string.Empty;
 
         // Switch search type
-        if (isEmptySearchInput || (!isKeywordSearch && settings.OnlyDateTimeNowGlobal))
+        if (isEmptySearchInput || (!isKeywordSearch))
         {
             // Return all results for system time/date on empty keyword search
             // or only time, date and now results for system time on global queries if the corresponding setting is enabled

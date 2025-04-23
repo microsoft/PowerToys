@@ -682,6 +682,24 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enable fallback items for TimeDate (week, year, now, time, date).
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingEnableFallbackItems {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingEnableFallbackItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show time and date results when typing keywords like &quot;week&quot;, &quot;year&quot;, &quot;now&quot;, &quot;time&quot;, or &quot;date&quot;.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingEnableFallbackItems_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingEnableFallbackItems_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to First day of the week.
         /// </summary>
         public static string Microsoft_plugin_timedate_SettingFirstDayOfWeek {

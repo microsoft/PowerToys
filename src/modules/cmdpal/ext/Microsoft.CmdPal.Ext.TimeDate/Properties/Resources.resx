@@ -439,4 +439,10 @@
   <data name="Microsoft_plugin_timedate_SearchTagWeek" xml:space="preserve">
     <value>Week</value>
   </data>
+  <data name="Microsoft_plugin_timedate_SettingEnableFallbackItems" xml:space="preserve">
+    <value>Enable fallback items for TimeDate (week, year, now, time, date)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingEnableFallbackItems_Description" xml:space="preserve">
+    <value>Show time and date results when typing keywords like "week", "year", "now", "time", or "date"</value>
+  </data>
 </root>

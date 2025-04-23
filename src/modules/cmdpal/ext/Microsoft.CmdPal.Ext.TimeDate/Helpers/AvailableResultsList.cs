@@ -68,7 +68,7 @@ internal static class AvailableResultsList
                 },
         });
 
-        if (isKeywordSearch || !settings.OnlyDateTimeNowGlobal)
+        if (isKeywordSearch)
         {
             // We use long instead of int for unix time stamp because int is too small after 03:14:07 UTC 2038-01-19
             var unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();

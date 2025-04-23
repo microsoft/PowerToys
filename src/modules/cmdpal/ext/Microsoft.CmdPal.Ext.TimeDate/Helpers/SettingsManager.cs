@@ -75,11 +75,11 @@ public class SettingsManager : JsonSettingsManager
         Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
         _firstDayOfWeekChoices);
 
-    private readonly ToggleSetting _onlyDateTimeNowGlobal = new(
-        Namespaced(nameof(OnlyDateTimeNowGlobal)),
-        Resources.Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal,
-        Resources.Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description,
-        true); // TODO -- double check default value
+    private readonly ToggleSetting _enableFallbackItems = new(
+        Namespaced(nameof(EnableFallbackItems)),
+        Resources.Microsoft_plugin_timedate_SettingEnableFallbackItems,
+        Resources.Microsoft_plugin_timedate_SettingEnableFallbackItems_Description,
+        true);
 
     private readonly ToggleSetting _timeWithSeconds = new(
         Namespaced(nameof(TimeWithSecond)),
@@ -145,7 +145,7 @@ public class SettingsManager : JsonSettingsManager
         }
     }
 
-    public bool OnlyDateTimeNowGlobal => _onlyDateTimeNowGlobal.Value;
+    public bool EnableFallbackItems => _enableFallbackItems.Value;
 
     public bool TimeWithSecond => _timeWithSeconds.Value;
 
@@ -172,6 +172,7 @@ public class SettingsManager : JsonSettingsManager
         Settings.Add(_onlyDateTimeNowGlobal);
         Settings.Add(_hideNumberMessageOnGlobalQuery); */
 
+        Settings.Add(_enableFallbackItems);
         Settings.Add(_timeWithSeconds);
         Settings.Add(_dateWithWeekday);
         Settings.Add(_firstWeekOfYear);
