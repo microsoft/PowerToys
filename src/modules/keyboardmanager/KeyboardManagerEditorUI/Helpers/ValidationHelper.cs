@@ -62,7 +62,7 @@ namespace KeyboardManagerEditorUI.Helpers
             // Check if this is a shortcut (multiple keys) and if it's an illegal combination
             if (originalKeys.Count > 1)
             {
-                string shortcutKeysString = string.Join(";", originalKeys.Select(k => KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+                string shortcutKeysString = string.Join(";", originalKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
                 if (KeyboardManagerInterop.IsShortcutIllegal(shortcutKeysString))
                 {
@@ -101,7 +101,7 @@ namespace KeyboardManagerEditorUI.Helpers
             // For single key remapping
             if (originalKeys.Count == 1)
             {
-                int originalKeyCode = KeyboardManagerInterop.GetKeyCodeFromName(originalKeys[0]);
+                int originalKeyCode = mappingService.GetKeyCodeFromName(originalKeys[0]);
                 if (originalKeyCode == 0)
                 {
                     return false;
@@ -115,7 +115,7 @@ namespace KeyboardManagerEditorUI.Helpers
                         // Skip if the remapping is the same as the one being edited
                         if (isEditMode && editingRemapping != null &&
                             editingRemapping.OriginalKeys.Count == 1 &&
-                            KeyboardManagerInterop.GetKeyCodeFromName(editingRemapping.OriginalKeys[0]) == originalKeyCode)
+                            mappingService.GetKeyCodeFromName(editingRemapping.OriginalKeys[0]) == originalKeyCode)
                         {
                             continue;
                         }
@@ -129,14 +129,14 @@ namespace KeyboardManagerEditorUI.Helpers
             else
             {
                 string originalKeysString = string.Join(";", originalKeys.Select(
-                    k => KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+                    k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
                 // Don't check for duplicates if the original keys are the same as the remapping being edited
                 bool isEditingExistingRemapping = false;
                 if (isEditMode && editingRemapping != null)
                 {
                     string editingOriginalKeysString = string.Join(";", editingRemapping.OriginalKeys.Select(k =>
-                                    KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+                                    mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
                     if (KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, editingOriginalKeysString))
                     {
@@ -181,8 +181,13 @@ namespace KeyboardManagerEditorUI.Helpers
             return false;
         }
 
-        public static bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys)
+        public static bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys, KeyboardMappingService mappingService)
         {
+            if (mappingService == null)
+            {
+                return false;
+            }
+
             // If either list is empty, it's not a self-mapping
             if (originalKeys == null || remappedKeys == null ||
                 originalKeys.Count == 0 || remappedKeys.Count == 0)
@@ -190,8 +195,8 @@ namespace KeyboardManagerEditorUI.Helpers
                 return false;
             }
 
-            string originalKeysString = string.Join(";", originalKeys.Select(k => KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
-            string remappedKeysString = string.Join(";", remappedKeys.Select(k => KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+            string originalKeysString = string.Join(";", originalKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+            string remappedKeysString = string.Join(";", remappedKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
             return KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, remappedKeysString);
         }
