@@ -33,6 +33,7 @@ internal static class AvailableResultsList
         var dateTimeNowUtc = dateTimeNow.ToUniversalTime();
         var firstWeekRule = firstWeekOfYear ?? TimeAndDateHelper.GetCalendarWeekRule(settings.FirstWeekOfYear);
         var firstDayOfTheWeek = firstDayOfWeek ?? TimeAndDateHelper.GetFirstDayOfWeek(settings.FirstDayOfWeek);
+        var weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
 
         results.AddRange(new[]
         {
@@ -60,12 +61,12 @@ internal static class AvailableResultsList
                 IconType = ResultIconType.DateTime,
             },
             new AvailableResult()
-                {
-                    Value = TimeAndDateHelper.GetNumberOfDayInWeek(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
-                    Label = Resources.Microsoft_plugin_timedate_DayOfWeek,
-                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
-                    IconType = ResultIconType.Date,
-                },
+            {
+                Value = weekOfYear.ToString(CultureInfo.CurrentCulture),
+                Label = Resources.Microsoft_plugin_timedate_WeekOfYear,
+                AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                IconType = ResultIconType.Date,
+            },
         });
 
         if (isKeywordSearch)
@@ -73,7 +74,6 @@ internal static class AvailableResultsList
             // We use long instead of int for unix time stamp because int is too small after 03:14:07 UTC 2038-01-19
             var unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
             var unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();
-            var weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
             var era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(dateTimeNow));
             var eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
 
@@ -224,6 +224,13 @@ internal static class AvailableResultsList
                 },
                 new AvailableResult()
                 {
+                    Value = TimeAndDateHelper.GetNumberOfDayInWeek(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
+                    Label = Resources.Microsoft_plugin_timedate_DayOfWeek,
+                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                    IconType = ResultIconType.Date,
+                },
+                new AvailableResult()
+                {
                     Value = dateTimeNow.Day.ToString(CultureInfo.CurrentCulture),
                     Label = Resources.Microsoft_plugin_timedate_DayOfMonth,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
@@ -247,13 +254,6 @@ internal static class AvailableResultsList
                 {
                     Value = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
                     Label = Resources.Microsoft_plugin_timedate_WeekOfMonth,
-                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
-                    IconType = ResultIconType.Date,
-                },
-                new AvailableResult()
-                {
-                    Value = weekOfYear.ToString(CultureInfo.CurrentCulture),
-                    Label = Resources.Microsoft_plugin_timedate_WeekOfYear,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                     IconType = ResultIconType.Date,
                 },
