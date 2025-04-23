@@ -56,8 +56,7 @@ namespace MouseUtils.UITests
             var activationShortcutButton = foundCustom.Find<Button>("Activation shortcut");
             Assert.IsNotNull(activationShortcutButton);
 
-            activationShortcutButton.Click();
-            Task.Delay(500).Wait();
+            activationShortcutButton.Click(false, 500, 1000);
             var activationShortcutWindow = Session.Find<Window>("Activation shortcut");
             Assert.IsNotNull(activationShortcutWindow);
 
@@ -72,34 +71,34 @@ namespace MouseUtils.UITests
             // Assert.IsNull(activationShortcutWindow.Find<TextBlock>("Invalid shortcut"));
             var saveButton = activationShortcutWindow.Find<Button>("Save");
             Assert.IsNotNull(saveButton);
-            saveButton.Click();
-            Task.Delay(500).Wait();
+            saveButton.Click(false, 500, 1000);
 
             SetMousePointerCrosshairsAppearanceBehavior(ref foundCustom, ref settings);
-            Task.Delay(2000).Wait();
+            Task.Delay(500).Wait();
 
             // [Test Case]  Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
             var xy0 = Session.GetMousePosition();
             Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2);
             Session.PerformMouseAction(MouseActionType.LeftClick);
             Session.SendKeys(Key.Win, Key.Alt, Key.A);
-            Task.Delay(2000).Wait();
+            Task.Delay(1000).Wait();
 
             xy0 = Session.GetMousePosition();
-            Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2);
+            Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2 - 100);
             Session.PerformMouseAction(MouseActionType.LeftClick);
             VerifyMousePointerCrosshairsAppears(ref settings);
             Task.Delay(500).Wait();
+
             xy0 = Session.GetMousePosition();
-            Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2 - 100);
+            Session.MoveMouseTo(xy0.Item1 - 50, xy0.Item2 - 50);
             VerifyMousePointerCrosshairsAppears(ref settings);
 
             // [Test Case] Press the activation shortcut again and verify the crosshairs disappear.
             Session.SendKeys(Key.Win, Key.Alt, Key.A);
-            Task.Delay(2000).Wait();
+            Task.Delay(1000).Wait();
 
             xy0 = Session.GetMousePosition();
-            Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2);
+            Session.MoveMouseTo(xy0.Item1 - 10, xy0.Item2);
             Session.PerformMouseAction(MouseActionType.LeftClick);
             VerifyMousePointerCrosshairsNotAppears(ref settings);
             Task.Delay(500).Wait();
@@ -110,7 +109,7 @@ namespace MouseUtils.UITests
             Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2);
             Session.PerformMouseAction(MouseActionType.LeftClick);
             Session.SendKeys(Key.Win, Key.Alt, Key.A);
-            Task.Delay(2000).Wait();
+            Task.Delay(1000).Wait();
 
             VerifyMousePointerCrosshairsNotAppears(ref settings);
         }
@@ -140,16 +139,16 @@ namespace MouseUtils.UITests
             var color = Session.GetPixelColorString(location.Item1, location.Item2);
             Assert.AreEqual(expectedColor, color);
 
-            var colorX = Session.GetPixelColorString(location.Item1 + 100, location.Item2);
+            var colorX = Session.GetPixelColorString(location.Item1 + 50, location.Item2);
             Assert.AreEqual(expectedColor, colorX);
 
-            colorX = Session.GetPixelColorString(location.Item1 - 100, location.Item2);
+            colorX = Session.GetPixelColorString(location.Item1 - 50, location.Item2);
             Assert.AreEqual(expectedColor, colorX);
 
-            var colorY = Session.GetPixelColorString(location.Item1, location.Item2 + 100);
+            var colorY = Session.GetPixelColorString(location.Item1, location.Item2 + 50);
             Assert.AreEqual(expectedColor, colorY);
 
-            colorY = Session.GetPixelColorString(location.Item1, location.Item2 - 100);
+            colorY = Session.GetPixelColorString(location.Item1, location.Item2 - 50);
             Assert.AreEqual(expectedColor, colorY);
         }
 
@@ -165,23 +164,17 @@ namespace MouseUtils.UITests
 
                 var button = primaryButtonHighlightColor.Find<Button>(By.XPath(".//Button"));
                 Assert.IsNotNull(button);
-                button.Click();
-
-                Task.Delay(500).Wait();
+                button.Click(false);
                 var popupWindow = Session.Find<Window>("Popup");
                 Assert.IsNotNull(popupWindow);
                 var colorModelComboBox = this.Find<ComboBox>("Color model");
                 Assert.IsNotNull(colorModelComboBox);
                 colorModelComboBox.Click();
-                Task.Delay(500).Wait();
                 var selectedItem = colorModelComboBox.Find<NavigationViewItem>("RGB");
                 selectedItem.Click();
-                Task.Delay(100).Wait();
                 var rgbHexEdit = this.Find<TextBox>("RGB hex");
                 Assert.IsNotNull(rgbHexEdit);
-                Task.Delay(100).Wait();
                 rgbHexEdit.SetText(colorValue);
-                Task.Delay(100).Wait();
 
                 button.Click();
             }

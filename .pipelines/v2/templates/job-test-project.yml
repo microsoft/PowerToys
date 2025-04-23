@@ -18,6 +18,7 @@ parameters:
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}
   displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}
+  timeoutInMinutes: 300
   variables:
     BuildPlatform: ${{ parameters.platform }}
     BuildConfiguration: ${{ parameters.configuration }}

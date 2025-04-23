@@ -23,6 +23,15 @@ namespace Microsoft.PowerToys.UITest
         [RequiresUnreferencedCode("This method uses reflection which may not be compatible with trimming.")]
         public static void AreEqual(TestContext? testContext, Element element, string scenarioSubname = "")
         {
+            var pipelinePlatform = Environment.GetEnvironmentVariable("platform");
+
+            // Perform visual validation only in the pipeline
+            if (string.IsNullOrEmpty(pipelinePlatform))
+            {
+                Console.WriteLine("Skip visual validation in the local run.");
+                return;
+            }
+
             if (element == null)
             {
                 Assert.Fail("Element object is null or invalid");
@@ -42,11 +51,11 @@ namespace Microsoft.PowerToys.UITest
 
             if (string.IsNullOrWhiteSpace(scenarioSubname))
             {
-                scenarioSubname = string.Join("_", callerClassName, callerName);
+                scenarioSubname = string.Join("_", callerClassName, callerName, pipelinePlatform);
             }
             else
             {
-                scenarioSubname = string.Join("_", callerClassName, callerName, scenarioSubname.Trim());
+                scenarioSubname = string.Join("_", callerClassName, callerName, scenarioSubname.Trim(), pipelinePlatform);
             }
 
             var baselineImageResourceName = callerMethod!.DeclaringType!.Assembly.GetManifestResourceNames().Where(name => name.Contains(scenarioSubname)).FirstOrDefault();
@@ -58,6 +67,7 @@ namespace Microsoft.PowerToys.UITest
             if (string.IsNullOrEmpty(baselineImageResourceName)
                 || !Path.GetFileNameWithoutExtension(baselineImageResourceName).EndsWith(scenarioSubname))
             {
+                testContext?.AddResultFile(tempTestImagePath);
                 Assert.Fail($"Baseline image for scenario {scenarioSubname} can not be found, test image saved in file://{tempTestImagePath.Replace('\\', '/')}");
             }
 
