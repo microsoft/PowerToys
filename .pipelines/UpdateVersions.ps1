@@ -1,5 +1,5 @@
 Param(
-  # Using the default value of 1.6 for winAppSdkVersionNumber and useExperimentalVersion as false
+  # Using the default value of 1.7 for winAppSdkVersionNumber and useExperimentalVersion as false
   [Parameter(Mandatory=$False,Position=1)]
   [string]$winAppSdkVersionNumber = "1.7",
 
