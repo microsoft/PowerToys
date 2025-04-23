@@ -59,6 +59,13 @@ internal static class AvailableResultsList
                 AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                 IconType = ResultIconType.DateTime,
             },
+            new AvailableResult()
+                {
+                    Value = TimeAndDateHelper.GetNumberOfDayInWeek(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
+                    Label = Resources.Microsoft_plugin_timedate_DayOfWeek,
+                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                    IconType = ResultIconType.Date,
+                },
         });
 
         if (isKeywordSearch || !settings.OnlyDateTimeNowGlobal)
@@ -212,13 +219,6 @@ internal static class AvailableResultsList
                 {
                     Value = DateTimeFormatInfo.CurrentInfo.GetDayName(dateTimeNow.DayOfWeek),
                     Label = Resources.Microsoft_plugin_timedate_Day,
-                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
-                    IconType = ResultIconType.Date,
-                },
-                new AvailableResult()
-                {
-                    Value = TimeAndDateHelper.GetNumberOfDayInWeek(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
-                    Label = Resources.Microsoft_plugin_timedate_DayOfWeek,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                     IconType = ResultIconType.Date,
                 },

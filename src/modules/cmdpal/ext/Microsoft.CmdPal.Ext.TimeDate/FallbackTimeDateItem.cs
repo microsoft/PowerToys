@@ -24,7 +24,11 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
         _settingsManager = settings;
         _validOptions = new(StringComparer.OrdinalIgnoreCase)
         {
-            "week", "year", "now", "time",
+            ResultHelper.SelectStringFromResources(true, string.Empty, "Microsoft_plugin_timedate_SearchTagWeek"),
+            ResultHelper.SelectStringFromResources(true, string.Empty, "Microsoft_plugin_timedate_SearchTagDate"),
+            ResultHelper.SelectStringFromResources(true, string.Empty, "Microsoft_plugin_timedate_Year"),
+            ResultHelper.SelectStringFromResources(true, string.Empty, "Microsoft_plugin_timedate_Now"),
+            ResultHelper.SelectStringFromResources(true, string.Empty, "Microsoft_plugin_timedate_Time"),
         };
     }
 
@@ -38,7 +42,7 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
             return;
         }
 
-        var availableResults = AvailableResultsList.GetList(true, _settingsManager);
+        var availableResults = AvailableResultsList.GetList(false, _settingsManager);
         ListItem result = null;
         var maxScore = 0;
 

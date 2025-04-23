@@ -95,7 +95,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_DateAndTime", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Date and time UTC.
         /// </summary>
@@ -615,6 +615,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_SearchTagTimeNow {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagTimeNow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Week.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SearchTagWeek {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagWeek", resourceCulture);
             }
         }
         
