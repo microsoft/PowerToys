@@ -276,6 +276,7 @@ namespace Microsoft.FancyZones.UITests
         public void TestApplyHotKey()
         {
             this.OpenFancyZonesPanel();
+            this.ControlQuickLayoutSwitch(true);
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
             this.AttachFancyZonesEditor();
@@ -303,6 +304,7 @@ namespace Microsoft.FancyZones.UITests
         public void TestDragShiftHotKey()
         {
             this.OpenFancyZonesPanel();
+            this.ControlQuickLayoutSwitch(true);
 
             int screenWidth = 1920;  // default 1920
 
@@ -367,6 +369,8 @@ namespace Microsoft.FancyZones.UITests
         public void HotKeyWindowFlashTest()
         {
             this.OpenFancyZonesPanel();
+            this.ControlQuickLayoutSwitch(true);
+
             int tries = 14;
             Pull(tries, "down");
             this.Find<Element>("Enable quick layout switch").Click();
@@ -405,6 +409,34 @@ namespace Microsoft.FancyZones.UITests
             this.Session.ReleaseKey(Key.Num0);
         }
 
+        [TestMethod]
+        public void TestDisableApplyHotKey()
+        {
+            this.OpenFancyZonesPanel();
+            this.ControlQuickLayoutSwitch(false);
+
+            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
+            this.AttachFancyZonesEditor();
+            var element = this.Find<Element>("Grid custom layout");
+            Assert.IsFalse(element.Selected, $"{element.Selected} Grid custom layout is not visible");
+            this.CloseFancyZonesEditor();
+            this.AttachPowertoySetting();
+
+            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num1);
+            this.AttachFancyZonesEditor();
+            element = this.Find<Element>("Grid-9");
+            Assert.IsFalse(element.Selected, $"{element.Selected} Grid-9 is not visible");
+            this.CloseFancyZonesEditor();
+            this.AttachPowertoySetting();
+
+            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num2);
+            this.AttachFancyZonesEditor();
+            element = this.Find<Element>("Canvas custom layout");
+            Assert.IsFalse(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
+            this.CloseFancyZonesEditor();
+            this.AttachPowertoySetting();
+        }
+
         private void OpenFancyZonesPanel(bool launchAsAdmin = false)
         {
             var windowingElement = this.Find<NavigationViewItem>("Windowing & Layouts");
@@ -419,10 +451,13 @@ namespace Microsoft.FancyZones.UITests
             windowingElement.Find<Element>("FancyZones").Click();
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
             this.Session.SetMainWindowSize(WindowSize.Large_Vertical);
+        }
 
+        private void ControlQuickLayoutSwitch(bool flag)
+        {
             int tries = 12;
             Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
-            this.Find<ToggleSwitch>("Enable quick layout switch").Toggle(true);
+            this.Find<ToggleSwitch>("Enable quick layout switch").Toggle(flag);
 
             tries = 12;
             Pull(tries, "up");
