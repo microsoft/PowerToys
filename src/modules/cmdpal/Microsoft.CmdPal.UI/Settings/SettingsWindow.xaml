@@ -42,10 +42,10 @@
                 Height="16"
                 Source="ms-appx:///Assets/icon.svg" />
             <TextBlock
+                x:Uid="CmdPalSettingsHeader"
                 Margin="12,0,0,0"
                 VerticalAlignment="Center"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                x:Uid="CmdPalSettingsHeader" />
+                Style="{StaticResource CaptionTextBlockStyle}" />
         </StackPanel>
         <NavigationView
             x:Name="NavView"
