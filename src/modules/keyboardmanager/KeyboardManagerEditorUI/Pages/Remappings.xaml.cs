@@ -71,6 +71,196 @@ namespace KeyboardManagerEditorUI.Pages
             RemappingControl.CleanupKeyboardHook();
         }
 
+        private void RegisterWindowActivationHandler()
+        {
+            // Get the current window that contains this page
+            var app = Application.Current as App;
+            if (app?.GetWindow() is Window window)
+            {
+                // Register for window activation events
+                window.Activated += Dialog_WindowActivated;
+            }
+        }
+
+        private void UnregisterWindowActivationHandler()
+        {
+            var app = Application.Current as App;
+            if (app?.GetWindow() is Window window)
+            {
+                // Unregister to prevent memory leaks
+                window.Activated -= Dialog_WindowActivated;
+            }
+        }
+
+        private void Dialog_WindowActivated(object sender, WindowActivatedEventArgs args)
+        {
+            // When window is deactivated (user switched to another app)
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                // Make sure to cleanup the keyboard hook when the window loses focus
+                RemappingControl.CleanupKeyboardHook();
+
+                RemappingControl.ResetToggleButtons();
+                RemappingControl.UpdateAllAppsCheckBoxState();
+            }
+        }
+
+        private async void NewRemappingBtn_Click(object sender, RoutedEventArgs e)
+        {
+            _isEditMode = false;
+            _editingRemapping = null;
+
+            RemappingControl.SetOriginalKeys(new List<string>());
+            RemappingControl.SetRemappedKeys(new List<string>());
+            RemappingControl.SetApp(false, string.Empty);
+            RemappingControl.SetUpToggleButtonInitialStatus();
+
+            RegisterWindowActivationHandler();
+
+            // Show the dialog to add a new remapping
+            KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
+            await KeyDialog.ShowAsync();
+            KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
+
+            UnregisterWindowActivationHandler();
+
+            RemappingControl.CleanupKeyboardHook();
+        }
+
+        private async void ListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is Remapping selectedRemapping && selectedRemapping.IsEnabled)
+            {
+                // Set to edit mode
+                _isEditMode = true;
+                _editingRemapping = selectedRemapping;
+
+                RemappingControl.SetOriginalKeys(selectedRemapping.OriginalKeys);
+                RemappingControl.SetRemappedKeys(selectedRemapping.RemappedKeys);
+                RemappingControl.SetApp(!selectedRemapping.IsAllApps, selectedRemapping.AppName);
+                RemappingControl.SetUpToggleButtonInitialStatus();
+
+                RegisterWindowActivationHandler();
+
+                KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
+                await KeyDialog.ShowAsync();
+                KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
+
+                UnregisterWindowActivationHandler();
+
+                RemappingControl.CleanupKeyboardHook();
+
+                // Reset the edit status
+                _isEditMode = false;
+                _editingRemapping = null;
+            }
+        }
+
+        private void KeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            List<string> originalKeys = RemappingControl.GetOriginalKeys();
+            List<string> remappedKeys = RemappingControl.GetRemappedKeys();
+            bool isAppSpecific = RemappingControl.GetIsAppSpecific();
+            string appName = RemappingControl.GetAppName();
+
+            // Make sure _mappingService is not null before validating and saving
+            if (_mappingService == null)
+            {
+                Logger.LogError("Mapping service is null, cannot validate mapping");
+                return;
+            }
+
+            // Validate the remapping
+            ValidationErrorType errorType = ValidationHelper.ValidateKeyMapping(
+                originalKeys, remappedKeys, isAppSpecific, appName, _mappingService, _isEditMode, _editingRemapping);
+
+            if (errorType != ValidationErrorType.NoError)
+            {
+                ShowValidationError(errorType, args);
+                return;
+            }
+
+            // Check for orphaned keys
+            if (originalKeys.Count == 1 && _mappingService != null)
+            {
+                int originalKeyCode = _mappingService.GetKeyCodeFromName(originalKeys[0]);
+
+                if (IsKeyOrphaned(originalKeyCode, _mappingService))
+                {
+                    string keyName = _mappingService.GetKeyDisplayName(originalKeyCode);
+
+                    OrphanedKeysTeachingTip.Target = RemappingControl;
+                    OrphanedKeysTeachingTip.Subtitle = $"The key {keyName} will become orphaned (inaccessible) after remapping. Please confirm if you want to proceed.";
+                    OrphanedKeysTeachingTip.Tag = args;
+                    OrphanedKeysTeachingTip.IsOpen = true;
+
+                    args.Cancel = true;
+                    return;
+                }
+            }
+
+            // If in edit mode, delete the existing remapping before saving the new one
+            if (_isEditMode && _editingRemapping != null)
+            {
+                if (!RemappingHelper.DeleteRemapping(_mappingService!, _editingRemapping))
+                {
+                    return;
+                }
+            }
+
+            // If no errors, proceed to save the remapping
+            bool saved = RemappingHelper.SaveMapping(_mappingService!, originalKeys, remappedKeys, isAppSpecific, appName);
+            if (saved)
+            {
+                // Display the remapping in the list after saving
+                LoadMappings();
+            }
+        }
+
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.DataContext is Remapping remapping)
+            {
+                if (RemappingHelper.DeleteRemapping(_mappingService!, remapping))
+                {
+                    LoadMappings();
+                }
+            }
+        }
+
+        private void ValidationTeachingTip_CloseButtonClick(TeachingTip sender, object args)
+        {
+            sender.IsOpen = false;
+        }
+
+        private void OrphanedKeysTeachingTip_ActionButtonClick(TeachingTip sender, object args)
+        {
+            // User pressed continue anyway button
+            sender.IsOpen = false;
+
+            if (_isEditMode && _editingRemapping != null)
+            {
+                if (!RemappingHelper.DeleteRemapping(_mappingService!, _editingRemapping))
+                {
+                    return;
+                }
+            }
+
+            bool saved = RemappingHelper.SaveMapping(
+                _mappingService!, RemappingControl.GetOriginalKeys(), RemappingControl.GetRemappedKeys(), RemappingControl.GetIsAppSpecific(), RemappingControl.GetAppName());
+            if (saved)
+            {
+                KeyDialog.Hide();
+                LoadMappings();
+            }
+        }
+
+        private void OrphanedKeysTeachingTip_CloseButtonClick(TeachingTip sender, object args)
+        {
+            // Just close the teaching tip if the user canceled
+            sender.IsOpen = false;
+        }
+
         private void LoadMappings()
         {
             if (_mappingService == null)
@@ -143,6 +333,19 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
+        private bool ShowValidationError(ValidationErrorType errorType, ContentDialogButtonClickEventArgs args)
+        {
+            var (title, message) = ValidationMessages[errorType];
+
+            ValidationTeachingTip.Title = title;
+            ValidationTeachingTip.Subtitle = message;
+            ValidationTeachingTip.Target = RemappingControl;
+            ValidationTeachingTip.Tag = args;
+            ValidationTeachingTip.IsOpen = true;
+            args.Cancel = true;
+            return false;
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -161,271 +364,6 @@ namespace KeyboardManagerEditorUI.Pages
                 }
 
                 _disposed = true;
-            }
-        }
-
-        private void RegisterWindowActivationHandler()
-        {
-            // Get the current window that contains this page
-            var app = Application.Current as App;
-            if (app?.GetWindow() is Window window)
-            {
-                // Register for window activation events
-                window.Activated += Dialog_WindowActivated;
-            }
-        }
-
-        private void UnregisterWindowActivationHandler()
-        {
-            var app = Application.Current as App;
-            if (app?.GetWindow() is Window window)
-            {
-                // Unregister to prevent memory leaks
-                window.Activated -= Dialog_WindowActivated;
-            }
-        }
-
-        private void Dialog_WindowActivated(object sender, WindowActivatedEventArgs args)
-        {
-            // When window is deactivated (user switched to another app)
-            if (args.WindowActivationState == WindowActivationState.Deactivated)
-            {
-                // Make sure to cleanup the keyboard hook when the window loses focus
-                RemappingControl.CleanupKeyboardHook();
-
-                RemappingControl.ResetToggleButtons();
-                RemappingControl.UpdateAllAppsCheckBoxState();
-            }
-        }
-
-        private async void NewRemappingBtn_Click(object sender, RoutedEventArgs e)
-        {
-            _isEditMode = false;
-            _editingRemapping = null;
-
-            RemappingControl.SetOriginalKeys(new List<string>());
-            RemappingControl.SetRemappedKeys(new List<string>());
-            RemappingControl.SetApp(false, string.Empty);
-            RemappingControl.SetUpToggleButtonInitialStatus();
-
-            RegisterWindowActivationHandler();
-
-            // Show the dialog to add a new remapping
-            KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
-            await KeyDialog.ShowAsync();
-            KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
-
-            UnregisterWindowActivationHandler();
-
-            RemappingControl.CleanupKeyboardHook();
-        }
-
-        private void KeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
-        {
-            List<string> originalKeys = RemappingControl.GetOriginalKeys();
-            List<string> remappedKeys = RemappingControl.GetRemappedKeys();
-            bool isAppSpecific = RemappingControl.GetIsAppSpecific();
-            string appName = RemappingControl.GetAppName();
-
-            // Make sure _mappingService is not null before validating and saving
-            if (_mappingService == null)
-            {
-                Logger.LogError("Mapping service is null, cannot validate mapping");
-                return;
-            }
-
-            // Validate the remapping
-            ValidationErrorType errorType = ValidationHelper.ValidateKeyMapping(
-                originalKeys, remappedKeys, isAppSpecific, appName, _mappingService, _isEditMode, _editingRemapping);
-
-            if (errorType != ValidationErrorType.NoError)
-            {
-                ShowValidationError(errorType, args);
-                return;
-            }
-
-            // Check for orphaned keys
-            if (originalKeys.Count == 1 && _mappingService != null)
-            {
-                int originalKeyCode = GetKeyCode(originalKeys[0]);
-
-                if (IsKeyOrphaned(originalKeyCode, _mappingService))
-                {
-                    string keyName = _mappingService.GetKeyDisplayName(originalKeyCode);
-
-                    OrphanedKeysTeachingTip.Target = RemappingControl;
-                    OrphanedKeysTeachingTip.Subtitle = $"The key {keyName} will become orphaned (inaccessible) after remapping. Please confirm if you want to proceed.";
-                    OrphanedKeysTeachingTip.Tag = args;
-                    OrphanedKeysTeachingTip.IsOpen = true;
-
-                    args.Cancel = true;
-                    return;
-                }
-            }
-
-            // If in edit mode, delete the existing remapping before saving the new one
-            if (_isEditMode && _editingRemapping != null)
-            {
-                if (!RemappingHelper.DeleteRemapping(_mappingService!, _editingRemapping))
-                {
-                    return;
-                }
-            }
-
-            // If no errors, proceed to save the remapping
-            bool saved = RemappingHelper.SaveMapping(_mappingService!, originalKeys, remappedKeys, isAppSpecific, appName);
-            if (saved)
-            {
-                // Display the remapping in the list after saving
-                LoadMappings();
-            }
-        }
-
-        private bool ShowValidationError(ValidationErrorType errorType, ContentDialogButtonClickEventArgs args)
-        {
-            var (title, message) = ValidationMessages[errorType];
-
-            ValidationTeachingTip.Title = title;
-            ValidationTeachingTip.Subtitle = message;
-            ValidationTeachingTip.Target = RemappingControl;
-            ValidationTeachingTip.Tag = args;
-            ValidationTeachingTip.IsOpen = true;
-            args.Cancel = true;
-            return false;
-        }
-
-        private void ValidationTeachingTip_CloseButtonClick(TeachingTip sender, object args)
-        {
-            sender.IsOpen = false;
-        }
-
-        private void OrphanedKeysTeachingTip_ActionButtonClick(TeachingTip sender, object args)
-        {
-            // User pressed continue anyway button
-            sender.IsOpen = false;
-
-            if (_isEditMode && _editingRemapping != null)
-            {
-                if (!RemappingHelper.DeleteRemapping(_mappingService!, _editingRemapping))
-                {
-                    return;
-                }
-            }
-
-            bool saved = RemappingHelper.SaveMapping(
-                _mappingService!, RemappingControl.GetOriginalKeys(), RemappingControl.GetRemappedKeys(), RemappingControl.GetIsAppSpecific(), RemappingControl.GetAppName());
-            if (saved)
-            {
-                KeyDialog.Hide();
-                LoadMappings();
-            }
-        }
-
-        private void OrphanedKeysTeachingTip_CloseButtonClick(TeachingTip sender, object args)
-        {
-            // User canceled - just close the teaching tip
-            sender.IsOpen = false;
-        }
-
-        private async void ListView_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            if (e.ClickedItem is Remapping selectedRemapping && selectedRemapping.IsEnabled)
-            {
-                // Set to edit mode
-                _isEditMode = true;
-                _editingRemapping = selectedRemapping;
-
-                RemappingControl.SetOriginalKeys(selectedRemapping.OriginalKeys);
-                RemappingControl.SetRemappedKeys(selectedRemapping.RemappedKeys);
-                RemappingControl.SetApp(!selectedRemapping.IsAllApps, selectedRemapping.AppName);
-                RemappingControl.SetUpToggleButtonInitialStatus();
-
-                RegisterWindowActivationHandler();
-
-                KeyDialog.PrimaryButtonClick += KeyDialog_PrimaryButtonClick;
-                await KeyDialog.ShowAsync();
-                KeyDialog.PrimaryButtonClick -= KeyDialog_PrimaryButtonClick;
-
-                UnregisterWindowActivationHandler();
-
-                RemappingControl.CleanupKeyboardHook();
-
-                // Reset the edit status
-                _isEditMode = false;
-                _editingRemapping = null;
-            }
-        }
-
-        public static int GetKeyCode(string keyName)
-        {
-            return KeyboardManagerInterop.GetKeyCodeFromName(keyName);
-        }
-
-        private void DeleteButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.DataContext is Remapping remapping)
-            {
-                if (RemappingHelper.DeleteRemapping(_mappingService!, remapping))
-                {
-                    LoadMappings();
-                }
-            }
-        }
-
-        private void DeleteRemapping(Remapping remapping)
-        {
-            if (_mappingService == null)
-            {
-                return;
-            }
-
-            try
-            {
-                // Determine the type of remapping to delete
-                if (remapping.OriginalKeys.Count == 1)
-                {
-                    // Single key mapping
-                    int originalKey = GetKeyCode(remapping.OriginalKeys[0]);
-                    if (originalKey != 0)
-                    {
-                        if (_mappingService.DeleteSingleKeyMapping(originalKey))
-                        {
-                            // Save settings after successful deletion
-                            _mappingService.SaveSettings();
-
-                            // Remove from UI
-                            RemappingList.Remove(remapping);
-                        }
-                    }
-                }
-                else if (remapping.OriginalKeys.Count > 1)
-                {
-                    // Shortcut key mapping
-                    string originalKeysString = string.Join(";", remapping.OriginalKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
-
-                    bool deleteResult;
-                    if (!remapping.IsAllApps && !string.IsNullOrEmpty(remapping.AppName))
-                    {
-                        // App-specific shortcut key mapping
-                        deleteResult = _mappingService.DeleteShortcutMapping(originalKeysString, remapping.AppName);
-                    }
-                    else
-                    {
-                        // Global shortcut key mapping
-                        deleteResult = _mappingService.DeleteShortcutMapping(originalKeysString);
-                    }
-
-                    if (deleteResult)
-                    {
-                        _mappingService.SaveSettings();
-
-                        RemappingList.Remove(remapping);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Error deleting remapping: {ex.Message}");
             }
         }
     }
