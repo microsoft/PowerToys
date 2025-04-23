@@ -8,6 +8,7 @@ Acceleratorkeys
 ACCEPTFILES
 ACCESSDENIED
 ACCESSTOKEN
+acfs
 AClient
 AColumn
 acrt
@@ -273,6 +274,7 @@ CURSORINFO
 cursorpos
 customaction
 CUSTOMACTIONTEST
+CUSTOMFORMATPLACEHOLDER
 CVal
 cvd
 CVirtual
@@ -517,11 +519,13 @@ FRAMECHANGED
 frm
 Froml
 FROMTOUCH
+fsanitize
 fsmgmt
 FZE
 gacutil
 Gaeilge
 Gaidhlig
+gameid
 GC'ed
 GCLP
 gdi
@@ -628,6 +632,7 @@ HOTKEYF
 hotkeys
 hotlight
 hotspot
+Hostx
 HPAINTBUFFER
 HRAWINPUT
 HREDRAW
@@ -711,6 +716,7 @@ INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
 INSTALLDIR
+installdir
 INSTALLFOLDER
 INSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER
 INSTALLFOLDERTOPREVIOUSINSTALLFOLDER
@@ -1005,6 +1011,7 @@ netsh
 newcolor
 NEWDIALOGSTYLE
 NEWFILE
+NEWFILEHEADER
 newitem
 newpath
 newplus
@@ -1075,6 +1082,7 @@ NOTRACK
 NOTSRCCOPY
 NOTSRCERASE
 NOTXORPEN
+notwindows
 NOZORDER
 NPH
 npmjs
@@ -1396,6 +1404,7 @@ sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
+sancov
 SAVEFAILED
 scanled
 schedtasks
@@ -1567,6 +1576,7 @@ stdcpp
 stdcpplatest
 STDMETHODCALLTYPE
 STDMETHODIMP
+steamapps
 STGC
 STGM
 STGMEDIUM
@@ -1648,6 +1658,7 @@ telephon
 templatenamespace
 testprocess
 TEXCOORD
+TEXTBOXNEWLINE
 TEXTEXTRACTOR
 TEXTINCLUDE
 tfopen
@@ -1929,6 +1940,7 @@ WUX
 Wwanpp
 XAxis
 xclip
+xcopy
 XDocument
 XElement
 xfd

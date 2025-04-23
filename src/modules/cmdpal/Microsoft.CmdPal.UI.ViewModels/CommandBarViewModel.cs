@@ -102,6 +102,7 @@ public partial class CommandBarViewModel : ObservableObject,
         if (SelectedItem.MoreCommands.Count() > 1)
         {
             ShouldShowContextMenu = true;
+
             ContextMenuStack.Clear();
             ContextMenuStack.Add(new ContextMenuStackViewModel(SelectedItem));
             OnPropertyChanged(nameof(ContextMenu));

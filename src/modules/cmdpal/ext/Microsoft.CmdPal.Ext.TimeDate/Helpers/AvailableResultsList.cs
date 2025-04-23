@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
@@ -69,6 +70,86 @@ internal static class AvailableResultsList
             var era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(dateTimeNow));
             var eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
 
+            // Custom formats
+            foreach (var f in settings.CustomFormats)
+            {
+                var formatParts = f.Split("=", 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                var formatSyntax = formatParts.Length == 2 ? formatParts[1] : string.Empty;
+                var searchTags = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagCustom");
+                var dtObject = dateTimeNow;
+
+                // If Length = 0 then empty string.
+                if (formatParts.Length >= 1)
+                {
+                    try
+                    {
+                        // Verify and check input and update search tags
+                        if (formatParts.Length == 1)
+                        {
+                            throw new FormatException("Format syntax part after equal sign is missing.");
+                        }
+
+                        var containsCustomSyntax = TimeAndDateHelper.StringContainsCustomFormatSyntax(formatSyntax);
+                        if (formatSyntax.StartsWith("UTC:", StringComparison.InvariantCulture))
+                        {
+                            searchTags = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagCustomUtc");
+                            dtObject = dateTimeNowUtc;
+                        }
+
+                        // Get formated date
+                        var value = TimeAndDateHelper.ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, eraShort, Regex.Replace(formatSyntax, "^UTC:", string.Empty), firstWeekRule, firstDayOfTheWeek);
+                        try
+                        {
+                            value = dtObject.ToString(value, CultureInfo.CurrentCulture);
+                        }
+                        catch
+                        {
+                            if (!containsCustomSyntax)
+                            {
+                                throw;
+                            }
+                            else
+                            {
+                                // Do not fail as we have custom format syntax. Instead fix backslashes.
+                                value = Regex.Replace(value, @"(?<!\\)\\", string.Empty).Replace("\\\\", "\\");
+                            }
+                        }
+
+                        // Add result
+                        results.Add(new AvailableResult()
+                        {
+                            Value = value,
+                            Label = formatParts[0],
+                            AlternativeSearchTag = searchTags,
+                            IconType = ResultIconType.DateTime,
+                        });
+                    }
+                    catch (ArgumentOutOfRangeException e)
+                    {
+                        results.Add(new AvailableResult()
+                        {
+                            Value = Resources.Microsoft_plugin_timedate_ErrorConvertCustomFormat,
+                            Label = formatParts[0] + " - " + Resources.Microsoft_plugin_timedate_show_details,
+                            AlternativeSearchTag = searchTags,
+                            IconType = ResultIconType.Error,
+                            ErrorDetails = e.Message,
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        results.Add(new AvailableResult()
+                        {
+                            Value = Resources.Microsoft_plugin_timedate_InvalidCustomFormat + " " + formatSyntax,
+                            Label = formatParts[0] + " - " + Resources.Microsoft_plugin_timedate_show_details,
+                            AlternativeSearchTag = searchTags,
+                            IconType = ResultIconType.Error,
+                            ErrorDetails = e.Message,
+                        });
+                    }
+                }
+            }
+
+            // Predefined formats
             results.AddRange(new[]
             {
                 new AvailableResult()
@@ -150,6 +231,13 @@ internal static class AvailableResultsList
                 },
                 new AvailableResult()
                 {
+                    Value = DateTime.DaysInMonth(dateTimeNow.Year, dateTimeNow.Month).ToString(CultureInfo.CurrentCulture),
+                    Label = Resources.Microsoft_plugin_timedate_DaysInMonth,
+                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                    IconType = ResultIconType.Date,
+                },
+                new AvailableResult()
+                {
                     Value = dateTimeNow.DayOfYear.ToString(CultureInfo.CurrentCulture),
                     Label = Resources.Microsoft_plugin_timedate_DayOfYear,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
@@ -199,6 +287,13 @@ internal static class AvailableResultsList
                 },
                 new AvailableResult()
                 {
+                    Value = DateTime.IsLeapYear(dateTimeNow.Year) ? Resources.Microsoft_plugin_timedate_LeapYear : Resources.Microsoft_plugin_timedate_NoLeapYear,
+                    Label = Resources.Microsoft_plugin_timedate_LeapYear,
+                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                    IconType = ResultIconType.Date,
+                },
+                new AvailableResult()
+                {
                     Value = era,
                     Label = Resources.Microsoft_plugin_timedate_Era,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagEra"),
@@ -218,13 +313,31 @@ internal static class AvailableResultsList
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                     IconType = ResultIconType.Date,
                 },
-                new AvailableResult()
+            });
+
+            try
+            {
+                results.Add(new AvailableResult()
                 {
                     Value = dateTimeNow.ToFileTime().ToString(CultureInfo.CurrentCulture),
                     Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                     IconType = ResultIconType.DateTime,
-                },
+                });
+            }
+            catch
+            {
+                results.Add(new AvailableResult()
+                {
+                    Value = Resources.Microsoft_plugin_timedate_ErrorConvertWft,
+                    Label = Resources.Microsoft_plugin_timedate_WindowsFileTime,
+                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
+                    IconType = ResultIconType.Error,
+                });
+            }
+
+            results.AddRange(new[]
+            {
                 new AvailableResult()
                 {
                     Value = dateTimeNowUtc.ToString("u"),

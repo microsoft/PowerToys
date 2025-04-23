@@ -34,13 +34,14 @@ public partial class ContextMenuStackViewModel : ObservableObject
 
         _lastSearchText = searchText;
 
+        var commands = _context.AllCommands.Where(c => c.ShouldBeVisible);
         if (string.IsNullOrEmpty(searchText))
         {
-            ListHelpers.InPlaceUpdateList(FilteredItems, _context.AllCommands);
+            ListHelpers.InPlaceUpdateList(FilteredItems, commands);
             return;
         }
 
-        var newResults = ListHelpers.FilterList<CommandContextItemViewModel>(_context.AllCommands, searchText, ScoreContextCommand);
+        var newResults = ListHelpers.FilterList<CommandContextItemViewModel>(commands, searchText, ScoreContextCommand);
         ListHelpers.InPlaceUpdateList(FilteredItems, newResults);
     }
 
