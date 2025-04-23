@@ -182,16 +182,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int LeftClickBehavior
+        public int PrimaryClickBehavior
         {
-            get => (int)_colorPickerSettings.Properties.LeftClickAction;
+            get => (int)_colorPickerSettings.Properties.PrimaryClickAction;
 
             set
             {
-                if (value != (int)_colorPickerSettings.Properties.LeftClickAction)
+                if (value != (int)_colorPickerSettings.Properties.PrimaryClickAction)
                 {
-                    _colorPickerSettings.Properties.LeftClickAction = (ColorPickerClickAction)value;
-                    OnPropertyChanged(nameof(LeftClickBehavior));
+                    _colorPickerSettings.Properties.PrimaryClickAction = (ColorPickerClickAction)value;
+                    OnPropertyChanged(nameof(PrimaryClickBehavior));
                     NotifySettingsChanged();
                 }
             }
@@ -212,16 +212,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int RightClickBehavior
+        public int SecondaryClickBehavior
         {
-            get => (int)_colorPickerSettings.Properties.RightClickAction;
+            get => (int)_colorPickerSettings.Properties.SecondaryClickAction;
 
             set
             {
-                if (value != (int)_colorPickerSettings.Properties.RightClickAction)
+                if (value != (int)_colorPickerSettings.Properties.SecondaryClickAction)
                 {
-                    _colorPickerSettings.Properties.RightClickAction = (ColorPickerClickAction)value;
-                    OnPropertyChanged(nameof(RightClickBehavior));
+                    _colorPickerSettings.Properties.SecondaryClickAction = (ColorPickerClickAction)value;
+                    OnPropertyChanged(nameof(SecondaryClickBehavior));
                     NotifySettingsChanged();
                 }
             }

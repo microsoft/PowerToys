@@ -797,7 +797,6 @@ LCIDTo
 Lclean
 Ldone
 Ldr
-leftclickaction
 LEFTSCROLLBAR
 LEFTTEXT
 LError
@@ -1264,6 +1263,7 @@ prg
 prgh
 prgms
 pri
+primaryclickaction
 PRINTCLIENT
 printmanagement
 prm
@@ -1393,7 +1393,6 @@ rgh
 rgn
 rgs
 RIDEV
-rightclickaction
 RIGHTSCROLLBAR
 riid
 ringbuffer
@@ -1442,6 +1441,7 @@ sdns
 searchterm
 searchtext
 SEARCHUI
+secondaryclickaction
 SECONDARYDISPLAY
 secpol
 SEEMASKINVOKEIDLIST

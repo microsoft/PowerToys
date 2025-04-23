@@ -1522,14 +1522,14 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ColorPicker_MouseActions.Description" xml:space="preserve">
     <value>Choose what clicking individual buttons does</value>
   </data>
-  <data name="ColorPicker_LeftClick.Header" xml:space="preserve">
-    <value>Left click</value>
-  </data>
-  <data name="ColorPicker_RightClick.Header" xml:space="preserve">
-    <value>Right click</value>
+  <data name="ColorPicker_PrimaryClick.Header" xml:space="preserve">
+    <value>Primary click</value>
   </data>
   <data name="ColorPicker_MiddleClick.Header" xml:space="preserve">
-    <value>Scroll wheel click</value>
+    <value>Middle click</value>
+  </data>
+  <data name="ColorPicker_SecondaryClick.Header" xml:space="preserve">
+    <value>Secondary click</value>
   </data>
   <data name="ColorPicker_PickColorThenEditor.Content" xml:space="preserve">
     <value>Pick a color and open editor</value>

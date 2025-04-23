@@ -13,7 +13,7 @@ using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Mouse
 {
-    public delegate void MouseDownEventHandler(object sender, IntPtr wParam);
+    public delegate void PrimaryMouseDownEventHandler(object sender, IntPtr wParam);
 
     public delegate void SecondaryMouseUpEventHandler(object sender, IntPtr wParam);
 
@@ -37,19 +37,19 @@ namespace ColorPicker.Mouse
         private IntPtr _mouseHookHandle;
         private HookProc _mouseDelegate;
 
-        private event MouseDownEventHandler MouseDown;
+        private event PrimaryMouseDownEventHandler PrimaryMouseDown;
 
-        public event MouseDownEventHandler OnMouseDown
+        public event PrimaryMouseDownEventHandler OnPrimaryMouseDown
         {
             add
             {
                 Subscribe();
-                MouseDown += value;
+                PrimaryMouseDown += value;
             }
 
             remove
             {
-                MouseDown -= value;
+                PrimaryMouseDown -= value;
                 Unsubscribe();
             }
         }
@@ -146,9 +146,9 @@ namespace ColorPicker.Mouse
                 MSLLHOOKSTRUCT mouseHookStruct = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
                 if (wParam.ToInt32() == WM_LBUTTONDOWN)
                 {
-                    if (MouseDown != null)
+                    if (PrimaryMouseDown != null)
                     {
-                        MouseDown.Invoke(null, wParam);
+                        PrimaryMouseDown.Invoke(null, wParam);
                     }
 
                     return new IntPtr(-1);

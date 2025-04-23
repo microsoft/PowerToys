@@ -39,9 +39,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             VisibleColorFormats.Add("HEX Int", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HEX Int")));
             ShowColorName = false;
             ActivationAction = ColorPickerActivationAction.OpenColorPicker;
-            LeftClickAction = ColorPickerClickAction.PickColorThenEditor;
+            PrimaryClickAction = ColorPickerClickAction.PickColorThenEditor;
             MiddleClickAction = ColorPickerClickAction.PickColorAndClose;
-            RightClickAction = ColorPickerClickAction.Close;
+            SecondaryClickAction = ColorPickerClickAction.Close;
             CopiedColorRepresentation = "HEX";
         }
 
@@ -58,14 +58,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("activationaction")]
         public ColorPickerActivationAction ActivationAction { get; set; }
 
-        [JsonPropertyName("leftclickaction")]
-        public ColorPickerClickAction LeftClickAction { get; set; }
+        [JsonPropertyName("primaryclickaction")]
+        public ColorPickerClickAction PrimaryClickAction { get; set; }
 
         [JsonPropertyName("middleclickaction")]
         public ColorPickerClickAction MiddleClickAction { get; set; }
 
-        [JsonPropertyName("rightclickaction")]
-        public ColorPickerClickAction RightClickAction { get; set; }
+        [JsonPropertyName("secondarytclickaction")]
+        public ColorPickerClickAction SecondaryClickAction { get; set; }
 
         // Property ColorHistory is not used, the color history is saved separately in the colorHistory.json file
         [JsonPropertyName("colorhistory")]

@@ -80,7 +80,7 @@ namespace ColorPicker.ViewModels
             {
                 SetColorDetails(mouseInfoProvider.CurrentColor);
                 mouseInfoProvider.MouseColorChanged += Mouse_ColorChanged;
-                mouseInfoProvider.OnMouseDown += MouseInfoProvider_OnMouseDown;
+                mouseInfoProvider.OnPrimaryMouseDown += MouseInfoProvider_OnPrimaryMouseDown;
                 mouseInfoProvider.OnMouseWheel += MouseInfoProvider_OnMouseWheel;
                 mouseInfoProvider.OnSecondaryMouseUp += MouseInfoProvider_OnSecondaryMouseUp;
                 mouseInfoProvider.OnMiddleMouseDown += MouseInfoProvider_OnMiddleMouseDown;
@@ -115,7 +115,7 @@ namespace ColorPicker.ViewModels
 
         private void AppStateHandler_EnterPressed(object sender, EventArgs e)
         {
-            MouseInfoProvider_OnMouseDown(null, default);
+            MouseInfoProvider_OnPrimaryMouseDown(null, default);
         }
 
         /// <summary>
@@ -169,19 +169,19 @@ namespace ColorPicker.ViewModels
             SetColorDetails(color);
         }
 
-        private void MouseInfoProvider_OnMouseDown(object sender, IntPtr wParam)
+        private void MouseInfoProvider_OnPrimaryMouseDown(object sender, IntPtr wParam)
         {
-            HandleMouseClickAction(_userSettings.LeftClickAction.Value);
-        }
-
-        private void MouseInfoProvider_OnSecondaryMouseUp(object sender, IntPtr wParam)
-        {
-            HandleMouseClickAction(_userSettings.RightClickAction.Value);
+            HandleMouseClickAction(_userSettings.PrimaryClickAction.Value);
         }
 
         private void MouseInfoProvider_OnMiddleMouseDown(object sender, IntPtr wParam)
         {
             HandleMouseClickAction(_userSettings.MiddleClickAction.Value);
+        }
+
+        private void MouseInfoProvider_OnSecondaryMouseUp(object sender, IntPtr wParam)
+        {
+            HandleMouseClickAction(_userSettings.SecondaryClickAction.Value);
         }
 
         private void HandleMouseClickAction(ColorPickerClickAction action)

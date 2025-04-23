@@ -60,8 +60,8 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
                         IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="ColorPicker_LeftClick" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.LeftClickBehavior, Mode=TwoWay}">
+                            <tkcontrols:SettingsCard x:Uid="ColorPicker_PrimaryClick" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PrimaryClickBehavior, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="ColorPicker_PickColorThenEditor" />
                                     <ComboBoxItem x:Uid="ColorPicker_PickColorAndClose" />
                                     <ComboBoxItem x:Uid="ColorPicker_Close" />
@@ -74,8 +74,8 @@
                                     <ComboBoxItem x:Uid="ColorPicker_Close" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="ColorPicker_RightClick" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.RightClickBehavior, Mode=TwoWay}">
+                            <tkcontrols:SettingsCard x:Uid="ColorPicker_SecondaryClick" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.SecondaryClickBehavior, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="ColorPicker_PickColorThenEditor" />
                                     <ComboBoxItem x:Uid="ColorPicker_PickColorAndClose" />
                                     <ComboBoxItem x:Uid="ColorPicker_Close" />

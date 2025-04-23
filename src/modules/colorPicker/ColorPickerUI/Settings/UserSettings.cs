@@ -50,9 +50,9 @@ namespace ColorPicker.Settings
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             CopiedColorRepresentation = new SettingItem<string>(ColorRepresentationType.HEX.ToString());
             ActivationAction = new SettingItem<ColorPickerActivationAction>(ColorPickerActivationAction.OpenColorPicker);
-            LeftClickAction = new SettingItem<ColorPickerClickAction>(ColorPickerClickAction.PickColorThenEditor);
+            PrimaryClickAction = new SettingItem<ColorPickerClickAction>(ColorPickerClickAction.PickColorThenEditor);
             MiddleClickAction = new SettingItem<ColorPickerClickAction>(ColorPickerClickAction.PickColorAndClose);
-            RightClickAction = new SettingItem<ColorPickerClickAction>(ColorPickerClickAction.Close);
+            SecondaryClickAction = new SettingItem<ColorPickerClickAction>(ColorPickerClickAction.Close);
             ColorHistoryLimit = new SettingItem<int>(20);
             ColorHistory.CollectionChanged += ColorHistory_CollectionChanged;
             ShowColorName = new SettingItem<bool>(false);
@@ -81,11 +81,11 @@ namespace ColorPicker.Settings
 
         public SettingItem<ColorPickerActivationAction> ActivationAction { get; private set; }
 
-        public SettingItem<ColorPickerClickAction> LeftClickAction { get; private set; }
+        public SettingItem<ColorPickerClickAction> PrimaryClickAction { get; private set; }
 
         public SettingItem<ColorPickerClickAction> MiddleClickAction { get; private set; }
 
-        public SettingItem<ColorPickerClickAction> RightClickAction { get; private set; }
+        public SettingItem<ColorPickerClickAction> SecondaryClickAction { get; private set; }
 
         public RangeObservableCollection<string> ColorHistory { get; private set; } = new RangeObservableCollection<string>();
 
@@ -130,9 +130,9 @@ namespace ColorPicker.Settings
                                 CopiedColorRepresentation.Value = settings.Properties.CopiedColorRepresentation;
                                 CopiedColorRepresentationFormat = new SettingItem<string>(string.Empty);
                                 ActivationAction.Value = settings.Properties.ActivationAction;
-                                LeftClickAction.Value = settings.Properties.LeftClickAction;
+                                PrimaryClickAction.Value = settings.Properties.PrimaryClickAction;
                                 MiddleClickAction.Value = settings.Properties.MiddleClickAction;
-                                RightClickAction.Value = settings.Properties.RightClickAction;
+                                SecondaryClickAction.Value = settings.Properties.SecondaryClickAction;
                                 ColorHistoryLimit.Value = settings.Properties.ColorHistoryLimit;
                                 ShowColorName.Value = settings.Properties.ShowColorName;
 
