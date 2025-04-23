@@ -437,6 +437,33 @@ namespace Microsoft.FancyZones.UITests
             this.AttachPowertoySetting();
         }
 
+        [TestMethod]
+        public void TestVirtualDesktopLayout()
+        {
+            this.OpenFancyZonesPanel();
+
+            this.AttachFancyZonesEditor();
+            var element = this.Find<Element>("Grid custom layout");
+            element.Click();
+            this.CloseFancyZonesEditor();
+            this.ExitScopeExe();
+
+            // Add virtual desktop
+            SendKeys(Key.Ctrl, Key.Win, Key.D);
+            this.RestartScopeExe();
+            this.OpenFancyZonesPanel();
+            this.AttachFancyZonesEditor();
+            element = this.Find<Element>("Grid custom layout");
+            Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
+            this.CloseFancyZonesEditor();
+
+            // close the virtual desktop
+            SendKeys(Key.Ctrl, Key.Win, Key.Right);
+            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+            SendKeys(Key.Ctrl, Key.Win, Key.F4);
+            Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+        }
+
         private void OpenFancyZonesPanel(bool launchAsAdmin = false)
         {
             var windowingElement = this.Find<NavigationViewItem>("Windowing & Layouts");
