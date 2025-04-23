@@ -28,10 +28,10 @@ namespace UITests_FancyZones
     [TestClass]
     public class OneZoneSwitchTests : UITestBase
     {
-        private static readonly string WindowName = "Windows (C:) - File Explorer"; // set launch explorer window name
-        private static readonly string PowertoysWindowName = "PowerToys Settings"; // set powertoys settings window name
         private static readonly int SubZones = 2;
         private static readonly IOTestHelper AppZoneHistory = new FancyZonesEditorFiles().AppZoneHistoryIOHelper;
+        private static string windowName = "Windows (C:) - File Explorer"; // set launch explorer window name
+        private static string powertoysWindowName = "PowerToys Settings"; // set powertoys settings window name
 
         public OneZoneSwitchTests()
             : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
@@ -68,8 +68,7 @@ namespace UITests_FancyZones
             Task.Delay(500).Wait(); // Wait for the setting to be applied
             Pull(tries, "up"); // Pull the setting page down to make sure the setting is visible
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click();
-
-            Task.Delay(1000).Wait();
+            Task.Delay(2000).Wait();
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Element>(By.Name("Custom Column")).Click();
             this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
@@ -82,13 +81,13 @@ namespace UITests_FancyZones
             SnapToOneZone();
 
             string? activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
-            Assert.AreEqual(PowertoysWindowName, activeWindowTitle);
+            Assert.AreEqual(powertoysWindowName, activeWindowTitle);
 
             // switch to the previous window by shortcut win+page down
             SendKeys(Key.Win, Key.PageDown);
 
             activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
-            Assert.AreEqual(WindowName, activeWindowTitle);
+            Assert.AreEqual(windowName, activeWindowTitle);
 
             // Clean settings
             Clean();
@@ -100,7 +99,7 @@ namespace UITests_FancyZones
             SnapToOneZone();
 
             string? windowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
-            Assert.AreEqual(PowertoysWindowName, windowTitle);
+            Assert.AreEqual(powertoysWindowName, windowTitle);
 
             // Add virtual desktop
             SendKeys(Key.Ctrl, Key.Win, Key.D);
@@ -110,12 +109,12 @@ namespace UITests_FancyZones
             SendKeys(Key.Ctrl, Key.Win, Key.Left);
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
             string? returnWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
-            Assert.AreEqual(PowertoysWindowName, returnWindowTitle);
+            Assert.AreEqual(powertoysWindowName, returnWindowTitle);
 
             // check shortcut
             SendKeys(Key.Win, Key.PageDown);
             string? activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
-            Assert.AreEqual(WindowName, activeWindowTitle);
+            Assert.AreEqual(windowName, activeWindowTitle);
 
             // close the virtual desktop
             SendKeys(Key.Ctrl, Key.Win, Key.Right);
@@ -133,14 +132,14 @@ namespace UITests_FancyZones
             SnapToOneZone();
 
             string? activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
-            Assert.AreEqual(PowertoysWindowName, activeWindowTitle);
+            Assert.AreEqual(powertoysWindowName, activeWindowTitle);
 
             // switch to the previous window by shortcut win+page down
             SendKeys(Key.Win, Key.PageDown);
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
 
             activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
-            Assert.AreNotEqual(WindowName, activeWindowTitle);
+            Assert.AreNotEqual(windowName, activeWindowTitle);
 
             // Clean Setting
             Clean();
@@ -159,14 +158,17 @@ namespace UITests_FancyZones
             Session.KillAllProcessesByName("explorer");
             Session.StartExe("explorer.exe", "C:\\");
 
+            // Fix for CS8601: Possible null reference assignment.
+            windowName = ZoneSwitchHelper.GetActiveWindowTitle() ?? string.Empty;
+
             // Start Windows Explorer process
-            Session.Attach(WindowName, WindowSize.UnSpecified); // display window1
+            Session.Attach(windowName, WindowSize.UnSpecified); // display window1
             var tabView = Find<Element>(By.AccessibilityId("TabView"));
             tabView.DoubleClick(); // maximize the window
             tabView.KeyDownAndDrag(Key.Shift, targetX, targetY);
 
             // Attach the PowerToys settings window to the front
-            Session.Attach(PowertoysWindowName, WindowSize.UnSpecified);
+            Session.Attach(powertoysWindowName, WindowSize.UnSpecified);
             string name = "Non Client Input Sink Window";
             Element settingsView = Find<Element>(By.Name(name));
             settingsView.DoubleClick(); // maximize the window
@@ -174,10 +176,10 @@ namespace UITests_FancyZones
 
             // check the AppZoneHistory layout is set and in the same zone
             string appZoneHistoryJson = AppZoneHistory.GetData();
-            Console.WriteLine($"{ZoneSwitchHelper.GetZoneIndexSetByAppName(WindowName, appZoneHistoryJson)},{ZoneSwitchHelper.GetZoneIndexSetByAppName(WindowName, appZoneHistoryJson)}");
+            Console.WriteLine($"{ZoneSwitchHelper.GetZoneIndexSetByAppName(windowName, appZoneHistoryJson)},{ZoneSwitchHelper.GetZoneIndexSetByAppName(windowName, appZoneHistoryJson)}");
             Assert.AreEqual(
-                ZoneSwitchHelper.GetZoneIndexSetByAppName(WindowName, appZoneHistoryJson),
-                ZoneSwitchHelper.GetZoneIndexSetByAppName(PowertoysWindowName, appZoneHistoryJson));
+                ZoneSwitchHelper.GetZoneIndexSetByAppName(windowName, appZoneHistoryJson),
+                ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson));
         }
 
         private static readonly CustomLayouts.CustomLayoutListWrapper CustomLayoutsList = new CustomLayouts.CustomLayoutListWrapper
