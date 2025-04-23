@@ -30,7 +30,9 @@ namespace KeyboardManagerEditorUI.Helpers
             List<string> remappedKeys,
             bool isAppSpecific,
             string appName,
-            KeyboardMappingService mappingService)
+            KeyboardMappingService mappingService,
+            bool isEditMode = false,
+            Remapping? editingRemapping = null)
         {
             // Check if original keys are empty
             if (originalKeys == null || originalKeys.Count == 0)
@@ -69,7 +71,7 @@ namespace KeyboardManagerEditorUI.Helpers
             }
 
             // Check for duplicate mappings
-            if (IsDuplicateMapping(originalKeys, isAppSpecific, appName, mappingService))
+            if (IsDuplicateMapping(originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingRemapping))
             {
                 return ValidationErrorType.DuplicateMapping;
             }
@@ -83,7 +85,13 @@ namespace KeyboardManagerEditorUI.Helpers
             return ValidationErrorType.NoError;
         }
 
-        public static bool IsDuplicateMapping(List<string> originalKeys, bool isAppSpecific, string appName, KeyboardMappingService mappingService)
+        public static bool IsDuplicateMapping(
+            List<string> originalKeys,
+            bool isAppSpecific,
+            string appName,
+            KeyboardMappingService mappingService,
+            bool isEditMode = false,
+            Remapping? editingRemapping = null)
         {
             if (mappingService == null || originalKeys == null || originalKeys.Count == 0)
             {
@@ -104,6 +112,14 @@ namespace KeyboardManagerEditorUI.Helpers
                 {
                     if (mapping.OriginalKey == originalKeyCode)
                     {
+                        // Skip if the remapping is the same as the one being edited
+                        if (isEditMode && editingRemapping != null &&
+                            editingRemapping.OriginalKeys.Count == 1 &&
+                            KeyboardManagerInterop.GetKeyCodeFromName(editingRemapping.OriginalKeys[0]) == originalKeyCode)
+                        {
+                            continue;
+                        }
+
                         return true;
                     }
                 }
@@ -115,15 +131,33 @@ namespace KeyboardManagerEditorUI.Helpers
                 string originalKeysString = string.Join(";", originalKeys.Select(
                     k => KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
+                // Don't check for duplicates if the original keys are the same as the remapping being edited
+                bool isEditingExistingRemapping = false;
+                if (isEditMode && editingRemapping != null)
+                {
+                    string editingOriginalKeysString = string.Join(";", editingRemapping.OriginalKeys.Select(k =>
+                                    KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+
+                    if (KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, editingOriginalKeysString))
+                    {
+                        isEditingExistingRemapping = true;
+                    }
+                }
+
                 // Check if the shortcut is already remapped in the same app context
                 foreach (var mapping in mappingService.GetShortcutMappingsByType(ShortcutOperationType.RemapShortcut))
                 {
-                    // Same shortcut in the same app context
                     if (KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, mapping.OriginalKeys))
                     {
                         // If both are global (all apps)
                         if (!isAppSpecific && string.IsNullOrEmpty(mapping.TargetApp))
                         {
+                            // Skip if the remapping is the same as the one being edited
+                            if (editingRemapping != null && editingRemapping.OriginalKeys.Count > 1 && editingRemapping.IsAllApps && isEditingExistingRemapping)
+                            {
+                                continue;
+                            }
+
                             return true;
                         }
 
@@ -131,6 +165,13 @@ namespace KeyboardManagerEditorUI.Helpers
                         else if (isAppSpecific && !string.IsNullOrEmpty(mapping.TargetApp)
                             && string.Equals(mapping.TargetApp, appName, StringComparison.OrdinalIgnoreCase))
                         {
+                            // Skip if the remapping is the same as the one being edited
+                            if (editingRemapping != null && editingRemapping.OriginalKeys.Count > 1 && !editingRemapping.IsAllApps &&
+                                string.Equals(editingRemapping.AppName, appName, StringComparison.OrdinalIgnoreCase) && isEditingExistingRemapping)
+                            {
+                                continue;
+                            }
+
                             return true;
                         }
                     }
