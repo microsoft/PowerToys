@@ -29,7 +29,7 @@ public sealed partial class SettingsWindow : WindowEx,
         this.SetIcon();
         this.AppWindow.Title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
-        this.CenterOnScreen();
+        PositionCentered();
 
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
@@ -67,6 +67,19 @@ public sealed partial class SettingsWindow : WindowEx,
     {
         NavFrame.Navigate(typeof(ExtensionPage), extension);
         BreadCrumbs.Add(new(extension.DisplayName, string.Empty));
+    }
+
+    private void PositionCentered()
+    {
+        AppWindow.Resize(new SizeInt32 { Width = 1280, Height = 720 });
+        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
+        if (displayArea is not null)
+        {
+            var centeredPosition = AppWindow.Position;
+            centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
+            centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
+            AppWindow.Move(centeredPosition);
+        }
     }
 
     public void Receive(NavigateToExtensionSettingsMessage message) => Navigate(message.ProviderSettingsVM);

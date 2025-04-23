@@ -7,6 +7,8 @@
     xmlns:pages="using:Microsoft.CmdPal.UI.Pages"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:winuiex="using:WinUIEx"
+    Width="800"
+    Height="480"
     MinWidth="320"
     MinHeight="240"
     Activated="MainWindow_Activated"

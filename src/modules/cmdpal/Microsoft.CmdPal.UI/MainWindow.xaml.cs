@@ -75,7 +75,7 @@ public sealed partial class MainWindow : WindowEx,
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
-        this.CenterOnScreen(800, 480);
+        PositionCentered();
         SetAcrylic();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
@@ -123,6 +123,26 @@ public sealed partial class MainWindow : WindowEx,
         UpdateRegionsForCustomTitleBar();
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
+
+    private void PositionCentered()
+    {
+        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
+        PositionCentered(displayArea);
+    }
+
+    private void PositionCentered(DisplayArea displayArea)
+    {
+        if (displayArea is not null)
+        {
+            var centeredPosition = AppWindow.Position;
+            centeredPosition.X = (displayArea.WorkArea.Width - AppWindow.Size.Width) / 2;
+            centeredPosition.Y = (displayArea.WorkArea.Height - AppWindow.Size.Height) / 2;
+
+            centeredPosition.X += displayArea.WorkArea.X;
+            centeredPosition.Y += displayArea.WorkArea.Y;
+            AppWindow.Move(centeredPosition);
+        }
+    }
 
     private void HotReloadSettings()
     {
@@ -199,7 +219,7 @@ public sealed partial class MainWindow : WindowEx,
         }
 
         var display = GetScreen(hwnd, target);
-        this.CenterOnScreen();
+        PositionCentered(display);
 
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
         PInvoke.SetForegroundWindow(hwnd);
