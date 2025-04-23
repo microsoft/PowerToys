@@ -9,7 +9,7 @@ Param(
 
   # Root folder Path for processing
   [Parameter(Mandatory=$False,Position=3)]
-  [string]$rootPath = $(Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path))
+  [string]$rootPath = $(Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)),
 
   # Root folder Path for processing
   [Parameter(Mandatory=$False,Position=4)]
@@ -113,7 +113,7 @@ if ($latestVersion) {
 }
 
 # Update packages.config files
-Get-ChildItem -Recurse packages.config | ForEach-Object {
+Get-ChildItem -Path $rootPath -Recurse packages.config | ForEach-Object {
     $file = Read-FileWithEncoding -Path $_.FullName
     $content = $file.Content
     if ($content -match 'package id="Microsoft.WindowsAppSDK"') {
@@ -140,7 +140,7 @@ if (Test-Path $propsFile) {
 }
 
 # Update .vcxproj files
-Get-ChildItem -Recurse *.vcxproj | ForEach-Object {
+Get-ChildItem -Path $rootPath -Recurse *.vcxproj | ForEach-Object {
     $file = Read-FileWithEncoding -Path $_.FullName
     $content = $file.Content
     if ($content -match '\\Microsoft.WindowsAppSDK.') {
@@ -153,7 +153,7 @@ Get-ChildItem -Recurse *.vcxproj | ForEach-Object {
 }
 
 # Update .csproj files
-Get-ChildItem -Recurse *.csproj | ForEach-Object {
+Get-ChildItem -Path $rootPath -Recurse *.csproj | ForEach-Object {
     $file = Read-FileWithEncoding -Path $_.FullName
     $content = $file.Content
     if ($content -match 'PackageReference Include="Microsoft.WindowsAppSDK"') {
