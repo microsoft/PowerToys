@@ -131,6 +131,16 @@ namespace KeyboardManagerEditorUI.Interop
             return keyName.ToString();
         }
 
+        public int GetKeyCodeFromName(string keyName)
+        {
+            if (string.IsNullOrEmpty(keyName))
+            {
+                return 0;
+            }
+
+            return KeyboardManagerInterop.GetKeyCodeFromName(keyName);
+        }
+
         public bool AddSingleKeyMapping(int originalKey, int targetKey)
         {
             return KeyboardManagerInterop.AddSingleKeyRemap(_configHandle, originalKey, targetKey);
