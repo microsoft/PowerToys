@@ -108,12 +108,12 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool RecenterWindow
+    public bool OpenWindowInLastPos
     {
-        get => _settings.RecenterWindow;
+        get => _settings.OpenWindowInLastPos;
         set
         {
-            _settings.RecenterWindow = value;
+            _settings.OpenWindowInLastPos = value;
             Save();
         }
     }

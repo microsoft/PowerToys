@@ -403,10 +403,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="MoreCommandsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More</value>
   </data>
-  <data name="Settings_GeneralPage_RecenterWindow_SettingsCard.Header" xml:space="preserve">
-    <value>Recenter window on launch</value>
+  <data name="Settings_GeneralPage_OpenWindowInLastPos_SettingsCard.Header" xml:space="preserve">
+    <value>Restore window position</value>
   </data>
-	<data name="Settings_GeneralPage_RecenterWindow_SettingsCard.Description" xml:space="preserve">
-    <value>Open the window centered on screen instead of the last position.</value>
+  <data name="Settings_GeneralPage_OpenWindowInLastPos_SettingsCard.Description" xml:space="preserve">
+    <value>Reopen the window where it was last closed</value>
   </data>
 </root>

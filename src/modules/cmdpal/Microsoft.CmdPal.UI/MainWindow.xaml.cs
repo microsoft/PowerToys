@@ -63,7 +63,7 @@ public sealed partial class MainWindow : Window,
     private SystemBackdropConfiguration? _configurationSource;
 
     private WindowPosition _currentWindowPosition = new();
-    private bool _recenterWindow = true;
+    private bool _openWindowInLastPos = true;
 
     public MainWindow()
     {
@@ -103,7 +103,6 @@ public sealed partial class MainWindow : Window,
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         SizeChanged += WindowSizeChanged;
         RootShellPage.Loaded += RootShellPage_Loaded;
-        AppWindow.Changed += AppWindow_Changed;
 
         // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
         // member (and instead like, use a local), then the pointer we marshal
@@ -133,14 +132,6 @@ public sealed partial class MainWindow : Window,
 
         // Now that our content has loaded, we can update our draggable regions
         UpdateRegionsForCustomTitleBar();
-
-    private void AppWindow_Changed(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowChangedEventArgs args)
-    {
-        if (args.DidPositionChange || args.DidSizeChange)
-        {
-            UpdateWindowPositionInMemory();
-        }
-    }
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
@@ -181,7 +172,7 @@ public sealed partial class MainWindow : Window,
 
         SetupHotkey(settings);
         SetupTrayIcon(settings.ShowSystemTrayIcon);
-        _recenterWindow = settings.RecenterWindow;
+        _openWindowInLastPos = settings.OpenWindowInLastPos;
 
         // This will prevent our window from appearing in alt+tab or the taskbar.
         // You'll _need_ to use the hotkey to summon it.
@@ -251,15 +242,15 @@ public sealed partial class MainWindow : Window,
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
-        if (_recenterWindow)
-        {
-            var display = GetScreen(hwnd, target);
-            PositionCentered(display);
-        }
-        else
+        if (_openWindowInLastPos)
         {
             AppWindow.Resize(new SizeInt32 { Width = _currentWindowPosition.Width, Height = _currentWindowPosition.Height });
             AppWindow.Move(new PointInt32 { X = _currentWindowPosition.X, Y = _currentWindowPosition.Y });
+        }
+        else
+        {
+            var display = GetScreen(hwnd, target);
+            PositionCentered(display);
         }
 
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
@@ -402,6 +393,12 @@ public sealed partial class MainWindow : Window,
     {
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
+            // Save the current window position before hiding the window
+            if (_openWindowInLastPos)
+            {
+                UpdateWindowPositionInMemory();
+            }
+
             // If there's a debugger attached...
             if (System.Diagnostics.Debugger.IsAttached)
             {
