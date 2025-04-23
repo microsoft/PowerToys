@@ -45,7 +45,7 @@
                 Margin="12,0,0,0"
                 VerticalAlignment="Center"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="Command Palette Settings" />
+                x:Uid="CmdPalSettingsHeader" />
         </StackPanel>
         <NavigationView
             x:Name="NavView"
