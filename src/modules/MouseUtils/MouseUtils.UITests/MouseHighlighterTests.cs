@@ -165,6 +165,7 @@ namespace MouseUtils.UITests
             Assert.AreNotEqual(expectedColor, colorBackground);
 
             Session.MoveMouseTo(location.Item1 - 300, location.Item2);
+            Task.Delay(1000).Wait();
 
             location = Session.GetMousePosition();
             colorLeftClick = Session.GetPixelColorString(location.Item1, location.Item2);
