@@ -2,41 +2,36 @@
 //
 
 #include <iostream>
+#include <fstream>
 #include <PowerRenameRegEx.h>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
-    if (size < 4)
+    if (size < 6)
         return 0;
 
     size_t offset = 0;
 
-    auto read_length = [&](size_t max_len) -> size_t {
-        if (offset + 1 > size)
-            return 0;
-        uint8_t len = data[offset++];
-        return (std::min)(static_cast<size_t>(len), max_len);
-    };
+    size_t input_len = size / 3;
+    size_t find_len = size / 3;
+    size_t replace_len = size - input_len - find_len;
 
-    auto read_wstring = [&](size_t max_len) -> std::wstring {
-        size_t len = read_length(max_len);
+    auto read_wstring = [&](size_t len) -> std::wstring {
+        std::wstring result;
         if (offset + len > size)
             len = size - offset;
-        std::string utf8(reinterpret_cast<const char*>(data + offset), len);
+
+        result.assign(reinterpret_cast<const wchar_t*>(data + offset), len / sizeof(wchar_t));
         offset += len;
-
-        int wide_len = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, nullptr, 0);
-        if (wide_len == 0)
-            return L"";
-
-        std::wstring wide(wide_len, L'\0');
-        MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), -1, &wide[0], wide_len);
-        return wide;
+        return result;
     };
 
-    std::wstring input = read_wstring(100);
-    std::wstring find = read_wstring(50);
-    std::wstring replace = read_wstring(100);
+    std::wstring input = read_wstring(input_len);
+    std::wstring find = read_wstring(find_len);
+    std::wstring replace = read_wstring(replace_len);
+
+    if (find.empty() || replace.empty())
+        return 0;
 
     CComPtr<IPowerRenameRegEx> renamer;
     CPowerRenameRegEx::s_CreateInstance(&renamer);
@@ -46,13 +41,27 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     renamer->PutSearchTerm(find.c_str());
     renamer->PutReplaceTerm(replace.c_str());
 
-    BSTR result{};
+    PWSTR result = nullptr;
     unsigned long index = 0;
-
-    renamer->Replace(input.c_str(), &result, index);
-
-    if (result)
-        SysFreeString(result);
+    HRESULT hr = renamer->Replace(input.c_str(), &result, index);
+    if (SUCCEEDED(hr) && result != nullptr)
+    {
+        CoTaskMemFree(result);
+    }
 
     return 0;
 }
+
+#ifndef DISABLE_FOR_FUZZING
+
+int main(int argc, char** argv)
+{
+    const char8_t raw[] = u8"test_string";
+
+    std::vector<uint8_t> data(reinterpret_cast<const uint8_t*>(raw), reinterpret_cast<const uint8_t*>(raw) + sizeof(raw) - 1);
+
+    LLVMFuzzerTestOneInput(data.data(), data.size());
+    return 0;
+}
+
+#endif

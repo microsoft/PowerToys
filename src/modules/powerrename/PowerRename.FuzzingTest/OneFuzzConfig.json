@@ -21,8 +21,8 @@
       "oneFuzzJobs": [
         // at least one job is required
         {
-          "projectName": "PowerRename",
-          "targetName": "PowerRename-Fuzzer"
+          "projectName": "PowerToys.PowerRename",
+          "targetName": "PowerRename_Fuzzer"
         }
       ],
       "jobDependencies": [
