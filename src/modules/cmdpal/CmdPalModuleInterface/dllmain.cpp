@@ -46,6 +46,9 @@ private:
 
     HANDLE m_hTerminateEvent;
 
+    // Track if this is the first call to enable
+    bool firstEnableCall = false;
+
     void LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
     {
         std::wstring dir = std::filesystem::path(appPath).parent_path();
@@ -205,12 +208,13 @@ public:
 
         m_enabled = true;
 
+        std::wstring packageName = L"Microsoft.CommandPalette";
+        #ifdef _DEBUG
+            packageName = L"Microsoft.CommandPalette.Dev";
+        #endif
+        
         try
         {
-            std::wstring packageName = L"Microsoft.CommandPalette";
-#ifdef _DEBUG
-            packageName = L"Microsoft.CommandPalette.Dev";
-#endif
             if (!package::GetRegisteredPackage(packageName, false).has_value())
             {
                 Logger::info(L"CmdPal not installed. Installing...");
@@ -246,11 +250,56 @@ public:
             Logger::error(errorMessage);
         }
 
-#if _DEBUG
-        LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App", L"RunFromPT", false);
-#else
-        LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette_8wekyb3d8bbwe!App", L"RunFromPT", false);
-#endif
+        try
+        {
+            if (!package::GetRegisteredPackage(packageName, false).has_value())
+            {
+                const int maxRetryTimeInMinutes = 10;
+                const int maxRetryTimeInMilliseconds = firstEnableCall? maxRetryTimeInMinutes * 60 * 1000: 1;
+                const int baseDelayMilliseconds = 1000; // Start with 1 second delay
+        
+                int retryCount = 0;
+                int totalWaitTime = 0;
+                bool launchSuccess = false;
+        
+                while (totalWaitTime < maxRetryTimeInMilliseconds)
+                {
+                    try
+                    {
+            #if _DEBUG
+                        LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App", L"RunFromPT", false);
+            #else
+                        LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette_8wekyb3d8bbwe!App", L"RunFromPT", false);
+            #endif
+                    }
+                    catch (const std::exception& e)
+                    {
+                        Logger::error(L"CmdPal launch failed: {}", e.what());
+                        launchSuccess = false;
+                    }
+
+                    if (launchSuccess)
+                    {
+                        Logger::info(L"CmdPal launched successfully after {} retries.", retryCount);
+                        break;
+                    }
+        
+                    retryCount++;
+                    int delay = baseDelayMilliseconds * (1 << (retryCount - 1)); // Exponential backoff
+                    std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+                    totalWaitTime += delay;
+                }
+            }
+        }
+        catch (const std::exception& e)
+        {
+            Logger::error(L"CmdPal launch failed: {}", e.what());
+        }
+
+        if (!firstEnableCall)
+        {
+            firstEnableCall=true;
+        }
     }
 
     virtual void disable()
