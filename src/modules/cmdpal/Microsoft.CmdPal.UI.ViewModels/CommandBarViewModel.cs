@@ -29,6 +29,8 @@ public partial class CommandBarViewModel : ObservableObject,
 
             field = value;
             SetSelectedItem(value);
+
+            OnPropertyChanged(nameof(SelectedItem));
         }
     }
 
@@ -115,6 +117,10 @@ public partial class CommandBarViewModel : ObservableObject,
         {
             ShouldShowContextMenu = false;
         }
+
+        OnPropertyChanged(nameof(HasSecondaryCommand));
+        OnPropertyChanged(nameof(SecondaryCommand));
+        OnPropertyChanged(nameof(ShouldShowContextMenu));
     }
 
     // InvokeItemCommand is what this will be in Xaml due to source generator
