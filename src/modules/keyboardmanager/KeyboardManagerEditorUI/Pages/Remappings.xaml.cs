@@ -236,7 +236,7 @@ namespace KeyboardManagerEditorUI.Pages
 
             // Validate the remapping
             ValidationErrorType errorType = ValidationHelper.ValidateKeyMapping(
-                originalKeys, remappedKeys, isAppSpecific, appName, _mappingService);
+                originalKeys, remappedKeys, isAppSpecific, appName, _mappingService, _isEditMode, _editingRemapping);
 
             if (errorType != ValidationErrorType.NoError)
             {
