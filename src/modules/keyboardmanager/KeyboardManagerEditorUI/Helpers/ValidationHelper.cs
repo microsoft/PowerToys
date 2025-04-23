@@ -112,7 +112,8 @@ namespace KeyboardManagerEditorUI.Helpers
             // For shortcut remapping
             else
             {
-                string originalKeysString = string.Join(";", originalKeys.Select(k => KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+                string originalKeysString = string.Join(";", originalKeys.Select(
+                    k => KeyboardManagerInterop.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
                 // Check if the shortcut is already remapped in the same app context
                 foreach (var mapping in mappingService.GetShortcutMappingsByType(ShortcutOperationType.RemapShortcut))
@@ -127,7 +128,8 @@ namespace KeyboardManagerEditorUI.Helpers
                         }
 
                         // If both are for the same specific app
-                        else if (isAppSpecific && !string.IsNullOrEmpty(mapping.TargetApp) && string.Equals(mapping.TargetApp, appName, StringComparison.OrdinalIgnoreCase))
+                        else if (isAppSpecific && !string.IsNullOrEmpty(mapping.TargetApp)
+                            && string.Equals(mapping.TargetApp, appName, StringComparison.OrdinalIgnoreCase))
                         {
                             return true;
                         }

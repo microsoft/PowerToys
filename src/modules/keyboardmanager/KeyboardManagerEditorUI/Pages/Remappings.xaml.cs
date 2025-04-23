@@ -266,7 +266,10 @@ namespace KeyboardManagerEditorUI.Pages
             // If in edit mode, delete the existing remapping before saving the new one
             if (_isEditMode && _editingRemapping != null)
             {
-                DeleteRemapping(_editingRemapping);
+                if (!RemappingHelper.DeleteRemapping(_mappingService!, _editingRemapping))
+                {
+                    return;
+                }
             }
 
             // If no errors, proceed to save the remapping
@@ -303,10 +306,14 @@ namespace KeyboardManagerEditorUI.Pages
 
             if (_isEditMode && _editingRemapping != null)
             {
-                DeleteRemapping(_editingRemapping);
+                if (!RemappingHelper.DeleteRemapping(_mappingService!, _editingRemapping))
+                {
+                    return;
+                }
             }
 
-            bool saved = RemappingHelper.SaveMapping(_mappingService!, RemappingControl.GetOriginalKeys(), RemappingControl.GetRemappedKeys(), RemappingControl.GetIsAppSpecific(), RemappingControl.GetAppName());
+            bool saved = RemappingHelper.SaveMapping(
+                _mappingService!, RemappingControl.GetOriginalKeys(), RemappingControl.GetRemappedKeys(), RemappingControl.GetIsAppSpecific(), RemappingControl.GetAppName());
             if (saved)
             {
                 KeyDialog.Hide();
@@ -358,7 +365,10 @@ namespace KeyboardManagerEditorUI.Pages
         {
             if (sender is Button button && button.DataContext is Remapping remapping)
             {
-                DeleteRemapping(remapping);
+                if (RemappingHelper.DeleteRemapping(_mappingService!, remapping))
+                {
+                    LoadMappings();
+                }
             }
         }
 
