@@ -77,7 +77,7 @@ namespace KeyboardManagerEditorUI.Helpers
             }
 
             // Check for self-mapping
-            if (IsSelfMapping(originalKeys, remappedKeys))
+            if (IsSelfMapping(originalKeys, remappedKeys, mappingService))
             {
                 return ValidationErrorType.SelfMapping;
             }
