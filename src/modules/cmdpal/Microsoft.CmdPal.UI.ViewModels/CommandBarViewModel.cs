@@ -119,7 +119,6 @@ public partial class CommandBarViewModel : ObservableObject,
         }
 
         OnPropertyChanged(nameof(HasSecondaryCommand));
-        OnPropertyChanged(nameof(ShouldShowContextMenu));
         OnPropertyChanged(nameof(SecondaryCommand));
         OnPropertyChanged(nameof(ShouldShowContextMenu));
     }
