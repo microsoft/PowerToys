@@ -64,7 +64,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("middleclickaction")]
         public ColorPickerClickAction MiddleClickAction { get; set; }
 
-        [JsonPropertyName("secondarytclickaction")]
+        [JsonPropertyName("secondaryclickaction")]
         public ColorPickerClickAction SecondaryClickAction { get; set; }
 
         // Property ColorHistory is not used, the color history is saved separately in the colorHistory.json file
