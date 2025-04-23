@@ -206,7 +206,7 @@ namespace UITests_FancyZones
             },
         };
 
-        private void Pull(int tries = 5, string direction = "up")
+        private void Scroll(int tries = 5, string direction = "up")
         {
             Key keyToSend = direction == "up" ? Key.Up : Key.Down;
             for (int i = 0; i < tries; i++)
