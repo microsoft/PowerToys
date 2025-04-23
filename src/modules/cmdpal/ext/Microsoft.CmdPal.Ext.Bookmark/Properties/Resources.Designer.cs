@@ -133,6 +133,15 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bookmark Type.
+        /// </summary>
+        public static string bookmarks_form_bookmark_type {
+            get {
+                return ResourceManager.GetString("bookmarks_form_bookmark_type", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name.
         /// </summary>
         public static string bookmarks_form_name_label {

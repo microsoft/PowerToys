@@ -6,6 +6,8 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
+using Microsoft.CmdPal.Ext.Bookmarks.Models;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -23,12 +25,23 @@ internal sealed partial class AddBookmarkForm : FormContent
         _bookmark = bookmark;
         var name = _bookmark?.Name ?? string.Empty;
         var url = _bookmark?.Bookmark ?? string.Empty;
+        var bookmarkType = _bookmark?.Type.ToString() ?? string.Empty;
+        var bookmarkTypeChoices = BookmarkTypeHelper.GetBookmarkChoices();
+
         TemplateJson = $$"""
 {
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
     "type": "AdaptiveCard",
     "version": "1.5",
     "body": [
+        {
+            "type": "Input.ChoiceSet",
+            "label": "{{Resources.bookmarks_form_bookmark_type}}",
+            "value":  {{JsonSerializer.Serialize(bookmarkType)}},
+            "choices": {{bookmarkTypeChoices}},
+            "placeholder": "Placeholder text",
+            "id": "bookmarkType"
+        },
         {
             "type": "Input.Text",
             "style": "text",
@@ -74,34 +87,33 @@ internal sealed partial class AddBookmarkForm : FormContent
         var formName = formInput["name"] ?? string.Empty;
         var formBookmark = formInput["bookmark"] ?? string.Empty;
         var hasPlaceholder = formBookmark.ToString().Contains('{') && formBookmark.ToString().Contains('}');
+        var bookmarkTypeString = formInput["bookmarkType"]?.ToString() ?? string.Empty;
 
         // Determine the type of the bookmark
-        string bookmarkType;
+        if (!Enum.TryParse<BookmarkType>(bookmarkTypeString, true, out var bookmarkType))
+        {
+            // TODO: need a toast
+            return CommandResult.GoHome();
+        }
 
-        if (formBookmark.ToString().StartsWith("http://", StringComparison.OrdinalIgnoreCase) || formBookmark.ToString().StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        if (!ValidateBookmarkData(formName.ToString(), formBookmark.ToString(), bookmarkType))
         {
-            bookmarkType = "web";
-        }
-        else if (File.Exists(formBookmark.ToString()))
-        {
-            bookmarkType = "file";
-        }
-        else if (Directory.Exists(formBookmark.ToString()))
-        {
-            bookmarkType = "folder";
-        }
-        else
-        {
-            // Default to web if we can't determine the type
-            bookmarkType = "web";
+            // TODO: need a toast
+            return CommandResult.GoHome();
         }
 
         var updated = _bookmark ?? new BookmarkData();
         updated.Name = formName.ToString();
         updated.Bookmark = formBookmark.ToString();
         updated.Type = bookmarkType;
+        var paths = EnvironmentsCache.Instance.GetPaths();
 
         AddedCommand?.Invoke(this, updated);
         return CommandResult.GoHome();
+    }
+
+    private bool ValidateBookmarkData(string name, string bookmark, BookmarkType type)
+    {
+        return true;
     }
 }

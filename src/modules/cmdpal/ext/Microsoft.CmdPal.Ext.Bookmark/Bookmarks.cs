@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using Microsoft.CmdPal.Ext.Bookmarks.Models;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
@@ -40,5 +41,12 @@ public sealed class Bookmarks
         var jsonString = JsonSerializer.Serialize(data, _jsonOptions);
 
         File.WriteAllText(BookmarksCommandProvider.StateJsonPath(), jsonString);
+    }
+
+    public enum BookmarkType
+    {
+        File,
+        Url,
+        Folder,
     }
 }

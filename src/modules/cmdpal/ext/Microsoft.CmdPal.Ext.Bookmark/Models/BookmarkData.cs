@@ -4,7 +4,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.CmdPal.Ext.Bookmarks;
+namespace Microsoft.CmdPal.Ext.Bookmarks.Models;
 
 public class BookmarkData
 {
@@ -12,7 +12,8 @@ public class BookmarkData
 
     public string Bookmark { get; set; } = string.Empty;
 
-    public string Type { get; set; } = string.Empty;
+    [JsonConverter(typeof(JsonStringEnumConverter<BookmarkType>))]
+    public BookmarkType Type { get; set; } = BookmarkType.Web;
 
     [JsonIgnore]
     public bool IsPlaceholder => Bookmark.Contains('{') && Bookmark.Contains('}');

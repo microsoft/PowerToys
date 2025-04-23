@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
+using Microsoft.CmdPal.Ext.Bookmarks.Models;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CommandPalette.Extensions;
@@ -109,57 +111,27 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     private CommandItem BookmarkToCommandItem(BookmarkData bookmark)
     {
-        ICommand command = bookmark.IsPlaceholder ?
-            new BookmarkPlaceholderPage(bookmark) :
-            new UrlCommand(bookmark);
-
-        var listItem = new CommandItem(command) { Icon = command.Icon };
-
-        List<CommandContextItem> contextMenu = [];
-
-        // Add commands for folder types
-        if (command is UrlCommand urlCommand)
+        var deleteAction = () =>
         {
-            if (urlCommand.Type == "folder")
+            if (_bookmarks != null)
             {
-                contextMenu.Add(
-                    new CommandContextItem(new DirectoryPage(urlCommand.Url)));
+                ExtensionHost.LogMessage($"Deleting bookmark ({bookmark.Name},{bookmark.Bookmark})");
 
-                contextMenu.Add(
-                    new CommandContextItem(new OpenInTerminalCommand(urlCommand.Url)));
+                _bookmarks.Data.Remove(bookmark);
+
+                SaveAndUpdateCommands();
             }
+        };
 
-            listItem.Subtitle = urlCommand.Url;
+        if (CommandItemFactory.TryCreateBookmarkCommand(bookmark, Edit_AddedCommand, deleteAction, out var commandItem))
+        {
+            return commandItem;
         }
 
-        var edit = new AddBookmarkPage(bookmark) { Icon = EditIcon };
-        edit.AddedCommand += Edit_AddedCommand;
-        contextMenu.Add(new CommandContextItem(edit));
+        ExtensionHost.LogMessage($"Failed to create command for bookmark ({bookmark.Name},{bookmark.Bookmark})");
 
-        var delete = new CommandContextItem(
-            title: Resources.bookmarks_delete_title,
-            name: Resources.bookmarks_delete_name,
-            action: () =>
-            {
-                if (_bookmarks != null)
-                {
-                    ExtensionHost.LogMessage($"Deleting bookmark ({bookmark.Name},{bookmark.Bookmark})");
-
-                    _bookmarks.Data.Remove(bookmark);
-
-                    SaveAndUpdateCommands();
-                }
-            },
-            result: CommandResult.KeepOpen())
-        {
-            IsCritical = true,
-            Icon = DeleteIcon,
-        };
-        contextMenu.Add(delete);
-
-        listItem.MoreCommands = contextMenu.ToArray();
-
-        return listItem;
+        // TODO: need fix it
+        return new ListItem(new NoOpCommand());
     }
 
     public override ICommandItem[] TopLevelCommands()

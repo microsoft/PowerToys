@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
+using Microsoft.CmdPal.Ext.Bookmarks.Models;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 
@@ -10,7 +12,7 @@ namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 public partial class UrlCommand : InvokableCommand
 {
-    public string Type { get; }
+    public BookmarkType Type { get; }
 
     public string Url { get; }
 
@@ -19,17 +21,22 @@ public partial class UrlCommand : InvokableCommand
     {
     }
 
-    public UrlCommand(string name, string url, string type)
+    public UrlCommand(string name, string url, BookmarkType type)
     {
         Name = name;
         Type = type;
         Url = url;
-        Icon = new IconInfo(IconFromUrl(Url, type));
+        Icon = IconHelper.CreateIcon(url, type);
     }
 
     public override CommandResult Invoke()
     {
-        var target = Url;
+        return UrlCommand.Invoke(Url);
+    }
+
+    public static CommandResult Invoke(string url)
+    {
+        var target = url;
         try
         {
             var uri = GetUri(target);
@@ -62,37 +69,5 @@ public partial class UrlCommand : InvokableCommand
         }
 
         return uri;
-    }
-
-    internal static string IconFromUrl(string url, string type)
-    {
-        switch (type)
-        {
-            case "file":
-                return "📄";
-            case "folder":
-                return "📁";
-            case "web":
-            default:
-                // Get the base url up to the first placeholder
-                var placeholderIndex = url.IndexOf('{');
-                var baseString = placeholderIndex > 0 ? url.Substring(0, placeholderIndex) : url;
-                try
-                {
-                    var uri = GetUri(baseString);
-                    if (uri != null)
-                    {
-                        var hostname = uri.Host;
-                        var faviconUrl = $"{uri.Scheme}://{hostname}/favicon.ico";
-                        return faviconUrl;
-                    }
-                }
-                catch (UriFormatException)
-                {
-                    // return "🔗";
-                }
-
-                return "🔗";
-        }
     }
 }

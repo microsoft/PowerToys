@@ -161,4 +161,7 @@
     <value>{0} is required</value>
     <comment>{0} will be replaced by a parameter name provided by the user</comment>
   </data>
+  <data name="bookmarks_form_bookmark_type" xml:space="preserve">
+    <value>Bookmark Type</value>
+  </data>
 </root>
