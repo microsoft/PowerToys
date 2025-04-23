@@ -63,7 +63,7 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_OpenWindowInLastPos_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE9A9;}">
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_OpenWindowInLastPos_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A7;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.OpenWindowInLastPos, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
