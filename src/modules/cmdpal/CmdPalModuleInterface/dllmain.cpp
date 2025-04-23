@@ -218,12 +218,12 @@ public:
 
         m_enabled.store(true);
 
-        std::wstring appUserModelId = L"Microsoft.CommandPalette_8wekyb3d8bbwe!App";
+        std::wstring launchPath = L"shell:AppsFolder\\Microsoft.CommandPalette_8wekyb3d8bbwe!App";
         std::wstring packageName = L"Microsoft.CommandPalette";
 
 #ifdef _DEBUG
         packageName = L"Microsoft.CommandPalette.Dev";
-        appUserModelId = L"Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App";
+        launchPath = L"Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App";
 #endif
 
         try
@@ -268,7 +268,9 @@ public:
             Logger::trace("Cmdpal is not registered, quit..");
         }
         Logger::trace("Try to launch");
-        std::thread launchThread(RetryLaunch, firstEnableCall ? 0 : 10, appUserModelId);
+
+        // Total retry delay would largest be less than 9 min.
+        std::thread launchThread(&CmdPal::RetryLaunch, firstEnableCall ? 0 : 9, launchPath);
         launchThread.detach();
 
         firstEnableCall = false;
