@@ -3,6 +3,7 @@
 
 #include <interface/powertoy_module_interface.h>
 
+#include <atomic>
 #include <common/logger/logger.h>
 #include <common/utils/logger_helper.h>
 #include <common/SettingsAPI/settings_helpers.h>
@@ -10,10 +11,11 @@
 #include <common/utils/resources.h>
 #include <common/utils/package.h>
 #include <common/utils/process_path.h>
+#include <common/utils/winapi_error.h>
 #include <common/interop/shared_constants.h>
 #include <Psapi.h>
 #include <TlHelp32.h>
-#include <common/utils/winapi_error.h>
+#include <thread>
 
 HINSTANCE g_hInst_cmdPal = 0;
 
@@ -37,7 +39,8 @@ BOOL APIENTRY DllMain(HMODULE hInstance,
 class CmdPal : public PowertoyModuleIface
 {
 private:
-    bool m_enabled = false;
+    std::atomic<bool> m_enabled{ false };
+    std::atomic<bool> m_launched{ false };
 
     std::wstring app_name;
 
@@ -49,7 +52,7 @@ private:
     // Track if this is the first call to enable
     bool firstEnableCall = true;
 
-    void LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
+    bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated, bool silentFail)
     {
         std::wstring dir = std::filesystem::path(appPath).parent_path();
 
@@ -57,6 +60,10 @@ private:
         sei.cbSize = sizeof(SHELLEXECUTEINFO);
         sei.hwnd = nullptr;
         sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE;
+        if (silentFail)
+        {
+            sei.fMask = sei.fMask | SEE_MASK_FLAG_NO_UI;
+        }
         sei.lpVerb = elevated ? L"runas" : L"open";
         sei.lpFile = appPath.c_str();
         sei.lpParameters = commandLineArgs.c_str();
@@ -67,7 +74,10 @@ private:
         {
             std::wstring error = get_last_error_or_default(GetLastError());
             Logger::error(L"Failed to launch process. {}", error);
+            return false;
         }
+
+        return true;
     }
 
     std::vector<DWORD> GetProcessesIdByName(const std::wstring& processName)
@@ -206,13 +216,16 @@ public:
     {
         Logger::trace("CmdPal::enable()");
 
-        m_enabled = true;
+        m_enabled.store(true);
 
+        std::wstring appUserModelId = L"Microsoft.CommandPalette_8wekyb3d8bbwe!App";
         std::wstring packageName = L"Microsoft.CommandPalette";
-        #ifdef _DEBUG
-            packageName = L"Microsoft.CommandPalette.Dev";
-        #endif
-        
+
+#ifdef _DEBUG
+        packageName = L"Microsoft.CommandPalette.Dev";
+        appUserModelId = L"Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App";
+#endif
+
         try
         {
             if (!package::GetRegisteredPackage(packageName, false).has_value())
@@ -250,56 +263,15 @@ public:
             Logger::error(errorMessage);
         }
 
-        try
+        if (!package::GetRegisteredPackage(packageName, false).has_value())
         {
-            if (package::GetRegisteredPackage(packageName, false).has_value())
-            {
-                const int maxRetryTimeInMinutes = 10;
-                const int maxRetryTimeInMilliseconds = firstEnableCall? maxRetryTimeInMinutes * 60 * 1000: 1;
-                const int baseDelayMilliseconds = 1000; // Start with 1 second delay
-        
-                int retryCount = 0;
-                int totalWaitTime = 0;
-                bool launchSuccess = false;
-        
-                while (totalWaitTime < maxRetryTimeInMilliseconds)
-                {
-                    try
-                    {
-            #if _DEBUG
-                        LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App", L"RunFromPT", false);
-            #else
-                        LaunchApp(std::wstring{ L"shell:AppsFolder\\" } + L"Microsoft.CommandPalette_8wekyb3d8bbwe!App", L"RunFromPT", false);
-            #endif
-                    }
-                    catch (const std::exception& e)
-                    {
-                        Logger::error(L"CmdPal launch failed: {}", e.what());
-                        launchSuccess = false;
-                    }
+            Logger::trace("Cmdpal is not registered, quit..");
+        }
+        Logger::trace("Try to launch");
+        std::thread launchThread(RetryLaunch, firstEnableCall ? 0 : 10, appUserModelId);
+        launchThread.detach();
 
-                    if (launchSuccess)
-                    {
-                        Logger::info(L"CmdPal launched successfully after {} retries.", retryCount);
-                        break;
-                    }
-        
-                    retryCount++;
-                    int delay = baseDelayMilliseconds * (1 << (retryCount - 1)); // Exponential backoff
-                    std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-                    totalWaitTime += delay;
-                }
-            }
-        }
-        catch (const std::exception& e)
-        {
-            Logger::error(L"CmdPal launch failed: {}", e.what());
-        }
-
-        if (firstEnableCall)
-        {
-            firstEnableCall=false;
-        }
+        firstEnableCall = false;
     }
 
     virtual void disable()
@@ -307,7 +279,29 @@ public:
         Logger::trace("CmdPal::disable()");
         TerminateCmdPal();
 
-        m_enabled = false;
+        m_enabled.store(false);
+    }
+
+    void RetryLaunch(int retryCount, std::wstring path)
+    {
+        int attempt = 0;
+        const int baseDelayMilliseconds = 1000;
+        do
+        {
+            auto launchResult = LaunchApp(path, L"RunFromPT", false, attempt == retryCount);
+            if (launchResult)
+            {
+                Logger::info(L"CmdPal launched successfully after {} retries.", attempt);
+                m_launched.store(true);
+                break;
+            }
+
+            attempt++;
+            int delay = baseDelayMilliseconds * (1 << (attempt)); // Exponential backoff
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+        } while (attempt < retryCount && !m_enabled.load() && !m_launched.load()); // When trying to launch, if disable, or launched by some other thread, quit the loop.
+
+        Logger::error(L"CmdPal launched failed after {} retries.", retryCount);
     }
 
     virtual bool on_hotkey(size_t) override
@@ -322,7 +316,7 @@ public:
 
     virtual bool is_enabled() override
     {
-        return m_enabled;
+        return m_enabled.load();
     }
 };
 
