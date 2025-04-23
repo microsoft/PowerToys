@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -24,11 +25,11 @@ internal sealed partial class FallbackTimeDateItem : FallbackCommandItem
         _settingsManager = settings;
         _validOptions = new(StringComparer.OrdinalIgnoreCase)
         {
-            ResultHelper.SelectStringFromResources(true, string.Empty, "Microsoft_plugin_timedate_SearchTagWeek"),
-            ResultHelper.SelectStringFromResources(true, string.Empty, "Microsoft_plugin_timedate_SearchTagDate"),
-            ResultHelper.SelectStringFromResources(true, string.Empty, "Microsoft_plugin_timedate_Year"),
-            ResultHelper.SelectStringFromResources(true, string.Empty, "Microsoft_plugin_timedate_Now"),
-            ResultHelper.SelectStringFromResources(true, string.Empty, "Microsoft_plugin_timedate_Time"),
+            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagWeek", CultureInfo.CurrentCulture),
+            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagDate", CultureInfo.CurrentCulture),
+            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_Year", CultureInfo.CurrentCulture),
+            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_Now", CultureInfo.CurrentCulture),
+            Resources.ResourceManager.GetString("Microsoft_plugin_timedate_Time", CultureInfo.CurrentCulture),
         };
     }
 
