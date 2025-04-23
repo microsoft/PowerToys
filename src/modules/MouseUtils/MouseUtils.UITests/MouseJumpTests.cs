@@ -127,6 +127,7 @@ namespace MouseUtils.UITests
         private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
         {
             Session.SetMainWindowSize(WindowSize.Large);
+            Task.Delay(1000).Wait();
 
             // Goto Hosts File Editor setting page
             if (this.FindAll<NavigationViewItem>("Mouse utilities").Count == 0)
@@ -135,6 +136,7 @@ namespace MouseUtils.UITests
                 this.Find<NavigationViewItem>("Input / Output").Click();
             }
 
+            Task.Delay(1000).Wait();
             this.Find<NavigationViewItem>("Mouse utilities").Click();
         }
     }
