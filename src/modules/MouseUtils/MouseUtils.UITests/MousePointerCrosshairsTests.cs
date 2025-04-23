@@ -129,7 +129,7 @@ namespace MouseUtils.UITests
 
         private void VerifyMousePointerCrosshairsAppears(ref MousePointerCrosshairsSettings settings)
         {
-            Task.Delay(500).Wait();
+            Task.Delay(1000).Wait();
             string expectedColor = string.Empty;
             expectedColor = "#" + settings.CrosshairsColor;
             var location = Session.GetMousePosition();
