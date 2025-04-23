@@ -270,7 +270,7 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             // If no errors, proceed to save the remapping
-            bool saved = SaveCurrentMapping();
+            bool saved = RemappingHelper.SaveMapping(_mappingService!, originalKeys, remappedKeys, isAppSpecific, appName);
             if (saved)
             {
                 // Display the remapping in the list after saving
@@ -306,7 +306,7 @@ namespace KeyboardManagerEditorUI.Pages
                 DeleteRemapping(_editingRemapping);
             }
 
-            bool saved = SaveCurrentMapping();
+            bool saved = RemappingHelper.SaveMapping(_mappingService!, RemappingControl.GetOriginalKeys(), RemappingControl.GetRemappedKeys(), RemappingControl.GetIsAppSpecific(), RemappingControl.GetAppName());
             if (saved)
             {
                 KeyDialog.Hide();
@@ -352,71 +352,6 @@ namespace KeyboardManagerEditorUI.Pages
         public static int GetKeyCode(string keyName)
         {
             return KeyboardManagerInterop.GetKeyCodeFromName(keyName);
-        }
-
-        private bool SaveCurrentMapping()
-        {
-            if (_mappingService == null)
-            {
-                Logger.LogError("Mapping service is null, cannot save mapping");
-                return false;
-            }
-
-            try
-            {
-                List<string> originalKeys = RemappingControl.GetOriginalKeys();
-                List<string> remappedKeys = RemappingControl.GetRemappedKeys();
-                bool isAppSpecific = RemappingControl.GetIsAppSpecific();
-                string appName = RemappingControl.GetAppName();
-
-                if (originalKeys == null || originalKeys.Count == 0 || remappedKeys == null || remappedKeys.Count == 0)
-                {
-                    return false;
-                }
-
-                if (originalKeys.Count == 1)
-                {
-                    int originalKey = GetKeyCode(originalKeys[0]);
-                    if (originalKey != 0)
-                    {
-                        if (remappedKeys.Count == 1)
-                        {
-                            int targetKey = GetKeyCode(remappedKeys[0]);
-                            if (targetKey != 0)
-                            {
-                                _mappingService.AddSingleKeyMapping(originalKey, targetKey);
-                            }
-                        }
-                        else
-                        {
-                            string targetKeys = string.Join(";", remappedKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
-                            _mappingService.AddSingleKeyMapping(originalKey, targetKeys);
-                        }
-                    }
-                }
-                else
-                {
-                    string originalKeysString = string.Join(";", originalKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
-                    string targetKeysString = string.Join(";", remappedKeys.Select(k => GetKeyCode(k).ToString(CultureInfo.InvariantCulture)));
-
-                    if (isAppSpecific && !string.IsNullOrEmpty(appName))
-                    {
-                        _mappingService.AddShortcutMapping(originalKeysString, targetKeysString, appName);
-                    }
-                    else
-                    {
-                        _mappingService.AddShortcutMapping(originalKeysString, targetKeysString);
-                    }
-                }
-
-                _mappingService.SaveSettings();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Error saving shortcut mapping: " + ex.Message);
-                return false;
-            }
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)

@@ -1,0 +1,78 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using KeyboardManagerEditorUI.Interop;
+using ManagedCommon;
+
+namespace KeyboardManagerEditorUI.Helpers
+{
+    public static class RemappingHelper
+    {
+        public static bool SaveMapping(KeyboardMappingService mappingService, List<string> originalKeys, List<string> remappedKeys, bool isAppSpecific, string appName)
+        {
+            if (mappingService == null)
+            {
+                Logger.LogError("Mapping service is null, cannot save mapping");
+                return false;
+            }
+
+            try
+            {
+                if (originalKeys == null || originalKeys.Count == 0 || remappedKeys == null || remappedKeys.Count == 0)
+                {
+                    return false;
+                }
+
+                if (originalKeys.Count == 1)
+                {
+                    int originalKey = mappingService.GetKeyCodeFromName(originalKeys[0]);
+                    if (originalKey != 0)
+                    {
+                        if (remappedKeys.Count == 1)
+                        {
+                            int targetKey = mappingService.GetKeyCodeFromName(remappedKeys[0]);
+                            if (targetKey != 0)
+                            {
+                                mappingService.AddSingleKeyMapping(originalKey, targetKey);
+                            }
+                        }
+                        else
+                        {
+                            string targetKeys = string.Join(";", remappedKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+                            mappingService.AddSingleKeyMapping(originalKey, targetKeys);
+                        }
+                    }
+                }
+                else
+                {
+                    string originalKeysString = string.Join(";", originalKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+                    string targetKeysString = string.Join(";", remappedKeys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+
+                    if (isAppSpecific && !string.IsNullOrEmpty(appName))
+                    {
+                        mappingService.AddShortcutMapping(originalKeysString, targetKeysString, appName);
+                    }
+                    else
+                    {
+                        mappingService.AddShortcutMapping(originalKeysString, targetKeysString);
+                    }
+                }
+
+                mappingService.SaveSettings();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error saving mapping: " + ex.Message);
+                return false;
+            }
+        }
+    }
+}
