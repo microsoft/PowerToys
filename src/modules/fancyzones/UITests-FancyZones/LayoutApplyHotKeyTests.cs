@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FancyZonesEditor.Models;
 using FancyZonesEditorCommon.Data;
+using Microsoft.FancyZonesEditor.UITests;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -499,6 +500,20 @@ namespace Microsoft.FancyZones.UITests
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
             SendKeys(Key.Ctrl, Key.Win, Key.F4);
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+        }
+
+        [TestMethod]
+        public void TestDeleteCustomLayoutBehavior()
+        {
+            this.OpenFancyZonesPanel();
+
+            this.AttachFancyZonesEditor();
+            this.Find<Element>("Grid custom layout").Click();
+            this.Find<Element>("Grid custom layout").Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            Session.Find<Button>(By.AccessibilityId(AccessibilityId.DeleteLayoutButton)).Click();
+
+            // verify the empty layout is selected
+            Assert.IsTrue(Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.Blank])!.Selected);
         }
 
         private void OpenFancyZonesPanel(bool launchAsAdmin = false)
