@@ -39,9 +39,6 @@ BOOL APIENTRY DllMain(HMODULE hInstance,
 class CmdPal : public PowertoyModuleIface
 {
 private:
-    std::atomic<bool> m_enabled{ false };
-    std::atomic<bool> m_launched{ false };
-
     std::wstring app_name;
 
     //contains the non localized key of the powertoy
@@ -52,7 +49,7 @@ private:
     // Track if this is the first call to enable
     bool firstEnableCall = true;
 
-    bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated, bool silentFail)
+    static bool LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated, bool silentFail)
     {
         std::wstring dir = std::filesystem::path(appPath).parent_path();
 
@@ -135,6 +132,9 @@ private:
     }
 
 public:
+    static std::atomic<bool> m_enabled;
+    static std::atomic<bool> m_launched;
+
     CmdPal()
     {
         app_name = L"CmdPal";
@@ -146,10 +146,10 @@ public:
 
     ~CmdPal()
     {
-        if (m_enabled)
+        if (CmdPal::m_enabled)
         {
         }
-        m_enabled = false;
+        CmdPal::m_enabled = false;
     }
 
     // Destroy the powertoy and free memory
@@ -216,7 +216,7 @@ public:
     {
         Logger::trace("CmdPal::enable()");
 
-        m_enabled.store(true);
+        CmdPal::m_enabled.store(true);
 
         std::wstring launchPath = L"shell:AppsFolder\\Microsoft.CommandPalette_8wekyb3d8bbwe!App";
         std::wstring packageName = L"Microsoft.CommandPalette";
@@ -269,7 +269,6 @@ public:
         }
         Logger::trace("Try to launch");
 
-        // Total retry delay would largest be less than 9 min.
         std::thread launchThread(&CmdPal::RetryLaunch, firstEnableCall ? 0 : 9, launchPath);
         launchThread.detach();
 
@@ -281,10 +280,10 @@ public:
         Logger::trace("CmdPal::disable()");
         TerminateCmdPal();
 
-        m_enabled.store(false);
+        CmdPal::m_enabled.store(false);
     }
 
-    void RetryLaunch(int retryCount, std::wstring path)
+    static void RetryLaunch(int retryCount, std::wstring path)
     {
         int attempt = 0;
         const int baseDelayMilliseconds = 1000;
@@ -318,9 +317,12 @@ public:
 
     virtual bool is_enabled() override
     {
-        return m_enabled.load();
+        return CmdPal::m_enabled.load();
     }
 };
+
+std::atomic<bool> CmdPal::m_enabled{ false };
+std::atomic<bool> CmdPal::m_launched{ false };
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
