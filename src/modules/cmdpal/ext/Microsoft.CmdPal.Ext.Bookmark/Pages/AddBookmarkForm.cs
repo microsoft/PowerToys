@@ -86,7 +86,6 @@ internal sealed partial class AddBookmarkForm : FormContent
         // get the name and url out of the values
         var formName = formInput["name"] ?? string.Empty;
         var formBookmark = formInput["bookmark"] ?? string.Empty;
-        var hasPlaceholder = formBookmark.ToString().Contains('{') && formBookmark.ToString().Contains('}');
         var bookmarkTypeString = formInput["bookmarkType"]?.ToString() ?? string.Empty;
 
         // Determine the type of the bookmark

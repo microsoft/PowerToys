@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Bookmarks.Models;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
@@ -20,17 +21,17 @@ public static partial class BookmarkTypeHelper
             new JsonObject
             {
                 ["title"] = "Web",
-                ["value"] = "Web",
+                ["value"] = BookmarkType.Web.ToString(),
             },
             new JsonObject
             {
                 ["title"] = "File",
-                ["value"] = "File",
+                ["value"] = BookmarkType.File.ToString(),
             },
             new JsonObject
             {
                 ["title"] = "Folder",
-                ["value"] = "Folder",
+                ["value"] = BookmarkType.Folder.ToString(),
             },
         };
 
@@ -39,7 +40,7 @@ public static partial class BookmarkTypeHelper
             bookmarkChoices.Add(new JsonObject
             {
                 ["title"] = "pwsh",
-                ["value"] = "PWSH",
+                ["value"] = BookmarkType.PWSH.ToString(),
             });
         }
 
@@ -48,7 +49,7 @@ public static partial class BookmarkTypeHelper
             bookmarkChoices.Add(new JsonObject
             {
                 ["title"] = "Windows PowerShell",
-                ["value"] = "PowerShell",
+                ["value"] = BookmarkType.PowerShell.ToString(),
             });
         }
 
@@ -57,7 +58,7 @@ public static partial class BookmarkTypeHelper
             bookmarkChoices.Add(new JsonObject
             {
                 ["title"] = "Command Prompt",
-                ["value"] = "Cmd",
+                ["value"] = BookmarkType.Cmd.ToString(),
             });
         }
 
@@ -66,7 +67,7 @@ public static partial class BookmarkTypeHelper
             bookmarkChoices.Add(new JsonObject
             {
                 ["title"] = "Python",
-                ["value"] = "python",
+                ["value"] = BookmarkType.Python.ToString(),
             });
         }
 
@@ -75,7 +76,7 @@ public static partial class BookmarkTypeHelper
             bookmarkChoices.Add(new JsonObject
             {
                 ["title"] = "Python3",
-                ["value"] = "python3",
+                ["value"] = BookmarkType.Ptyhon3.ToString(),
             });
         }
 

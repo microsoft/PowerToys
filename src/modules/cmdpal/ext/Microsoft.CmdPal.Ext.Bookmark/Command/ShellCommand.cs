@@ -36,6 +36,9 @@ public sealed partial class ShellCommand : InvokableCommand
         BookmarkName = name;
         BookmarkType = type;
         BookmarkValue = value;
+        Icon = IconHelper.GetIconByType(type);
+
+        Name = name;
 
         // Icon = new IconInfo(IconFromUrl(Value, type));
     }

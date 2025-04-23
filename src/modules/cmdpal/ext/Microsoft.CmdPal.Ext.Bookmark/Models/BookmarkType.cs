@@ -6,7 +6,7 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Models;
 
 public enum BookmarkType
 {
-    Web = 0,
+    Web,
     File,
     Folder,
     PWSH,
