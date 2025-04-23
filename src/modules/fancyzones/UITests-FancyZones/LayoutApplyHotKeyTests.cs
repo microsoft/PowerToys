@@ -516,6 +516,33 @@ namespace Microsoft.FancyZones.UITests
             Assert.IsTrue(Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.Blank])!.Selected);
         }
 
+        [TestMethod]
+        public void TestCreateGridLayoutChangeMonitorSetting()
+        {
+            this.OpenFancyZonesPanel();
+            this.AttachFancyZonesEditor();
+
+            string name = "Custom layout 1";
+            this.Session.Find<Element>(By.AccessibilityId(AccessibilityId.NewLayoutButton)).Click();
+            this.Session.Find<Element>(By.AccessibilityId(AccessibilityId.PrimaryButton)).Click();
+            this.Session.Find<Button>(ElementName.Save).Click();
+
+            // verify new layout presented
+            Assert.IsNotNull(Session.Find<Element>(name));
+            this.CloseFancyZonesEditor();
+
+            int nowHeight = UITestBase.MonitorInfoData.Monitors[UITestBase.MonitorInfoData.Monitors.Count - 1].PelsHeight;
+            int nowWidth = UITestBase.MonitorInfoData.Monitors[UITestBase.MonitorInfoData.Monitors.Count - 1].PelsWidth;
+            int height = UITestBase.MonitorInfoData.Monitors[0].PelsHeight;
+            int width = UITestBase.MonitorInfoData.Monitors[0].PelsWidth;
+            UITestBase.NativeMethods.ChangeDispalyResolution(height, width);
+            this.AttachPowertoySetting();
+            this.AttachFancyZonesEditor();
+            Session.Find<Element>(By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Find(height + " x " + width);
+            this.CloseFancyZonesEditor();
+            UITestBase.NativeMethods.ChangeDispalyResolution(nowHeight, nowWidth);
+        }
+
         private void OpenFancyZonesPanel(bool launchAsAdmin = false)
         {
             var windowingElement = this.Find<NavigationViewItem>("Windowing & Layouts");

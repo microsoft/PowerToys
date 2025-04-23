@@ -28,6 +28,8 @@ namespace Microsoft.PowerToys.UITest
 
         public required Session Session { get; set; }
 
+        public static MonitorInfoData.ParamsWrapper MonitorInfoData { get; set; } = new MonitorInfoData.ParamsWrapper() { Monitors = new List<MonitorInfoData.MonitorInfoDataWrapper>() };
+
         private readonly bool isInPipeline;
         private readonly PowerToysModule scope;
         private readonly WindowSize size;
@@ -43,7 +45,7 @@ namespace Microsoft.PowerToys.UITest
             Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
             if (isInPipeline)
             {
-                NativeMethods.ChangeDispalyResolution();
+                NativeMethods.ChangeDispalyResolution(1920, 1080);
                 NativeMethods.GetMonitorInfo();
 
                 // Escape Popups before starting
@@ -513,6 +515,16 @@ namespace Microsoft.PowerToys.UITest
                     int modeNum = 0;
                     while (EnumDisplaySettings(d.DeviceName, modeNum, ref dm) > 0)
                     {
+                        MonitorInfoData.Monitors.Add(new MonitorInfoData.MonitorInfoDataWrapper()
+                        {
+                            DeviceName = d.DeviceName,
+                            DeviceString = d.DeviceString,
+                            DeviceID = d.DeviceID,
+                            DeviceKey = d.DeviceKey,
+                            PelsWidth = dm.DmPelsWidth,
+                            PelsHeight = dm.DmPelsHeight,
+                            DisplayFrequency = dm.DmDisplayFrequency,
+                        });
                         Console.WriteLine($"  mode {modeNum}: {dm.DmPelsWidth}x{dm.DmPelsHeight} @ {dm.DmDisplayFrequency}Hz");
                         modeNum++;
                     }
@@ -522,10 +534,10 @@ namespace Microsoft.PowerToys.UITest
                 }
             }
 
-            public static void ChangeDispalyResolution()
+            public static void ChangeDispalyResolution(int PelsWidth, int PelsHeight)
             {
                 Screen screen = Screen.PrimaryScreen!;
-                if (screen.Bounds.Width == 1920 && screen.Bounds.Height == 1080)
+                if (screen.Bounds.Width == PelsWidth && screen.Bounds.Height == PelsHeight)
                 {
                     return;
                 }
@@ -542,8 +554,8 @@ namespace Microsoft.PowerToys.UITest
                     modeNum++;
                 }
 
-                devMode.DmPelsWidth = 1920;
-                devMode.DmPelsHeight = 1080;
+                devMode.DmPelsWidth = PelsWidth;
+                devMode.DmPelsHeight = PelsHeight;
 
                 int result = NativeMethods.ChangeDisplaySettings(ref devMode, NativeMethods.CDS_TEST);
 
