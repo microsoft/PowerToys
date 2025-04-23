@@ -138,14 +138,15 @@
             </controls:Case>
             <controls:Case Value="True">
                 <StackPanel
+                    Margin="24"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Orientation="Vertical"
                     Spacing="4">
                     <cpcontrols:IconBox
                         x:Name="IconBorder"
-                        Width="56"
-                        Height="56"
+                        Width="48"
+                        Height="48"
                         Margin="8"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         SourceKey="{x:Bind ViewModel.EmptyContent.Icon, Mode=OneWay}"
@@ -154,11 +155,15 @@
                         Margin="0,4,0,0"
                         HorizontalAlignment="Center"
                         FontWeight="SemiBold"
-                        Text="{x:Bind ViewModel.EmptyContent.Title, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.EmptyContent.Title, Mode=OneWay}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
                     <TextBlock
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="{x:Bind ViewModel.EmptyContent.Subtitle, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.EmptyContent.Subtitle, Mode=OneWay}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
                 </StackPanel>
             </controls:Case>
         </controls:SwitchPresenter>
