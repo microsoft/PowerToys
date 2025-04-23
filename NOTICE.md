@@ -1473,7 +1473,7 @@ SOFTWARE.
 - Microsoft.Windows.CsWinRT 2.2.0
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
 - Microsoft.WindowsAppSDK 1.6.250205002
-- Microsoft.WindowsPackageManager.ComInterop 1.10.120-preview
+- Microsoft.WindowsPackageManager.ComInterop 1.10.340
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
 - Microsoft.Xaml.Behaviors.Wpf 1.1.39
 - ModernWpfUI 0.9.4
