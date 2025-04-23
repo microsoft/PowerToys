@@ -136,7 +136,8 @@ namespace MouseUtils.UITests
                 this.Find<NavigationViewItem>("Input / Output").Click();
             }
 
-            Task.Delay(1000).Wait();
+            // Click on the Mouse utilities
+            Task.Delay(3000).Wait();
             this.Find<NavigationViewItem>("Mouse utilities").Click();
         }
     }

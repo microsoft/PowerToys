@@ -164,8 +164,9 @@ namespace MouseUtils.UITests
             var colorBackground = Session.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
             Assert.AreNotEqual(expectedColor, colorBackground);
 
-            Session.MoveMouseTo(location.Item1 - 300, location.Item2);
-            Task.Delay(1000).Wait();
+            // Drag the mouse
+            Session.MoveMouseTo(location.Item1 - 200, location.Item2);
+            Task.Delay(2000).Wait();
 
             location = Session.GetMousePosition();
             colorLeftClick = Session.GetPixelColorString(location.Item1, location.Item2);
