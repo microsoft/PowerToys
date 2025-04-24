@@ -64,12 +64,10 @@ public static class IconHelper
                     return new IconInfo(faviconUrl);
                 }
             }
-            catch (UriFormatException)
+            catch (UriFormatException ex)
             {
-                // return "🔗";
+                ExtensionHost.LogMessage(new LogMessage() { Message = $"Create Icon failed. {ex}: {ex.Message}" });
             }
-
-            return GetIconByType(bookmarkType);
         }
 
         return GetIconByType(bookmarkType);

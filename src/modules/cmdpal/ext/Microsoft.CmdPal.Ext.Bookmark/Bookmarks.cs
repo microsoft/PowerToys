@@ -42,11 +42,4 @@ public sealed class Bookmarks
 
         File.WriteAllText(BookmarksCommandProvider.StateJsonPath(), jsonString);
     }
-
-    public enum BookmarkType
-    {
-        File,
-        Url,
-        Folder,
-    }
 }
