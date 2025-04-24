@@ -289,21 +289,10 @@ public:
     static void RetryLaunch(bool first_time_launch, std::wstring path)
     {
         const int base_delay_milliseconds = 1000;
-        int max_retry = first_time_launch ? 9 : 1; // 2**9 - 1 seconds. Control total wait time within 10 min.
+        int max_retry = first_time_launch ? 9 : 0; // 2**9 - 1 seconds. Control total wait time within 10 min.
         int retry = 0;
         do
         {
-            if (retry > 0)
-            {
-                int delay = base_delay_milliseconds * (1 << (retry - 1));
-                std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-                if (!m_enabled.load() || m_launched.load())
-                {
-                    Logger::info(L"CmdPal launch cancelled.");
-                    return;
-                }
-            }
-
             auto launch_result = LaunchApp(path, L"RunFromPT", false, retry == max_retry - 1);
             if (launch_result)
             {
@@ -311,11 +300,22 @@ public:
                 return;
             }
 
+            if (retry < max_retry)
+            {
+                // When we got max retry, we don't need to wait for the next retry.
+                int delay = base_delay_milliseconds * (1 << (retry));
+                std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+            }
             ++retry;
-
         } while (retry <= max_retry && m_enabled.load() && !m_launched.load());
 
-        Logger::error(L"CmdPal launch failed after {} retries.", retry);
+        if(!m_enabled.load() || m_launched.load())
+        {
+            Logger::error(L"Retry cancelled. CmdPal is disabled or already launched.");
+        }
+        else{
+            Logger::error(L"CmdPal launch failed after {} retries.", retry);
+        }
     }
 
     virtual bool on_hotkey(size_t) override
