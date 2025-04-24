@@ -133,11 +133,11 @@ namespace MouseUtils.UITests
             if (this.FindAll<NavigationViewItem>("Mouse utilities").Count == 0)
             {
                 // Expand Advanced list-group if needed
-                this.Find<NavigationViewItem>("Input / Output").Click();
+                this.Find<NavigationViewItem>("Input / Output").ClickCenter();
             }
 
             // Click on the Mouse utilities
-            Task.Delay(3000).Wait();
+            Task.Delay(2000).Wait();
             this.Find<NavigationViewItem>("Mouse utilities").Click();
         }
     }
