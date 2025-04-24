@@ -38,7 +38,6 @@ internal sealed partial class AddBookmarkForm : FormContent
             "label": {{JsonSerializer.Serialize(Resources.bookmarks_form_bookmark_type)}},
             "value":  {{JsonSerializer.Serialize(bookmarkType)}},
             "choices": {{bookmarkTypeChoices}},
-            "placeholder": "Placeholder text",
             "id": "bookmarkType",
             "isRequired": true,
             "errorMessage": "{{JsonSerializer.Serialize(Resources.bookmarks_form_bookmarkType_required)}}"
