@@ -92,6 +92,7 @@ namespace UITests_FancyZones
             switch (testName)
             {
                 case "TestShowZonesOnShiftDuringDrag":
+                case "TestShowZonesOnDragDuringShift":
                     useShiftCheckBox.SetCheck(true, 500);
                     useNonPrimaryMouseCheckBox.SetCheck(false, 500);
                     break;
@@ -101,45 +102,60 @@ namespace UITests_FancyZones
         }
 
         /// <summary>
-        /// Test  in the FancyZones
+        /// Test Use Shift key to activate zones while dragging a window in FancyZones Zone Behaviour Settings
         /// <list type="bullet">
         /// <item>
-        /// <description>Validating Adding-entry Button works correctly.</description>
+        /// <description>Verifies that holding Shift while dragging activates zones as expected.</description>
         /// </item>
         /// </list>
         /// </summary>
         [TestMethod]
         public void TestShowZonesOnShiftDuringDrag()
         {
-            // assert the AppZoneHistory layout is set
-            // Start Windows Explorer process
             Session.Attach(powertoysWindowName, WindowSize.Small); // display window1
-            GetOutWindowPixelColor(10);
-
-            Element settingsView = Find<Element>(By.Name("Non Client Input Sink Window"));
-            if (settingsView?.Rect is not { } rect)
-            {
-                throw new InvalidOperationException("Element 'settingsView' does not have a valid Rect. Cannot perform drag operation.");
-            }
-
-            settingsView.DragAndHold(centerX, centerY);
-            var windowRect = this.Session.GetWindowRect();
-            GetOutWindowPixelColor(20);
-
-            // Tests shift work or not
-            Session.PressKey(Key.Shift);
-            string zoneColor = this.Session.GetPixelColorString(checkPositionX, checkPositionY); // Removed trailing whitespace
-
-            // relese mouse and shift key
-            Session.ReleaseKey(Key.Shift);
-            settingsView.ReleaseDrag();
-
-            var intoZonewindowRect = this.Session.GetWindowRect();
-            Assert.AreNotEqual(windowRect, intoZonewindowRect, "Window rects are equal");
-            Console.WriteLine($"intoZonewindowRect: {intoZonewindowRect}");
+            var settingsView = Find<Element>(By.Name("Non Client Input Sink Window"));
+            RunDragInteractions(
+                preAction: () =>
+                {
+                    settingsView.DragAndHold(centerX, centerY);
+                },
+                postAction: () =>
+                {
+                    Session.PressKey(Key.Shift);
+                },
+                releaseAction: () =>
+                {
+                    settingsView.ReleaseDrag();
+                    Session.ReleaseKey(Key.Shift);
+                },
+                testCaseName: nameof(TestShowZonesOnShiftDuringDrag));
         }
 
-        public void GetOutWindowPixelColor(int offset)
+        [TestMethod]
+        public void TestShowZonesOnDragDuringShift()
+        {
+            Session.Attach(powertoysWindowName, WindowSize.Small); // display window1
+            var settingsView = Find<Element>(By.Name("Non Client Input Sink Window"));
+            Session.GetOffset
+            settingsView.Drag(centerX, centerY);
+            RunDragInteractions(
+                preAction: () =>
+                {
+                    Session.PressKey(Key.Shift);
+                },
+                postAction: () =>
+                {
+                    settingsView.DragAndHold(centerX + 20, centerY + 20);
+                    settingsView.DragAndHold(centerX - 20, centerY - 20);
+                },
+                releaseAction: () =>
+                {
+                    Session.ReleaseKey(Key.Shift);
+                },
+                testCaseName: nameof(TestShowZonesOnShiftDuringDrag));
+        }
+
+        public string GetOutWindowPixelColor(int offset)
         {
             var windowRect = this.Session.GetWindowRect(); // Get the window rectangle
             int top = windowRect.Top; // Extract the 'Top' value from the tuple
@@ -148,8 +164,34 @@ namespace UITests_FancyZones
             checkPositionX = left;
             Assert.IsTrue(checkPositionY > minTop, "checkPositionY is not greater than minTop");
 
-            string originalZoneColor = this.Session.GetPixelColorString(checkPositionX, checkPositionY); // Removed trailing whitespace
-            Console.WriteLine($"Original zone color: {originalZoneColor}");
+            string zoneColor = this.Session.GetPixelColorString(checkPositionX, checkPositionY); // Removed trailing whitespace
+            Console.WriteLine($"zone color: {zoneColor}");
+            return zoneColor;
+        }
+
+        public void RunDragInteractions(
+        Action? preAction,
+        Action? postAction,
+        Action? releaseAction,
+        string testCaseName)
+        {
+            preAction?.Invoke();
+
+            // Drag PowerToys Window
+            var windowRectBefore = this.Session.GetWindowRect();
+            string zoneColorBefore = GetOutWindowPixelColor(30);
+
+            postAction?.Invoke();
+            var windowRectpost = this.Session.GetWindowRect();
+            Assert.IsTrue(checkPositionX <= windowRectBefore.Left || checkPositionY < windowRectBefore.Left, $"[{testCaseName}] Window rect did not change.");
+            string zoneColorAfter = this.Session.GetPixelColorString(checkPositionX, checkPositionY);
+            Assert.AreNotEqual(zoneColorBefore, zoneColorAfter, $"[{testCaseName}] Zone color did not change.");
+
+            releaseAction?.Invoke();
+            var windowRectAfter = this.Session.GetWindowRect();
+            Assert.AreNotEqual(windowRectBefore, windowRectAfter, $"[{testCaseName}] Window rect did not change.");
+
+            // Assert the AppZoneHistory layout is set
         }
 
         private bool FindGroup(string groupName)

@@ -191,16 +191,13 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
-        /// <summary>
-        /// Send Key of the element.
-        /// </summary>
-        /// <param name="key">The Key to Send.</param>
-        public void SendKeys(string key)
+        public Tuple<int, int> GetOffset(Element element, int targetX, int targetY)
         {
-            PerformAction((actions, windowElement) =>
-            {
-                windowElement.SendKeys(key);
-            });
+            Assert.IsNotNull(element.Rect, "element is null");
+            int dx = targetX - element.Rect.Value.X;
+            int dy = targetY - element.Rect.Value.Y;
+
+            return Tuple.Create(dx, dy);
         }
 
         public void DragAndHold(int targetX, int targetY)
@@ -224,12 +221,6 @@ namespace Microsoft.PowerToys.UITest
                     stepAction.MoveByOffset(stepX, stepY).Perform();
                 }
             });
-        }
-
-        public void ReleaseDrag()
-        {
-            var releaseAction = new Actions(driver);
-            releaseAction.Release().Perform();
         }
 
         /// <summary>
@@ -407,6 +398,12 @@ namespace Microsoft.PowerToys.UITest
             return this.FindAll<Element>(By.Name(name), timeoutMS);
         }
 
+        public void ReleaseDrag()
+        {
+            var releaseAction = new Actions(driver);
+            releaseAction.Release().Perform();
+        }
+
         /// <summary>
         /// Simulates a manual operation on the element.
         /// </summary>
@@ -439,5 +436,18 @@ namespace Microsoft.PowerToys.UITest
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method SaveToFile with parameter: path = {path}");
             this.windowsElement.GetScreenshot().SaveAsFile(path);
         }
+
+        /// <summary>
+        /// Send Key of the element.
+        /// </summary>
+        /// <param name="key">The Key to Send.</param>
+        public void SendKeys(string key)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                windowElement.SendKeys(key);
+            });
+        }
+
     }
 }
