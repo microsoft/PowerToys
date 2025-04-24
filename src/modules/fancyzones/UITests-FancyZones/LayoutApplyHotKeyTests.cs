@@ -419,21 +419,21 @@ namespace Microsoft.FancyZones.UITests
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
             this.AttachFancyZonesEditor();
             var element = this.Find<Element>("Grid custom layout");
-            Assert.IsFalse(element.Selected, $"{element.Selected} Grid custom layout is not visible");
+            Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num1);
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Grid-9");
-            Assert.IsFalse(element.Selected, $"{element.Selected} Grid-9 is not visible");
+            Assert.IsTrue(element.Selected, $"{element.Selected} Grid-9 is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num2);
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Canvas custom layout");
-            Assert.IsFalse(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
+            Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
         }
@@ -511,6 +511,7 @@ namespace Microsoft.FancyZones.UITests
             this.Find<Element>("Grid custom layout").Click();
             this.Find<Element>("Grid custom layout").Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             Session.Find<Button>(By.AccessibilityId(AccessibilityId.DeleteLayoutButton)).Click();
+            Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the empty layout is selected
             Assert.IsTrue(Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.Blank])!.Selected);
@@ -535,12 +536,12 @@ namespace Microsoft.FancyZones.UITests
             int nowWidth = UITestBase.MonitorInfoData.Monitors[UITestBase.MonitorInfoData.Monitors.Count - 1].PelsWidth;
             int height = UITestBase.MonitorInfoData.Monitors[0].PelsHeight;
             int width = UITestBase.MonitorInfoData.Monitors[0].PelsWidth;
-            UITestBase.NativeMethods.ChangeDispalyResolution(height, width);
+            UITestBase.NativeMethods.ChangeDispalyResolution(width, height);
             this.AttachPowertoySetting();
             this.AttachFancyZonesEditor();
-            Session.Find<Element>(By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Find(height + " x " + width);
+            Session.Find<Element>(By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Find(width + " x " + height);
             this.CloseFancyZonesEditor();
-            UITestBase.NativeMethods.ChangeDispalyResolution(nowHeight, nowWidth);
+            UITestBase.NativeMethods.ChangeDispalyResolution(nowWidth, nowHeight);
         }
 
         private void OpenFancyZonesPanel(bool launchAsAdmin = false)
