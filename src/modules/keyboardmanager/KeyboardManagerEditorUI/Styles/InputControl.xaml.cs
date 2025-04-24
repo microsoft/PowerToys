@@ -28,18 +28,17 @@ namespace KeyboardManagerEditorUI.Styles
 
         private bool _disposed;
 
-        // Define newMode as a DependencyProperty for binding
-        public static readonly DependencyProperty NewModeProperty =
+        public static readonly DependencyProperty InputModeProperty =
             DependencyProperty.Register(
-                "NewMode",
-                typeof(bool),
+                "InputMode",
+                typeof(KeyInputMode),
                 typeof(InputControl),
-                new PropertyMetadata(false, OnNewModeChanged));
+                new PropertyMetadata(KeyInputMode.OriginalKeys));
 
-        public bool NewMode
+        public KeyInputMode InputMode
         {
-            get { return (bool)GetValue(NewModeProperty); }
-            set { SetValue(NewModeProperty, value); }
+            get { return (KeyInputMode)GetValue(InputModeProperty); }
+            set { SetValue(InputModeProperty, value); }
         }
 
         public InputControl()
@@ -66,7 +65,7 @@ namespace KeyboardManagerEditorUI.Styles
 
         public void OnKeyDown(VirtualKey key, List<string> formattedKeys)
         {
-            if (NewMode)
+            if (InputMode == KeyInputMode.RemappedKeys)
             {
                 _remappedKeys.Clear();
                 foreach (var keyName in formattedKeys)
@@ -88,7 +87,7 @@ namespace KeyboardManagerEditorUI.Styles
 
         public void ClearKeys()
         {
-            if (NewMode)
+            if (InputMode == KeyInputMode.RemappedKeys)
             {
                 _remappedKeys.Clear();
             }
@@ -120,7 +119,7 @@ namespace KeyboardManagerEditorUI.Styles
             };
 
             // Target the toggle button that triggered the notification
-            currentNotification.Target = NewMode ? RemappedToggleBtn : OriginalToggleBtn;
+            currentNotification.Target = InputMode == KeyInputMode.RemappedKeys ? RemappedToggleBtn : OriginalToggleBtn;
 
             // Add the notification to the root panel and show it
             if (this.Content is Panel rootPanel)
@@ -161,13 +160,6 @@ namespace KeyboardManagerEditorUI.Styles
                 }
 
                 currentNotification = null;
-            }
-        }
-
-        private static void OnNewModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (d is InputControl control)
-            {
             }
         }
 
@@ -242,7 +234,7 @@ namespace KeyboardManagerEditorUI.Styles
             // Only set NewMode to true if RemappedToggleBtn is checked
             if (RemappedToggleBtn.IsChecked == true)
             {
-                NewMode = true;
+                InputMode = KeyInputMode.RemappedKeys;
 
                 // Make sure OriginalToggleBtn is unchecked
                 if (OriginalToggleBtn.IsChecked == true)
@@ -263,7 +255,7 @@ namespace KeyboardManagerEditorUI.Styles
             // Only set NewMode to false if OriginalToggleBtn is checked
             if (OriginalToggleBtn.IsChecked == true)
             {
-                NewMode = false;
+                InputMode = KeyInputMode.OriginalKeys;
 
                 // Make sure RemappedToggleBtn is unchecked
                 if (RemappedToggleBtn.IsChecked == true)
@@ -418,7 +410,7 @@ namespace KeyboardManagerEditorUI.Styles
                 OriginalToggleBtn.IsChecked = false;
             }
 
-            NewMode = false;
+            InputMode = KeyInputMode.OriginalKeys;
 
             // Reset app name text box
             if (AppNameTextBox != null)
