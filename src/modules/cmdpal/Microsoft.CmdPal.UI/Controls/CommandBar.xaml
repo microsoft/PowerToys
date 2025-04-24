@@ -225,27 +225,42 @@
                 ToolTipService.ToolTip="Ctrl+K"
                 Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
                 <Button.Flyout>
-                    <Flyout Placement="TopEdgeAlignedRight">
-                        <ListView
-                            x:Name="CommandsDropdown"
-                            MinWidth="248"
-                            Margin="-16,-12,-16,-12"
-                            IsItemClickEnabled="True"
-                            ItemClick="CommandsDropdown_ItemClick"
-                            ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
-                            ItemsSource="{x:Bind ViewModel.ContextCommands, Mode=OneWay}"
-                            KeyDown="CommandsDropdown_KeyDown"
-                            SelectionMode="None">
-                            <ListView.ItemContainerStyle>
-                                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                                    <Setter Property="MinHeight" Value="0" />
-                                    <Setter Property="Padding" Value="12,7,12,7" />
-                                </Style>
-                            </ListView.ItemContainerStyle>
-                            <ListView.ItemContainerTransitions>
-                                <TransitionCollection />
-                            </ListView.ItemContainerTransitions>
-                        </ListView>
+                    <Flyout
+                        Closing="Flyout_Closing"
+                        Opened="Flyout_Opened"
+                        Placement="TopEdgeAlignedRight">
+                        <StackPanel>
+
+                            <ListView
+                                x:Name="CommandsDropdown"
+                                MinWidth="248"
+                                Margin="-16,-12,-16,-12"
+                                IsItemClickEnabled="True"
+                                ItemClick="CommandsDropdown_ItemClick"
+                                ItemTemplate="{StaticResource ContextMenuViewModelTemplate}"
+                                ItemsSource="{x:Bind ViewModel.ContextMenu.FilteredItems, Mode=OneWay}"
+                                KeyDown="CommandsDropdown_KeyDown"
+                                SelectionMode="Single">
+                                <ListView.ItemContainerStyle>
+                                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                        <Setter Property="MinHeight" Value="0" />
+                                        <Setter Property="Padding" Value="12,7,12,7" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                                <ListView.ItemContainerTransitions>
+                                    <TransitionCollection />
+                                </ListView.ItemContainerTransitions>
+                            </ListView>
+
+                            <TextBox
+                                x:Name="ContextFilterBox"
+                                x:Uid="ContextFilterBox"
+                                Margin="-12,12,-12,-12"
+                                KeyDown="ContextFilterBox_KeyDown"
+                                PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
+                                TextChanged="ContextFilterBox_TextChanged" />
+
+                        </StackPanel>
                     </Flyout>
                 </Button.Flyout>
             </Button>
