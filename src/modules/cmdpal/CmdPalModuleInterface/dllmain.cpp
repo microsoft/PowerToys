@@ -293,7 +293,7 @@ public:
         int retry = 0;
         do
         {
-            auto launch_result = LaunchApp(path, L"RunFromPT", false, retry == max_retry - 1);
+            auto launch_result = LaunchApp(path, L"RunFromPT", false, retry == max_retry);
             if (launch_result)
             {
                 Logger::info(L"CmdPal launched successfully after {} retries.", retry);
@@ -314,7 +314,7 @@ public:
             Logger::error(L"Retry cancelled. CmdPal is disabled or already launched.");
         }
         else{
-            Logger::error(L"CmdPal launch failed after {} retries.", retry);
+            Logger::error(L"CmdPal launch failed after {} attempts.", retry);
         }
     }
 
