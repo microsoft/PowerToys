@@ -619,7 +619,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Week.
+        ///   Looks up a localized string similar to Current Week; Calendar week; Week of the year; Week.
         /// </summary>
         public static string Microsoft_plugin_timedate_SearchTagWeek {
             get {
@@ -813,33 +813,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hide &apos;Invalid number input&apos; error message on global queries.
-        /// </summary>
-        public static string Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Show only &apos;Time&apos;, &apos;Date&apos; and &apos;Now&apos; result for system time on global queries.
-        /// </summary>
-        public static string Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Regardless of this setting, for global queries the first word of the query has to be a complete match..
-        /// </summary>
-        public static string Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description", resourceCulture);
             }
         }
         

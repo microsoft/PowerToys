@@ -91,23 +91,6 @@ public sealed partial class TimeDateCalculator
             }
         }
 
-        /*htcfreek:Code obsolete with current CmdPal behavior.
-        // If search term is only a number that can't be parsed return an error message
-        if (!isEmptySearchInput && results.Count == 0 && Regex.IsMatch(query, @"\w+\d+.*$") && !query.Any(char.IsWhiteSpace) && (TimeAndDateHelper.IsSpecialInputParsing(query) || !Regex.IsMatch(query, @"\d+[\.:/]\d+")))
-        {
-            // Without plugin key word show only if message is not hidden by setting
-            if (!settings.HideNumberMessageOnGlobalQuery)
-            {
-                var er = ResultHelper.CreateInvalidInputErrorResult();
-                if (!string.IsNullOrEmpty(lastInputParsingErrorMsg))
-                {
-                    er.Details = new Details() { Body = lastInputParsingErrorMsg };
-                }
-
-                results.Add(er);
-            }
-        } */
-
         if (results.Count == 0)
         {
             var er = ResultHelper.CreateInvalidInputErrorResult();

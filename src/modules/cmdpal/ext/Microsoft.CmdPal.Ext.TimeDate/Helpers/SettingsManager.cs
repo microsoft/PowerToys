@@ -93,12 +93,6 @@ public class SettingsManager : JsonSettingsManager
         Resources.Microsoft_plugin_timedate_SettingDateWithWeekday_Description,
         false); // TODO -- double check default value
 
-    private readonly ToggleSetting _hideNumberMessageOnGlobalQuery = new(
-        Namespaced(nameof(HideNumberMessageOnGlobalQuery)),
-        Resources.Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery,
-        Resources.Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery,
-        true); // TODO -- double check default value
-
     private readonly TextSetting _customFormats = new(
         Namespaced(nameof(CustomFormats)),
         Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
@@ -151,8 +145,6 @@ public class SettingsManager : JsonSettingsManager
 
     public bool DateWithWeekday => _dateWithWeekday.Value;
 
-    public bool HideNumberMessageOnGlobalQuery => _hideNumberMessageOnGlobalQuery.Value;
-
     public List<string> CustomFormats => _customFormats.Value.Split(TEXTBOXNEWLINE).ToList();
 
     internal static string SettingsJsonPath()
@@ -167,10 +159,6 @@ public class SettingsManager : JsonSettingsManager
     public SettingsManager()
     {
         FilePath = SettingsJsonPath();
-
-        /* The following two settings make no sense with current CmdPal behavior.
-        Settings.Add(_onlyDateTimeNowGlobal);
-        Settings.Add(_hideNumberMessageOnGlobalQuery); */
 
         Settings.Add(_enableFallbackItems);
         Settings.Add(_timeWithSeconds);
