@@ -41,7 +41,7 @@ public static class IconHelper
             BookmarkType.PWSH => PWSHIcon,
             BookmarkType.PowerShell => PowerShellIcon,
             BookmarkType.Python => PythonIcon,
-            BookmarkType.Ptyhon3 => Python3Icon,
+            BookmarkType.Python3 => Python3Icon,
 
             _ => UrlIcon, // Default icon
         };

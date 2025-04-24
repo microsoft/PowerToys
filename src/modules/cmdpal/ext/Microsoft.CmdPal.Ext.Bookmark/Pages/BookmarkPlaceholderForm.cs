@@ -102,7 +102,7 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
                 case BookmarkType.Cmd:
                 case BookmarkType.PWSH:
                 case BookmarkType.PowerShell:
-                case BookmarkType.Ptyhon3:
+                case BookmarkType.Python3:
                 case BookmarkType.Python:
                     result = ShellCommand.Invoke(target, _bookmarkType);
                     break;

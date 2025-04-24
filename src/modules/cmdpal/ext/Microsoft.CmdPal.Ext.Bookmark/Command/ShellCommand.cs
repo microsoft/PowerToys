@@ -17,7 +17,7 @@ public sealed partial class ShellCommand : InvokableCommand
         { Models.BookmarkType.PWSH, "pwsh.exe" },
         { Models.BookmarkType.PowerShell, "powershell.exe" },
         { Models.BookmarkType.Python, "python.exe" },
-        { Models.BookmarkType.Ptyhon3, "python3.exe" },
+        { Models.BookmarkType.Python3, "python3.exe" },
     };
 
     private Models.BookmarkType BookmarkType { get; }

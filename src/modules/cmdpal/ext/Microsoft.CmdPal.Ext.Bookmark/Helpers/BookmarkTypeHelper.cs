@@ -72,7 +72,7 @@ public static partial class BookmarkTypeHelper
             bookmarkChoices.Add(new JsonObject
             {
                 ["title"] = Resources.bookmarks_form_bookmark_type_Python3,
-                ["value"] = BookmarkType.Ptyhon3.ToString(),
+                ["value"] = BookmarkType.Python3.ToString(),
             });
         }
 
