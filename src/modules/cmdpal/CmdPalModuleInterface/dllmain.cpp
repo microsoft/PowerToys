@@ -271,7 +271,7 @@ public:
 
         Logger::trace("Try to launch");
 
-        std::thread launchThread(&CmdPal::RetryLaunch, firstEnableCall ? 9 : 0, launchPath);
+        std::thread launchThread(&CmdPal::RetryLaunch, firstEnableCall, launchPath);
         launchThread.detach();
 
         firstEnableCall = false;
@@ -285,25 +285,32 @@ public:
         CmdPal::m_enabled.store(false);
     }
 
-    static void RetryLaunch(std::wstring path)
+    static void RetryLaunch(bool first_time_launch, std::wstring path)
     {
         const int base_delay_milliseconds = 1000;
-        const int max_retry_count = 9; // 2**9 - 1 seconds. Control total wait time within 10 min.
-        for (int attempt = 0; attempt < max_retry_count && m_enabled.load() && !m_launched.load(); ++attempt)
+        int max_retry = first_time_launch ? 9 : 1; // 2**9 - 1 seconds. Control total wait time within 10 min.
+        int retry = 0;
+        do
         {
-            auto launchResult = LaunchApp(path, L"RunFromPT", false, attempt == max_retry_count - 1);
-            if (launchResult)
+            if (retry > 0)
             {
-                Logger::info(L"CmdPal launched successfully after {} retries.", attempt);
+                int delay = base_delay_milliseconds * (1 << (retry - 1));
+                std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+            }
+
+            auto launch_result = LaunchApp(path, L"RunFromPT", false, retry == max_retry - 1);
+            if (launch_result)
+            {
+                Logger::info(L"CmdPal launched successfully after {} retries.", retry);
                 m_launched.store(true);
                 return;
             }
 
-            int delay = base_delay_milliseconds * (1 << attempt);
-            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
-        }
+            ++retry;
 
-        Logger::error(L"CmdPal launch failed after {} retries.", max_retry_count);
+        } while (retry <= max_retry && m_enabled.load() && !m_launched.load());
+
+        Logger::error(L"CmdPal launch failed after {} retries.", retry);
     }
 
     virtual bool on_hotkey(size_t) override
