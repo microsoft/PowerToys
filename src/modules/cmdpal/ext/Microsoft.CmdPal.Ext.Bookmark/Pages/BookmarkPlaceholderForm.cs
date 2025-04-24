@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.CmdPal.Ext.Bookmarks.Command;
@@ -63,7 +64,7 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
   "actions": [
     {
       "type": "Action.Submit",
-      "title": "{{Resources.bookmarks_form_open}}",
+      "title": {{JsonSerializer.Serialize(Resources.bookmarks_form_open)}},
       "data": {
         "placeholder": "placeholder"
       }

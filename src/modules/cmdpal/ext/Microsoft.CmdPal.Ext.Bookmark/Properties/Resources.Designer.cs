@@ -142,6 +142,87 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Command Prompt.
+        /// </summary>
+        public static string bookmarks_form_bookmark_type_CMD {
+            get {
+                return ResourceManager.GetString("bookmarks_form_bookmark_type_CMD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File.
+        /// </summary>
+        public static string bookmarks_form_bookmark_type_File {
+            get {
+                return ResourceManager.GetString("bookmarks_form_bookmark_type_File", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder.
+        /// </summary>
+        public static string bookmarks_form_bookmark_type_Folder {
+            get {
+                return ResourceManager.GetString("bookmarks_form_bookmark_type_Folder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerShell.
+        /// </summary>
+        public static string bookmarks_form_bookmark_type_PowerShell {
+            get {
+                return ResourceManager.GetString("bookmarks_form_bookmark_type_PowerShell", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PWSH.
+        /// </summary>
+        public static string bookmarks_form_bookmark_type_PWSH {
+            get {
+                return ResourceManager.GetString("bookmarks_form_bookmark_type_PWSH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Python.
+        /// </summary>
+        public static string bookmarks_form_bookmark_type_Python {
+            get {
+                return ResourceManager.GetString("bookmarks_form_bookmark_type_Python", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Python3.
+        /// </summary>
+        public static string bookmarks_form_bookmark_type_Python3 {
+            get {
+                return ResourceManager.GetString("bookmarks_form_bookmark_type_Python3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Web.
+        /// </summary>
+        public static string bookmarks_form_bookmark_type_web {
+            get {
+                return ResourceManager.GetString("bookmarks_form_bookmark_type_web", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bookmark type is required..
+        /// </summary>
+        public static string bookmarks_form_bookmarkType_required {
+            get {
+                return ResourceManager.GetString("bookmarks_form_bookmarkType_required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name.
         /// </summary>
         public static string bookmarks_form_name_label {

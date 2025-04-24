@@ -6,15 +6,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
-// TODO: move to toolKit?
+// TODO: move to common?
 public class EnvironmentsCache
 {
-    // singleton instance
     private static readonly Lazy<EnvironmentsCache> _instance = new Lazy<EnvironmentsCache>(() => new EnvironmentsCache());
 
     public static EnvironmentsCache Instance => _instance.Value;

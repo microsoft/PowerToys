@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
@@ -25,7 +24,7 @@ internal sealed partial class AddBookmarkForm : FormContent
         _bookmark = bookmark;
         var name = _bookmark?.Name ?? string.Empty;
         var url = _bookmark?.Bookmark ?? string.Empty;
-        var bookmarkType = _bookmark?.Type.ToString() ?? string.Empty;
+        var bookmarkType = _bookmark?.Type.ToString() ?? BookmarkType.Web.ToString();
         var bookmarkTypeChoices = BookmarkTypeHelper.GetBookmarkChoices();
 
         TemplateJson = $$"""
@@ -36,35 +35,37 @@ internal sealed partial class AddBookmarkForm : FormContent
     "body": [
         {
             "type": "Input.ChoiceSet",
-            "label": "{{Resources.bookmarks_form_bookmark_type}}",
+            "label": {{JsonSerializer.Serialize(Resources.bookmarks_form_bookmark_type)}},
             "value":  {{JsonSerializer.Serialize(bookmarkType)}},
             "choices": {{bookmarkTypeChoices}},
             "placeholder": "Placeholder text",
-            "id": "bookmarkType"
+            "id": "bookmarkType",
+            "isRequired": true,
+            "errorMessage": "{{JsonSerializer.Serialize(Resources.bookmarks_form_bookmarkType_required)}}"
         },
         {
             "type": "Input.Text",
             "style": "text",
             "id": "name",
-            "label": "{{Resources.bookmarks_form_name_label}}",
+            "label": {{JsonSerializer.Serialize(Resources.bookmarks_form_name_label)}},
             "value": {{JsonSerializer.Serialize(name)}},
             "isRequired": true,
-            "errorMessage": "{{Resources.bookmarks_form_name_required}}"
+            "errorMessage": "{{JsonSerializer.Serialize(Resources.bookmarks_form_name_required)}}"
         },
         {
             "type": "Input.Text",
             "style": "text",
             "id": "bookmark",
             "value": {{JsonSerializer.Serialize(url)}},
-            "label": "{{Resources.bookmarks_form_bookmark_label}}",
+            "label": {{JsonSerializer.Serialize(Resources.bookmarks_form_bookmark_label)}},
             "isRequired": true,
-            "errorMessage": "{{Resources.bookmarks_form_bookmark_required}}"
+            "errorMessage": "{{JsonSerializer.Serialize(Resources.bookmarks_form_bookmark_required)}}"
         }
     ],
     "actions": [
         {
             "type": "Action.Submit",
-            "title": "{{Resources.bookmarks_form_save}}",
+            "title": {{JsonSerializer.Serialize(Resources.bookmarks_form_save)}},
             "data": {
                 "name": "name",
                 "bookmark": "bookmark"

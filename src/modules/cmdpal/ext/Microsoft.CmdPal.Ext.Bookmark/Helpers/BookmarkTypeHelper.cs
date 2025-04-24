@@ -2,13 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Bookmarks.Models;
+using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
@@ -20,17 +16,17 @@ public static partial class BookmarkTypeHelper
         {
             new JsonObject
             {
-                ["title"] = "Web",
+                ["title"] = Resources.bookmarks_form_bookmark_type_web,
                 ["value"] = BookmarkType.Web.ToString(),
             },
             new JsonObject
             {
-                ["title"] = "File",
+                ["title"] = Resources.bookmarks_form_bookmark_type_File,
                 ["value"] = BookmarkType.File.ToString(),
             },
             new JsonObject
             {
-                ["title"] = "Folder",
+                ["title"] = Resources.bookmarks_form_bookmark_type_Folder,
                 ["value"] = BookmarkType.Folder.ToString(),
             },
         };
@@ -39,7 +35,7 @@ public static partial class BookmarkTypeHelper
         {
             bookmarkChoices.Add(new JsonObject
             {
-                ["title"] = "pwsh",
+                ["title"] = Resources.bookmarks_form_bookmark_type_PWSH,
                 ["value"] = BookmarkType.PWSH.ToString(),
             });
         }
@@ -48,7 +44,7 @@ public static partial class BookmarkTypeHelper
         {
             bookmarkChoices.Add(new JsonObject
             {
-                ["title"] = "Windows PowerShell",
+                ["title"] = Resources.bookmarks_form_bookmark_type_PowerShell,
                 ["value"] = BookmarkType.PowerShell.ToString(),
             });
         }
@@ -57,7 +53,7 @@ public static partial class BookmarkTypeHelper
         {
             bookmarkChoices.Add(new JsonObject
             {
-                ["title"] = "Command Prompt",
+                ["title"] = Resources.bookmarks_form_bookmark_type_CMD,
                 ["value"] = BookmarkType.Cmd.ToString(),
             });
         }
@@ -66,7 +62,7 @@ public static partial class BookmarkTypeHelper
         {
             bookmarkChoices.Add(new JsonObject
             {
-                ["title"] = "Python",
+                ["title"] = Resources.bookmarks_form_bookmark_type_Python,
                 ["value"] = BookmarkType.Python.ToString(),
             });
         }
@@ -75,7 +71,7 @@ public static partial class BookmarkTypeHelper
         {
             bookmarkChoices.Add(new JsonObject
             {
-                ["title"] = "Python3",
+                ["title"] = Resources.bookmarks_form_bookmark_type_Python3,
                 ["value"] = BookmarkType.Ptyhon3.ToString(),
             });
         }

@@ -5,7 +5,6 @@
 using System;
 using Microsoft.CmdPal.Ext.Bookmarks.Models;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.UI.Xaml;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
