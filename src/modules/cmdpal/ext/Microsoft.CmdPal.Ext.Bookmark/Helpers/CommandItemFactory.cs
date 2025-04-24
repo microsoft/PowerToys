@@ -76,7 +76,7 @@ public static partial class CommandItemFactory
 
         List<CommandContextItem> contextMenu = [];
 
-        if (command.Type == BookmarkType.Web)
+        if (command.Type == BookmarkType.Folder)
         {
             contextMenu.Add(
                 new CommandContextItem(new DirectoryPage(command.Url)));
