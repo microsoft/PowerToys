@@ -296,6 +296,11 @@ public:
             {
                 int delay = base_delay_milliseconds * (1 << (retry - 1));
                 std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+                if (!m_enabled.load() || m_launched.load())
+                {
+                    Logger::info(L"CmdPal launch cancelled.");
+                    return;
+                }
             }
 
             auto launch_result = LaunchApp(path, L"RunFromPT", false, retry == max_retry - 1);
