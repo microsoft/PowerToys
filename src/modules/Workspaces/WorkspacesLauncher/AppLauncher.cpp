@@ -122,6 +122,22 @@ namespace AppLauncher
         // usage example: elevated Terminal
         if (!launched && !app.appUserModelId.empty() && !app.packageFullName.empty())
         {
+            Logger::trace(L"Launching {} as {} - {app.packageFullName}", app.name, app.appUserModelId, app.packageFullName);
+            auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
+            if (res.isOk())
+            {
+                launched = true;
+            }
+            else
+            {
+                launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+            }
+        }
+
+        // win32 app with appUserModelId:
+        // usage example: steam games
+        if (!launched && !app.appUserModelId.empty())
+        {
             Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
             auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
             if (res.isOk())

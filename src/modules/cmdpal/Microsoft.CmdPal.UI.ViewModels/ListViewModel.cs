@@ -436,7 +436,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 break;
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);
-                EmptyContent.InitializeProperties();
+                EmptyContent.SlowInitializeProperties();
                 break;
             case nameof(IsLoading):
                 UpdateEmptyContent();
@@ -453,6 +453,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             return;
         }
+
+        UpdateProperty(nameof(EmptyContent));
 
         DoOnUiThread(
            () =>
