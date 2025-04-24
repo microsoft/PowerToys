@@ -72,8 +72,8 @@
         ColumnSpacing="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
         <Grid
@@ -133,6 +133,8 @@
             VerticalAlignment="Center"
             Style="{StaticResource CaptionTextBlockStyle}"
             Text="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}"
+            TextTrimming="CharacterEllipsis"
+            TextWrapping="NoWrap"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}" />
         <StackPanel
             Grid.Column="2"
