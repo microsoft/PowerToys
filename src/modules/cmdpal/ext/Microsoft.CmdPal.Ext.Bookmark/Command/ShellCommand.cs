@@ -58,12 +58,19 @@ public sealed partial class ShellCommand : InvokableCommand
         }
 
         var fullPath = string.Empty;
-        if (!EnvironmentsCache.Instance.TryGetExecutableFileFullPath(bookmarkValue, out fullPath))
+        if (!EnvironmentsCache.Instance.TryGetExecutableFileFullPath(exeFile, out fullPath))
         {
             return CommandResult.ShowToast(new ToastArgs() { Message = "invalid fullPath" });
         }
 
-        if (!OpenInShellHelper.OpenInShell(fullPath, bookmarkValue, null, OpenInShellHelper.ShellRunAsType.None, false))
+        var args = bookmarkValue;
+
+        if (bookmarkType == BookmarkType.Cmd)
+        {
+            args = $"/C {bookmarkValue}";
+        }
+
+        if (!OpenInShellHelper.OpenInShell(fullPath, args, null, OpenInShellHelper.ShellRunAsType.None, false))
         {
             ExtensionHost.LogMessage($"Failed to open {bookmarkValue} in shell.");
             return CommandResult.ShowToast(new ToastArgs() { Message = "Open in shell error." });

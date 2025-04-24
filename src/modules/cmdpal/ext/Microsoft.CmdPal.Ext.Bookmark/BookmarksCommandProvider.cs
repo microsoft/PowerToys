@@ -24,10 +24,6 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     private Bookmarks? _bookmarks;
 
-    public static IconInfo DeleteIcon { get; private set; } = new("\uE74D"); // Delete
-
-    public static IconInfo EditIcon { get; private set; } = new("\uE70F"); // Edit
-
     public BookmarksCommandProvider()
     {
         Id = "Bookmarks";
