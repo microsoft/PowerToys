@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using ManagedCommon;
 
 namespace KeyboardManagerEditorUI.Interop
 {
@@ -21,6 +22,7 @@ namespace KeyboardManagerEditorUI.Interop
             _configHandle = KeyboardManagerInterop.CreateMappingConfiguration();
             if (_configHandle == IntPtr.Zero)
             {
+                Logger.LogError("Failed to create mapping configuration");
                 throw new InvalidOperationException("Failed to create mapping configuration");
             }
 
