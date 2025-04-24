@@ -411,4 +411,7 @@
   <data name="Microsoft_plugin_command_name_sleep" xml:space="preserve">
     <value>Sleep</value>
   </data>
+  <data name="Microsoft_plugin_ext_fallback_display_title" xml:space="preserve">
+    <value>Open System Command</value>
+  </data>
 </root>

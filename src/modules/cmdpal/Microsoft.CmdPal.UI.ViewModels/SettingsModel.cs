@@ -42,6 +42,8 @@ public partial class SettingsModel : ObservableObject
 
     public bool OpenWindowInLastPos { get; set; }
 
+    public bool IgnoreShortcutWhenFullscreen { get; set; } = true;
+
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 
     public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
