@@ -16,19 +16,11 @@ using Windows.System;
 
 namespace KeyboardManagerEditorUI.Styles
 {
-    public sealed partial class InputControl : UserControl, IDisposable
+    public sealed partial class InputControl : UserControl, IDisposable, IKeyboardHookTarget
     {
-        // List to store pressed keys
-        private HashSet<VirtualKey> _currentlyPressedKeys = new HashSet<VirtualKey>();
-
-        // List to store order of remapped keys
-        private List<VirtualKey> _keyPressOrder = new List<VirtualKey>();
-
         // Collection to store original and remapped keys
         private ObservableCollection<string> _originalKeys = new ObservableCollection<string>();
         private ObservableCollection<string> _remappedKeys = new ObservableCollection<string>();
-
-        private HotkeySettingsControlHook? _keyboardHook;
 
         // TeachingTip for notifications
         private TeachingTip? currentNotification;
@@ -72,57 +64,46 @@ namespace KeyboardManagerEditorUI.Styles
             Reset();
         }
 
-        private void InputControl_KeyDown(int key)
+        public void OnKeyDown(VirtualKey key, List<string> formattedKeys)
         {
-            VirtualKey virtualKey = (VirtualKey)key;
-
-            if (_currentlyPressedKeys.Contains(virtualKey))
+            if (NewMode)
             {
-                return;
-            }
-
-            // if no keys are pressed, clear the lists when a new key is pressed
-            if (_currentlyPressedKeys.Count == 0)
-            {
-                if (NewMode)
+                _remappedKeys.Clear();
+                foreach (var keyName in formattedKeys)
                 {
-                    _remappedKeys.Clear();
+                    _remappedKeys.Add(keyName);
                 }
-                else
+            }
+            else
+            {
+                _originalKeys.Clear();
+                foreach (var keyName in formattedKeys)
                 {
-                    _originalKeys.Clear();
+                    _originalKeys.Add(keyName);
                 }
-
-                _keyPressOrder.Clear();
             }
 
-            // Count current modifiers
-            int modifierCount = _currentlyPressedKeys.Count(k => IsModifierKey(k));
+            UpdateAllAppsCheckBoxState();
+        }
 
-            // If adding this key would exceed the limits (4 modifiers + 1 action key), don't add it and show notification
-            if ((IsModifierKey(virtualKey) && modifierCount >= 4) ||
-                (!IsModifierKey(virtualKey) && _currentlyPressedKeys.Count >= 5))
+        public void ClearKeys()
+        {
+            if (NewMode)
             {
-                ShowNotificationTip("Shortcuts can only have up to 4 modifier keys");
-                return;
+                _remappedKeys.Clear();
             }
-
-            // Check if this is a different variant of a modifier key already pressed
-            if (IsModifierKey(virtualKey))
+            else
             {
-                // Remove existing variant of this modifier key if a new one is pressed
-                // This is to ensure that only one variant of a modifier key is displayed at a time
-                RemoveExistingModifierVariant(virtualKey);
-            }
-
-            if (_currentlyPressedKeys.Add(virtualKey))
-            {
-                _keyPressOrder.Add(virtualKey);
-                UpdateKeysDisplay();
+                _originalKeys.Clear();
             }
         }
 
-        private void ShowNotificationTip(string message)
+        public void OnInputLimitReached()
+        {
+            ShowNotificationTip("Shortcuts can only have up to 4 modifier keys");
+        }
+
+        public void ShowNotificationTip(string message)
         {
             // If there's already an active notification, close and remove it first
             CloseExistingNotification();
@@ -183,146 +164,19 @@ namespace KeyboardManagerEditorUI.Styles
             }
         }
 
-        private void RemoveExistingModifierVariant(VirtualKey key)
-        {
-            KeyType keyType = (KeyType)KeyboardManagerInterop.GetKeyType((int)key);
-
-            // No need to remove if the key is an action key
-            if (keyType == KeyType.Action)
-            {
-                return;
-            }
-
-            foreach (var existingKey in _currentlyPressedKeys.ToList())
-            {
-                if (existingKey != key)
-                {
-                    KeyType existingKeyType = (KeyType)KeyboardManagerInterop.GetKeyType((int)existingKey);
-
-                    // Remove the existing key if it is a modifier key and has the same type as the new key
-                    if (existingKeyType == keyType)
-                    {
-                        _currentlyPressedKeys.Remove(existingKey);
-                        _keyPressOrder.Remove(existingKey);
-                    }
-                }
-            }
-        }
-
-        private void InputControl_KeyUp(int key)
-        {
-            VirtualKey virtualKey = (VirtualKey)key;
-
-            if (_currentlyPressedKeys.Remove(virtualKey))
-            {
-                _keyPressOrder.Remove(virtualKey);
-            }
-        }
-
         private static void OnNewModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is InputControl control)
             {
-                // Clear the lists when the mode changes
-                control._currentlyPressedKeys.Clear();
-                control._keyPressOrder.Clear();
             }
-        }
-
-        public void SetKeyboardHook()
-        {
-            CleanupKeyboardHook();
-
-            _keyboardHook = new HotkeySettingsControlHook(
-                InputControl_KeyDown,
-                InputControl_KeyUp,
-                () => true,
-                (key, extraInfo) => true);
         }
 
         public void CleanupKeyboardHook()
         {
-            if (_keyboardHook != null)
-            {
-                _keyboardHook.Dispose();
-                _keyboardHook = null;
-
-                _currentlyPressedKeys.Clear();
-                _keyPressOrder.Clear();
-            }
+            KeyboardHookHelper.Instance.CleanupHook();
         }
 
-        private void UpdateKeysDisplay()
-        {
-            var formattedKeys = GetFormattedKeyList();
-
-            if (NewMode)
-            {
-                _remappedKeys.Clear();
-                foreach (var key in formattedKeys)
-                {
-                    _remappedKeys.Add(key);
-                }
-            }
-            else
-            {
-                _originalKeys.Clear();
-                foreach (var key in formattedKeys)
-                {
-                    _originalKeys.Add(key);
-                }
-
-                UpdateAllAppsCheckBoxState();
-            }
-        }
-
-        private List<string> GetFormattedKeyList()
-        {
-            List<string> keyList = new List<string>();
-            List<VirtualKey> modifierKeys = new List<VirtualKey>();
-            VirtualKey? actionKey = null;
-
-            foreach (var key in _keyPressOrder)
-            {
-                if (!_currentlyPressedKeys.Contains(key))
-                {
-                    continue;
-                }
-
-                if (IsModifierKey(key))
-                {
-                    if (!modifierKeys.Contains(key))
-                    {
-                        modifierKeys.Add(key);
-                    }
-                }
-                else
-                {
-                    actionKey = key;
-                }
-            }
-
-            foreach (var key in modifierKeys)
-            {
-                keyList.Add(GetKeyDisplayName((int)key));
-            }
-
-            if (actionKey.HasValue)
-            {
-                keyList.Add(GetKeyDisplayName((int)actionKey.Value));
-            }
-
-            return keyList;
-        }
-
-        private string GetKeyDisplayName(int keyCode)
-        {
-            var keyName = new System.Text.StringBuilder(64);
-            KeyboardManagerInterop.GetKeyDisplayName(keyCode, keyName, keyName.Capacity);
-            return keyName.ToString();
-        }
-
-        private bool IsModifierKey(VirtualKey key)
+        public bool IsModifierKey(VirtualKey key)
         {
             return key == VirtualKey.Control
                 || key == VirtualKey.LeftControl
@@ -396,7 +250,7 @@ namespace KeyboardManagerEditorUI.Styles
                     OriginalToggleBtn.IsChecked = false;
                 }
 
-                SetKeyboardHook();
+                KeyboardHookHelper.Instance.ActivateHook(this);
             }
             else
             {
@@ -417,7 +271,7 @@ namespace KeyboardManagerEditorUI.Styles
                     RemappedToggleBtn.IsChecked = false;
                 }
 
-                SetKeyboardHook();
+                KeyboardHookHelper.Instance.ActivateHook(this);
             }
         }
 
@@ -549,10 +403,6 @@ namespace KeyboardManagerEditorUI.Styles
 
         public void Reset()
         {
-            // Reset key status
-            _currentlyPressedKeys.Clear();
-            _keyPressOrder.Clear();
-
             // Reset displayed keys
             _originalKeys.Clear();
             _remappedKeys.Clear();

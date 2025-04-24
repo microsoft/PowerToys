@@ -68,7 +68,7 @@ namespace KeyboardManagerEditorUI.Pages
         {
             // Make sure we unregister the handler when the page is unloaded
             UnregisterWindowActivationHandler();
-            RemappingControl.CleanupKeyboardHook();
+            KeyboardHookHelper.Instance.CleanupHook();
         }
 
         private void RegisterWindowActivationHandler()
@@ -98,7 +98,7 @@ namespace KeyboardManagerEditorUI.Pages
             if (args.WindowActivationState == WindowActivationState.Deactivated)
             {
                 // Make sure to cleanup the keyboard hook when the window loses focus
-                RemappingControl.CleanupKeyboardHook();
+                KeyboardHookHelper.Instance.CleanupHook();
 
                 RemappingControl.ResetToggleButtons();
                 RemappingControl.UpdateAllAppsCheckBoxState();
@@ -124,7 +124,7 @@ namespace KeyboardManagerEditorUI.Pages
 
             UnregisterWindowActivationHandler();
 
-            RemappingControl.CleanupKeyboardHook();
+            KeyboardHookHelper.Instance.CleanupHook();
         }
 
         private async void ListView_ItemClick(object sender, ItemClickEventArgs e)
@@ -148,7 +148,7 @@ namespace KeyboardManagerEditorUI.Pages
 
                 UnregisterWindowActivationHandler();
 
-                RemappingControl.CleanupKeyboardHook();
+                KeyboardHookHelper.Instance.CleanupHook();
 
                 // Reset the edit status
                 _isEditMode = false;
