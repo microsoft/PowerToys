@@ -15,12 +15,12 @@ namespace Microsoft.PowerToys.UITest
     /// </summary>
     public class CheckBox : Element
     {
-        private static readonly string ExpectedControlType = "ControlType.Button";
+        private static readonly string ExpectedControlType = "ControlType.CheckBox";
 
         /// Initializes a new instance of the <see cref="CheckBox"/> class.
         public CheckBox()
         {
-            this.TargetControlType = CheckBox.ExpectedControlType;
+            this.TargetControlType = ExpectedControlType;
         }
 
         /// <summary>
@@ -28,50 +28,24 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public bool IsChecked => this.Selected;
 
-        /// <summary>
-        /// Checks the CheckBox if it is not already checked.
-        /// </summary>
-        public void Check()
+        public CheckBox SetCheck(bool value = true, int msPreAction = 500, int msPostAction = 500)
         {
-            if (!IsChecked)
+            if (this.IsChecked != value)
             {
+                if (msPreAction > 0)
+                {
+                    Task.Delay(msPreAction).Wait();
+                }
+
+                // Toggle the switch
                 this.Click();
+                if (msPostAction > 0)
+                {
+                    Task.Delay(msPostAction).Wait();
+                }
             }
-        }
 
-        /// <summary>
-        /// Unchecks the CheckBox if it is currently checked.
-        /// </summary>
-        public void Uncheck()
-        {
-            if (IsChecked)
-            {
-                this.Click();
-            }
-        }
-
-        /// <summary>
-        /// Toggles the CheckBox (check if unchecked, uncheck if checked).
-        /// </summary>
-        public void Toggle()
-        {
-            this.Click();
-        }
-
-        /// <summary>
-        /// Sets the CheckBox to a specific checked state.
-        /// </summary>
-        /// <param name="value">True to check, false to uncheck.</param>
-        public void SetChecked(bool value)
-        {
-            if (value)
-            {
-                this.Check();
-            }
-            else
-            {
-                this.Uncheck();
-            }
+            return this;
         }
     }
 }

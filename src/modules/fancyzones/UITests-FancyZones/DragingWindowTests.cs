@@ -23,7 +23,7 @@ using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
-namespace Microsoft.FancyZones.UITests
+namespace UITests_FancyZones
 {
     [TestClass]
     public class DragingWindowTests : UITestBase
@@ -60,17 +60,7 @@ namespace Microsoft.FancyZones.UITests
             int tries = 5;
             Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
             bool switchWindowEnable = TestContext.TestName == "TestSwitchShortCutDisable" ? false : true;
-
-            this.Find<ToggleSwitch>("Switch between windows in the current zone").Toggle(switchWindowEnable);
-            Task.Delay(500).Wait(); // Wait for the setting to be applied
-            Pull(tries, "up"); // Pull the setting page down to make sure the setting is visible
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click();
-            Task.Delay(2000).Wait();
-            this.Session.Attach(PowerToysModule.FancyZone);
-            this.Find<Element>(By.Name("Custom Column")).Click();
-            this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
             this.RestartScopeExe();
-
         }
 
         /// <summary>
@@ -114,6 +104,15 @@ namespace Microsoft.FancyZones.UITests
         [TestMethod]
         public void TestMakeDraggedWindowTransparentOff()
         {
+        }
+
+        private void Pull(int tries = 5, string direction = "up")
+        {
+            Key keyToSend = direction == "up" ? Key.Up : Key.Down;
+            for (int i = 0; i < tries; i++)
+            {
+                SendKeys(keyToSend);
+            }
         }
 
         private static readonly CustomLayouts.CustomLayoutListWrapper CustomLayoutsList = new CustomLayouts.CustomLayoutListWrapper

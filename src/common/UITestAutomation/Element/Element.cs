@@ -203,6 +203,35 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
+        public void DragAndHold(int targetX, int targetY)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                actions.MoveToElement(windowElement)
+                       .ClickAndHold()
+                       .Perform();
+
+                int dx = targetX - windowElement.Rect.X;
+                int dy = targetY - windowElement.Rect.Y;
+
+                int stepCount = 10;
+                int stepX = dx / stepCount;
+                int stepY = dy / stepCount;
+
+                for (int i = 0; i < stepCount; i++)
+                {
+                    var stepAction = new Actions(driver);
+                    stepAction.MoveByOffset(stepX, stepY).Perform();
+                }
+            });
+        }
+
+        public void ReleaseDrag()
+        {
+            var releaseAction = new Actions(driver);
+            releaseAction.Release().Perform();
+        }
+
         /// <summary>
         /// Simulates holding a key, clicking and dragging a UI element to the specified screen coordinates.
         /// </summary>

@@ -41,6 +41,9 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
+            // get PowerToys window Name
+            powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
+
             // set a custom layout with 2 subzones
             CustomLayouts customLayouts = new CustomLayouts();
             CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = CustomLayoutsList;
@@ -67,8 +70,7 @@ namespace UITests_FancyZones
             this.Find<ToggleSwitch>("Switch between windows in the current zone").Toggle(switchWindowEnable);
             Task.Delay(500).Wait(); // Wait for the setting to be applied
             Pull(tries, "up"); // Pull the setting page down to make sure the setting is visible
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click();
-            Task.Delay(2000).Wait();
+            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 2000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Element>(By.Name("Custom Column")).Click();
             this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
@@ -169,8 +171,7 @@ namespace UITests_FancyZones
 
             // Attach the PowerToys settings window to the front
             Session.Attach(powertoysWindowName, WindowSize.UnSpecified);
-            string name = "Non Client Input Sink Window";
-            Element settingsView = Find<Element>(By.Name(name));
+            Element settingsView = Find<Element>(By.Name("Non Client Input Sink Window"));
             settingsView.DoubleClick(); // maximize the window
             settingsView.KeyDownAndDrag(Key.Shift, targetX, targetY);
 
@@ -180,7 +181,7 @@ namespace UITests_FancyZones
             Assert.AreEqual(
                 ZoneSwitchHelper.GetZoneIndexSetByAppName(windowName, appZoneHistoryJson),
                 ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson));
-        }
+            }
 
         private static readonly CustomLayouts.CustomLayoutListWrapper CustomLayoutsList = new CustomLayouts.CustomLayoutListWrapper
         {
@@ -206,7 +207,7 @@ namespace UITests_FancyZones
             },
         };
 
-        private void Scroll(int tries = 5, string direction = "up")
+        private void Pull(int tries = 5, string direction = "up")
         {
             Key keyToSend = direction == "up" ? Key.Up : Key.Down;
             for (int i = 0; i < tries; i++)
