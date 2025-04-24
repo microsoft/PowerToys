@@ -74,6 +74,7 @@ private:
             return false;
         }
 
+        m_launched.store(true);
         return true;
     }
 
@@ -307,7 +308,6 @@ public:
             if (launch_result)
             {
                 Logger::info(L"CmdPal launched successfully after {} retries.", retry);
-                m_launched.store(true);
                 return;
             }
 
