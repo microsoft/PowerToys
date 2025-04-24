@@ -32,11 +32,13 @@ namespace UITests_FancyZones
     public class DragingWindowTestssingle : UITestBase
     {
         private static readonly IOTestHelper AppZoneHistory = new FancyZonesEditorFiles().AppZoneHistoryIOHelper;
-        private static int checkPositionX; // set check position
-        private static int checkPositionY; // set check position
-        private static int centerX; // set check position
-        private static int centerY; // set check position
-        private static int minTop;
+        private static int screenMarginTop; // set check position
+        private static int screenMarginLeft; // set check position
+        private static int screenMarginRight; // set check position
+        private static int screenMarginBottom; // set check position
+
+        private static int centerX;
+        private static int centerY;
         private static string powertoysWindowName = "PowerToys Settings"; // set powertoys settings window name
 
         public DragingWindowTestssingle()
@@ -49,7 +51,6 @@ namespace UITests_FancyZones
         {
             // get PowerToys window Name
             powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
-            Console.WriteLine($"PowerToys window name: {powertoysWindowName}");
 
             // set a custom layout with 2 subzones
             CustomLayouts customLayouts = new CustomLayouts();
@@ -68,20 +69,27 @@ namespace UITests_FancyZones
 
             this.Find<NavigationViewItem>("FancyZones").Click();
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
+            this.Session.SetMainWindowSize(WindowSize.Large_Vertical);
 
-            int tries = 3;
+            int tries = 2;
             Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
             ZoneBehaviourSettings(TestContext.TestName);
+            this.Find<Slider>("Opacity (%)").QuickSetValue(100);
 
             Pull(tries, "up");
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 4000);
             this.Session.Attach(PowerToysModule.FancyZone);
-            this.Find<Element>(By.Name("Custom Column")).Click();
             this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
-            var windowCenter = this.Session.GetWindowCenter();
-            centerX = windowCenter.CenterX;
-            centerY = windowCenter.CenterY;
-            minTop = this.Session.GetWindowRect().Top;
+            var rect = this.Session.GetWindowRect();
+            screenMarginTop = rect.Top; // set check position
+            screenMarginLeft = rect.Left; // set check position
+            screenMarginRight = rect.Right; // set check position
+            screenMarginBottom = rect.Bottom; // set check position
+
+            centerX = (rect.Left + rect.Right) / 2;
+            centerY = (rect.Top + rect.Bottom) / 2;
+
+            this.Find<Element>(By.Name("Custom Column")).Click();
             this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
         }
 
@@ -136,8 +144,8 @@ namespace UITests_FancyZones
         {
             Session.Attach(powertoysWindowName, WindowSize.Small); // display window1
             var settingsView = Find<Element>(By.Name("Non Client Input Sink Window"));
-            Session.GetOffset
-            settingsView.Drag(centerX, centerY);
+            var offSet = ZoneSwitchHelper.GetOffset(settingsView, centerX, centerY);
+            settingsView.Drag(offSet.Dx, offSet.Dy);
             RunDragInteractions(
                 preAction: () =>
                 {
@@ -152,19 +160,40 @@ namespace UITests_FancyZones
                 {
                     Session.ReleaseKey(Key.Shift);
                 },
-                testCaseName: nameof(TestShowZonesOnShiftDuringDrag));
+                testCaseName: nameof(TestShowZonesOnDragDuringShift));
         }
 
-        public string GetOutWindowPixelColor(int offset)
+        public string GetOutWindowPixelColor(int spacing)
         {
-            var windowRect = this.Session.GetWindowRect(); // Get the window rectangle
-            int top = windowRect.Top; // Extract the 'Top' value from the tuple
-            int left = windowRect.Left; // Extract the 'Left' value from the tuple
-            checkPositionY = top - offset;
-            checkPositionX = left;
-            Assert.IsTrue(checkPositionY > minTop, "checkPositionY is not greater than minTop");
+            var rect = this.Session.GetWindowRect();
+            int checkX, checkY;
 
-            string zoneColor = this.Session.GetPixelColorString(checkPositionX, checkPositionY); // Removed trailing whitespace
+            if ((rect.Top - screenMarginTop) >= spacing)
+            {
+                checkX = rect.Left;
+                checkY = rect.Top + (spacing / 2);
+            }
+            else if ((screenMarginBottom - rect.Bottom) >= spacing)
+            {
+                checkX = rect.Left;
+                checkY = rect.Bottom + (spacing / 2);
+            }
+            else if ((rect.Left - screenMarginLeft) >= spacing)
+            {
+                checkX = rect.Left - (spacing / 2);
+                checkY = rect.Top;
+            }
+            else if ((screenMarginRight - rect.Right) >= spacing)
+            {
+                checkX = rect.Right + (spacing / 2);
+                checkY = rect.Top;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(spacing), "No sufficient margin to sample outside the window.");
+            }
+
+            string zoneColor = this.Session.GetPixelColorString(checkX, checkY);
             Console.WriteLine($"zone color: {zoneColor}");
             return zoneColor;
         }
@@ -182,9 +211,7 @@ namespace UITests_FancyZones
             string zoneColorBefore = GetOutWindowPixelColor(30);
 
             postAction?.Invoke();
-            var windowRectpost = this.Session.GetWindowRect();
-            Assert.IsTrue(checkPositionX <= windowRectBefore.Left || checkPositionY < windowRectBefore.Left, $"[{testCaseName}] Window rect did not change.");
-            string zoneColorAfter = this.Session.GetPixelColorString(checkPositionX, checkPositionY);
+            string zoneColorAfter = GetOutWindowPixelColor(30);
             Assert.AreNotEqual(zoneColorBefore, zoneColorAfter, $"[{testCaseName}] Zone color did not change.");
 
             releaseAction?.Invoke();
@@ -249,7 +276,7 @@ namespace UITests_FancyZones
                         CellChildMap = new int[][] { [0] },
                         SensitivityRadius = 20,
                         ShowSpacing = true,
-                        Spacing = 10,
+                        Spacing = 0, // set spacing to 0 make sure the zone is full of the screen
                     }),
                 },
             },

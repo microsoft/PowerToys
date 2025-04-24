@@ -10,6 +10,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.PowerToys.UITest;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.FancyZones.UITests.Utils
 {
@@ -70,6 +72,13 @@ namespace Microsoft.FancyZones.UITests.Utils
                 // Handle the error if needed
                 throw new InvalidOperationException("Failed to get window title.");
             }
+        }
+
+        public static (int Dx, int Dy) GetOffset(Element element, int targetX, int targetY)
+        {
+            Assert.IsNotNull(element.Rect, "element is null");
+            var rect = element.Rect.Value;
+            return (targetX - rect.X, targetY - rect.Y);
         }
     }
 }

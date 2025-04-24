@@ -191,15 +191,6 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
-        public Tuple<int, int> GetOffset(Element element, int targetX, int targetY)
-        {
-            Assert.IsNotNull(element.Rect, "element is null");
-            int dx = targetX - element.Rect.Value.X;
-            int dy = targetY - element.Rect.Value.Y;
-
-            return Tuple.Create(dx, dy);
-        }
-
         public void DragAndHold(int targetX, int targetY)
         {
             PerformAction((actions, windowElement) =>
@@ -448,6 +439,5 @@ namespace Microsoft.PowerToys.UITest
                 windowElement.SendKeys(key);
             });
         }
-
     }
 }
