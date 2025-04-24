@@ -9,6 +9,7 @@ using Microsoft.CmdPal.Ext.Bookmarks.Models;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Diagnostics.Utilities;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
@@ -113,6 +114,8 @@ public static partial class CommandItemFactory
         var listItem = new CommandItem(invokableCommand) { Icon = invokableCommand.Icon };
 
         List<CommandContextItem> contextMenu = [];
+
+        listItem.Subtitle = invokableCommand.BookmarkValue;
 
         var edit = new AddBookmarkPage(bookmark) { Icon = IconHelper.EditIcon };
         edit.AddedCommand += addBookmarkFunc;

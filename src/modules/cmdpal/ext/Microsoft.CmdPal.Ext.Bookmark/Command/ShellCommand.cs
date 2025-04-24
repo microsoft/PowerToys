@@ -24,7 +24,7 @@ public sealed partial class ShellCommand : InvokableCommand
 
     private string BookmarkName { get; }
 
-    private string BookmarkValue { get; }
+    public string BookmarkValue { get; }
 
     public ShellCommand(BookmarkData data)
         : this(data.Name, data.Bookmark, data.Type)
