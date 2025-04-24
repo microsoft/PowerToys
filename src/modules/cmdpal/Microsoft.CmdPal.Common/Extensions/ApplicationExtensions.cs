@@ -10,7 +10,7 @@ namespace Microsoft.CmdPal.Common.Extensions;
 /// <summary>
 /// Extension class implementing extension methods for <see cref="Application"/>.
 /// </summary>
-public static class ApplicationExtensions
+public static partial class ApplicationExtensions
 {
     /// <summary>
     /// Get registered services at the application level from anywhere in the

@@ -4,7 +4,7 @@
 
 namespace Microsoft.CmdPal.Common.Models;
 
-public class LocalSettingsOptions
+public partial class LocalSettingsOptions
 {
     public string? ApplicationDataFolder
     {
