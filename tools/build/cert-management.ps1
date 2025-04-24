@@ -117,3 +117,43 @@ function EnsureCertificate {
 
     return $cert
 }
+
+function Export-CertificateFiles {
+    param (
+        [System.Security.Cryptography.X509Certificates.X509Certificate2]$Certificate,
+        [string]$CerPath,
+        [string]$PfxPath,
+        [securestring]$PfxPassword
+    )
+
+    if (-not $Certificate) {
+        Write-Error "No certificate provided to export."
+        return
+    }
+
+    if ($CerPath) {
+        try {
+            Export-Certificate -Cert $Certificate -FilePath $CerPath -Force | Out-Null
+            Write-Host "Exported CER to: $CerPath"
+        } catch {
+            Write-Warning "Failed to export CER file: $_"
+        }
+    }
+
+    if ($PfxPath -and $PfxPassword) {
+        try {
+            Export-PfxCertificate -Cert $Certificate -FilePath $PfxPath -Password $PfxPassword -Force | Out-Null
+            Write-Host "Exported PFX to: $PfxPath"
+        } catch {
+            Write-Warning "Failed to export PFX file: $_"
+        }
+    }
+
+    if (-not $CerPath -and -not $PfxPath) {
+        Write-Warning "No output path specified. Nothing was exported."
+    }
+}
+
+$cert = EnsureCertificate
+$pswd = ConvertTo-SecureString -String "MySecurePassword123!" -AsPlainText -Force
+Export-CertificateFiles -Certificate $cert -CerPath "$env:TEMP\cert.cer" -PfxPath "$env:TEMP\cert.pfx" -PfxPassword $pswd
