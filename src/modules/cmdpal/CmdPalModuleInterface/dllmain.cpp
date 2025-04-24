@@ -149,7 +149,7 @@ public:
         if (CmdPal::m_enabled)
         {
         }
-        CmdPal::m_enabled = false;
+        CmdPal::m_enabled.store(false);
     }
 
     // Destroy the powertoy and free memory
@@ -223,12 +223,12 @@ public:
 
 #ifdef _DEBUG
         packageName = L"Microsoft.CommandPalette.Dev";
-        launchPath = L"Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App";
+        launchPath = L"shell:AppsFolder\\Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App";
 #endif
 
-        try
+        if (!package::GetRegisteredPackage(packageName, false).has_value())
         {
-            if (!package::GetRegisteredPackage(packageName, false).has_value())
+            try
             {
                 Logger::info(L"CmdPal not installed. Installing...");
 
@@ -255,21 +255,23 @@ public:
                     }
                 }
             }
-        }
-        catch (std::exception& e)
-        {
-            std::string errorMessage{ "Exception thrown while trying to install CmdPal package: " };
-            errorMessage += e.what();
-            Logger::error(errorMessage);
+            catch (std::exception& e)
+            {
+                std::string errorMessage{ "Exception thrown while trying to install CmdPal package: " };
+                errorMessage += e.what();
+                Logger::error(errorMessage);
+            }
         }
 
         if (!package::GetRegisteredPackage(packageName, false).has_value())
         {
-            Logger::trace("Cmdpal is not registered, quit..");
+            Logger::error("Cmdpal is not registered, quit..");
+            return;
         }
+
         Logger::trace("Try to launch");
 
-        std::thread launchThread(&CmdPal::RetryLaunch, firstEnableCall ? 0 : 9, launchPath);
+        std::thread launchThread(&CmdPal::RetryLaunch, firstEnableCall ? 9 : 0, launchPath);
         launchThread.detach();
 
         firstEnableCall = false;
