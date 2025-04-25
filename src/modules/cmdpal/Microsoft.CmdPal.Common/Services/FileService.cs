@@ -2,14 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.CmdPal.Common.Contracts;
+using Microsoft.CmdPal.Common.JsonSerilizerContext;
 
 namespace Microsoft.CmdPal.Common.Services;
 
-public class FileService : IFileService
+public partial class FileService : IFileService
 {
     private static readonly Encoding _encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
@@ -20,7 +23,14 @@ public class FileService : IFileService
         if (File.Exists(path))
         {
             using var fileStream = File.OpenText(path);
-            return JsonSerializer.Deserialize<T>(fileStream.BaseStream);
+
+            JsonTypeInfo<T>? typeInfo = (JsonTypeInfo<T>?)CommonSerializationContext.Default.GetTypeInfo(typeof(T));
+            if (typeInfo == null)
+            {
+                throw new InvalidOperationException($"Type {typeof(T)} is not supported for deSerialization.");
+            }
+
+            return JsonSerializer.Deserialize<T>(fileStream.BaseStream, typeInfo);
         }
 
         return default;
@@ -34,7 +44,13 @@ public class FileService : IFileService
             Directory.CreateDirectory(folderPath);
         }
 
-        var fileContent = JsonSerializer.Serialize(content);
+        JsonTypeInfo<T>? typeInfo = (JsonTypeInfo<T>?)CommonSerializationContext.Default.GetTypeInfo(typeof(T));
+        if (typeInfo == null)
+        {
+            throw new InvalidOperationException($"Type {typeof(T)} is not supported for serialization.");
+        }
+
+        var fileContent = JsonSerializer.Serialize(content, typeInfo);
         File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, _encoding);
     }
 
