@@ -9,7 +9,7 @@ using Microsoft.UI.Dispatching;
 
 namespace Microsoft.CmdPal.Common.Helpers;
 
-public static class NativeEventWaiter
+public static partial class NativeEventWaiter
 {
     public static void WaitForEventLoop(string eventName, Action callback)
     {

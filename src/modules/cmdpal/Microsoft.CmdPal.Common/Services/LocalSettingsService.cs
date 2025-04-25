@@ -14,7 +14,7 @@ using Windows.Storage;
 
 namespace Microsoft.CmdPal.Common.Services;
 
-public class LocalSettingsService : ILocalSettingsService
+public partial class LocalSettingsService : ILocalSettingsService
 {
     // TODO! for now, we're hardcoding the path as effectively:
     // %localappdata%\CmdPal\LocalSettings.json
