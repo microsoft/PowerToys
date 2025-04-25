@@ -219,10 +219,9 @@ public:
 
         CmdPal::m_enabled.store(true);
 
-        std::wstring launchPath = L"shell:AppsFolder\\Microsoft.CommandPalette_8wekyb3d8bbwe!App";
         std::wstring packageName = L"Microsoft.CommandPalette";
-
-#ifdef _DEBUG
+        std::wstring launchPath = L"shell:AppsFolder\\Microsoft.CommandPalette_8wekyb3d8bbwe!App";
+#ifdef IS_DEV_BRANDING
         packageName = L"Microsoft.CommandPalette.Dev";
         launchPath = L"shell:AppsFolder\\Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App";
 #endif
@@ -272,8 +271,16 @@ public:
 
         Logger::trace("Try to launch");
 
-        std::thread launchThread(&CmdPal::RetryLaunch, firstEnableCall, launchPath);
-        launchThread.detach();
+        if (firstEnableCall)
+        {
+            LaunchApp(launchPath, L"RunFromPT", false /*no elevated*/, false /*error pop up*/);
+        }
+        else
+        {
+            // If not first time enable, do retry launch.
+            std::thread launchThread(&CmdPal::RetryLaunch, launchPath);
+            launchThread.detach();
+        }
 
         firstEnableCall = false;
     }
@@ -286,10 +293,10 @@ public:
         CmdPal::m_enabled.store(false);
     }
 
-    static void RetryLaunch(bool first_time_launch, std::wstring path)
+    static void RetryLaunch(std::wstring path)
     {
         const int base_delay_milliseconds = 1000;
-        int max_retry = first_time_launch ? 9 : 0; // 2**9 - 1 seconds. Control total wait time within 10 min.
+        int max_retry = 9; // 2**9 - 1 seconds. Control total wait time within 10 min.
         int retry = 0;
         do
         {
@@ -300,20 +307,21 @@ public:
                 return;
             }
 
+            // When we got max retry, we don't need to wait for the next retry.
             if (retry < max_retry)
             {
-                // When we got max retry, we don't need to wait for the next retry.
                 int delay = base_delay_milliseconds * (1 << (retry));
                 std::this_thread::sleep_for(std::chrono::milliseconds(delay));
             }
             ++retry;
         } while (retry <= max_retry && m_enabled.load() && !m_launched.load());
 
-        if(!m_enabled.load() || m_launched.load())
+        if (!m_enabled.load() || m_launched.load())
         {
             Logger::error(L"Retry cancelled. CmdPal is disabled or already launched.");
         }
-        else{
+        else
+        {
             Logger::error(L"CmdPal launch failed after {} attempts.", retry);
         }
     }
