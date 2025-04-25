@@ -142,6 +142,47 @@ namespace ManagedCommon
         }
 
         /// <summary>
+        /// Convert a given <see cref="Color"/> to a CIE LCh color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>The lightness [0..100], the chroma [0..150], and the hue angle [0°..360°]</returns>
+        public static (double Lightness, double Chroma, double Hue) ConvertToCIELCHColor(Color color)
+        {
+            var xyz = ConvertToCIEXYZColor(color);
+            var lab = GetCIELABColorFromCIEXYZ(xyz.X, xyz.Y, xyz.Z);
+            var lch = GetCIELCHColorFromCIELAB(lab.Lightness, lab.ChromaticityA, lab.ChromaticityB);
+
+            return lch;
+        }
+
+        /// <summary>
+        /// Convert a given <see cref="Color"/> to a Oklab color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>The perceptual lightness [0..1] and two chromaticities [-0.5..0.5]</returns>
+        public static (double Lightness, double ChromaticityA, double ChromaticityB) ConvertToOklabColor(Color color)
+        {
+            var xyz = ConvertToCIEXYZColor(color);
+            var oklab = GetOklabColorFromCIEXYZ(xyz.X, xyz.Y, xyz.Z);
+
+            return oklab;
+        }
+
+        /// <summary>
+        /// Convert a given <see cref="Color"/> to a Oklch color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>The perceptual lightness [0..1], the chroma [0..0.5], and the hue angle [0°..360°]</returns>
+        public static (double Lightness, double Chroma, double Hue) ConvertToOklchColor(Color color)
+        {
+            var xyz = ConvertToCIEXYZColor(color);
+            var oklab = GetOklabColorFromCIEXYZ(xyz.X, xyz.Y, xyz.Z);
+            var oklch = GetOklchColorFromOklab(oklab.Lightness, oklab.ChromaticityA, oklab.ChromaticityB);
+
+            return oklch;
+        }
+
+        /// <summary>
         /// Convert a given <see cref="Color"/> to a CIE XYZ color (XYZ)
         /// The constants of the formula matches this Wikipedia page, but at a higher precision:
         /// https://en.wikipedia.org/wiki/SRGB#The_reverse_transformation_(sRGB_to_CIE_XYZ)
@@ -211,6 +252,106 @@ namespace ManagedCommon
         }
 
         /// <summary>
+        /// Convert a CIE LAB color <see cref="double"/> from Cartesian form to its polar form CIE LCh
+        /// https://en.wikipedia.org/wiki/CIELAB_color_space#Cylindrical_model
+        /// </summary>
+        /// <param name="lightness">The <see cref="lightness"/></param>
+        /// <param name="chromaticity_a">The <see cref="chromaticity_a"/></param>
+        /// <param name="chromaticity_b">The <see cref="chromaticity_b"/></param>
+        /// <returns>The lightness [0..100], the chroma [0..150], and the hue angle [0°..360°]</returns>C
+        private static (double Lightness, double Chroma, double Hue)
+            GetCIELCHColorFromCIELAB(double lightness, double chromaticity_a, double chromaticity_b)
+        {
+            // Lab to LCh transformation
+            double chroma = Math.Sqrt(Math.Pow(chromaticity_a, 2) + Math.Pow(chromaticity_b, 2));
+            double hue = ((Math.Atan2(chromaticity_b, chromaticity_a) * (180 / Math.PI)) + 360) % 360;
+            return (lightness, chroma, hue);
+        }
+
+        /// <summary>
+        /// Convert a CIE XYZ color <see cref="double"/> to an Oklab adapted to sRGB D65 white point
+        /// The constants of the formula used come from this blog post:
+        /// https://bottosson.github.io/posts/oklab/
+        /// </summary>
+        /// <param name="x">The <see cref="x"/> represents a mix of the three CIE RGB curves</param>
+        /// <param name="y">The <see cref="y"/> represents the luminance</param>
+        /// <param name="z">The <see cref="z"/> is quasi-equal to blue (of CIE RGB)</param>
+        /// <returns>The perceptual lightness [0..1] and two chromaticities [-0.5..0.5]</returns>
+        private static (double Lightness, double ChromaticityA, double ChromaticityB)
+            GetOklabColorFromCIEXYZ(double x, double y, double z)
+        {
+            static double[] MatrixVectorMultiply(double[,] matrix, double[] vector)
+            {
+                double[] result = new double[vector.Length];
+                for (int i = 0; i < matrix.GetLength(0); i++)
+                {
+                    double sum = 0;
+                    for (int j = 0; j < matrix.GetLength(1); j++)
+                    {
+                        sum += matrix[i, j] * vector[j];
+                    }
+
+                    result[i] = sum;
+                }
+
+                return result;
+            }
+
+            static double[] VectorPower(double[] vector, double power)
+            {
+                for (int i = 0; i < vector.Length; i++)
+                {
+                    vector[i] = Math.Pow(vector[i], power);
+                }
+
+                return vector;
+            }
+
+            // Matrix constants
+            double[,] xyz_to_lms = new double[3, 3]
+            {
+                { 0.8189330101, 0.3618667424, -0.1288597137 },
+                { 0.0329845436, 0.9293118715, 0.0361456387 },
+                { 0.0482003018, 0.2643662691, 0.6338517070 },
+            };
+            double[,] lms_to_lab = new double[3, 3]
+            {
+                { 0.2104542553, 0.7936177850, -0.0040720468 },
+                { 1.9779984951, -2.4285922050, 0.4505937099 },
+                { 0.0259040371, 0.7827717662, -0.8086757660 },
+            };
+
+            double[] vec = new double[3] { x, y, z };
+
+            // Convert XYZ coordinates to approximate cone responses
+            double[] lms = MatrixVectorMultiply(xyz_to_lms, vec);
+
+            // Apply non-linearity
+            double[] lms_prime = VectorPower(lms, 1 / 3.0);
+
+            // Transform to Lab coordinates
+            double[] lab = MatrixVectorMultiply(lms_to_lab, lms_prime);
+            return (lab[0], lab[1], lab[2]);
+        }
+
+        /// <summary>
+        /// Convert an Oklab color <see cref="double"/> from Cartesian form to its polar form Oklch
+        /// https://bottosson.github.io/posts/oklab/#the-oklab-color-space
+        /// </summary>
+        /// <param name="lightness">The <see cref="lightness"/></param>
+        /// <param name="chromaticity_a">The <see cref="chromaticity_a"/></param>
+        /// <param name="chromaticity_b">The <see cref="chromaticity_b"/></param>
+        /// <returns>The perceptual lightness [0..1], the chroma [0..0.5], and the hue angle [0°..360°]</returns>
+        private static (double Lightness, double Chroma, double Hue)
+            GetOklchColorFromOklab(double lightness, double chromaticity_a, double chromaticity_b)
+        {
+            // Lab to LCh transformation
+            double chroma = Math.Sqrt(Math.Pow(chromaticity_a, 2) + Math.Pow(chromaticity_b, 2));
+            double hue = ((Math.Atan2(chromaticity_b, chromaticity_a) * (180 / Math.PI)) + 360) % 360;
+            return (lightness, chroma, hue);
+        }
+
+        /// <summary>
         /// Convert a given <see cref="Color"/> to a natural color (hue, whiteness, blackness)
         /// </summary>
         /// <param name="color">The <see cref="Color"/> to convert</param>
@@ -276,12 +417,19 @@ namespace ManagedCommon
             { "Br", 'p' },   // brightness       percent
             { "In", 'p' },   // intensity        percent
             { "Ll", 'p' },   // lightness (HSL)  percent
-            { "Lc", 'p' },   // lightness(CIELAB)percent
             { "Va", 'p' },   // value            percent
             { "Wh", 'p' },   // whiteness        percent
             { "Bn", 'p' },   // blackness        percent
-            { "Ca", 'p' },   // chromaticityA    percent
-            { "Cb", 'p' },   // chromaticityB    percent
+            { "Lc", 'p' },   // lightness (CIE)         percent
+            { "Ca", 'p' },   // chromaticityA (CIELAB)  percent
+            { "Cb", 'p' },   // chromaticityB (CIELAB)  percent
+            { "Cc", 'p' },   // chroma (CIELCh)         percent
+            { "Ch", 'p' },   // hue angle (CIELCh)      percent
+            { "Lo", 'p' },   // lightness (Oklab/Oklch) percent
+            { "Oa", 'p' },   // chromaticityA (Oklab)   percent
+            { "Ob", 'p' },   // chromaticityB (Oklab)   percent
+            { "Oc", 'p' },   // chroma (Oklch)          percent
+            { "Oh", 'p' },   // hue angle (Oklch)       percent
             { "Xv", 'i' },   // X value          int
             { "Yv", 'i' },   // Y value          int
             { "Zv", 'i' },   // Z value          int
@@ -424,6 +572,10 @@ namespace ManagedCommon
                     var (lightnessC, _, _) = ConvertToCIELABColor(color);
                     lightnessC = Math.Round(lightnessC, 2);
                     return lightnessC.ToString(CultureInfo.InvariantCulture);
+                case "Lo":
+                    var (lightnessO, _, _) = ConvertToOklabColor(color);
+                    lightnessO = Math.Round(lightnessO, 2);
+                    return lightnessO.ToString(CultureInfo.InvariantCulture);
                 case "Wh":
                     var (_, whiteness, _) = ConvertToHWBColor(color);
                     whiteness = Math.Round(whiteness * 100);
@@ -440,6 +592,30 @@ namespace ManagedCommon
                     var (_, _, chromaticityB) = ConvertToCIELABColor(color);
                     chromaticityB = Math.Round(chromaticityB, 2);
                     return chromaticityB.ToString(CultureInfo.InvariantCulture);
+                case "Cc":
+                    var (_, chromaCIE, _) = ConvertToCIELCHColor(color);
+                    chromaCIE = Math.Round(chromaCIE, 2);
+                    return chromaCIE.ToString(CultureInfo.InvariantCulture);
+                case "Ch":
+                    var (_, _, hueCIE) = ConvertToCIELCHColor(color);
+                    hue = Math.Round(hueCIE, 2);
+                    return hue.ToString(CultureInfo.InvariantCulture);
+                case "Oa":
+                    var (_, chromaticityAOklab, _) = ConvertToOklabColor(color);
+                    chromaticityAOklab = Math.Round(chromaticityAOklab, 2);
+                    return chromaticityAOklab.ToString(CultureInfo.InvariantCulture);
+                case "Ob":
+                    var (_, _, chromaticityBOklab) = ConvertToOklabColor(color);
+                    chromaticityBOklab = Math.Round(chromaticityBOklab, 2);
+                    return chromaticityBOklab.ToString(CultureInfo.InvariantCulture);
+                case "Oc":
+                    var (_, chromaOklab, _) = ConvertToOklchColor(color);
+                    chromaOklab = Math.Round(chromaOklab, 2);
+                    return chromaOklab.ToString(CultureInfo.InvariantCulture);
+                case "Oh":
+                    var (_, _, hueOklab) = ConvertToOklchColor(color);
+                    hueOklab = Math.Round(hueOklab, 2);
+                    return hueOklab.ToString(CultureInfo.InvariantCulture);
                 case "Xv":
                     var (x, _, _) = ConvertToCIEXYZColor(color);
                     x = Math.Round(x * 100, 4);
@@ -495,8 +671,11 @@ namespace ManagedCommon
                 case "HSI": return "hsi(%Hu, %Si%, %In%)";
                 case "HWB": return "hwb(%Hu, %Wh%, %Bn%)";
                 case "NCol": return "%Hn, %Wh%, %Bn%";
-                case "CIELAB": return "CIELab(%Lc, %Ca, %Cb)";
                 case "CIEXYZ": return "XYZ(%Xv, %Yv, %Zv)";
+                case "CIELAB": return "CIELab(%Lc, %Ca, %Cb)";
+                case "CIELCh": return "CIELCh(%Lc, %Cc, %Ch)";
+                case "Oklab": return "oklab(%Lo, %Oa, %Ob)";
+                case "Oklch": return "oklch(%Lo, %Oc, %Oh)";
                 case "VEC4": return "(%Reff, %Grff, %Blff, 1f)";
                 case "Decimal": return "%Dv";
                 case "HEX Int": return "0xFF%ReX%GrX%BlX";
