@@ -300,7 +300,7 @@ public:
         int retry = 0;
         do
         {
-            auto launch_result = LaunchApp(path, L"RunFromPT", false, retry == max_retry);
+            auto launch_result = LaunchApp(path, L"RunFromPT", false, retry < max_retry);
             if (launch_result)
             {
                 Logger::info(L"CmdPal launched successfully after {} retries.", retry);
