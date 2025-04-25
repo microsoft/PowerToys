@@ -427,8 +427,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             }
 
             _settingsWindow.Activate();
-
-            WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
         });
     }
 
