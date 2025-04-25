@@ -1,7 +1,6 @@
 GetPhysicallyInstalledSystemMemory
 GlobalMemoryStatusEx
 GetSystemInfo
-CoCreateInstance
 SetForegroundWindow
 IsIconic
 RegisterHotKey
@@ -15,5 +14,4 @@ MonitorFromWindow
 GetMonitorInfo
 SHCreateStreamOnFileEx
 CoAllowSetForegroundWindow
-SHCreateStreamOnFileEx
 SHLoadIndirectString
