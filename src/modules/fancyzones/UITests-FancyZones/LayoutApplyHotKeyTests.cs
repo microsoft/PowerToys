@@ -372,7 +372,7 @@ namespace Microsoft.FancyZones.UITests
             this.OpenFancyZonesPanel();
             this.ControlQuickLayoutSwitch(true);
 
-            int tries = 14;
+            int tries = 16;
             Pull(tries, "down");
             this.Find<Element>("Enable quick layout switch").Click();
             var checkbox1 = this.Find<Element>("Flash zones when switching layout");
@@ -414,7 +414,9 @@ namespace Microsoft.FancyZones.UITests
         public void TestDisableApplyHotKey()
         {
             this.OpenFancyZonesPanel();
+            this.AttachFancyZonesEditor();
             this.ControlQuickLayoutSwitch(false);
+            this.CloseFancyZonesEditor();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
             this.AttachFancyZonesEditor();
