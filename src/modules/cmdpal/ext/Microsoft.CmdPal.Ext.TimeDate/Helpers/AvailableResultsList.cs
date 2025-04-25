@@ -33,6 +33,7 @@ internal static class AvailableResultsList
         var dateTimeNowUtc = dateTimeNow.ToUniversalTime();
         var firstWeekRule = firstWeekOfYear ?? TimeAndDateHelper.GetCalendarWeekRule(settings.FirstWeekOfYear);
         var firstDayOfTheWeek = firstDayOfWeek ?? TimeAndDateHelper.GetFirstDayOfWeek(settings.FirstDayOfWeek);
+        var weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
 
         results.AddRange(new[]
         {
@@ -59,14 +60,20 @@ internal static class AvailableResultsList
                 AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                 IconType = ResultIconType.DateTime,
             },
+            new AvailableResult()
+            {
+                Value = weekOfYear.ToString(CultureInfo.CurrentCulture),
+                Label = Resources.Microsoft_plugin_timedate_WeekOfYear,
+                AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                IconType = ResultIconType.Date,
+            },
         });
 
-        if (isKeywordSearch || !settings.OnlyDateTimeNowGlobal)
+        if (isKeywordSearch)
         {
             // We use long instead of int for unix time stamp because int is too small after 03:14:07 UTC 2038-01-19
             var unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
             var unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();
-            var weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
             var era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(dateTimeNow));
             var eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
 
@@ -247,13 +254,6 @@ internal static class AvailableResultsList
                 {
                     Value = TimeAndDateHelper.GetWeekOfMonth(dateTimeNow, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture),
                     Label = Resources.Microsoft_plugin_timedate_WeekOfMonth,
-                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
-                    IconType = ResultIconType.Date,
-                },
-                new AvailableResult()
-                {
-                    Value = weekOfYear.ToString(CultureInfo.CurrentCulture),
-                    Label = Resources.Microsoft_plugin_timedate_WeekOfYear,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
                     IconType = ResultIconType.Date,
                 },
