@@ -12,8 +12,9 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 // We should probably merge them into one. and move it to a common location.
 public static partial class OpenInShellHelper
 {
-    public static bool OpenInShell(string path, string? arguments = null, string? workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
+    public static bool OpenInShell(string path, string? arguments, string? workingDir, ShellRunAsType runAs, bool runWithHiddenWindow, out string errorMessage)
     {
+        errorMessage = string.Empty;
         using var process = new Process();
         process.StartInfo.FileName = path;
         process.StartInfo.WorkingDirectory = string.IsNullOrWhiteSpace(workingDir) ? string.Empty : workingDir;
@@ -38,6 +39,7 @@ public static partial class OpenInShellHelper
         catch (Win32Exception ex)
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = $"Unable to open {path}: {ex.Message}" });
+            errorMessage = ex.Message;
             return false;
         }
     }

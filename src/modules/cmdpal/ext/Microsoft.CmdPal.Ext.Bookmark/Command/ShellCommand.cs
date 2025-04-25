@@ -67,10 +67,10 @@ public sealed partial class ShellCommand : InvokableCommand
             args = $"/C {bookmarkValue}";
         }
 
-        if (!OpenInShellHelper.OpenInShell(fullPath, args, null, OpenInShellHelper.ShellRunAsType.None, false))
+        if (!OpenInShellHelper.OpenInShell(fullPath, args, null, OpenInShellHelper.ShellRunAsType.None, false, out var errorMessage))
         {
-            ExtensionHost.LogMessage($"Failed to open {bookmarkValue} in shell.");
-            return CommandResult.ShowToast(new ToastArgs() { Message = "Open in shell error." });
+            ExtensionHost.LogMessage($"Failed to open {bookmarkValue} in shell. Ex: {errorMessage}");
+            return CommandResult.ShowToast(new ToastArgs() { Message = $"Open in shell error. Ex: {errorMessage}" });
         }
 
         return CommandResult.Dismiss();
