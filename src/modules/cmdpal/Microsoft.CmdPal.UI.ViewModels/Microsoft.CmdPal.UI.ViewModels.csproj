@@ -12,10 +12,6 @@
     <LangVersion>preview</LangVersion>
     <!-- Disable SA1313 for Primary Constructor fields conflict https://learn.microsoft.com/dotnet/csharp/programming-guide/classes-and-structs/instance-constructors#primary-constructors  -->
     <NoWarn>SA1313;</NoWarn>
-
-    <EnableMsixTooling>true</EnableMsixTooling>
-    <UseWinUI>false</UseWinUI>
-
   </PropertyGroup>
 
   <ItemGroup>
@@ -73,13 +69,15 @@
     </Content>
   </ItemGroup>
 
-  <PropertyGroup>
+  <!-- Just mark it as AOT compatible. Do not publish with AOT now. We need fully test before we really publish it as AOT enabled-->
+  <!--<PropertyGroup>
     <SelfContained>true</SelfContained>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <PublishTrimmed>true</PublishTrimmed>
     <PublishSingleFile>true</PublishSingleFile>
-    <!-- <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling> -->
+    --><!-- <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling> --><!--
     <PublishAot>true</PublishAot>
-  </PropertyGroup>
+	<EnableMsixTooling>true</EnableMsixTooling>
+  </PropertyGroup>-->
 
 </Project>
