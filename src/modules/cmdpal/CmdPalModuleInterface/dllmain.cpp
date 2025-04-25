@@ -269,15 +269,15 @@ public:
             return;
         }
 
-        Logger::trace("Try to launch");
-
-        if (firstEnableCall)
+        if (!firstEnableCall)
         {
+            Logger::trace("Not first attempt, try to launch");
             LaunchApp(launchPath, L"RunFromPT", false /*no elevated*/, false /*error pop up*/);
         }
         else
         {
             // If not first time enable, do retry launch.
+            Logger::trace("First attempt, try to launch");
             std::thread launchThread(&CmdPal::RetryLaunch, launchPath);
             launchThread.detach();
         }
