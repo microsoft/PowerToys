@@ -282,11 +282,11 @@ namespace PowerLauncher.ViewModel
 
             if (options.SearchQueryTuningEnabled)
             {
-                sorted = Results.OrderByDescending(x => x.Result.GetSortOrder(options.SearchClickedItemWeight)).ToList();
+                sorted = Results.OrderByDescending(x => x.Result.GetSortOrderScore(options.SearchClickedItemWeight)).ToList();
             }
             else
             {
-                sorted = Results.OrderByDescending(x => x.Result.GetSortOrder(5)).ToList();
+                sorted = Results.OrderByDescending(x => x.Result.GetSortOrderScore(5)).ToList();
             }
 
             // remove history items in they are in the list as non-history items
