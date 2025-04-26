@@ -564,11 +564,11 @@ namespace Microsoft.FancyZones.UITests
 
         private void ControlQuickLayoutSwitch(bool flag)
         {
-            int tries = 12;
+            int tries = 14;
             Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
             this.Find<ToggleSwitch>("Enable quick layout switch").Toggle(flag);
 
-            tries = 12;
+            tries = 14;
             Pull(tries, "up");
         }
 
