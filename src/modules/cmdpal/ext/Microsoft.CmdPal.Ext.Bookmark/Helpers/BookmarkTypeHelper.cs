@@ -16,7 +16,7 @@ public static partial class BookmarkTypeHelper
      * So:
      * 1. Check if it's a valid url.
      * 2. Check if it's a existing folder.
-     * 3. if it's a exsiting file, it also have the possibility to be a shell command file. eg: "test.cmd" or "test.ps1". So, check the extension. If not, assume it's a normal file.
+     * 3. if it's a existing file, it also have the possibility to be a shell command file. eg: "test.cmd" or "test.ps1". So, check the extension. If not, assume it's a normal file.
      * By default, we assume it's Web Link.
      */
 
@@ -28,8 +28,8 @@ public static partial class BookmarkTypeHelper
         {
             // absolutely it's a shell command
             // we don't need to check the file name
-            var exectuableFileName = splittedBookmarkValue[0];
-            var executableExtension = System.IO.Path.GetExtension(exectuableFileName);
+            var executableFileName = splittedBookmarkValue[0];
+            var executableExtension = System.IO.Path.GetExtension(executableFileName);
 
             // if it's a cmd
             if (executableExtension == ".cmd" || executableExtension == ".bat")
@@ -57,7 +57,7 @@ public static partial class BookmarkTypeHelper
             }
         }
 
-        // judge if the bookmak is a existing folder
+        // judge if the bookmark is a existing folder
         if (System.IO.Directory.Exists(bookmark))
         {
             return BookmarkType.Folder;
