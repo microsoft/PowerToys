@@ -34,13 +34,15 @@ namespace UITests_FancyZones
         private static readonly IOTestHelper AppZoneHistory = new FancyZonesEditorFiles().AppZoneHistoryIOHelper;
         private static string nonPrimaryMouseButton = "Right";
 
+        private static string highlightColor = "#0072C9"; // set highlight color
+        private static string primaryColor = "#F2F2F2"; // set primary mouse button
         private static int screenMarginTop; // set check position
         private static int screenMarginLeft; // set check position
         private static int screenMarginRight; // set check position
         private static int screenMarginBottom; // set check position
 
-        private static int centerX;
-        private static int centerY;
+        private static int quarterX;
+        private static int quarterY;
         private static string powertoysWindowName = "PowerToys Settings"; // set powertoys settings window name
 
         public DragingWindowTestssingle()
@@ -76,10 +78,9 @@ namespace UITests_FancyZones
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
             this.Session.SetMainWindowSize(WindowSize.Large_Vertical);
 
-            int tries = 2;
+            int tries = 3;
             Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
             ZoneBehaviourSettings(TestContext.TestName);
-            this.Find<Slider>("Opacity (%)").QuickSetValue(100);
 
             Pull(tries, "up");
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 4000);
@@ -91,11 +92,12 @@ namespace UITests_FancyZones
             screenMarginRight = rect.Right; // set check position
             screenMarginBottom = rect.Bottom; // set check position
 
-            centerX = (rect.Left + rect.Right) / 2;
-            centerY = (rect.Top + rect.Bottom) / 2;
+            quarterX = (rect.Left + rect.Right) / 4;
+            quarterY = (rect.Top + rect.Bottom) / 4;
 
             this.Find<Element>(By.Name("Custom Column")).Click();
             this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
+            Session.Attach(powertoysWindowName, WindowSize.Small); // display window1
         }
 
         /// <summary>
@@ -109,29 +111,40 @@ namespace UITests_FancyZones
         [TestMethod]
         public void TestShowZonesOnShiftDuringDrag()
         {
-            Session.Attach(powertoysWindowName, WindowSize.Small); // display window1
             var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
-            this.DragwithShift(dragElement, nameof(TestShowZonesOnShiftDuringDrag));
+            var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+            dragElement.DragAndHold(offSet.Dx, offSet.Dy);
+            string zoneColorBefore = GetOutWindowPixelColor(30);
+            Session.PressKey(Key.Shift);
+            string zoneColorwithShift = GetOutWindowPixelColor(30);
+            Assert.AreNotEqual(zoneColorwithShift, zoneColorBefore, $"[{nameof(TestShowZonesOnShiftDuringDrag)}] Check color did not change.");
+            Assert.AreEqual(primaryColor, zoneColorwithShift, $"[{nameof(TestShowZonesOnShiftDuringDrag)}] Zones did not shown.");
+            Session.ReleaseKey(Key.Shift);
+            string zoneColorcurrent = GetOutWindowPixelColor(30);
+            Assert.AreEqual(zoneColorcurrent, zoneColorBefore, $"[{nameof(TestShowZonesOnShiftDuringDrag)}] Zone color did not activate.");
+            dragElement.ReleaseDrag();
         }
 
         [TestMethod]
         public void TestShowZonesOnDragDuringShift()
         {
-            Session.Attach(powertoysWindowName, WindowSize.Small); // display window1
             var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
-            var offSet = ZoneSwitchHelper.GetOffset(dragElement, centerX, centerY);
-            dragElement.Drag(offSet.Dx, offSet.Dy);
+            var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+
             RunDragInteractions(
                 preAction: () =>
                 {
+                    dragElement.Drag(offSet.Dx, offSet.Dy);
                     Session.PressKey(Key.Shift);
                 },
                 postAction: () =>
                 {
-                    dragElement.DragAndHold(centerX + 20, centerY + 20);
+                    dragElement.DragAndHold(0, 0);
+                    Task.Delay(5000).Wait();
                 },
                 releaseAction: () =>
                 {
+                    dragElement.ReleaseDrag();
                     Session.ReleaseKey(Key.Shift);
                 },
                 testCaseName: nameof(TestShowZonesOnDragDuringShift));
@@ -140,101 +153,88 @@ namespace UITests_FancyZones
         [TestMethod]
         public void TestToggleZonesWithNonPrimaryMouseClick()
         {
-            this.Session.PerformMouseAction(
+            var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
+            var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+
+            // activate zone
+            dragElement.DragAndHold(offSet.Dx, offSet.Dy);
+            string zoneColorcurrent = GetOutWindowPixelColor(30);
+
+            // press non-primary mouse button
+            Session.PerformMouseAction(
                 nonPrimaryMouseButton == "Right" ? MouseActionType.RightClick : MouseActionType.LeftClick);
 
-            Session.Attach(powertoysWindowName, WindowSize.Small); // display window1
-            var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
-            var offSet = ZoneSwitchHelper.GetOffset(dragElement, centerX, centerY);
-            dragElement.Drag(offSet.Dx, offSet.Dy);
+            // check the zone color is not activated
+            string zoneColorAfter = GetOutWindowPixelColor(30);
+            Assert.AreNotEqual(zoneColorcurrent, zoneColorAfter, $"[{nameof(TestToggleZonesWithNonPrimaryMouseClick)}] Zone color did not deactivate.");
+            highlightColor = zoneColorcurrent;
 
-            TogglewithMouse(dragElement, nameof(TestToggleZonesWithNonPrimaryMouseClick));
+            // release drag
+            dragElement.ReleaseDrag();
         }
 
         [TestMethod]
         public void TestShowZonesWhenShiftAndMouseOff()
         {
-            Session.Attach(powertoysWindowName, WindowSize.Small); // display window1
             var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
-            var offSet = ZoneSwitchHelper.GetOffset(dragElement, centerX, centerY);
-            dragElement.Drag(offSet.Dx, offSet.Dy);
-
-            RunDragInteractions(
-                preAction: () =>
-                {
-                    dragElement.DragAndHold(centerX - 20, centerY - 20);
-                },
-                postAction: () =>
-                {
-                    dragElement.ReleaseDrag();
-                },
-                releaseAction: () =>
-                {
-                },
-                testCaseName: nameof(TestShowZonesWhenShiftAndMouseOff));
+            var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+            dragElement.DragAndHold(offSet.Dx, offSet.Dy);
+            Task.Delay(1000).Wait();
+            string currentzoneColor = GetOutWindowPixelColor(30);
+            Assert.AreEqual(highlightColor, currentzoneColor, $"[{nameof(TestShowZonesWhenShiftAndMouseOff)}] Zone color did not activate.");
+            Session.PressKey(Key.Shift);
+            string zoneColor = GetOutWindowPixelColor(30);
+            Assert.AreNotEqual(highlightColor, zoneColor, $"[{nameof(TestShowZonesWhenShiftAndMouseOff)}] Zone color did not deactivate.");
+            dragElement.ReleaseDrag();
+            Session.ReleaseKey(Key.Shift);
         }
 
         [TestMethod]
         public void TestShowZonesWhenShiftAndMouseOn()
         {
-            Session.Attach(powertoysWindowName, WindowSize.Small); // display window1
             var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
-            var offSet = ZoneSwitchHelper.GetOffset(dragElement, centerX, centerY);
-            dragElement.Drag(offSet.Dx, offSet.Dy);
+            var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+            dragElement.DragAndHold(offSet.Dx, offSet.Dy);
+            Task.Delay(1000).Wait();
+            string currentzoneColor = GetOutWindowPixelColor(30);
+            Session.PressKey(Key.Shift);
+            string zoneColorwithShift = GetOutWindowPixelColor(30);
+            Assert.AreEqual(primaryColor, zoneColorwithShift, $"[{nameof(TestShowZonesWhenShiftAndMouseOff)}] Zone color did not activate.");
+            Session.PerformMouseAction(
+             nonPrimaryMouseButton == "Right" ? MouseActionType.RightClick : MouseActionType.LeftClick);
+            string zoneColorwithMouse = GetOutWindowPixelColor(30);
+            Assert.AreEqual(currentzoneColor, zoneColorwithMouse, $"[{nameof(TestShowZonesWhenShiftAndMouseOff)}] Zone color did not activate.");
 
-            string testCaseName = nameof(TestShowZonesWhenShiftAndMouseOn);
-            TogglewithMouse(dragElement, testCaseName);
-            DragwithShift(dragElement, testCaseName);
+            Session.ReleaseKey(Key.Shift);
+            dragElement.ReleaseDrag();
         }
 
         [TestMethod]
         public void TestMakeDraggedWindowTransparentOn()
         {
+            var pixel = GetPixelWhenMakeDraggedWindow();
+            Assert.AreNotEqual(pixel.PixelInwindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}] window color is not transparent.");
         }
 
         [TestMethod]
         public void TestMakeDraggedWindowTransparentOff()
         {
+            var pixel = GetPixelWhenMakeDraggedWindow();
+            Assert.AreEqual(pixel.PixelInwindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}] window color is not transparent.");
         }
 
-        private void DragwithShift(Element dragEelement, string testCaseName)
+        public (string PixelInwindow, string TransPixel) GetPixelWhenMakeDraggedWindow()
         {
-            RunDragInteractions(
-               preAction: () =>
-               {
-                   dragEelement.DragAndHold(centerX, centerY);
-               },
-               postAction: () =>
-               {
-                   Session.PressKey(Key.Shift);
-               },
-               releaseAction: () =>
-               {
-                   dragEelement.ReleaseDrag();
-                   Session.ReleaseKey(Key.Shift);
-               },
-               testCaseName: nameof(TestShowZonesOnShiftDuringDrag));
-        }
-
-        private void TogglewithMouse(Element dragElement, string testCaseName)
-        {
-            RunDragInteractions(
-                preAction: () =>
-                {
-                    dragElement.DragAndHold(centerX - 20, centerY - 20);
-                },
-                postAction: () =>
-                {
-                    Session.PerformMouseAction(
-                 nonPrimaryMouseButton == "Right" ? MouseActionType.RightDown : MouseActionType.LeftDown);
-                },
-                releaseAction: () =>
-                {
-                    dragElement.ReleaseDrag();
-                    Session.PerformMouseAction(
-                nonPrimaryMouseButton == "Right" ? MouseActionType.RightUp : MouseActionType.LeftUp);
-                },
-                testCaseName: testCaseName);
+            Element dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
+            var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+            dragElement.DragAndHold(offSet.Dx, offSet.Dy);
+            Tuple<int, int> pos = GetMousePosition();
+            string pixelInWindow = Session.GetPixelColorString(pos.Item1, pos.Item2);
+            Session.PressKey(Key.Shift);
+            string transPixel = Session.GetPixelColorString(pos.Item1, pos.Item2);
+            Session.ReleaseKey(Key.Shift);
+            dragElement.ReleaseDrag();
+            return (pixelInWindow, transPixel);
         }
 
         public string GetOutWindowPixelColor(int spacing)
@@ -267,6 +267,7 @@ namespace UITests_FancyZones
                 throw new ArgumentOutOfRangeException(nameof(spacing), "No sufficient margin to sample outside the window.");
             }
 
+            Console.WriteLine($"checkX: {checkX}, checkY: {checkY}");
             string zoneColor = this.Session.GetPixelColorString(checkX, checkY);
             Console.WriteLine($"zone color: {zoneColor}");
             return zoneColor;
@@ -287,12 +288,12 @@ namespace UITests_FancyZones
             postAction?.Invoke();
             string zoneColorAfter = GetOutWindowPixelColor(30);
             Assert.AreNotEqual(zoneColorBefore, zoneColorAfter, $"[{testCaseName}] Zone color did not change.");
+            Assert.AreEqual(highlightColor, zoneColorAfter, $"[{testCaseName}] Zone color did not activate.");
 
             releaseAction?.Invoke();
-            var windowRectAfter = this.Session.GetWindowRect();
-            Assert.AreNotEqual(windowRectBefore, windowRectAfter, $"[{testCaseName}] Window rect did not change.");
-
-            // Assert the AppZoneHistory layout is set
+            string appZoneHistoryJson = AppZoneHistory.GetData();
+            string? zonenumber = ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson);
+            Assert.IsNull(zonenumber, $"[{testCaseName}] AppZoneHistory layout is not set.");
         }
 
         private bool FindGroup(string groupName)
@@ -358,10 +359,12 @@ namespace UITests_FancyZones
 
         private void ZoneBehaviourSettings(string? testName)
         {
+            Microsoft.PowerToys.UITest.CheckBox showZoneNumber = this.Find<Microsoft.PowerToys.UITest.CheckBox>("Show zone number");
             Microsoft.PowerToys.UITest.CheckBox useShiftCheckBox = this.Find<Microsoft.PowerToys.UITest.CheckBox>("Hold Shift key to activate zones while dragging a window");
             Microsoft.PowerToys.UITest.CheckBox useNonPrimaryMouseCheckBox = this.Find<Microsoft.PowerToys.UITest.CheckBox>("Use a non-primary mouse button to toggle zone activation");
             Microsoft.PowerToys.UITest.CheckBox makeDraggedWindowTransparent = this.Find<Microsoft.PowerToys.UITest.CheckBox>("Make dragged window transparent");
-
+            this.Find<Slider>("Opacity (%)").QuickSetValue(100);
+            showZoneNumber.SetCheck(false, 100);
             switch (testName)
             {
                 case "TestShowZonesOnShiftDuringDrag":
@@ -373,11 +376,11 @@ namespace UITests_FancyZones
                     useShiftCheckBox.SetCheck(false, 500);
                     useNonPrimaryMouseCheckBox.SetCheck(true, 500);
                     break;
-                case "TestToggleZonesWhenShiftAndMouseOff":
+                case "TestShowZonesWhenShiftAndMouseOff":
                     useShiftCheckBox.SetCheck(false, 500);
                     useNonPrimaryMouseCheckBox.SetCheck(false, 500);
                     break;
-                case "TestToggleZonesWhenShiftAndMouseOn":
+                case "TestShowZonesWhenShiftAndMouseOn":
                     useShiftCheckBox.SetCheck(true, 500);
                     useNonPrimaryMouseCheckBox.SetCheck(true, 500);
                     break;
@@ -390,6 +393,7 @@ namespace UITests_FancyZones
                     useShiftCheckBox.SetCheck(true, 500);
                     useNonPrimaryMouseCheckBox.SetCheck(false, 500);
                     makeDraggedWindowTransparent.SetCheck(false, 500);
+                    Find<Element>(By.AccessibilityId("HeaderPresenter")).Click(); // make mouse on the windows settings then scroll up can work.
                     break; // Added break to prevent fall-through
                 default:
                     throw new ArgumentException("Unsupported Test Case.", testName);
