@@ -26,7 +26,7 @@ public static partial class BookmarkTypeHelper
 
         if (splittedBookmarkValue.Length > 1)
         {
-            // abosolutely it's a shell command
+            // absolutely it's a shell command
             // we don't need to check the file name
             var exectuableFileName = splittedBookmarkValue[0];
             var executableExtension = System.IO.Path.GetExtension(exectuableFileName);
