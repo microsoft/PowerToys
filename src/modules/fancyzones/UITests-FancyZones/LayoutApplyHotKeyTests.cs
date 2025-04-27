@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows.Automation;
 using FancyZonesEditor.Models;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests;
@@ -540,7 +541,14 @@ namespace Microsoft.FancyZones.UITests
             UITestBase.NativeMethods.ChangeDispalyResolution(width, height);
             this.AttachPowertoySetting();
             this.AttachFancyZonesEditor();
-            Session.Find<Element>(By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Find<Element>($"{width} x {height}");
+            var resolution = this.Session.Find<Element>(By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Find<Element>(By.AccessibilityId("ResolutionText"));
+            if (resolution.Text != "640 × 480")
+            {
+                this.CloseFancyZonesEditor();
+                UITestBase.NativeMethods.ChangeDispalyResolution(nowWidth, nowHeight);
+                Assert.AreEqual("640 × 480", resolution.Text);
+            }
+
             this.CloseFancyZonesEditor();
             UITestBase.NativeMethods.ChangeDispalyResolution(nowWidth, nowHeight);
         }
