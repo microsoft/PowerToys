@@ -543,7 +543,7 @@ namespace Microsoft.FancyZones.UITests
             UITestBase.NativeMethods.ChangeDispalyResolution(width, height);
             this.AttachPowertoySetting();
             this.AttachFancyZonesEditor();
-            Session.Find<Element>(By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Find(width + " x " + height);
+            Session.Find<Element>(By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Find<Element>($"{width} x {height}");
             this.CloseFancyZonesEditor();
             UITestBase.NativeMethods.ChangeDispalyResolution(nowWidth, nowHeight);
         }
