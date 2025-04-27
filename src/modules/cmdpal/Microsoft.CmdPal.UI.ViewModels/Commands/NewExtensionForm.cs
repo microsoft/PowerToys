@@ -194,9 +194,8 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
         Directory.Delete(tempDir, true);
     }
 
-    private string FormatJsonString(string str)
-    {
+    private string FormatJsonString(string str) =>
+
         // Escape the string for JSON
-        return JsonSerializer.Serialize(str);
-    }
+        JsonSerializer.Serialize(str, JsonSerializationContext.Default.String);
 }
