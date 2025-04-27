@@ -22,13 +22,13 @@ public static partial class BookmarkTypeHelper
 
     public static BookmarkType GetBookmarkTypeFromValue(string bookmark)
     {
-        var splitedBookmarkValue = bookmark.Split(" ");
+        var splittedBookmarkValue = bookmark.Split(" ");
 
-        if (splitedBookmarkValue.Length > 1)
+        if (splittedBookmarkValue.Length > 1)
         {
             // abosolutely it's a shell command
             // we don't need to check the file name
-            var exectuableFileName = splitedBookmarkValue[0];
+            var exectuableFileName = splittedBookmarkValue[0];
             var executableExtension = System.IO.Path.GetExtension(exectuableFileName);
 
             // if it's a cmd
