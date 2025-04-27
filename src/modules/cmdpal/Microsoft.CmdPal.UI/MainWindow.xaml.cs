@@ -592,7 +592,7 @@ public sealed partial class MainWindow : Window,
                 _largeIcon = GetAppIconHandle();
                 _trayIconData = new NOTIFYICONDATAW()
                 {
-                    cbSize = (uint)Marshal.SizeOf(typeof(NOTIFYICONDATAW)),
+                    cbSize = (uint)Marshal.SizeOf<NOTIFYICONDATAW>(),
                     hWnd = _hwnd,
                     uID = MY_NOTIFY_ID,
                     uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
@@ -629,7 +629,10 @@ public sealed partial class MainWindow : Window,
 
     private DestroyIconSafeHandle GetAppIconHandle()
     {
-        var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+        var basePath = AppContext.BaseDirectory;
+        var exePath = Path.Combine(basePath, "Microsoft.CmdPal.UI.dll");
+
+        // var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
         DestroyIconSafeHandle largeIcon;
         PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out _, 1);
         return largeIcon;

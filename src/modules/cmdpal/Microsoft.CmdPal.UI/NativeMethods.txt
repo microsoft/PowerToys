@@ -1,7 +1,6 @@
 GetPhysicallyInstalledSystemMemory
 GlobalMemoryStatusEx
 GetSystemInfo
-CoCreateInstance
 GetForegroundWindow
 SetForegroundWindow
 GetWindowRect
@@ -21,9 +20,7 @@ SetActiveWindow
 MonitorFromWindow
 GetMonitorInfo
 GetDpiForMonitor
-SHCreateStreamOnFileEx
 CoAllowSetForegroundWindow
-SHCreateStreamOnFileEx
 SHLoadIndirectString
 
 Shell_NotifyIcon

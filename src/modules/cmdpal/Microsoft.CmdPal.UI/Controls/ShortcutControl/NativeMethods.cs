@@ -64,9 +64,6 @@ public static class NativeMethods
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
     public static extern IntPtr LoadLibrary(string dllToLoad);
 
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-    public static extern bool FreeLibrary(IntPtr hModule);
-
 #pragma warning restore CA1401 // P/Invokes should not be visible
 
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
