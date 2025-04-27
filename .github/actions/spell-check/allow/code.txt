@@ -53,6 +53,8 @@ YVU
 YVYU
 zipfolder
 CODEOWNERS
+VNext
+vnext
 
 # FONTS
 

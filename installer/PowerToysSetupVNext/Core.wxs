@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER" FileSource="$(var.BinDir)">
+      <Component Id="powertoys_per_machine_comp" Win64="yes">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys">
+          <RegistryValue Type="string" Name="InstallScope" Value="$(var.InstallScope)" />
+        </RegistryKey>
+      </Component>
+      <Component Id="powertoys_toast_clsid" Win64="yes">
+        <RemoveFolder Id='Remove_powertoys_toast_clsid' On='uninstall' />
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\CLSID\{DD5CACDA-7C2E-4997-A62A-04A597B58F76}">
+          <RegistryValue Type="string" Value="PowerToys Toast Notifications Background Activator" />
+          <RegistryValue Type="string" Key="LocalServer32" Value="[INSTALLFOLDER]PowerToys.exe -ToastActivated" />
+          <RegistryValue Type="string" Key="LocalServer32" Name="ThreadingModel" Value="Apartment" />
+        </RegistryKey>
+      </Component>
+      <Component Id="powertoys_exe" Win64="yes" Guid="30261594-41A6-4509-AD09-FBC4E692F441">
+        <File Id="PowerToys.exe" Checksum="yes" />
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys">
+          <RegistryValue Type="string" Name="URL Protocol" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Value="URL:PowerToys custom internal URI protocol"/>
+          <RegistryKey Key="DefaultIcon">
+            <RegistryValue Type="string" Value="PowerToys.exe" />
+          </RegistryKey>
+          <RegistryKey Key="shell\open\command">
+            <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]PowerToys.exe&quot; &quot;%1&quot;" />
+          </RegistryKey>
+        </RegistryKey>
+      </Component>
+      <Component Id="License_rtf" Win64="yes" Guid="632C60DF-0DDC-4F14-8F2B-A28136CD9E63">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="License_rtf" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.RepoDir)\installer\License.rtf" Id="License.rtf" />
+      </Component>
+      <Component Id="Notice_md" Win64="yes" Guid="1671B5F5-1260-42CF-83A8-9B3430DFF8C5">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="Notice_md" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.RepoDir)\Notice.md" Id="Notice.md" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="DSCModulesReferenceFolder">
+      <Component Id="PowerToysDSCReference" Win64="yes" Guid="40869ACB-0BEB-4911-AE41-5E73BC1586A9">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="DSCModulesReference" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psd1" Id="PTConfReference.psd1" />
+        <File Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psm1" Id="PTConfReference.psm1" />
+      </Component>
+    </DirectoryRef>
+
+    <?if $(var.PerUser) = "true" ?>
+    <!-- DSC module files for PerUser handled in InstallDSCModule custom action. -->
+    <?else?>
+    <DirectoryRef Id="ProgramFiles64Folder">
+      <Directory Id="WindowsPowerShellFolder" Name="WindowsPowerShell">
+        <Directory Id="PowerShellModulesFolder" Name="Modules">
+          <Directory Id="PowerToysDscFolder" Name="Microsoft.PowerToys.Configure">
+            <Directory Id="PowerToysDscVerFolder" Name="$(var.Version).0">
+              <Component Id="PowerToysDSC" Win64="yes" Guid="C52AECA0-DA73-49B8-BB49-31EF6640FF1F">
+                <!-- Don't fail installation because of DSC. Files are marked as not vital. -->
+                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psd1" Id="PTConf.psd1" />
+                <File Vital="no" Source="$(var.RepoDir)\src\dsc\Microsoft.PowerToys.Configure\Generated\Microsoft.PowerToys.Configure\$(var.Version).0\Microsoft.PowerToys.Configure.psm1" Id="PTConf.psm1" />
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </DirectoryRef>
+    <?endif?>
+
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="PowerToysStartMenuShortcut" >
+        <Shortcut Id="ApplicationStartMenuShortcut"
+        Name="PowerToys (Preview)"
+        Description="PowerToys - Windows system utilities to maximize productivity"
+        Icon="powertoys.exe"
+        IconIndex="0"
+        Target="[!PowerToys.exe]"
+        WorkingDirectory="INSTALLFOLDER">
+          <ShortcutProperty Key="System.AppUserModel.ID" Value="Microsoft.PowerToysWin32"/>
+        </Shortcut>
+        <RemoveFolder Id="CleanUpStartMenuShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+        <!-- ApplicationStartMenuShortcut is implicitly installed in HKCU, so WIX won't allow changing this reg value to HKLM. -->
+        <RegistryValue Root="HKCU" Key="Software\Microsoft\PowerToys" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="DesktopShortcut" >
+        <Condition>INSTALLDESKTOPSHORTCUT</Condition>
+        <!-- DesktopShortcutId is implicitly installed in HKCU, so WIX won't allow changing this reg value to HKLM. -->
+        <RegistryValue Root="HKCU"
+                        Key="Software\[Manufacturer]\[ProductName]"
+                        Name="desktopshorcutinstalled"
+                        Type="integer"
+                        Value="1"
+                        KeyPath="yes"/>
+        <Shortcut Id="DesktopShortcutId"
+                  Name="PowerToys (Preview)"
+                  Description="PowerToys - Windows system utilities to maximize productivity"
+                  Target="[!PowerToys.exe]"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="powertoys.exe"
+                  Directory="DesktopFolder"/>
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <ComponentGroup Id="CoreComponents">
+      <Component Id="RemoveCoreFolder" Guid="9330BD69-2D12-4D98-B0C7-66C99564D619" Directory="INSTALLFOLDER" >
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveCoreFolder" Value="" KeyPath="yes"/>
+        </RegistryKey>
+        <RemoveFolder Id="RemoveBaseApplicationsAssetsFolder" Directory="BaseApplicationsAssetsFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveDSCModulesReferenceFolder" Directory="DSCModulesReferenceFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveWinUI3AppsInstallFolder" Directory="WinUI3AppsInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveWinUI3AppsAssetsFolder" Directory="WinUI3AppsAssetsFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveINSTALLFOLDER" Directory="INSTALLFOLDER" On="uninstall"/>
+      </Component>
+      <ComponentRef Id="powertoys_exe" />
+      <ComponentRef Id="PowerToysStartMenuShortcut"/>
+      <ComponentRef Id="powertoys_per_machine_comp" />
+      <ComponentRef Id="powertoys_toast_clsid" />
+      <ComponentRef Id="License_rtf" />
+      <ComponentRef Id="Notice_md" />
+      <ComponentRef Id="DesktopShortcut" />
+      <ComponentRef Id="PowerToysDSCReference" />
+      <?if $(var.PerUser) = "false" ?>
+      <ComponentRef Id="PowerToysDSC" />
+      <?endif?>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

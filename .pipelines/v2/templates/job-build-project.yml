@@ -219,6 +219,10 @@ jobs:
       & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
     displayName: Download and install WiX 3.14 development build
 
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\.pipelines\installWiXVNext.ps1"
+    displayName: Download and install WiX 4/5 development build
+
   - ${{ parameters.beforeBuildSteps }}
 
   - task: VSBuild@1
@@ -452,6 +456,21 @@ jobs:
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
       buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
 
+  - template: steps-build-installer-vnext.yml
+    parameters:
+      codeSign: ${{ parameters.codeSign }}
+      signingIdentity: ${{ parameters.signingIdentity }}
+      versionNumber: ${{ parameters.versionNumber }}
+      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+
+  - template: steps-build-installer-vnext.yml
+    parameters:
+      codeSign: ${{ parameters.codeSign }}
+      signingIdentity: ${{ parameters.signingIdentity }}
+      versionNumber: ${{ parameters.versionNumber }}
+      additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+      buildUserInstaller: true # NOTE: This is the distinction between the above and below rules
+
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
   # - All .pdbs from any static libs .libs (which were only used during linking)
@@ -471,6 +490,13 @@ jobs:
     displayName: Stage Installers
     inputs:
       contents: "**/PowerToys*Setup-*.exe"
+      flattenFolders: True
+      targetFolder: $(JobOutputDirectory)
+
+  - task: CopyFiles@2
+    displayName: Stage Installers
+    inputs:
+      contents: "**/PowerToys*SetupVNext-*.exe"
       flattenFolders: True
       targetFolder: $(JobOutputDirectory)
 
@@ -503,6 +529,28 @@ jobs:
       echo $machineHash
       echo $combinedMachinePath
 
+      $userHash | out-file -filepath $combinedUserPath
+      $machineHash | out-file -filepath $combinedMachinePath
+    displayName: Calculate file hashes
+
+  # Output config for installer vnext
+  - pwsh: |-
+      $p = "$(JobOutputDirectory)\"
+      $userHash = ((Get-Item $p\PowerToysUserSetupVNext*.exe | Get-FileHash).Hash);
+      $machineHash = ((Get-Item $p\PowerToysSetupVNext*.exe | Get-FileHash).Hash);
+      $userPlat = "hash_user_$(BuildPlatform).txt";
+      $machinePlat = "hash_machine_$(BuildPlatform).txt";
+      $combinedUserPath = $p + $userPlat;
+      $combinedMachinePath = $p + $machinePlat;
+      
+      echo $p
+      echo $userPlat
+      echo $userHash
+      echo $combinedUserPath
+      echo $machinePlat
+      echo $machineHash
+      echo $combinedMachinePath
+      
       $userHash | out-file -filepath $combinedUserPath
       $machineHash | out-file -filepath $combinedMachinePath
     displayName: Calculate file hashes
