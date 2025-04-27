@@ -32,6 +32,7 @@ namespace Hosts.UITests
         /// </list>
         /// </summary>
         [TestMethod("Hosts.Basic.EmptyViewShouldWork")]
+        [TestCategory("Hosts File Editor #4")]
         public void TestEmptyView()
         {
             this.CloseWarningDialog();
@@ -63,6 +64,7 @@ namespace Hosts.UITests
         /// </list>
         /// </summary>
         [TestMethod("Hosts.Basic.AddEntryButtonShouldWork")]
+        [TestCategory("Hosts File Editor #4")]
         public void TestAddingEntry()
         {
             this.CloseWarningDialog();
@@ -89,6 +91,7 @@ namespace Hosts.UITests
         /// </list>
         /// </summary>
         [TestMethod("Hosts.Basic.CanNotAddMoreThenNighHosts")]
+        [TestCategory("Hosts File Editor #5")]
         public void TestTooManyHosts()
         {
             this.CloseWarningDialog();
@@ -123,6 +126,7 @@ namespace Hosts.UITests
         /// </list>
         /// </summary>
         [TestMethod("Hosts.Basic.ErrorMessgeShowupIfNotRunAsAdmin")]
+        [TestCategory("Hosts File Editor #8")]
         public void TestErrorMessageWithNonAdminPermission()
         {
             if (this.Session.IsElevated == false)
@@ -148,6 +152,7 @@ namespace Hosts.UITests
         /// </list>
         /// </summary>
         [TestMethod("Hosts.Basic.NoErrorMessgeShowupIfRunAsAdmin")]
+        [TestCategory("Hosts File Editor #8")]
         public void TestNoErrorMessageWithNonAdminPermission()
         {
             if (this.Session.IsElevated == true)
@@ -179,6 +184,7 @@ namespace Hosts.UITests
         /// </list>
         /// </summary>
         [TestMethod("Hosts.Basic.FiltersControlShouldWork")]
+        [TestCategory("Hosts File Editor #6")]
         public void TestFilterControl()
         {
             this.CloseWarningDialog();

@@ -98,6 +98,62 @@ namespace MouseUtils.UITests
         }
 
         [TestMethod]
+        public void TestEnableFindMyMouse2()
+        {
+            LaunchFromSetting();
+
+            var settings = new FindMyMouseSettings();
+            settings.OverlayOpacity = "100";
+            settings.Radius = "80";
+            settings.InitialZoom = "1";
+            settings.AnimationDuration = "0";
+            settings.BackgroundColor = "FFFFFF";
+            settings.SpotlightColor = "000000";
+
+            var foundCustom = this.Find<Custom>("Find My Mouse");
+            Assert.IsNotNull(foundCustom);
+
+            if (CheckAnimationEnable(ref foundCustom))
+            {
+                foundCustom = this.Find<Custom>("Find My Mouse");
+            }
+
+            if (foundCustom != null)
+            {
+                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+
+                // foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+                SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
+                Assert.IsNotNull(foundCustom, "Find My Mouse group not found.");
+                SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
+
+                var excludedApps = foundCustom.Find<TextBlock>("Excluded apps");
+                if (excludedApps != null)
+                {
+                    excludedApps.Click();
+                    excludedApps.Click();
+                }
+                else
+                {
+                    Assert.Fail("Excluded apps group not found.");
+                }
+            }
+            else
+            {
+                Assert.Fail("Find My Mouse group not found.");
+            }
+
+            // [Test Case]Test the different settings and verify they apply, Background color
+            // [Test Case]Test the different settings and verify they apply, Spotlight color
+            // [Test Case]Test the different settings and verify they apply, Spotlight radius
+            VerifySpotlightSettings(ref settings);
+
+            // [Test Case]Enable FindMyMouse. Then, without moving your mouse: Press any other key and verify the overlay disappears.
+            Session.SendKeys(Key.A);
+            VerifySpotlightDisappears(ref settings);
+        }
+
+        [TestMethod]
         public void TestDisableFindMyMouse()
         {
             LaunchFromSetting();
@@ -232,7 +288,7 @@ namespace MouseUtils.UITests
 
         private void VerifySpotlightAppears(ref FindMyMouseSettings settings)
         {
-            Task.Delay(1000).Wait();
+            Task.Delay(2000).Wait();
 
             var location = Session.GetMousePosition();
             int radius = int.Parse(settings.Radius, CultureInfo.InvariantCulture);
@@ -338,7 +394,7 @@ namespace MouseUtils.UITests
                 Assert.IsNotNull(button);
                 button.Click();
 
-                var popupWindow = Session.Find<Window>("Popup");
+                var popupWindow = this.Find<Window>("Popup");
                 Assert.IsNotNull(popupWindow);
                 Task.Delay(1000).Wait();
                 var colorModelComboBox = this.Find<ComboBox>("Color model");
