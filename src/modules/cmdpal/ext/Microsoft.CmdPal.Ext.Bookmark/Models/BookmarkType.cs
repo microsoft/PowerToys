@@ -12,6 +12,4 @@ public enum BookmarkType
     PWSH,
     PowerShell,
     Cmd,
-    Python,
-    Python3,
 }

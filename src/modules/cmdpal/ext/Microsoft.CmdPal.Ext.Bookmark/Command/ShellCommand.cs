@@ -16,8 +16,6 @@ public sealed partial class ShellCommand : InvokableCommand
         { Models.BookmarkType.Cmd, "cmd.exe" },
         { Models.BookmarkType.PWSH, "pwsh.exe" },
         { Models.BookmarkType.PowerShell, "powershell.exe" },
-        { Models.BookmarkType.Python, "python.exe" },
-        { Models.BookmarkType.Python3, "python3.exe" },
     };
 
     private Models.BookmarkType BookmarkType { get; }
@@ -65,6 +63,10 @@ public sealed partial class ShellCommand : InvokableCommand
         if (bookmarkType == BookmarkType.Cmd)
         {
             args = $"/C {bookmarkValue}";
+        }
+        else
+        {
+            args = $"-Command \"{bookmarkValue}\"";
         }
 
         if (!OpenInShellHelper.OpenInShell(fullPath, args, null, OpenInShellHelper.ShellRunAsType.None, false, out var errorMessage))

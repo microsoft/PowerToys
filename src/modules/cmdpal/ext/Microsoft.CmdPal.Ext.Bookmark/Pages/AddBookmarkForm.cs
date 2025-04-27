@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
@@ -25,7 +24,6 @@ internal sealed partial class AddBookmarkForm : FormContent
         var name = _bookmark?.Name ?? string.Empty;
         var url = _bookmark?.Bookmark ?? string.Empty;
         var bookmarkType = _bookmark?.Type.ToString() ?? BookmarkType.Web.ToString();
-        var bookmarkTypeChoices = BookmarkTypeHelper.GetBookmarkChoices();
 
         TemplateJson = $$"""
 {
@@ -34,37 +32,28 @@ internal sealed partial class AddBookmarkForm : FormContent
     "version": "1.5",
     "body": [
         {
-            "type": "Input.ChoiceSet",
-            "label": {{JsonSerializer.Serialize(Resources.bookmarks_form_bookmark_type)}},
-            "value":  {{JsonSerializer.Serialize(bookmarkType)}},
-            "choices": {{bookmarkTypeChoices}},
-            "id": "bookmarkType",
-            "isRequired": true,
-            "errorMessage": "{{JsonSerializer.Serialize(Resources.bookmarks_form_bookmarkType_required)}}"
-        },
-        {
             "type": "Input.Text",
             "style": "text",
             "id": "name",
-            "label": {{JsonSerializer.Serialize(Resources.bookmarks_form_name_label)}},
-            "value": {{JsonSerializer.Serialize(name)}},
+            "label": {{JsonSerializer.Serialize(Resources.bookmarks_form_name_label, BookmarkSerializationContext.Default.String)}},
+            "value": {{JsonSerializer.Serialize(name, BookmarkSerializationContext.Default.String)}},
             "isRequired": true,
-            "errorMessage": "{{JsonSerializer.Serialize(Resources.bookmarks_form_name_required)}}"
+            "errorMessage": "{{JsonSerializer.Serialize(Resources.bookmarks_form_name_required, BookmarkSerializationContext.Default.String)}}"
         },
         {
             "type": "Input.Text",
             "style": "text",
             "id": "bookmark",
-            "value": {{JsonSerializer.Serialize(url)}},
-            "label": {{JsonSerializer.Serialize(Resources.bookmarks_form_bookmark_label)}},
+            "value": {{JsonSerializer.Serialize(url, BookmarkSerializationContext.Default.String)}},
+            "label": {{JsonSerializer.Serialize(Resources.bookmarks_form_bookmark_label, BookmarkSerializationContext.Default.String)}},
             "isRequired": true,
-            "errorMessage": "{{JsonSerializer.Serialize(Resources.bookmarks_form_bookmark_required)}}"
+            "errorMessage": "{{JsonSerializer.Serialize(Resources.bookmarks_form_bookmark_required, BookmarkSerializationContext.Default.String)}}"
         }
     ],
     "actions": [
         {
             "type": "Action.Submit",
-            "title": {{JsonSerializer.Serialize(Resources.bookmarks_form_save)}},
+            "title": {{JsonSerializer.Serialize(Resources.bookmarks_form_save, BookmarkSerializationContext.Default.String)}},
             "data": {
                 "name": "name",
                 "bookmark": "bookmark"
@@ -88,31 +77,14 @@ internal sealed partial class AddBookmarkForm : FormContent
         var formBookmark = formInput["bookmark"] ?? string.Empty;
         var bookmarkTypeString = formInput["bookmarkType"]?.ToString() ?? string.Empty;
 
-        // Determine the type of the bookmark
-        if (!Enum.TryParse<BookmarkType>(bookmarkTypeString, true, out var bookmarkType))
-        {
-            // TODO: need a toast
-            return CommandResult.GoHome();
-        }
-
-        if (!ValidateBookmarkData(formName.ToString(), formBookmark.ToString(), bookmarkType))
-        {
-            // TODO: need a toast
-            return CommandResult.GoHome();
-        }
-
+        var parsedBookmarkType = BookmarkTypeHelper.GetBookmarkTypeFromValue(formBookmark.ToString());
         var updated = _bookmark ?? new BookmarkData();
         updated.Name = formName.ToString();
         updated.Bookmark = formBookmark.ToString();
-        updated.Type = bookmarkType;
+        updated.Type = parsedBookmarkType;
         var paths = EnvironmentsCache.Instance.GetPaths();
 
         AddedCommand?.Invoke(this, updated);
         return CommandResult.GoHome();
-    }
-
-    private bool ValidateBookmarkData(string name, string bookmark, BookmarkType type)
-    {
-        return true;
     }
 }

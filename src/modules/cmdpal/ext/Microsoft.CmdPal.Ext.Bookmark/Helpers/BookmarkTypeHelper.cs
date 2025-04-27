@@ -2,80 +2,93 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Text.Json.Nodes;
+using System;
 using Microsoft.CmdPal.Ext.Bookmarks.Models;
-using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
 public static partial class BookmarkTypeHelper
 {
-    public static string GetBookmarkChoices()
+    /*
+     * Summary:
+     * If bookmark has a space, we assume it's a shell command. eg: "python test.py" or "test.ps1 /C /D"
+     * Ok fine, we can ensure the bookmark don't have spaces now.
+     * So:
+     * 1. Check if it's a valid url.
+     * 2. Check if it's a existing folder.
+     * 3. if it's a exsiting file, it also have the possibility to be a shell command file. eg: "test.cmd" or "test.ps1". So, check the extension. If not, assume it's a normal file.
+     * By default, we assume it's Web Link.
+     */
+
+    public static BookmarkType GetBookmarkTypeFromValue(string bookmark)
     {
-        JsonArray bookmarkChoices = new JsonArray
-        {
-            new JsonObject
-            {
-                ["title"] = Resources.bookmarks_form_bookmark_type_web,
-                ["value"] = BookmarkType.Web.ToString(),
-            },
-            new JsonObject
-            {
-                ["title"] = Resources.bookmarks_form_bookmark_type_File,
-                ["value"] = BookmarkType.File.ToString(),
-            },
-            new JsonObject
-            {
-                ["title"] = Resources.bookmarks_form_bookmark_type_Folder,
-                ["value"] = BookmarkType.Folder.ToString(),
-            },
-        };
+        var splitedBookmarkValue = bookmark.Split(" ");
 
-        if (EnvironmentsCache.Instance.TryGetExecutableFileFullPath("pwsh.exe", out _))
+        if (splitedBookmarkValue.Length > 1)
         {
-            bookmarkChoices.Add(new JsonObject
+            // abosolutely it's a shell command
+            // we don't need to check the file name
+            var exectuableFileName = splitedBookmarkValue[0];
+            var executableExtension = System.IO.Path.GetExtension(exectuableFileName);
+
+            // if it's a cmd
+            if (executableExtension == ".cmd" || executableExtension == ".bat")
             {
-                ["title"] = Resources.bookmarks_form_bookmark_type_PWSH,
-                ["value"] = BookmarkType.PWSH.ToString(),
-            });
+                return BookmarkType.Cmd;
+            }
+
+            // Otherwise, we assume it's a powershell or pwsh.
+            // Prefer to use pwsh, but check if pwsh is installed
+            // if not, we use powershell
+            if (EnvironmentsCache.Instance.TryGetExecutableFileFullPath("pwsh.exe", out _))
+            {
+                return BookmarkType.PWSH;
+            }
+
+            return BookmarkType.PowerShell;
         }
 
-        if (EnvironmentsCache.Instance.TryGetExecutableFileFullPath("powershell.exe", out _))
+        // judge if the bookmark is a url
+        if (Uri.TryCreate(bookmark, UriKind.Absolute, out var uriResult))
         {
-            bookmarkChoices.Add(new JsonObject
+            if (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps)
             {
-                ["title"] = Resources.bookmarks_form_bookmark_type_PowerShell,
-                ["value"] = BookmarkType.PowerShell.ToString(),
-            });
+                return BookmarkType.Web;
+            }
         }
 
-        if (EnvironmentsCache.Instance.TryGetExecutableFileFullPath("cmd.exe", out _))
+        // judge if the bookmak is a existing folder
+        if (System.IO.Directory.Exists(bookmark))
         {
-            bookmarkChoices.Add(new JsonObject
-            {
-                ["title"] = Resources.bookmarks_form_bookmark_type_CMD,
-                ["value"] = BookmarkType.Cmd.ToString(),
-            });
+            return BookmarkType.Folder;
         }
 
-        if (EnvironmentsCache.Instance.TryGetExecutableFileFullPath("python.exe", out _))
+        // ok, fine. Actually, it's also have the possibility to be a shell command.
+        // Such as 'test.cmd' or 'test.ps1'. Try to catch this case.
+        if (System.IO.File.Exists(bookmark))
         {
-            bookmarkChoices.Add(new JsonObject
+            // get file name
+            var extension = System.IO.Path.GetExtension(bookmark);
+            switch (extension)
             {
-                ["title"] = Resources.bookmarks_form_bookmark_type_Python,
-                ["value"] = BookmarkType.Python.ToString(),
-            });
+                case ".ps1":
+                case ".psm1":
+                    // prefer pwsh.exe over powershell.exe
+                    if (EnvironmentsCache.Instance.TryGetExecutableFileFullPath("pwsh.exe", out _))
+                    {
+                        return BookmarkType.PWSH;
+                    }
+
+                    return BookmarkType.PowerShell;
+                case ".cmd":
+                case ".bat":
+                    return BookmarkType.Cmd;
+            }
+
+            return BookmarkType.File;
         }
 
-        if (EnvironmentsCache.Instance.TryGetExecutableFileFullPath("python3.exe", out _))
-        {
-            bookmarkChoices.Add(new JsonObject
-            {
-                ["title"] = Resources.bookmarks_form_bookmark_type_Python3,
-                ["value"] = BookmarkType.Python3.ToString(),
-            });
-        }
-
-        return bookmarkChoices.ToJsonString();
+        // by default. we assume the bookmark is a Web link
+        return BookmarkType.Web;
     }
 }

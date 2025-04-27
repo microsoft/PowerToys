@@ -24,8 +24,6 @@ public static partial class CommandItemFactory
         { Models.BookmarkType.Cmd, CreateShellCommand },
         { Models.BookmarkType.PWSH, CreateShellCommand },
         { Models.BookmarkType.PowerShell, CreateShellCommand },
-        { Models.BookmarkType.Python, CreateShellCommand },
-        { Models.BookmarkType.Python3, CreateShellCommand },
     };
 
     public static bool TryCreateBookmarkCommand(BookmarkData data, TypedEventHandler<object, BookmarkData> addBookmarkFunc, Action deleteAction, out CommandItem command)

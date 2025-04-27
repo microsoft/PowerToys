@@ -43,10 +43,10 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
 {
     "type": "Input.Text",
     "style": "text",
-    "id": "{{p}}",
-    "label": "{{p}}",
+    "id": "{{JsonSerializer.Serialize(p, BookmarkSerializationContext.Default.String)}}",
+    "label": "{{JsonSerializer.Serialize(p, BookmarkSerializationContext.Default.String)}}",
     "isRequired": true,
-    "errorMessage": "{{errorMessage}}"
+    "errorMessage": "{{JsonSerializer.Serialize(errorMessage, BookmarkSerializationContext.Default.String)}}"
 }
 """;
         }).ToList();
@@ -64,7 +64,7 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
   "actions": [
     {
       "type": "Action.Submit",
-      "title": {{JsonSerializer.Serialize(Resources.bookmarks_form_open)}},
+      "title": {{JsonSerializer.Serialize(Resources.bookmarks_form_open, BookmarkSerializationContext.Default.String)}},
       "data": {
         "placeholder": "placeholder"
       }
@@ -102,8 +102,6 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
                 case BookmarkType.Cmd:
                 case BookmarkType.PWSH:
                 case BookmarkType.PowerShell:
-                case BookmarkType.Python3:
-                case BookmarkType.Python:
                     result = ShellCommand.Invoke(target, _bookmarkType);
                     break;
 

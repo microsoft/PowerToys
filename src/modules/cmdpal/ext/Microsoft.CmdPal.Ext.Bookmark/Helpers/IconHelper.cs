@@ -26,10 +26,6 @@ public static class IconHelper
 
     public static IconInfo PowerShellIcon { get; private set; } = new("\uE756"); // PowerShell
 
-    public static IconInfo PythonIcon { get; private set; } = new("\uE756"); // Python
-
-    public static IconInfo Python3Icon { get; private set; } = new("\uE756"); // Python3
-
     public static IconInfo GetIconByType(BookmarkType type)
     {
         return type switch
@@ -40,8 +36,6 @@ public static class IconHelper
             BookmarkType.Cmd => CmdIcon,
             BookmarkType.PWSH => PWSHIcon,
             BookmarkType.PowerShell => PowerShellIcon,
-            BookmarkType.Python => PythonIcon,
-            BookmarkType.Python3 => Python3Icon,
 
             _ => UrlIcon, // Default icon
         };
