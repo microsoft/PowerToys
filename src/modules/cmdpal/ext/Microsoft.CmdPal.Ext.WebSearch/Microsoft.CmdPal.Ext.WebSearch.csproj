@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.WebSearch</RootNamespace>
 	<Nullable>enable</Nullable>

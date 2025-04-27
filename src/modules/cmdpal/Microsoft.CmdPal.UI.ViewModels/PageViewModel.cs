@@ -99,7 +99,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     //// Run on background thread from ListPage.xaml.cs
     [RelayCommand]
-    private Task<bool> InitializeAsync()
+    internal Task<bool> InitializeAsync()
     {
         // TODO: We may want a SemaphoreSlim lock here.
 

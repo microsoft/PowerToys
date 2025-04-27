@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <PathToRoot>..\..\..\..\..\</PathToRoot>
-    <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.6.250205002</WasdkNuget>
+    <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.7.250401001</WasdkNuget>
     <CppWinRTNuget>$(PathToRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5</CppWinRTNuget>
     <WindowsSdkBuildToolsNuget>$(PathToRoot)packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428</WindowsSdkBuildToolsNuget>
     <WebView2Nuget>$(PathToRoot)packages\Microsoft.Web.WebView2.1.0.2903.40</WebView2Nuget>

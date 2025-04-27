@@ -13,5 +13,5 @@ public class HistoryItem(string searchString, DateTime timestamp)
 
     public DateTime Timestamp { get; private set; } = timestamp;
 
-    public string ToJson() => JsonSerializer.Serialize(this);
+    public string ToJson() => JsonSerializer.Serialize(this, WebSearchJsonSerializationContext.Default.HistoryItem);
 }
