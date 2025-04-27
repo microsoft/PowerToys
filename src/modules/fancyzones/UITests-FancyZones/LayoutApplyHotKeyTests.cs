@@ -375,10 +375,9 @@ namespace Microsoft.FancyZones.UITests
 
             int tries = 24;
             Pull(tries, "down");
-            this.Find<Element>("Enable quick layout switch").Click();
-            var checkbox1 = this.Find<Element>("Flash zones when switching layout");
-            Console.WriteLine($"checkbox1: {checkbox1.GetAttribute("TogglePattern.ToggleState")}");
-            if (checkbox1.GetAttribute("TogglePattern.ToggleState") == "False")
+            this.Find<Group>("Enable quick layout switch").Click();
+            var checkbox1 = this.Find<CheckBox>("Flash zones when switching layout");
+            if (checkbox1.GetAttribute("Toggle.ToggleState") == "0")
             {
                 checkbox1.Click();
             }
@@ -394,8 +393,8 @@ namespace Microsoft.FancyZones.UITests
             this.Session.ReleaseKey(Key.Alt);
             this.Session.ReleaseKey(Key.Num0);
 
-            var checkbox2 = this.Find<Element>("Flash zones when switching layout");
-            if (checkbox2.GetAttribute("TogglePattern.ToggleState") == "True")
+            var checkbox2 = this.Find<CheckBox>("Flash zones when switching layout");
+            if (checkbox2.GetAttribute("Toggle.ToggleState") == "1")
             {
                 checkbox2.Click();
             }
@@ -416,9 +415,7 @@ namespace Microsoft.FancyZones.UITests
         public void TestDisableApplyHotKey()
         {
             this.OpenFancyZonesPanel();
-            this.AttachFancyZonesEditor();
             this.ControlQuickLayoutSwitch(false);
-            this.CloseFancyZonesEditor();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
             this.AttachFancyZonesEditor();
