@@ -147,9 +147,6 @@ public:
 
     ~CmdPal()
     {
-        if (CmdPal::m_enabled)
-        {
-        }
         CmdPal::m_enabled.store(false);
     }
 
@@ -276,7 +273,7 @@ public:
         }
         else
         {
-            // If not first time enable, do retry launch.
+            // If first time enable, do retry launch.
             Logger::trace("First attempt, try to launch");
             std::thread launchThread(&CmdPal::RetryLaunch, launchPath);
             launchThread.detach();
@@ -305,6 +302,10 @@ public:
             {
                 Logger::info(L"CmdPal launched successfully after {} retries.", retry);
                 return;
+            }
+            else
+            {
+                Logger::error(L"Retry {} launch CmdPal launch failed.", retry);
             }
 
             // When we got max retry, we don't need to wait for the next retry.
