@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FancyZonesEditor.Models;
@@ -372,10 +373,11 @@ namespace Microsoft.FancyZones.UITests
             this.OpenFancyZonesPanel();
             this.ControlQuickLayoutSwitch(true);
 
-            int tries = 16;
+            int tries = 24;
             Pull(tries, "down");
             this.Find<Element>("Enable quick layout switch").Click();
             var checkbox1 = this.Find<Element>("Flash zones when switching layout");
+            Console.WriteLine($"checkbox1: {checkbox1.GetAttribute("TogglePattern.ToggleState")}");
             if (checkbox1.GetAttribute("TogglePattern.ToggleState") == "False")
             {
                 checkbox1.Click();
@@ -564,11 +566,11 @@ namespace Microsoft.FancyZones.UITests
 
         private void ControlQuickLayoutSwitch(bool flag)
         {
-            int tries = 14;
+            int tries = 24;
             Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
             this.Find<ToggleSwitch>("Enable quick layout switch").Toggle(flag);
 
-            tries = 14;
+            tries = 24;
             Pull(tries, "up");
         }
 
