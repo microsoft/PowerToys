@@ -30,7 +30,7 @@ using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 namespace UITests_FancyZones
 {
     [TestClass]
-    public class DragingWindowTests : UITestBase
+    public class DragWindowTests : UITestBase
     {
         private static readonly IOTestHelper AppZoneHistory = new FancyZonesEditorFiles().AppZoneHistoryIOHelper;
         private static string nonPrimaryMouseButton = "Right";
@@ -47,7 +47,7 @@ namespace UITests_FancyZones
 
         private static string powertoysWindowName = "PowerToys Settings"; // set powertoys settings window name
 
-        public DragingWindowTests()
+        public DragWindowTests()
             : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
         {
         }
@@ -241,8 +241,8 @@ namespace UITests_FancyZones
             Session.PerformMouseAction(
              nonPrimaryMouseButton == "Right" ? MouseActionType.RightClick : MouseActionType.LeftClick);
 
-            string zoneColorwithMouse = GetOutWindowPixelColor(30);
-            Assert.AreEqual(initialColor, zoneColorwithMouse, $"[{nameof(TestShowZonesWhenShiftAndMouseOff)}] Zone color did not activate.");
+            string zoneColorWithMouse = GetOutWindowPixelColor(30);
+            Assert.AreEqual(initialColor, zoneColorWithMouse, $"[{nameof(TestShowZonesWhenShiftAndMouseOff)}] Zone color did not activate.");
 
             Session.ReleaseKey(Key.Shift);
             dragElement.ReleaseDrag();
@@ -252,14 +252,14 @@ namespace UITests_FancyZones
         public void TestMakeDraggedWindowTransparentOn()
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
-            Assert.AreNotEqual(pixel.PixelInwindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}] window color is not transparent.");
+            Assert.AreNotEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}] window color is not transparent.");
         }
 
         [TestMethod]
         public void TestMakeDraggedWindowTransparentOff()
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
-            Assert.AreEqual(pixel.PixelInwindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}] window color is not transparent.");
+            Assert.AreEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}] window color is not transparent.");
         }
 
         private void SetupCustomLayouts()
@@ -298,7 +298,7 @@ namespace UITests_FancyZones
             quarterY = (rect.Top + rect.Bottom) / 4;
         }
 
-        public (string PixelInwindow, string TransPixel) GetPixelWhenMakeDraggedWindow()
+        public (string PixelInWindow, string TransPixel) GetPixelWhenMakeDraggedWindow()
         {
             var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);

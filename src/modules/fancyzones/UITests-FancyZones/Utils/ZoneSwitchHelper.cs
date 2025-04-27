@@ -52,38 +52,6 @@ namespace Microsoft.FancyZones.UITests.Utils
             return null;
         }
 
-        [DllImport("dwmapi.dll", PreserveSig = true)]
-        private static extern void DwmGetColorizationColor(out uint colorizationColor, out bool opaqueBlend);
-
-        public static Color GetHighlightColor()
-        {
-            DwmGetColorizationColor(out uint colorizationColor, out _);
-            byte r = (byte)((colorizationColor >> 16) & 0xFF);
-            byte g = (byte)((colorizationColor >> 8) & 0xFF);
-            byte b = (byte)(colorizationColor & 0xFF);
-            return Color.FromArgb(r, g, b);
-        }
-
-        public static string GetHighlightColorString()
-        {
-            Color color = GetHighlightColor();
-            return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
-        }
-
-        public static int GetZoneHistoyNum(string json)
-        {
-            try
-            {
-                using var doc = JsonDocument.Parse(json);
-                var historyArray = doc.RootElement.GetProperty("app-zone-history");
-                return historyArray.GetArrayLength();
-            }
-            catch (JsonException)
-            {
-                return 0;
-            }
-        }
-
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
 
