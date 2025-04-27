@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using Windows.Win32;
 using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
 
 namespace Microsoft.CmdPal.Ext.Apps.Utils;
@@ -34,7 +35,7 @@ public class ShellLocalization
         }
 
         var shellItemType = ShellItemTypeConstants.ShellItemGuid;
-        var retCode = SHCreateItemFromParsingName(path, nint.Zero, ref shellItemType, out var shellItem);
+        var retCode = PInvoke.SHCreateItemFromParsingName(path, nint.Zero, ref shellItemType, out var shellItem);
         if (retCode != 0)
         {
             return string.Empty;

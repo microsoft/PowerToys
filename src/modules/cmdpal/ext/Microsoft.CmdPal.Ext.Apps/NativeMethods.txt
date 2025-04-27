@@ -15,3 +15,4 @@ GetMonitorInfo
 SHCreateStreamOnFileEx
 CoAllowSetForegroundWindow
 SHLoadIndirectString
+SHCreateItemFromParsingName
