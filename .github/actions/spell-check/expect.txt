@@ -1279,6 +1279,7 @@ pstm
 PStr
 pstream
 pstrm
+pswd
 PSYSTEM
 psz
 ptb
@@ -1425,6 +1426,7 @@ searchterm
 SEARCHUI
 SECONDARYDISPLAY
 secpol
+securestring
 SEEMASKINVOKEIDLIST
 SELCHANGE
 SENDCHANGE
@@ -1981,3 +1983,11 @@ ZOOMITX
 ZXk
 ZXNs
 zzz
+ACIE
+AOklab
+BCIE
+BOklab
+culori
+Evercoder
+LCh
+CIELCh
