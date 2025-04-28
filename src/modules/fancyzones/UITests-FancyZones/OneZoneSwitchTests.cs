@@ -9,9 +9,11 @@ using System.Diagnostics;
 using System.DirectoryServices;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Automation;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using FancyZonesEditor.Models;
@@ -21,6 +23,7 @@ using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium.Appium.Windows;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace UITests_FancyZones
@@ -70,7 +73,7 @@ namespace UITests_FancyZones
             this.Find<ToggleSwitch>("Switch between windows in the current zone").Toggle(switchWindowEnable);
             Task.Delay(500).Wait(); // Wait for the setting to be applied
             Pull(tries, "up"); // Pull the setting page down to make sure the setting is visible
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 2000);
+            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 3000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Element>(By.Name("Custom Column")).Click();
             this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
@@ -156,12 +159,21 @@ namespace UITests_FancyZones
             int targetX = screenWidth / SubZones / 3;
             int targetY = screenWidth / SubZones / 2;
 
-            // assert the AppZoneHistory layout is set
+            // Attach the PowerToys settings window to the front
+            Session.Attach(powertoysWindowName, WindowSize.UnSpecified);
+            string windowNameFront = ZoneSwitchHelper.GetActiveWindowTitle();
+            Console.WriteLine($"Window name: {windowNameFront}");
+            Element settingsView = Find<Element>(By.Name("Non Client Input Sink Window"));
+            settingsView.DoubleClick(); // maximize the window
+            settingsView.KeyDownAndDrag(Key.Shift, targetX, targetY);
+
+            // start exe
             Session.KillAllProcessesByName("explorer");
             Session.StartExe("explorer.exe", "C:\\");
+            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the window is open
 
-            // Fix for CS8601: Possible null reference assignment.
-            windowName = ZoneSwitchHelper.GetActiveWindowTitle() ?? string.Empty;
+            windowName = ZoneSwitchHelper.GetActiveWindowTitle();
+            Console.WriteLine($"Window name: {windowName}");
 
             // Start Windows Explorer process
             Session.Attach(windowName, WindowSize.UnSpecified); // display window1
@@ -169,19 +181,13 @@ namespace UITests_FancyZones
             tabView.DoubleClick(); // maximize the window
             tabView.KeyDownAndDrag(Key.Shift, targetX, targetY);
 
-            // Attach the PowerToys settings window to the front
-            Session.Attach(powertoysWindowName, WindowSize.UnSpecified);
-            Element settingsView = Find<Element>(By.Name("Non Client Input Sink Window"));
-            settingsView.DoubleClick(); // maximize the window
-            settingsView.KeyDownAndDrag(Key.Shift, targetX, targetY);
-
             // check the AppZoneHistory layout is set and in the same zone
             string appZoneHistoryJson = AppZoneHistory.GetData();
             Console.WriteLine($"{ZoneSwitchHelper.GetZoneIndexSetByAppName(windowName, appZoneHistoryJson)},{ZoneSwitchHelper.GetZoneIndexSetByAppName(windowName, appZoneHistoryJson)}");
             Assert.AreEqual(
                 ZoneSwitchHelper.GetZoneIndexSetByAppName(windowName, appZoneHistoryJson),
                 ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson));
-            }
+        }
 
         private static readonly CustomLayouts.CustomLayoutListWrapper CustomLayoutsList = new CustomLayouts.CustomLayoutListWrapper
         {
