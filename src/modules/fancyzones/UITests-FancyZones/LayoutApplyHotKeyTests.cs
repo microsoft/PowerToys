@@ -218,6 +218,7 @@ namespace Microsoft.FancyZones.UITests
         [TestInitialize]
         public void TestInitialize()
         {
+            this.RestartScopeExe();
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(Parameters));
