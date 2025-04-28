@@ -35,12 +35,12 @@ namespace Microsoft.PowerToys.Telemetry
         /// <summary>
         /// Publishes ETW event when an action is triggered on
         /// </summary>
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Ok, fine. Currently all path which would call this function are a certain Type. That's ok when trimming. But if in the future, we still need another generics warpper for it. Please also add DynamicallyAccessedMembers for it.")]
         public void WriteEvent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>(T telemetryEvent)
             where T : EventBase, IEvent
         {
             if (DataDiagnosticsSettings.GetEnabledValue())
             {
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
                 this.Write<T>(
                     telemetryEvent.EventName,
                     new EventSourceOptions()
@@ -49,7 +49,6 @@ namespace Microsoft.PowerToys.Telemetry
                         Tags = ProjectTelemetryTagProductAndServicePerformance,
                     },
                     telemetryEvent);
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
             }
         }
     }
