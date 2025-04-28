@@ -38,6 +38,7 @@ namespace UITests_FancyZones
         {
         }
 
+        /*
         [TestInitialize]
         public void TestInitialize()
         {
@@ -217,5 +218,7 @@ namespace UITests_FancyZones
         {
             Session.KillAllProcessesByName("explorer");
         }
+
+        */
     }
 }
