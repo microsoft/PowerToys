@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -804,6 +804,11 @@ namespace Microsoft.PowerToys.UITest
                 }
             }
 
+            /// <summary>
+            /// Get the boundary coordinates (left, top, right, bottom) of a specified window (in screen coordinates).
+            /// </summary>
+            /// <param name="hWnd">The window handle.</param>
+            /// <returns>A tuple containing the left, top, right, and bottom coordinates of the window.</returns>
             public static (int Left, int Top, int Right, int Bottom) GetWindowRect(IntPtr hWnd)
             {
                 if (hWnd == IntPtr.Zero)

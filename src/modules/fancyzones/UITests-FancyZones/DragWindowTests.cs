@@ -83,7 +83,7 @@ namespace UITests_FancyZones
         /// Test Use Shift key to activate zones while dragging a window in FancyZones Zone Behaviour Settings
         /// <list type="bullet">
         /// <item>
-        /// <description>Verifies that holding Shift while dragging activates zones as expected.</description>
+        /// <description>Verifies that holding Shift while dragging shows all zones as expected.</description>
         /// </item>
         /// </list>
         /// </summary>
@@ -120,6 +120,14 @@ namespace UITests_FancyZones
             dragElement.ReleaseDrag();
         }
 
+        /// <summary>
+        /// Test dragging a window during Shift key press in FancyZones Zone Behaviour Settings
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Verifies that dragging activates zones as expected.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
         [TestMethod]
         public void TestShowZonesOnDragDuringShift()
         {
@@ -146,8 +154,8 @@ namespace UITests_FancyZones
                 },
                 testCaseName: nameof(TestShowZonesOnDragDuringShift));
 
-            Assert.AreNotEqual(initialColor, withDragColor, $"[{testCaseName}] Zone color did not change during shift.");
-            Assert.AreEqual(highlightColor, withDragColor, $"[{testCaseName}] Zone color did not activate.");
+            Assert.AreNotEqual(initialColor, withDragColor, $"[{testCaseName}] Zone color did not change and zone did not activate.");
+            Assert.AreEqual(highlightColor, withDragColor, $"[{testCaseName}] Zone color did not match tha highcolor and did not activate.");
 
             // double check by app-zone-history.json
             string appZoneHistoryJson = AppZoneHistory.GetData();
@@ -155,6 +163,14 @@ namespace UITests_FancyZones
             Assert.IsNull(zonenumber, $"[{testCaseName}] AppZoneHistory layout is not set.");
         }
 
+        /// <summary>
+        /// Test toggling zones using a non-primary mouse click during window dragging.
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Verifies that clicking a non-primary mouse button deactivates zones while dragging a window.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
         [TestMethod]
         public void TestToggleZonesWithNonPrimaryMouseClick()
         {
@@ -187,6 +203,14 @@ namespace UITests_FancyZones
             Assert.AreNotEqual(highlightColor, withMouseColor, $"[{testCaseName}] Zone color did not deactivate.");
         }
 
+        /// <summary>
+        /// Test both use Shift and non primary mouse off settings.
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Verifies that pressing the Shift key deactivates zones during a window drag-and-hold action.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
         [TestMethod]
         public void TestShowZonesWhenShiftAndMouseOff()
         {
@@ -217,6 +241,14 @@ namespace UITests_FancyZones
             Assert.AreNotEqual(highlightColor, withShiftColor, $"[{testCaseName}] Zone color did not deactivate.");
         }
 
+        /// <summary>
+        /// Test zone visibility when both Shift key and mouse settings are involved.
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Verifies that zones are activated when Shift is pressed during drag, and deactivated by a non-primary mouse click.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
         [TestMethod]
         public void TestShowZonesWhenShiftAndMouseOn()
         {
@@ -250,6 +282,14 @@ namespace UITests_FancyZones
             dragElement.ReleaseDrag();
         }
 
+        /// <summary>
+        /// Test that a window becomes transparent during dragging when the transparent window setting is enabled.
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Verifies that the window appears transparent while being dragged.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
         [TestMethod]
         public void TestMakeDraggedWindowTransparentOn()
         {
@@ -257,13 +297,22 @@ namespace UITests_FancyZones
             Assert.AreNotEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}] window color is not transparent.");
         }
 
+        /// <summary>
+        /// Test that a window remains opaque during dragging when the transparent window setting is disabled.
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Verifies that the window is not transparent while being dragged.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
         [TestMethod]
         public void TestMakeDraggedWindowTransparentOff()
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
-            Assert.AreEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}] window color is not transparent.");
+            Assert.AreEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}] window color is changed.");
         }
 
+        // Setup custom layout with 1 subzones
         private void SetupCustomLayouts()
         {
             var customLayouts = new CustomLayouts();
@@ -271,6 +320,7 @@ namespace UITests_FancyZones
             Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
         }
 
+        // launch FancyZones settings page
         private void LaunchFancyZones()
         {
             if (this.FindAll<NavigationViewItem>("FancyZones").Count == 0)
@@ -290,6 +340,7 @@ namespace UITests_FancyZones
             this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
         }
 
+        // Get the screen margins to calculate the dragged window position
         private void GetScreenMargins()
         {
             var rect = this.Session.GetWindowRect();
@@ -301,6 +352,7 @@ namespace UITests_FancyZones
             quarterY = (rect.Top + rect.Bottom) / 4;
         }
 
+        // Get the mouse color of the pixel when make dragged window
         public (string PixelInWindow, string TransPixel) GetPixelWhenMakeDraggedWindow()
         {
             var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
@@ -315,6 +367,7 @@ namespace UITests_FancyZones
             return (pixelInWindow, transPixel);
         }
 
+        // Get the color of the pixel outside the window
         public string GetOutWindowPixelColor(int spacing)
         {
             var rect = this.Session.GetWindowRect();
@@ -351,6 +404,7 @@ namespace UITests_FancyZones
             return zoneColor;
         }
 
+        // Run drag interactions and return the initial and final zone colors
         public (string InitialZoneColor, string FinalZoneColor) RunDragInteractions(
         Action? preAction,
         Action? postAction,
@@ -376,6 +430,7 @@ namespace UITests_FancyZones
             return (initialZoneColor, finalZoneColor);
         }
 
+        // Pull the setting page up or down
         private void Pull(int tries = 5, string direction = "up")
         {
             Key keyToSend = direction == "up" ? Key.Up : Key.Down;
@@ -385,6 +440,7 @@ namespace UITests_FancyZones
             }
         }
 
+        // set the custom layout
         private static readonly CustomLayouts.CustomLayoutListWrapper CustomLayoutsList = new CustomLayouts.CustomLayoutListWrapper
         {
             CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>
@@ -409,6 +465,7 @@ namespace UITests_FancyZones
             },
         };
 
+        // set the zone behaviour settings
         private void ZoneBehaviourSettings(string? testName)
         {
             Microsoft.PowerToys.UITest.CheckBox showZoneNumber = this.Find<Microsoft.PowerToys.UITest.CheckBox>("Show zone number");
