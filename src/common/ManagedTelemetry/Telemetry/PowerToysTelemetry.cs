@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 
 using Microsoft.PowerToys.Telemetry.Events;
@@ -11,7 +12,7 @@ namespace Microsoft.PowerToys.Telemetry
     /// <summary>
     /// Telemetry helper class for PowerToys.
     /// </summary>
-    public class PowerToysTelemetry : TelemetryBase
+    public partial class PowerToysTelemetry : TelemetryBase
     {
         /// <summary>
         /// Name for ETW event.
@@ -34,11 +35,12 @@ namespace Microsoft.PowerToys.Telemetry
         /// <summary>
         /// Publishes ETW event when an action is triggered on
         /// </summary>
-        public void WriteEvent<T>(T telemetryEvent)
+        public void WriteEvent<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>(T telemetryEvent)
             where T : EventBase, IEvent
         {
             if (DataDiagnosticsSettings.GetEnabledValue())
             {
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
                 this.Write<T>(
                     telemetryEvent.EventName,
                     new EventSourceOptions()
@@ -47,6 +49,7 @@ namespace Microsoft.PowerToys.Telemetry
                         Tags = ProjectTelemetryTagProductAndServicePerformance,
                     },
                     telemetryEvent);
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
             }
         }
     }

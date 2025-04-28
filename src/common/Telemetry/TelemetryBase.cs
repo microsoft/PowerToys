@@ -26,7 +26,7 @@ namespace Microsoft.PowerToys.Telemetry
     /// <summary>
     /// Base class for telemetry events.
     /// </summary>
-    public class TelemetryBase : EventSource
+    public partial class TelemetryBase : EventSource
     {
         /// <summary>
         /// The event tag for this event source.
