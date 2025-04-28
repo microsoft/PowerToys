@@ -129,7 +129,7 @@ namespace MouseUtils.UITests
 
         private void VerifyMousePointerCrosshairsAppears(ref MousePointerCrosshairsSettings settings)
         {
-            Task.Delay(500).Wait();
+            Task.Delay(1000).Wait();
             string expectedColor = string.Empty;
             expectedColor = "#" + settings.CrosshairsColor;
             var location = Session.GetMousePosition();
@@ -137,19 +137,19 @@ namespace MouseUtils.UITests
             int radius = int.Parse(settings.CenterRadius, CultureInfo.InvariantCulture);
 
             var color = Session.GetPixelColorString(location.Item1, location.Item2);
-            Assert.AreEqual(expectedColor, color);
+            Assert.AreEqual(expectedColor, color, "Center color check failed");
 
             var colorX = Session.GetPixelColorString(location.Item1 + 50, location.Item2);
-            Assert.AreEqual(expectedColor, colorX);
+            Assert.AreEqual(expectedColor, colorX, "Center x + 50 color check failed");
 
             colorX = Session.GetPixelColorString(location.Item1 - 50, location.Item2);
-            Assert.AreEqual(expectedColor, colorX);
+            Assert.AreEqual(expectedColor, colorX, "Center x - 50 color check failed");
 
             var colorY = Session.GetPixelColorString(location.Item1, location.Item2 + 50);
-            Assert.AreEqual(expectedColor, colorY);
+            Assert.AreEqual(expectedColor, colorY, "Center y + 50 color check failed");
 
             colorY = Session.GetPixelColorString(location.Item1, location.Item2 - 50);
-            Assert.AreEqual(expectedColor, colorY);
+            Assert.AreEqual(expectedColor, colorY, "Center y + 50 color check failed");
         }
 
         private void SetColor(ref Custom foundCustom, string colorName, string colorValue = "000000")
