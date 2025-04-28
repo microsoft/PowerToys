@@ -155,7 +155,7 @@ namespace UITests_FancyZones
                 testCaseName: nameof(TestShowZonesOnDragDuringShift));
 
             Assert.AreNotEqual(initialColor, withDragColor, $"[{testCaseName}] Zone color did not change and zone did not activate.");
-            Assert.AreEqual(highlightColor, withDragColor, $"[{testCaseName}] Zone color did not match the highlightcolor and did not activate.");
+            Assert.AreEqual(highlightColor, withDragColor, $"[{testCaseName}] Zone color did not match the highlightColor and did not activate.");
 
             // double check by app-zone-history.json
             string appZoneHistoryJson = AppZoneHistory.GetData();
