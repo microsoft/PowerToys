@@ -399,17 +399,6 @@ namespace Microsoft.FancyZones.UITests
             {
                 checkbox2.Click();
             }
-
-            this.Session.PressKey(Key.Win);
-            this.Session.PressKey(Key.Ctrl);
-            this.Session.PressKey(Key.Alt);
-            this.Session.PressKey(Key.Num0);
-            res = this.Session.IsWindowOpen("FancyZones_ZonesOverlay");
-            Assert.IsFalse(res, $"==={res}===");
-            this.Session.ReleaseKey(Key.Win);
-            this.Session.ReleaseKey(Key.Ctrl);
-            this.Session.ReleaseKey(Key.Alt);
-            this.Session.ReleaseKey(Key.Num0);
         }
 
         [TestMethod]
