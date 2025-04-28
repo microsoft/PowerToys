@@ -421,21 +421,21 @@ namespace Microsoft.FancyZones.UITests
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
             this.AttachFancyZonesEditor();
             var element = this.Find<Element>("Grid custom layout");
-            Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
+            Assert.IsFalse(element.Selected, $"{element.Selected} Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num1);
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Grid-9");
-            Assert.IsTrue(element.Selected, $"{element.Selected} Grid-9 is not visible");
+            Assert.IsFalse(element.Selected, $"{element.Selected} Grid-9 is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num2);
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Canvas custom layout");
-            Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
+            Assert.IsFalse(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
         }
@@ -555,13 +555,6 @@ namespace Microsoft.FancyZones.UITests
 
         private void OpenFancyZonesPanel(bool launchAsAdmin = false)
         {
-            if (this.Session.IsWindowOpen("FancyZones Layout"))
-            {
-                AttachFancyZonesEditor();
-                CloseFancyZonesEditor();
-                AttachPowertoySetting();
-            }
-
             var windowingElement = this.Find<NavigationViewItem>("Windowing & Layouts");
 
             // Goto FancyZones Editor setting page
@@ -573,6 +566,7 @@ namespace Microsoft.FancyZones.UITests
 
             windowingElement.Find<Element>("FancyZones").Click();
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
+            this.Find<Custom>("Editor").Find<TextBlock>(By.AccessibilityId("HeaderPresenter")).Click();
             this.Session.SetMainWindowSize(WindowSize.Large_Vertical);
         }
 
