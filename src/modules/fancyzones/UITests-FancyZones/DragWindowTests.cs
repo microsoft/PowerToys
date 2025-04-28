@@ -102,10 +102,12 @@ namespace UITests_FancyZones
               postAction: () =>
               {
                   Session.PressKey(Key.Shift);
+                  Task.Delay(500).Wait();
               },
               releaseAction: () =>
               {
                   Session.ReleaseKey(Key.Shift);
+                  Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure window switch
               },
               testCaseName: testCaseName);
 
@@ -114,7 +116,7 @@ namespace UITests_FancyZones
             Assert.AreNotEqual(initialColor, withShiftColor, $"[{testCaseName}] Check color did not change.");
             Assert.AreEqual(primaryColor, withShiftColor, $"[{testCaseName}] Zone did not shown.");
 
-            Assert.AreEqual(zoneColorWithoutShift, initialColor, $"[{testCaseName}] Zone color did not activate.");
+            Assert.AreEqual(zoneColorWithoutShift, initialColor, $"[{testCaseName}] Zone color did not deactivate.");
             dragElement.ReleaseDrag();
         }
 
@@ -179,7 +181,7 @@ namespace UITests_FancyZones
                 testCaseName: testCaseName);
 
             // check the zone color is activated
-            Assert.AreEqual(initialColor, highlightColor, $"[{testCaseName}] Zone color did not change.");
+            Assert.AreEqual(highlightColor, initialColor, $"[{testCaseName}] Zone color did not change.");
 
             // check the zone color is deactivated
             Assert.AreNotEqual(highlightColor, withMouseColor, $"[{testCaseName}] Zone color did not deactivate.");
@@ -202,6 +204,7 @@ namespace UITests_FancyZones
                {
                    // press Shift Key to deactivate zones
                    Session.PressKey(Key.Shift);
+                   Task.Delay(500).Wait();
                },
                releaseAction: () =>
                {
@@ -225,7 +228,6 @@ namespace UITests_FancyZones
              preAction: () =>
              {
                  dragElement.DragAndHold(offSet.Dx, offSet.Dy);
-                 Task.Delay(1000).Wait();
              },
              postAction: () =>
              {
@@ -278,11 +280,12 @@ namespace UITests_FancyZones
 
             this.Find<NavigationViewItem>("FancyZones").Click();
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
+
             this.Session.SetMainWindowSize(WindowSize.Large_Vertical);
             Pull(3, "down"); // Ensure settings are visible
             ZoneBehaviourSettings(TestContext.TestName);
-            Pull(3, "up");
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 2000);
+            Pull(10, "up");
+            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 3000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
         }
@@ -367,6 +370,8 @@ namespace UITests_FancyZones
             // Capture final zone color after the interaction
             string finalZoneColor = GetOutWindowPixelColor(30);
 
+            releaseAction?.Invoke();
+
             // Return initial and final zone colors
             return (initialZoneColor, finalZoneColor);
         }
@@ -411,6 +416,8 @@ namespace UITests_FancyZones
             Microsoft.PowerToys.UITest.CheckBox useNonPrimaryMouseCheckBox = this.Find<Microsoft.PowerToys.UITest.CheckBox>("Use a non-primary mouse button to toggle zone activation");
             Microsoft.PowerToys.UITest.CheckBox makeDraggedWindowTransparent = this.Find<Microsoft.PowerToys.UITest.CheckBox>("Make dragged window transparent");
             this.Find<Slider>("Opacity (%)").QuickSetValue(100);
+            makeDraggedWindowTransparent.SetCheck(false, 500);
+            Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
             showZoneNumber.SetCheck(false, 100);
             switch (testName)
             {
@@ -418,29 +425,31 @@ namespace UITests_FancyZones
                 case "TestShowZonesOnDragDuringShift":
                     useShiftCheckBox.SetCheck(true, 500);
                     useNonPrimaryMouseCheckBox.SetCheck(false, 500);
+                    Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
                     break;
                 case "TestToggleZonesWithNonPrimaryMouseClick":
                     useShiftCheckBox.SetCheck(false, 500);
                     useNonPrimaryMouseCheckBox.SetCheck(true, 500);
+                    Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
                     break;
                 case "TestShowZonesWhenShiftAndMouseOff":
                     useShiftCheckBox.SetCheck(false, 500);
                     useNonPrimaryMouseCheckBox.SetCheck(false, 500);
+                    Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
                     break;
                 case "TestShowZonesWhenShiftAndMouseOn":
                     useShiftCheckBox.SetCheck(true, 500);
                     useNonPrimaryMouseCheckBox.SetCheck(true, 500);
+                    Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
                     break;
                 case "TestMakeDraggedWindowTransparentOn":
-                    useShiftCheckBox.SetCheck(true, 500);
-                    useNonPrimaryMouseCheckBox.SetCheck(false, 500);
                     makeDraggedWindowTransparent.SetCheck(true, 500);
+                    useNonPrimaryMouseCheckBox.SetCheck(false, 500);
+                    useShiftCheckBox.SetCheck(true, 500);
                     break; // Added break to prevent fall-through
                 case "TestMakeDraggedWindowTransparentOff":
                     useShiftCheckBox.SetCheck(true, 500);
                     useNonPrimaryMouseCheckBox.SetCheck(false, 500);
-                    makeDraggedWindowTransparent.SetCheck(false, 500);
-                    Find<Element>(By.AccessibilityId("HeaderPresenter")).Click(); // make mouse on the windows settings then scroll up can work.
                     break; // Added break to prevent fall-through
                 default:
                     throw new ArgumentException("Unsupported Test Case.", testName);
