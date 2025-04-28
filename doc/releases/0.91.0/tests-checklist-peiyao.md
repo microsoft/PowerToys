@@ -14,7 +14,7 @@
     * create a virtual desktop and apply the custom grid layout
     * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
  * install the new version (it will uninstall the old version and install the new version)
- - [x] verify the settings are preserved and FancyZones configuration is still the same
+ - [ ] verify the settings are preserved and FancyZones configuration is still the same
  - [ ] test installing as SYSTEM (LocalSystem account)
    * Remove current PowerToys.
    * Download PsTools from https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
@@ -30,31 +30,31 @@
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
  - [ ] System tray menu items
- - [x] Settings
+ - [ ] Settings
  - [ ] OOBE (What's new)
- - [x] Keyboard Manager Editor
- - [x] Color Picker (check the tooltips)
- - [x] FancyZones Editor
- - [x] Power Rename (new WinUI 3 may not be localized)
+ - [ ] Keyboard Manager Editor
+ - [ ] Color Picker (check the tooltips)
+ - [ ] FancyZones Editor
+ - [ ] Power Rename (new WinUI 3 may not be localized)
  - [ ] PowerToys Run ("Start typing" string is localized, for example)
- - [x] Image Resizer
- - [x] Shortcut Guide (Windows controls are localized)
- - [x] Registry Preview
- - [x] Environment Variables
+ - [ ] Image Resizer
+ - [ ] Shortcut Guide (Windows controls are localized)
+ - [ ] Registry Preview
+ - [ ] Environment Variables
 
 ## Keyboard Manager
 
 UI Validation:
 
-  - [x] In Remap keys, add and remove rows to validate those buttons. While the blank rows are present, pressing the OK button should result in a warning dialog that some mappings are invalid.
-  - [x] Using only the Type buttons, for both the remap windows, try adding keys/shortcuts in all the columns. The right-side column in both windows should accept both keys and shortcuts, while the left-side column will accept only keys or only shortcuts for Remap keys and Remap shortcuts respectively. Validate that the Hold Enter and Esc accessibility features work as expected.
-  - [x] Using the drop downs try to add key to key, key to shortcut, shortcut to key and shortcut to shortcut remapping and ensure that you are able to select remapping both by using mouse and by keyboard navigation.
-  - [x] Validate that remapping can be saved by pressing the OK button and re-opening the windows loads existing remapping.
+  - [ ] In Remap keys, add and remove rows to validate those buttons. While the blank rows are present, pressing the OK button should result in a warning dialog that some mappings are invalid.
+  - [ ] Using only the Type buttons, for both the remap windows, try adding keys/shortcuts in all the columns. The right-side column in both windows should accept both keys and shortcuts, while the left-side column will accept only keys or only shortcuts for Remap keys and Remap shortcuts respectively. Validate that the Hold Enter and Esc accessibility features work as expected.
+  - [ ] Using the drop downs try to add key to key, key to shortcut, shortcut to key and shortcut to shortcut remapping and ensure that you are able to select remapping both by using mouse and by keyboard navigation.
+  - [ ] Validate that remapping can be saved by pressing the OK button and re-opening the windows loads existing remapping.
 
 Remapping Validation:
 
 For all the remapping below, try pressing and releasing the remapped key/shortcut and pressing and holding it. Try different behaviors like releasing the modifier key before the action key and vice versa.
-  - [x] Test key to key remapping
+  - [ ] Test key to key remapping
     - A->B
     - Ctrl->A
     - A->Ctrl
@@ -62,113 +62,113 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
     - B->Win (make sure Start menu doesn't appear accidentally)
     - A->Disable
     - Win->Disable
-  - [x] Test key to shortcut remapping
+  - [ ] Test key to shortcut remapping
     - A->Ctrl+V
     - B->Win+A
-  - [x] Test shortcut to shortcut remapping
+  - [ ] Test shortcut to shortcut remapping
     - Ctrl+A->Ctrl+V
     - Win+A->Ctrl+V
     - Ctrl+V->Win+A
     - Win+A->Win+F
-  - [x] Test shortcut to key remapping
+  - [ ] Test shortcut to key remapping
     - Ctrl+A->B
     - Ctrl+A->Win
     - Win+A->B
   * Test app-specific remaps
-    - [x] Similar remaps to above with Edge (entered as `msedge`), VSCode (entered as `code`) and cmd (entered as `windowsterminal`). For cmd try admin and non-admin (requires PT to run as admin)
-    - [x] Try some cases where focus is lost due to the shortcut. Example remapping to Alt+Tab or Alt+F4
-  - [x] Test switching between remapping while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
+    - [ ] Similar remaps to above with Edge (entered as `msedge`), VSCode (entered as `code`) and cmd (entered as `windowsterminal`). For cmd try admin and non-admin (requires PT to run as admin)
+    - [ ] Try some cases where focus is lost due to the shortcut. Example remapping to Alt+Tab or Alt+F4
+  - [ ] Test switching between remapping while holding down modifiers - Eg. Ctrl+D->Ctrl+A and Ctrl+E->Ctrl+V, hold Ctrl and press D followed by E. Should select all and paste over it in a text editor. Similar steps for Windows key shortcuts.
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [x] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [x] Verify the module is not enabled.
-   - [x] Open settings and verify the module is not enabled and you can't enable it.
-   - [x] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [x] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [ ] Verify the module is not enabled.
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [x] Verify the module is enabled.
-   - [x] Open settings and verify the module is enabled and you can't disable it.
-   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [ ] Verify the module is enabled.
+   - [ ] Open settings and verify the module is enabled and you can't disable it.
+   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [x] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [x] Verify the module is not enabled. (No context menu entry)
-   - [x] Open settings and verify the module is not enabled and you can't enable it.
-   - [x] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [ ] Verify the module is not enabled. (No context menu entry)
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [x] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
 ## Quick Accent
  * Enable Quick Accent and open notepad. Then:
-   - [x] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
-   - [x] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
-   - [x] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
+   - [ ] Press `a` and the left or right arrow and verify the accent menu appears and adds the accented letter you've selected. Use left and arrow keys to cycle through the options.
+   - [ ] Press `a` and the space key and verify the accent menu appears and adds the accented letter you've selected. Use <kbd>Space</kbd> to navigate forward, <kbd>Space</kbd> + <kbd>Shift</kbd> to navigate backward.
+   - [ ] Disable Quick Accent and verify you can no longer add accented characters through Quick Accent.
  * Test the different settings and verify they are applied:
-   - [x] Activation key
-   - [x] Language (for example, Currency has no accents for 'a' but has for 's')
-   - [x] Toolbar position (test every option, some had issues before)
-   - [x] Input delay
-   - [x] Exclude some apps. Verify that Quick Accent is not activated for them.
-   - [x] Sort characters by frequency.
-   - [x] Always start on the first character when using left/right arrows as activation method.
+   - [ ] Activation key
+   - [ ] Language (for example, Currency has no accents for 'a' but has for 's')
+   - [ ] Toolbar position (test every option, some had issues before)
+   - [ ] Input delay
+   - [ ] Exclude some apps. Verify that Quick Accent is not activated for them.
+   - [ ] Sort characters by frequency.
+   - [ ] Always start on the first character when using left/right arrows as activation method.
 
 ## Registry Preview
  * Open Registry Editor, add new registry key with 1 string value and 1 binary value in e.g. HKLM/Software/Classes/PowerToysTest. Right click new registry key->export and export it to file.
  * Launch Registry Preview by right-clicking exported .reg file->'Preview'. Then:
-   - [x] Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
-   - [x] Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
-   - [x] Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
-   - [x] Try opening different registry file by pressing Open file button.
-   - [x] Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
+   - [ ] Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
+   - [ ] Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
+   - [ ] Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
+   - [ ] Try opening different registry file by pressing Open file button.
+   - [ ] Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
    
  * Open Registry Preview Settings. Then:
-   - [x] Disable Registry Preview and ensure that Preview context menu option for .reg files no longer appears.
-   - [x] Try to launch Registry Preview from it's OOBE page while Registry Preview is disabled and ensure that it does not start.
-   - [x] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
-   - [x] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
-   - [x] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
-   - [x] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
+   - [ ] Disable Registry Preview and ensure that Preview context menu option for .reg files no longer appears.
+   - [ ] Try to launch Registry Preview from it's OOBE page while Registry Preview is disabled and ensure that it does not start.
+   - [ ] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
+   - [ ] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
+   - [ ] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
+   - [ ] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
 
 ## Environment Variables
  * NOTE: Make backup of USER and SYSTEM Path and TMP variables before testing so you can revert those is something goes wrong!
  * Open Environment Variables settings
-   - [x] Launch as administrator ON - Launch Environment Variables and confirm that SYSTEM variables ARE editable and Add variable button is enabled
-   - [x] Launch as administrator OFF - Launch Environment Variables and confirm that SYSTEM variables ARE NOT editable and Add variable button is disabled
+   - [ ] Launch as administrator ON - Launch Environment Variables and confirm that SYSTEM variables ARE editable and Add variable button is enabled
+   - [ ] Launch as administrator OFF - Launch Environment Variables and confirm that SYSTEM variables ARE NOT editable and Add variable button is disabled
 
  * User/System variables
-   - [x] Add new User variable. Open OS Environment variables window and confirm that added variable is there. Also, confirm that it's added to "Applied variables" list.
-   - [x] Edit one User variable. Open OS Environment variables window and confirm that variable is changed. Also, confirm that change is applied to "Applied variables" list.
-   - [x] Remove one User variable. Open OS Environment variables window and confirm that variable is removed. Also, confirm that variable is removed from "Applied variables" list.
+   - [ ] Add new User variable. Open OS Environment variables window and confirm that added variable is there. Also, confirm that it's added to "Applied variables" list.
+   - [ ] Edit one User variable. Open OS Environment variables window and confirm that variable is changed. Also, confirm that change is applied to "Applied variables" list.
+   - [ ] Remove one User variable. Open OS Environment variables window and confirm that variable is removed. Also, confirm that variable is removed from "Applied variables" list.
    - Repeat the steps for System variables.
 
  * Profiles - Basic tests
-   - [x] Add new profile with no variables and name it "Test_profile_1" (referenced below by name)
-   - [x] Edit "Test_profile_1": Add one new variable to profile e.g. name: "profile_1_variable_1" value: "profile_1_value_1"
-   - [x] Add new profile "Test_profile_2": From "Add profile dialog" add two new variables (profile_2_variable_1:profile_2_value_1 and profile_2_variable_2:profile_2_value_2). Set profile to enabled and click Save. Open OS Environment variables window and confirm that all variables from the profile are applied correctly. Also, confirm that "Applied variables" list contains all variables from the profile.
-   - [x] Apply "Test_profile_1" while "Test_profile_2" is still aplpied. Open OS Environment variables window and confirm that all variables from Test_profile_2 are unapplied and that all variables from Test_profile_1 are applied. Also, confirm that state of "Applied variables" list is updated correctly.
-   - [x] Unapply applied profile. Open OS Environment variables window and confirm that all variables from the profile are unapplied correctly. Also, confirm that "Applied variables" list does not contain variables from the profile.
+   - [ ] Add new profile with no variables and name it "Test_profile_1" (referenced below by name)
+   - [ ] Edit "Test_profile_1": Add one new variable to profile e.g. name: "profile_1_variable_1" value: "profile_1_value_1"
+   - [ ] Add new profile "Test_profile_2": From "Add profile dialog" add two new variables (profile_2_variable_1:profile_2_value_1 and profile_2_variable_2:profile_2_value_2). Set profile to enabled and click Save. Open OS Environment variables window and confirm that all variables from the profile are applied correctly. Also, confirm that "Applied variables" list contains all variables from the profile.
+   - [ ] Apply "Test_profile_1" while "Test_profile_2" is still aplpied. Open OS Environment variables window and confirm that all variables from Test_profile_2 are unapplied and that all variables from Test_profile_1 are applied. Also, confirm that state of "Applied variables" list is updated correctly.
+   - [ ] Unapply applied profile. Open OS Environment variables window and confirm that all variables from the profile are unapplied correctly. Also, confirm that "Applied variables" list does not contain variables from the profile.
 
  * Overriding existing variable
-   - [x] To "Test_profile_1" add one existing variable from USER variables, e.g. TMP. After adding, change it's value to e.g "test_TMP" (or manually add variable named TMP with value test_TMP).
-   - [x] Apply "Test_profile_1". Open OS Environment variables window and confirm that TMP variable in USER variables has value "test_TMP". Confirm that there is backup variable "TMP_PowerToys_Test_profile_1" with original value of TMP var. Also, confirm that "Applied variables" list is updated correctly - there is TMP profile variable, and backup User variable..
-   - [x] Unapply "Test_profile_1". Open OS Environment variables window and confirm that TMP variable in USER variable has original value and that there is no backup variable. Also, confirm that "Applied variables" list is updated correctly.
+   - [ ] To "Test_profile_1" add one existing variable from USER variables, e.g. TMP. After adding, change it's value to e.g "test_TMP" (or manually add variable named TMP with value test_TMP).
+   - [ ] Apply "Test_profile_1". Open OS Environment variables window and confirm that TMP variable in USER variables has value "test_TMP". Confirm that there is backup variable "TMP_PowerToys_Test_profile_1" with original value of TMP var. Also, confirm that "Applied variables" list is updated correctly - there is TMP profile variable, and backup User variable..
+   - [ ] Unapply "Test_profile_1". Open OS Environment variables window and confirm that TMP variable in USER variable has original value and that there is no backup variable. Also, confirm that "Applied variables" list is updated correctly.
 
  * PATH variable
-   - [x] In "Applied variables" list confirm that PATH variable is shown properly: value of USER Path concatenated to the end of SYSTEM Path.
-   - [x] To "Test_profile_1" add variable named PATH with value "path1;path2;path3" and click Save. Confirm that PATH variable in profile is shown as list (list of 3 values and not as path1;path2;path3).
-   - [x] Edit PATH variable from "Test_profile_1". Try different options from ... menu (Delete, Move up, Move down, etc...). Click Save.
-   - [x] Apply "Test_profile_1". Open OS Environment variables window and confirm that profile is applied correctly - Path value and backup variable. Also, in "Applied variables" list check that Path variable has correct value: value of profile PATH concatenated to the end of SYSTEM Path.
+   - [ ] In "Applied variables" list confirm that PATH variable is shown properly: value of USER Path concatenated to the end of SYSTEM Path.
+   - [ ] To "Test_profile_1" add variable named PATH with value "path1;path2;path3" and click Save. Confirm that PATH variable in profile is shown as list (list of 3 values and not as path1;path2;path3).
+   - [ ] Edit PATH variable from "Test_profile_1". Try different options from ... menu (Delete, Move up, Move down, etc...). Click Save.
+   - [ ] Apply "Test_profile_1". Open OS Environment variables window and confirm that profile is applied correctly - Path value and backup variable. Also, in "Applied variables" list check that Path variable has correct value: value of profile PATH concatenated to the end of SYSTEM Path.
 
  * Loading profiles on startup
-   - [x] Close the app and reopen it. Confirm that the state of the app is the same as before closing.
+   - [ ] Close the app and reopen it. Confirm that the state of the app is the same as before closing.
 
- - [x] "Test_profile_1" should still be applied (if not apply it). Delete "Test_profile_1". Confirm that profile is unapplied (both in OS Environment variables window and "Applied variables" list).
- - [x] Delete "Test_profile_2". Check profiles.json file and confirm that both profiles are gone.
+ - [ ] "Test_profile_1" should still be applied (if not apply it). Delete "Test_profile_1". Confirm that profile is unapplied (both in OS Environment variables window and "Applied variables" list).
+ - [ ] Delete "Test_profile_2". Check profiles.json file and confirm that both profiles are gone.
 
 ## DSC
  * You need to have some prerequisites installed:
@@ -176,9 +176,9 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
    - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
  * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [x] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
-   - [x] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
-   - [x] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
-   - [x] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [x] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [x] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+   - [ ] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
+   - [ ] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
+   - [ ] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
+   - [ ] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
+   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
