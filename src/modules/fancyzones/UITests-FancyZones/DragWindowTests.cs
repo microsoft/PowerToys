@@ -90,7 +90,7 @@ namespace UITests_FancyZones
         [TestMethod]
         public void TestShowZonesOnShiftDuringDrag()
         {
-            string testCaseName = nameof(TestShowZonesOnDragDuringShift);
+            string testCaseName = nameof(TestShowZonesOnShiftDuringDrag);
             Element dragElement = Find<Element>(By.Name("Non Client Input Sink Window")); // element to drag
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
 
@@ -152,7 +152,7 @@ namespace UITests_FancyZones
                     dragElement.ReleaseDrag();
                     Session.ReleaseKey(Key.Shift);
                 },
-                testCaseName: nameof(TestShowZonesOnDragDuringShift));
+                testCaseName: testCaseName);
 
             Assert.AreNotEqual(initialColor, withDragColor, $"[{testCaseName}] Zone color did not change; zone activation failed.");
             Assert.AreEqual(highlightColor, withDragColor, $"[{testCaseName}] Zone color did not match the highlight color; activation failed.");
@@ -214,7 +214,7 @@ namespace UITests_FancyZones
         [TestMethod]
         public void TestShowZonesWhenShiftAndMouseOff()
         {
-            string testCaseName = nameof(TestToggleZonesWithNonPrimaryMouseClick);
+            string testCaseName = nameof(TestShowZonesWhenShiftAndMouseOff);
             Element dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
 
