@@ -155,12 +155,12 @@ namespace UITests_FancyZones
                 testCaseName: nameof(TestShowZonesOnDragDuringShift));
 
             Assert.AreNotEqual(initialColor, withDragColor, $"[{testCaseName}] Zone color did not change and zone did not activate.");
-            Assert.AreEqual(highlightColor, withDragColor, $"[{testCaseName}] Zone color did not match tha highcolor and did not activate.");
+            Assert.AreEqual(highlightColor, withDragColor, $"[{testCaseName}] Zone color did not match the highlightcolor and did not activate.");
 
             // double check by app-zone-history.json
             string appZoneHistoryJson = AppZoneHistory.GetData();
-            string? zonenumber = ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson);
-            Assert.IsNull(zonenumber, $"[{testCaseName}] AppZoneHistory layout is not set.");
+            string? zoneNumber = ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson);
+            Assert.IsNull(zoneNumber, $"[{testCaseName}] AppZoneHistory layout is not set.");
         }
 
         /// <summary>
