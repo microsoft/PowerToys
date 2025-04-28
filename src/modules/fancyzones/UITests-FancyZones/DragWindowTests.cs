@@ -113,10 +113,10 @@ namespace UITests_FancyZones
 
             string zoneColorWithoutShift = GetOutWindowPixelColor(30);
 
-            Assert.AreNotEqual(initialColor, withShiftColor, $"[{testCaseName}] Check color did not change.");
-            Assert.AreEqual(primaryColor, withShiftColor, $"[{testCaseName}] Zone did not shown.");
+            Assert.AreNotEqual(initialColor, withShiftColor, $"[{testCaseName}] Zone display failed.");
+            Assert.AreEqual(primaryColor, withShiftColor, $"[{testCaseName}] Zone display failed.");
 
-            Assert.AreEqual(zoneColorWithoutShift, initialColor, $"[{testCaseName}] Zone color did not deactivate.");
+            Assert.AreEqual(zoneColorWithoutShift, initialColor, $"[{testCaseName}] Zone deactivated failed.");
             dragElement.ReleaseDrag();
         }
 
@@ -154,13 +154,13 @@ namespace UITests_FancyZones
                 },
                 testCaseName: nameof(TestShowZonesOnDragDuringShift));
 
-            Assert.AreNotEqual(initialColor, withDragColor, $"[{testCaseName}] Zone color did not change and zone did not activate.");
-            Assert.AreEqual(highlightColor, withDragColor, $"[{testCaseName}] Zone color did not match the highlightColor and did not activate.");
+            Assert.AreNotEqual(initialColor, withDragColor, $"[{testCaseName}] Zone color did not change; zone activation failed.");
+            Assert.AreEqual(highlightColor, withDragColor, $"[{testCaseName}] Zone color did not match the highlight color; activation failed.");
 
             // double check by app-zone-history.json
             string appZoneHistoryJson = AppZoneHistory.GetData();
             string? zoneNumber = ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson);
-            Assert.IsNull(zoneNumber, $"[{testCaseName}] AppZoneHistory layout is not set.");
+            Assert.IsNull(zoneNumber, $"[{testCaseName}] AppZoneHistory layout was unexpectedly set.");
         }
 
         /// <summary>
@@ -197,10 +197,10 @@ namespace UITests_FancyZones
                 testCaseName: testCaseName);
 
             // check the zone color is activated
-            Assert.AreEqual(highlightColor, initialColor, $"[{testCaseName}] Zone color did not change.");
+            Assert.AreEqual(highlightColor, initialColor, $"[{testCaseName}] Zone activation failed.");
 
             // check the zone color is deactivated
-            Assert.AreNotEqual(highlightColor, withMouseColor, $"[{testCaseName}] Zone color did not deactivate.");
+            Assert.AreNotEqual(highlightColor, withMouseColor, $"[{testCaseName}] Zone deactivation failed.");
         }
 
         /// <summary>
@@ -237,8 +237,8 @@ namespace UITests_FancyZones
                },
                testCaseName: testCaseName);
 
-            Assert.AreEqual(highlightColor, initialColor, $"[{testCaseName}] Zone color did not activate.");
-            Assert.AreNotEqual(highlightColor, withShiftColor, $"[{testCaseName}] Zone color did not deactivate.");
+            Assert.AreEqual(highlightColor, initialColor, $"[{testCaseName}] Zone activation failed.");
+            Assert.AreNotEqual(highlightColor, withShiftColor, $"[{testCaseName}] Zone deactivation failed.");
         }
 
         /// <summary>
@@ -270,13 +270,13 @@ namespace UITests_FancyZones
              },
              testCaseName: testCaseName);
 
-            Assert.AreEqual(primaryColor, withShiftColor, $"[{testCaseName}] zone did not shown.");
+            Assert.AreEqual(primaryColor, withShiftColor, $"[{testCaseName}] show zone failed.");
 
             Session.PerformMouseAction(
              nonPrimaryMouseButton == "Right" ? MouseActionType.RightClick : MouseActionType.LeftClick);
 
             string zoneColorWithMouse = GetOutWindowPixelColor(30);
-            Assert.AreEqual(initialColor, zoneColorWithMouse, $"[{nameof(TestShowZonesWhenShiftAndMouseOff)}] Zone color did not activate.");
+            Assert.AreEqual(initialColor, zoneColorWithMouse, $"[{nameof(TestShowZonesWhenShiftAndMouseOff)}] Zone deactivate failed.");
 
             Session.ReleaseKey(Key.Shift);
             dragElement.ReleaseDrag();
@@ -294,7 +294,7 @@ namespace UITests_FancyZones
         public void TestMakeDraggedWindowTransparentOn()
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
-            Assert.AreNotEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}] window color is not transparent.");
+            Assert.AreNotEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}]  Window transparency failed.");
         }
 
         /// <summary>
@@ -309,7 +309,7 @@ namespace UITests_FancyZones
         public void TestMakeDraggedWindowTransparentOff()
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
-            Assert.AreEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}] window color is changed.");
+            Assert.AreEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}]  Window without transparency failed.");
         }
 
         // Setup custom layout with 1 subzones
