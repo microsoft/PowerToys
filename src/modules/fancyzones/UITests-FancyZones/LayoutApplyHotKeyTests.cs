@@ -555,6 +555,13 @@ namespace Microsoft.FancyZones.UITests
 
         private void OpenFancyZonesPanel(bool launchAsAdmin = false)
         {
+            if (this.Session.IsWindowOpen("FancyZones Layout"))
+            {
+                AttachFancyZonesEditor();
+                CloseFancyZonesEditor();
+                AttachPowertoySetting();
+            }
+
             var windowingElement = this.Find<NavigationViewItem>("Windowing & Layouts");
 
             // Goto FancyZones Editor setting page
