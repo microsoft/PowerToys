@@ -28,9 +28,9 @@ namespace UITests_FancyZones
     [TestClass]
     public class OneZoneSwitchTests : UITestBase
     {
-        private static readonly string WindowName = "Windows (C:) - File Explorer"; // set launch explorer window name
-        private static readonly string PowertoysWindowName = "PowerToys Settings"; // set powertoys settings window name
-        private static readonly int SubZones = 2;
+        // private static readonly string WindowName = "Windows (C:) - File Explorer"; // set launch explorer window name
+        // private static readonly string PowertoysWindowName = "PowerToys Settings"; // set powertoys settings window name
+        // private static readonly int SubZones = 2;
         private static readonly IOTestHelper AppZoneHistory = new FancyZonesEditorFiles().AppZoneHistoryIOHelper;
 
         public OneZoneSwitchTests()
