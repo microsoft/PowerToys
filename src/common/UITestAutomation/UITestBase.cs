@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.UITest
             Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
             if (isInPipeline)
             {
-                NativeMethods.ChangeDispalyResolution(1920, 1080);
+                NativeMethods.ChangeDisplayResolution(1920, 1080);
                 NativeMethods.GetMonitorInfo();
 
                 // Escape Popups before starting
@@ -534,7 +534,7 @@ namespace Microsoft.PowerToys.UITest
                 }
             }
 
-            public static void ChangeDispalyResolution(int PelsWidth, int PelsHeight)
+            public static void ChangeDisplayResolution(int PelsWidth, int PelsHeight)
             {
                 Screen screen = Screen.PrimaryScreen!;
                 if (screen.Bounds.Width == PelsWidth && screen.Bounds.Height == PelsHeight)

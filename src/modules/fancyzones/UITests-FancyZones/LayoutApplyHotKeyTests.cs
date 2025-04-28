@@ -528,19 +528,19 @@ namespace Microsoft.FancyZones.UITests
             int nowWidth = UITestBase.MonitorInfoData.Monitors[UITestBase.MonitorInfoData.Monitors.Count - 1].PelsWidth;
             int height = UITestBase.MonitorInfoData.Monitors[0].PelsHeight;
             int width = UITestBase.MonitorInfoData.Monitors[0].PelsWidth;
-            UITestBase.NativeMethods.ChangeDispalyResolution(width, height);
+            UITestBase.NativeMethods.ChangeDisplayResolution(width, height);
             this.AttachPowertoySetting();
             this.AttachFancyZonesEditor();
             var resolution = this.Session.Find<Element>(By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Find<Element>(By.AccessibilityId("ResolutionText"));
             if (resolution.Text != "640 × 480")
             {
                 this.CloseFancyZonesEditor();
-                UITestBase.NativeMethods.ChangeDispalyResolution(nowWidth, nowHeight);
+                UITestBase.NativeMethods.ChangeDisplayResolution(nowWidth, nowHeight);
                 Assert.AreEqual("640 × 480", resolution.Text);
             }
 
             this.CloseFancyZonesEditor();
-            UITestBase.NativeMethods.ChangeDispalyResolution(nowWidth, nowHeight);
+            UITestBase.NativeMethods.ChangeDisplayResolution(nowWidth, nowHeight);
         }
 
         private void OpenFancyZonesPanel(bool launchAsAdmin = false)
