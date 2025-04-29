@@ -137,3 +137,47 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
    - [x] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
    - [x] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
    - [x] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
+
+## DSC
+ * You need to have some prerequisites installed:
+   - PowerShell >= 7.2 .
+   - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
+   - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
+ * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
+   - [ ] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
+   - [ ] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
+   - [ ] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
+   - [ ] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
+   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+
+## Localization
+ Change the Windows language to a language different than English. Then verify if the following screens change their language:
+ - [ ] Keyboard Manager Editor
+ - [ ] Registry Preview
+ - [ ] Environment Variables
+
+   ## GPO
+ * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
+   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+ * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
+   - [ ] Verify the module is not enabled.
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+ * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
+   - [ ] Verify the module is enabled.
+   - [ ] Open settings and verify the module is enabled and you can't disable it.
+   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+ * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
+   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+ * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
+   - [ ] Verify the module is not enabled. (No context menu entry)
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+ * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
+   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+ * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
+
