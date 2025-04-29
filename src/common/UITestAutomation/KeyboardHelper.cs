@@ -299,10 +299,134 @@ namespace Microsoft.PowerToys.UITest
                     return 0x10;  // Shift Key - 0x10 in hex
                 case Key.LCtrl:
                     return 0xA2;  // Left Ctrl Key - 0xA2 in hex
-                case Key.RCtrl: // Right Ctrl Key - 0xA3 in hex
-                    return 0xA3;
+                case Key.RCtrl:
+                    return 0xA3;  // Right Ctrl Key - 0xA3 in hex
                 case Key.A:
                     return 0x41;  // A Key - 0x41 in hex
+                case Key.B:
+                    return 0x42;  // B Key - 0x42 in hex
+                case Key.C:
+                    return 0x43;  // C Key - 0x43 in hex
+                case Key.D:
+                    return 0x44;  // D Key - 0x44 in hex
+                case Key.E:
+                    return 0x45;  // E Key - 0x45 in hex
+                case Key.F:
+                    return 0x46;  // F Key - 0x46 in hex
+                case Key.G:
+                    return 0x47;  // G Key - 0x47 in hex
+                case Key.H:
+                    return 0x48;  // H Key - 0x48 in hex
+                case Key.I:
+                    return 0x49;  // I Key - 0x49 in hex
+                case Key.J:
+                    return 0x4A;  // J Key - 0x4A in hex
+                case Key.K:
+                    return 0x4B;  // K Key - 0x4B in hex
+                case Key.L:
+                    return 0x4C;  // L Key - 0x4C in hex
+                case Key.M:
+                    return 0x4D;  // M Key - 0x4D in hex
+                case Key.N:
+                    return 0x4E;  // N Key - 0x4E in hex
+                case Key.O:
+                    return 0x4F;  // O Key - 0x4F in hex
+                case Key.P:
+                    return 0x50;  // P Key - 0x50 in hex
+                case Key.Q:
+                    return 0x51;  // Q Key - 0x51 in hex
+                case Key.R:
+                    return 0x52;  // R Key - 0x52 in hex
+                case Key.S:
+                    return 0x53;  // S Key - 0x53 in hex
+                case Key.T:
+                    return 0x54;  // T Key - 0x54 in hex
+                case Key.U:
+                    return 0x55;  // U Key - 0x55 in hex
+                case Key.V:
+                    return 0x56;  // V Key - 0x56 in hex
+                case Key.W:
+                    return 0x57;  // W Key - 0x57 in hex
+                case Key.X:
+                    return 0x58;  // X Key - 0x58 in hex
+                case Key.Y:
+                    return 0x59;  // Y Key - 0x59 in hex
+                case Key.Z:
+                    return 0x5A;  // Z Key - 0x5A in hex
+                case Key.Num0:
+                    return 0x30;  // 0 Key - 0x30 in hex
+                case Key.Num1:
+                    return 0x31;  // 1 Key - 0x31 in hex
+                case Key.Num2:
+                    return 0x32;  // 2 Key - 0x32 in hex
+                case Key.Num3:
+                    return 0x33;  // 3 Key - 0x33 in hex
+                case Key.Num4:
+                    return 0x34;  // 4 Key - 0x34 in hex
+                case Key.Num5:
+                    return 0x35;  // 5 Key - 0x35 in hex
+                case Key.Num6:
+                    return 0x36;  // 6 Key - 0x36 in hex
+                case Key.Num7:
+                    return 0x37;  // 7 Key - 0x37 in hex
+                case Key.Num8:
+                    return 0x38;  // 8 Key - 0x38 in hex
+                case Key.Num9:
+                    return 0x39;  // 9 Key - 0x39 in hex
+                case Key.F1:
+                    return 0x70;  // F1 Key - 0x70 in hex
+                case Key.F2:
+                    return 0x71;  // F2 Key - 0x71 in hex
+                case Key.F3:
+                    return 0x72;  // F3 Key - 0x72 in hex
+                case Key.F4:
+                    return 0x73;  // F4 Key - 0x73 in hex
+                case Key.F5:
+                    return 0x74;  // F5 Key - 0x74 in hex
+                case Key.F6:
+                    return 0x75;  // F6 Key - 0x75 in hex
+                case Key.F7:
+                    return 0x76;  // F7 Key - 0x76 in hex
+                case Key.F8:
+                    return 0x77;  // F8 Key - 0x77 in hex
+                case Key.F9:
+                    return 0x78;  // F9 Key - 0x78 in hex
+                case Key.F10:
+                    return 0x79;  // F10 Key - 0x79 in hex
+                case Key.F11:
+                    return 0x7A;  // F11 Key - 0x7A in hex
+                case Key.F12:
+                    return 0x7B;  // F12 Key - 0x7B in hex
+                case Key.Up:
+                    return 0x26;  // Up Arrow Key - 0x26 in hex
+                case Key.Down:
+                    return 0x28;  // Down Arrow Key - 0x28 in hex
+                case Key.Left:
+                    return 0x25;  // Left Arrow Key - 0x25 in hex
+                case Key.Right:
+                    return 0x27;  // Right Arrow Key - 0x27 in hex
+                case Key.Home:
+                    return 0x24;  // Home Key - 0x24 in hex
+                case Key.End:
+                    return 0x23;  // End Key - 0x23 in hex
+                case Key.PageUp:
+                    return 0x21;  // Page Up Key - 0x21 in hex
+                case Key.PageDown:
+                    return 0x22;  // Page Down Key - 0x22 in hex
+                case Key.Space:
+                    return 0x20;  // Space Key - 0x20 in hex
+                case Key.Enter:
+                    return 0x0D;  // Enter Key - 0x0D in hex
+                case Key.Backspace:
+                    return 0x08;  // Backspace Key - 0x08 in hex
+                case Key.Tab:
+                    return 0x09;  // Tab Key - 0x09 in hex
+                case Key.Esc:
+                    return 0x1B;  // Escape Key - 0x1B in hex
+                case Key.Insert:
+                    return 0x2D;  // Insert Key - 0x2D in hex
+                case Key.Delete:
+                    return 0x2E;  // Delete Key - 0x2E in hex
                 default:
                     throw new ArgumentException($"Key {key} is not supported, Please add your key at TranslateKeyHex for translation to hex.");
             }

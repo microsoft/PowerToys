@@ -20,7 +20,7 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class CustomLayoutsTests : UITestBase
     {
         public CustomLayoutsTests()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 
