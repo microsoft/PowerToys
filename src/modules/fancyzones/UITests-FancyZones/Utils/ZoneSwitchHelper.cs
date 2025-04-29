@@ -13,6 +13,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium.Internal;
 
 namespace Microsoft.FancyZones.UITests.Utils
 {
@@ -80,6 +81,18 @@ namespace Microsoft.FancyZones.UITests.Utils
             Assert.IsNotNull(element.Rect, "element is null");
             var rect = element.Rect.Value;
             return (targetX - rect.X, targetY - rect.Y);
+        }
+
+        public static (int X, int Y) GetScreenMargins((int Left, int Top, int Right, int Bottom) rect, int quantile = 4)
+        {
+            if (quantile == 0)
+            {
+                throw new ArgumentException("Quantile cannot be zero.", nameof(quantile));
+            }
+
+            int x = (rect.Left + rect.Right) / quantile;
+            int y = (rect.Top + rect.Bottom) / quantile;
+            return (x, y);
         }
     }
 }
