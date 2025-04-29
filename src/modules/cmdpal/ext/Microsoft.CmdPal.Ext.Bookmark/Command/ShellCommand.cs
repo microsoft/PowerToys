@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Models;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -18,24 +19,28 @@ public sealed partial class ShellCommand : InvokableCommand
         { Models.BookmarkType.PowerShell, "powershell.exe" },
     };
 
+    private readonly SettingsManager _settings;
+
     private Models.BookmarkType BookmarkType { get; }
 
     private string BookmarkName { get; }
 
     public string BookmarkValue { get; }
 
-    public ShellCommand(BookmarkData data)
-        : this(data.Name, data.Bookmark, data.Type)
+    public ShellCommand(BookmarkData data, SettingsManager settings)
+        : this(data.Name, data.Bookmark, data.Type, settings)
     {
     }
 
-    public ShellCommand(string name, string value, BookmarkType type)
+    public ShellCommand(string name, string value, BookmarkType type, SettingsManager settings)
     {
         BookmarkName = name;
         BookmarkType = type;
         BookmarkValue = value;
         Icon = IconHelper.GetIconByType(type);
         Name = name;
+
+        _settings = settings;
     }
 
     public override CommandResult Invoke()
@@ -43,7 +48,7 @@ public sealed partial class ShellCommand : InvokableCommand
         return ShellCommand.Invoke(BookmarkValue, BookmarkType);
     }
 
-    public static CommandResult Invoke(string bookmarkValue, BookmarkType bookmarkType)
+    public static CommandResult Invoke(string bookmarkValue, BookmarkType bookmarkType, bool keepTerminalWindowOpen)
     {
         var exeFile = ExecutableFileName[bookmarkType];
 
@@ -62,11 +67,13 @@ public sealed partial class ShellCommand : InvokableCommand
 
         if (bookmarkType == BookmarkType.Cmd)
         {
-            args = $"/C {bookmarkValue}";
+            var keepOpenParameter = keepTerminalWindowOpen ? "/K" : "/C";
+            args = $"{keepOpenParameter} {bookmarkValue}";
         }
         else
         {
-            args = $"-Command \"{bookmarkValue}\"";
+            var keepOpenParameter = keepTerminalWindowOpen ? "-NoExit" : string.Empty;
+            args = $"{keepOpenParameter} -Command \"{bookmarkValue}\"";
         }
 
         if (!OpenInShellHelper.OpenInShell(fullPath, args, null, OpenInShellHelper.ShellRunAsType.None, false, out var errorMessage))

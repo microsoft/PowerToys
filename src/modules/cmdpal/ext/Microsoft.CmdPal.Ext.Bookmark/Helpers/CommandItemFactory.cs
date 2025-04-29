@@ -16,7 +16,7 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
 public static partial class CommandItemFactory
 {
-    private static readonly Dictionary<BookmarkType, Func<BookmarkData, TypedEventHandler<object, BookmarkData>, Action, CommandItem>> _factory = new()
+    private static readonly Dictionary<BookmarkType, Func<BookmarkData, TypedEventHandler<object, BookmarkData>, Action, SettingsManager, CommandItem>> _factory = new()
     {
         { Models.BookmarkType.Folder, CreateUrlCommand },
         { Models.BookmarkType.Web, CreateUrlCommand },
@@ -26,17 +26,17 @@ public static partial class CommandItemFactory
         { Models.BookmarkType.PowerShell, CreateShellCommand },
     };
 
-    public static bool TryCreateBookmarkCommand(BookmarkData data, TypedEventHandler<object, BookmarkData> addBookmarkFunc, Action deleteAction, out CommandItem command)
+    public static bool TryCreateBookmarkCommand(BookmarkData data, TypedEventHandler<object, BookmarkData> addBookmarkFunc, Action deleteAction, SettingsManager settings, out CommandItem command)
     {
         if (data.IsPlaceholder)
         {
-            command = CreatePlaceholderCommand(data, addBookmarkFunc, deleteAction);
+            command = CreatePlaceholderCommand(data, addBookmarkFunc, deleteAction, settings);
             return true;
         }
 
         if (_factory.TryGetValue(data.Type, out var factory))
         {
-            command = factory(data, addBookmarkFunc, deleteAction);
+            command = factory(data, addBookmarkFunc, deleteAction, settings);
 
             return true;
         }
@@ -45,7 +45,7 @@ public static partial class CommandItemFactory
         return false;
     }
 
-    private static CommandItem CreatePlaceholderCommand(BookmarkData bookmark, TypedEventHandler<object, BookmarkData> addBookmarkFunc, Action deleteAction)
+    private static CommandItem CreatePlaceholderCommand(BookmarkData bookmark, TypedEventHandler<object, BookmarkData> addBookmarkFunc, Action deleteAction, SettingsManager settings)
     {
         var command = new BookmarkPlaceholderPage(bookmark);
         var listItem = new CommandItem(command) { Icon = command.Icon };
@@ -68,7 +68,7 @@ public static partial class CommandItemFactory
         return listItem;
     }
 
-    private static CommandItem CreateUrlCommand(BookmarkData bookmark, TypedEventHandler<object, BookmarkData> addBookmarkFunc, Action deleteAction)
+    private static CommandItem CreateUrlCommand(BookmarkData bookmark, TypedEventHandler<object, BookmarkData> addBookmarkFunc, Action deleteAction, SettingsManager settings)
     {
         UrlCommand command = new UrlCommand(bookmark);
         var listItem = new CommandItem(command) { Icon = command.Icon };
@@ -106,7 +106,7 @@ public static partial class CommandItemFactory
         return listItem;
     }
 
-    private static CommandItem CreateShellCommand(BookmarkData bookmark, TypedEventHandler<object, BookmarkData> addBookmarkFunc, Action deleteAction)
+    private static CommandItem CreateShellCommand(BookmarkData bookmark, TypedEventHandler<object, BookmarkData> addBookmarkFunc, Action deleteAction, SettingsManager settings)
     {
         var invokableCommand = new ShellCommand(bookmark);
         var listItem = new CommandItem(invokableCommand) { Icon = invokableCommand.Icon };
