@@ -5,28 +5,19 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.PowerToys.UITest;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.FancyZones.UITests.Utils
 {
     public class ZoneSwitchHelper
     {
-        public static void LaunchExplorer(string path)
-        {
-            var explorerProcessInfo = new ProcessStartInfo
-            {
-                FileName = "explorer.exe",
-                Arguments = path,
-            };
-
-            Process.Start(explorerProcessInfo);
-            Task.Delay(2000).Wait(); // Wait for the Explorer window to fully launch
-        }
-
         public static string? GetZoneIndexSetByAppName(string exeName, string json)
         {
             if (string.IsNullOrEmpty(exeName) || string.IsNullOrEmpty(json))
@@ -67,7 +58,7 @@ namespace Microsoft.FancyZones.UITests.Utils
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 
-        public static string? GetActiveWindowTitle()
+        public static string GetActiveWindowTitle()
         {
             const int nChars = 256;
             StringBuilder buff = new StringBuilder(nChars);
@@ -77,8 +68,18 @@ namespace Microsoft.FancyZones.UITests.Utils
             {
                 return buff.ToString();
             }
+            else
+            {
+                // Handle the error if needed
+                throw new InvalidOperationException("Failed to get window title.");
+            }
+        }
 
-            return null;
+        public static (int Dx, int Dy) GetOffset(Element element, int targetX, int targetY)
+        {
+            Assert.IsNotNull(element.Rect, "element is null");
+            var rect = element.Rect.Value;
+            return (targetX - rect.X, targetY - rect.Y);
         }
     }
 }

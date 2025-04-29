@@ -191,15 +191,12 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
-        /// <summary>
-        /// Send Key of the element.
-        /// </summary>
-        /// <param name="key">The Key to Send.</param>
-        public void SendKeys(string key)
+        public void DragAndHold(int offsetX, int offsetY)
         {
             PerformAction((actions, windowElement) =>
             {
-                windowElement.SendKeys(key);
+                actions.MoveToElement(windowElement).MoveByOffset(10, 10).ClickAndHold(windowElement).MoveByOffset(offsetX, offsetY);
+                actions.Build().Perform();
             });
         }
 
@@ -378,6 +375,12 @@ namespace Microsoft.PowerToys.UITest
             return this.FindAll<Element>(By.Name(name), timeoutMS);
         }
 
+        public void ReleaseDrag()
+        {
+            var releaseAction = new Actions(driver);
+            releaseAction.Release().Perform();
+        }
+
         /// <summary>
         /// Simulates a manual operation on the element.
         /// </summary>
@@ -409,6 +412,18 @@ namespace Microsoft.PowerToys.UITest
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method SaveToFile with parameter: path = {path}");
             this.windowsElement.GetScreenshot().SaveAsFile(path);
+        }
+
+        /// <summary>
+        /// Send Key of the element.
+        /// </summary>
+        /// <param name="key">The Key to Send.</param>
+        public void SendKeys(string key)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                windowElement.SendKeys(key);
+            });
         }
     }
 }
