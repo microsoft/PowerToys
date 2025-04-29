@@ -158,13 +158,23 @@
                                     VerticalAlignment="Center"
                                     FontSize="12"
                                     Text="{x:Bind AppName}" />
-                                <ToggleSwitch
-                                    Grid.ColumnSpan="4"
-                                    Margin="0,0,-112,0"
+                                <Button
+                                    Grid.Column="3"
+                                    Margin="0,0,4,0"
+                                    Padding="8,4"
                                     HorizontalAlignment="Right"
-                                    IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
-                                    OffContent=""
-                                    OnContent="" />
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.Name="Delete remapping"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Click="DeleteButton_Click"
+                                    ToolTipService.ToolTip="Delete remapping">
+                                    <FontIcon
+                                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                        FontSize="16"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Glyph="&#xE74D;" />
+                                </Button>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -183,5 +193,29 @@
                 <styles:InputControl x:Name="RemappingControl" />
             </Grid>
         </ContentDialog>
+        <TeachingTip
+            x:Name="OrphanedKeysTeachingTip"
+            Title="Orphaned Keys Warning"
+            ActionButtonClick="OrphanedKeysTeachingTip_ActionButtonClick"
+            ActionButtonContent="Continue anyway"
+            ActionButtonStyle="{StaticResource AccentButtonStyle}"
+            CloseButtonClick="OrphanedKeysTeachingTip_CloseButtonClick"
+            CloseButtonContent="Cancel"
+            IsLightDismissEnabled="False"
+            PreferredPlacement="Center">
+            <TeachingTip.IconSource>
+                <SymbolIconSource Symbol="Important" />
+            </TeachingTip.IconSource>
+        </TeachingTip>
+        <TeachingTip
+            x:Name="ValidationTeachingTip"
+            CloseButtonClick="ValidationTeachingTip_CloseButtonClick"
+            CloseButtonContent="OK"
+            IsLightDismissEnabled="True"
+            PreferredPlacement="Center">
+            <TeachingTip.IconSource>
+                <SymbolIconSource Symbol="Important" />
+            </TeachingTip.IconSource>
+        </TeachingTip>
     </Grid>
 </Page>

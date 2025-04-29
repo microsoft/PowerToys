@@ -8,6 +8,7 @@
 
 #include <common/utils/logger_helper.h>
 #include <keyboardmanager/KeyboardManagerEditor/KeyboardManagerEditor.h>
+#include <keyboardmanager/KeyboardManagerEditorLibrary/EditorHelpers.h>
 #include <common/interop/keyboard_layout.h>
 
 extern "C"
@@ -518,18 +519,18 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
-        Shortcut origShortcut(originalKeys);
+        Shortcut originalShortcut(originalKeys);
         Shortcut targetShortcut(targetKeys);
 
         std::wstring app(targetApp ? targetApp : L"");
 
         if (app.empty())
         {
-            return mappingConfig->AddOSLevelShortcut(origShortcut, targetShortcut);
+            return mappingConfig->AddOSLevelShortcut(originalShortcut, targetShortcut);
         }
         else
         {
-            return mappingConfig->AddAppSpecificShortcut(app, origShortcut, targetShortcut);
+            return mappingConfig->AddAppSpecificShortcut(app, originalShortcut, targetShortcut);
         }
     }
 
@@ -554,6 +555,107 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         LayoutMap layoutMap;
         std::wstring name(keyName);
         return static_cast<int>(layoutMap.GetKeyFromName(name));
+    }
+
+    // Function to get the type of a key (Win, Ctrl, Alt, Shift, or Action)
+    int GetKeyType(int key)
+    {
+        return static_cast<int>(Helpers::GetKeyType(static_cast<DWORD>(key)));
+    }
+
+    // Function to check if a shortcut is illegal
+    bool IsShortcutIllegal(const wchar_t* shortcutKeys)
+    {
+        if (!shortcutKeys)
+        {
+            return false;
+        }
+
+        Shortcut shortcut(shortcutKeys);
+
+        ShortcutErrorType result = EditorHelpers::IsShortcutIllegal(shortcut);
+
+        // Return true if an error was detected (anything other than NoError)
+        return result != ShortcutErrorType::NoError;
+    }
+
+    // Function to check if two shortcuts are equal
+    bool AreShortcutsEqual(const wchar_t* lShort, const wchar_t* rShort)
+    {
+        if (!lShort || !rShort)
+        {
+            return false;
+        }
+
+        Shortcut lhs(lShort);
+        Shortcut rhs(rShort);
+
+        return lhs == rhs;
+    }
+
+    // Function to delete a single key remapping
+    bool DeleteSingleKeyRemap(void* config, int originalKey)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        // Find and delete the single key remapping
+        auto it = mappingConfig->singleKeyReMap.find(static_cast<DWORD>(originalKey));
+        if (it != mappingConfig->singleKeyReMap.end())
+        {
+            mappingConfig->singleKeyReMap.erase(it);
+            return true;
+        }
+
+        return false;
+    }
+
+    // Function to delete a shortcut remapping
+    bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+
+        if (originalKeys == nullptr)
+        {
+            return false;
+        }
+
+        std::wstring appName = targetApp ? targetApp : L"";
+        Shortcut shortcut(originalKeys);
+
+        // Determine the type of remapping to delete based on the app name
+        if (appName.empty())
+        {
+            // Delete OS level shortcut mapping
+            auto it = mappingConfig->osLevelShortcutReMap.find(shortcut);
+            if (it != mappingConfig->osLevelShortcutReMap.end())
+            {
+                mappingConfig->osLevelShortcutReMap.erase(it);
+                return true;
+            }
+        }
+        else
+        {
+            // Delete app-specific shortcut mapping
+            auto appIt = mappingConfig->appSpecificShortcutReMap.find(appName);
+            if (appIt != mappingConfig->appSpecificShortcutReMap.end())
+            {
+                auto shortcutIt = appIt->second.find(shortcut);
+                if (shortcutIt != appIt->second.end())
+                {
+                    appIt->second.erase(shortcutIt);
+
+                    // If the app-specific mapping is empty, remove the app entry
+                    if (appIt->second.empty())
+                    {
+                        mappingConfig->appSpecificShortcutReMap.erase(appIt);
+                    }
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
 

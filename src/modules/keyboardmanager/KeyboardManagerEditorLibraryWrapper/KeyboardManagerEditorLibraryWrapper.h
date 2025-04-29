@@ -67,6 +67,13 @@ extern "C"
     __declspec(dllexport) void GetKeyDisplayName(int keyCode, wchar_t* keyName, int maxCount);
     __declspec(dllexport) int GetKeyCodeFromName(const wchar_t* keyName);
     __declspec(dllexport) void FreeString(wchar_t* str);
+    __declspec(dllexport) int GetKeyType(int keyCode);
+
+    __declspec(dllexport) bool IsShortcutIllegal(const wchar_t* shortcutKeys);
+    __declspec(dllexport) bool AreShortcutsEqual(const wchar_t* lShort, const wchar_t* rShort);
+
+    __declspec(dllexport) bool DeleteSingleKeyRemap(void* config, int originalKey);
+    __declspec(dllexport) bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp);
 }
 extern "C" __declspec(dllexport) bool CheckIfRemappingsAreValid();
 extern "C" __declspec(dllexport) int GetKeyboardKeysList(bool isShortcut, KeyNamePair* keyList, int maxCount);

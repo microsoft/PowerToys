@@ -81,6 +81,11 @@ namespace KeyboardManagerEditorUI
             Logger.LogError("Unhandled exception", e.Exception);
         }
 
+        public Window? GetWindow()
+        {
+            return window;
+        }
+
         private Window? window;
     }
 }
