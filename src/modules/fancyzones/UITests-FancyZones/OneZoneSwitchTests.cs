@@ -111,18 +111,17 @@ namespace UITests_FancyZones
 
             // Add virtual desktop
             SendKeys(Key.Ctrl, Key.Win, Key.D);
-            string? switchWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle(); // Fixed variable name to start with lower-case letter and removed unnecessary assignment warning by using the variable meaningfully.
 
             // return back
             SendKeys(Key.Ctrl, Key.Win, Key.Left);
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
             string? returnWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
-            Assert.AreEqual(preWindow, returnWindowTitle);
+            Assert.AreEqual(postWindow, returnWindowTitle);
 
             // check shortcut
             SendKeys(Key.Win, Key.PageDown);
             string? activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
-            Assert.AreEqual(windowName, activeWindowTitle);
+            Assert.AreEqual(preWindow, activeWindowTitle);
 
             // close the virtual desktop
             SendKeys(Key.Ctrl, Key.Win, Key.Right);
@@ -164,14 +163,16 @@ namespace UITests_FancyZones
 
             var rect = Session.GetWindowRect();
             var (targetX, targetY) = ZoneSwitchHelper.GetScreenMargins(rect, 4);
-            Session.PressKey(Key.Shift);
             var offSet = ZoneSwitchHelper.GetOffset(settingsView, targetX, targetY);
-            settingsView.DragAndHold(offSet.Dx, offSet.Dy);
-            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the drag is in progress
-            settingsView.ReleaseDrag();
-            Task.Delay(1000).Wait();
-            Session.ReleaseKey(Key.Shift);
 
+            DragWithShift(settingsView, offSet);
+
+            // Session.PressKey(Key.Shift);
+            // settingsView.DragAndHold(offSet.Dx, offSet.Dy);
+            // Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the drag is in progress
+            // settingsView.ReleaseDrag();
+            // Task.Delay(1000).Wait();
+            // Session.ReleaseKey(Key.Shift);
             string appZoneHistoryJson = AppZoneHistory.GetData();
             string? zoneIndexOfPowertoys = ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson);
 
@@ -189,7 +190,10 @@ namespace UITests_FancyZones
             Session.Attach(windowName, WindowSize.UnSpecified); // display window1
             var tabView = Find<Element>(By.AccessibilityId("TabView"));
             tabView.DoubleClick(); // maximize the window
-            tabView.KeyDownAndDrag(Key.Shift, targetX, targetY);
+
+            DragWithShift(tabView, offSet);
+
+            // tabView.KeyDownAndDrag(Key.Shift, targetX, targetY);
             appZoneHistoryJson = AppZoneHistory.GetData();
 
             string? zoneIndexOfFileWindow = ZoneSwitchHelper.GetZoneIndexSetByAppName(windowName, appZoneHistoryJson);
@@ -200,6 +204,16 @@ namespace UITests_FancyZones
             Assert.AreEqual(zoneIndexOfPowertoys, zoneIndexOfFileWindow);
 
             return (powertoysWindowName, windowName);
+        }
+
+        private void DragWithShift(Element settingsView, (int Dx, int Dy) offSet)
+        {
+            Session.PressKey(Key.Shift);
+            settingsView.DragAndHold(offSet.Dx, offSet.Dy);
+            Task.Delay(1000).Wait(); // Wait for drag to start (optional)
+            settingsView.ReleaseDrag();
+            Task.Delay(1000).Wait(); // Wait after drag (optional)
+            Session.ReleaseKey(Key.Shift);
         }
 
         private static readonly CustomLayouts.CustomLayoutListWrapper CustomLayoutsList = new CustomLayouts.CustomLayoutListWrapper
