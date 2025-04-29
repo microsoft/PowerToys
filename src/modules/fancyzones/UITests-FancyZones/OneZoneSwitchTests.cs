@@ -74,6 +74,8 @@ namespace UITests_FancyZones
             bool switchWindowEnable = TestContext.TestName == "TestSwitchShortCutDisable" ? false : true;
 
             this.Find<ToggleSwitch>("Switch between windows in the current zone").Toggle(switchWindowEnable);
+
+            Console.WriteLine($"Switch between windows in the current zone: {Find<ToggleSwitch>("Switch between windows in the current zone").IsOn}");
             Task.Delay(500).Wait(); // Wait for the setting to be applied
             Pull(tries, "up"); // Pull the setting page down to make sure the setting is visible
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
@@ -173,8 +175,6 @@ namespace UITests_FancyZones
             // settingsView.ReleaseDrag();
             // Task.Delay(1000).Wait();
             // Session.ReleaseKey(Key.Shift);
-            string appZoneHistoryJson = AppZoneHistory.GetData();
-            string? zoneIndexOfPowertoys = ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson);
 
             // Assert.IsNotNull(zoneIndexOfPowertoys, "Powertoys Drag to zone Failed");
 
@@ -194,9 +194,10 @@ namespace UITests_FancyZones
             DragWithShift(tabView, offSet);
 
             // tabView.KeyDownAndDrag(Key.Shift, targetX, targetY);
-            appZoneHistoryJson = AppZoneHistory.GetData();
+            string appZoneHistoryJson = AppZoneHistory.GetData();
 
-            string? zoneIndexOfFileWindow = ZoneSwitchHelper.GetZoneIndexSetByAppName(windowName, appZoneHistoryJson);
+            string? zoneIndexOfFileWindow = ZoneSwitchHelper.GetZoneIndexSetByAppName("explorer.exe", appZoneHistoryJson);
+            string? zoneIndexOfPowertoys = ZoneSwitchHelper.GetZoneIndexSetByAppName("PowerToys.Settings.exe", appZoneHistoryJson);
 
             Console.WriteLine($"zoneIndexOfFileWindow: {zoneIndexOfFileWindow}, zoneIndexOfPowertoys {zoneIndexOfPowertoys}");
 

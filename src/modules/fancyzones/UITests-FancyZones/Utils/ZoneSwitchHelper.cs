@@ -40,7 +40,7 @@ namespace Microsoft.FancyZones.UITests.Utils
                         var history = item.GetProperty("history");
                         if (history.GetArrayLength() > 0)
                         {
-                            return history[0].GetProperty("zone-index-set")[0].GetString();
+                            return history[0].GetProperty("zone-index-set")[0].GetRawText();
                         }
                     }
                 }
