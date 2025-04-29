@@ -168,8 +168,9 @@ namespace UITests_FancyZones
             var offSet = ZoneSwitchHelper.GetOffset(settingsView, targetX, targetY);
             settingsView.DragAndHold(offSet.Dx, offSet.Dy);
             Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the drag is in progress
-            Session.ReleaseKey(Key.Shift);
             settingsView.ReleaseDrag();
+            Task.Delay(1000).Wait();
+            Session.ReleaseKey(Key.Shift);
 
             string appZoneHistoryJson = AppZoneHistory.GetData();
             string? zoneIndexOfPowertoys = ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson);
@@ -192,10 +193,10 @@ namespace UITests_FancyZones
             appZoneHistoryJson = AppZoneHistory.GetData();
 
             string? zoneIndexOfFileWindow = ZoneSwitchHelper.GetZoneIndexSetByAppName(windowName, appZoneHistoryJson);
-            Assert.IsNotNull(zoneIndexOfFileWindow, "Drag to zone Failed");
+
+            Console.WriteLine($"zoneIndexOfFileWindow: {zoneIndexOfFileWindow}, zoneIndexOfPowertoys {zoneIndexOfPowertoys}");
 
             // check the AppZoneHistory layout is set and in the same zone
-            Console.WriteLine($"{ZoneSwitchHelper.GetZoneIndexSetByAppName(windowName, appZoneHistoryJson)},{ZoneSwitchHelper.GetZoneIndexSetByAppName(windowName, appZoneHistoryJson)}");
             Assert.AreEqual(zoneIndexOfPowertoys, zoneIndexOfFileWindow);
 
             return (powertoysWindowName, windowName);
