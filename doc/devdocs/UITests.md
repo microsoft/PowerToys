@@ -63,7 +63,7 @@
     }
   ```
 
-- Then you can start using session to perform the UI operations.
+- Then you can start performing the UI operations.
 
 **Example**
 ```
