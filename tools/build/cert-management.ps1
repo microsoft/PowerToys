@@ -153,7 +153,3 @@ function Export-CertificateFiles {
         Write-Warning "No output path specified. Nothing was exported."
     }
 }
-
-$cert = EnsureCertificate
-$pswd = ConvertTo-SecureString -String "MySecurePassword123!" -AsPlainText -Force
-Export-CertificateFiles -Certificate $cert -CerPath "$env:TEMP\cert.cer" -PfxPath "$env:TEMP\cert.pfx" -PfxPassword $pswd
