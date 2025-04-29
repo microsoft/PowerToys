@@ -29,50 +29,46 @@
 
 ## Functional tests
 
- Regressions:
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [ ] https://github.com/microsoft/PowerToys/issues/1524
-
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] System tray menu items
- - [ ] Settings
- - [ ] OOBE (What's new)
- - [ ] Keyboard Manager Editor
- - [ ] Color Picker (check the tooltips)
- - [ ] FancyZones Editor
- - [ ] Power Rename (new WinUI 3 may not be localized)
- - [ ] PowerToys Run ("Start typing" string is localized, for example)
- - [ ] Image Resizer
+ - [X] System tray menu items
+ - [X] Settings
+ - [X] OOBE (What's new)
+ - [X] Keyboard Manager Editor
+ - [X] Color Picker (check the tooltips)
+ - [X] FancyZones Editor
+ - [X] Power Rename (new WinUI 3 may not be localized)
+ - [X] PowerToys Run ("Start typing" string is localized, for example)
+ - [X] Image Resizer
  - [ ] Shortcut Guide (Windows controls are localized)
  - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
- - [ ] Hosts File Editor
+ - [X] Hosts File Editor
  - [ ] File Locksmith
- - [ ] Registry Preview
- - [ ] Environment Variables
+ - [X] Registry Preview
+ - [X] Environment Variables
 
 ## Awake
- - [ ] Try out the features and see if they work, no list at this time.
+ - [X] Try out the features and see if they work, no list at this time.
 ## Hosts File Editor
  * Launch Host File Editor:
-   - [ ] Verify the application exits if "Quit" is clicked on the initial warning.
-   - [ ] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
-   - [ ] Enable and disable lines and verify they are applied to the file.
-   - [ ] Add a new entry and verify it's applied.
-   - [ ] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
-   - [ ] Try to filter for lines and verify you can find them.
-   - [ ] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
+   - [X] Verify the application exits if "Quit" is clicked on the initial warning.
+   - [X] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
+   - [X] Enable and disable lines and verify they are applied to the file.
+   - [X] Add a new entry and verify it's applied.
+   - [X] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
+   - [X] Try to filter for lines and verify you can find them.
+   - [X] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
  * Test the different settings and verify they are applied:
-   - [ ] Launch as Administrator.
-   - [ ] Show a warning at startup.
-   - [ ] Additional lines position.
+   - [X] Launch as Administrator.
+   - [X] Show a warning at startup.
+   - [X] Additional lines position.
 
 ## File Locksmith
  * Start the PowerToys installer executable and let it stay in the initial screen.
-   - [ ] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
-   - [ ] End the tasks in File Locksmith UI and verify that closes the installer.
-   - [ ] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
-   - [ ] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
+   - [X] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
+   - [X] End the tasks in File Locksmith UI and verify that closes the installer.
+   - [X] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
+   - [X] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
  * Start the PowerToys installer executable again and let it stay in the initial screen.
    - [ ] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
    - [ ] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
@@ -80,84 +76,84 @@
    - [ ] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
    - [ ] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
  - [ ] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
- - [ ] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
+ - [X] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [X] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled.
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [X] Verify the module is not enabled.
+   - [X] Open settings and verify the module is not enabled and you can't enable it.
+   - [X] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [X] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [X] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is enabled.
-   - [ ] Open settings and verify the module is enabled and you can't disable it.
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [X] Verify the module is enabled.
+   - [X] Open settings and verify the module is enabled and you can't disable it.
+   - [X] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [X] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (No context menu entry)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [X] Verify the module is not enabled. (No context menu entry)
+   - [X] Open settings and verify the module is not enabled and you can't enable it.
+   - [X] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [X] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [X] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
 ## [Mouse Without Borders](tests-checklist-template-mouse-without-borders-section.md)
  * Install PowerToys on two PCs in the same local network:
-   - [ ] Verify that PowerToys is properly installed on both PCs.
+   - [X] Verify that PowerToys is properly installed on both PCs.
    
  * Setup Connection:
-   - [ ] Open MWB's settings on the first PC and click the "New Key" button. Verify that a new security key is generated.
-   - [ ] Copy the generated security key and paste it in the corresponding input field in the settings of MWB on the second PC. Also enter the name of the first PC in the required field.
-   - [ ] Press "Connect" and verify that the machine layout now includes two PC tiles, each displaying their respective PC names.
+   - [X] Open MWB's settings on the first PC and click the "New Key" button. Verify that a new security key is generated.
+   - [X] Copy the generated security key and paste it in the corresponding input field in the settings of MWB on the second PC. Also enter the name of the first PC in the required field.
+   - [X] Press "Connect" and verify that the machine layout now includes two PC tiles, each displaying their respective PC names.
    
  * Verify Connection Status:
-   - [ ] Ensure that the border of the remote PC turns green, indicating a successful connection.
-   - [ ] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
+   - [X] Ensure that the border of the remote PC turns green, indicating a successful connection.
+   - [X] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
    
  * Test Remote Mouse/Keyboard Control:
-   - [ ] With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
-   - [ ] Test remote mouse/keyboard control across all four PCs, if available. Verify that inputs are correctly registered on each connected PC when the mouse is active there.
+   - [X] With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
+   - [X] Test remote mouse/keyboard control across all four PCs, if available. Verify that inputs are correctly registered on each connected PC when the mouse is active there.
    
  * Test Remote Control with Elevated Apps:
-   - [ ] Open an elevated app on one of the PCs. Verify that without "Use Service" enabled, PowerToys does not control the elevated app.
-   - [ ] Enable "Use Service" in MWB's settings. Verify that PowerToys can now control the elevated app remotely. Verify that MWB processes are running as LocalSystem, while the MWB helper process is running non-elevated.
-   - [ ] Toggle "Use Service" again, verify that each time you do that, the MWB processes are restarted.
-   - [ ] Run PowerToys elevated on one of the machines, verify that you can control elevated apps remotely now on that machine.
+   - [X] Open an elevated app on one of the PCs. Verify that without "Use Service" enabled, PowerToys does not control the elevated app.
+   - [X] Enable "Use Service" in MWB's settings. Verify that PowerToys can now control the elevated app remotely. Verify that MWB processes are running as LocalSystem, while the MWB helper process is running non-elevated.
+   - [X] Toggle "Use Service" again, verify that each time you do that, the MWB processes are restarted.
+   - [X] Run PowerToys elevated on one of the machines, verify that you can control elevated apps remotely now on that machine.
 
 * Test Module Enable Status:
-   - [ ] For all combinations of "Use Service"/"Run PowerToys as admin", try enabling/disabling MWB module and verify that it's indeed being toggled using task manager.
+   - [X] For all combinations of "Use Service"/"Run PowerToys as admin", try enabling/disabling MWB module and verify that it's indeed being toggled using task manager.
    
  * Test Disconnection/Reconnection:
-   - [ ] Disconnect one of the PCs from network. Verify that the machine layout updates to reflect the disconnection. 
-   - [ ] Do the same, but now by exiting PowerToys.
-   - [ ] Start PowerToys again, verify that the PCs are reconnected.
+   - [X] Disconnect one of the PCs from network. Verify that the machine layout updates to reflect the disconnection. 
+   - [X] Do the same, but now by exiting PowerToys.
+   - [X] Start PowerToys again, verify that the PCs are reconnected.
   
  * Test Various Local Network Conditions:
-   - [ ] Test MWB performance under various network conditions (e.g., low bandwidth, high latency). Verify that the tool maintains a stable connection and functions correctly.
+   - [X] Test MWB performance under various network conditions (e.g., low bandwidth, high latency). Verify that the tool maintains a stable connection and functions correctly.
 
  * Clipboard Sharing:
-   - [ ] Copy some text on one PC and verify that the same text can be pasted on another PC.
-   - [ ] Use the screenshot key and Win+Shift+S to take a screenshot on one PC and verify that the screenshot can be pasted on another PC.
-   - [ ] Copy a file in Windows Explorer and verify that the file can be pasted on another PC. Make sure the file size is below 100MB.
-   - [ ] Try to copy multiple files and directories and verify that it's not possible (only the first selected file is being copied).
+   - [X] Copy some text on one PC and verify that the same text can be pasted on another PC.
+   - [X] Use the screenshot key and Win+Shift+S to take a screenshot on one PC and verify that the screenshot can be pasted on another PC.
+   - [X] Copy a file in Windows Explorer and verify that the file can be pasted on another PC. Make sure the file size is below 100MB.
+   - [X] Try to copy multiple files and directories and verify that it's not possible (only the first selected file is being copied).
  
  * Drag and Drop:
-   - [ ] Drag a file from Windows Explorer on one PC, cross the screen border onto another PC, and release it there. Verify that the file is copied to the other PC. Make sure the file size is below 100MB.
-   - [ ] While dragging the file, verify that a corresponding icon is displayed under the mouse cursor.
-   - [ ] Without moving the mouse from one PC to the target PC, press CTRL+ALT+F1/2/3/4 hotkey to switch to the target PC directly and verify that file sharing/dropping is not working.
+   - [X] Drag a file from Windows Explorer on one PC, cross the screen border onto another PC, and release it there. Verify that the file is copied to the other PC. Make sure the file size is below 100MB.
+   - [X] While dragging the file, verify that a corresponding icon is displayed under the mouse cursor.
+   - [X] Without moving the mouse from one PC to the target PC, press CTRL+ALT+F1/2/3/4 hotkey to switch to the target PC directly and verify that file sharing/dropping is not working.
 
  * Lock and Unlock with "Use Service" Enabled:
-   - [ ] Enable "Use Service" in MWB's settings.
-   - [ ] Lock a remote PC using Win+L, move the mouse to it remotely, and try to unlock it. Verify that you can unlock the remote PC.
-   - [ ] Disable "Use Service" in MWB's settings, lock the remote PC, move the mouse to it remotely, and try to unlock it. Verify that you can't unlock the remote PC.
+   - [X] Enable "Use Service" in MWB's settings.
+   - [X] Lock a remote PC using Win+L, move the mouse to it remotely, and try to unlock it. Verify that you can unlock the remote PC.
+   - [X] Disable "Use Service" in MWB's settings, lock the remote PC, move the mouse to it remotely, and try to unlock it. Verify that you can't unlock the remote PC.
 
  * Test Settings:
-   - [ ] Change the rest of available settings on MWB page and verify that each setting works as described.
+   - [X] Change the rest of available settings on MWB page and verify that each setting works as described.
 
 ## DSC
  * You need to have some prerequisites installed:
@@ -165,75 +161,75 @@
    - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
    - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
  * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [ ] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
-   - [ ] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
+   - [X] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
+   - [X] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
    - [ ] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
    - [ ] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+   - [X] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [X] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
 
 ## [Workspaces](tests-checklist-template-workspaces-section.md)
 * Settings
-   - [ ] Launch the Editor by clicking the button on the settings page.
-   - [ ] Launch the Editor from quick access.
-   - [ ] Launch the Editor by the Activation shortcut.
-   - [ ] Disable the module and and verify it won't launch by the shortcut.
+   - [X] Launch the Editor by clicking the button on the settings page.
+   - [X] Launch the Editor from quick access.
+   - [X] Launch the Editor by the Activation shortcut.
+   - [X] Disable the module and and verify it won't launch by the shortcut.
 
 * Snapshot tool: try with elevated and non-elevated PT
-   * Open non-packaged apps, e.g., VisualStudio, VisualStudioCode.
-   * Open packaged apps, e.g., Notepad, Settings.
-   * Run any app as an administrator.
-   * Minimize any app.
+   * Open non-packaged apps, everything, edge.
+   * Open packaged apps, e.g., Notepad.
+   * Run any app as an administrator - terminal.
+   * Minimize any app - terminal(non-admin).
    * Click `Create Workspace`.
    * Open any other window.
    * Click `Capture`
-   - [ ] Verify Editor shows all opened windows (the elevated window will be captured if PT is also elevated).
-   - [ ] Verify windows are in the correct positions.
-   - [ ] Verify elevated app has the `Admin` box checked (if captured).
+   - [X] Verify Editor shows all opened windows (the elevated window will be captured if PT is also elevated).
+   - [X] Verify windows are in the correct positions.
+   - [X] Verify elevated app has the `Admin` box checked (if captured).
 
 * Editor
-   - [ ] Verify that the new Workspace appears in the list after capturing.
-   - [ ] Verify that the new Workspace doesn't appear after canceling the Capture.
-   - [ ] Verify `Search` filters Workspaces (by workspace name or app name).
-   - [ ] Verify `SortBy` works.
-   - [ ] Verify `SortBy` keeps its value when you close and open the editor again.
-   - [ ] Verify `Remove` removes the Workspace from the list.
-   - [ ] Verify `Edit` opens the Workspace editing page.
-   - [ ] Verify clicking at the Workspace opens the Workspace editing page.
+   - [X] Verify that the new Workspace appears in the list after capturing.
+   - [X] Verify that the new Workspace doesn't appear after canceling the Capture.
+   - [X] Verify `Search` filters Workspaces (by workspace name or app name).
+   - [X] Verify `SortBy` works.
+   - [X] Verify `SortBy` keeps its value when you close and open the editor again.
+   - [X] Verify `Remove` removes the Workspace from the list.
+   - [X] Verify `Edit` opens the Workspace editing page.
+   - [X] Verify clicking at the Workspace opens the Workspace editing page.
    
    * Editing page
-   - [ ] `Remove` an app and verify it disappeared on the preview.
-   - [ ] `Remove` and `Add back` an app, verify it's returned back to the preview.
-   - [ ] Set an app minimized, check the preview.
-   - [ ] Set an app maximized, check the preview.
-   - [ ] Check `Launch as admin` for the app where it's available.
-   - [ ] Add CLI args, e.g. path to the PowerToys.sln file for VisualStudio.
-   - [ ] Manually change the position for the app, check the preview.
-   - [ ] Change the Workspace name.
-   - [ ] Verify `Save` and `Cancel` work as expected. 
-   - [ ] Change anything in the project, click at the `Workspaces` on the top of the page, and verify you returned to the main page without saving any changes.
-   - [ ] Check `Create desktop shortcut`, save the project, verify the shortcut appears on the desktop. 
-   - [ ] Verify that `Create desktop shortcut` is checked when the shortcut is on the desktop and unchecked when there is no shortcut on the desktop. 
-   - [ ] Click `Launch and Edit`, wait for the apps to launch, click `Capture`, verify opened apps are added to the project.
+   - [X] `Remove` an app and verify it disappeared on the preview.
+   - [X] `Remove` and `Add back` an app, verify it's returned back to the preview.
+   - [X] Set an app minimized, check the preview.
+   - [X] Set an app maximized, check the preview.
+   - [X] Check `Launch as admin` for the app where it's available.
+   - [X] Add CLI args, e.g. path to the PowerToys.sln file for VisualStudio.
+   - [X] Manually change the position for the app, check the preview.
+   - [X] Change the Workspace name.
+   - [X] Verify `Save` and `Cancel` work as expected. 
+   - [X] Change anything in the project, click at the `Workspaces` on the top of the page, and verify you returned to the main page without saving any changes.
+   - [X] Check `Create desktop shortcut`, save the project, verify the shortcut appears on the desktop. 
+   - [X] Verify that `Create desktop shortcut` is checked when the shortcut is on the desktop and unchecked when there is no shortcut on the desktop. 
+   - [X] Click `Launch and Edit`, wait for the apps to launch, click `Capture`, verify opened apps are added to the project.
 
 * Launcher
-   - [ ] Click `Launch` in the editor, verify the Workspace apps launching.
-   - [ ] Launch Workspace by a shortcut, verify the Workspace apps launching.
-   - [ ] Verify a window with launching progress is shown while apps are launching and presents the correct launching state (launching, launched, not launched) for every app.
-   - [ ] Click `Cancel launch`, verify launching is stopped at the current state (opened apps will stay opened), and the window is closed.
-   - [ ] Click `Dismiss` and verify apps keep launching, but the LauncherUI window is closed.
+   - [X] Click `Launch` in the editor, verify the Workspace apps launching.
+   - [X] Launch Workspace by a shortcut, verify the Workspace apps launching.
+   - [X] Verify a window with launching progress is shown while apps are launching and presents the correct launching state (launching, launched, not launched) for every app.
+   - [X] Click `Cancel launch`, verify launching is stopped at the current state (opened apps will stay opened), and the window is closed.
+   - [X] Click `Dismiss` and verify apps keep launching, but the LauncherUI window is closed.
    
 * To verify that the launcher works correctly with different apps, try to capture and launch:   
-   - [ ] Non-packaged app, e.g., VisualStudio code
-      - [ ] As admin
-      - [ ] With CLI args 
-    - [ ] Packaged app, e.g. Terminal
-      - [ ] As admin
-      - [ ] With CLI args
+   - [X] Non-packaged app, e.g., VisualStudio code
+      - [X] As admin
+      - [X] With CLI args 
+    - [X] Packaged app, e.g. Terminal
+      - [X] As admin
+      - [X] With CLI args
 
 * Try to launch the Workspace with a different setup
-   - [ ] Create a Workspace with one monitor connected, connect the second monitor, launch the Workspace, verify apps are opened on the first one, as captured.
-   - [ ] Create a Workspace with two monitors connected, disconnect a monitor, verify apps are opened on the remaining one.
+   - [X] Create a Workspace with one monitor connected, connect the second monitor, launch the Workspace, verify apps are opened on the first one, as captured.
+   - [X] Create a Workspace with two monitors connected, disconnect a monitor, verify apps are opened on the remaining one.
 
 ## [Command Palette](tests-checklist-template-command-palette-section.md)
  * Check if Command Palette successfully install/uninstall with PowerToys.
