@@ -9,4 +9,6 @@ namespace Microsoft.CmdPal.Ext.Shell;
 internal sealed class Icons
 {
     internal static IconInfo RunV2 { get; } = IconHelpers.FromRelativePath("Assets\\Run.svg");
+
+    internal static IconInfo Folder { get; } = new("📁");
 }

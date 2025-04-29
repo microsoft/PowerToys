@@ -1,0 +1,45 @@
+﻿// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.IO;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+
+namespace Microsoft.CmdPal.Ext.Shell;
+
+internal sealed partial class PathListItem : ListItem
+{
+    private readonly Lazy<IconInfo> _icon;
+    private readonly bool _isDirectory;
+
+    public override IIconInfo? Icon { get => _icon.Value; set => base.Icon = value; }
+
+    public PathListItem(string path)
+        : base(new OpenUrlCommand(path))
+    {
+        var fileName = Path.GetFileName(path);
+        _isDirectory = Directory.Exists(path);
+        if (_isDirectory)
+        {
+            path = path + "\\";
+            fileName = fileName + "\\";
+        }
+
+        Title = fileName;
+        Subtitle = path;
+        TextToSuggest = path;
+        MoreCommands = [
+            new CommandContextItem(new CopyTextCommand(path))
+        ];
+
+        _icon = new Lazy<IconInfo>(() =>
+        {
+            var iconStream = ThumbnailHelper.GetThumbnail(path).Result;
+            var icon = iconStream != null ? IconInfo.FromStream(iconStream) :
+             _isDirectory ? Icons.Folder : Icons.RunV2;
+            return icon;
+        });
+    }
+}
