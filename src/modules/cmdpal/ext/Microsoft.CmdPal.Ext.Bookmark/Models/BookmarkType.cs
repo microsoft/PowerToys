@@ -9,7 +9,5 @@ public enum BookmarkType
     Web,
     File,
     Folder,
-    PWSH,
-    PowerShell,
-    Cmd,
+    Command,
 }

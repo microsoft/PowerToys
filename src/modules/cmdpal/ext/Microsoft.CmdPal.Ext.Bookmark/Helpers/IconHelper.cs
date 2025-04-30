@@ -20,11 +20,7 @@ public static class IconHelper
 
     public static IconInfo FileIcon { get; private set; } = new("📄"); // File
 
-    public static IconInfo CmdIcon { get; private set; } = new("\uE756"); // Cmd
-
-    public static IconInfo PWSHIcon { get; private set; } = new("\uE756"); // PWSH
-
-    public static IconInfo PowerShellIcon { get; private set; } = new("\uE756"); // PowerShell
+    public static IconInfo CommandIcon { get; private set; } = new("\uE756"); // Command
 
     public static IconInfo GetIconByType(BookmarkType type)
     {
@@ -33,9 +29,7 @@ public static class IconHelper
             BookmarkType.Web => UrlIcon,
             BookmarkType.Folder => FolderIcon,
             BookmarkType.File => FileIcon,
-            BookmarkType.Cmd => CmdIcon,
-            BookmarkType.PWSH => PWSHIcon,
-            BookmarkType.PowerShell => PowerShellIcon,
+            BookmarkType.Command => CommandIcon,
 
             _ => UrlIcon, // Default icon
         };
