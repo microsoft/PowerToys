@@ -33,7 +33,6 @@ namespace UITests_FancyZones
     {
         private static readonly int SubZones = 2;
         private static readonly IOTestHelper AppZoneHistory = new FancyZonesEditorFiles().AppZoneHistoryIOHelper;
-        private static string windowName = "Windows (C:) - File Explorer"; // set launch explorer window name
         private static string powertoysWindowName = "PowerToys Settings"; // set powertoys settings window name
 
         public OneZoneSwitchTests()
@@ -83,7 +82,8 @@ namespace UITests_FancyZones
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Element>(By.Name("Custom Column")).Click();
             this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
-
+            this.Session.Attach(PowerToysModule.PowerToysSettings);
+            LaunchFromSetting();
             this.RestartScopeExe();
         }
 
@@ -158,16 +158,26 @@ namespace UITests_FancyZones
 
         private (string PreWindow, string PostWindow) SnapToOneZone()
         {
+            this.Session.Attach(PowerToysModule.Hosts, WindowSize.Large_Vertical);
+
+            var hostsView = Find<Element>(By.Name("Non Client Input Sink Window"));
+            hostsView.DoubleClick(); // maximize the window
+
+            var rect = Session.GetWindowRect();
+            var (targetX, targetY) = ZoneSwitchHelper.GetScreenMargins(rect, 4);
+            var offSet = ZoneSwitchHelper.GetOffset(hostsView, targetX, targetY);
+
+            DragWithShift(hostsView, offSet);
+
+            string preWindow = ZoneSwitchHelper.GetActiveWindowTitle();
+            Console.WriteLine($"Window name: {preWindow}");
+
             // Attach the PowerToys settings window to the front
             Session.Attach(powertoysWindowName, WindowSize.UnSpecified);
             string windowNameFront = ZoneSwitchHelper.GetActiveWindowTitle();
             Console.WriteLine($"Window name: {windowNameFront}");
             Element settingsView = Find<Element>(By.Name("Non Client Input Sink Window"));
             settingsView.DoubleClick(); // maximize the window
-
-            var rect = Session.GetWindowRect();
-            var (targetX, targetY) = ZoneSwitchHelper.GetScreenMargins(rect, 4);
-            var offSet = ZoneSwitchHelper.GetOffset(settingsView, targetX, targetY);
 
             DragWithShift(settingsView, offSet);
 
@@ -181,25 +191,16 @@ namespace UITests_FancyZones
             // Assert.IsNotNull(zoneIndexOfPowertoys, "Powertoys Drag to zone Failed");
 
             // start exe
-            Session.KillAllProcessesByName("explorer");
-            Session.StartExe("explorer.exe", "C:\\");
-            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the window is open
-
-            windowName = ZoneSwitchHelper.GetActiveWindowTitle();
-            Console.WriteLine($"Window name: {windowName}");
+            // Session.KillAllProcessesByName("explorer");
+            // Session.StartExe("explorer.exe", "C:\\");
+            // Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the window is open
 
             // Start Windows Explorer process
-            Session.Attach(windowName, WindowSize.Large_Vertical); // display window1
-
-            var tabView = Find<Element>(By.AccessibilityId("TabView"));
-            tabView.DoubleClick(); // maximize the window
-
-            DragWithShift(tabView, offSet);
-
+            // Session.Attach(windowName, WindowSize.Large_Vertical); // display window1
             // tabView.KeyDownAndDrag(Key.Shift, targetX, targetY);
             string appZoneHistoryJson = AppZoneHistory.GetData();
 
-            string? zoneIndexOfFileWindow = ZoneSwitchHelper.GetZoneIndexSetByAppName("explorer.exe", appZoneHistoryJson);
+            string? zoneIndexOfFileWindow = ZoneSwitchHelper.GetZoneIndexSetByAppName("PowerToys.Hosts.exe", appZoneHistoryJson); // explorer.exe
             string? zoneIndexOfPowertoys = ZoneSwitchHelper.GetZoneIndexSetByAppName("PowerToys.Settings.exe", appZoneHistoryJson);
 
             Console.WriteLine($"zoneIndexOfFileWindow: {zoneIndexOfFileWindow}, zoneIndexOfPowertoys {zoneIndexOfPowertoys}");
@@ -207,7 +208,7 @@ namespace UITests_FancyZones
             // check the AppZoneHistory layout is set and in the same zone
             Assert.AreEqual(zoneIndexOfPowertoys, zoneIndexOfFileWindow);
 
-            return (powertoysWindowName, windowName);
+            return (preWindow, powertoysWindowName);
         }
 
         private void DragWithShift(Element settingsView, (int Dx, int Dy) offSet)
@@ -257,6 +258,28 @@ namespace UITests_FancyZones
         private void Clean()
         {
             Session.KillAllProcessesByName("explorer");
+        }
+
+        private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
+        {
+            // Goto Hosts File Editor setting page
+            if (this.FindAll<NavigationViewItem>("Hosts File Editor").Count == 0)
+            {
+                // Expand Advanced list-group if needed
+                this.Find<NavigationViewItem>("Advanced").Click();
+            }
+
+            this.Find<NavigationViewItem>("Hosts File Editor").Click();
+            Task.Delay(1000).Wait();
+
+            this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
+            this.Find<ToggleSwitch>("Launch as administrator").Toggle(launchAsAdmin);
+            this.Find<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
+
+            // launch Hosts File Editor
+            this.Find<Microsoft.PowerToys.UITest.Button>("Launch Hosts File Editor").Click();
+
+            Task.Delay(1000).Wait();
         }
     }
 }
