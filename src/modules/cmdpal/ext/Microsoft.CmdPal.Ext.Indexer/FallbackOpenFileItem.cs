@@ -2,7 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -10,8 +13,14 @@ using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.Indexer;
 
-internal sealed partial class FallbackOpenFileItem : FallbackCommandItem
+internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System.IDisposable
 {
+    private readonly CompositeFormat fallbackItemSearchPageTitleCompositeFormat = CompositeFormat.Parse(Resources.Indexer_fallback_searchPage_title);
+
+    private readonly SearchEngine _searchEngine = new();
+
+    private uint _queryCookie = 10;
+
     public FallbackOpenFileItem()
         : base(new NoOpCommand(), Resources.Indexer_Find_Path_fallback_display_title)
     {
@@ -21,8 +30,20 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem
 
     public override void UpdateQuery(string query)
     {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            Command = new NoOpCommand();
+            Title = string.Empty;
+            Subtitle = string.Empty;
+            Icon = null;
+            MoreCommands = null;
+
+            return;
+        }
+
         if (Path.Exists(query))
         {
+            // Exit 1: The query is a direct path to a file. Great! Return it.
             var item = new IndexerItem() { FullPath = query, FileName = Path.GetFileName(query) };
             var listItemForUs = new IndexerListItem(item, IncludeBrowseCommand.AsDefault);
             Command = listItemForUs.Command;
@@ -43,12 +64,65 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem
             catch
             {
             }
+
+            return;
         }
         else
         {
-            Title = string.Empty;
-            Subtitle = string.Empty;
-            Command = new NoOpCommand();
+            _queryCookie++;
+
+            try
+            {
+                _searchEngine.Query(query, _queryCookie);
+                var results = _searchEngine.FetchItems(0, 20, _queryCookie, out var _);
+
+                if (results.Count == 0 || ((results[0] as IndexerListItem) == null))
+                {
+                    // Exit 2: We searched for the file, and found nothing. Oh well.
+                    // Hide ourselves.
+                    Title = string.Empty;
+                    Subtitle = string.Empty;
+                    Command = new NoOpCommand();
+                    return;
+                }
+
+                if (results.Count == 1)
+                {
+                    // Exit 3: We searched for the file, and found exactly one thing. Awesome!
+                    // Return it.
+                    Title = results[0].Title;
+                    Subtitle = results[0].Subtitle;
+                    Icon = results[0].Icon;
+                    Command = results[0].Command;
+                    MoreCommands = results[0].MoreCommands;
+
+                    return;
+                }
+
+                // Exit 4: We found more than one result. Make our command take
+                // us to the file search page, prepopulated with this search.
+                var indexerPage = new IndexerPage(query, _searchEngine, _queryCookie, results);
+                Title = string.Format(CultureInfo.CurrentCulture, fallbackItemSearchPageTitleCompositeFormat, query);
+                Icon = Icons.FileExplorer;
+                Subtitle = Resources.Indexer_Subtitle;
+                Command = indexerPage;
+
+                return;
+            }
+            catch
+            {
+                Title = string.Empty;
+                Subtitle = string.Empty;
+                Icon = null;
+                Command = new NoOpCommand();
+                MoreCommands = null;
+            }
         }
+    }
+
+    public void Dispose()
+    {
+        _searchEngine.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
