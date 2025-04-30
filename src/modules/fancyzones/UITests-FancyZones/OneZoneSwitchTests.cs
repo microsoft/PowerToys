@@ -64,20 +64,21 @@ namespace UITests_FancyZones
 
             this.Find<NavigationViewItem>("FancyZones").Click();
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
-            this.Session.SetMainWindowSize(WindowSize.Large_Vertical);
+            this.Session.SetMainWindowSize(WindowSize.Large);
 
             // fixed settings
             this.Find<Microsoft.PowerToys.UITest.CheckBox>("Hold Shift key to activate zones while dragging a window").SetCheck(true, 500);
 
-            int tries = 5;
-            Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
+            // should bind mouse to suitable zone for scrolling
+            Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
+            Scroll(9, "Down"); // Pull the setting page up to make sure the setting is visible
             bool switchWindowEnable = TestContext.TestName == "TestSwitchShortCutDisable" ? false : true;
 
             this.Find<ToggleSwitch>("Switch between windows in the current zone").Toggle(switchWindowEnable);
 
             Console.WriteLine($"Switch between windows in the current zone: {Find<ToggleSwitch>("Switch between windows in the current zone").IsOn}");
             Task.Delay(500).Wait(); // Wait for the setting to be applied
-            Pull(tries, "up"); // Pull the setting page down to make sure the setting is visible
+            Scroll(9, "Up"); // Pull the setting page down to make sure the setting is visible
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Element>(By.Name("Custom Column")).Click();
@@ -241,12 +242,13 @@ namespace UITests_FancyZones
             },
         };
 
-        private void Pull(int tries = 5, string direction = "up")
+        // Pull the setting page up or down
+        private void Scroll(int tries = 5, string direction = "Up")
         {
-            Key keyToSend = direction == "up" ? Key.Up : Key.Down;
+            MouseActionType mouseAction = direction == "Up" ? MouseActionType.ScrollUp : MouseActionType.ScrollDown;
             for (int i = 0; i < tries; i++)
             {
-               SendKeys(keyToSend);
+                Session.PerformMouseAction(mouseAction, 100, 1000); // Ensure settings are visible
             }
         }
 
