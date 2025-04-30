@@ -41,55 +41,79 @@ internal sealed partial class RunMainPage : DynamicListPage
             return;
         }
 
+        var directoryPath = string.Empty;
+        var searchPattern = string.Empty;
+
         // Check if the search text is a valid path
         if (Path.IsPathRooted(searchText) && Path.GetDirectoryName(searchText) is string directoryName)
         {
-            // Check if the directory exists
-            if (Directory.Exists(directoryName))
-            {
-                // Get all the files in the directory that start with the search text
-                var files = Directory.GetFileSystemEntries(directoryName, $"{Path.GetFileName(searchText)}*");
+            directoryPath = directoryName;
+            searchPattern = $"{Path.GetFileName(searchText)}*";
+            //// Check if the directory exists
+            // if (Directory.Exists(directoryName))
+            // {
+            //    // Get all the files in the directory that start with the search text
+            //    var files = Directory.GetFileSystemEntries(directoryName, $"{Path.GetFileName(searchText)}*");
 
-                // Create a list of commands for each file
-                var commands = files.Select(PathToListItem).ToList();
+            // // Create a list of commands for each file
+            //    var commands = files.Select(PathToListItem).ToList();
 
-                // Add the commands to the list
-                ListHelpers.InPlaceUpdateList(_pathItems, commands);
-            }
+            // // Add the commands to the list
+            //    ListHelpers.InPlaceUpdateList(_pathItems, commands);
+            // }
         }
 
         // we should also handle just drive roots, ala c:\ or d:\
         else if (searchText.Length == 2 && searchText[1] == ':')
         {
-            // Check if the drive exists
-            if (Directory.Exists(searchText + "\\"))
-            {
-                // Get all the files in the directory that start with the search text
-                var files = Directory.GetFileSystemEntries(searchText + "\\", "*");
+            directoryPath = searchText + "\\";
+            searchPattern = $"*";
 
-                // Create a list of commands for each file
-                var commands = files.Select(PathToListItem).ToList();
+            //// Check if the drive exists
+            // if (Directory.Exists(searchText + "\\"))
+            // {
+            //    // Get all the files in the directory that start with the search text
+            //    var files = Directory.GetFileSystemEntries(searchText + "\\", "*");
 
-                // Add the commands to the list
-                ListHelpers.InPlaceUpdateList(_pathItems, commands);
-            }
+            // // Create a list of commands for each file
+            //    var commands = files.Select(PathToListItem).ToList();
+
+            // // Add the commands to the list
+            //    ListHelpers.InPlaceUpdateList(_pathItems, commands);
+            // }
         }
 
         // Check if the search text is a valid UNC path
         else if (searchText.StartsWith(@"\\", System.StringComparison.CurrentCultureIgnoreCase) && searchText.Contains(@"\\"))
         {
-            // Check if the directory exists
-            if (Directory.Exists(searchText))
-            {
-                // Get all the files in the directory that start with the search text
-                var files = Directory.GetFileSystemEntries(searchText, "*");
+            directoryPath = searchText;
+            searchPattern = $"*";
 
-                // Create a list of commands for each file
-                var commands = files.Select(PathToListItem).ToList();
+            //// Check if the directory exists
+            // if (Directory.Exists(searchText))
+            // {
+            //    // Get all the files in the directory that start with the search text
+            //    var files = Directory.GetFileSystemEntries(searchText, "*");
 
-                // Add the commands to the list
-                ListHelpers.InPlaceUpdateList(_pathItems, commands);
-            }
+            // // Create a list of commands for each file
+            //    var commands = files.Select(PathToListItem).ToList();
+
+            // // Add the commands to the list
+            //    ListHelpers.InPlaceUpdateList(_pathItems, commands);
+            // }
+        }
+
+        // Check if the directory exists
+        if (Directory.Exists(directoryPath))
+        {
+            // Get all the files in the directory that start with the search text
+            var files = Directory.GetFileSystemEntries(directoryPath, searchPattern);
+
+            // Create a list of commands for each file
+            var commands = files.Select(PathToListItem).ToList();
+
+            // Add the commands to the list
+            ListHelpers.InPlaceUpdateList(_pathItems, commands);
         }
 
         RaiseItemsChanged();
