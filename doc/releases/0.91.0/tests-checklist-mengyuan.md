@@ -70,12 +70,12 @@
    - [X] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
    - [X] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
  * Start the PowerToys installer executable again and let it stay in the initial screen.
-   - [ ] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
-   - [ ] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
+   - [X] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
+   - [X] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
  * Restart PowerToys as admin.
-   - [ ] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
-   - [ ] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
- - [ ] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
+   - [X] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
+   - [X] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
+ - [X] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
  - [X] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
 
 ## GPO
@@ -112,21 +112,21 @@
    - [X] Press "Connect" and verify that the machine layout now includes two PC tiles, each displaying their respective PC names.
    
  * Verify Connection Status:
-   - [X] Ensure that the border of the remote PC turns green, indicating a successful connection.
-   - [X] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
+   - [ ] Ensure that the border of the remote PC turns green, indicating a successful connection.
+   - [ ] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
    
  * Test Remote Mouse/Keyboard Control:
-   - [X] With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
-   - [X] Test remote mouse/keyboard control across all four PCs, if available. Verify that inputs are correctly registered on each connected PC when the mouse is active there.
+   - [ ] With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
+   - [ ] Test remote mouse/keyboard control across all four PCs, if available. Verify that inputs are correctly registered on each connected PC when the mouse is active there.
    
  * Test Remote Control with Elevated Apps:
-   - [X] Open an elevated app on one of the PCs. Verify that without "Use Service" enabled, PowerToys does not control the elevated app.
-   - [X] Enable "Use Service" in MWB's settings. Verify that PowerToys can now control the elevated app remotely. Verify that MWB processes are running as LocalSystem, while the MWB helper process is running non-elevated.
-   - [X] Toggle "Use Service" again, verify that each time you do that, the MWB processes are restarted.
-   - [X] Run PowerToys elevated on one of the machines, verify that you can control elevated apps remotely now on that machine.
+   - [ ] Open an elevated app on one of the PCs. Verify that without "Use Service" enabled, PowerToys does not control the elevated app.
+   - [ ] Enable "Use Service" in MWB's settings. Verify that PowerToys can now control the elevated app remotely. Verify that MWB processes are running as LocalSystem, while the MWB helper process is running non-elevated.
+   - [ ] Toggle "Use Service" again, verify that each time you do that, the MWB processes are restarted.
+   - [ ] Run PowerToys elevated on one of the machines, verify that you can control elevated apps remotely now on that machine.
 
 * Test Module Enable Status:
-   - [X] For all combinations of "Use Service"/"Run PowerToys as admin", try enabling/disabling MWB module and verify that it's indeed being toggled using task manager.
+   - [ ] For all combinations of "Use Service"/"Run PowerToys as admin", try enabling/disabling MWB module and verify that it's indeed being toggled using task manager.
    
  * Test Disconnection/Reconnection:
    - [X] Disconnect one of the PCs from network. Verify that the machine layout updates to reflect the disconnection. 
