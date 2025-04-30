@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
-  <PropertyGroup>
+  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+
+	<PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.WinGet</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>

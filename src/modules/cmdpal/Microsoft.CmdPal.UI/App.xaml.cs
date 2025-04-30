@@ -6,11 +6,12 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Indexer;
+using Microsoft.CmdPal.Ext.Shell;
+/*
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
-using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CmdPal.Ext.Registry;
-using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.Ext.System;
 using Microsoft.CmdPal.Ext.TimeDate;
 using Microsoft.CmdPal.Ext.WebSearch;
@@ -19,6 +20,7 @@ using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
+*/
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -110,20 +112,22 @@ public partial class App : Application
         var allApps = new AllAppsCommandProvider();
         services.AddSingleton<ICommandProvider>(allApps);
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
-        services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
-        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
+
+        // services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
+        // services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
 
         // TODO GH #527 re-enable the clipboard commands
         // services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
+        // services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
+        // services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
 
         // GH #38440: Users might not have WinGet installed! Or they might have
         // a ridiculously old version. Or might be running as admin.
         // We shouldn't explode in the App ctor if we fail to instantiate an
         // instance of PackageManager, which will happen in the static ctor
         // for WinGetStatics
+        /*
         try
         {
             var winget = new WinGetExtensionCommandsProvider();
@@ -136,14 +140,15 @@ public partial class App : Application
             Logger.LogError("Couldn't load winget");
             Logger.LogError(ex.ToString());
         }
+        */
 
-        services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
-        services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
-        services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
-        services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
-        services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
+        // services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
+        // services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
+        // services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
+        // services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
+        // services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
+        // services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
+        // services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
 
         // Models
         services.AddSingleton<TopLevelCommandManager>();

@@ -4,7 +4,6 @@
 
 using System.Text.Json;
 using AdaptiveCards.ObjectModel.WinUI3;
-using AdaptiveCards.Templating;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -36,35 +35,90 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
             return;
         }
 
+        TemplateJson = model.TemplateJson;
+        StateJson = model.StateJson;
+        DataJson = model.DataJson;
+
         try
         {
-            TemplateJson = model.TemplateJson;
-            StateJson = model.StateJson;
-            DataJson = model.DataJson;
+            // Parse the template and data JSON
+            var templateJsonObject = JsonObject.Parse(TemplateJson);
+            var dataJsonObject = JsonObject.Parse(DataJson);
 
-            AdaptiveCardTemplate template = new(TemplateJson);
-            var cardJson = template.Expand(DataJson);
+            // Manually replace placeholders in the template with data
+            foreach (var key in dataJsonObject.Keys)
+            {
+                if (templateJsonObject.ContainsKey(key))
+                {
+                    templateJsonObject[key] = dataJsonObject[key];
+                }
+            }
+
+            // Serialize the modified template back to a JSON string
+            var cardJson = templateJsonObject.Stringify();
+
+            // Construct the AdaptiveCard
             Card = AdaptiveCard.FromJsonString(cardJson);
         }
         catch (Exception e)
         {
-            // If we fail to parse the card JSON, then display _our own card_
-            // with the exception
-            AdaptiveCardTemplate template = new(ErrorCardJson);
+            // Handle errors (similar to your existing error handling)
             var serializeString = (string? s) => JsonSerializer.Serialize(s, JsonSerializationContext.Default.String);
 
-            // todo: we could probably stick Card.Errors in there too
-            var dataJson = $$"""
-{
-    "error_message": {{serializeString(e.Message)}},
-    "error_stack": {{serializeString(e.StackTrace)}},
-    "inner_exception": {{serializeString(e.InnerException?.Message)}},
-    "template_json": {{serializeString(TemplateJson)}},
-    "data_json": {{serializeString(DataJson)}}
-}
-""";
-            var cardJson = template.Expand(dataJson);
-            Card = AdaptiveCard.FromJsonString(cardJson);
+            var dataJson = $$"""  
+                {  
+                   "error_message": {{serializeString(e.Message)}},  
+                   "error_stack": {{serializeString(e.StackTrace)}},  
+                   "inner_exception": {{serializeString(e.InnerException?.Message)}},  
+                   "template_json": {{serializeString(TemplateJson)}},  
+                   "data_json": {{serializeString(DataJson)}}  
+                }  
+                """;
+
+            // Directly construct the error card JSON string
+            var errorCardJson = $$"""  
+                {  
+                   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",  
+                   "type": "AdaptiveCard",  
+                   "version": "1.5",  
+                   "body": [  
+                       {  
+                           "type": "TextBlock",  
+                           "text": "Error parsing form from extension",  
+                           "wrap": true,  
+                           "style": "heading",  
+                           "size": "ExtraLarge",  
+                           "weight": "Bolder",  
+                           "color": "Attention"  
+                       },  
+                       {  
+                           "type": "TextBlock",  
+                           "wrap": true,  
+                           "text": {{serializeString(e.Message)}},  
+                           "color": "Attention"  
+                       },  
+                       {  
+                           "type": "TextBlock",  
+                           "text": {{serializeString(e.StackTrace)}},  
+                           "fontType": "Monospace"  
+                       },  
+                       {  
+                           "type": "TextBlock",  
+                           "wrap": true,  
+                           "text": "Inner exception:"  
+                       },  
+                       {  
+                           "type": "TextBlock",  
+                           "wrap": true,  
+                           "text": {{serializeString(e.InnerException?.Message)}},  
+                           "color": "Attention"  
+                       }  
+                   ]  
+                }  
+                """;
+
+            // Create the AdaptiveCard object from the JSON string
+            Card = AdaptiveCard.FromJsonString(errorCardJson);
         }
 
         UpdateProperty(nameof(Card));
@@ -102,45 +156,4 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
             });
         }
     }
-
-    private static readonly string ErrorCardJson = """
-{
-    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-    "type": "AdaptiveCard",
-    "version": "1.5",
-    "body": [
-        {
-            "type": "TextBlock",
-            "text": "Error parsing form from extension",
-            "wrap": true,
-            "style": "heading",
-            "size": "ExtraLarge",
-            "weight": "Bolder",
-            "color": "Attention"
-        },
-        {
-            "type": "TextBlock",
-            "wrap": true,
-            "text": "${error_message}",
-            "color": "Attention"
-        },
-        {
-            "type": "TextBlock",
-            "text": "${error_stack}",
-            "fontType": "Monospace"
-        },
-        {
-            "type": "TextBlock",
-            "wrap": true,
-            "text": "Inner exception:"
-        },
-        {
-            "type": "TextBlock",
-            "wrap": true,
-            "text": "${inner_exception}",
-            "color": "Attention"
-        }
-    ]
-}
-""";
 }
