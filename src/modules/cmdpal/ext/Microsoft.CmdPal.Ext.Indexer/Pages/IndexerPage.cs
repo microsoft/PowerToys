@@ -15,6 +15,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 {
     private readonly List<IListItem> _indexerListItems = [];
     private readonly SearchEngine _searchEngine;
+    private readonly bool disposeSearchEngine = true;
 
     private uint _queryCookie;
 
@@ -39,6 +40,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         _indexerListItems.AddRange(firstPageData);
         initialQuery = query;
         SearchText = query;
+        disposeSearchEngine = false;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -76,7 +78,10 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     public void Dispose()
     {
-        _searchEngine.Dispose();
-        GC.SuppressFinalize(this);
+        if (disposeSearchEngine)
+        {
+            _searchEngine.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }
