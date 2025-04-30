@@ -3,8 +3,8 @@
 // Used by Resource.rc
 
 #define FILE_DESCRIPTION "PowerToys Setup Custom Actions"
-#define INTERNAL_NAME "PowerToysSetupCustomActions"
-#define ORIGINAL_FILENAME "PowerToysSetupCustomActions.dll"
+#define INTERNAL_NAME "PowerToysSetupCustomActionsVNext"
+#define ORIGINAL_FILENAME "PowerToysSetupCustomActionsVNext.dll"
 
 // Next default values for new objects
 // 
