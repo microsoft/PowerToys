@@ -35,7 +35,7 @@ public partial class ShellCommandsProvider : CommandProvider
                 new CommandContextItem(Settings.SettingsPage),
             ],
         };
-        _runMainPageItem = new CommandItem(new RunMainPage())
+        _runMainPageItem = new CommandItem(new RunMainPage(_settingsManager))
         {
             Icon = Icons.RunV2,
             Title = "Run 2 electric boogaloo", // LOC!

@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -12,13 +13,16 @@ namespace Microsoft.CmdPal.Ext.Shell;
 
 internal sealed partial class RunMainPage : DynamicListPage
 {
-    private readonly List<ListItem> _pathItems = new();
+    private readonly ShellListPageHelpers _helper;
+    private readonly List<ListItem> _historyItems = new();
+    private List<ListItem> _pathItems = new();
 
-    public RunMainPage()
+    public RunMainPage(SettingsManager settingsManager)
     {
         Name = "Open"; // LOC!
         Title = "Run commands"; // LOC!
         Icon = Icons.RunV2;
+        _helper = new(settingsManager);
 
         EmptyContent = new CommandItem()
         {
@@ -29,7 +33,8 @@ internal sealed partial class RunMainPage : DynamicListPage
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        // If the search text is the start of a path to a file (it might be a unc path), then we want to list all the files that start with that text:
+        // If the search text is the start of a path to a file (it might be a
+        // UNC path), then we want to list all the files that start with that text:
 
         // 1. Check if the search text is a valid path
         // 2. If it is, then list all the files that start with that text
@@ -49,18 +54,6 @@ internal sealed partial class RunMainPage : DynamicListPage
         {
             directoryPath = directoryName;
             searchPattern = $"{Path.GetFileName(searchText)}*";
-            //// Check if the directory exists
-            // if (Directory.Exists(directoryName))
-            // {
-            //    // Get all the files in the directory that start with the search text
-            //    var files = Directory.GetFileSystemEntries(directoryName, $"{Path.GetFileName(searchText)}*");
-
-            // // Create a list of commands for each file
-            //    var commands = files.Select(PathToListItem).ToList();
-
-            // // Add the commands to the list
-            //    ListHelpers.InPlaceUpdateList(_pathItems, commands);
-            // }
         }
 
         // we should also handle just drive roots, ala c:\ or d:\
@@ -68,19 +61,6 @@ internal sealed partial class RunMainPage : DynamicListPage
         {
             directoryPath = searchText + "\\";
             searchPattern = $"*";
-
-            //// Check if the drive exists
-            // if (Directory.Exists(searchText + "\\"))
-            // {
-            //    // Get all the files in the directory that start with the search text
-            //    var files = Directory.GetFileSystemEntries(searchText + "\\", "*");
-
-            // // Create a list of commands for each file
-            //    var commands = files.Select(PathToListItem).ToList();
-
-            // // Add the commands to the list
-            //    ListHelpers.InPlaceUpdateList(_pathItems, commands);
-            // }
         }
 
         // Check if the search text is a valid UNC path
@@ -88,19 +68,6 @@ internal sealed partial class RunMainPage : DynamicListPage
         {
             directoryPath = searchText;
             searchPattern = $"*";
-
-            //// Check if the directory exists
-            // if (Directory.Exists(searchText))
-            // {
-            //    // Get all the files in the directory that start with the search text
-            //    var files = Directory.GetFileSystemEntries(searchText, "*");
-
-            // // Create a list of commands for each file
-            //    var commands = files.Select(PathToListItem).ToList();
-
-            // // Add the commands to the list
-            //    ListHelpers.InPlaceUpdateList(_pathItems, commands);
-            // }
         }
 
         // Check if the directory exists
@@ -113,7 +80,46 @@ internal sealed partial class RunMainPage : DynamicListPage
             var commands = files.Select(PathToListItem).ToList();
 
             // Add the commands to the list
-            ListHelpers.InPlaceUpdateList(_pathItems, commands);
+            _pathItems = commands;
+
+            // ListHelpers.InPlaceUpdateList(_pathItems, commands);
+        }
+        else
+        {
+            _pathItems.Clear();
+
+            // Phase 2:
+            // Try to parse the search text as a commandline.
+            // Is there an executable that the user typed (possibly with args)?
+
+            // If so, then we should add it to the list of commands.
+
+            // Parse the search text as a commandline
+            // var commandLine = new CommandLine(searchText);
+            // var executablePath = commandLine.ExecutablePath;
+            // var arguments = commandLine.Arguments;
+            _historyItems.Clear();
+
+            // if (!string.IsNullOrEmpty(executablePath))
+            {
+                var commands = _helper.Query(searchText);
+                if (commands != null && commands.Count > 0)
+                {
+                    _historyItems.AddRange(commands);
+                }
+
+                // var openCommand = new OpenInShellCommand(executablePath, arguments);
+                // var item = new ListItem(openCommand)
+                // {
+                //    Icon = Icons.RunV2,
+                //    Title = searchText,
+                //    Subtitle = "Run this commnand", // LOC!
+
+                // };
+                // If the executable path is empty, then we don't have a commandline to add
+                RaiseItemsChanged();
+                return;
+            }
         }
 
         RaiseItemsChanged();
@@ -121,21 +127,11 @@ internal sealed partial class RunMainPage : DynamicListPage
 
     private ListItem PathToListItem(string path)
     {
-        // var iconStream = ThumbnailHelper.GetThumbnail(path).Result;
-        // var icon = iconStream != null ? IconInfo.FromStream(iconStream) : Icons.RunV2;
-        // var fileName = Path.GetFileName(path);
-        // var isDirectory = Directory.Exists(path);
-        // if (isDirectory)
-        // {
-        //    path = path + "\\";
-        //    fileName = fileName + "\\";
-        //    icon = Icons.Folder;
-        // }
         return new PathListItem(path);
     }
 
     public override IListItem[] GetItems()
     {
-        return _pathItems.ToArray();
+        return _historyItems.Concat(_pathItems).ToArray();
     }
 }
