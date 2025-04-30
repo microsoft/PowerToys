@@ -1660,11 +1660,11 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Help_blackness" xml:space="preserve">
     <value>blackness</value>
   </data>
-  <data name="Help_chromaticityA" xml:space="preserve">
-    <value>chromaticityA</value>
+  <data name="Help_chromaticityACIE" xml:space="preserve">
+    <value>chromaticity A (CIE Lab)</value>
   </data>
-  <data name="Help_chromaticityB" xml:space="preserve">
-    <value>chromaticityB</value>
+  <data name="Help_chromaticityBCIE" xml:space="preserve">
+    <value>chromaticity B (CIE Lab)</value>
   </data>
   <data name="Help_X_value" xml:space="preserve">
     <value>X value</value>
@@ -4460,7 +4460,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="NewPlus_Behaviour_Replace_Variables_Info_Card_Title.Text" xml:space="preserve">
     <value>Commonly used variables</value>
     <comment>New+ commonly used variables header in the flyout info card</comment>
-  </data>   
+  </data>
   <data name="NewPlus_Year_YYYY_Variable_Description.Text" xml:space="preserve">
     <value>Year, represented by a full four or five digits, depending on the calendar used.</value>
     <comment>New+ description of the year $YYYY variable - casing of $YYYY is important</comment>
@@ -4998,5 +4998,26 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="CmdPal_ActivationShortcut.Description" xml:space="preserve">
     <value>Go to Command Palette settings to customize the activation shortcut.</value>
+  </data>
+  <data name="Help_chromaCIE" xml:space="preserve">
+    <value>chroma (CIE LCh)</value>
+  </data>
+  <data name="Help_hueCIE" xml:space="preserve">
+    <value>hue (CIE LCh)</value>
+  </data>
+  <data name="Help_lightnessOklab" xml:space="preserve">
+    <value>lightness (Oklab/Oklch)</value>
+  </data>
+  <data name="Help_chromaticityAOklab" xml:space="preserve">
+    <value>chromaticity A (Oklab)</value>
+  </data>
+  <data name="Help_chromaticityBOklab" xml:space="preserve">
+    <value>chromaticity B (Oklab)</value>
+  </data>
+  <data name="Help_chromaOklch" xml:space="preserve">
+    <value>chroma (Oklch)</value>
+  </data>
+  <data name="Help_hueOklch" xml:space="preserve">
+    <value>hue (Oklch)</value>
   </data>
 </root>
