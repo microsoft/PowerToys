@@ -25,6 +25,7 @@ using Microsoft.FancyZones.UITests.Utils;
 using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
+using Microsoft.VisualBasic.FileIO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
@@ -337,13 +338,27 @@ namespace UITests_FancyZones
             this.Find<NavigationViewItem>("FancyZones").Click();
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
 
-            this.Session.SetMainWindowSize(WindowSize.Large_Vertical);
+            this.Session.SetMainWindowSize(WindowSize.Large);
             Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
-            Scroll(3, "Down"); // Pull the settings page up to make sure the settings are visible
+            Scroll(7, "Down"); // Pull the settings page up to make sure the settings are visible
             ZoneBehaviourSettings(TestContext.TestName);
+
+            // check settings status
+            var shiftsetting = Find<Microsoft.PowerToys.UITest.CheckBox>("Hold Shift key to activate zones while dragging a window");
+            bool isChecked = shiftsetting.IsChecked;
+            Console.WriteLine($"[{TestContext.TestName}] Shift key setting is {isChecked}.");
+
+            var nonprimarysetting = Find<Microsoft.PowerToys.UITest.CheckBox>("Use a non-primary mouse button to toggle zone activation");
+            bool nonprimaryIsChecked = nonprimarysetting.IsChecked;
+            Console.WriteLine($"[{TestContext.TestName}] Non-primary mouse button setting is {nonprimaryIsChecked}.");
+
+            var transparentsetting = Find<Microsoft.PowerToys.UITest.CheckBox>("Make dragged window transparent");
+            bool transparentIsChecked = transparentsetting.IsChecked;
+            Console.WriteLine($"[{TestContext.TestName}] Make dragged window transparent setting is {transparentIsChecked}.");
+
             Find<Element>(By.AccessibilityId("ZonesSettingsGroup")).Click();
-            Scroll(3, "Up");
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 3000);
+            Scroll(7, "Up");
+            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
         }
@@ -384,7 +399,7 @@ namespace UITests_FancyZones
             if ((rect.Top - screenMarginTop) >= spacing)
             {
                 checkX = rect.Left;
-                checkY = rect.Top + (spacing / 2);
+                checkY = screenMarginTop + (spacing / 2);
             }
             else if ((screenMarginBottom - rect.Bottom) >= spacing)
             {
@@ -406,6 +421,10 @@ namespace UITests_FancyZones
                 throw new ArgumentOutOfRangeException(nameof(spacing), "No sufficient margin to sample outside the window.");
             }
 
+            Console.WriteLine($"Rect: {rect.Left},{rect.Top}, {rect.Bottom}, {rect.Right}");
+            Console.WriteLine($"Screen: {screenMarginTop},{screenMarginBottom}, {screenMarginLeft}, {screenMarginRight}");
+
+            Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure the mouse is in position
             Console.WriteLine($"checkX: {checkX}, checkY: {checkY}");
             string zoneColor = this.Session.GetPixelColorString(checkX, checkY);
             Console.WriteLine($"zone color: {zoneColor}");
@@ -419,6 +438,8 @@ namespace UITests_FancyZones
         Action? releaseAction,
         string testCaseName)
         {
+            Console.WriteLine($"[highlight color is {highlightColor}]. inactivate color is {inactivateColor}");
+
             // Invoke the pre-action
             preAction?.Invoke();
 
