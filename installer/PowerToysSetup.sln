@@ -21,6 +21,8 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PowerToysInstallerVNext", "
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PowerToysBootstrapperVNext", "PowerToysSetupVNext\PowerToysBootstrapperVNext.wixproj", "{DA4E9744-80BE-424C-B0F5-AFD8757DB575}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToysSetupCustomActionsVNext", "PowerToysSetupCustomActionsVNext\PowerToysSetupCustomActionsVNext.vcxproj", "{B3A354B0-1E54-4B55-A962-FB5AF9330C19}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -98,6 +100,13 @@ Global
 		{DA4E9744-80BE-424C-B0F5-AFD8757DB575}.Release|ARM64.Build.0 = Release|ARM64
 		{DA4E9744-80BE-424C-B0F5-AFD8757DB575}.Release|x64.ActiveCfg = Release|x64
 		{DA4E9744-80BE-424C-B0F5-AFD8757DB575}.Release|x64.Build.0 = Release|x64
+		{B3A354B0-1E54-4B55-A962-FB5AF9330C19}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{B3A354B0-1E54-4B55-A962-FB5AF9330C19}.Debug|x64.ActiveCfg = Debug|x64
+		{B3A354B0-1E54-4B55-A962-FB5AF9330C19}.Debug|x64.Build.0 = Debug|x64
+		{B3A354B0-1E54-4B55-A962-FB5AF9330C19}.Release|ARM64.ActiveCfg = Release|ARM64
+		{B3A354B0-1E54-4B55-A962-FB5AF9330C19}.Release|ARM64.Build.0 = Release|ARM64
+		{B3A354B0-1E54-4B55-A962-FB5AF9330C19}.Release|x64.ActiveCfg = Release|x64
+		{B3A354B0-1E54-4B55-A962-FB5AF9330C19}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

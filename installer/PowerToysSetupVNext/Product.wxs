@@ -441,7 +441,7 @@
   </Product>
 
   <Fragment>
-    <Binary Id="PTCustomActions" SourceFile="$(var.PowerToysSetupCustomActions.TargetPath)" />
+    <Binary Id="PTCustomActions" SourceFile="$(var.PowerToysSetupCustomActionsVNext.TargetPath)" />
   </Fragment>
 
   <!-- Installation directory structure -->
