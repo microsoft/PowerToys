@@ -14,7 +14,7 @@ namespace Microsoft.CmdPal.Ext.Shell;
 internal sealed partial class RunMainPage : DynamicListPage
 {
     private readonly ShellListPageHelpers _helper;
-    private readonly List<ListItem> _historyItems = new();
+    private List<ListItem> _historyItems = new();
     private List<ListItem> _pathItems = new();
 
     public RunMainPage(SettingsManager settingsManager)
@@ -39,6 +39,11 @@ internal sealed partial class RunMainPage : DynamicListPage
         // 1. Check if the search text is a valid path
         // 2. If it is, then list all the files that start with that text
         var searchText = newSearch.Trim();
+
+        _historyItems = _helper.Query(searchText);
+
+        // TODO we can be smarter about only re-reading the filesystem if the
+        // new search is just the oldSearch+some chars
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
             _pathItems.Clear();
@@ -81,45 +86,10 @@ internal sealed partial class RunMainPage : DynamicListPage
 
             // Add the commands to the list
             _pathItems = commands;
-
-            // ListHelpers.InPlaceUpdateList(_pathItems, commands);
         }
         else
         {
             _pathItems.Clear();
-
-            // Phase 2:
-            // Try to parse the search text as a commandline.
-            // Is there an executable that the user typed (possibly with args)?
-
-            // If so, then we should add it to the list of commands.
-
-            // Parse the search text as a commandline
-            // var commandLine = new CommandLine(searchText);
-            // var executablePath = commandLine.ExecutablePath;
-            // var arguments = commandLine.Arguments;
-            _historyItems.Clear();
-
-            // if (!string.IsNullOrEmpty(executablePath))
-            {
-                var commands = _helper.Query(searchText);
-                if (commands != null && commands.Count > 0)
-                {
-                    _historyItems.AddRange(commands);
-                }
-
-                // var openCommand = new OpenInShellCommand(executablePath, arguments);
-                // var item = new ListItem(openCommand)
-                // {
-                //    Icon = Icons.RunV2,
-                //    Title = searchText,
-                //    Subtitle = "Run this commnand", // LOC!
-
-                // };
-                // If the executable path is empty, then we don't have a commandline to add
-                RaiseItemsChanged();
-                return;
-            }
         }
 
         RaiseItemsChanged();
