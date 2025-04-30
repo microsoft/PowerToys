@@ -71,7 +71,6 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void PositionCentered()
     {
-        AppWindow.Resize(new SizeInt32 { Width = 1280, Height = 720 });
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
         if (displayArea is not null)
         {
