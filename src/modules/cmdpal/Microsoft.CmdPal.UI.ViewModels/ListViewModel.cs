@@ -344,8 +344,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
 
-               WeakReferenceMessenger.Default.Send<UpdateItemKeybindingsMessage>(new(item.Keybindings()));
-
                if (ShowDetails && item.HasDetails)
                {
                    WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
@@ -436,7 +434,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 break;
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);
-                EmptyContent.InitializeProperties();
+                EmptyContent.SlowInitializeProperties();
                 break;
             case nameof(IsLoading):
                 UpdateEmptyContent();
@@ -453,6 +451,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             return;
         }
+
+        UpdateProperty(nameof(EmptyContent));
 
         DoOnUiThread(
            () =>

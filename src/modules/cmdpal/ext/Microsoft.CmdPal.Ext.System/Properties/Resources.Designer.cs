@@ -187,6 +187,15 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open System Command.
+        /// </summary>
+        public static string Microsoft_plugin_ext_fallback_display_title {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_ext_fallback_display_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Hide disconnected network info.
         /// </summary>
         public static string Microsoft_plugin_ext_settings_hideDisconnectedNetworkInfo {
