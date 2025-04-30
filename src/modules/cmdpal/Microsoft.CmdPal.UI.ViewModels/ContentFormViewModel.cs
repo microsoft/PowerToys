@@ -51,15 +51,16 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
             // If we fail to parse the card JSON, then display _our own card_
             // with the exception
             AdaptiveCardTemplate template = new(ErrorCardJson);
+            var serializeString = (string? s) => JsonSerializer.Serialize(s, JsonSerializationContext.Default.String);
 
             // todo: we could probably stick Card.Errors in there too
             var dataJson = $$"""
 {
-    "error_message": {{JsonSerializer.Serialize(e.Message)}},
-    "error_stack": {{JsonSerializer.Serialize(e.StackTrace)}},
-    "inner_exception": {{JsonSerializer.Serialize(e.InnerException?.Message)}},
-    "template_json": {{JsonSerializer.Serialize(TemplateJson)}},
-    "data_json": {{JsonSerializer.Serialize(DataJson)}}
+    "error_message": {{serializeString(e.Message)}},
+    "error_stack": {{serializeString(e.StackTrace)}},
+    "inner_exception": {{serializeString(e.InnerException?.Message)}},
+    "template_json": {{serializeString(TemplateJson)}},
+    "data_json": {{serializeString(DataJson)}}
 }
 """;
             var cardJson = template.Expand(dataJson);
