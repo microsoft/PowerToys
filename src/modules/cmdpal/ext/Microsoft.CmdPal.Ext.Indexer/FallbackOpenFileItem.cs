@@ -32,10 +32,10 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
     {
         if (string.IsNullOrWhiteSpace(query))
         {
+            Command = new NoOpCommand();
             Title = string.Empty;
             Subtitle = string.Empty;
             Icon = null;
-            Command = new NoOpCommand();
             MoreCommands = null;
 
             return;
