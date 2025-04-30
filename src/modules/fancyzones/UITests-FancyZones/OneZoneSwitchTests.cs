@@ -55,7 +55,7 @@ namespace UITests_FancyZones
             // clear the app zone history
             AppZoneHistory.DeleteFile();
 
-            // Goto Hosts File Editor setting page
+            // Goto FancyZones setting page
             if (this.FindAll<NavigationViewItem>("FancyZones").Count == 0)
             {
                 // Expand Advanced list-group if needed
@@ -83,6 +83,7 @@ namespace UITests_FancyZones
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Element>(By.Name("Custom Column")).Click();
             this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
+
             this.RestartScopeExe();
         }
 
@@ -188,7 +189,8 @@ namespace UITests_FancyZones
             Console.WriteLine($"Window name: {windowName}");
 
             // Start Windows Explorer process
-            Session.Attach(windowName, WindowSize.UnSpecified); // display window1
+            Session.Attach(windowName, WindowSize.Large_Vertical); // display window1
+
             var tabView = Find<Element>(By.AccessibilityId("TabView"));
             tabView.DoubleClick(); // maximize the window
 
