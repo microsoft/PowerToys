@@ -36,3 +36,7 @@ ExtractIconEx
 WM_RBUTTONUP
 WM_LBUTTONUP
 WM_LBUTTONDBLCLK
+
+DwmGetWindowAttribute
+DwmSetWindowAttribute
+DWM_CLOAKED_APP
