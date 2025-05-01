@@ -62,6 +62,7 @@ namespace UITests_FancyZones
         {
             // clean app zone history file
             AppZoneHistory.DeleteFile();
+            FancyZonesEditorHelper.Files.Restore();
 
             this.RestartScopeExe();
 
@@ -126,6 +127,9 @@ namespace UITests_FancyZones
             string zoneColorWithoutShift = GetOutWindowPixelColor(30);
 
             Assert.AreNotEqual(initialColor, withShiftColor, $"[{testCaseName}] Zone display failed.");
+            Assert.IsTrue(
+    withShiftColor == inactivateColor || withShiftColor == highlightColor,
+    $"[{testCaseName}] Zone display failed: withShiftColor was {withShiftColor}, expected {inactivateColor} or {highlightColor}.");
             Assert.AreEqual(inactivateColor, withShiftColor, $"[{testCaseName}] Zone display failed.");
 
             Assert.AreEqual(zoneColorWithoutShift, initialColor, $"[{testCaseName}] Zone deactivated failed.");
@@ -363,6 +367,10 @@ namespace UITests_FancyZones
 
             Find<Element>(By.AccessibilityId("ZonesSettingsGroup")).Click();
             Scroll(7, "Up");
+
+            string appZoneHistoryJson = AppZoneHistory.GetData();
+            Console.WriteLine($"[{TestContext.TestName}] AppZoneHistory layout is {appZoneHistoryJson}.");
+
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
