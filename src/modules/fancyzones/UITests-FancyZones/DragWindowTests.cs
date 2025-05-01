@@ -343,7 +343,7 @@ namespace UITests_FancyZones
 
             this.Session.SetMainWindowSize(WindowSize.Large);
             Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
-            Scroll(7, "Down"); // Pull the settings page up to make sure the settings are visible
+            Scroll(6, "Down"); // Pull the settings page up to make sure the settings are visible
             ZoneBehaviourSettings(TestContext.TestName);
 
             // check settings status
@@ -534,9 +534,9 @@ namespace UITests_FancyZones
             highlightColor = GetZoneColor("Highlight color");
             inactivateColor = GetZoneColor("Inactive color");
 
-            Scroll(1, "Down");
+            Scroll(2, "Down");
             makeDraggedWindowTransparent.SetCheck(false, 500); // set make dragged window transparent to false or will infuluence the color comparision
-            Scroll(2, "Up");
+            Scroll(6, "Up");
 
             switch (testName)
             {
@@ -560,9 +560,9 @@ namespace UITests_FancyZones
                 case "TestMakeDraggedWindowTransparentOn":
                     useNonPrimaryMouseCheckBox.SetCheck(false, 500);
                     useShiftCheckBox.SetCheck(true, 500);
-                    Scroll(1, "Down"); // Pull the settings page up to make sure the settings are visible
+                    Scroll(5, "Down"); // Pull the settings page up to make sure the settings are visible
                     makeDraggedWindowTransparent.SetCheck(true, 500);
-                    Scroll(1, "Up");
+                    Scroll(5, "Up");
                     break; // Added break to prevent fall-through
                 case "TestMakeDraggedWindowTransparentOff":
                     useShiftCheckBox.SetCheck(true, 500);
