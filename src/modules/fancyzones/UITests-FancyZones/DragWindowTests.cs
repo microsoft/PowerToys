@@ -60,7 +60,7 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
-            // clean app zone history file 
+            // clean app zone history file
             AppZoneHistory.DeleteFile();
 
             this.RestartScopeExe();
@@ -73,7 +73,7 @@ namespace UITests_FancyZones
 
             // Set a custom layout with 2 subzones and clear app zone history
             SetupCustomLayouts();
-         
+
             // Ensure FancyZones settings page is visible and enable FancyZones
             LaunchFancyZones();
 
