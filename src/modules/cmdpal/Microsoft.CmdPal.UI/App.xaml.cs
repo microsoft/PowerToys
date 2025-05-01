@@ -26,6 +26,7 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
+using Windows.ApplicationModel.Activation;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -73,19 +74,25 @@ public partial class App : Application
     /// Invoked when the application is launched.
     /// </summary>
     /// <param name="args">Details about the launch request and process.</param>
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         AppWindow = new MainWindow();
 
-        var cmdArgs = Environment.GetCommandLineArgs();
-
         var runFromPT = false;
-        foreach (var arg in cmdArgs)
+
+        var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+        if (activatedEventArgs.Kind == Microsoft.Windows.AppLifecycle.ExtendedActivationKind.Protocol)
         {
-            if (arg == "RunFromPT")
+            if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
             {
-                runFromPT = true;
-                break;
+                var uri = protocolArgs.Uri.ToString();
+
+                // was the URI "x-cmdpal://background" ?
+                if (uri != null &&
+                    uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
+                {
+                    runFromPT = true;
+                }
             }
         }
 
