@@ -14,6 +14,7 @@ namespace Microsoft.CmdPal.Ext.Shell;
 internal sealed partial class RunMainPage : DynamicListPage
 {
     private readonly ShellListPageHelpers _helper;
+    private readonly List<ListItem> _topLevelItems = new();
     private List<ListItem> _historyItems = new();
     private List<ListItem> _pathItems = new();
 
@@ -22,6 +23,7 @@ internal sealed partial class RunMainPage : DynamicListPage
         Name = "Open"; // LOC!
         Title = "Run commands"; // LOC!
         Icon = Icons.RunV2;
+        PlaceholderText = "Type the name of a command to run"; // LOC!
         _helper = new(settingsManager);
 
         EmptyContent = new CommandItem()
@@ -29,6 +31,39 @@ internal sealed partial class RunMainPage : DynamicListPage
             Title = "Run commands",
             Icon = Icons.RunV2,
         };
+
+        var allAppsCommandItem = new ListItem(new NoOpCommand()
+        {
+            Name = "Open",
+            Icon = IconHelpers.FromRelativePath("Assets\\AllApps.svg"),
+        })
+        {
+            Title = "All apps",
+            Subtitle = "Search installed apps",
+        };
+        var calculatorCommandItem = new ListItem(new NoOpCommand()
+        {
+            Name = "Open",
+            Icon = IconHelpers.FromRelativePath("Assets\\Calculator.png"),
+        })
+        {
+            Title = "Calculator",
+            Subtitle = "Press = to type an equation",
+        };
+
+        // var fileSearchCommandItem = new ListItem(new NoOpCommand()
+        // {
+        //     Name = "Open",
+        //     Icon = IconHelpers.FromRelativePath("Assets\\FileExplorer.png"),
+        // })
+        // {
+        //     Title = "Search files",
+        //     Subtitle = "Search files on this device",
+        // };
+        _topLevelItems.Add(allAppsCommandItem);
+        _topLevelItems.Add(calculatorCommandItem);
+
+        // _topLevelItems.Add(fileSearchCommandItem);
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -41,6 +76,11 @@ internal sealed partial class RunMainPage : DynamicListPage
         var searchText = newSearch.Trim();
 
         _historyItems = _helper.Query(searchText);
+        _historyItems.ForEach(i =>
+        {
+            i.Icon = Icons.RunV2;
+            i.Subtitle = string.Empty;
+        });
 
         // TODO we can be smarter about only re-reading the filesystem if the
         // new search is just the oldSearch+some chars
@@ -102,6 +142,9 @@ internal sealed partial class RunMainPage : DynamicListPage
 
     public override IListItem[] GetItems()
     {
-        return _historyItems.Concat(_pathItems).ToArray();
+        return ListHelpers.FilterList(_topLevelItems, SearchText)
+            .Concat(_historyItems)
+            .Concat(_pathItems)
+            .ToArray();
     }
 }
