@@ -87,7 +87,7 @@ namespace UITests_FancyZones
             this.RestartScopeExe();
         }
 
-        // [TestMethod]
+        [TestMethod]
         public void TestSwitchWindow()
         {
             var (preWindow, postWindow) = SnapToOneZone();
@@ -105,7 +105,7 @@ namespace UITests_FancyZones
             Clean();
         }
 
-        // [TestMethod]
+        [TestMethod]
         public void TestSwitchAfterDesktopChange()
         {
             var (preWindow, postWindow) = SnapToOneZone();
@@ -137,7 +137,7 @@ namespace UITests_FancyZones
             Clean();
         }
 
-        // [TestMethod]
+        [TestMethod]
         public void TestSwitchShortCutDisable()
         {
             var (preWindow, postWindow) = SnapToOneZone();
