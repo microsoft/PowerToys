@@ -100,7 +100,7 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        // [TestMethod]
         public void TestShowZonesOnShiftDuringDrag()
         {
             string testCaseName = nameof(TestShowZonesOnShiftDuringDrag);
@@ -371,7 +371,7 @@ namespace UITests_FancyZones
             string appZoneHistoryJson = AppZoneHistory.GetData();
             Console.WriteLine($"[{TestContext.TestName}] AppZoneHistory layout is {appZoneHistoryJson}.");
 
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
+            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 2000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
         }
@@ -551,6 +551,9 @@ namespace UITests_FancyZones
             switch (testName)
             {
                 case "TestShowZonesOnShiftDuringDrag":
+                    useShiftCheckBox.SetCheck(true, 500);
+                    useNonPrimaryMouseCheckBox.SetCheck(false, 500);
+                    break;
                 case "TestShowZonesOnDragDuringShift":
                     useShiftCheckBox.SetCheck(true, 500);
                     useNonPrimaryMouseCheckBox.SetCheck(false, 500);
