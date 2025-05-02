@@ -262,7 +262,7 @@ public partial class TopLevelCommandManager : ObservableObject,
             Logger.LogDebug($"Starting {extension.PackageFullName}");
             try
             {
-                await extension.StartExtensionAsync();
+                await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10));
                 return new CommandProviderWrapper(extension, _taskScheduler);
             }
             catch (Exception ex)
@@ -285,7 +285,11 @@ public partial class TopLevelCommandManager : ObservableObject,
         {
             try
             {
-                return await LoadTopLevelCommandsFromProvider(wrapper!);
+                return await LoadTopLevelCommandsFromProvider(wrapper!).WaitAsync(TimeSpan.FromSeconds(10));
+            }
+            catch (TimeoutException)
+            {
+                Logger.LogError($"Loading commands from {wrapper!.ExtensionHost?.Extension?.PackageFullName} timed out");
             }
             catch (Exception ex)
             {
