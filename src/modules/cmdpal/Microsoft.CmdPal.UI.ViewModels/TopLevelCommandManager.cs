@@ -273,7 +273,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         });
 
         // Wait for all extensions to start
-        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).ToList();
+        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).Select(w => w!).ToList();
 
         foreach (var wrapper in wrappers)
         {
@@ -281,23 +281,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         }
 
         // Load the commands from the providers in parallel
-        var loadTasks = wrappers.Select(async wrapper =>
-        {
-            try
-            {
-                return await LoadTopLevelCommandsFromProvider(wrapper!).WaitAsync(TimeSpan.FromSeconds(10));
-            }
-            catch (TimeoutException)
-            {
-                Logger.LogError($"Loading commands from {wrapper!.ExtensionHost?.Extension?.PackageFullName} timed out");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to load commands for extension {wrapper!.ExtensionHost?.Extension?.PackageFullName}: {ex}");
-            }
-
-            return null;
-        });
+        var loadTasks = wrappers.Select(LoadCommandsWithTimeoutAsync);
 
         var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results != null).Select(r => r!).ToList();
 
@@ -314,6 +298,24 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         timer.Stop();
         Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms");
+    }
+
+    private async Task<IEnumerable<TopLevelViewModel>?> LoadCommandsWithTimeoutAsync(CommandProviderWrapper wrapper)
+    {
+        try
+        {
+            return await LoadTopLevelCommandsFromProvider(wrapper!).WaitAsync(TimeSpan.FromSeconds(10));
+        }
+        catch (TimeoutException)
+        {
+            Logger.LogError($"Loading commands from {wrapper!.ExtensionHost?.Extension?.PackageFullName} timed out");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to load commands for extension {wrapper!.ExtensionHost?.Extension?.PackageFullName}: {ex}");
+        }
+
+        return null;
     }
 
     private void ExtensionService_OnExtensionRemoved(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
