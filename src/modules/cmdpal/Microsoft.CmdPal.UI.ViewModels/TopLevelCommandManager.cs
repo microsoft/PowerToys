@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -239,25 +240,71 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions)
     {
-        // TODO This most definitely needs a lock
-        foreach (var extension in extensions)
+        var timer = new Stopwatch();
+        timer.Start();
+
+        /*
+
+       // TODO This most definitely needs a lock
+       foreach (var extension in extensions)
+       {
+           Logger.LogDebug($"Starting {extension.PackageFullName}");
+           try
+           {
+               // start it ...
+               await extension.StartExtensionAsync();
+
+               // ... and fetch the command provider from it.
+               CommandProviderWrapper wrapper = new(extension, _taskScheduler);
+               _extensionCommandProviders.Add(wrapper);
+               await LoadTopLevelCommandsFromProvider(wrapper);
+           }
+           catch (Exception ex)
+           {
+               Logger.LogError(ex.ToString());
+           }
+       }
+
+       // */
+
+        // /*
+
+        // Start all extensions in parallel
+        var startTasks = extensions.Select(async extension =>
         {
             Logger.LogDebug($"Starting {extension.PackageFullName}");
             try
             {
-                // start it ...
                 await extension.StartExtensionAsync();
-
-                // ... and fetch the command provider from it.
-                CommandProviderWrapper wrapper = new(extension, _taskScheduler);
-                _extensionCommandProviders.Add(wrapper);
-                await LoadTopLevelCommandsFromProvider(wrapper);
+                return new CommandProviderWrapper(extension, _taskScheduler);
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex.ToString());
+                Logger.LogError($"Failed to start extension {extension.PackageFullName}: {ex}");
+                return null; // Return null for failed extensions
+            }
+        });
+
+        // Wait for all extensions to start
+        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).ToList();
+
+        // Load commands serially
+        foreach (var wrapper in wrappers)
+        {
+            _extensionCommandProviders.Add(wrapper!);
+            try
+            {
+                await LoadTopLevelCommandsFromProvider(wrapper!);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load commands for extension {wrapper!.ExtensionHost?.Extension?.PackageFullName}: {ex}");
             }
         }
+
+        // */
+        timer.Stop();
+        Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms ************");
     }
 
     private void ExtensionService_OnExtensionRemoved(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
