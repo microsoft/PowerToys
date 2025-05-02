@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -206,7 +207,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         _extensionCommandProviders.Clear();
         if (extensions != null)
         {
-            await StartExtensionsAndGetCommands(extensions);
+            StartExtensionsAndGetCommands(extensions);
         }
 
         extensionService.OnExtensionAdded += ExtensionService_OnExtensionAdded;
@@ -220,35 +221,47 @@ public partial class TopLevelCommandManager : ObservableObject,
     private void ExtensionService_OnExtensionAdded(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
     {
         // When we get an extension install event, hop off to a BG thread
-        _ = Task.Run(async () =>
+        _ = Task.Run(() =>
         {
             // for each newly installed extension, start it and get commands
             // from it. One single package might have more than one
             // IExtensionWrapper in it.
-            await StartExtensionsAndGetCommands(extensions);
+            StartExtensionsAndGetCommands(extensions);
         });
     }
 
-    private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions)
+    private void StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions)
     {
         var timer = new Stopwatch();
         timer.Start();
 
-        // Start all extensions in parallel
-        var startTasks = extensions.Select(StartExtensionWithTimeoutAsync);
-
-        // Wait for all extensions to start
-        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).Select(w => w!).ToList();
+        // Start all extensions in parallel using Parallel.ForEach
+        var wrappers = new ConcurrentBag<CommandProviderWrapper>();
+        Parallel.ForEach(extensions, extension =>
+        {
+            var wrapper = StartExtensionWithTimeoutAsync(extension).GetAwaiter().GetResult();
+            if (wrapper != null)
+            {
+                wrappers.Add(wrapper);
+            }
+        });
 
         foreach (var wrapper in wrappers)
         {
-            _extensionCommandProviders.Add(wrapper!);
+            _extensionCommandProviders.Add(wrapper);
         }
 
         // Load the commands from the providers in parallel
-        var loadTasks = wrappers.Select(LoadCommandsWithTimeoutAsync);
+        var commandSets = new ConcurrentBag<IEnumerable<TopLevelViewModel>>();
 
-        var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results != null).Select(r => r!).ToList();
+        Parallel.ForEach(wrappers, wrapper =>
+        {
+            var commands = LoadCommandsWithTimeoutAsync(wrapper).GetAwaiter().GetResult();
+            if (commands != null)
+            {
+                commandSets.Add(commands);
+            }
+        });
 
         lock (TopLevelCommands)
         {
