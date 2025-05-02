@@ -54,46 +54,57 @@ public partial class TopLevelCommandManager : ObservableObject,
         {
             CommandProviderWrapper wrapper = new(provider, _taskScheduler);
             _builtInCommands.Add(wrapper);
-            await LoadTopLevelCommandsFromProvider(wrapper);
+            var commands = await LoadTopLevelCommandsFromProvider(wrapper);
+            lock (TopLevelCommands)
+            {
+                foreach (var c in commands)
+                {
+                    TopLevelCommands.Add(c);
+                }
+            }
         }
 
         return true;
     }
 
     // May be called from a background thread
-    private async Task LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
+    private async Task<IEnumerable<TopLevelViewModel>> LoadTopLevelCommandsFromProvider(CommandProviderWrapper commandProvider)
     {
         WeakReference<IPageContext> weakSelf = new(this);
 
         await commandProvider.LoadTopLevelCommands(_serviceProvider, weakSelf);
 
         var settings = _serviceProvider.GetService<SettingsModel>()!;
-        var makeAndAdd = (ICommandItem? i, bool fallback) =>
-        {
-            var commandItemViewModel = new CommandItemViewModel(new(i), weakSelf);
-            var topLevelViewModel = new TopLevelViewModel(commandItemViewModel, fallback, commandProvider.ExtensionHost, commandProvider.ProviderId, settings, _serviceProvider);
 
-            lock (TopLevelCommands)
-            {
-                TopLevelCommands.Add(topLevelViewModel);
-            }
-        };
+        // var makeAndAdd = (ICommandItem? i, bool fallback) =>
+        // {
+        //    var commandItemViewModel = new CommandItemViewModel(new(i), weakSelf);
+        //    var topLevelViewModel = new TopLevelViewModel(commandItemViewModel, fallback, commandProvider.ExtensionHost, commandProvider.ProviderId, settings, _serviceProvider);
 
-        await Task.Factory.StartNew(
+        // lock (TopLevelCommands)
+        //    {
+        //        TopLevelCommands.Add(topLevelViewModel);
+        //    }
+        // };
+        var commands = await Task.Factory.StartNew(
             () =>
             {
-                lock (TopLevelCommands)
-                {
-                    foreach (var item in commandProvider.TopLevelItems)
-                    {
-                        TopLevelCommands.Add(item);
-                    }
+                List<TopLevelViewModel> commands = [];
 
-                    foreach (var item in commandProvider.FallbackItems)
-                    {
-                        TopLevelCommands.Add(item);
-                    }
+                // lock (TopLevelCommands)
+                // {
+                foreach (var item in commandProvider.TopLevelItems)
+                {
+                    commands.Add(item);
                 }
+
+                foreach (var item in commandProvider.FallbackItems)
+                {
+                    commands.Add(item);
+                }
+
+                // }
+                return commands;
             },
             CancellationToken.None,
             TaskCreationOptions.None,
@@ -101,6 +112,8 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         commandProvider.CommandsChanged -= CommandProvider_CommandsChanged;
         commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
+
+        return commands;
     }
 
     // By all accounts, we're already on a background thread (the COM call
@@ -292,13 +305,41 @@ public partial class TopLevelCommandManager : ObservableObject,
         foreach (var wrapper in wrappers)
         {
             _extensionCommandProviders.Add(wrapper!);
+
+            // try
+            // {
+            //    await LoadTopLevelCommandsFromProvider(wrapper!);
+            // }
+            // catch (Exception ex)
+            // {
+            //    Logger.LogError($"Failed to load commands for extension {wrapper!.ExtensionHost?.Extension?.PackageFullName}: {ex}");
+            // }
+        }
+
+        var loadTasks = wrappers.Select(async wrapper =>
+        {
             try
             {
-                await LoadTopLevelCommandsFromProvider(wrapper!);
+                return await LoadTopLevelCommandsFromProvider(wrapper!);
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to load commands for extension {wrapper!.ExtensionHost?.Extension?.PackageFullName}: {ex}");
+            }
+
+            return null;
+        });
+
+        var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results != null).Select(r => r!).ToList();
+
+        lock (TopLevelCommands)
+        {
+            foreach (var commands in commandSets)
+            {
+                foreach (var c in commands)
+                {
+                    TopLevelCommands.Add(c);
+                }
             }
         }
 
