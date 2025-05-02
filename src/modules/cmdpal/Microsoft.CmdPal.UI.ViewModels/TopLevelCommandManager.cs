@@ -86,39 +86,29 @@ public partial class TopLevelCommandManager : ObservableObject,
         //        TopLevelCommands.Add(topLevelViewModel);
         //    }
         // };
-        // var commands = await Task.Factory.StartNew(
-        //    () =>
-        //    {
-        //        List<TopLevelViewModel> commands = [];
+        var commands = await Task.Factory.StartNew(
+            () =>
+            {
+                List<TopLevelViewModel> commands = [];
 
-        // // lock (TopLevelCommands)
-        //        // {
-        //        foreach (var item in commandProvider.TopLevelItems)
-        //        {
-        //            commands.Add(item);
-        //        }
+                // lock (TopLevelCommands)
+                // {
+                foreach (var item in commandProvider.TopLevelItems)
+                {
+                    commands.Add(item);
+                }
 
-        // foreach (var item in commandProvider.FallbackItems)
-        //        {
-        //            commands.Add(item);
-        //        }
+                foreach (var item in commandProvider.FallbackItems)
+                {
+                    commands.Add(item);
+                }
 
-        // // }
-        //        return commands;
-        //    },
-        //    CancellationToken.None,
-        //    TaskCreationOptions.None,
-        //    _taskScheduler);
-        List<TopLevelViewModel> commands = [];
-        foreach (var item in commandProvider.TopLevelItems)
-        {
-            commands.Add(item);
-        }
-
-        foreach (var item in commandProvider.FallbackItems)
-        {
-            commands.Add(item);
-        }
+                // }
+                return commands;
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            _taskScheduler);
 
         commandProvider.CommandsChanged -= CommandProvider_CommandsChanged;
         commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
@@ -267,111 +257,59 @@ public partial class TopLevelCommandManager : ObservableObject,
         timer.Start();
 
         // Start all extensions in parallel
-        var startTasks = extensions.Select(StartExtensionGetProviderAsync);
+        var startTasks = extensions.Select(async extension =>
+        {
+            Logger.LogDebug($"Starting {extension.PackageFullName}");
+            try
+            {
+                await extension.StartExtensionAsync();
+                return new CommandProviderWrapper(extension, _taskScheduler);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to start extension {extension.PackageFullName}: {ex}");
+                return null; // Return null for failed extensions
+            }
+        });
 
         // Wait for all extensions to start
-        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).Select(w => w!).ToList();
+        var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).ToList();
 
-        // Add all the providers we've started to the list.
         foreach (var wrapper in wrappers)
         {
             _extensionCommandProviders.Add(wrapper!);
         }
 
-        // Now that they're all started, load the commands from the providers in parallel.
-        var loadTasks = wrappers.Select(LoadCommandsFromProviderWithTimeout);
+        // Load the commands from the providers in parallel
+        var loadTasks = wrappers.Select(async wrapper =>
+        {
+            try
+            {
+                return await LoadTopLevelCommandsFromProvider(wrapper!);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load commands for extension {wrapper!.ExtensionHost?.Extension?.PackageFullName}: {ex}");
+            }
+
+            return null;
+        });
 
         var commandSets = (await Task.WhenAll(loadTasks)).Where(results => results != null).Select(r => r!).ToList();
 
-        await Task.Factory.StartNew(
-            () =>
+        lock (TopLevelCommands)
+        {
+            foreach (var commands in commandSets)
             {
-                Logger.LogInfo($"Adding commands for {commandSets} providers");
-
-                // After we got all the commands from all the providers, add them here to our top-level items. Putting them in the top-level in serial after they're all loaded
-                lock (TopLevelCommands)
+                foreach (var c in commands)
                 {
-                    foreach (var commands in commandSets)
-                    {
-                        foreach (var c in commands)
-                        {
-                            TopLevelCommands.Add(c);
-                        }
-                    }
+                    TopLevelCommands.Add(c);
                 }
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            _taskScheduler);
+            }
+        }
 
         timer.Stop();
         Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms");
-    }
-
-    private async Task<IEnumerable<TopLevelViewModel>?> LoadCommandsFromProviderWithTimeout(CommandProviderWrapper wrapper, int milliseconds = 5000)
-    {
-        // var task = LoadCommandsFromProviderAsync(wrapper);
-        // var first = await Task.WhenAny(task, Task.Delay(milliseconds));
-        // if (first == task)
-        // {
-        //    // task completed within timeout
-        //    return await task; // Return the result of the task
-        // }
-        // else
-        // {
-        //    // timeout logic
-        //    Logger.LogError($"Loading commands from {wrapper!.ExtensionHost?.Extension?.PackageFullName} timed out");
-        //    return null; // or handle timeout as needed
-        // }
-        var timer = new Stopwatch();
-        timer.Start();
-        try
-        {
-            var commands = await LoadCommandsFromProviderAsync(wrapper).WaitAsync(TimeSpan.FromMilliseconds(milliseconds));
-            Logger.LogInfo(commands != null ? $"Loaded {commands.Count()} commands from {wrapper.Extension?.ExtensionUniqueId}" : $"Failed to load commands from {wrapper.Extension?.ExtensionUniqueId}");
-
-            timer.Stop();
-            Logger.LogDebug($"Loading {wrapper.Extension?.ExtensionUniqueId} took {timer.ElapsedMilliseconds} ms");
-            return commands;
-
-            // return await TaskExtensions.TimeoutAfter(LoadCommandsFromProviderAsync(wrapper), );
-        }
-        catch (TimeoutException)
-        {
-            Logger.LogError($"Loading commands from {wrapper!.ExtensionHost?.Extension?.PackageFullName} timed out");
-            timer.Stop();
-            Logger.LogDebug($"Loading {wrapper.Extension?.ExtensionUniqueId} took {timer.ElapsedMilliseconds} ms");
-            return null; // or handle timeout as needed
-        }
-    }
-
-    private async Task<IEnumerable<TopLevelViewModel>?> LoadCommandsFromProviderAsync(CommandProviderWrapper wrapper)
-    {
-        try
-        {
-            return await LoadTopLevelCommandsFromProvider(wrapper);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to load commands for extension {wrapper!.ExtensionHost?.Extension?.PackageFullName}: {ex}");
-        }
-
-        return null;
-    }
-
-    private async Task<CommandProviderWrapper?> StartExtensionGetProviderAsync(IExtensionWrapper extension)
-    {
-        Logger.LogDebug($"Starting {extension.PackageFullName}");
-        try
-        {
-            await extension.StartExtensionAsync();
-            return new CommandProviderWrapper(extension, _taskScheduler);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to start extension {extension.PackageFullName}: {ex}");
-            return null; // Return null for failed extensions
-        }
     }
 
     private void ExtensionService_OnExtensionRemoved(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
