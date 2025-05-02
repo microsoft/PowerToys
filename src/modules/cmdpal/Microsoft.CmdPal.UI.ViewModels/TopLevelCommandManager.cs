@@ -76,39 +76,17 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         var settings = _serviceProvider.GetService<SettingsModel>()!;
 
-        // var makeAndAdd = (ICommandItem? i, bool fallback) =>
-        // {
-        //    var commandItemViewModel = new CommandItemViewModel(new(i), weakSelf);
-        //    var topLevelViewModel = new TopLevelViewModel(commandItemViewModel, fallback, commandProvider.ExtensionHost, commandProvider.ProviderId, settings, _serviceProvider);
+        List<TopLevelViewModel> commands = [];
 
-        // lock (TopLevelCommands)
-        //    {
-        //        TopLevelCommands.Add(topLevelViewModel);
-        //    }
-        // };
-        var commands = await Task.Factory.StartNew(
-            () =>
-            {
-                List<TopLevelViewModel> commands = [];
+        foreach (var item in commandProvider.TopLevelItems)
+        {
+            commands.Add(item);
+        }
 
-                // lock (TopLevelCommands)
-                // {
-                foreach (var item in commandProvider.TopLevelItems)
-                {
-                    commands.Add(item);
-                }
-
-                foreach (var item in commandProvider.FallbackItems)
-                {
-                    commands.Add(item);
-                }
-
-                // }
-                return commands;
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            _taskScheduler);
+        foreach (var item in commandProvider.FallbackItems)
+        {
+            commands.Add(item);
+        }
 
         commandProvider.CommandsChanged -= CommandProvider_CommandsChanged;
         commandProvider.CommandsChanged += CommandProvider_CommandsChanged;
