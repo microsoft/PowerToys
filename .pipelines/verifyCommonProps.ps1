@@ -35,6 +35,11 @@ $hasInvalidCsProj = $false
 
 # Enumerate the array of file paths and call Validate-ImportSharedCsWinRTProps for each file
 foreach ($csprojFile in $csprojFilesArray) {
+    # Skip if the file ends with 'TemplateCmdPalExtension.csproj'
+    if ($csprojFile -like '*TemplateCmdPalExtension.csproj') {
+        continue
+    }
+
     $importExists = Test-ImportSharedCsWinRTProps -filePath $csprojFile
     if (!$importExists) {
         Write-Output "$csprojFile need to import 'Common.Dotnet.CsWinRT.props'."
