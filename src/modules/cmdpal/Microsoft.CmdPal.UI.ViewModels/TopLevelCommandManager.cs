@@ -257,20 +257,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         timer.Start();
 
         // Start all extensions in parallel
-        var startTasks = extensions.Select(async extension =>
-        {
-            Logger.LogDebug($"Starting {extension.PackageFullName}");
-            try
-            {
-                await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10));
-                return new CommandProviderWrapper(extension, _taskScheduler);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to start extension {extension.PackageFullName}: {ex}");
-                return null; // Return null for failed extensions
-            }
-        });
+        var startTasks = extensions.Select(StartExtensionWithTimeoutAsync);
 
         // Wait for all extensions to start
         var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).Select(w => w!).ToList();
@@ -298,6 +285,21 @@ public partial class TopLevelCommandManager : ObservableObject,
 
         timer.Stop();
         Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms");
+    }
+
+    private async Task<CommandProviderWrapper?> StartExtensionWithTimeoutAsync(IExtensionWrapper extension)
+    {
+        Logger.LogDebug($"Starting {extension.PackageFullName}");
+        try
+        {
+            await extension.StartExtensionAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            return new CommandProviderWrapper(extension, _taskScheduler);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to start extension {extension.PackageFullName}: {ex}");
+            return null; // Return null for failed extensions
+        }
     }
 
     private async Task<IEnumerable<TopLevelViewModel>?> LoadCommandsWithTimeoutAsync(CommandProviderWrapper wrapper)
