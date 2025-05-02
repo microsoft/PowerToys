@@ -256,32 +256,6 @@ public partial class TopLevelCommandManager : ObservableObject,
         var timer = new Stopwatch();
         timer.Start();
 
-        /*
-
-       // TODO This most definitely needs a lock
-       foreach (var extension in extensions)
-       {
-           Logger.LogDebug($"Starting {extension.PackageFullName}");
-           try
-           {
-               // start it ...
-               await extension.StartExtensionAsync();
-
-               // ... and fetch the command provider from it.
-               CommandProviderWrapper wrapper = new(extension, _taskScheduler);
-               _extensionCommandProviders.Add(wrapper);
-               await LoadTopLevelCommandsFromProvider(wrapper);
-           }
-           catch (Exception ex)
-           {
-               Logger.LogError(ex.ToString());
-           }
-       }
-
-       // */
-
-        // /*
-
         // Start all extensions in parallel
         var startTasks = extensions.Select(async extension =>
         {
@@ -301,21 +275,12 @@ public partial class TopLevelCommandManager : ObservableObject,
         // Wait for all extensions to start
         var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).ToList();
 
-        // Load commands serially
         foreach (var wrapper in wrappers)
         {
             _extensionCommandProviders.Add(wrapper!);
-
-            // try
-            // {
-            //    await LoadTopLevelCommandsFromProvider(wrapper!);
-            // }
-            // catch (Exception ex)
-            // {
-            //    Logger.LogError($"Failed to load commands for extension {wrapper!.ExtensionHost?.Extension?.PackageFullName}: {ex}");
-            // }
         }
 
+        // Load the commands from the providers in parallel
         var loadTasks = wrappers.Select(async wrapper =>
         {
             try
@@ -343,9 +308,8 @@ public partial class TopLevelCommandManager : ObservableObject,
             }
         }
 
-        // */
         timer.Stop();
-        Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms ************");
+        Logger.LogDebug($"Loading extensions took {timer.ElapsedMilliseconds} ms");
     }
 
     private void ExtensionService_OnExtensionRemoved(IExtensionService sender, IEnumerable<IExtensionWrapper> extensions)
