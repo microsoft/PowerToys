@@ -404,11 +404,6 @@ public sealed partial class MainWindow : Window,
         // know till the message is being handled.
         WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(commandId, _hwnd));
 
-#pragma warning disable SA1310 // Field names should not contain underscore
-    private const uint DOT_KEY = 0xBE;
-    private const uint WM_HOTKEY = 0x0312;
-#pragma warning restore SA1310 // Field names should not contain underscore
-
     private void UnregisterHotkeys()
     {
         _keyboardListener.ClearHotkeys();
@@ -502,7 +497,10 @@ public sealed partial class MainWindow : Window,
     {
         switch (uMsg)
         {
-            case WM_HOTKEY:
+            // Prevent the window from maximizing when double-clicking the title bar area
+            case PInvoke.WM_NCLBUTTONDBLCLK:
+                return (LRESULT)IntPtr.Zero;
+            case PInvoke.WM_HOTKEY:
                 {
                     var hotkeyIndex = (int)wParam.Value;
                     if (hotkeyIndex < _hotkeys.Count)
