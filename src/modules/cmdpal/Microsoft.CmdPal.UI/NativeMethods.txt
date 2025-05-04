@@ -25,6 +25,8 @@ SHCreateStreamOnFileEx
 CoAllowSetForegroundWindow
 SHCreateStreamOnFileEx
 SHLoadIndirectString
+WM_HOTKEY
+WM_NCLBUTTONDBLCLK
 
 Shell_NotifyIcon
 LoadIcon
