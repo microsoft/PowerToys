@@ -19,6 +19,7 @@ using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -40,6 +41,8 @@ public partial class App : Application
     /// Gets the current <see cref="App"/> instance in use.
     /// </summary>
     public static new App Current => (App)Application.Current;
+
+    public bool RunFromPowerToys { get; private set; }
 
     public Window? AppWindow { get; private set; }
 
@@ -75,21 +78,20 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        AppWindow = new MainWindow();
-
         var cmdArgs = Environment.GetCommandLineArgs();
 
-        var runFromPT = false;
         foreach (var arg in cmdArgs)
         {
             if (arg == "RunFromPT")
             {
-                runFromPT = true;
+                RunFromPowerToys = true;
                 break;
             }
         }
 
-        if (!runFromPT)
+        AppWindow = new MainWindow();
+
+        if (!RunFromPowerToys)
         {
             AppWindow.Activate();
         }
@@ -154,6 +156,7 @@ public partial class App : Application
         var state = AppStateModel.LoadState();
         services.AddSingleton(state);
         services.AddSingleton<IExtensionService, ExtensionService>();
+        services.AddSingleton<TrayIconService>();
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
