@@ -311,14 +311,14 @@ internal sealed class NetworkConnectionProperties
     {
         switch (property)
         {
-            case string:
-                return string.IsNullOrWhiteSpace(property) ? string.Empty : $"\n\n{title}{property}";
+            case string str:
+                return string.IsNullOrWhiteSpace(str) ? string.Empty : $"\n\n{title}{str}";
             case List<string> listString:
-                return listString.Count == 0 ? string.Empty : $"\n\n{title}{string.Join("\n\n* ", property)}";
+                return listString.Count == 0 ? string.Empty : $"\n\n{title}{string.Join("\n\n* ", listString)}";
             case List<IPAddress> listIP:
-                return listIP.Count == 0 ? string.Empty : $"\n\n{title}{string.Join("\n\n* ", property)}";
+                return listIP.Count == 0 ? string.Empty : $"\n\n{title}{string.Join("\n\n* ", listIP)}";
             case IPAddressCollection collectionIP:
-                return collectionIP.Count == 0 ? string.Empty : $"\n\n{title}{string.Join("\n\n* ", property)}";
+                return collectionIP.Count == 0 ? string.Empty : $"\n\n{title}{string.Join("\n\n* ", collectionIP)}";
             case null:
                 return string.Empty;
             default:

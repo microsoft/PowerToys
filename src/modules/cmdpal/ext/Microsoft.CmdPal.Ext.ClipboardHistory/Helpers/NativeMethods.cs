@@ -17,7 +17,7 @@ internal static class NativeMethods
         internal INPUTTYPE type;
         internal InputUnion data;
 
-        internal static int Size => Marshal.SizeOf(typeof(INPUT));
+        internal static int Size => Marshal.SizeOf<INPUT>();
     }
 
     [StructLayout(LayoutKind.Explicit)]
