@@ -19,7 +19,7 @@ namespace ColorPicker.Mouse
 {
     [Export(typeof(IMouseInfoProvider))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class MouseInfoProvider : IMouseInfoProvider
+    public class MouseInfoProvider : IMouseInfoProvider, IDisposable
     {
         private readonly double _mousePullInfoIntervalInMs;
         private readonly DispatcherTimer _timer = new DispatcherTimer();
@@ -28,6 +28,7 @@ namespace ColorPicker.Mouse
         private System.Windows.Point _previousMousePosition = new System.Windows.Point(-1, 1);
         private Color _previousColor = Color.Transparent;
         private bool _colorFormatChanged;
+        private bool _disposed = false;
 
         [ImportingConstructor]
         public MouseInfoProvider(AppStateHandler appStateMonitor, IUserSettings userSettings)
@@ -202,6 +203,37 @@ namespace ColorPicker.Mouse
             {
                 CursorManager.RestoreOriginalCursors();
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                // Dispose managed resources
+                DisposeHook();
+                _timer.Tick -= Timer_Tick;
+                if (_userSettings != null && _userSettings.CopiedColorRepresentation != null)
+                {
+                    _userSettings.CopiedColorRepresentation.PropertyChanged -= CopiedColorRepresentation_PropertyChanged;
+                }
+                _mouseHook?.Dispose();
+            }
+            // No unmanaged resources to clean up directly
+            _disposed = true;
+        }
+
+        ~MouseInfoProvider()
+        {
+            Dispose(false);
         }
     }
 }
