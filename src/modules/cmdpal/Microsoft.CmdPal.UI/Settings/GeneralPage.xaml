@@ -17,8 +17,8 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ScrollViewer Grid.Row="1" Padding="0,0,8,0">
-            <Grid Padding="8,16,8,8">
+        <ScrollViewer Grid.Row="1">
+            <Grid Padding="16">
                 <StackPanel
                     MaxWidth="1000"
                     HorizontalAlignment="Stretch"
@@ -33,6 +33,9 @@
                   <EntranceThemeTransition FromVerticalOffset="50" />
                   <RepositionThemeTransition IsStaggeringEnabled="False" />
               </StackPanel.ChildrenTransitions>-->
+
+                    <TextBlock x:Uid="ActivationSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
                     <controls:SettingsExpander
                         x:Uid="Settings_GeneralPage_ActivationKey_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
@@ -40,23 +43,30 @@
                         <ptControls:ShortcutControl HotkeySettings="{x:Bind viewModel.Hotkey, Mode=TwoWay}" />
 
                         <controls:SettingsExpander.Items>
-                            <controls:SettingsCard x:Uid="Settings_GeneralPage_GoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
-                                <ToggleSwitch IsOn="{x:Bind viewModel.HotkeyGoesHome, Mode=TwoWay}" />
+                            <controls:SettingsCard x:Uid="Settings_GeneralPage_LowLevelHook_SettingsCard">
+                                <ToggleSwitch IsOn="{x:Bind viewModel.UseLowLevelGlobalHotkey, Mode=TwoWay}" />
                             </controls:SettingsCard>
-                            <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard">
-                                <ToggleSwitch IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
-                            </controls:SettingsCard>
-                            <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
-                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind viewModel.MonitorPositionIndex, Mode=TwoWay}">
-                                    <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
-                                    <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
-                                    <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
-                                    <ComboBoxItem x:Uid="Run_Radio_Position_In_Place" />
-                                </ComboBox>
-                            </controls:SettingsCard>
-
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.IgnoreShortcutWhenFullscreen, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_GoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.HotkeyGoesHome, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_HighlightSearch_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE933;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind viewModel.MonitorPositionIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_In_Place" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
+                    <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowAppDetails, Mode=TwoWay}" />
@@ -70,6 +80,10 @@
                         <ToggleSwitch IsOn="{x:Bind viewModel.SingleClickActivates, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  Example 'About' section  -->
                     <TextBlock x:Uid="AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
@@ -81,8 +95,8 @@
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
                                 <StackPanel Margin="-12,0,0,0" Orientation="Vertical">
-                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_GithubLink_Hyperlink" NavigateUri="https://github.com/zadjii-msft/PowerToys" />
-                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_SDKDocs_Hyperlink" NavigateUri="https://github.com/zadjii-msft/PowerToys/blob/main/src/modules/cmdpal/doc/initial-sdk-spec/initial-sdk-spec.md" />
+                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_GithubLink_Hyperlink" NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310837" />
+                                    <HyperlinkButton x:Uid="Settings_GeneralPage_About_SDKDocs_Hyperlink" NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310639" />
                                 </StackPanel>
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
@@ -90,7 +104,7 @@
                     <HyperlinkButton
                         x:Uid="Settings_GeneralPage_SendFeedback_Hyperlink"
                         Margin="0,8,0,0"
-                        NavigateUri="https://github.com/zadjii-msft/PowerToys/issues/new" />
+                        NavigateUri="https://go.microsoft.com/fwlink/?linkid=2310638" />
                 </StackPanel>
             </Grid>
         </ScrollViewer>

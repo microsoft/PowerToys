@@ -18,16 +18,19 @@ public record PerformCommandMessage
 
     public bool WithAnimation { get; set; } = true;
 
+    public CommandPaletteHost? ExtensionHost { get; private set; }
+
     public PerformCommandMessage(ExtensionObject<ICommand> command)
     {
         Command = command;
         Context = null;
     }
 
-    public PerformCommandMessage(TopLevelCommandItemWrapper topLevelCommand)
+    public PerformCommandMessage(TopLevelViewModel topLevelCommand)
     {
-        Command = new(topLevelCommand.Command);
+        Command = topLevelCommand.CommandViewModel.Model;
         Context = null;
+        ExtensionHost = topLevelCommand.ExtensionHost;
     }
 
     public PerformCommandMessage(ExtensionObject<ICommand> command, ExtensionObject<IListItem> context)
@@ -46,6 +49,12 @@ public record PerformCommandMessage
     {
         Command = command;
         Context = context.Unsafe;
+    }
+
+    public PerformCommandMessage(CommandContextItemViewModel contextCommand)
+    {
+        Command = contextCommand.Command.Model;
+        Context = contextCommand.Model.Unsafe;
     }
 
     public PerformCommandMessage(ConfirmResultViewModel vm)

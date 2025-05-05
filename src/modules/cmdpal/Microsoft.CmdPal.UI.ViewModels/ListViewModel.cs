@@ -52,6 +52,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public string SearchText { get; private set; } = string.Empty;
 
+    public string InitialSearchText { get; private set; } = string.Empty;
+
     public CommandItemViewModel EmptyContent { get; private set; }
 
     private bool _isDynamic;
@@ -128,7 +130,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         try
         {
-            IListItem[] newItems = _model.Unsafe!.GetItems();
+            var newItems = _model.Unsafe!.GetItems();
 
             // Collect all the items into new viewmodels
             Collection<ListItemViewModel> newViewModels = [];
@@ -136,7 +138,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // TODO we can probably further optimize this by also keeping a
             // HashSet of every ExtensionObject we currently have, and only
             // building new viewmodels for the ones we haven't already built.
-            foreach (IListItem? item in newItems)
+            foreach (var item in newItems)
             {
                 ListItemViewModel viewModel = new(item, new(this));
 
@@ -147,8 +149,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 }
             }
 
-            IEnumerable<ListItemViewModel> firstTwenty = newViewModels.Take(20);
-            foreach (ListItemViewModel? item in firstTwenty)
+            var firstTwenty = newViewModels.Take(20);
+            foreach (var item in firstTwenty)
             {
                 item?.SafeInitializeProperties();
             }
@@ -233,7 +235,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             iterable = Items.ToArray();
         }
 
-        foreach (ListItemViewModel item in iterable)
+        foreach (var item in iterable)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -266,8 +268,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return 1;
         }
 
-        MatchResult nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
-        MatchResult descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
+        var nameMatch = StringMatcher.FuzzySearch(query, listItem.Title);
+        var descriptionMatch = StringMatcher.FuzzySearch(query, listItem.Subtitle);
         return new[] { nameMatch.Score, (descriptionMatch.Score - 4) / 2, 0 }.Max();
     }
 
@@ -280,7 +282,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     // Similarly stolen from ListHelpers.FilterList
     public static IEnumerable<ListItemViewModel> FilterList(IEnumerable<ListItemViewModel> items, string query)
     {
-        IOrderedEnumerable<ScoredListItemViewModel> scores = items
+        var scores = items
             .Where(i => !i.IsInErrorState)
             .Select(li => new ScoredListItemViewModel() { ViewModel = li, Score = ScoreListItem(query, li) })
             .Where(score => score.Score > 0)
@@ -326,7 +328,19 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     [RelayCommand]
-    private void UpdateSelectedItem(ListItemViewModel item)
+    private void UpdateSelectedItem(ListItemViewModel? item)
+    {
+        if (item != null)
+        {
+            SetSelectedItem(item);
+        }
+        else
+        {
+            ClearSelectedItem();
+        }
+    }
+
+    private void SetSelectedItem(ListItemViewModel item)
     {
         if (!item.SafeSlowInit())
         {
@@ -355,11 +369,28 @@ public partial class ListViewModel : PageViewModel, IDisposable
            });
     }
 
+    private void ClearSelectedItem()
+    {
+        // GH #322:
+        // For inexplicable reasons, if you try updating the command bar and
+        // the details on the same UI thread tick as updating the list, we'll
+        // explode
+        DoOnUiThread(
+           () =>
+           {
+               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
+
+               WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+
+               TextToSuggest = string.Empty;
+           });
+    }
+
     public override void InitializeProperties()
     {
         base.InitializeProperties();
 
-        IListPage? model = _model.Unsafe;
+        var model = _model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -373,8 +404,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
         _modelPlaceholderText = model.PlaceholderText;
         UpdateProperty(nameof(PlaceholderText));
 
-        SearchText = model.SearchText;
+        InitialSearchText = SearchText = model.SearchText;
         UpdateProperty(nameof(SearchText));
+        UpdateProperty(nameof(InitialSearchText));
 
         EmptyContent = new(new(model.EmptyContent), PageContext);
         EmptyContent.SlowInitializeProperties();
@@ -385,7 +417,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public void LoadMoreIfNeeded()
     {
-        IListPage? model = this._model.Unsafe;
+        var model = this._model.Unsafe;
         if (model == null)
         {
             return;
@@ -412,7 +444,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         base.FetchProperty(propertyName);
 
-        IListPage? model = this._model.Unsafe;
+        var model = this._model.Unsafe;
         if (model == null)
         {
             return; // throw?
@@ -431,7 +463,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 break;
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);
-                EmptyContent.InitializeProperties();
+                EmptyContent.SlowInitializeProperties();
                 break;
             case nameof(IsLoading):
                 UpdateEmptyContent();
@@ -448,6 +480,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             return;
         }
+
+        UpdateProperty(nameof(EmptyContent));
 
         DoOnUiThread(
            () =>
@@ -475,13 +509,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         lock (_listLock)
         {
-            foreach (ListItemViewModel item in Items)
+            foreach (var item in Items)
             {
                 item.SafeCleanup();
             }
 
             Items.Clear();
-            foreach (ListItemViewModel item in FilteredItems)
+            foreach (var item in FilteredItems)
             {
                 item.SafeCleanup();
             }
@@ -489,7 +523,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             FilteredItems.Clear();
         }
 
-        IListPage? model = _model.Unsafe;
+        var model = _model.Unsafe;
         if (model != null)
         {
             model.ItemsChanged -= Model_ItemsChanged;

@@ -2,95 +2,286 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
+using Windows.Foundation;
+using WyHash;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public sealed partial class TopLevelViewModel : ObservableObject
+public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 {
     private readonly SettingsModel _settings;
     private readonly IServiceProvider _serviceProvider;
+    private readonly CommandItemViewModel _commandItemViewModel;
 
-    // TopLevelCommandItemWrapper is a ListItem, but it's in-memory for the app already.
-    // We construct it either from data that we pulled from the cache, or from the
-    // extension, but the data in it is all in our process now.
-    private readonly TopLevelCommandItemWrapper _item;
+    private readonly string _commandProviderId;
 
-    public IconInfoViewModel Icon { get; private set; }
+    private string IdFromModel => _commandItemViewModel.Command.Id;
 
-    public string Title => _item.Title;
+    private string _generatedId = string.Empty;
 
-    public string Subtitle => _item.Subtitle;
+    private HotkeySettings? _hotkey;
+
+    private CommandAlias? Alias { get; set; }
+
+    public bool IsFallback { get; private set; }
+
+    [ObservableProperty]
+    public partial ObservableCollection<Tag> Tags { get; set; } = [];
+
+    public string Id => string.IsNullOrEmpty(IdFromModel) ? _generatedId : IdFromModel;
+
+    public CommandPaletteHost ExtensionHost { get; private set; }
+
+    public CommandViewModel CommandViewModel => _commandItemViewModel.Command;
+
+    public CommandItemViewModel ItemViewModel => _commandItemViewModel;
+
+    ////// ICommandItem
+    public string Title => _commandItemViewModel.Title;
+
+    public string Subtitle => _commandItemViewModel.Subtitle;
+
+    public IIconInfo Icon => _commandItemViewModel.Icon;
+
+    ICommand? ICommandItem.Command => _commandItemViewModel.Command.Model.Unsafe;
+
+    IContextItem?[] ICommandItem.MoreCommands => _commandItemViewModel.MoreCommands.Select(i => i.Model.Unsafe).ToArray();
+
+    ////// IListItem
+    ITag[] IListItem.Tags => Tags.ToArray();
+
+    IDetails? IListItem.Details => null;
+
+    string IListItem.Section => string.Empty;
+
+    string IListItem.TextToSuggest => string.Empty;
+
+    ////// INotifyPropChanged
+    public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
 
     public HotkeySettings? Hotkey
     {
-        get => _item.Hotkey;
+        get => _hotkey;
         set
         {
-            _serviceProvider.GetService<HotkeyManager>()!.UpdateHotkey(_item.Id, value);
-            _item.Hotkey = value;
+            _serviceProvider.GetService<HotkeyManager>()!.UpdateHotkey(Id, value);
+            UpdateHotkey();
+            UpdateTags();
             Save();
         }
     }
 
-    private string _aliasText;
+    public bool HasAlias => !string.IsNullOrEmpty(AliasText);
 
     public string AliasText
     {
-        get => _aliasText;
+        get => Alias?.Alias ?? string.Empty;
         set
         {
-            if (SetProperty(ref _aliasText, value))
+            if (string.IsNullOrEmpty(value))
             {
-                UpdateAlias();
+                Alias = null;
             }
+            else
+            {
+                if (Alias is CommandAlias a)
+                {
+                    a.Alias = value;
+                }
+                else
+                {
+                    Alias = new CommandAlias(value, Id);
+                }
+            }
+
+            HandleChangeAlias();
         }
     }
-
-    private bool _isDirectAlias;
 
     public bool IsDirectAlias
     {
-        get => _isDirectAlias;
+        get => Alias?.IsDirect ?? false;
         set
         {
-            if (SetProperty(ref _isDirectAlias, value))
+            if (Alias is CommandAlias a)
             {
-                UpdateAlias();
+                a.IsDirect = value;
             }
+
+            HandleChangeAlias();
         }
     }
 
-    public TopLevelViewModel(TopLevelCommandItemWrapper item, SettingsModel settings, IServiceProvider serviceProvider)
+    public TopLevelViewModel(
+        CommandItemViewModel item,
+        bool isFallback,
+        CommandPaletteHost extensionHost,
+        string commandProviderId,
+        SettingsModel settings,
+        IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
         _settings = settings;
+        _commandProviderId = commandProviderId;
+        _commandItemViewModel = item;
 
-        _item = item;
-        Icon = new(item.Icon ?? item.Command?.Icon);
-        Icon.InitializeProperties();
+        IsFallback = isFallback;
+        ExtensionHost = extensionHost;
 
-        var aliases = _serviceProvider.GetService<AliasManager>()!;
-        _isDirectAlias = _item.Alias?.IsDirect ?? false;
-        _aliasText = _item.Alias?.Alias ?? string.Empty;
+        item.PropertyChanged += Item_PropertyChanged;
+
+        // UpdateAlias();
+        // UpdateHotkey();
+        // UpdateTags();
+    }
+
+    private void Item_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (!string.IsNullOrEmpty(e.PropertyName))
+        {
+            PropChanged?.Invoke(this, new PropChangedEventArgs(e.PropertyName));
+
+            if (e.PropertyName == "IsInitialized")
+            {
+                GenerateId();
+
+                FetchAliasFromAliasManager();
+                UpdateHotkey();
+                UpdateTags();
+            }
+        }
     }
 
     private void Save() => SettingsModel.SaveSettings(_settings);
 
-    private void UpdateAlias()
+    private void HandleChangeAlias()
     {
-        if (string.IsNullOrWhiteSpace(_aliasText))
+        SetAlias();
+        Save();
+    }
+
+    public void SetAlias()
+    {
+        var commandAlias = Alias is null
+                ? null
+                : new CommandAlias(Alias.Alias, Alias.CommandId, Alias.IsDirect);
+
+        _serviceProvider.GetService<AliasManager>()!.UpdateAlias(Id, commandAlias);
+        UpdateTags();
+    }
+
+    private void FetchAliasFromAliasManager()
+    {
+        var am = _serviceProvider.GetService<AliasManager>();
+        if (am != null)
         {
-            _item.UpdateAlias(null);
+            var commandAlias = am.AliasFromId(Id);
+            if (commandAlias is not null)
+            {
+                // Decouple from the alias manager alias object
+                Alias = new CommandAlias(commandAlias.Alias, commandAlias.CommandId, commandAlias.IsDirect);
+            }
         }
-        else
+    }
+
+    private void UpdateHotkey()
+    {
+        var hotkey = _settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
+        if (hotkey != null)
         {
-            var newAlias = new CommandAlias(_aliasText, _item.Id, _isDirectAlias);
-            _item.UpdateAlias(newAlias);
+            _hotkey = hotkey.Hotkey;
+        }
+    }
+
+    private void UpdateTags()
+    {
+        List<Tag> tags = new();
+
+        if (Hotkey != null)
+        {
+            tags.Add(new Tag() { Text = Hotkey.ToString() });
         }
 
-        Save();
+        if (Alias != null)
+        {
+            tags.Add(new Tag() { Text = Alias.SearchPrefix });
+        }
+
+        DoOnUiThread(
+            () =>
+            {
+                ListHelpers.InPlaceUpdateList(Tags, tags);
+                PropChanged?.Invoke(this, new PropChangedEventArgs(nameof(Tags)));
+            });
+    }
+
+    private void GenerateId()
+    {
+        // Use WyHash64 to generate stable ID hashes.
+        // manually seeding with 0, so that the hash is stable across launches
+        var result = WyHash64.ComputeHash64(_commandProviderId + Title + Subtitle, seed: 0);
+        _generatedId = $"{_commandProviderId}{result}";
+    }
+
+    private void DoOnUiThread(Action action)
+    {
+        if (_commandItemViewModel.PageContext.TryGetTarget(out var pageContext))
+        {
+            Task.Factory.StartNew(
+                action,
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                pageContext.Scheduler);
+        }
+    }
+
+    internal bool SafeUpdateFallbackTextSynchronous(string newQuery)
+    {
+        if (!IsFallback)
+        {
+            return false;
+        }
+
+        try
+        {
+            return UnsafeUpdateFallbackSynchronous(newQuery);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex.ToString());
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Calls UpdateQuery on our command, if we're a fallback item. This does
+    /// RPC work, so make sure you're calling it on a BG thread.
+    /// </summary>
+    /// <param name="newQuery">The new search text to pass to the extension</param>
+    /// <returns>true if our Title changed across this call</returns>
+    private bool UnsafeUpdateFallbackSynchronous(string newQuery)
+    {
+        var model = _commandItemViewModel.Model.Unsafe;
+
+        // RPC to check type
+        if (model is IFallbackCommandItem fallback)
+        {
+            var wasEmpty = string.IsNullOrEmpty(Title);
+
+            // RPC for method
+            fallback.FallbackHandler.UpdateQuery(newQuery);
+            var isEmpty = string.IsNullOrEmpty(Title);
+            return wasEmpty != isEmpty;
+        }
+
+        return false;
     }
 }
