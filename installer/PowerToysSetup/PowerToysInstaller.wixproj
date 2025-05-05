@@ -57,31 +57,6 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
       call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
       call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\AdvancedPaste.wxs.bk ..\..\..\..\PowerToysSetupVNext\AdvancedPaste.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\Awake.wxs.bk ..\..\..\..\PowerToysSetupVNext\Awake.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\BaseApplications.wxs.bk ..\..\..\..\PowerToysSetupVNext\BaseApplications.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\ColorPicker.wxs.bk ..\..\..\..\PowerToysSetupVNext\ColorPicker.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\Core.wxs.bk ..\..\..\..\PowerToysSetupVNext\Core.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\EnvironmentVariables.wxs.bk ..\..\..\..\PowerToysSetupVNext\EnvironmentVariables.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\FileExplorerPreview.wxs.bk ..\..\..\..\PowerToysSetupVNext\FileExplorerPreview.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\FileLocksmith.wxs.bk ..\..\..\..\PowerToysSetupVNext\FileLocksmith.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\Hosts.wxs.bk ..\..\..\..\PowerToysSetupVNext\Hosts.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\ImageResizer.wxs.bk ..\..\..\..\PowerToysSetupVNext\ImageResizer.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\KeyboardManager.wxs.bk ..\..\..\..\PowerToysSetupVNext\KeyboardManager.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\MouseWithoutBorders.wxs.bk ..\..\..\..\PowerToysSetupVNext\MouseWithoutBorders.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\NewPlus.wxs.bk ..\..\..\..\PowerToysSetupVNext\NewPlus.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\Peek.wxs.bk ..\..\..\..\PowerToysSetupVNext\Peek.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\PowerRename.wxs.bk ..\..\..\..\PowerToysSetupVNext\PowerRename.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\Product.wxs.bk ..\..\..\..\PowerToysSetupVNext\Product.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\RegistryPreview.wxs.bk ..\..\..\..\PowerToysSetupVNext\RegistryPreview.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\Resources.wxs.bk ..\..\..\..\PowerToysSetupVNext\Resources.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\Run.wxs.bk ..\..\..\..\PowerToysSetupVNext\Run.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\Settings.wxs.bk ..\..\..\..\PowerToysSetupVNext\Settings.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\ShortcutGuide.wxs.bk ..\..\..\..\PowerToysSetupVNext\ShortcutGuide.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\Tools.wxs.bk ..\..\..\..\PowerToysSetupVNext\Tools.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\WinAppSDK.wxs.bk ..\..\..\..\PowerToysSetupVNext\WinAppSDK.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\WinUI3Applications.wxs.bk ..\..\..\..\PowerToysSetupVNext\WinUI3Applications.wxs
-      call move /Y ..\..\..\..\PowerToysSetupVNext\Workspaces.wxs.bk ..\..\..\..\PowerToysSetupVNext\Workspaces.wxs
       </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>

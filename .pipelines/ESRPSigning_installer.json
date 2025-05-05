@@ -5,6 +5,7 @@
         {
             "MatchedPath": [
                 "PowerToysSetupCustomActions.dll",
+                "PowerToysSetupCustomActionsVNext.dll",
                 "PowerToys*Setup-*.exe",
                 "PowerToys*Setup-*.msi",
                 "PowerToys*Setup-*.msi",
