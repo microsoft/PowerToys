@@ -3,7 +3,7 @@
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup>
     <PathToRoot>..\..\..\..\</PathToRoot>
-    <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.6.250205002</WasdkNuget>
+    <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.7.250401001</WasdkNuget>
   </PropertyGroup>
   <Import Project="$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props')" />
   <PropertyGroup Label="Globals">

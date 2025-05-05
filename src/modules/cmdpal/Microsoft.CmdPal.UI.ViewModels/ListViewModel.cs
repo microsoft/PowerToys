@@ -328,7 +328,19 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     [RelayCommand]
-    private void UpdateSelectedItem(ListItemViewModel item)
+    private void UpdateSelectedItem(ListItemViewModel? item)
+    {
+        if (item != null)
+        {
+            SetSelectedItem(item);
+        }
+        else
+        {
+            ClearSelectedItem();
+        }
+    }
+
+    private void SetSelectedItem(ListItemViewModel item)
     {
         if (!item.SafeSlowInit())
         {
@@ -344,8 +356,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
            {
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
 
-               WeakReferenceMessenger.Default.Send<UpdateItemKeybindingsMessage>(new(item.Keybindings()));
-
                if (ShowDetails && item.HasDetails)
                {
                    WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
@@ -356,6 +366,23 @@ public partial class ListViewModel : PageViewModel, IDisposable
                }
 
                TextToSuggest = item.TextToSuggest;
+           });
+    }
+
+    private void ClearSelectedItem()
+    {
+        // GH #322:
+        // For inexplicable reasons, if you try updating the command bar and
+        // the details on the same UI thread tick as updating the list, we'll
+        // explode
+        DoOnUiThread(
+           () =>
+           {
+               WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
+
+               WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+
+               TextToSuggest = string.Empty;
            });
     }
 
@@ -436,7 +463,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 break;
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext);
-                EmptyContent.InitializeProperties();
+                EmptyContent.SlowInitializeProperties();
                 break;
             case nameof(IsLoading):
                 UpdateEmptyContent();
@@ -453,6 +480,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             return;
         }
+
+        UpdateProperty(nameof(EmptyContent));
 
         DoOnUiThread(
            () =>
