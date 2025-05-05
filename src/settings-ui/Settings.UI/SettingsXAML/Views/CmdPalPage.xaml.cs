@@ -19,7 +19,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new CmdPalViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
-                ShellPage.SendDefaultIPCMessage);
+                ShellPage.SendDefaultIPCMessage,
+                DispatcherQueue);
             DataContext = ViewModel;
             InitializeComponent();
         }
