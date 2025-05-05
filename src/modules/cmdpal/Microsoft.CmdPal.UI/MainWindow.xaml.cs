@@ -29,11 +29,12 @@ using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
+using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
-public sealed partial class MainWindow : Window,
+public sealed partial class MainWindow : WindowEx,
     IRecipient<DismissMessage>,
     IRecipient<ShowWindowMessage>,
     IRecipient<HideWindowMessage>,
@@ -82,7 +83,6 @@ public sealed partial class MainWindow : Window,
 
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
-        AppWindow.Resize(new SizeInt32 { Width = 1000, Height = 620 });
         PositionCentered();
         SetAcrylic();
 
