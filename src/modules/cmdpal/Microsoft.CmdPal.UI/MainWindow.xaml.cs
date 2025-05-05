@@ -25,6 +25,7 @@ using Windows.UI;
 using Windows.UI.WindowManagement;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -232,6 +233,16 @@ public sealed partial class MainWindow : WindowEx,
         PositionCentered(display);
 
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
+
+        // instead of showing the window, uncloak it from DWM
+        // This will make it visible to the user, without the animation or frames for
+        // loading XAML with composition
+        unsafe
+        {
+            BOOL value = false;
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, (void*)&value, (uint)sizeof(BOOL));
+        }
+
         PInvoke.SetForegroundWindow(hwnd);
         PInvoke.SetActiveWindow(hwnd);
     }
@@ -289,7 +300,7 @@ public sealed partial class MainWindow : WindowEx,
         ShowHwnd(message.Hwnd, settings.SummonOn);
     }
 
-    public void Receive(HideWindowMessage message) => PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+    public void Receive(HideWindowMessage message) => HideWindow();
 
     public void Receive(QuitMessage message) =>
 
@@ -297,7 +308,21 @@ public sealed partial class MainWindow : WindowEx,
         DispatcherQueue.TryEnqueue(() => Close());
 
     public void Receive(DismissMessage message) =>
-        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+        HideWindow();
+
+    private void HideWindow()
+    {
+        // Hide our window
+
+        // Instead of hiding the window, cloak it from DWM
+        // This will make it invisible to the user, such that we can show it again
+        // by uncloaking it, which avoids an unnecessary "flicker in" that XAML does
+        unsafe
+        {
+            BOOL value = true;
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, (void*)&value, (uint)sizeof(BOOL));
+        }
+    }
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
@@ -386,7 +411,9 @@ public sealed partial class MainWindow : WindowEx,
                 return;
             }
 
-            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+            // This will DWM cloak our window:
+            HideWindow();
+
             PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
         }
 
@@ -474,10 +501,24 @@ public sealed partial class MainWindow : WindowEx,
         var isRootHotkey = string.IsNullOrEmpty(commandId);
         PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
 
+        var isVisible = this.Visible;
+        unsafe
+        {
+            // We need to check if our window is cloaked or not. A cloaked window is still
+            // technically visible, because SHOW/HIDE != iconic (minimized) != cloaked
+            // (these are all separate states)
+            long attr = 0;
+            PInvoke.DwmGetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAKED, &attr, sizeof(long));
+            if (attr == 1 /* DWM_CLOAKED_APP */)
+            {
+                isVisible = false;
+            }
+        }
+
         // Note to future us: the wParam will have the index of the hotkey we registered.
         // We can use that in the future to differentiate the hotkeys we've pressed
         // so that we can bind hotkeys to individual commands
-        if (!this.Visible || !isRootHotkey)
+        if (!isVisible || !isRootHotkey)
         {
             Activate();
 
@@ -485,7 +526,16 @@ public sealed partial class MainWindow : WindowEx,
         }
         else if (isRootHotkey)
         {
-            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+            // If there's a debugger attached...
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                // ... then manually hide our window. When debugged, we won't get the cool cloaking,
+                // but that's the price to pay for having the HWND not light-dismiss while we're debugging.
+                PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+                return;
+            }
+
+            HideWindow();
         }
     }
 
@@ -516,22 +566,6 @@ public sealed partial class MainWindow : WindowEx,
 
                         var hotkey = _hotkeys[hotkeyIndex];
                         HandleSummon(hotkey.CommandId);
-
-                        // var isRootHotkey = string.IsNullOrEmpty(hotkey.CommandId);
-
-                        // // Note to future us: the wParam will have the index of the hotkey we registered.
-                        // // We can use that in the future to differentiate the hotkeys we've pressed
-                        // // so that we can bind hotkeys to individual commands
-                        // if (!this.Visible || !isRootHotkey)
-                        // {
-                        //     Activate();
-
-                        // Summon(hotkey.CommandId);
-                        // }
-                        // else if (isRootHotkey)
-                        // {
-                        //     PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_HIDE);
-                        // }
                     }
 
                     return (LRESULT)IntPtr.Zero;
