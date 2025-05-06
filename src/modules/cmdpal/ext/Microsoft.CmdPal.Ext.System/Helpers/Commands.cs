@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -109,6 +110,13 @@ internal static class Commands
                     Icon = Icons.RecycleBinIcon,
                 });
         }
+
+        results.Add(new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_sys_RestartShell_name!, confirmCommands, Resources.Microsoft_plugin_sys_RestartShell_confirmation!, static () => Task.Run(static () => ProcessRestarter.RestartAsync("explorer", TimeSpan.FromSeconds(10)))))
+        {
+            Title = Resources.Microsoft_plugin_sys_RestartShell!,
+            Subtitle = Resources.Microsoft_plugin_sys_RestartShell_description!,
+            Icon = Icons.RestartShellIcon,
+        });
 
         // UEFI command/result. It is only available on systems booted in UEFI mode.
         if (isUefi)
