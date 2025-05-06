@@ -19,32 +19,36 @@ namespace ColorPicker.Mouse
 {
     [Export(typeof(IMouseInfoProvider))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class MouseInfoProvider : IMouseInfoProvider
+    public class MouseInfoProvider : IMouseInfoProvider, IDisposable
     {
         private readonly double _mousePullInfoIntervalInMs;
         private readonly DispatcherTimer _timer = new DispatcherTimer();
         private readonly MouseHook _mouseHook;
         private readonly IUserSettings _userSettings;
+        private readonly AppStateHandler _appStateMonitor; // Store AppStateHandler to unsubscribe
         private System.Windows.Point _previousMousePosition = new System.Windows.Point(-1, 1);
         private Color _previousColor = Color.Transparent;
         private bool _colorFormatChanged;
+        private bool _disposed = false;
 
         [ImportingConstructor]
         public MouseInfoProvider(AppStateHandler appStateMonitor, IUserSettings userSettings)
         {
+            _appStateMonitor = appStateMonitor; // Store for later unsubscription
+            _userSettings = userSettings;
+
             _mousePullInfoIntervalInMs = 1000.0 / GetMainDisplayRefreshRate();
             _timer.Interval = TimeSpan.FromMilliseconds(_mousePullInfoIntervalInMs);
             _timer.Tick += Timer_Tick;
 
-            if (appStateMonitor != null)
+            if (_appStateMonitor != null)
             {
-                appStateMonitor.AppShown += AppStateMonitor_AppShown;
-                appStateMonitor.AppClosed += AppStateMonitor_AppClosed;
-                appStateMonitor.AppHidden += AppStateMonitor_AppClosed;
+                _appStateMonitor.AppShown += AppStateMonitor_AppShown;
+                _appStateMonitor.AppClosed += AppStateMonitor_AppClosed;
+                _appStateMonitor.AppHidden += AppStateMonitor_AppClosed; // Assuming AppClosed handler is appropriate for AppHidden as well
             }
 
             _mouseHook = new MouseHook();
-            _userSettings = userSettings;
             _userSettings.CopiedColorRepresentation.PropertyChanged += CopiedColorRepresentation_PropertyChanged;
             _previousMousePosition = GetCursorPosition();
             _previousColor = GetPixelColor(_previousMousePosition);
@@ -101,15 +105,24 @@ namespace ColorPicker.Mouse
 
         private static Color GetPixelColor(System.Windows.Point mousePosition)
         {
-            var rect = new Rectangle((int)mousePosition.X, (int)mousePosition.Y, 1, 1);
-            using (var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
+            try
             {
-                using (var g = Graphics.FromImage(bmp)) // Ensure Graphics object is disposed
+                var rect = new Rectangle((int)mousePosition.X, (int)mousePosition.Y, 1, 1);
+                using (var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
                 {
-                    g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
-                }
+                    using (var g = Graphics.FromImage(bmp)) // Ensure Graphics object is disposed
+                    {
+                        g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+                    }
 
-                return bmp.GetPixel(0, 0);
+                    return bmp.GetPixel(0, 0);
+                }
+            }
+            catch (Exception ex) // Catches potential errors during screen capture (e.g., on secure desktops)
+            {
+                // Optional: Log the exception (ex) if a logging mechanism is available
+                // System.Diagnostics.Debug.WriteLine($"Error getting pixel color: {ex.Message}");
+                return Color.Transparent; // Return a default color on failure
             }
         }
 
@@ -202,6 +215,47 @@ namespace ColorPicker.Mouse
             {
                 CursorManager.RestoreOriginalCursors();
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                // Dispose managed resources
+                DisposeHook(); // Call this first to stop active operations
+
+                _timer.Tick -= Timer_Tick;
+
+                if (_userSettings != null && _userSettings.CopiedColorRepresentation != null)
+                {
+                    _userSettings.CopiedColorRepresentation.PropertyChanged -= CopiedColorRepresentation_PropertyChanged;
+                }
+
+                if (_appStateMonitor != null)
+                {
+                    _appStateMonitor.AppShown -= AppStateMonitor_AppShown;
+                    _appStateMonitor.AppClosed -= AppStateMonitor_AppClosed;
+                    _appStateMonitor.AppHidden -= AppStateMonitor_AppClosed; // Assuming this was the intended unsubscription
+                }
+
+                _mouseHook?.Dispose();
+            }
+            // No unmanaged resources to clean up directly
+            _disposed = true;
+        }
+
+        ~MouseInfoProvider()
+        {
+            Dispose(false);
         }
     }
 }
