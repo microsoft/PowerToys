@@ -1427,8 +1427,8 @@ SOFTWARE.
 
 ## NuGet Packages used by PowerToys
 
-- AdaptiveCards.ObjectModel.WinUI3 2.0.0-beta
-- AdaptiveCards.Rendering.WinUI3 2.1.0-beta
+- AdaptiveCards.ObjectModel.WinUI3 2.0.1-beta
+- AdaptiveCards.Rendering.WinUI3 2.2.3-beta
 - AdaptiveCards.Templating 2.0.2
 - Appium.WebDriver 4.4.5
 - Azure.AI.OpenAI 1.0.0-beta.17

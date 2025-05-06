@@ -38,6 +38,9 @@
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
   </PropertyGroup>
+  
+  <Import Project="..\..\HybridCrt.pre.props" />
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -58,23 +61,25 @@
     <TargetName>PowerToys.Interop</TargetName>
     <OutDir>..\..\..\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
-  <PropertyGroup>
-    <CopyCppRuntimeToOutputDir>true</CopyCppRuntimeToOutputDir>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <UseDebugLibraries>true</UseDebugLibraries>
       <LinkIncremental>true</LinkIncremental>
     </ClCompile>
+    <Link>
+      <AdditionalOptions>%(AdditionalOptions) /profile /opt:ref /opt:icf</AdditionalOptions>
+    </Link>
+
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <UseDebugLibraries>false</UseDebugLibraries>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <LinkIncremental>false</LinkIncremental>
     </ClCompile>
+    <Link>
+      <AdditionalOptions>%(AdditionalOptions) /profile /opt:ref /opt:icf</AdditionalOptions>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -183,4 +188,7 @@
     <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
+
+  <Import Project="..\..\HybridCrt.post.props" />
+
 </Project>
