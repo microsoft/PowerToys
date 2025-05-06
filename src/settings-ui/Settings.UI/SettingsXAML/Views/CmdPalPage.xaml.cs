@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void CmdPalSettingsDeeplink_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            // TO DO: Add deeplink to CmdPal settings
+            // TO DO: Launch CmdPal settings window
         }
     }
 }
