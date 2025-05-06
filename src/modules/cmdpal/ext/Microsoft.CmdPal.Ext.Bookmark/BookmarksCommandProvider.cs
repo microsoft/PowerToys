@@ -125,8 +125,6 @@ public partial class BookmarksCommandProvider : CommandProvider
         }
 
         ExtensionHost.LogMessage($"Failed to create command for bookmark ({bookmark.Name},{bookmark.Bookmark})");
-
-        // TODO: need fix it
         return new ListItem(new NoOpCommand());
     }
 
