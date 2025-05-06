@@ -1,0 +1,53 @@
+﻿<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.ShortcutControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="LayoutRoot"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
+
+    <Grid HorizontalAlignment="Right">
+        <StackPanel Orientation="Horizontal">
+            <Button
+                x:Name="EditButton"
+                Padding="0"
+                Click="OpenDialogButton_Click"
+                CornerRadius="8">
+                <StackPanel
+                    Margin="12,6,12,6"
+                    Orientation="Horizontal"
+                    Spacing="16">
+                    <ItemsControl
+                        x:Name="PreviewKeysControl"
+                        VerticalAlignment="Center"
+                        IsEnabled="{Binding ElementName=EditButton, Path=IsEnabled}"
+                        IsTabStop="False">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <controls:KeyVisual
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    Content="{Binding}"
+                                    IsTabStop="False"
+                                    VisualType="Small" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <FontIcon
+                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                        FontSize="16"
+                        Glyph="&#xE70F;" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

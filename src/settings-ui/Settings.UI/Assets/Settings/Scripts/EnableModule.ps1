@@ -4,10 +4,17 @@ Param(
   [string]$scriptPath
 )
 
-Write-Host "Enabling experimental feature: PSFeedbackProvider"
-Enable-ExperimentalFeature PSFeedbackProvider
-Write-Host "Enabling experimental feature: PSCommandNotFoundSuggestion"
-Enable-ExperimentalFeature PSCommandNotFoundSuggestion
+$experimentalFeatures = Get-ExperimentalFeature;
+if ($experimentalFeatures.Name -contains "PSFeedbackProvider")
+{
+  Write-Host "Enabling experimental feature: PSFeedbackProvider"
+  Enable-ExperimentalFeature PSFeedbackProvider
+}
+if ($experimentalFeatures.Name -contains "PSCommandNotFoundSuggestion")
+{
+  Write-Host "Enabling experimental feature: PSCommandNotFoundSuggestion"
+  Enable-ExperimentalFeature PSCommandNotFoundSuggestion
+}
 
 $wingetModules = Get-Module -ListAvailable -Name Microsoft.WinGet.Client
 if ($wingetModules) {

@@ -138,14 +138,6 @@ namespace ColorPicker.Helpers
                 Application.Current.MainWindow.Opacity = 0;
                 Application.Current.MainWindow.Visibility = Visibility.Visible;
                 _colorPickerShown = true;
-
-                // HACK: WPF UI theme watcher removes the composition target background color, among other weird stuff.
-                // https://github.com/lepoco/wpfui/blob/303f0aefcd59a142bc681415dc4360a34a15f33d/src/Wpf.Ui/Controls/Window/WindowBackdrop.cs#L280
-                // So we set it back with https://github.com/lepoco/wpfui/blob/303f0aefcd59a142bc681415dc4360a34a15f33d/src/Wpf.Ui/Controls/Window/WindowBackdrop.cs#L191
-                // And also reapply the intended backdrop.
-                // This hack fixes: https://github.com/microsoft/PowerToys/issues/31725
-                Wpf.Ui.Controls.WindowBackdrop.RemoveBackground(Application.Current.MainWindow);
-                Wpf.Ui.Controls.WindowBackdrop.ApplyBackdrop(Application.Current.MainWindow, Wpf.Ui.Controls.WindowBackdropType.None);
             }
         }
 
@@ -230,7 +222,7 @@ namespace ColorPicker.Helpers
 
         public bool HandleEnterPressed()
         {
-            if (!IsColorPickerVisible())
+            if (!_colorPickerShown)
             {
                 return false;
             }
@@ -241,14 +233,13 @@ namespace ColorPicker.Helpers
 
         public bool HandleEscPressed()
         {
-            if (!BlockEscapeKeyClosingColorPickerEditor)
+            if (!BlockEscapeKeyClosingColorPickerEditor
+                && (_colorPickerShown || (_colorEditorWindow != null && _colorEditorWindow.IsActive)))
             {
                 return EndUserSession();
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         internal void MoveCursor(int xOffset, int yOffset)

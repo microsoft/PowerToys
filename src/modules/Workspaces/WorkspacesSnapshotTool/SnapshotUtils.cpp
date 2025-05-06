@@ -52,6 +52,11 @@ namespace SnapshotUtils
 
         for (const auto window : windows)
         {
+            if (WindowFilter::FilterPopup(window))
+            {
+                continue;
+            }
+
             // filter by window rect size
             RECT rect = WindowUtils::GetWindowRect(window);
             if (rect.right - rect.left <= 0 || rect.bottom - rect.top <= 0)
@@ -65,6 +70,8 @@ namespace SnapshotUtils
             {
                 continue;
             }
+
+            Logger::info("Try to get window app:{}", reinterpret_cast<void*>(window));
 
             DWORD pid{};
             GetWindowThreadProcessId(window, &pid);
@@ -93,7 +100,7 @@ namespace SnapshotUtils
                 continue;
             }
 
-            // fix for the packaged apps that are not caught when minimized, e.g., Settings.
+            // fix for the packaged apps that are not caught when minimized, e.g. Settings, Microsoft ToDo, ...
             if (processPath.ends_with(NonLocalizable::ApplicationFrameHost))
             {
                 for (auto otherWindow : windows)
@@ -110,17 +117,21 @@ namespace SnapshotUtils
                 }
             }
 
-            if (WindowFilter::FilterPopup(window))
-            {
-                continue;
-            }
-
             auto data = Utils::Apps::GetApp(processPath, pid, installedApps);
             if (!data.has_value() || data->name.empty())
             {
-                Logger::info(L"Installed app not found: {}", processPath);
+                Logger::info(L"Installed app not found:{},{}", reinterpret_cast<void*>(window), processPath);
                 continue;
             }
+
+            if (!data->IsSteamGame() && !WindowUtils::HasThickFrame(window))
+            {
+                // Only care about steam games if it has no thick frame to remain consistent with
+                // the behavior as before.
+                continue;
+            }
+
+            Logger::info(L"Found app for window:{},{}", reinterpret_cast<void*>(window), processPath);
 
             auto appData = data.value();
 

@@ -90,6 +90,7 @@ OTP
 Yubi
 Yubico
 Perplexity
+svgl
 
 # KEYS
 
@@ -232,6 +233,9 @@ SLOWMACHINE
 SWAPBUTTON
 SYSTEMDOCKED
 TABLETPC
+
+# Units
+nmi
 
 # MATH
 

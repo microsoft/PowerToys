@@ -101,8 +101,10 @@ namespace MouseWithoutBorders
         private static bool runOnLogonDesktop;
         private static bool runOnScrSaverDesktop;
 
-        private static int[] toggleIcons;
-        private static int toggleIconsIndex;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+        internal static int[] toggleIcons;
+        internal static int toggleIconsIndex;
+#pragma warning restore SA1307
         internal const int TOGGLE_ICONS_SIZE = 4;
         internal const int ICON_ONE = 0;
         internal const int ICON_ALL = 1;
@@ -114,7 +116,9 @@ namespace MouseWithoutBorders
         internal const int NETWORK_STREAM_BUF_SIZE = 1024 * 1024;
         internal static readonly EventWaitHandle EvSwitch = new(false, EventResetMode.AutoReset);
         private static Point lastPos;
-        private static int switchCount;
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
+        internal static int switchCount;
+#pragma warning restore SA1307
         private static long lastReconnectByHotKeyTime;
         private static int tcpPort;
         private static bool secondOpenSocketTry;
@@ -543,7 +547,7 @@ namespace MouseWithoutBorders
         internal static void SendAwakeBeat()
         {
             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive() &&
-                Setting.Values.BlockScreenSaver && lastRealInputEventCount != Common.RealInputEventCount)
+                Setting.Values.BlockScreenSaver && lastRealInputEventCount != Event.RealInputEventCount)
             {
                 SendPackage(ID.ALL, PackageType.Awake);
             }
@@ -552,13 +556,13 @@ namespace MouseWithoutBorders
                 SendHeartBeat();
             }
 
-            lastInputEventCount = Common.InputEventCount;
-            lastRealInputEventCount = Common.RealInputEventCount;
+            lastInputEventCount = Event.InputEventCount;
+            lastRealInputEventCount = Event.RealInputEventCount;
         }
 
         internal static void HumanBeingDetected()
         {
-            if (lastInputEventCount == Common.InputEventCount)
+            if (lastInputEventCount == Event.InputEventCount)
             {
                 if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive())
                 {
@@ -566,7 +570,7 @@ namespace MouseWithoutBorders
                 }
             }
 
-            lastInputEventCount = Common.InputEventCount;
+            lastInputEventCount = Event.InputEventCount;
         }
 
         private static void PokeMyself()
@@ -581,7 +585,7 @@ namespace MouseWithoutBorders
                 InputSimulation.MoveMouseRelative(-x, -y);
                 Thread.Sleep(50);
 
-                if (lastInputEventCount != Common.InputEventCount)
+                if (lastInputEventCount != Event.InputEventCount)
                 {
                     break;
                 }
@@ -590,8 +594,8 @@ namespace MouseWithoutBorders
 
         internal static void InitLastInputEventCount()
         {
-            lastInputEventCount = Common.InputEventCount;
-            lastRealInputEventCount = Common.RealInputEventCount;
+            lastInputEventCount = Event.InputEventCount;
+            lastRealInputEventCount = Event.RealInputEventCount;
         }
 
         internal static void SendHello()
@@ -665,7 +669,7 @@ namespace MouseWithoutBorders
         {
             Common.DoSomethingInUIThread(() =>
             {
-                if (!DragDrop.MouseDown && Common.SendMessageToHelper(0x401, IntPtr.Zero, IntPtr.Zero) > 0)
+                if (!DragDrop.MouseDown && Helper.SendMessageToHelper(0x401, IntPtr.Zero, IntPtr.Zero) > 0)
                 {
                     Common.MMSleep(0.2);
                     InputSimulation.SendKey(new KEYBDDATA() { wVk = (int)VK.SNAPSHOT });
@@ -674,14 +678,14 @@ namespace MouseWithoutBorders
                     Logger.LogDebug("PrepareScreenCapture: SNAPSHOT simulated.");
 
                     _ = NativeMethods.MoveWindow(
-                        (IntPtr)NativeMethods.FindWindow(null, Common.HELPER_FORM_TEXT),
+                        (IntPtr)NativeMethods.FindWindow(null, Helper.HELPER_FORM_TEXT),
                         MachineStuff.DesktopBounds.Left,
                         MachineStuff.DesktopBounds.Top,
                         MachineStuff.DesktopBounds.Right - MachineStuff.DesktopBounds.Left,
                         MachineStuff.DesktopBounds.Bottom - MachineStuff.DesktopBounds.Top,
                         false);
 
-                    _ = Common.SendMessageToHelper(0x406, IntPtr.Zero, IntPtr.Zero, false);
+                    _ = Helper.SendMessageToHelper(0x406, IntPtr.Zero, IntPtr.Zero, false);
                 }
                 else
                 {
@@ -698,7 +702,7 @@ namespace MouseWithoutBorders
             // {
             //    Process.Start("explorer", "\"" + file + "\"");
             // });
-            _ = CreateProcessInInputDesktopSession(
+            _ = Launch.CreateProcessInInputDesktopSession(
                 "\"" + Environment.ExpandEnvironmentVariables(@"%SystemRoot%\System32\Mspaint.exe") +
                 "\"",
                 "\"" + file + "\"",
@@ -956,8 +960,8 @@ namespace MouseWithoutBorders
                         {
                             // SwitchToMachine(MachineName.Trim());
                             MachineStuff.NewDesMachineID = DesMachineID = MachineID;
-                            MachineStuff.SwitchLocation.X = XY_BY_PIXEL + myLastX;
-                            MachineStuff.SwitchLocation.Y = XY_BY_PIXEL + myLastY;
+                            MachineStuff.SwitchLocation.X = Event.XY_BY_PIXEL + Event.myLastX;
+                            MachineStuff.SwitchLocation.Y = Event.XY_BY_PIXEL + Event.myLastY;
                             MachineStuff.SwitchLocation.ResetCount();
                             EvSwitch.Set();
                         }
@@ -1314,7 +1318,7 @@ namespace MouseWithoutBorders
                 }
                 else
                 {
-                    _ = ImpersonateLoggedOnUserAndDoSomething(() =>
+                    _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                     {
                         st = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + Common.BinaryName;
                         if (!Directory.Exists(st))
