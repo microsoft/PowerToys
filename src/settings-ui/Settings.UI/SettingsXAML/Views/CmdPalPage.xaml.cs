@@ -29,5 +29,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             ViewModel.RefreshEnabledState();
         }
+
+        private void CmdPalSettingsDeeplink_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            // TO DO: Add deeplink to CmdPal settings
+        }
     }
 }
