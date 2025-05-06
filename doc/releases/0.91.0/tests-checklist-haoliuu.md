@@ -66,18 +66,11 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
     * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
  * install the new version (it will uninstall the old version and install the new version)
  - [x] verify the settings are preserved and FancyZones configuration is still the same
- - [ ] test installing as SYSTEM (LocalSystem account)
+ - [x] test installing as SYSTEM (LocalSystem account)
    * Remove current PowerToys.
    * Download PsTools from https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
    * Run PowerToys installer with psexec tool `psexec.exe -sid <path_to_installer_exe`
    * Brief check if all modules are working
-
- * PER-USER and PER-MACHINE TESTS:
-   * Install **previous version** on a clean machine and update with new per-machine version. Ensure that it is installed in Program files and that registry entries are under **HKLM**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
-   * Try installing per-user version over already installed per-machine version and ensure that proper error message is shown.
-   * Remove PowerToys and install per-user version. Ensure that it is installed in <APPDATA>/Local/PowerToys and that registry entries are under **HKCU**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
-   * Create a new user and install per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
-
 
  * PER-USER and PER-MACHINE TESTS:
    * Install **previous version** on a clean machine and update with new per-machine version. Ensure that it is installed in Program files and that registry entries are under **HKLM**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
@@ -153,9 +146,9 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
 
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] Keyboard Manager Editor
- - [ ] Registry Preview
- - [ ] Environment Variables
+ - [x] Keyboard Manager Editor
+ - [x] Registry Preview
+ - [x] Environment Variables
 
    ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
