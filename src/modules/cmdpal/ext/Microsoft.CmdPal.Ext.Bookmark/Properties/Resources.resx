@@ -191,12 +191,6 @@
   <data name="bookmarks_form_bookmark_type_CMD" xml:space="preserve">
     <value>Command Prompt</value>
   </data>
-  <data name="bookmarks_settings_keepTerminalWindowOpen" xml:space="preserve">
-    <value>Keep the terminal window open</value>
-  </data>
-  <data name="bookmarks_settings_keepTerminalWindowOpen_descrption" xml:space="preserve">
-    <value>Does not exit after running commands.</value>
-  </data>
   <data name="bookmarks_command_invoke_failed_message" xml:space="preserve">
     <value>Unable to call command. Please check your configuration.</value>
   </data>

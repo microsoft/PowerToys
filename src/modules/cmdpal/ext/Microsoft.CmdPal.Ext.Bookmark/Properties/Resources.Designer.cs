@@ -284,23 +284,5 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
                 return ResourceManager.GetString("bookmarks_required_placeholder", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Keep the terminal window open.
-        /// </summary>
-        public static string bookmarks_settings_keepTerminalWindowOpen {
-            get {
-                return ResourceManager.GetString("bookmarks_settings_keepTerminalWindowOpen", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Does not exit after running commands..
-        /// </summary>
-        public static string bookmarks_settings_keepTerminalWindowOpen_descrption {
-            get {
-                return ResourceManager.GetString("bookmarks_settings_keepTerminalWindowOpen_descrption", resourceCulture);
-            }
-        }
     }
 }
