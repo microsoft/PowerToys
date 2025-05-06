@@ -14,7 +14,7 @@ using Win32Program = Microsoft.CmdPal.Ext.Apps.Programs.Win32Program;
 
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
 
-internal sealed class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository
+internal sealed partial class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository
 {
     private static readonly IFileSystem FileSystem = new FileSystem();
     private static readonly IPath Path = FileSystem.Path;
