@@ -268,7 +268,7 @@ public:
         if (!firstEnableCall)
         {
             Logger::trace("Not first attempt, try to launch");
-            LaunchApp(launchPath, L"RunFromPT", false /*no elevated*/, false /*error pop up*/);
+            LaunchApp(launchPath, L"", false /*no elevated*/, false /*error pop up*/);
         }
         else
         {
@@ -296,7 +296,7 @@ public:
         int retry = 0;
         do
         {
-            auto launch_result = LaunchApp(path, L"RunFromPT", false, retry < max_retry);
+            auto launch_result = LaunchApp(path, L"", false, retry < max_retry);
             if (launch_result)
             {
                 Logger::info(L"CmdPal launched successfully after {} retries.", retry);
