@@ -19,6 +19,8 @@ using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
+using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Graphics;
 using Windows.UI;
@@ -240,7 +242,7 @@ public sealed partial class MainWindow : WindowEx,
         unsafe
         {
             BOOL value = false;
-            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, (void*)&value, (uint)sizeof(BOOL));
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
         }
 
         PInvoke.SetForegroundWindow(hwnd);
@@ -320,7 +322,7 @@ public sealed partial class MainWindow : WindowEx,
         unsafe
         {
             BOOL value = true;
-            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, (void*)&value, (uint)sizeof(BOOL));
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
         }
     }
 
@@ -421,6 +423,40 @@ public sealed partial class MainWindow : WindowEx,
         {
             _configurationSource.IsInputActive = args.WindowActivationState != WindowActivationState.Deactivated;
         }
+    }
+
+    public void HandleLaunch(AppActivationArguments? activatedEventArgs)
+    {
+        if (activatedEventArgs == null)
+        {
+            Summon(string.Empty);
+            return;
+        }
+
+        if (activatedEventArgs.Kind == Microsoft.Windows.AppLifecycle.ExtendedActivationKind.Protocol)
+        {
+            if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
+            {
+                if (protocolArgs.Uri.ToString() is string uri)
+                {
+                    // was the URI "x-cmdpal://background" ?
+                    if (uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // we're running, we don't want to activate our window. bail
+                        return;
+                    }
+                    else if (uri.StartsWith("x-cmdpal://settings", StringComparison.OrdinalIgnoreCase))
+                    {
+                        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+                        return;
+                    }
+                }
+
+                return;
+            }
+        }
+
+        Activate();
     }
 
     public void Summon(string commandId) =>

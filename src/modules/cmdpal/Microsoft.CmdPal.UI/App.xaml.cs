@@ -26,7 +26,6 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
-using Windows.ApplicationModel.Activation;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -78,28 +77,8 @@ public partial class App : Application
     {
         AppWindow = new MainWindow();
 
-        var runFromPT = false;
-
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
-        if (activatedEventArgs.Kind == Microsoft.Windows.AppLifecycle.ExtendedActivationKind.Protocol)
-        {
-            if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
-            {
-                var uri = protocolArgs.Uri.ToString();
-
-                // was the URI "x-cmdpal://background" ?
-                if (uri != null &&
-                    uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
-                {
-                    runFromPT = true;
-                }
-            }
-        }
-
-        if (!runFromPT)
-        {
-            AppWindow.Activate();
-        }
+        ((MainWindow)AppWindow).HandleLaunch(activatedEventArgs);
     }
 
     /// <summary>

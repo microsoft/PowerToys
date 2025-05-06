@@ -109,7 +109,9 @@ internal sealed class Program
             if (thisApp.AppWindow is not null and
                 MainWindow mainWindow)
             {
-                mainWindow.Summon(string.Empty);
+                mainWindow.HandleLaunch(args);
+
+                // mainWindow.Summon(string.Empty);
             }
         }
     }
