@@ -22,8 +22,6 @@ public partial class BookmarksCommandProvider : CommandProvider
 
     private readonly AddBookmarkPage _addNewCommand = new(null);
 
-    private readonly SettingsManager _settingsManager = new();
-
     private Bookmarks? _bookmarks;
 
     public BookmarksCommandProvider()
@@ -31,7 +29,6 @@ public partial class BookmarksCommandProvider : CommandProvider
         Id = "Bookmarks";
         DisplayName = Resources.bookmarks_display_name;
         Icon = new IconInfo("\uE718"); // Pin
-        Settings = _settingsManager.Settings;
 
         _addNewCommand.AddedCommand += AddNewCommand_AddedCommand;
     }
