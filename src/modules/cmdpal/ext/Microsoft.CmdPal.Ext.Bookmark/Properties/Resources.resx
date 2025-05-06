@@ -197,4 +197,7 @@
   <data name="bookmarks_settings_keepTerminalWindowOpen_descrption" xml:space="preserve">
     <value>Does not exit after running commands.</value>
   </data>
+  <data name="bookmarks_command_invoke_failed_message" xml:space="preserve">
+    <value>Unable to call command. Please check your configuration.</value>
+  </data>
 </root>

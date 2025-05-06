@@ -9,7 +9,8 @@ using System.Linq;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
-// TODO: move to common?
+// TODO: ok, fine. Currently we implement it but not use it.
+// Consider to remove it in the future.
 public class EnvironmentsCache
 {
     private static readonly Lazy<EnvironmentsCache> _instance = new Lazy<EnvironmentsCache>(() => new EnvironmentsCache());

@@ -79,6 +79,15 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to call command. Please check your configuration..
+        /// </summary>
+        public static string bookmarks_command_invoke_failed_message {
+            get {
+                return ResourceManager.GetString("bookmarks_command_invoke_failed_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delete.
         /// </summary>
         public static string bookmarks_delete_name {
