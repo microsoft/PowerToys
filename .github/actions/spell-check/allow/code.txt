@@ -89,7 +89,7 @@ onefuzzingestionpreparationtool
 OTP
 Yubi
 Yubico
-PerplexitySearchShortcut
+Perplexity
 
 # KEYS
 
