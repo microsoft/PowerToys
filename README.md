@@ -106,73 +106,78 @@ In this release, we focused on new features, stability, and automation.
  - Added the ability to delete files directly from Peek, enhancing file management efficiency. Thanks [@daverayment](https://github.com/daverayment) and thanks [@htcfreek](https://github.com/htcfreek) for the review!
  - Added support for variables in template filenames, enabling dynamic elements like date components and environment variables for enhanced customization in New+. Thanks [@cgaarden](https://github.com/cgaarden)!
 
+### Advanced Paste
+
+ - Fixed an issue where Advanced Paste failed to create the OCR engine for certain English language tags (e.g., en-CA) by initializing the OCR engine with the user profile language. Thanks [@cryolithic](https://github.com/cryolithic)!
+
 ### Color Picker
 
- - Replaced WPF UI with .NET WPF for the Color Picker, enhancing compatibility and improving theme support. Thanks [@mantaionut](https://github.com/mantaionut)! Thanks [@Jay-o-Way](https://github.com/Jay-o-Way) and [@niels9001](https://github.com/niels9001) for helping with the review!
+ - Fixed an issue where a resource leak caused hangs or crashes by properly disposing of the Graphics object. Thanks [@dcog989](https://github.com/dcog989)!
+
+### Command Not Found
+
+ - Updated the WinGet Command Not Found script to only enable the experimental features if they actually exist. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
 
 ### Command Palette
 
-- Introduced the Windows Command Palette ("CmdPal"), the next iteration of PowerToys Run, designed with extensibility at its core. CmdPal includes features such as searching for installed apps, shell commands, files and WinGet package installation. This module aims to provide a more powerful and flexible launcher experience. Thanks [@zadjii-msft](https://github.com/zadjii-msft), [@niels9001](https://github.com/niels9001), [@michael-hawker](https://github.com/michael-hawker), [@joadoumie](https://github.com/joadoumie), [@plante-msft](https://github.com/plante-msft), and the whole team!
-
-### FancyZones
-
- - Fixed a bug where deleting a layout resulted in incorrect data being written to the JSON file.
- - Fixed a bug where layout hotkeys were displayed incorrectly, ensuring the hotkey list does not include invalid entries.
- - Fixed an issue where the "None" option was missing in the editor layout.
+- Update bug template to include Command Palette module.
+- Fix an issue where the toast window was not scaled for DPI, causing layout issues under display scaling. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Fix an issue where Up/Down keyboard navigation didn't move selection when caret was at position 0, and add continuous navigation like PT Run v1.Thanks [@davidegiacometti](https://github.com/davidegiacometti) Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+- Update the Time and Date extension code to simplify it and improve clarity.
+- Fix an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase.Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+- Added the ability to open URLs directly in the browser from Command Palette.Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+- Add setting to enable/disable system tray icon in CmdPal and align terminology with Windows 11.Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
 
 ### Image Resizer
 
- - Fixed warnings in ImageResizer regarding the use of variables "shellItem" and "itemName" without being initialized.
+ - Fixed an issue where deleting an Image Resizer preset removed the wrong preset.Thanks [@daverayment](https://github.com/daverayment) for your help reviewing this!
 
-### Mouse Without Borders
+### Keyboard Manager
 
- - Enhanced the logger to properly track the file path for easier debugging.
- - Refactored the "Common" class into distinct individual classes to enhance maintainability, and updated all references and unit tests to reflect these changes. Thanks [@mikeclayton](https://github.com/mikeclayton) for this!
+ - Fixed an issue where a modifier key, when set without specifying left or right, would get stuck due to incorrect key handling, by tracking the pressed keys and sending the correct key accordingly.Thanks [@mantaionut](https://github.com/mantaionut)!
 
-### New+
+### PowerRename
 
- - Added support for variables in template filenames, including date/time components, parent folder name, and environment variables. Thanks [@cgaarden](https://github.com/cgaarden)!
-
-### Peek
-
- - Added the ability to delete the file currently being previewed in Peek, including navigation updates and handling for deleted items. Thanks [@daverayment](https://github.com/daverayment) and thanks [@htcfreek](https://github.com/htcfreek) for your help reviewing this!
+ - Enhanced PowerRename's time formatting capabilities by adding 12-hour time format patterns with AM/PM support. Thanks [@bitmap4](https://github.com/bitmap4)!
 
 ### PowerToys Run
 
- - Fixed an issue where duplicated applications were shown by ensuring the shell link helper opens .ink files non-exclusively and correctly retrieves the "FullPath". Thanks [@htcfreek](https://github.com/htcfreek) and [@davidegiacometti](https://github.com/davidegiacometti) for review!
- - Fixed an issue where applying round corners on Windows 11 build 22000 caused crashes.
- - Async the OnRename method to unblock the thread. Thanks [@davidegiacometti](https://github.com/davidegiacometti) for review!
- - Added support for using `sq` instead of `^2` in the Unit Converter. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Added support for custom formats in the "Time and Date" plugin and improves error messages for invalid input formats. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Fix two crashes: one for WFT on very early dates and another for calculating the week of the month on very late dates (e.g., 31.12.9999), and reorder UI settings. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Fix an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase.Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+
+### Quick Accent
+
+ - Updated the letter mapping in GetDefaultLetterKeyEPO, replacing "ǔ" with "ŭ" for the VK_U key to accurately reflect Esperanto phonetics. Thanks [@OlegKharchevkin](https://github.com/OlegKharchevkin)! 
+
+### Registry Preview
+
+ - Enhanced Registry Preview to support pasting registry keys and values without manually writing the file header, and added a new button for resetting the app. Thanks [@htcfreek](https://github.com/htcfreek)! Thanks [@randyrants](https://github.com/randyrants) for helping with the review!
 
 ### Settings
 
- - Disabled the spell check feature in the text boxes of plugin settings for PowerToys Run. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fixed an issue where InfoBars for release notes errors were not displayed properly, and added a retry button. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fix an issue where the Settings app randomly showed a blank icon in the taskbar by deferring icon assignment until the window is activated.
+ - Added the ability to maximize the "What's New" window for a more comfortable reading experience.Thanks [@Jay-o-Way](https://github.com/Jay-o-Way) for review!
 
 ### Workspaces
 
- - Fixed an issue where some minimized packaged apps (e.g., Microsoft ToDo, Settings) were not snapshotted.
+ - Fixed an issue where Steam games were not captured or launched correctly by updating window filtering and integrating Steam URL protocol handling.
 
 ### Documentation
 
- - Added the FirefoxBookmark plugin to the list of Third-Party plugins for PowerToys Run. Thanks [@8LWXpg](https://github.com/8LWXpg)!
- - Added the SVGL third-party plugin to PowerToys Run, enabling users to search, browse, and copy SVG logos. Thanks [@SameerJS6](https://github.com/SameerJS6)!
- - Added Monaco usage for the Registry Preview.
+ - Added QuickNotes to the third-party plugins documentation for PowerToys Run. Thanks [@ruslanlap](https://github.com/ruslanlap)!
 
 ### Development
 
- - Updated WinGet configuration file location and extension. Thanks [@mdanish-kh](https://github.com/mdanish-kh)!
- - Removed the Markdown file bypass to ensure CI runs for commits that only update Markdown files.
- - Fixed an issue where the default generated file path exceeded the length limit of 260 characters for EnvironmentVariablesUILib.csproj, causing build failures.
- - Upgraded WindowsAppSDK to 1.6.250205002 and CsWinRT to 2.2.0. Thanks [@htcfreek](https://github.com/htcfreek) for review!
- - Upgraded XamlStyler to 3.2501.8 and dotnet-consolidate to 4.2.0. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
- - Updated .NET Packages from 9.0.2 to 9.0.3.
- - Optimized the UI Test Automation Framework and added UI test cases for the Hosts File Editor module.
- - Added fuzz testing for RegistryPreview.
- - Added new UI tests for the FancyZones editor, including tests for creating, duplicating, editing, and deleting layouts.
- - Added telemetry code to measure the module editor open time and evaluate the benefits of applying AOT.
+ - Update GitHub Action to install .NET 9 for MSStore release support.
+ - Update version placeholder in bug_report.yml to prevent incorrect v0.70.0 versioning in issue reports. Thanks [@htcfreek](https://github.com/htcfreek) for review!
+ - Update GitHub Action to upgrade actions/setup-dotnet from version 3 to version 4 for MSStore release.
+ - Add securityContext to WinGet configuration files, allowing invocation from user context and prompting a single UAC for elevated resources in a separate process. Thanks [@mdanish-kh](https://github.com/mdanish-kh)! Thanks [@denelon](https://github.com/denelon) for review!
+  
+### Tool/General
 
-
+ - Added support for automating bug report creation by generating a pre-filled GitHub issue URL with system and diagnostic information. Thanks [@donlaci](https://github.com/donlaci)! Thanks [@htcfreek](https://github.com/htcfreek) for review!
+   
  
 ### What is being planned for version 0.92
 
