@@ -153,6 +153,8 @@ In this release, we focused on new features, stability, and automation.
 - Added import of Common.Dotnet.AotCompatibility.props across multiple CmdPal project files to enhance AOT compilation support.
 - Fixed a crash in ComPal settings caused by a null HotKey when settings.json is missing or lacks a defined hotkey. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
 - Added support for filterable, nested context menus in ComPal, including a search box to maintain focus behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@lauren-ciha](https://github.com/lauren-ciha) for review!
+- Refactored ComPal classes to improve JSON serialization and introduced new serialization contexts for better performance and maintainability.
+- Added support for ahead-of-time (AOT) compilation.
 
 ### Image Resizer
 
@@ -216,6 +218,7 @@ In this release, we focused on new features, stability, and automation.
  - Added centralized pre-creation of generated folders for all .csproj projects to prevent build failures.
  - Updated WinAppSDK to the latest 1.7 version.
  - Upgraded Boost dependencies to the latest version for the PowerRename Fuzzing project.
+ - Updated the ADO area path in tsa.json to resolve TSA pipeline errors caused by a deprecated path.
   
 ### Tool/General
 
