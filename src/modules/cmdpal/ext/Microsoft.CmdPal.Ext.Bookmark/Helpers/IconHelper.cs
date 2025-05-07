@@ -36,7 +36,7 @@ public static class IconHelper
         };
     }
 
-    public static IconInfo CreateIcon(string bookmark, BookmarkType bookmarkType, bool isPlaceholde)
+    public static IconInfo CreateIcon(string bookmark, BookmarkType bookmarkType, bool isPlaceholder)
     {
         // In some case, we want to use placeholder, but we can still get the favicon.
         // eg: "https://google.com?q={query}"
@@ -61,7 +61,7 @@ public static class IconHelper
             }
         }
 
-        if (isPlaceholde)
+        if (isPlaceholder)
         {
             // If it's a placeholder bookmark, we don't need to get the icon.
             // Just use the default icon.
