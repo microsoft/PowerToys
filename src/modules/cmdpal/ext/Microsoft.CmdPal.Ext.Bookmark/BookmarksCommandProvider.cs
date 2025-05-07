@@ -10,8 +10,10 @@ using System.Linq;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Models;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
+using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Diagnostics.Utilities;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
@@ -174,6 +176,14 @@ public partial class BookmarksCommandProvider : CommandProvider
         var listItem = new CommandItem(invokableCommand) { Icon = invokableCommand.Icon };
 
         List<CommandContextItem> contextMenu = [];
+
+        if (bookmark.Type == BookmarkType.Folder)
+        {
+            contextMenu.Add(
+                new CommandContextItem(new DirectoryPage(bookmark.Bookmark)));
+            contextMenu.Add(
+                new CommandContextItem(new OpenInTerminalCommand(bookmark.Bookmark)));
+        }
 
         listItem.Subtitle = invokableCommand.BookmarkData.Bookmark;
 
