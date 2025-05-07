@@ -11,13 +11,9 @@ public static partial class BookmarkTypeHelper
 {
     /*
      * Summary:
-     * If bookmark has a space, we assume it's a shell command. eg: "python test.py" or "test.ps1 /C /D"
-     * Ok fine, we can ensure the bookmark don't have spaces now.
-     * So:
-     * 1. Check if it follow such format 'COMMAND ARGS'
-     * 2. Check if it's a valid url.
-     * 3. Check if it's a existing folder or file.
-     * By default, we assume it's Web Link.
+     * If it's a valid uri, we assume it's a Web Link.
+     * Otherwise, we check if it's a existing folder or file.
+     * By default, we assume it's a command type.
      */
 
     public static BookmarkType GetBookmarkTypeFromValue(string bookmark)
