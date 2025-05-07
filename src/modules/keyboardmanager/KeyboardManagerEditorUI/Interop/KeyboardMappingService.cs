@@ -165,6 +165,16 @@ namespace KeyboardManagerEditorUI.Interop
             }
         }
 
+        public bool AddSingleKeyToTextMapping(int originalKey, string targetText)
+        {
+            if (string.IsNullOrEmpty(targetText))
+            {
+                return false;
+            }
+
+            return KeyboardManagerInterop.AddSingleKeyToTextRemap(_configHandle, originalKey, targetText);
+        }
+
         public bool AddShortcutMapping(string originalKeys, string targetKeys, string targetApp = "")
         {
             if (string.IsNullOrEmpty(originalKeys) || string.IsNullOrEmpty(targetKeys))
