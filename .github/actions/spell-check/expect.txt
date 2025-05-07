@@ -565,6 +565,7 @@ guiddata
 GUITHREADINFO
 GValue
 gwl
+GWL
 GWLP
 GWLSTYLE
 hangeul
