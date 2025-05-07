@@ -216,7 +216,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Element>(CustomLayouts.CustomLayouts[0].Name).Click();
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.DeleteNotAppliedLayout")]
+        [TestCategory("FancyZones Editor #5")]
         public void DeleteNotAppliedLayout()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
@@ -234,7 +235,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsFalse(data.CustomLayouts.Exists(x => x.Name == deletedLayout));
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.DeleteAppliedLayout")]
+        [TestCategory("FancyZones Editor #5")]
         public void DeleteAppliedLayout()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[0].Name;
@@ -260,7 +262,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(LayoutType.Blank.TypeToString(), appliedLayoutsData.AppliedLayouts.Find(x => x.Device.Monitor == Parameters.Monitors[0].Monitor).AppliedLayout.Type);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.CancelDeletion")]
+        [TestCategory("FancyZones Editor #5")]
         public void CancelDeletion()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
@@ -278,7 +281,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == deletedLayout));
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.DeleteFromContextMenu")]
+        [TestCategory("FancyZones Editor #5")]
         public void DeleteFromContextMenu()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
@@ -295,7 +299,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsFalse(data.CustomLayouts.Exists(x => x.Name == deletedLayout));
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.DeleteDefaultLayout")]
+        [TestCategory("FancyZones Editor #5")]
         public void DeleteDefaultLayout()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
@@ -314,7 +319,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(LayoutType.PriorityGrid.TypeToString(), data.DefaultLayouts.Find(x => x.MonitorConfiguration == configuration).Layout.Type);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.DeleteLayoutWithHotkey")]
+        [TestCategory("FancyZones Editor #5")]
         public void DeleteLayoutWithHotkey()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;

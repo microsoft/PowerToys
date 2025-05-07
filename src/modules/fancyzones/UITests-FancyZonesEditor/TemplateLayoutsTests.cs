@@ -192,7 +192,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             this.RestartScopeExe();
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.ZoneNumber_Cancel")]
+        [TestCategory("FancyZones Editor #6")]
         public void ZoneNumber_Cancel()
         {
             var type = LayoutType.Rows;
@@ -213,7 +214,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.HighlightDistance_Initialize")]
+        [TestCategory("FancyZones Editor #6")]
         public void HighlightDistance_Initialize()
         {
             foreach (var (type, name) in TestConstants.TemplateLayoutNames)
@@ -234,7 +236,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.HighlightDistance_Save")]
+        [TestCategory("FancyZones Editor #6")]
         public void HighlightDistance_Save()
         {
             var type = LayoutType.Focus;
@@ -258,7 +261,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.HighlightDistance_Cancel")]
+        [TestCategory("FancyZones Editor #6")]
         public void HighlightDistance_Cancel()
         {
             var type = LayoutType.Focus;
@@ -278,7 +282,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Initialize")]
+        [TestCategory("FancyZones Editor #6")]
         public void SpaceAroundZones_Initialize()
         {
             foreach (var (type, name) in TestConstants.TemplateLayoutNames)
@@ -304,7 +309,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Slider_Save")]
+        [TestCategory("FancyZones Editor #6")]
         public void SpaceAroundZones_Slider_Save()
         {
             var type = LayoutType.PriorityGrid;
@@ -326,7 +332,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Slider_Cancel")]
+        [TestCategory("FancyZones Editor #6")]
         public void SpaceAroundZones_Slider_Cancel()
         {
             var type = LayoutType.PriorityGrid;
@@ -348,7 +355,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Toggle_Save")]
+        [TestCategory("FancyZones Editor #6")]
         public void SpaceAroundZones_Toggle_Save()
         {
             var type = LayoutType.PriorityGrid;
@@ -371,7 +379,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Toggle_Cancel")]
+        [TestCategory("FancyZones Editor #6")]
         public void SpaceAroundZones_Toggle_Cancel()
         {
             var type = LayoutType.PriorityGrid;

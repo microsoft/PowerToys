@@ -98,23 +98,79 @@
 
 ## [FancyZones Editor](tests-checklist-template-fancyzones-section.md)
 
-- [ ] 1. Open editor from the settings
+- [x] 1. Open editor from the settings
+      - TestMethod("FancyZones.Setting")
 - [ ] 2. Open editor with a shortcut
-- [ ] 3. Create a new layout (grid and canvas)
-- [ ] 4. Duplicate a template and a custom layout
-- [ ] 5. Delete layout
-- [ ] 6. Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
-- [ ] 7. Edit canvas layout: zones size and position, create or delete zones.
-- [ ] 8. Edit grid layout: split, merge, resize zones.
-- [ ] 9. Check `Save and apply` and `Cancel` buttons behavior after editing.
-- [ ] 10. Assign a layout to each monitor.
-- [ ] 11. Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
-- [ ] 12. Assign horizontal and vertical default layouts
-- [ ] 13. Test duplicate layout focus
+- [x] 3. Create a new layout (grid and canvas)
+      - TestMethod("FancyZonesEditor.Basic.CreateWithCustomName")
+      - TestMethod("FancyZonesEditor.Basic.CreateGrid")
+      - TestMethod("FancyZonesEditor.Basic.CreateCanvas")
+      - TestMethod("FancyZonesEditor.Basic.CancelGridCreation")
+      - TestMethod("FancyZonesEditor.Basic.CancelCanvasCreation")
+- [x] 4. Duplicate a template and a custom layout
+      - TestMethod("FancyZonesEditor.Basic.CopyTemplate_FromEditLayoutWindow")
+      - TestMethod("FancyZonesEditor.Basic.CopyTemplate_FromContextMenu")
+      - TestMethod("FancyZonesEditor.Basic.CopyCustomLayout_FromEditLayoutWindow")
+      - TestMethod("FancyZonesEditor.Basic.CopyCustomLayout_FromContextMenu")
+      - TestMethod("FancyZonesEditor.Basic.CopyCustomLayout_Hotkey")
+- [x] 5. Delete layout
+      - TestMethod("FancyZonesEditor.Basic.DeleteNotAppliedLayout")
+      - TestMethod("FancyZonesEditor.Basic.DeleteAppliedLayout")
+      - TestMethod("FancyZonesEditor.Basic.CancelDeletion")
+      - TestMethod("FancyZonesEditor.Basic.DeleteFromContextMenu")
+      - TestMethod("FancyZonesEditor.Basic.DeleteDefaultLayout")
+      - TestMethod("FancyZonesEditor.Basic.DeleteLayoutWithHotkey")
+- [x] 6. Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
+      - TestMethod("FancyZonesEditor.Basic.ZoneNumber_Cancel")
+      - TestMethod("FancyZonesEditor.Basic.HighlightDistance_Initialize")
+      - TestMethod("FancyZonesEditor.Basic.HighlightDistance_Save")
+      - TestMethod("FancyZonesEditor.Basic.HighlightDistance_Cancel")
+      - TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Initialize")
+      - TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Slider_Save")
+      - TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Slider_Cancel")
+      - TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Toggle_Save")
+      - TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Toggle_Cancel")
+- [x] 7. Edit canvas layout: zones size and position, create or delete zones.
+      - TestMethod("FancyZonesEditor.Basic.OpenEditMode")
+      - TestMethod("FancyZonesEditor.Basic.OpenEditModeFromContextMenu")
+      - TestMethod("FancyZonesEditor.Basic.Canvas_AddZone_Save")
+      - TestMethod("FancyZonesEditor.Basic.Canvas_AddZone_Cancel")
+      - TestMethod("FancyZonesEditor.Basic.Canvas_DeleteZone_Save")
+      - TestMethod("FancyZonesEditor.Basic.Canvas_DeleteZone_Cancel")
+      - TestMethod("FancyZonesEditor.Basic.Canvas_MoveZone_Save")
+      - TestMethod("FancyZonesEditor.Basic.Canvas_MoveZone_Cancel")
+      - TestMethod("FancyZonesEditor.Basic.Canvas_ResizeZone_Save")
+      - TestMethod("FancyZonesEditor.Basic.Canvas_ResizeZone_Cancel")
+- [x] 8. Edit grid layout: split, merge, resize zones.
+      - TestMethod("FancyZonesEditor.Basic.Grid_SplitZone_Save")
+      - TestMethod("FancyZonesEditor.Basic.Grid_SplitZone_Cancel")
+      - TestMethod("FancyZonesEditor.Basic.Grid_MergeZones_Save")
+      - TestMethod("FancyZonesEditor.Basic.Grid_MergeZones_Cancel")
+      - TestMethod("FancyZonesEditor.Basic.Grid_MoveSplitter_Save")
+      - TestMethod("FancyZonesEditor.Basic.Grid_MoveSplitter_Cancel")
+- [x] 9. Check `Save and apply` and `Cancel` buttons behavior after editing.
+      - All Save and Cancel button have this test.
+- [x] 10. Assign a layout to each monitor.
+      - TestMethod("FancyZonesEditor.Basic.ApplyLayoutsOnEachMonitor")
+      - TestMethod("FancyZonesEditor.Basic.ApplyTemplateWithDifferentParametersOnEachMonitor")
+- [x] 11. Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
+      - TestMethod("FancyZonesEditor.Basic.HotKey_Initialize")
+      - TestMethod("FancyZonesEditor.Basic.HotKey_Assign_Save")
+      - TestMethod("FancyZonesEditor.Basic.HotKey_Assign_Cancel")
+      - TestMethod("FancyZonesEditor.Basic.HotKey_Assign_AllPossibleValues")
+      - TestMethod("FancyZonesEditor.Basic.HotKey_Reset_Save")
+      - TestMethod("FancyZonesEditor.Basic.HotKey_Reset_Cancel")
+- [x] 12. Assign horizontal and vertical default layouts
+      - TestMethod("FancyZonesEditor.Basic.Default_Initialize")
+      - TestMethod("FancyZonesEditor.Basic.Default_Assign_Cancel")
+      - TestMethod("FancyZonesEditor.Basic.Default_Assign_Save")
+- [x] 13. Test duplicate layout focus
    * Select any layout X in 'Templates' or 'Custom' section by click left mouse button
    * Mouse right button click on any layout Y in 'Templates' or 'Custom' sections
    * Duplicate it by clicking 'Create custom layout' (Templates section) or 'Duplicate' in 'Custom' section
    * Expect the layout Y is duplicated
+      - TestMethod("FancyZonesEditor.Basic.CopyTemplate_DefaultLayout")
+      - TestMethod("FancyZonesEditor.Basic.CopyCustomLayout_DefaultLayout")
 
 ## [FancyZones](tests-checklist-template-fancyzones-section.md)
 

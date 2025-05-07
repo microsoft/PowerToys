@@ -229,7 +229,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(Parameters.Monitors[0].MonitorNumber, data.AppliedLayouts[0].Device.MonitorNumber);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.ApplyLayoutsOnEachMonitor")]
+        [TestCategory("FancyZones Editor #10")]
         public void ApplyLayoutsOnEachMonitor()
         {
             // apply the layout on the first monitor
@@ -256,7 +257,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(secondLayout.Uuid, data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 2).AppliedLayout.Uuid);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.ApplyTemplateWithDifferentParametersOnEachMonitor")]
+        [TestCategory("FancyZones Editor #10")]
         public void ApplyTemplateWithDifferentParametersOnEachMonitor()
         {
             var layoutType = LayoutType.Columns;
