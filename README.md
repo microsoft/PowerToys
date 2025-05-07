@@ -228,6 +228,7 @@ In this release, we focused on new features, stability, and automation.
 
  - Added support for automating bug report creation by generating a pre-filled GitHub issue URL with system and diagnostic information. Thanks [@donlaci](https://github.com/donlaci)! Thanks [@htcfreek](https://github.com/htcfreek) for review!
  - Added scripts to locally build the installer, ensuring the ComPal can also be launched in a local environment.
+ - Removed export PFX logic to eliminate hardcoded password usage and resolve PSScriptAnalyzer security warning.
    
 ### What is being planned for version 0.92
 
