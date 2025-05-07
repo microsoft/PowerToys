@@ -113,6 +113,7 @@ In this release, we focused on new features, stability, and automation.
 ### Color Picker
 
  - Fixed an issue where a resource leak caused hangs or crashes by properly disposing of the Graphics object. Thanks [@dcog989](https://github.com/dcog989)!
+ - Fixed an issue where Color Picker exited on Backspace keypress by ensuring it only closes when focused and aligning Escape/Backspace behavior. Thanks [@PesBandi](https://github.com/PesBandi)!
 
 ### Command Not Found
 
@@ -120,13 +121,18 @@ In this release, we focused on new features, stability, and automation.
 
 ### Command Palette
 
-- Update bug template to include Command Palette module.
-- Fix an issue where the toast window was not scaled for DPI, causing layout issues under display scaling. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Fix an issue where Up/Down keyboard navigation didn't move selection when caret was at position 0, and add continuous navigation like PT Run v1.Thanks [@davidegiacometti](https://github.com/davidegiacometti) Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
-- Update the Time and Date extension code to simplify it and improve clarity.
-- Fix an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase.Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
-- Added the ability to open URLs directly in the browser from Command Palette.Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
-- Add setting to enable/disable system tray icon in CmdPal and align terminology with Windows 11.Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+- Updated bug template to include Command Palette module.
+- Fixed an issue where the toast window was not scaled for DPI, causing layout issues under display scaling. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Fixed an issue where Up/Down keyboard navigation didn't move selection when caret was at position 0, and add continuous navigation like PT Run v1. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+- Updated the Time and Date extension code to simplify it and improve clarity.
+- Fixed an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+- Added the ability to open URLs directly in the browser from Command Palette. Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+- Added setting to enable/disable system tray icon in CmdPal and align terminology with Windows 11. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+- Fixed an alias update issue by removing the old alias when a new one is set. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
+- Resolved GitHub casing conflict by migrating Exts and exts into a new ext directory, ensuring consistent structure across platforms and preventing path fragmentation. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Fix an issue where the 'Create New Extension' command generated empty file names. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
+- Added the ability to make the global hotkey a low-level keyboard hook. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Added support for JUMBO thumbnails, enabling access to high-resolution icons. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
 
 ### Image Resizer
 
@@ -145,10 +151,12 @@ In this release, we focused on new features, stability, and automation.
  - Added support for custom formats in the "Time and Date" plugin and improves error messages for invalid input formats. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Fix two crashes: one for WFT on very early dates and another for calculating the week of the month on very late dates (e.g., 31.12.9999), and reorder UI settings. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Fix an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase.Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+ - Added version details to plugin error messages for 'Loading error' and 'Init error'. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Quick Accent
 
- - Updated the letter mapping in GetDefaultLetterKeyEPO, replacing "ǔ" with "ŭ" for the VK_U key to accurately reflect Esperanto phonetics. Thanks [@OlegKharchevkin](https://github.com/OlegKharchevkin)! 
+ - Updated the letter mapping in GetDefaultLetterKeyEPO, replacing "ǔ" with "ŭ" for the VK_U key to accurately reflect Esperanto phonetics. Thanks [@OlegKharchevkin](https://github.com/OlegKharchevkin)!
+ - Fixed an issue where Quick Accent did not work properly when using the on-screen keyboard. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@jaysondapo](https://github.com/jaysondapo) for helping with the review!
 
 ### Registry Preview
 
@@ -166,19 +174,25 @@ In this release, we focused on new features, stability, and automation.
 ### Documentation
 
  - Added QuickNotes to the third-party plugins documentation for PowerToys Run. Thanks [@ruslanlap](https://github.com/ruslanlap)!
+ - Added Weather and Pomodoro plugins to the PowerToys Run third-party plugin documentation. Thanks [@ruslanlap](https://github.com/ruslanlap)!
 
 ### Development
 
- - Update GitHub Action to install .NET 9 for MSStore release support.
- - Update version placeholder in bug_report.yml to prevent incorrect v0.70.0 versioning in issue reports. Thanks [@htcfreek](https://github.com/htcfreek) for review!
- - Update GitHub Action to upgrade actions/setup-dotnet from version 3 to version 4 for MSStore release.
- - Add securityContext to WinGet configuration files, allowing invocation from user context and prompting a single UAC for elevated resources in a separate process. Thanks [@mdanish-kh](https://github.com/mdanish-kh)! Thanks [@denelon](https://github.com/denelon) for review!
+ - Updated GitHub Action to install .NET 9 for MSStore release support.
+ - Updated version placeholder in bug_report.yml to prevent incorrect v0.70.0 versioning in issue reports. Thanks [@htcfreek](https://github.com/htcfreek) for review!
+ - Updated GitHub Action to upgrade actions/setup-dotnet from version 3 to version 4 for MSStore release.
+ - Added securityContext to WinGet configuration files, allowing invocation from user context and prompting a single UAC for elevated resources in a separate process. Thanks [@mdanish-kh](https://github.com/mdanish-kh)! Thanks [@denelon](https://github.com/denelon) for review!
+ - Changed log file extensions from .txt to .log to support proper file associations and tooling compatibility, and added logs for Workspace. Thanks [@benwa](https://github.com/benwa)! Thanks [@Jay-o-Way](https://github.com/Jay-o-Way) for review!
+ - Upgraded testing framework dependencies and aligned package versions across components.
+ - Upgraded dependencies to fix vulnerabilities.
+ - Enhanced repository security by pinning GitHub Actions and Docker tags to immutable full-length commits and integrating automated dependency vulnerability scanning via Dependency Review Workflow. Thanks [@Nick2bad4u](https://github.com/Nick2bad4u)!
+ - Upgraded Boost dependencies to a newer version.
+ - Upgraded toolkit to the latest version, suppressed AOT-related warnings.
   
 ### Tool/General
 
  - Added support for automating bug report creation by generating a pre-filled GitHub issue URL with system and diagnostic information. Thanks [@donlaci](https://github.com/donlaci)! Thanks [@htcfreek](https://github.com/htcfreek) for review!
    
- 
 ### What is being planned for version 0.92
 
 For [v0.92][github-next-release-work], we'll work on the items below:
