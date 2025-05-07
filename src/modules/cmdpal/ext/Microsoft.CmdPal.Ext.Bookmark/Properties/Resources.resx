@@ -161,36 +161,6 @@
     <value>{0} is required</value>
     <comment>{0} will be replaced by a parameter name provided by the user</comment>
   </data>
-  <data name="bookmarks_form_bookmark_type" xml:space="preserve">
-    <value>Bookmark Type</value>
-  </data>
-  <data name="bookmarks_form_bookmarkType_required" xml:space="preserve">
-    <value>Bookmark type is required.</value>
-  </data>
-  <data name="bookmarks_form_bookmark_type_web" xml:space="preserve">
-    <value>Web</value>
-  </data>
-  <data name="bookmarks_form_bookmark_type_File" xml:space="preserve">
-    <value>File</value>
-  </data>
-  <data name="bookmarks_form_bookmark_type_Folder" xml:space="preserve">
-    <value>Folder</value>
-  </data>
-  <data name="bookmarks_form_bookmark_type_PWSH" xml:space="preserve">
-    <value>PWSH</value>
-  </data>
-  <data name="bookmarks_form_bookmark_type_PowerShell" xml:space="preserve">
-    <value>PowerShell</value>
-  </data>
-  <data name="bookmarks_form_bookmark_type_Python" xml:space="preserve">
-    <value>Python</value>
-  </data>
-  <data name="bookmarks_form_bookmark_type_Python3" xml:space="preserve">
-    <value>Python3</value>
-  </data>
-  <data name="bookmarks_form_bookmark_type_CMD" xml:space="preserve">
-    <value>Command Prompt</value>
-  </data>
   <data name="bookmarks_command_invoke_failed_message" xml:space="preserve">
     <value>Unable to call command. Please check your configuration.</value>
   </data>
