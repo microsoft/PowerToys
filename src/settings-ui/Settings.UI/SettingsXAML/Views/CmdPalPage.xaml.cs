@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.RefreshEnabledState();
         }
 
-        private bool LaunchApp(string appPath)
+        private void LaunchApp(string appPath)
         {
             try
             {
@@ -50,21 +50,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     CreateNoWindow = false,
                 };
 
-                Process process = Process.Start(processStartInfo);
-
-                if (process == null)
-                {
-                    throw new InvalidOperationException("Failed to start the process.");
-                }
-
+                Process process = Process.Start(processStartInfo) ?? throw new InvalidOperationException("Failed to start the process.");
                 process.WaitForInputIdle();
-
-                return true;
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to launch CmdPal settings: {ex.Message}");
-                return false;
+                throw new InvalidOperationException($"Failed to launch CmdPal settings: {ex.Message}");
             }
         }
 
