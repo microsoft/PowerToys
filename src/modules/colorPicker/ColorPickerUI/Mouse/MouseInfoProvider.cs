@@ -34,7 +34,7 @@ namespace ColorPicker.Mouse
         [ImportingConstructor]
         public MouseInfoProvider(AppStateHandler appStateMonitor, IUserSettings userSettings)
         {
-            _appStateMonitor = appStateMonitor; // Store for later unsubscription
+            _appStateMonitor = appStateMonitor; // Store for later unsubscribe
             _userSettings = userSettings;
 
             _mousePullInfoIntervalInMs = 1000.0 / GetMainDisplayRefreshRate();
@@ -244,7 +244,7 @@ namespace ColorPicker.Mouse
                 {
                     _appStateMonitor.AppShown -= AppStateMonitor_AppShown;
                     _appStateMonitor.AppClosed -= AppStateMonitor_AppClosed;
-                    _appStateMonitor.AppHidden -= AppStateMonitor_AppClosed; // Assuming this was the intended unsubscription
+                    _appStateMonitor.AppHidden -= AppStateMonitor_AppClosed; // Assuming this was the intended unsubscribe
                 }
 
                 _mouseHook?.Dispose();
