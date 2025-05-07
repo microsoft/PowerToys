@@ -287,9 +287,9 @@ namespace Microsoft.FancyZonesEditor.UITests
             var type = layout.Type;
             Session.Find<Element>(layout.Name).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
 
-            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
+            var slider = Session.Find<Slider>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
+            slider.SendKeys(Key.Right);
 
             var value = type == CustomLayout.Canvas.TypeToString() ?
                     new CustomLayouts().CanvasFromJsonElement(layout.Info.GetRawText()).SensitivityRadius :
@@ -316,9 +316,9 @@ namespace Microsoft.FancyZonesEditor.UITests
             var type = layout.Type;
             Session.Find<Element>(layout.Name).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
 
-            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
+            var slider = Session.Find<Slider>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
+            slider.SendKeys(Key.Right);
 
             var expected = type == CustomLayout.Canvas.TypeToString() ?
                     new CustomLayouts().CanvasFromJsonElement(layout.Info.GetRawText()).SensitivityRadius :
@@ -371,9 +371,9 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).Spacing + 1; // one step right
             Session.Find<Element>(layout.Name).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
 
-            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
+            var slider = Session.Find<Slider>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
+            slider.SendKeys(Key.Right);
             Assert.AreEqual($"{expected}", slider.Text);
 
             Session.Find<Button>(ElementName.Save).Click();
@@ -392,9 +392,9 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Element>(layout.Name).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
             var expected = new CustomLayouts().GridFromJsonElement(layout.Info.GetRawText()).Spacing;
 
-            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
+            var slider = Session.Find<Slider>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
+            slider.SendKeys(Key.Right);
             Session.Find<Button>(ElementName.Cancel).Click();
 
             // verify the file
