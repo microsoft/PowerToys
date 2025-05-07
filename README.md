@@ -155,6 +155,9 @@ In this release, we focused on new features, stability, and automation.
 - Added support for filterable, nested context menus in ComPal, including a search box to maintain focus behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@lauren-ciha](https://github.com/lauren-ciha) for review!
 - Refactored ComPal classes to improve JSON serialization and introduced new serialization contexts for better performance and maintainability.
 - Added support for ahead-of-time (AOT) compilation.
+- Added retry mechanism for CmdPal launch.
+- Removed some unused files from CmdPal.Common to simplify codebase and facilitate marking it as AoT-compatible.
+- Fixed a bug where a race condition in the update of SearchText caused the cursor in the input box to automatically jump to the end of the line, ensuring SearchText is only updated after it has actually been changed. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
 
 ### Image Resizer
 
@@ -219,6 +222,7 @@ In this release, we focused on new features, stability, and automation.
  - Updated WinAppSDK to the latest 1.7 version.
  - Upgraded Boost dependencies to the latest version for the PowerRename Fuzzing project.
  - Updated the ADO area path in tsa.json to resolve TSA pipeline errors caused by a deprecated path.
+ - Initiated AoT support for CmdPal with foundational work in progress. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
   
 ### Tool/General
 
