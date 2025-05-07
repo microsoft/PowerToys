@@ -133,6 +133,18 @@ In this release, we focused on new features, stability, and automation.
 - Fix an issue where the 'Create New Extension' command generated empty file names. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
 - Added the ability to make the global hotkey a low-level keyboard hook. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
 - Added support for JUMBO thumbnails, enabling access to high-resolution icons. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Fixed crashes when CmdPal auto-hidden itself while an MSAL dialog was opened, by preventing CmdPal from hiding if it's disabled. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@guimafelipe](https://github.com/guimafelipe) and [@lauren-ciha](https://github.com/lauren-ciha) for helping with the review!
+- Added support for immediately selecting search text when a page is loaded. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@krschau](https://github.com/krschau) for review!
+- Fixed a bug where extension settings pages failed to reload on reopen by updating the settings form when extension settings are saved. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@krschau](https://github.com/krschau) for review!
+- Fixes an issue where the Command Palette failed to launch from the runner. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
+- Refactored and ported the PowerToys Run v1 calculator logic into Command Palette, added settings support, and improved fallback behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft) and [@htcfreek](https://github.com/htcfreek) for helping with the review!
+- Re-added support for list item keyboard shortcuts. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Enhanced accessibility in Command Palette by adding proper labels, refining animations, improving localization, and fixed a11y related issues. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Ported custom format support to the Time and Date plugin, reordered and cleaned up settings, improved error messaging, and fixed edge-case crashes for more robust and user-friendly behavior. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Added fallback item for system command. Thanks [@zadjii-msft](https://github.com/zadjii-msft) and [@htcfreek](https://github.com/htcfreek) for helping with the review!
+- Fixed a bug in Windows System Command where the key prompt incorrectly displayed "Empty" for the "Open Recycle Bin" action. Thanks [@jironemo](https://github.com/jironemo)! Thanks [@htcfreek](https://github.com/htcfreek) for helping with the review!
+- 
+- 
 
 ### Image Resizer
 
@@ -169,12 +181,13 @@ In this release, we focused on new features, stability, and automation.
 
 ### Workspaces
 
- - Fixed an issue where Steam games were not captured or launched correctly by updating window filtering and integrating Steam URL protocol handling.
+ - Fixed bugs where Steam games were not captured or launched correctly by updating window filtering and integrating Steam URL protocol handling.
 
 ### Documentation
 
  - Added QuickNotes to the third-party plugins documentation for PowerToys Run. Thanks [@ruslanlap](https://github.com/ruslanlap)!
  - Added Weather and Pomodoro plugins to the PowerToys Run third-party plugin documentation. Thanks [@ruslanlap](https://github.com/ruslanlap)!
+ - Added the Linear plugin to PowerToys Run's third-party plugin documentation. Thanks [@vednig](https://github.com/vednig)! Thanks [@Aaron-Junker](https://github.com/Aaron-Junker) and [@DHowett](https://github.com/DHowett) for helping with the review!
 
 ### Development
 
@@ -188,6 +201,9 @@ In this release, we focused on new features, stability, and automation.
  - Enhanced repository security by pinning GitHub Actions and Docker tags to immutable full-length commits and integrating automated dependency vulnerability scanning via Dependency Review Workflow. Thanks [@Nick2bad4u](https://github.com/Nick2bad4u)!
  - Upgraded Boost dependencies to a newer version.
  - Upgraded toolkit to the latest version, suppressed AOT-related warnings.
+ - Fixed an issue where missing signing for newly added files caused build failures.
+ - Update release pipeline to prevent publishing private symbols for 100 years.
+ - Introduced fuzzing for PowerRename to improve reliability and added setup guidance for extending fuzzing to other C++ modules.
   
 ### Tool/General
 
