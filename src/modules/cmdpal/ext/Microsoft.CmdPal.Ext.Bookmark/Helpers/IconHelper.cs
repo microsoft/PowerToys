@@ -47,7 +47,7 @@ public static class IconHelper
             var baseString = placeholderIndex > 0 ? bookmark.Substring(0, placeholderIndex) : bookmark;
             try
             {
-                var uri = UrlCommand.GetUri(baseString);
+                var uri = OpenInShellHelper.GetUri(baseString);
                 if (uri != null)
                 {
                     var hostname = uri.Host;

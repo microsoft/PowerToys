@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -42,6 +43,20 @@ public static partial class OpenInShellHelper
             errorMessage = ex.Message;
             return false;
         }
+    }
+
+    public static Uri? GetUri(string url)
+    {
+        Uri? uri;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out uri))
+        {
+            if (!Uri.TryCreate("https://" + url, UriKind.Absolute, out uri))
+            {
+                return null;
+            }
+        }
+
+        return uri;
     }
 
     public enum ShellRunAsType

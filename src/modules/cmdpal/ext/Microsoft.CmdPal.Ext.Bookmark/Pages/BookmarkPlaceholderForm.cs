@@ -95,25 +95,7 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
 
         try
         {
-            CommandResult result = CommandResult.ShowToast(new ToastArgs() { Message = "Invalid bookmark" });
-
-            switch (_bookmarkType)
-            {
-                case BookmarkType.Command:
-                case BookmarkType.Folder:
-                case BookmarkType.File:
-                    result = ShellCommand.Invoke(_bookmarkType, target);
-                    break;
-                case BookmarkType.Web:
-                    result = UrlCommand.Invoke(target);
-                    break;
-
-                default:
-                    ExtensionHost.LogMessage($"Invalid bookmark type: {_bookmarkType}");
-                    break;
-            }
-
-            return result;
+            return ShellCommand.Invoke(_bookmarkType, target);
         }
         catch (Exception ex)
         {

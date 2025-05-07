@@ -10,9 +10,9 @@ using System.Linq;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Models;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
-using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
@@ -114,18 +114,16 @@ public partial class BookmarksCommandProvider : CommandProvider
                 ExtensionHost.LogMessage($"Deleting bookmark ({bookmark.Name},{bookmark.Bookmark})");
 
                 _bookmarks.Data.Remove(bookmark);
-
                 SaveAndUpdateCommands();
             }
         };
 
-        if (CommandItemFactory.TryCreateBookmarkCommand(bookmark, Edit_AddedCommand, deleteAction, out var commandItem))
+        if (bookmark.IsPlaceholder)
         {
-            return commandItem;
+            return CreatePlaceholderCommand(bookmark, Edit_AddedCommand, deleteAction);
         }
 
-        ExtensionHost.LogMessage($"Failed to create command for bookmark ({bookmark.Name},{bookmark.Bookmark})");
-        return new ListItem(new NoOpCommand());
+        return CreateShellCommand(bookmark, Edit_AddedCommand, deleteAction);
     }
 
     public override ICommandItem[] TopLevelCommands()
@@ -145,5 +143,57 @@ public partial class BookmarksCommandProvider : CommandProvider
 
         // now, the state is just next to the exe
         return System.IO.Path.Combine(directory, "bookmarks.json");
+    }
+
+    private static CommandItem CreatePlaceholderCommand(BookmarkData bookmark, TypedEventHandler<object, BookmarkData> addBookmarkFunc, Action deleteAction)
+    {
+        var command = new BookmarkPlaceholderPage(bookmark);
+        var listItem = new CommandItem(command) { Icon = command.Icon };
+        List<CommandContextItem> contextMenu = [];
+
+        var edit = new AddBookmarkPage(bookmark) { Icon = IconHelper.EditIcon };
+        edit.AddedCommand += addBookmarkFunc;
+        contextMenu.Add(new CommandContextItem(edit));
+        var delete = new CommandContextItem(
+            title: Resources.bookmarks_delete_title,
+            name: Resources.bookmarks_delete_name,
+            action: deleteAction,
+            result: CommandResult.KeepOpen())
+        {
+            IsCritical = true,
+            Icon = IconHelper.DeleteIcon,
+        };
+        contextMenu.Add(delete);
+        listItem.MoreCommands = contextMenu.ToArray();
+        return listItem;
+    }
+
+    private static CommandItem CreateShellCommand(BookmarkData bookmark, TypedEventHandler<object, BookmarkData> addBookmarkFunc, Action deleteAction)
+    {
+        var invokableCommand = new Command.ShellCommand(bookmark);
+        var listItem = new CommandItem(invokableCommand) { Icon = invokableCommand.Icon };
+
+        List<CommandContextItem> contextMenu = [];
+
+        listItem.Subtitle = invokableCommand.BookmarkData.Bookmark;
+
+        var edit = new AddBookmarkPage(bookmark) { Icon = IconHelper.EditIcon };
+        edit.AddedCommand += addBookmarkFunc;
+        contextMenu.Add(new CommandContextItem(edit));
+
+        var delete = new CommandContextItem(
+            title: Resources.bookmarks_delete_title,
+            name: Resources.bookmarks_delete_name,
+            action: deleteAction,
+            result: CommandResult.KeepOpen())
+        {
+            IsCritical = true,
+            Icon = IconHelper.DeleteIcon,
+        };
+        contextMenu.Add(delete);
+
+        listItem.MoreCommands = contextMenu.ToArray();
+
+        return listItem;
     }
 }

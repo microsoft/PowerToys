@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Data;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Models;
@@ -28,6 +29,25 @@ public sealed partial class ShellCommand : InvokableCommand
 
     public static CommandResult Invoke(BookmarkType bookmarkType, string bookmarkValue)
     {
+        if (bookmarkType == BookmarkType.Web)
+        {
+            var uri = OpenInShellHelper.GetUri(bookmarkValue);
+            if (uri != null)
+            {
+                if (!OpenInShellHelper.OpenInShell(uri.ToString(), null, null, OpenInShellHelper.ShellRunAsType.None, false, out var errMsg))
+                {
+                    ExtensionHost.LogMessage($"Failed to open {bookmarkValue} in shell. Ex: {errMsg}");
+                    return CommandResult.ShowToast(new ToastArgs() { Message = Resources.bookmarks_command_invoke_failed_message });
+                }
+
+                return CommandResult.Dismiss();
+            }
+            else
+            {
+                return CommandResult.ShowToast(new ToastArgs() { Message = Resources.bookmarks_command_invoke_failed_message });
+            }
+        }
+
         // if it's a file or folder bookmark, call them directly.
         if (bookmarkType == BookmarkType.File || bookmarkType == BookmarkType.Folder)
         {
