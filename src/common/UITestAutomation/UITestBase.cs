@@ -122,10 +122,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        protected T Find<T>(By by, int timeoutMS = 5000)
+        protected T Find<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.Session.Find<T>(by, timeoutMS);
+            return this.Session.Find<T>(by, timeoutMS, global);
         }
 
         /// <summary>
@@ -135,10 +135,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        protected T Find<T>(string name, int timeoutMS = 5000)
+        protected T Find<T>(string name, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.Session.Find<T>(By.Name(name), timeoutMS);
+            return this.Session.Find<T>(By.Name(name), timeoutMS, global);
         }
 
         /// <summary>
@@ -147,9 +147,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        protected Element Find(By by, int timeoutMS = 5000)
+        protected Element Find(By by, int timeoutMS = 5000, bool global = false)
         {
-            return this.Session.Find(by, timeoutMS);
+            return this.Session.Find(by, timeoutMS, global);
         }
 
         /// <summary>
@@ -158,9 +158,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        protected Element Find(string name, int timeoutMS = 5000)
+        protected Element Find(string name, int timeoutMS = 5000, bool global = false)
         {
-            return this.Session.Find(name, timeoutMS);
+            return this.Session.Find(name, timeoutMS, global);
         }
 
         /// <summary>
@@ -170,10 +170,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if only has one element, otherwise false.</returns>
-        public bool HasOne<T>(By by, int timeoutMS = 5000)
+        public bool HasOne<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.FindAll<T>(by, timeoutMS).Count == 1;
+            return this.FindAll<T>(by, timeoutMS, global).Count == 1;
         }
 
         /// <summary>
@@ -182,9 +182,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if only has one element, otherwise false.</returns>
-        public bool HasOne(By by, int timeoutMS = 5000)
+        public bool HasOne(By by, int timeoutMS = 5000, bool global = false)
         {
-            return this.Session.HasOne<Element>(by, timeoutMS);
+            return this.Session.HasOne<Element>(by, timeoutMS, global);
         }
 
         /// <summary>
@@ -194,10 +194,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if only has one element, otherwise false.</returns>
-        public bool HasOne<T>(string name, int timeoutMS = 5000)
+        public bool HasOne<T>(string name, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.Session.HasOne<T>(By.Name(name), timeoutMS);
+            return this.Session.HasOne<T>(By.Name(name), timeoutMS, global);
         }
 
         /// <summary>
@@ -206,9 +206,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if only has one element, otherwise false.</returns>
-        public bool HasOne(string name, int timeoutMS = 5000)
+        public bool HasOne(string name, int timeoutMS = 5000, bool global = false)
         {
-            return this.Session.HasOne<Element>(name, timeoutMS);
+            return this.Session.HasOne<Element>(name, timeoutMS, global);
         }
 
         /// <summary>
@@ -218,10 +218,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if  has one or more element, otherwise false.</returns>
-        public bool Has<T>(By by, int timeoutMS = 5000)
+        public bool Has<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.Session.FindAll<T>(by, timeoutMS).Count >= 1;
+            return this.Session.FindAll<T>(by, timeoutMS, global).Count >= 1;
         }
 
         /// <summary>
@@ -230,9 +230,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if  has one or more element, otherwise false.</returns>
-        public bool Has(By by, int timeoutMS = 5000)
+        public bool Has(By by, int timeoutMS = 5000, bool global = false)
         {
-            return this.Session.Has<Element>(by, timeoutMS);
+            return this.Session.Has<Element>(by, timeoutMS, global);
         }
 
         /// <summary>
@@ -242,10 +242,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if  has one or more element, otherwise false.</returns>
-        public bool Has<T>(string name, int timeoutMS = 5000)
+        public bool Has<T>(string name, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.Session.Has<T>(By.Name(name), timeoutMS);
+            return this.Session.Has<T>(By.Name(name), timeoutMS, global);
         }
 
         /// <summary>
@@ -254,9 +254,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if  has one or more element, otherwise false.</returns>
-        public bool Has(string name, int timeoutMS = 5000)
+        public bool Has(string name, int timeoutMS = 5000, bool global = false)
         {
-            return this.Session.Has<Element>(name, timeoutMS);
+            return this.Session.Has<Element>(name, timeoutMS, global);
         }
 
         /// <summary>
@@ -267,10 +267,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        protected ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 5000)
+        protected ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.Session.FindAll<T>(by, timeoutMS);
+            return this.Session.FindAll<T>(by, timeoutMS, global);
         }
 
         /// <summary>
@@ -281,10 +281,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        protected ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 5000)
+        protected ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.Session.FindAll<T>(By.Name(name), timeoutMS);
+            return this.Session.FindAll<T>(By.Name(name), timeoutMS, global);
         }
 
         /// <summary>
@@ -294,9 +294,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        protected ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 5000)
+        protected ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 5000, bool global = false)
         {
-            return this.Session.FindAll<Element>(by, timeoutMS);
+            return this.Session.FindAll<Element>(by, timeoutMS, global);
         }
 
         /// <summary>
@@ -306,9 +306,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        protected ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 5000)
+        protected ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 5000, bool global = false)
         {
-            return this.Session.FindAll<Element>(By.Name(name), timeoutMS);
+            return this.Session.FindAll<Element>(By.Name(name), timeoutMS, global);
         }
 
         /// <summary>
