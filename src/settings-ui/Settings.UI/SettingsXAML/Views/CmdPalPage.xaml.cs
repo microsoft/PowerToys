@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Diagnostics;
+using System.IO;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -30,9 +33,44 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.RefreshEnabledState();
         }
 
+        private bool LaunchApp(string appPath)
+        {
+            try
+            {
+                string dir = Path.GetDirectoryName(appPath);
+
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = appPath,
+                    Arguments = string.Empty,
+                    WorkingDirectory = dir,
+                    UseShellExecute = true,
+                    Verb = "open",
+                    CreateNoWindow = false,
+                };
+
+                Process process = Process.Start(processStartInfo);
+
+                if (process == null)
+                {
+                    throw new InvalidOperationException("Failed to start the process.");
+                }
+
+                process.WaitForInputIdle();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         private void CmdPalSettingsDeeplink_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            // TO DO: Launch CmdPal settings window
+            // Launch CmdPal settings window
+            string launchPath = "x-cmdpal://settings";
+            LaunchApp(launchPath);
         }
     }
 }
