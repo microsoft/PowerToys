@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="KeyboardManagerEditorUI.Styles.TextPageInputControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="UserControl_Loaded"
+    mc:Ignorable="d">
+
+    <StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="240" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Margin="0,12,0,0" Text="Shortcut key(s)" />
+            <Grid Grid.Column="2">
+                <TextBlock Margin="0,12,0,0" Text="Text" />
+            </Grid>
+
+            <Grid Grid.Row="1" Margin="0,8,0,0">
+                <ToggleButton
+                    x:Name="ShortcutToggleBtn"
+                    Padding="0,24,0,24"
+                    HorizontalAlignment="Stretch"
+                    Checked="ShortcutToggleBtn_Checked"
+                    Style="{StaticResource CustomShortcutToggleButtonStyle}">
+                    <ToggleButton.Content>
+                        <ItemsControl x:Name="ShortcutKeys">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        Margin="2,0"
+                                        Padding="8,4"
+                                        Background="{ThemeResource KeyBackgroundBrush}"
+                                        BorderBrush="{ThemeResource KeyBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4">
+                                        <TextBlock Text="{Binding}" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ToggleButton.Content>
+                </ToggleButton>
+            </Grid>
+
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="1"
+                Margin="24,0,24,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                Text="&#xE0AB;" />
+
+            <Grid
+                Grid.Row="1"
+                Grid.Column="2"
+                Margin="0,8,0,0">
+                <TextBox
+                    x:Name="TextContentBox"
+                    Height="100"
+                    AcceptsReturn="True"
+                    PlaceholderText="Enter text to insert" />
+            </Grid>
+        </Grid>
+
+        <CheckBox
+            x:Name="AllAppsCheckBox"
+            Margin="0,24,0,12"
+            Content="Only apply this text shortcut to a specific application" />
+        <TextBox
+            x:Name="AppNameTextBox"
+            Header="Application name"
+            IsEnabled="{Binding ElementName=AllAppsCheckBox, Path=IsChecked}"
+            PlaceholderText="e.g.: outlook.exe" />
+    </StackPanel>
+</UserControl>

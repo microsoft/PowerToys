@@ -1,0 +1,174 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using KeyboardManagerEditorUI.Helpers;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Windows.System;
+
+namespace KeyboardManagerEditorUI.Styles
+{
+    public sealed partial class TextPageInputControl : UserControl, IKeyboardHookTarget
+    {
+        private ObservableCollection<string> _shortcutKeys = new ObservableCollection<string>();
+        private TeachingTip? currentNotification;
+        private DispatcherTimer? notificationTimer;
+
+        public TextPageInputControl()
+        {
+            this.InitializeComponent();
+            this.ShortcutKeys.ItemsSource = _shortcutKeys;
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Activate keyboard hook when loaded
+            KeyboardHookHelper.Instance.ActivateHook(this);
+        }
+
+        private void ShortcutToggleBtn_Checked(object sender, RoutedEventArgs e)
+        {
+            if (ShortcutToggleBtn.IsChecked == true)
+            {
+                KeyboardHookHelper.Instance.ActivateHook(this);
+            }
+            else
+            {
+                KeyboardHookHelper.Instance.CleanupHook();
+            }
+        }
+
+        public void OnKeyDown(VirtualKey key, List<string> formattedKeys)
+        {
+            _shortcutKeys.Clear();
+            foreach (var keyName in formattedKeys)
+            {
+                _shortcutKeys.Add(keyName);
+            }
+        }
+
+        public void ClearKeys()
+        {
+            _shortcutKeys.Clear();
+        }
+
+        public bool IsModifierKey(VirtualKey key)
+        {
+            return key == VirtualKey.Control || key == VirtualKey.Menu ||
+                   key == VirtualKey.Shift || key == VirtualKey.LeftWindows ||
+                   key == VirtualKey.RightWindows || key == VirtualKey.LeftControl ||
+                   key == VirtualKey.RightControl || key == VirtualKey.LeftMenu ||
+                   key == VirtualKey.RightMenu || key == VirtualKey.LeftShift ||
+                   key == VirtualKey.RightShift;
+        }
+
+        public void OnInputLimitReached()
+        {
+            ShowNotificationTip("Shortcuts can only have up to 4 modifier keys");
+        }
+
+        public void ShowNotificationTip(string message)
+        {
+            if (this.Content is Panel rootPanel)
+            {
+                CloseExistingNotification();
+
+                currentNotification = new TeachingTip
+                {
+                    Title = "Input Limit",
+                    Subtitle = message,
+                    IsLightDismissEnabled = true,
+                };
+
+                rootPanel.Children.Add(currentNotification);
+                currentNotification.IsOpen = true;
+
+                notificationTimer = new DispatcherTimer();
+                notificationTimer.Interval = TimeSpan.FromSeconds(3);
+                notificationTimer.Tick += (s, e) =>
+                {
+                    CloseExistingNotification();
+                };
+                notificationTimer.Start();
+            }
+        }
+
+        private void CloseExistingNotification()
+        {
+            if (notificationTimer != null)
+            {
+                notificationTimer.Stop();
+                notificationTimer = null;
+            }
+
+            if (currentNotification != null && currentNotification.IsOpen)
+            {
+                currentNotification.IsOpen = false;
+
+                if (this.Content is Panel rootPanel && rootPanel.Children.Contains(currentNotification))
+                {
+                    rootPanel.Children.Remove(currentNotification);
+                }
+
+                currentNotification = null;
+            }
+        }
+
+        public List<string> GetShortcutKeys()
+        {
+            List<string> keys = new List<string>();
+
+            foreach (var key in _shortcutKeys)
+            {
+                keys.Add(key);
+            }
+
+            return keys;
+        }
+
+        public string GetTextContent()
+        {
+            return TextContentBox.Text;
+        }
+
+        public bool GetIsAppSpecific()
+        {
+            return AllAppsCheckBox.IsChecked ?? false;
+        }
+
+        public string GetAppName()
+        {
+            return AllAppsCheckBox.IsChecked == true ? AppNameTextBox.Text : string.Empty;
+        }
+
+        public void SetShortcutKeys(List<string> keys)
+        {
+            if (keys != null)
+            {
+                _shortcutKeys.Clear();
+                foreach (var key in keys)
+                {
+                    _shortcutKeys.Add(key);
+                }
+            }
+        }
+
+        public void SetTextContent(string text)
+        {
+            TextContentBox.Text = text;
+        }
+
+        public void SetAppSpecific(bool isAppSpecific, string appName)
+        {
+            AllAppsCheckBox.IsChecked = isAppSpecific;
+            if (isAppSpecific)
+            {
+                AppNameTextBox.Text = appName;
+            }
+        }
+    }
+}
