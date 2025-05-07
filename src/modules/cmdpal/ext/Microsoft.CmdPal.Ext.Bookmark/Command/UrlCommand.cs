@@ -26,7 +26,7 @@ public partial class UrlCommand : InvokableCommand
         Name = name;
         Type = type;
         Url = url;
-        Icon = IconHelper.CreateIcon(url, type);
+        Icon = IconHelper.CreateIcon(url, type, false);
     }
 
     public override CommandResult Invoke()

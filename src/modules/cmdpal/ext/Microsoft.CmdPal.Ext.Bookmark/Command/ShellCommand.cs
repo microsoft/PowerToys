@@ -18,7 +18,7 @@ public sealed partial class ShellCommand : InvokableCommand
     {
         BookmarkData = data;
         Name = data.Name;
-        Icon = IconHelper.GetIconByType(data.Type);
+        Icon = IconHelper.CreateIcon(data.Bookmark, data.Type, false);
     }
 
     public override CommandResult Invoke()

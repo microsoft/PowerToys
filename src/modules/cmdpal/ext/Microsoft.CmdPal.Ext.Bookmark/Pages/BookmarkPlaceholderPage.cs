@@ -23,7 +23,7 @@ internal sealed partial class BookmarkPlaceholderPage : ContentPage
     public BookmarkPlaceholderPage(string name, string url, BookmarkType type)
     {
         Name = name;
-        Icon = IconHelper.CreateIcon(url, type);
+        Icon = IconHelper.CreateIcon(url, type, true);
         _bookmarkPlaceholder = new BookmarkPlaceholderForm(name, url, type);
     }
 }

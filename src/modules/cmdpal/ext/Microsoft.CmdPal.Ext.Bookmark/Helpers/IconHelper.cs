@@ -5,6 +5,7 @@
 using System;
 using Microsoft.CmdPal.Ext.Bookmarks.Models;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
@@ -35,8 +36,10 @@ public static class IconHelper
         };
     }
 
-    public static IconInfo CreateIcon(string bookmark, BookmarkType bookmarkType)
+    public static IconInfo CreateIcon(string bookmark, BookmarkType bookmarkType, bool isPlaceholde)
     {
+        // In some case, we want to use placeholder, but we can still get the favicon.
+        // eg: "https://google.com?q={query}"
         if (bookmarkType == BookmarkType.Web)
         {
             // Get the base url up to the first placeholder
@@ -58,6 +61,35 @@ public static class IconHelper
             }
         }
 
+        if (isPlaceholde)
+        {
+            // If it's a placeholder bookmark, we don't need to get the icon.
+            // Just use the default icon.
+            return GetIconByType(bookmarkType);
+        }
+
+        if (bookmarkType == BookmarkType.File || bookmarkType == BookmarkType.Folder)
+        {
+            // try to get the file icon first. If not, use the default file icon.
+            try
+            {
+                // To be honest, I don't like to block thread.
+                // We need to refactor in the future.
+                // But now, it's ok. Only image file will trigger the async path.
+                var stream = ThumbnailHelper.GetThumbnail(bookmark).Result;
+                if (stream != null)
+                {
+                    var data = new IconData(RandomAccessStreamReference.CreateFromStream(stream));
+                    return new IconInfo(data, data);
+                }
+            }
+            catch
+            {
+                ExtensionHost.LogMessage(new LogMessage() { Message = $"Create Icon failed. {bookmarkType}: {bookmark}" });
+            }
+        }
+
+        // If we can't get the icon, just use the default icon.
         return GetIconByType(bookmarkType);
     }
 }
