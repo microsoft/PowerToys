@@ -18,9 +18,9 @@ public static partial class CommandItemFactory
 {
     private static readonly Dictionary<BookmarkType, Func<BookmarkData, TypedEventHandler<object, BookmarkData>, Action, CommandItem>> _factory = new()
     {
-        { Models.BookmarkType.Folder, CreateUrlCommand },
+        { Models.BookmarkType.Folder, CreateShellCommand },
         { Models.BookmarkType.Web, CreateUrlCommand },
-        { Models.BookmarkType.File, CreateUrlCommand },
+        { Models.BookmarkType.File, CreateShellCommand },
         { Models.BookmarkType.Command, CreateShellCommand },
     };
 
@@ -111,7 +111,7 @@ public static partial class CommandItemFactory
 
         List<CommandContextItem> contextMenu = [];
 
-        listItem.Subtitle = invokableCommand.BookmarkValue;
+        listItem.Subtitle = invokableCommand.BookmarkData.Bookmark;
 
         var edit = new AddBookmarkPage(bookmark) { Icon = IconHelper.EditIcon };
         edit.AddedCommand += addBookmarkFunc;

@@ -100,11 +100,10 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
             switch (_bookmarkType)
             {
                 case BookmarkType.Command:
-                    result = ShellCommand.Invoke(target);
-                    break;
-
                 case BookmarkType.Folder:
                 case BookmarkType.File:
+                    result = ShellCommand.Invoke(_bookmarkType, target);
+                    break;
                 case BookmarkType.Web:
                     result = UrlCommand.Invoke(target);
                     break;

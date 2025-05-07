@@ -22,15 +22,6 @@ public static partial class BookmarkTypeHelper
 
     public static BookmarkType GetBookmarkTypeFromValue(string bookmark)
     {
-        var splittedBookmarkValue = bookmark.Split(" ");
-
-        if (splittedBookmarkValue.Length > 1)
-        {
-            // absolutely it's a shell command
-            // eg: python3 test.py or pwsh -Command "test.ps1 /C /D"
-            return BookmarkType.Command;
-        }
-
         // judge if the bookmark is a url
         if (Uri.TryCreate(bookmark, UriKind.Absolute, out var uriResult))
         {
@@ -53,7 +44,7 @@ public static partial class BookmarkTypeHelper
             return BookmarkType.File;
         }
 
-        // by default. we assume the bookmark is a Web link
-        return BookmarkType.Web;
+        // by default. we assume it's a command type
+        return BookmarkType.Command;
     }
 }
