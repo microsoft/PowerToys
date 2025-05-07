@@ -33,7 +33,10 @@
                             HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=OneWay}"
                             IsEnabled="False" />
                         <tkcontrols:SettingsCard.Description>
-                            <HyperlinkButton x:Name="CmdPalSettingsDeeplink" x:Uid="CmdPal_DeeplinkContent" Click="CmdPalSettingsDeeplink_Click" />
+                            <HyperlinkButton
+                                x:Name="CmdPalSettingsDeeplink"
+                                x:Uid="CmdPal_DeeplinkContent"
+                                Click="CmdPalSettingsDeeplink_Click" />
                         </tkcontrols:SettingsCard.Description>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
