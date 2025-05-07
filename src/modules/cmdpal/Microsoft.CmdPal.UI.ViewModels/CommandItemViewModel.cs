@@ -48,7 +48,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public List<CommandContextItemViewModel> MoreCommands { get; private set; } = [];
 
-    IEnumerable<CommandContextItemViewModel> ICommandBarContext.MoreCommands => MoreCommands;
+    IEnumerable<CommandContextItemViewModel> IContextMenuContext.MoreCommands => MoreCommands;
 
     public bool HasMoreCommands => MoreCommands.Count > 0;
 
@@ -187,23 +187,26 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         // use Initialize straight up
         MoreCommands.ForEach(contextItem =>
         {
-            contextItem.InitializeProperties();
+            contextItem.SlowInitializeProperties();
         });
 
-        _defaultCommandContextItem = new(new CommandContextItem(model.Command!), PageContext)
+        if (!string.IsNullOrEmpty(model.Command?.Name))
         {
-            _itemTitle = Name,
-            Subtitle = Subtitle,
-            Command = Command,
+            _defaultCommandContextItem = new(new CommandContextItem(model.Command!), PageContext)
+            {
+                _itemTitle = Name,
+                Subtitle = Subtitle,
+                Command = Command,
 
-            // TODO this probably should just be a CommandContextItemViewModel(CommandItemViewModel) ctor, or a copy ctor or whatever
-        };
+                // TODO this probably should just be a CommandContextItemViewModel(CommandItemViewModel) ctor, or a copy ctor or whatever
+            };
 
-        // Only set the icon on the context item for us if our command didn't
-        // have its own icon
-        if (!Command.HasIcon)
-        {
-            _defaultCommandContextItem._listItemIcon = _listItemIcon;
+            // Only set the icon on the context item for us if our command didn't
+            // have its own icon
+            if (!Command.HasIcon)
+            {
+                _defaultCommandContextItem._listItemIcon = _listItemIcon;
+            }
         }
 
         Initialized |= InitializedState.SelectionInitialized;
