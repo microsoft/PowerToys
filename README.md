@@ -114,6 +114,7 @@ In this release, we focused on new features, stability, and automation.
 
  - Fixed an issue where a resource leak caused hangs or crashes by properly disposing of the Graphics object. Thanks [@dcog989](https://github.com/dcog989)!
  - Fixed an issue where Color Picker exited on Backspace keypress by ensuring it only closes when focused and aligning Escape/Backspace behavior. Thanks [@PesBandi](https://github.com/PesBandi)!
+ - Added support for Oklab and Oklch color formats in Color Picker. Thanks [@lemonyte](https://github.com/lemonyte)!
 
 ### Command Not Found
 
@@ -143,8 +144,15 @@ In this release, we focused on new features, stability, and automation.
 - Ported custom format support to the Time and Date plugin, reordered and cleaned up settings, improved error messaging, and fixed edge-case crashes for more robust and user-friendly behavior. Thanks [@htcfreek](https://github.com/htcfreek)!
 - Added fallback item for system command. Thanks [@zadjii-msft](https://github.com/zadjii-msft) and [@htcfreek](https://github.com/htcfreek) for helping with the review!
 - Fixed a bug in Windows System Command where the key prompt incorrectly displayed "Empty" for the "Open Recycle Bin" action. Thanks [@jironemo](https://github.com/jironemo)! Thanks [@htcfreek](https://github.com/htcfreek) for helping with the review!
-- 
-- 
+- Fixed an issue where the 'more commands' list showed commands that shouldn't be visible. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+- Fixed an issue where the details view in Command Palette displayed an oversized icon and misaligned text, aligning it with Windows Search behavior. Thanks [@niels9001](https://github.com/niels9001)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
+- Fixed a bug where empty screen content and command bar commands were cut off when using long labels, ensuring proper layout and visibility. Thanks [@niels9001](https://github.com/niels9001)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
+- Improved CmdPal’s winget integration by fixing version display for installed packages, enabling updates with icons, and migrating the preview winget API to a stable version. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@krschau](https://github.com/krschau) and [@niels9001](https://github.com/niels9001) for helping with the review!
+- Fixed a bug where commands for ContentPage didn't update until after exit, by ensuring context menus are fully initialized when they change. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@niels9001](https://github.com/niels9001) for review!
+- Added fallback support to the TimeDate extension, enabling direct date/time queries without pre-selecting the command. Thanks [@zadjii-msft](https://github.com/zadjii-msft) and [@htcfreek](https://github.com/htcfreek) for helping with the review!
+- Added import of Common.Dotnet.AotCompatibility.props across multiple CmdPal project files to enhance AOT compilation support.
+- Fixed a crash in ComPal settings caused by a null HotKey when settings.json is missing or lacks a defined hotkey. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
+- Added support for filterable, nested context menus in ComPal, including a search box to maintain focus behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@lauren-ciha](https://github.com/lauren-ciha) for review!
 
 ### Image Resizer
 
@@ -164,6 +172,7 @@ In this release, we focused on new features, stability, and automation.
  - Fix two crashes: one for WFT on very early dates and another for calculating the week of the month on very late dates (e.g., 31.12.9999), and reorder UI settings. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Fix an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase.Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
  - Added version details to plugin error messages for 'Loading error' and 'Init error'. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Enhanced result model by adding support for preventing usage-based ordering, giving plugin developers greater control over sorting behavior. Thanks [@CoreyHayward](https://github.com/CoreyHayward) and [@htcfreek](https://github.com/htcfreek)!
 
 ### Quick Accent
 
@@ -204,10 +213,14 @@ In this release, we focused on new features, stability, and automation.
  - Fixed an issue where missing signing for newly added files caused build failures.
  - Update release pipeline to prevent publishing private symbols for 100 years.
  - Introduced fuzzing for PowerRename to improve reliability and added setup guidance for extending fuzzing to other C++ modules.
+ - Added centralized pre-creation of generated folders for all .csproj projects to prevent build failures.
+ - Updated WinAppSDK to the latest 1.7 version.
+ - Upgraded Boost dependencies to the latest version for the PowerRename Fuzzing project.
   
 ### Tool/General
 
  - Added support for automating bug report creation by generating a pre-filled GitHub issue URL with system and diagnostic information. Thanks [@donlaci](https://github.com/donlaci)! Thanks [@htcfreek](https://github.com/htcfreek) for review!
+ - Added scripts to locally build the installer, ensuring the ComPal can also be launched in a local environment.
    
 ### What is being planned for version 0.92
 
