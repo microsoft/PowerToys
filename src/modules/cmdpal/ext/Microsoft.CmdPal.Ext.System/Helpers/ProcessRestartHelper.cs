@@ -14,7 +14,7 @@ namespace Microsoft.CmdPal.Ext.System.Helpers;
 /// <summary>
 /// Restarts running instances of a specified process using the Windows Restart Manager.
 /// </summary>
-internal static class ProcessRestarter
+internal static class ProcessRestartHelper
 {
     private static readonly TimeSpan DefaultShutdownTimeout = TimeSpan.FromSeconds(30);
 
