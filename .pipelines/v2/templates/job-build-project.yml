@@ -56,9 +56,6 @@ parameters:
   - name: versionNumber
     type: string
     default: '0.0.1'
-  - name: cmdPalVersionNumber
-    type: string
-    default: '0.0.1'
   - name: useLatestWinAppSDK
     type: boolean
     default: false
@@ -214,6 +211,10 @@ jobs:
     ${{ if eq(parameters.useVSPreview, true) }}:
       env:
         VCWhereExtraVersionTarget: '-prerelease'
+
+  - template: .\steps-setup-versioning.yml
+    parameters:
+      directory: $(build.sourcesdirectory)\src\modules\cmdpal
 
   - pwsh: |-
       & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
