@@ -233,10 +233,10 @@
 
 ## [Command Palette](tests-checklist-template-command-palette-section.md)
  * Check if Command Palette successfully install/uninstall with PowerToys.
-   - [ ] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
-   - [ ] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+   - [X] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
+   - [X] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
  * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
-   - [ ] when PowerToys is running unelevated on start-up
+   - [X] when PowerToys is running unelevated on start-up
    - [ ] when PowerToys is running as admin on start-up
    - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
