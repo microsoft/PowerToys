@@ -32,30 +32,19 @@ namespace KeyboardManagerEditorUI.Pages
 
         public Text()
         {
+            this.InitializeComponent();
+
             try
             {
-                this.InitializeComponent();
-
-                Logger.LogInfo("Initializing Text tab");
-
-                try
-                {
-                    _mappingService = new KeyboardMappingService();
-                    Logger.LogInfo("KeyboardMappingService initialized");
-                    LoadTextMappings();
-                    Logger.LogInfo("Text mappings loaded");
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError("Failed to initialize KeyboardMappingService: " + ex.Message);
-                }
-
-                this.Unloaded += Text_Unloaded;
+                _mappingService = new KeyboardMappingService();
+                LoadTextMappings();
             }
             catch (Exception ex)
             {
-                Logger.LogError("Exception in Text constructor: " + ex.ToString());
+                Logger.LogError("Failed to initialize KeyboardMappingService: " + ex.Message);
             }
+
+            this.Unloaded += Text_Unloaded;
         }
 
         private void Text_Unloaded(object sender, RoutedEventArgs e)

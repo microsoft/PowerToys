@@ -17,7 +17,6 @@
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="Text shortcuts allow you to insert text in any input field when you use the configured keyboard shortcut"
                 TextWrapping="Wrap" />
-
             <Button
                 x:Name="NewShortcutBtn"
                 Height="36"
@@ -31,7 +30,6 @@
                     <TextBlock VerticalAlignment="Center" Text="New" />
                 </StackPanel>
             </Button>
-
             <Grid
                 HorizontalAlignment="Stretch"
                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -48,19 +46,16 @@
                     <ColumnDefinition Width="120" />
                     <ColumnDefinition Width="84" />
                 </Grid.ColumnDefinitions>
-
                 <TextBlock
                     Grid.Column="0"
                     Margin="16,-2,0,0"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="Shortcut" />
-
+                    Text="Original key(s)" />
                 <AppBarSeparator
                     Grid.Column="1"
                     Margin="-6,4,0,4"
                     HorizontalAlignment="Left" />
-
                 <TextBlock
                     Grid.Column="1"
                     Margin="12,-2,0,0"
@@ -68,19 +63,23 @@
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Text="Text" />
-
+                <AppBarSeparator
+                    Grid.Column="2"
+                    Margin="-6,4,0,4"
+                    HorizontalAlignment="Left" />
                 <TextBlock
                     Grid.Column="2"
                     Margin="12,-2,0,0"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="App" />
+                    Text="Applicable apps" />
 
                 <Rectangle
                     Grid.Row="0"
                     Grid.ColumnSpan="4"
                     Height="1"
+                    HorizontalAlignment="Stretch"
                     VerticalAlignment="Bottom"
                     Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
 
@@ -94,16 +93,27 @@
                     SelectionMode="None">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="helper:TextMapping">
-                            <Grid Margin="8,4" HorizontalAlignment="Stretch">
+                            <Grid Height="Auto" MinHeight="48">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="220" />
+                                    <ColumnDefinition Width="236" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="120" />
                                     <ColumnDefinition Width="48" />
                                 </Grid.ColumnDefinitions>
+                                <Rectangle
+                                    Grid.ColumnSpan="5"
+                                    Height="1"
+                                    Margin="-16,0,-16,0"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Bottom"
+                                    Fill="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    Opacity="0.8" />
 
                                 <!--  Shortcut keys  -->
-                                <ItemsControl ItemsSource="{x:Bind Keys}">
+                                <ItemsControl
+                                    Grid.Column="0"
+                                    VerticalAlignment="Center"
+                                    ItemsSource="{x:Bind Keys}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <controls:WrapPanel
@@ -125,15 +135,20 @@
                                 <!--  Text content  -->
                                 <TextBlock
                                     Grid.Column="1"
+                                    Margin="-4,0,0,0"
+                                    HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
-                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                    FontSize="12"
                                     Text="{x:Bind Text}"
                                     TextTrimming="CharacterEllipsis" />
 
                                 <!--  App name  -->
                                 <TextBlock
                                     Grid.Column="2"
+                                    Margin="-4,0,0,0"
+                                    HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
+                                    FontSize="12"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     Text="{x:Bind AppName}"
                                     TextTrimming="CharacterEllipsis" />
