@@ -126,7 +126,7 @@
     <comment>do not loc, product name</comment>
   </data>
   <data name="PowerRename_Context_Menu_Entry" xml:space="preserve">
-    <value>Rename with Power&amp;Rename</value>
+    <value>Rename with Pow&amp;erRename</value>
     <comment>PowerRename is a product name. do not loc it. The &amp; allows to use W as a keyboard accelerator.</comment>
   </data>
   <data name="Settings_Description" xml:space="preserve">
