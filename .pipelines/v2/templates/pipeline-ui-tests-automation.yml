@@ -11,7 +11,8 @@ parameters:
   - name: buildPlatforms
     type: object
     default:
-      - x64
+      - win10-x64
+      - win11-x64
       - arm64
   - name: enableMsBuildCaching
     type: boolean
