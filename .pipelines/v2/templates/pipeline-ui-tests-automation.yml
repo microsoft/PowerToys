@@ -53,22 +53,18 @@ stages:
         dependsOn:
           - Build_${{platform}}
         jobs:
-          - job: Test_x64Win10
-            steps:
-              - template: job-test-project.yml
-                parameters:
-                  platform: x64Win10
-                  configuration: Release
-                  useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                  isUIAutomationPipeline: true
-          - job: Test_x64Win11
-            steps:
-              - template: job-test-project.yml
-                parameters:
-                  platform: x64Win11
-                  configuration: Release
-                  useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                  isUIAutomationPipeline: true
+            - template: job-test-project.yml
+              parameters:
+                platform: x64Win10
+                configuration: Release
+                useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+                isUIAutomationPipeline: true
+            - template: job-test-project.yml
+              parameters:
+                platform: x64Win11
+                configuration: Release
+                useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+                isUIAutomationPipeline: true
 
     - ${{ if ne(platform, 'x64') }}:
       - stage: Test_${{ platform }}
