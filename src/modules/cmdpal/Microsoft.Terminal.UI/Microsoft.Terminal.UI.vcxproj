@@ -23,9 +23,6 @@
     <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <ItemGroup>
-    <ResourceCompile Include="version.rc" />
-  </ItemGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM64">
       <Configuration>Debug</Configuration>
@@ -156,7 +153,6 @@
     <ClInclude Include="IconPathConverter.h">
       <DependentUpon>IconPathConverter.idl</DependentUpon>
     </ClInclude>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceString.h">
       <DependentUpon>ResourceString.idl</DependentUpon>
     </ClInclude>
@@ -205,9 +201,4 @@
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\common\version\version.vcxproj">
-      <Project>{cc6e41ac-8174-4e8a-8d22-85dd7f4851df}</Project>
-    </ProjectReference>
-  </ItemGroup>
 </Project>
