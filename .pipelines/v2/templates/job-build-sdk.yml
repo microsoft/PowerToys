@@ -33,6 +33,10 @@ jobs:
     fetchTags: false
     fetchDepth: 1
 
+  - template: .\steps-ensure-nuget-version.yml
+
+  - task: NuGetAuthenticate@1
+
   - template: .\steps-setup-versioning.yml
     parameters:
       directory: $(build.sourcesdirectory)\src\modules\cmdpal
