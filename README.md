@@ -99,12 +99,18 @@ In this release, we focused on new features, stability, and automation.
 
 **✨Highlights**
 
-![Gif for Command Palette](doc/images/overview/CmdPal_Hero.gif)
-
-- New module: Command Palette ("CmdPal") -  Created as the evolution of PowerToys Run with extensibility at the forefront, Command Palette is a quick launcher with a richer display and additional capabilities without sacrificing performance, allowing you to start anything with the shortcut **Win+Alt+Space**! Thanks [@zadjii-msft](https://github.com/zadjii-msft), [@niels9001](https://github.com/niels9001), [@michael-hawker](https://github.com/michael-hawker), [@joadoumie](https://github.com/joadoumie), [@plante-msft](https://github.com/plante-msft), [@ethanfangg](https://github.com/ethanfangg) and [@krschau](https://github.com/krschau)!
- - Enhanced the Color Picker by switching from WPF UI to .NET WPF, resulting in improved themes and visual consistency across different modes. Thanks [@mantaionut](https://github.com/mantaionut)! Thanks [@Jay-o-Way](https://github.com/Jay-o-Way) and [@niels9001](https://github.com/niels9001) for helping with the review!
- - Added the ability to delete files directly from Peek, enhancing file management efficiency. Thanks [@daverayment](https://github.com/daverayment) and thanks [@htcfreek](https://github.com/htcfreek) for the review!
- - Added support for variables in template filenames, enabling dynamic elements like date components and environment variables for enhanced customization in New+. Thanks [@cgaarden](https://github.com/cgaarden)!
+ - Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from Command Palette. Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+ - Added the ability to make the Command Palette global hotkey a low-level keyboard hook. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+ - Added the ability to immediately select search text on opening page, enhancing the search experience in Command Palette.
+. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@krschau](https://github.com/krschau) for review!
+- Refactored and ported the PowerToys Run v1 calculator logic into Command Palette, added settings support, and improved fallback behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft) and [@htcfreek](https://github.com/htcfreek) for helping with the review!
+- Re-added support for list item keyboard shortcuts in Command Palette. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Ported custom format support to the Time and Date plugin, reordered and cleaned up settings, improved error messaging, and fixed edge-case crashes for more robust and user-friendly behavior. Thanks [@htcfreek](https://github.com/htcfreek)!
+- Added fallback support to the TimeDate extension in Command Palette, enabling direct date/time queries without pre-selecting the command. Thanks [@zadjii-msft](https://github.com/zadjii-msft) and [@htcfreek](https://github.com/htcfreek) for helping with the review!
+- Added support for filterable, nested context menus in ComPal, including a search box to maintain focus behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@lauren-ciha](https://github.com/lauren-ciha) for review!
+- Added the ability for Command Palette to search any file using a fallback command. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@htcfreek](https://github.com/htcfreek) for helping with the review!
+- Enhanced Registry Preview to support pasting registry keys and values without manually writing the file header, and added a new button for resetting the app. Thanks [@htcfreek](https://github.com/htcfreek)! Thanks [@randyrants](https://github.com/randyrants) for helping with the review!
+- Added support for Oklab and Oklch color formats in Color Picker. Thanks [@lemonyte](https://github.com/lemonyte)!
 
 ### Advanced Paste
 
@@ -127,7 +133,7 @@ In this release, we focused on new features, stability, and automation.
 - Fixed an issue where Up/Down keyboard navigation didn't move selection when caret was at position 0, and add continuous navigation like PT Run v1. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
 - Updated the Time and Date extension code to simplify it and improve clarity.
 - Fixed an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
-- Added the ability to open URLs directly in the browser from Command Palette. Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+- Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from Command Palette. Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
 - Added setting to enable/disable system tray icon in CmdPal and align terminology with Windows 11. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
 - Fixed an alias update issue by removing the old alias when a new one is set. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
 - Resolved GitHub casing conflict by migrating Exts and exts into a new ext directory, ensuring consistent structure across platforms and preventing path fragmentation. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
@@ -137,7 +143,7 @@ In this release, we focused on new features, stability, and automation.
 - Fixed crashes when CmdPal auto-hidden itself while an MSAL dialog was opened, by preventing CmdPal from hiding if it's disabled. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@guimafelipe](https://github.com/guimafelipe) and [@lauren-ciha](https://github.com/lauren-ciha) for helping with the review!
 - Added support for immediately selecting search text when a page is loaded. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@krschau](https://github.com/krschau) for review!
 - Fixed a bug where extension settings pages failed to reload on reopen by updating the settings form when extension settings are saved. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@krschau](https://github.com/krschau) for review!
-- Fixes an issue where the Command Palette failed to launch from the runner. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
+- Fixed an issue where the Command Palette failed to launch from the runner. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
 - Refactored and ported the PowerToys Run v1 calculator logic into Command Palette, added settings support, and improved fallback behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft) and [@htcfreek](https://github.com/htcfreek) for helping with the review!
 - Re-added support for list item keyboard shortcuts. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
 - Enhanced accessibility in Command Palette by adding proper labels, refining animations, improving localization, and fixed a11y related issues. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
