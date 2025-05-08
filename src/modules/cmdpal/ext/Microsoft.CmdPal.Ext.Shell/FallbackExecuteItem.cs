@@ -27,6 +27,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
     {
         _executeItem.Cmd = query;
         _executeItem.Name = string.IsNullOrEmpty(query) ? string.Empty : Properties.Resources.generic_run_command;
+
         Title = query;
     }
 }
