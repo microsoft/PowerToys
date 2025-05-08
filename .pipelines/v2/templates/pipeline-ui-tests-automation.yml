@@ -48,8 +48,8 @@ stages:
             useVSPreview: ${{ parameters.useVSPreview }}
 
     - ${{ if eq(platform, 'x64') }}:
-      - stage: Test_${{ platform }}
-        displayName: Test ${{ platform }}
+      - stage: Test_x64Win10
+        displayName: Test x64Win10
         dependsOn:
           - Build_${{platform}}
         jobs:
@@ -59,6 +59,13 @@ stages:
                 configuration: Release
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                 isUIAutomationPipeline: true
+
+    - ${{ if eq(platform, 'x64') }}:
+      - stage: Test_x64Win11
+        displayName: Test x64Win11
+        dependsOn:
+          - Build_${{platform}}
+        jobs:
             - template: job-test-project.yml
               parameters:
                 platform: x64Win11
