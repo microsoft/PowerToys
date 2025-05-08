@@ -122,8 +122,7 @@
                         <NavigationViewItem
                             x:Uid="Shell_CmdPal"
                             helpers:NavHelper.NavigateTo="views:CmdPalPage"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}">
-                        </NavigationViewItem>
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}" />
                         <NavigationViewItem
                             x:Uid="Shell_ColorPicker"
                             helpers:NavHelper.NavigateTo="views:ColorPickerPage"
