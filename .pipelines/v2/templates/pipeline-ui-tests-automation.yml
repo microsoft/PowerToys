@@ -11,8 +11,7 @@ parameters:
   - name: buildPlatforms
     type: object
     default:
-      - x64Win10
-      - x64Win11
+      - x64
       - arm64
   - name: enableMsBuildCaching
     type: boolean
@@ -48,6 +47,32 @@ stages:
             buildTests: true
             useVSPreview: ${{ parameters.useVSPreview }}
 
+    - ${{ if eq(platform, 'x64') }}:
+      - stage: Test x64Win10
+        displayName: Test x64Win10
+        dependsOn:
+          - Build_${{platform}}
+        jobs:
+          - template: job-test-project.yml
+            parameters:
+              platform: x64Win10
+              configuration: Release
+              useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+              isUIAutomationPipeline: true
+
+      - stage: Test x64Win11
+        displayName: Test x64Win11
+        dependsOn:
+          - Build_${{platform}}
+        jobs:
+          - template: job-test-project.yml
+            parameters:
+              platform: x64Win11
+              configuration: Release
+              useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+              isUIAutomationPipeline: true
+
+    ${{ else }}:
     - stage: Test_${{ platform }}
       displayName: Test ${{ platform }}
       dependsOn:
