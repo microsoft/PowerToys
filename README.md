@@ -99,18 +99,17 @@ In this release, we focused on new features, stability, and automation.
 
 **✨Highlights**
 
- - Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from Command Palette. Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
- - Added the ability to make the Command Palette global hotkey a low-level keyboard hook. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+ - Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from Command Palette.
+ - Added the ability to make the Command Palette global hotkey a low-level keyboard hook.
  - Added the ability to immediately select search text on opening page, enhancing the search experience in Command Palette.
-. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@krschau](https://github.com/krschau) for review!
-- Refactored and ported the PowerToys Run v1 calculator logic into Command Palette, added settings support, and improved fallback behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft) and [@htcfreek](https://github.com/htcfreek) for helping with the review!
-- Re-added support for list item keyboard shortcuts in Command Palette. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Ported custom format support to the Time and Date plugin, reordered and cleaned up settings, improved error messaging, and fixed edge-case crashes for more robust and user-friendly behavior. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Added fallback support to the TimeDate extension in Command Palette, enabling direct date/time queries without pre-selecting the command. Thanks [@zadjii-msft](https://github.com/zadjii-msft) and [@htcfreek](https://github.com/htcfreek) for helping with the review!
-- Added support for filterable, nested context menus in ComPal, including a search box to maintain focus behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@lauren-ciha](https://github.com/lauren-ciha) for review!
-- Added the ability for Command Palette to search any file using a fallback command. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@htcfreek](https://github.com/htcfreek) for helping with the review!
-- Enhanced Registry Preview to support pasting registry keys and values without manually writing the file header, and added a new button for resetting the app. Thanks [@htcfreek](https://github.com/htcfreek)! Thanks [@randyrants](https://github.com/randyrants) for helping with the review!
-- Added support for Oklab and Oklch color formats in Color Picker. Thanks [@lemonyte](https://github.com/lemonyte)!
+ - Refactored and ported the PowerToys Run v1 calculator logic into Command Palette, added settings support, and improved fallback behavior.
+ - Re-added support for list item keyboard shortcuts in Command Palette.
+ - Ported custom format support to the Time and Date plugin, reordered and cleaned up settings, improved error messaging, and fixed edge-case crashes for more robust and user-friendly behavior.
+ - Added fallback support to the TimeDate extension in Command Palette, enabling direct date/time queries without pre-selecting the command.
+ - Added support for filterable, nested context menus in CmdPal, including a search box to maintain focus behavior.
+ - Added the ability for Command Palette to search any file using a fallback command.
+ - Enhanced Registry Preview to support pasting registry keys and values without manually writing the file header, and added a new button for resetting the app. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Added support for Oklab and Oklch color formats in Color Picker. Thanks [@lemonyte](https://github.com/lemonyte)!
 
 ### Advanced Paste
 
@@ -124,69 +123,69 @@ In this release, we focused on new features, stability, and automation.
 
 ### Command Not Found
 
- - Updated the WinGet Command Not Found script to only enable the experimental features if they actually exist. Thanks [@carlos-zamora](https://github.com/carlos-zamora)!
+ - Updated the WinGet Command Not Found script to only enable the experimental features if they actually exist.
 
 ### Command Palette
 
-- Updated bug template to include Command Palette module.
-- Fixed an issue where the toast window was not scaled for DPI, causing layout issues under display scaling. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Fixed an issue where Up/Down keyboard navigation didn't move selection when caret was at position 0, and add continuous navigation like PT Run v1. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
-- Updated the Time and Date extension code to simplify it and improve clarity.
-- Fixed an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
-- Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from Command Palette. Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
-- Added setting to enable/disable system tray icon in CmdPal and align terminology with Windows 11. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@htcfreek](https://github.com/htcfreek) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
-- Fixed an alias update issue by removing the old alias when a new one is set. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
-- Resolved GitHub casing conflict by migrating Exts and exts into a new ext directory, ensuring consistent structure across platforms and preventing path fragmentation. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Fix an issue where the 'Create New Extension' command generated empty file names. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
-- Added the ability to make the global hotkey a low-level keyboard hook. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Added support for JUMBO thumbnails, enabling access to high-resolution icons. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Fixed crashes when CmdPal auto-hidden itself while an MSAL dialog was opened, by preventing CmdPal from hiding if it's disabled. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@guimafelipe](https://github.com/guimafelipe) and [@lauren-ciha](https://github.com/lauren-ciha) for helping with the review!
-- Added support for immediately selecting search text when a page is loaded. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@krschau](https://github.com/krschau) for review!
-- Fixed a bug where extension settings pages failed to reload on reopen by updating the settings form when extension settings are saved. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@krschau](https://github.com/krschau) for review!
-- Fixed an issue where the Command Palette failed to launch from the runner. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
-- Refactored and ported the PowerToys Run v1 calculator logic into Command Palette, added settings support, and improved fallback behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft) and [@htcfreek](https://github.com/htcfreek) for helping with the review!
-- Re-added support for list item keyboard shortcuts. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Enhanced accessibility in Command Palette by adding proper labels, refining animations, improving localization, and fixed a11y related issues. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Ported custom format support to the Time and Date plugin, reordered and cleaned up settings, improved error messaging, and fixed edge-case crashes for more robust and user-friendly behavior. Thanks [@htcfreek](https://github.com/htcfreek)!
-- Added fallback item for system command. Thanks [@zadjii-msft](https://github.com/zadjii-msft) and [@htcfreek](https://github.com/htcfreek) for helping with the review!
-- Fixed a bug in Windows System Command where the key prompt incorrectly displayed "Empty" for the "Open Recycle Bin" action. Thanks [@jironemo](https://github.com/jironemo)! Thanks [@htcfreek](https://github.com/htcfreek) for helping with the review!
-- Fixed an issue where the 'more commands' list showed commands that shouldn't be visible. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-- Fixed an issue where the details view in Command Palette displayed an oversized icon and misaligned text, aligning it with Windows Search behavior. Thanks [@niels9001](https://github.com/niels9001)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
-- Fixed a bug where empty screen content and command bar commands were cut off when using long labels, ensuring proper layout and visibility. Thanks [@niels9001](https://github.com/niels9001)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
-- Improved CmdPal’s winget integration by fixing version display for installed packages, enabling updates with icons, and migrating the preview winget API to a stable version. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@krschau](https://github.com/krschau) and [@niels9001](https://github.com/niels9001) for helping with the review!
-- Fixed a bug where commands for ContentPage didn't update until after exit, by ensuring context menus are fully initialized when they change. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@niels9001](https://github.com/niels9001) for review!
-- Added fallback support to the TimeDate extension, enabling direct date/time queries without pre-selecting the command. Thanks [@zadjii-msft](https://github.com/zadjii-msft) and [@htcfreek](https://github.com/htcfreek) for helping with the review!
-- Added import of Common.Dotnet.AotCompatibility.props across multiple CmdPal project files to enhance AOT compilation support.
-- Fixed a crash in ComPal settings caused by a null HotKey when settings.json is missing or lacks a defined hotkey. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
-- Added support for filterable, nested context menus in ComPal, including a search box to maintain focus behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@lauren-ciha](https://github.com/lauren-ciha) for review!
-- Refactored ComPal classes to improve JSON serialization and introduced new serialization contexts for better performance and maintainability.
-- Added support for ahead-of-time (AOT) compilation.
-- Added retry mechanism for CmdPal launch.
-- Removed some unused files from CmdPal.Common to simplify codebase and facilitate marking it as AoT-compatible.
-- Fixed a bug where a race condition in the update of SearchText caused the cursor in the input box to automatically jump to the end of the line, ensuring SearchText is only updated after it has actually been changed. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Added support for searching any file in fallback command. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@htcfreek](https://github.com/htcfreek) for helping with the review!
-- Cleaned up AoT-related code to prevent duplicate operations during testing. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
-- Reduced CmdPal load time by parallelizing extension startup and adding timeouts to prevent misbehaving extensions from blocking others.Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Enhanced UI behavior by dismissing the details pane when the list gets emptied, avoiding inconsistent visual states. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Added support to unset the fallback command in CmdPal when no matching command is found, ensuring cleaner reload behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Fixed a leak in the CmdPal extension template by addressing improper ComServer use. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@shmuelie](https://github.com/shmuelie) for review!
-- Prevented CmdPal window from maximizing on title bar double-click to maintain intended window behavior.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
-- Fixed an issue where the Settings UI launched too small by making window dimensions DPI-aware and enforcing minimum width and height using WinUIEx. Thanks [@niels9001](https://github.com/niels9001)! Thanks [@dotMorten](https://github.com/dotMorten), [@davidegiacometti](https://github.com/davidegiacometti) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
-- Fixed white flash and one-time animation issues in CmdPal by cloaking the window instead of hiding it. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Fixed a bug where all extension settings were fetched on startup by lazy-loading extension settings, reducing initialization overhead. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@renanvargas1005](https://github.com/renanvargas1005) and [@krschau](https://github.com/krschau) for helping with the review!
-- Added support for protecting ComPal from crashes on adaptive card parse failure. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
-- Replaced shell:AppsFolder with URI activation in CmdPal to improve reliability. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
-- Added ability to open CmdPal settings from PowerToys Settings. Thanks [@niels9001](https://github.com/niels9001)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
-- Added ability for CmdPal to observe and dynamically update extension details by tracking property changes on the selected item. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@niels9001](https://github.com/niels9001) for review!
-- Bumped the toolkit version used in the CmdPal extension template to 0.2.0. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@krschau](https://github.com/krschau) for review!
+ - Updated bug template to include Command Palette module.
+ - Fixed an issue where the toast window was not scaled for DPI, causing layout issues under display scaling.
+ - Fixed an issue where Up/Down keyboard navigation didn't move selection when caret was at position 0, and add continuous navigation like PT Run v1. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Updated the Time and Date extension code to simplify it and improve clarity.
+ - Fixed an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase.
+ - Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from Command Palette. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Added setting to enable/disable system tray icon in CmdPal and align terminology with Windows 11. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed an alias update issue by removing the old alias when a new one is set.
+ - Resolved GitHub casing conflict by migrating Exts and exts into a new ext directory, ensuring consistent structure across platforms and preventing path fragmentation.
+ - Fix an issue where the 'Create New Extension' command generated empty file names.
+ - Added the ability to make the global hotkey a low-level keyboard hook.
+ - Added support for JUMBO thumbnails, enabling access to high-resolution icons.
+ - Fixed crashes when CmdPal auto-hid itself while an MSAL dialog was opened, by preventing CmdPal from hiding if it's disabled.
+ - Added support for immediately selecting search text when a page is loaded.
+ - Fixed a bug where extension settings pages failed to reload on reopen by updating the settings form when extension settings are saved.
+ - Fixed an issue where the Command Palette failed to launch from the runner.
+ - Refactored and ported the PowerToys Run v1 calculator logic into Command Palette, added settings support, and improved fallback behavior.
+ - Re-added support for list item keyboard shortcuts.
+ - Enhanced accessibility in Command Palette by adding proper labels, refining animations, improving localization, and fixed a11y related issues.
+ - Ported custom format support to the Time and Date plugin, reordered and cleaned up settings, improved error messaging, and fixed edge-case crashes for more robust and user-friendly behavior. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - Added fallback item for system command.
+ - Fixed a bug in Windows System Command where the key prompt incorrectly displayed "Empty" for the "Open Recycle Bin" action. Thanks [@jironemo](https://github.com/jironemo)!
+ - Fixed an issue where the 'more commands' list showed commands that shouldn't be visible. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed an issue where the details view in Command Palette displayed an oversized icon and misaligned text, aligning it with Windows Search behavior.
+ - Fixed a bug where empty screen content and command bar commands were cut off when using long labels, ensuring proper layout and visibility.
+ - Improved CmdPal’s WinGet integration by fixing version display for installed packages, enabling updates with icons, and migrating the preview winget API to a stable version.
+ - Fixed a bug where commands for ContentPage didn't update until after exit, by ensuring context menus are fully initialized when they change.
+ - Added fallback support to the TimeDate extension, enabling direct date/time queries without pre-selecting the command.
+ - Added import of Common.Dotnet.AotCompatibility.props across multiple CmdPal project files to enhance AOT compilation support.
+ - Fixed a crash in CmdPal settings caused by a null HotKey when settings.json is missing or lacks a defined hotkey. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Added support for filterable, nested context menus in CmdPal, including a search box to maintain focus behavior.
+ - Refactored CmdPal classes to improve JSON serialization and introduced new serialization contexts for better performance and maintainability.
+ - Added support for ahead-of-time (AoT) compilation.
+ - Added retry mechanism for CmdPal launch.
+ - Removed some unused files from CmdPal.Common to simplify codebase and facilitate marking it as AoT-compatible.
+ - Fixed a bug where a race condition in the update of SearchText caused the cursor in the input box to automatically jump to the end of the line, ensuring SearchText is only updated after it has actually been changed.
+ - Added support for searching any file in fallback command.
+ - Cleaned up AoT-related code to prevent duplicate operations during testing.
+ - Reduced CmdPal load time by parallelizing extension startup and adding timeouts to prevent misbehaving extensions from blocking others.
+ - Enhanced UI behavior by dismissing the details pane when the list gets emptied, avoiding inconsistent visual states.
+ - Added support to unset the fallback command in CmdPal when no matching command is found, ensuring cleaner reload behavior.
+ - Fixed a leak in the CmdPal extension template by addressing improper ComServer use.
+ - Prevented CmdPal window from maximizing on title bar double-click to maintain intended window behavior. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+ - Fixed an issue where the Settings UI launched too small by making window dimensions DPI-aware and enforcing minimum width and height using WinUIEx.
+ - Fixed white flash and one-time animation issues in CmdPal by cloaking the window instead of hiding it.
+ - Fixed a bug where all extension settings were fetched on startup by lazy-loading extension settings, reducing initialization overhead.
+ - Added support for protecting CmdPal from crashes on Adaptive Card parse failure.
+ - Replaced shell:AppsFolder with URI activation in CmdPal to improve reliability.
+ - Added ability to open CmdPal settings from PowerToys Settings.
+ - Added ability for CmdPal to observe and dynamically update extension details by tracking property changes on the selected item.
+ - Bumped the toolkit version used in the CmdPal extension template to 0.2.0.
 
 ### Image Resizer
 
- - Fixed an issue where deleting an Image Resizer preset removed the wrong preset.Thanks [@daverayment](https://github.com/daverayment) for your help reviewing this!
+ - Fixed an issue where deleting an Image Resizer preset removed the wrong preset.
 
 ### Keyboard Manager
 
- - Fixed an issue where a modifier key, when set without specifying left or right, would get stuck due to incorrect key handling, by tracking the pressed keys and sending the correct key accordingly.Thanks [@mantaionut](https://github.com/mantaionut)!
+ - Fixed an issue where a modifier key, when set without specifying left or right, would get stuck due to incorrect key handling, by tracking the pressed keys and sending the correct key accordingly. Thanks [@mantaionut](https://github.com/mantaionut)!
 
 ### PowerRename
 
@@ -196,23 +195,23 @@ In this release, we focused on new features, stability, and automation.
 
  - Added support for custom formats in the "Time and Date" plugin and improves error messages for invalid input formats. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Fix two crashes: one for WFT on very early dates and another for calculating the week of the month on very late dates (e.g., 31.12.9999), and reorder UI settings. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Fix an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase.Thanks [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+ - Fix an issue where capitalization in the command causes failure when trying to go to the mouse pointer, resolved by adjusting the command to lowercase.
  - Added version details to plugin error messages for 'Loading error' and 'Init error'. Thanks [@htcfreek](https://github.com/htcfreek)!
  - Enhanced result model by adding support for preventing usage-based ordering, giving plugin developers greater control over sorting behavior. Thanks [@CoreyHayward](https://github.com/CoreyHayward) and [@htcfreek](https://github.com/htcfreek)!
 
 ### Quick Accent
 
  - Updated the letter mapping in GetDefaultLetterKeyEPO, replacing "ǔ" with "ŭ" for the VK_U key to accurately reflect Esperanto phonetics. Thanks [@OlegKharchevkin](https://github.com/OlegKharchevkin)!
- - Fixed an issue where Quick Accent did not work properly when using the on-screen keyboard. Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@jaysondapo](https://github.com/jaysondapo) for helping with the review!
+ - Fixed an issue where Quick Accent did not work properly when using the on-screen keyboard. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
 
 ### Registry Preview
 
- - Enhanced Registry Preview to support pasting registry keys and values without manually writing the file header, and added a new button for resetting the app. Thanks [@htcfreek](https://github.com/htcfreek)! Thanks [@randyrants](https://github.com/randyrants) for helping with the review!
+ - Enhanced Registry Preview to support pasting registry keys and values without manually writing the file header, and added a new button for resetting the app. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Settings
 
  - Fix an issue where the Settings app randomly showed a blank icon in the taskbar by deferring icon assignment until the window is activated.
- - Added the ability to maximize the "What's New" window for a more comfortable reading experience.Thanks [@Jay-o-Way](https://github.com/Jay-o-Way) for review!
+ - Added the ability to maximize the "What's New" window for a more comfortable reading experience.
 
 ### Workspaces
 
@@ -222,20 +221,20 @@ In this release, we focused on new features, stability, and automation.
 
  - Added QuickNotes to the third-party plugins documentation for PowerToys Run. Thanks [@ruslanlap](https://github.com/ruslanlap)!
  - Added Weather and Pomodoro plugins to the PowerToys Run third-party plugin documentation. Thanks [@ruslanlap](https://github.com/ruslanlap)!
- - Added the Linear plugin to PowerToys Run's third-party plugin documentation. Thanks [@vednig](https://github.com/vednig)! Thanks [@Aaron-Junker](https://github.com/Aaron-Junker) and [@DHowett](https://github.com/DHowett) for helping with the review!
+ - Added the Linear plugin to PowerToys Run's third-party plugin documentation. Thanks [@vednig](https://github.com/vednig)!
 
 ### Development
 
  - Updated GitHub Action to install .NET 9 for MSStore release support.
- - Updated version placeholder in bug_report.yml to prevent incorrect v0.70.0 versioning in issue reports. Thanks [@htcfreek](https://github.com/htcfreek) for review!
+ - Updated version placeholder in bug_report.yml to prevent incorrect v0.70.0 versioning in issue reports.
  - Updated GitHub Action to upgrade actions/setup-dotnet from version 3 to version 4 for MSStore release.
- - Added securityContext to WinGet configuration files, allowing invocation from user context and prompting a single UAC for elevated resources in a separate process. Thanks [@mdanish-kh](https://github.com/mdanish-kh)! Thanks [@denelon](https://github.com/denelon) for review!
- - Changed log file extensions from .txt to .log to support proper file associations and tooling compatibility, and added logs for Workspace. Thanks [@benwa](https://github.com/benwa)! Thanks [@Jay-o-Way](https://github.com/Jay-o-Way) for review!
+ - Added securityContext to WinGet configuration files, allowing invocation from user context and prompting a single UAC for elevated resources in a separate process. Thanks [@mdanish-kh](https://github.com/mdanish-kh)!
+ - Changed log file extensions from .txt to .log to support proper file associations and tooling compatibility, and added logs for Workspace. Thanks [@benwa](https://github.com/benwa)!
  - Upgraded testing framework dependencies and aligned package versions across components.
  - Upgraded dependencies to fix vulnerabilities.
  - Enhanced repository security by pinning GitHub Actions and Docker tags to immutable full-length commits and integrating automated dependency vulnerability scanning via Dependency Review Workflow. Thanks [@Nick2bad4u](https://github.com/Nick2bad4u)!
  - Upgraded Boost dependencies to a newer version.
- - Upgraded toolkit to the latest version, suppressed AOT-related warnings.
+ - Upgraded toolkit to the latest version, suppressed AoT-related warnings.
  - Fixed an issue where missing signing for newly added files caused build failures.
  - Update release pipeline to prevent publishing private symbols for 100 years.
  - Introduced fuzzing for PowerRename to improve reliability and added setup guidance for extending fuzzing to other C++ modules.
@@ -243,12 +242,12 @@ In this release, we focused on new features, stability, and automation.
  - Updated WinAppSDK to the latest 1.7 version.
  - Upgraded Boost dependencies to the latest version for the PowerRename Fuzzing project.
  - Updated the ADO area path in tsa.json to resolve TSA pipeline errors caused by a deprecated path.
- - Initiated AoT support for CmdPal with foundational work in progress. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+ - Initiated AoT support for CmdPal with foundational work in progress.
   
 ### Tool/General
 
- - Added support for automating bug report creation by generating a pre-filled GitHub issue URL with system and diagnostic information. Thanks [@donlaci](https://github.com/donlaci)! Thanks [@htcfreek](https://github.com/htcfreek) for review!
- - Added scripts to locally build the installer, ensuring the ComPal can also be launched in a local environment.
+ - Added support for automating bug report creation by generating a pre-filled GitHub issue URL with system and diagnostic information. Thanks [@donlaci](https://github.com/donlaci)!
+ - Added scripts to locally build the installer, ensuring the CmdPal can also be launched in a local environment.
  - Removed export PFX logic to eliminate hardcoded password usage and resolve PSScriptAnalyzer security warning.
  - Added PowerShell script and CI integration to enforce consistent use of Common.Dotnet.CsWinRT.props across all C# projects under the src folder.
    
@@ -256,7 +255,7 @@ In this release, we focused on new features, stability, and automation.
 
 For [v0.92][github-next-release-work], we'll work on the items below:
 
- - New module: File Actions Menu
+ - Continued Command Palette polish
  - New UI Automation tests
  - Working on installer upgrades
  - Upgrading Keyboard Manager's editor UI
