@@ -19,12 +19,10 @@ public static partial class BookmarkTypeHelper
     public static BookmarkType GetBookmarkTypeFromValue(string bookmark)
     {
         // judge if the bookmark is a url
-        if (Uri.TryCreate(bookmark, UriKind.Absolute, out var uriResult))
+        var uri = OpenInShellHelper.GetUri(bookmark);
+        if (uri?.Scheme == Uri.UriSchemeHttp || uri?.Scheme == Uri.UriSchemeHttps)
         {
-            if (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps)
-            {
-                return BookmarkType.Web;
-            }
+            return BookmarkType.Web;
         }
 
         // judge if the bookmark is a existing folder
