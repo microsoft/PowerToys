@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 {
     public class OneNoteSettings : ISettingProvider
     {
-        private bool coloredIcons;
+        private bool _coloredIcons;
         private static readonly CompositeFormat ShowEncryptedSectionsDescription = CompositeFormat.Parse(Resources.ShowEncryptedSectionsDescription);
         private static readonly CompositeFormat ShowRecycleBinDescription = CompositeFormat.Parse(Resources.ShowRecycleBinDescription);
 
@@ -28,10 +28,10 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
 
         internal bool ColoredIcons
         {
-            get => coloredIcons;
+            get => _coloredIcons;
             private set
             {
-                coloredIcons = value;
+                _coloredIcons = value;
                 ColoredIconsSettingChanged?.Invoke();
             }
         }

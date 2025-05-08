@@ -70,12 +70,14 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote.Components
                     string search when search.StartsWith(Keywords.ScopedSearch, StringComparison.Ordinal) && (parent is OneNoteNotebook || parent is OneNoteSectionGroup)
                         => ScopedSearch(search, parent),
 
-                    // Default search
+                    // The current children of the parent.
                     _ => Explorer(lastSearch, parent, collection),
                 };
 
+                // parent is null if items in the collection are notebooks.
                 if (parent != null)
                 {
+                    // This result is a shortcut to opening the current parent the user is looking in.
                     var result = _resultCreator.CreateOneNoteItemResult(parent, false, score: 4000);
                     result.Title = string.Format(CultureInfo.CurrentCulture, OpenXInOneNote, parent.Name);
                     result.SubTitle = lastSearch switch

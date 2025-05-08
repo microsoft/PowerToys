@@ -1222,7 +1222,7 @@ ocid
 ocr
 Ocrsettings
 odbccp
-Odotocodot
+odotocodot
 OEMCONVERT
 officehubintl
 OFN
