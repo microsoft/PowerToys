@@ -70,15 +70,15 @@ stages:
                   useLatestWebView2: ${{ parameters.useLatestWebView2 }}
                   isUIAutomationPipeline: true
 
-    ${{ else }}:
-    - stage: Test_${{ platform }}
-      displayName: Test ${{ platform }}
-      dependsOn:
-        - Build_${{platform}}
-      jobs:
-        - template: job-test-project.yml
-          parameters:
-            platform: ${{ platform }}
-            configuration: Release
-            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-            isUIAutomationPipeline: true
+    - ${{ if ne(platform, 'x64') }}:
+      - stage: Test_${{ platform }}
+        displayName: Test ${{ platform }}
+        dependsOn:
+          - Build_${{platform}}
+        jobs:
+          - template: job-test-project.yml
+            parameters:
+              platform: ${{ platform }}
+              configuration: Release
+              useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+              isUIAutomationPipeline: true
