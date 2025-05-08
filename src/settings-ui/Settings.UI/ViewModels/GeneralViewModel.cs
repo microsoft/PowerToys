@@ -146,6 +146,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _startup = GeneralSettingsConfig.Startup;
             }
 
+            _hideSysTrayIcon = GeneralSettingsConfig.HideSysTrayIcon;
             _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
             _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
@@ -228,6 +229,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static bool _isDevBuild;
         private bool _startup;
+        private bool _hideSysTrayIcon;
         private GpoRuleConfigured _runAtStartupGpoRuleConfiguration;
         private bool _runAtStartupIsGPOConfigured;
         private bool _isElevated;
@@ -354,6 +356,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _startup = value;
                     GeneralSettingsConfig.Startup = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        // Gets or sets a value indicating whether the PowerToys icon should be hidden in the system tray.
+        public bool HideSysTrayIcon
+        {
+            get
+            {
+                return _hideSysTrayIcon;
+            }
+
+            set
+            {
+                if (_hideSysTrayIcon != value)
+                {
+                    _hideSysTrayIcon = value;
+                    GeneralSettingsConfig.HideSysTrayIcon = value;
                     NotifyPropertyChanged();
                 }
             }
