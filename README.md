@@ -158,6 +158,21 @@ In this release, we focused on new features, stability, and automation.
 - Added retry mechanism for CmdPal launch.
 - Removed some unused files from CmdPal.Common to simplify codebase and facilitate marking it as AoT-compatible.
 - Fixed a bug where a race condition in the update of SearchText caused the cursor in the input box to automatically jump to the end of the line, ensuring SearchText is only updated after it has actually been changed. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Added support for searching any file in fallback command. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@htcfreek](https://github.com/htcfreek) for helping with the review!
+- Cleaned up AoT-related code to prevent duplicate operations during testing. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
+- Reduced CmdPal load time by parallelizing extension startup and adding timeouts to prevent misbehaving extensions from blocking others.Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Enhanced UI behavior by dismissing the details pane when the list gets emptied, avoiding inconsistent visual states. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Added support to unset the fallback command in CmdPal when no matching command is found, ensuring cleaner reload behavior. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Fixed a leak in the CmdPal extension template by addressing improper ComServer use. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@shmuelie](https://github.com/shmuelie) for review!
+- Prevented CmdPal window from maximizing on title bar double-click to maintain intended window behavior.  Thanks [@davidegiacometti](https://github.com/davidegiacometti)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
+- Fixed an issue where the Settings UI launched too small by making window dimensions DPI-aware and enforcing minimum width and height using WinUIEx. Thanks [@niels9001](https://github.com/niels9001)! Thanks [@dotMorten](https://github.com/dotMorten), [@davidegiacometti](https://github.com/davidegiacometti) and [@zadjii-msft](https://github.com/zadjii-msft) for helping with the review!
+- Fixed white flash and one-time animation issues in CmdPal by cloaking the window instead of hiding it. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Fixed a bug where all extension settings were fetched on startup by lazy-loading extension settings, reducing initialization overhead. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@renanvargas1005](https://github.com/renanvargas1005) and [@krschau](https://github.com/krschau) for helping with the review!
+- Added support for protecting ComPal from crashes on adaptive card parse failure. Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
+- Replaced shell:AppsFolder with URI activation in CmdPal to improve reliability. Thanks [@zadjii-msft](https://github.com/zadjii-msft)!
+- Added ability to open CmdPal settings from PowerToys Settings. Thanks [@niels9001](https://github.com/niels9001)! Thanks [@zadjii-msft](https://github.com/zadjii-msft) for review!
+- Added ability for CmdPal to observe and dynamically update extension details by tracking property changes on the selected item. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@niels9001](https://github.com/niels9001) for review!
+- Bumped the toolkit version used in the CmdPal extension template to 0.2.0. Thanks [@zadjii-msft](https://github.com/zadjii-msft)! Thanks [@krschau](https://github.com/krschau) for review!
 
 ### Image Resizer
 
@@ -229,6 +244,7 @@ In this release, we focused on new features, stability, and automation.
  - Added support for automating bug report creation by generating a pre-filled GitHub issue URL with system and diagnostic information. Thanks [@donlaci](https://github.com/donlaci)! Thanks [@htcfreek](https://github.com/htcfreek) for review!
  - Added scripts to locally build the installer, ensuring the ComPal can also be launched in a local environment.
  - Removed export PFX logic to eliminate hardcoded password usage and resolve PSScriptAnalyzer security warning.
+ - Added PowerShell script and CI integration to enforce consistent use of Common.Dotnet.CsWinRT.props across all C# projects under the src folder.
    
 ### What is being planned for version 0.92
 
