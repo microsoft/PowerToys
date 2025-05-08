@@ -48,8 +48,8 @@ stages:
             useVSPreview: ${{ parameters.useVSPreview }}
 
     - ${{ if eq(platform, 'x64') }}:
-      - stage: Test x64
-        displayName: Test x64
+      - stage: Test_${{ platform }}
+        displayName: Test ${{ platform }}
         dependsOn:
           - Build_${{platform}}
         jobs:
