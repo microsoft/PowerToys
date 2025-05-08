@@ -22,12 +22,18 @@ namespace KeyboardManagerEditorUI.Styles
         {
             this.InitializeComponent();
             this.ShortcutKeys.ItemsSource = _shortcutKeys;
+
+            ShortcutToggleBtn.IsChecked = true;
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            // Activate keyboard hook when loaded
             KeyboardHookHelper.Instance.ActivateHook(this);
+            TextContentBox.GotFocus += TextContentBox_GotFocus;
+
+            AllAppsCheckBox.Checked += Control_FocusChanged;
+            AllAppsCheckBox.Unchecked += Control_FocusChanged;
+            AppNameTextBox.GotFocus += Control_FocusChanged;
         }
 
         private void ShortcutToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -51,19 +57,25 @@ namespace KeyboardManagerEditorUI.Styles
             }
         }
 
-        public void ClearKeys()
+        private void TextContentBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            _shortcutKeys.Clear();
+            // Clean up the keyboard hook when the text box gains focus
+            KeyboardHookHelper.Instance.CleanupHook();
+
+            if (ShortcutToggleBtn != null && ShortcutToggleBtn.IsChecked == true)
+            {
+                ShortcutToggleBtn.IsChecked = false;
+            }
         }
 
-        public bool IsModifierKey(VirtualKey key)
+        private void Control_FocusChanged(object sender, RoutedEventArgs e)
         {
-            return key == VirtualKey.Control || key == VirtualKey.Menu ||
-                   key == VirtualKey.Shift || key == VirtualKey.LeftWindows ||
-                   key == VirtualKey.RightWindows || key == VirtualKey.LeftControl ||
-                   key == VirtualKey.RightControl || key == VirtualKey.LeftMenu ||
-                   key == VirtualKey.RightMenu || key == VirtualKey.LeftShift ||
-                   key == VirtualKey.RightShift;
+            KeyboardHookHelper.Instance.CleanupHook();
+
+            if (ShortcutToggleBtn != null && ShortcutToggleBtn.IsChecked == true)
+            {
+                ShortcutToggleBtn.IsChecked = false;
+            }
         }
 
         public void OnInputLimitReached()
@@ -116,6 +128,21 @@ namespace KeyboardManagerEditorUI.Styles
 
                 currentNotification = null;
             }
+        }
+
+        public void ClearKeys()
+        {
+            _shortcutKeys.Clear();
+        }
+
+        public bool IsModifierKey(VirtualKey key)
+        {
+            return key == VirtualKey.Control || key == VirtualKey.Menu ||
+                   key == VirtualKey.Shift || key == VirtualKey.LeftWindows ||
+                   key == VirtualKey.RightWindows || key == VirtualKey.LeftControl ||
+                   key == VirtualKey.RightControl || key == VirtualKey.LeftMenu ||
+                   key == VirtualKey.RightMenu || key == VirtualKey.LeftShift ||
+                   key == VirtualKey.RightShift;
         }
 
         public List<string> GetShortcutKeys()
