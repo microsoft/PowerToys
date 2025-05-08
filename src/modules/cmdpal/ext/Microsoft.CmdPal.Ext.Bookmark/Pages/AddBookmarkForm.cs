@@ -82,7 +82,6 @@ internal sealed partial class AddBookmarkForm : FormContent
         updated.Name = formName.ToString();
         updated.Bookmark = formBookmark.ToString();
         updated.Type = parsedBookmarkType;
-        var paths = EnvironmentsCache.Instance.GetPaths();
 
         AddedCommand?.Invoke(this, updated);
         return CommandResult.GoHome();
