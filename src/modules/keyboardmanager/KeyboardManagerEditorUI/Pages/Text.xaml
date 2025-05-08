@@ -181,6 +181,8 @@
         <ContentDialog
             x:Name="KeyDialog"
             Title="Text Shortcut"
+            Width="480"
+            Height="360"
             MinWidth="600"
             MaxWidth="600"
             PrimaryButtonClick="KeyDialog_PrimaryButtonClick"
