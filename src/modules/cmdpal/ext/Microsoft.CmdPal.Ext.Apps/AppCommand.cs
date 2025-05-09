@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -33,8 +34,9 @@ internal sealed partial class AppCommand : InvokableCommand
             {
                 appManager.ActivateApplication(aumid, /*queryArguments*/ string.Empty, noFlags, out var unusedPid);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                Logger.LogError(ex.Message);
             }
         }).ConfigureAwait(false);
     }

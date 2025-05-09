@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using ManagedCommon;
 using Windows.Foundation.Metadata;
 using Package = Windows.ApplicationModel.Package;
 
@@ -51,6 +52,7 @@ public class PackageWrapper : IPackage
         }
         catch (Exception e) when (e is ArgumentException || e is FileNotFoundException || e is DirectoryNotFoundException)
         {
+            Logger.LogError(e.Message);
             return new PackageWrapper(
                 package.Id.Name,
                 package.Id.FullName,

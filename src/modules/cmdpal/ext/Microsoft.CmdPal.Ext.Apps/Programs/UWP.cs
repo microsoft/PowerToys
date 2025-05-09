@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Xml.Linq;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
@@ -131,8 +133,9 @@ public partial class UWP
                     u = new UWP(p);
                     u.InitializeAppInfo(p.InstalledLocation);
                 }
-                catch (Exception )
+                catch (Exception ex)
                 {
+                    Logger.LogError(ex.Message);
                     return Array.Empty<UWPApplication>();
                 }
 
@@ -161,8 +164,9 @@ public partial class UWP
                 var path = p.InstalledLocation;
                 return !f && !string.IsNullOrEmpty(path);
             }
-            catch (Exception )
+            catch (Exception ex)
             {
+                Logger.LogError(ex.Message);
                 return false;
             }
         });
