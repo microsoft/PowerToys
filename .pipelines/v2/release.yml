@@ -79,6 +79,7 @@ extends:
               buildConfigurations: ${{ parameters.buildConfigurations }}
               versionNumber: ${{ parameters.versionNumber }}
               publishArtifacts: false # 1ES PT handles publication for us.
+              official: true
               codeSign: true
               runTests: false
               signingIdentity:
@@ -117,6 +118,7 @@ extends:
                 name: SHINE-INT-L
                 image: SHINE-VS17-Latest
                 os: windows
+              official: true
               codeSign: true
               signingIdentity:
                 serviceName: $(SigningServiceName)

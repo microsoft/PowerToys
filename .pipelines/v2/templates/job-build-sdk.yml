@@ -3,6 +3,9 @@ parameters:
     type: object
     default:
       - Release
+  - name: official
+    type: boolean
+    default: false
   - name: codeSign
     type: boolean
     default: false
@@ -37,9 +40,10 @@ jobs:
 
   - task: NuGetAuthenticate@1
 
-  - template: .\steps-setup-versioning.yml
-    parameters:
-      directory: $(build.sourcesdirectory)\src\modules\cmdpal
+  - ${{ if eq(parameters.official, true) }}:
+    - template: .\steps-setup-versioning.yml
+      parameters:
+        directory: $(build.sourcesdirectory)\src\modules\cmdpal
 
   - pwsh: |-
       & "$(build.sourcesdirectory)\src\modules\cmdpal\extensionsdk\nuget\BuildSDKHelper.ps1" -Configuration "Release" -BuildStep "build" -IsAzurePipelineBuild
