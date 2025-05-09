@@ -152,24 +152,36 @@ internal static class ProcessRestartHelper
         }
     }
 
-    private static RM_UNIQUE_PROCESS[] GetProcesses(string name)
+    private static RM_UNIQUE_PROCESS[] GetProcesses(string processName)
     {
-        try
+        var currentSessionId = Process.GetCurrentProcess().SessionId;
+
+        return Process.GetProcessesByName(processName)
+            .Select(process => GetProcessInfoSafe(process, currentSessionId))
+            .Where(static processInfo => processInfo != null)
+            .Select(static processInfo => processInfo!.Value)
+            .ToArray();
+
+        static RM_UNIQUE_PROCESS? GetProcessInfoSafe(Process process, int targetSessionId)
         {
-            return Process
-                .GetProcessesByName(name)
-                .Select(static p => new RM_UNIQUE_PROCESS
+            try
+            {
+                if (process.HasExited || process.SessionId != targetSessionId)
                 {
-                    ProcessId = p.Id,
-                    ProcessStartTime = ToFileTimeStruct(p.StartTime),
-                })
-                .ToArray();
-        }
-        catch (Exception ex)
-        {
-            ExtensionHost.LogMessage(
-                $"Error retrieving processes '{name}': {ex.Message}");
-            return [];
+                    return null;
+                }
+
+                return new RM_UNIQUE_PROCESS
+                {
+                    ProcessId = process.Id,
+                    ProcessStartTime = ToFileTimeStruct(process.StartTime),
+                };
+            }
+            catch (Exception ex)
+            {
+                ExtensionHost.LogMessage($"Error retrieving processes (Process ID {process.Id}): {ex.Message}");
+                return null;
+            }
         }
 
         static FILETIME ToFileTimeStruct(DateTime dt)
