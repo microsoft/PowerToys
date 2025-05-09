@@ -1,10 +1,18 @@
 Param(
   [string]$Configuration = "release",
-  [string]$VersionOfSDK = "0.0.0",
+  [string]$VersionOfSDK = "",
   [string]$BuildStep = "all",
   [switch]$IsAzurePipelineBuild = $false,
   [switch]$Help = $false
 )
+
+If ([String]::IsNullOrEmpty($VersionOfSDK)) {
+  $VersionOfSDK = $Env:XES_PACKAGEVERSIONNUMBER
+}
+
+If ([String]::IsNullOrEmpty($VersionOfSDK)) {
+  $VersionOfSDK = "0.0.0"
+}
 
 $StartTime = Get-Date
 
