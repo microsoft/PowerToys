@@ -5,24 +5,27 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.Text;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.CmdPal.Ext.Apps.Utils;
 
 [SuppressMessage("Interoperability", "CA1401:P/Invokes should not be visible", Justification = "We want plugins to share this NativeMethods class, instead of each one creating its own.")]
-public sealed class Native
+public sealed partial class Native
 {
-    [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-    public static extern int SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, int cchOutBuf, nint ppvReserved);
+    [LibraryImport("shell32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    public static partial int SHCreateItemFromParsingName([MarshalAs(UnmanagedType.LPWStr)] string path, nint pbc, ref Guid riid, [MarshalUsing(typeof(IShellItemMarshallerOut))] out IShellItem? shellItem);
 
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    public static extern int SHCreateItemFromParsingName([MarshalAs(UnmanagedType.LPWStr)] string path, nint pbc, ref Guid riid, [MarshalAs(UnmanagedType.Interface)] out IShellItem shellItem);
+    [LibraryImport("shlwapi.dll", StringMarshalling = StringMarshalling.Utf16)]
+    public static partial HRESULT SHLoadIndirectString(string pszSource, Span<char> pszOutBuf, uint cchOutBuf, nint ppvReserved);
 
-    [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-    public static extern HRESULT SHCreateStreamOnFileEx(string fileName, STGM grfMode, uint attributes, bool create, System.Runtime.InteropServices.ComTypes.IStream reserved, out System.Runtime.InteropServices.ComTypes.IStream stream);
-
-    [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
-    public static extern HRESULT SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, uint cchOutBuf, nint ppvReserved);
+    [LibraryImport("shlwapi.dll", StringMarshalling = StringMarshalling.Utf16)]
+    public static partial int SHCreateStreamOnFileEx(
+        string pszFile,
+        uint grfMode,
+        uint dwAttributes,
+        [MarshalAs(UnmanagedType.Bool)]bool fCreate,
+        IntPtr pstmTemplate,
+        out IntPtr ppstm);
 
     public enum HRESULT : uint
     {
@@ -129,14 +132,14 @@ public sealed class Native
     public interface IShellItem
     {
         void BindToHandler(
-            nint pbc,
-            [MarshalAs(UnmanagedType.LPStruct)] Guid bhid,
-            [MarshalAs(UnmanagedType.LPStruct)] Guid riid,
-            out nint ppv);
+            IntPtr pbc,
+            ref Guid bhid,
+            ref Guid riid,
+            out IntPtr ppv);
 
         void GetParent(out IShellItem ppsi);
 
-        void GetDisplayName(SIGDN sigdnName, [MarshalAs(UnmanagedType.LPWStr)] out string ppszName);
+        void GetDisplayName(SIGDN sigdnName, out string ppszName);
 
         void GetAttributes(uint sfgaoMask, out uint psfgaoAttribs);
 
@@ -153,5 +156,28 @@ public sealed class Native
         WRITE = 0x00000001L,
         READWRITE = 0x00000002L,
         CREATE = 0x00001000L,
+    }
+
+    [CustomMarshaller(typeof(IShellItem), MarshalMode.ManagedToUnmanagedOut, typeof(IShellItemMarshallerOut))]
+    public static partial class IShellItemMarshallerOut
+    {
+        public static IShellItem? ConvertToManaged(IntPtr unmanaged)
+        {
+            if (unmanaged == IntPtr.Zero)
+            {
+                return null;
+            }
+
+            var obj = Marshal.GetObjectForIUnknown(unmanaged);
+            return (IShellItem)obj;
+        }
+
+        public static void Free(IntPtr? managed)
+        {
+            if (managed != null)
+            {
+                Marshal.ReleaseComObject(managed);
+            }
+        }
     }
 }

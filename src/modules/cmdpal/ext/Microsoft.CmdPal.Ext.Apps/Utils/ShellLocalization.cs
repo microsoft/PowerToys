@@ -40,6 +40,11 @@ public class ShellLocalization
             return string.Empty;
         }
 
+        if (shellItem == null)
+        {
+            return string.Empty;
+        }
+
         shellItem.GetDisplayName(SIGDN.NORMALDISPLAY, out var filename);
 
         _ = _localizationCache.TryAdd(lowerInvariantPath, filename);
