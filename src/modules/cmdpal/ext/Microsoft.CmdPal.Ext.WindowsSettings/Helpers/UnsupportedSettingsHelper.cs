@@ -75,11 +75,7 @@ internal static class UnsupportedSettingsHelper
         }
         catch (Exception ex)
         {
-            // Log.Exception(
-            //    $"Can't get registry value for '{valueName}'",
-            //    exception,
-            //    typeof(UnsupportedSettingsHelper));
-            Logger.LogWarning($"Can't get registry value for '{valueName}' - {ex.Message}");
+            Logger.LogError($"Can't get registry value for '{valueName}' - {ex.Message}");
             return uint.MinValue;
         }
 
