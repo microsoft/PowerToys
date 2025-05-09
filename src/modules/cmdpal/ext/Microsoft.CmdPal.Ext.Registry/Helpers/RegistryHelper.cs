@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Registry.Classes;
 using Microsoft.CmdPal.Ext.Registry.Constants;
 using Microsoft.CmdPal.Ext.Registry.Properties;
@@ -201,12 +201,14 @@ internal static class RegistryHelper
                 }
                 catch (Exception exception)
                 {
+                    Logger.LogError(exception.Message);
                     list.Add(new RegistryEntry($"{parentKey.Name}\\{subKey}", exception));
                 }
             }
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex.Message);
             list.Add(new RegistryEntry(parentKey.Name, ex));
         }
 

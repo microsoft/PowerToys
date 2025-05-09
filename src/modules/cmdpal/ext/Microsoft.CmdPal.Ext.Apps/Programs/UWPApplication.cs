@@ -8,12 +8,14 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
 using PackageVersion = Microsoft.CmdPal.Ext.Apps.Programs.UWP.PackageVersion;
+using Theme = Microsoft.CmdPal.Ext.Apps.Utils.Theme;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
@@ -154,8 +156,9 @@ public class UWPApplication : IProgram
                         return true;
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger.LogError(ex.Message);
                 }
             }
         }
