@@ -75,7 +75,8 @@ namespace KeyboardManagerEditorUI.Interop
             IntPtr config,
             [MarshalAs(UnmanagedType.LPWStr)] string originalKeys,
             [MarshalAs(UnmanagedType.LPWStr)] string targetKeys,
-            [MarshalAs(UnmanagedType.LPWStr)] string targetApp);
+            [MarshalAs(UnmanagedType.LPWStr)] string targetApp,
+            int operationType = 0);
 
         [DllImport(DllName)]
         internal static extern int GetKeyCodeFromName([MarshalAs(UnmanagedType.LPWStr)] string keyName);
@@ -99,6 +100,10 @@ namespace KeyboardManagerEditorUI.Interop
 
         [DllImport(DllName)]
         internal static extern bool DeleteSingleKeyRemap(IntPtr mappingConfiguration, int originalKey);
+
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool DeleteSingleKeyToTextRemap(IntPtr config, int originalKey);
 
         [DllImport(DllName)]
         internal static extern bool DeleteShortcutRemap(IntPtr mappingConfiguration, [MarshalAs(UnmanagedType.LPWStr)] string originalKeys, [MarshalAs(UnmanagedType.LPWStr)] string targetApp);

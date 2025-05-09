@@ -175,14 +175,14 @@ namespace KeyboardManagerEditorUI.Interop
             return KeyboardManagerInterop.AddSingleKeyToTextRemap(_configHandle, originalKey, targetText);
         }
 
-        public bool AddShortcutMapping(string originalKeys, string targetKeys, string targetApp = "")
+        public bool AddShortcutMapping(string originalKeys, string targetKeys, string targetApp = "", ShortcutOperationType operationType = ShortcutOperationType.RemapShortcut)
         {
             if (string.IsNullOrEmpty(originalKeys) || string.IsNullOrEmpty(targetKeys))
             {
                 return false;
             }
 
-            return KeyboardManagerInterop.AddShortcutRemap(_configHandle, originalKeys, targetKeys, targetApp);
+            return KeyboardManagerInterop.AddShortcutRemap(_configHandle, originalKeys, targetKeys, targetApp, (int)operationType);
         }
 
         public bool SaveSettings()
@@ -193,6 +193,16 @@ namespace KeyboardManagerEditorUI.Interop
         public bool DeleteSingleKeyMapping(int originalKey)
         {
             return KeyboardManagerInterop.DeleteSingleKeyRemap(_configHandle, originalKey);
+        }
+
+        public bool DeleteSingleKeyToTextMapping(int originalKey)
+        {
+            if (originalKey == 0)
+            {
+                return false;
+            }
+
+            return KeyboardManagerInterop.DeleteSingleKeyToTextRemap(_configHandle, originalKey);
         }
 
         public bool DeleteShortcutMapping(string originalKeys, string targetApp = "")

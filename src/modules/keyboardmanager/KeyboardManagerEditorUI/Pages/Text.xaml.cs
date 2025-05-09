@@ -197,11 +197,11 @@ namespace KeyboardManagerEditorUI.Pages
 
                     if (isAppSpecific && !string.IsNullOrEmpty(appName))
                     {
-                        saved = _mappingService.AddShortcutMapping(originalKeysString, textContent, appName);
+                        saved = _mappingService.AddShortcutMapping(originalKeysString, textContent, appName, ShortcutOperationType.RemapText);
                     }
                     else
                     {
-                        saved = _mappingService.AddShortcutMapping(originalKeysString, textContent);
+                        saved = _mappingService.AddShortcutMapping(originalKeysString, textContent, operationType: ShortcutOperationType.RemapText);
                     }
                 }
 
@@ -235,7 +235,7 @@ namespace KeyboardManagerEditorUI.Pages
                     int originalKey = _mappingService.GetKeyCodeFromName(mapping.Keys[0]);
                     if (originalKey != 0)
                     {
-                        deleted = _mappingService.DeleteSingleKeyMapping(originalKey);
+                        deleted = _mappingService.DeleteSingleKeyToTextMapping(originalKey);
                     }
                 }
                 else
