@@ -15,7 +15,7 @@
 
   <Properties>
     <DisplayName>runner-cli-package</DisplayName>
-    <PublisherDisplayName>amelbawa</PublisherDisplayName>
+    <PublisherDisplayName>>Microsoft Corporation</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 
@@ -30,28 +30,15 @@
 
   <Applications>
     <Application Id="RunnerCLI" Executable="runner-cli.exe" EntryPoint="Windows.FullTrustApplication">
-      <uap:VisualElements DisplayName="PowerToys Client" Square150x150Logo="Images\MedTile.png" Square44x44Logo="Images\AppList.png" Description="The PowerToys client." BackgroundColor="#0078d7" AppListEntry="none" >
+      <uap:VisualElements DisplayName="PowerToys DSC Client" Square150x150Logo="Images\MedTile.png" Square44x44Logo="Images\AppList.png" Description="PowerToys DSC client." BackgroundColor="#0078d7" AppListEntry="none" >
         <uap:DefaultTile/>
       </uap:VisualElements >
       <Extensions>
-        <uap3:Extension Category="windows.appExtensionHost">
-          <uap3:AppExtensionHost>
-            <uap3:Name>com.microsoft.winget.source</uap3:Name>
-          </uap3:AppExtensionHost>
-        </uap3:Extension>
         <uap5:Extension Category="windows.appExecutionAlias">
           <uap5:AppExecutionAlias>
             <uap5:ExecutionAlias Alias="runner-cli.exe" />
           </uap5:AppExecutionAlias>
         </uap5:Extension>
-        <uap3:Extension Category="windows.fileTypeAssociation">
-          <uap3:FileTypeAssociation Name="configuration" Parameters="configure &quot;%1&quot; --wait">
-            <uap:SupportedFileTypes>
-              <uap:FileType>.wingetdev</uap:FileType>
-            </uap:SupportedFileTypes>
-            <uap:DisplayName>PowerToys Client</uap:DisplayName>
-          </uap3:FileTypeAssociation>
-        </uap3:Extension>
       </Extensions>
     </Application>
   </Applications>
