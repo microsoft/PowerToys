@@ -20,10 +20,10 @@ jobs:
   displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}
   timeoutInMinutes: 300
   variables:
-    BuildPlatform: ${{ parameters.platform }}
+    BuildPlatform: ${{ if eq(parameters.platform, 'x64Win10') || eq(parameters.platform, 'x64Win11') }}x64${{ else }}${{ parameters.platform }}${{ end }}
     BuildConfiguration: ${{ parameters.configuration }}
     SrcPath: $(Build.Repository.LocalPath)
-    TestArtifactsName: build-${{ parameters.platform == 'x64Win10' || parameters.platform == 'x64Win11' ? 'x64' : parameters.platform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
+    TestArtifactsName: build-${{ variables.BuildPlatform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
   pool:
     ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
       ${{ if ne(parameters.platform, 'ARM64') }}:
