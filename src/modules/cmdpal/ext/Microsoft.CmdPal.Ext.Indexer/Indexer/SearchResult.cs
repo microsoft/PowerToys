@@ -3,12 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
 using Microsoft.CmdPal.Ext.Indexer.Native;
-using Windows.Win32.System.Com;
-using Windows.Win32.System.Com.StructuredStorage;
-using Windows.Win32.UI.Shell.PropertiesSystem;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
@@ -35,18 +33,18 @@ internal sealed class SearchResult
         }
     }
 
-    public static unsafe SearchResult Create(IPropertyStore propStore)
+    public static unsafe SearchResult Create(NativeMethods.IPropertyStore propStore)
     {
         try
         {
             var key = NativeHelpers.PropertyKeys.PKEYItemNameDisplay;
-            propStore.GetValue(&key, out var itemNameDisplay);
+            propStore.GetValue(ref key, out var itemNameDisplay);
 
             key = NativeHelpers.PropertyKeys.PKEYItemUrl;
-            propStore.GetValue(&key, out var itemUrl);
+            propStore.GetValue(ref key, out var itemUrl);
 
             key = NativeHelpers.PropertyKeys.PKEYKindText;
-            propStore.GetValue(&key, out var kindText);
+            propStore.GetValue(ref key, out var kindText);
 
             var filePath = GetFilePath(ref itemUrl);
             var isFolder = IsFoder(ref kindText);
@@ -67,28 +65,29 @@ internal sealed class SearchResult
         }
     }
 
-    private static bool IsFoder(ref PROPVARIANT kindText)
+    private static bool IsFoder(ref NativeHelpers.PROPVARIANT kindText)
     {
         var kindString = GetStringFromPropVariant(ref kindText);
         return string.Equals(kindString, "Folder", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string GetFilePath(ref PROPVARIANT itemUrl)
+    private static string GetFilePath(ref NativeHelpers.PROPVARIANT itemUrl)
     {
         var filePath = GetStringFromPropVariant(ref itemUrl);
         filePath = UrlToFilePathConverter.Convert(filePath);
         return filePath;
     }
 
-    private static string GetStringFromPropVariant(ref PROPVARIANT propVariant)
+    private static string GetStringFromPropVariant(ref NativeHelpers.PROPVARIANT propVariant)
     {
-        if (propVariant.Anonymous.Anonymous.vt == VARENUM.VT_LPWSTR)
+        if (propVariant.VarType == System.Runtime.InteropServices.VarEnum.VT_LPWSTR)
         {
-            var pwszVal = propVariant.Anonymous.Anonymous.Anonymous.pwszVal;
-            if (pwszVal != null)
-            {
-                return pwszVal.ToString();
-            }
+            var pwszVal = propVariant._ptr;
+
+            // convert to string
+            var str = Marshal.PtrToStringUni(pwszVal);
+            Marshal.FreeCoTaskMem(pwszVal);
+            return str;
         }
 
         return string.Empty;

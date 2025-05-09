@@ -11,9 +11,7 @@ using Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
 using Microsoft.CmdPal.Ext.Indexer.Native;
 using Windows.Win32;
-using Windows.Win32.System.Com;
 using Windows.Win32.System.Search;
-using Windows.Win32.UI.Shell.PropertiesSystem;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
@@ -152,9 +150,16 @@ internal sealed partial class SearchQuery : IDisposable
 
         try
         {
-            getRow.GetRowFromHROW(null, rowHandle, typeof(IPropertyStore).GUID, out propertyStorePtr);
+            getRow.GetRowFromHROW(null, rowHandle, NativeMethods.PropertyStoreGUID, out propertyStorePtr);
 
-            var propertyStore = (IPropertyStore)propertyStorePtr;
+            // get IpropertyStore from propertyStorePtr
+            if (propertyStorePtr == null)
+            {
+                Logger.LogError("Failed to get property store pointer");
+                return false;
+            }
+
+            var propertyStore = (NativeMethods.IPropertyStore)propertyStorePtr;
             if (propertyStore == null)
             {
                 Logger.LogError("Failed to get IPropertyStore interface");
@@ -443,9 +448,9 @@ internal sealed partial class SearchQuery : IDisposable
             return 0;
         }
 
-        if (prop?.vValue.Anonymous.Anonymous.vt == VARENUM.VT_UI4)
+        if (prop?.vValue.VarType == VarEnum.VT_UI4)
         {
-            var value = prop?.vValue.Anonymous.Anonymous.Anonymous.ulVal;
+            var value = prop?.vValue._ulong;
             return (uint)value;
         }
 

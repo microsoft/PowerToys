@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using Microsoft.CmdPal.Ext.Indexer.Native;
 using Windows.Win32.Storage.IndexServer;
 using Windows.Win32.System.Com.StructuredStorage;
 
@@ -16,6 +17,6 @@ internal struct DBPROP
     public uint dwOptions;
     public uint dwStatus;
     public DBID colid;
-    public PROPVARIANT vValue;
+    public NativeHelpers.PROPVARIANT vValue;
 #pragma warning restore SA1307 // Accessible fields should begin with upper-case letter
 }
