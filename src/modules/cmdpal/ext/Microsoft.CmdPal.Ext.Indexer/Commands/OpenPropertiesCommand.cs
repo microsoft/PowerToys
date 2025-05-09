@@ -13,6 +13,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
+using static Microsoft.CmdPal.Ext.Indexer.Native.NativeMethods;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
@@ -30,16 +31,17 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
             var filenamePCWSTR = new PCWSTR((char*)filenamePtr);
             var propertiesPCWSTR = new PCWSTR((char*)propertiesPtr);
 
-            var info = new SHELLEXECUTEINFOW
+            var info = new NativeMethods.SHELLEXECUTEINFOW
             {
-                cbSize = (uint)Marshal.SizeOf<SHELLEXECUTEINFOW>(),
-                lpVerb = propertiesPCWSTR,
-                lpFile = filenamePCWSTR,
+                cbSize = Marshal.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
+                lpVerb = propertiesPCWSTR.ToString(),
+                lpFile = filenamePCWSTR.ToString(),
+
                 nShow = (int)SHOW_WINDOW_CMD.SW_SHOW,
                 fMask = NativeHelpers.SEEMASKINVOKEIDLIST,
             };
 
-            return PInvoke.ShellExecuteEx(ref info);
+            return NativeMethods.ShellExecuteEx(ref info);
         }
         finally
         {

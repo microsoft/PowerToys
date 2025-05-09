@@ -28,16 +28,17 @@ internal sealed partial class OpenWithCommand : InvokableCommand
             var filenamePCWSTR = new PCWSTR((char*)filenamePtr);
             var verbPCWSTR = new PCWSTR((char*)verbPtr);
 
-            var info = new SHELLEXECUTEINFOW
+            var info = new NativeMethods.SHELLEXECUTEINFOW
             {
-                cbSize = (uint)Marshal.SizeOf<SHELLEXECUTEINFOW>(),
-                lpVerb = verbPCWSTR,
-                lpFile = filenamePCWSTR,
+                cbSize = Marshal.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
+                lpVerb = verbPCWSTR.ToString(),
+                lpFile = filenamePCWSTR.ToString(),
+
                 nShow = (int)SHOW_WINDOW_CMD.SW_SHOWNORMAL,
                 fMask = NativeHelpers.SEEMASKINVOKEIDLIST,
             };
 
-            return PInvoke.ShellExecuteEx(ref info);
+            return NativeMethods.ShellExecuteEx(ref info);
         }
         finally
         {

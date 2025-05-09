@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\CmdPalVersion.props" />
-	<Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
-
-	<Import Project="CmdPal.pre.props" />
+  <Import Project="CmdPal.pre.props" />
   <Import Project="CmdPal.Branding.props" />
 
   <PropertyGroup>

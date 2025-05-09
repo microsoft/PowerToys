@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using ManagedCommon;
-using Windows.Win32;
-using Windows.Win32.System.Com;
+using Microsoft.CmdPal.Ext.Indexer.Native;
 using Windows.Win32.System.Search;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
@@ -28,12 +28,16 @@ internal static class DataSourceManager
 
     private static bool InitializeDataSource()
     {
-        var hr = PInvoke.CoCreateInstance(CLSIDCollatorDataSource, null, CLSCTX.CLSCTX_INPROC_SERVER, typeof(IDBInitialize).GUID, out var dataSourceObj);
+        uint clsctxInProcServer = 0x00000001;
+        var hr = NativeMethods.CoCreateInstance(CLSIDCollatorDataSource, IntPtr.Zero, clsctxInProcServer, typeof(IDBInitialize).GUID, out var dataSourceObjPtr);
         if (hr != 0)
         {
             Logger.LogError("CoCreateInstance failed: " + hr);
             return false;
         }
+
+        // create datasource object from ptr
+        var dataSourceObj = Marshal.GetObjectForIUnknown(dataSourceObjPtr);
 
         if (dataSourceObj == null)
         {

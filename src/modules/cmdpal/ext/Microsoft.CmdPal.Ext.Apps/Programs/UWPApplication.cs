@@ -197,9 +197,10 @@ public class UWPApplication : IProgram
                 parsedFallback = prefix + "///" + key;
             }
 
-            var outBuffer = new StringBuilder(128);
+            var outBuffer = new char[1024];
+
             var source = $"@{{{packageFullName}? {parsed}}}";
-            var capacity = (uint)outBuffer.Capacity;
+            var capacity = (uint)outBuffer.Length;
             var hResult = SHLoadIndirectString(source, outBuffer, capacity, IntPtr.Zero);
             if (hResult != HRESULT.S_OK)
             {

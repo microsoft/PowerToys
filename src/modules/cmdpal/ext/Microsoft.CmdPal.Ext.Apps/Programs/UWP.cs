@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Windows.Win32;
@@ -65,11 +66,18 @@ public partial class UWP
         const uint noAttribute = 0x80;
 
         var access = (uint)STGM.READ;
-        var hResult = PInvoke.SHCreateStreamOnFileEx(path, access, noAttribute, false, null, out IStream stream);
+        var hResult = Native.SHCreateStreamOnFileEx(path, access, noAttribute, false, IntPtr.Zero, out var streamPtr);
 
         // S_OK
         if (hResult == 0)
         {
+            // create IStream from streamPtr
+            var stream = Marshal.GetTypedObjectForIUnknown(streamPtr, typeof(IStream)) as IStream;
+            if (stream == null)
+            {
+                return;
+            }
+
             Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest => new UWPApplication(appInManifest, this)).Where(a =>
             {
                 var valid =

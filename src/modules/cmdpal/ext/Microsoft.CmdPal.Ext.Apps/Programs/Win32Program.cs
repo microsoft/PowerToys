@@ -374,15 +374,17 @@ public class Win32Program : IProgram
 
             return program;
         }
-        catch (System.IO.FileLoadException)
+        catch (System.IO.FileLoadException ex)
         {
+            ExtensionHost.LogMessage(ex.ToString());
             return InvalidProgram;
         }
 
         // Only do a catch all in production. This is so make developer aware of any unhandled exception and add the exception handling in.
         // Error caused likely due to trying to get the description of the program
-        catch (Exception)
+        catch (Exception ex)
         {
+            ExtensionHost.LogMessage(ex.ToString());
             return InvalidProgram;
         }
     }

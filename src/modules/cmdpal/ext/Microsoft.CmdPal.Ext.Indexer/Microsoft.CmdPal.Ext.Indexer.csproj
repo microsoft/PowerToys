@@ -1,7 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
-	<Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
-
 	<PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.Indexer</RootNamespace>
 
@@ -9,7 +7,8 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 
-  </PropertyGroup>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
 
   <ItemGroup>
 	<PackageReference Include="Microsoft.Windows.CsWin32">
