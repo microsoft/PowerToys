@@ -2,10 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
+using Microsoft.CmdPal.Ext.Bookmarks.Models;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -23,6 +23,8 @@ internal sealed partial class AddBookmarkForm : FormContent
         _bookmark = bookmark;
         var name = _bookmark?.Name ?? string.Empty;
         var url = _bookmark?.Bookmark ?? string.Empty;
+        var bookmarkType = _bookmark?.Type.ToString() ?? BookmarkType.Web.ToString();
+
         TemplateJson = $$"""
 {
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
@@ -33,25 +35,25 @@ internal sealed partial class AddBookmarkForm : FormContent
             "type": "Input.Text",
             "style": "text",
             "id": "name",
-            "label": "{{Resources.bookmarks_form_name_label}}",
+            "label": {{JsonSerializer.Serialize(Resources.bookmarks_form_name_label, BookmarkSerializationContext.Default.String)}},
             "value": {{JsonSerializer.Serialize(name, BookmarkSerializationContext.Default.String)}},
             "isRequired": true,
-            "errorMessage": "{{Resources.bookmarks_form_name_required}}"
+            "errorMessage": "{{JsonSerializer.Serialize(Resources.bookmarks_form_name_required, BookmarkSerializationContext.Default.String)}}"
         },
         {
             "type": "Input.Text",
             "style": "text",
             "id": "bookmark",
             "value": {{JsonSerializer.Serialize(url, BookmarkSerializationContext.Default.String)}},
-            "label": "{{Resources.bookmarks_form_bookmark_label}}",
+            "label": {{JsonSerializer.Serialize(Resources.bookmarks_form_bookmark_label, BookmarkSerializationContext.Default.String)}},
             "isRequired": true,
-            "errorMessage": "{{Resources.bookmarks_form_bookmark_required}}"
+            "errorMessage": "{{JsonSerializer.Serialize(Resources.bookmarks_form_bookmark_required, BookmarkSerializationContext.Default.String)}}"
         }
     ],
     "actions": [
         {
             "type": "Action.Submit",
-            "title": "{{Resources.bookmarks_form_save}}",
+            "title": {{JsonSerializer.Serialize(Resources.bookmarks_form_save, BookmarkSerializationContext.Default.String)}},
             "data": {
                 "name": "name",
                 "bookmark": "bookmark"
@@ -73,33 +75,13 @@ internal sealed partial class AddBookmarkForm : FormContent
         // get the name and url out of the values
         var formName = formInput["name"] ?? string.Empty;
         var formBookmark = formInput["bookmark"] ?? string.Empty;
-        var hasPlaceholder = formBookmark.ToString().Contains('{') && formBookmark.ToString().Contains('}');
+        var bookmarkTypeString = formInput["bookmarkType"]?.ToString() ?? string.Empty;
 
-        // Determine the type of the bookmark
-        string bookmarkType;
-
-        if (formBookmark.ToString().StartsWith("http://", StringComparison.OrdinalIgnoreCase) || formBookmark.ToString().StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-        {
-            bookmarkType = "web";
-        }
-        else if (File.Exists(formBookmark.ToString()))
-        {
-            bookmarkType = "file";
-        }
-        else if (Directory.Exists(formBookmark.ToString()))
-        {
-            bookmarkType = "folder";
-        }
-        else
-        {
-            // Default to web if we can't determine the type
-            bookmarkType = "web";
-        }
-
+        var parsedBookmarkType = BookmarkTypeHelper.GetBookmarkTypeFromValue(formBookmark.ToString());
         var updated = _bookmark ?? new BookmarkData();
         updated.Name = formName.ToString();
         updated.Bookmark = formBookmark.ToString();
-        updated.Type = bookmarkType;
+        updated.Type = parsedBookmarkType;
 
         AddedCommand?.Invoke(this, updated);
         return CommandResult.GoHome();

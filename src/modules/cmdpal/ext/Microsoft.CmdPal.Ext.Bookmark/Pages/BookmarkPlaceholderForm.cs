@@ -7,11 +7,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using Microsoft.CmdPal.Ext.Bookmarks.Command;
+using Microsoft.CmdPal.Ext.Bookmarks.Models;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
@@ -23,10 +25,14 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
 
     private readonly string _bookmark = string.Empty;
 
+    private BookmarkType _bookmarkType;
+
     // TODO pass in an array of placeholders
-    public BookmarkPlaceholderForm(string name, string url, string type)
+    public BookmarkPlaceholderForm(string name, string url, BookmarkType bookmarkType)
     {
         _bookmark = url;
+        _bookmarkType = bookmarkType;
+
         var r = new Regex(Regex.Escape("{") + "(.*?)" + Regex.Escape("}"));
         var matches = r.Matches(url);
         _placeholderNames = matches.Select(m => m.Groups[1].Value).ToList();
@@ -37,10 +43,10 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
 {
     "type": "Input.Text",
     "style": "text",
-    "id": "{{p}}",
-    "label": "{{p}}",
+    "id": "{{JsonSerializer.Serialize(p, BookmarkSerializationContext.Default.String)}}",
+    "label": "{{JsonSerializer.Serialize(p, BookmarkSerializationContext.Default.String)}}",
     "isRequired": true,
-    "errorMessage": "{{errorMessage}}"
+    "errorMessage": "{{JsonSerializer.Serialize(errorMessage, BookmarkSerializationContext.Default.String)}}"
 }
 """;
         }).ToList();
@@ -58,7 +64,7 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
   "actions": [
     {
       "type": "Action.Submit",
-      "title": "{{Resources.bookmarks_form_open}}",
+      "title": {{JsonSerializer.Serialize(Resources.bookmarks_form_open, BookmarkSerializationContext.Default.String)}},
       "data": {
         "placeholder": "placeholder"
       }
@@ -89,19 +95,11 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
 
         try
         {
-            var uri = UrlCommand.GetUri(target);
-            if (uri != null)
-            {
-                _ = Launcher.LaunchUriAsync(uri);
-            }
-            else
-            {
-                // throw new UriFormatException("The provided URL is not valid.");
-            }
+            return ShellCommand.Invoke(_bookmarkType, target);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error launching URL: {ex.Message}");
+            ExtensionHost.LogMessage($"Invoke bookmark failed. ex.message: {ex.Message}");
         }
 
         return CommandResult.GoHome();
