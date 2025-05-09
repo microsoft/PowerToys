@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Runtime.InteropServices;
 using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
 
 namespace Microsoft.CmdPal.Ext.Apps.Utils;
@@ -45,7 +46,16 @@ public class ShellLocalization
             return string.Empty;
         }
 
-        shellItem.GetDisplayName(SIGDN.NORMALDISPLAY, out var filename);
+        shellItem.GetDisplayName(SIGDN.NORMALDISPLAY, out var filenamePtr);
+
+        // get filename from ptr
+        var filename = Marshal.PtrToStringUni(filenamePtr);
+        Marshal.FreeCoTaskMem(filenamePtr);
+
+        if (filename == null)
+        {
+            return string.Empty;
+        }
 
         _ = _localizationCache.TryAdd(lowerInvariantPath, filename);
 
