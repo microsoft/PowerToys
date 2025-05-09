@@ -137,26 +137,33 @@ public partial class InstallPackageCommand : InvokableCommand
     {
         try
         {
-            await action.AsTask();
-
-            _installBanner.Message = InstallCommandState == PackageInstallCommandState.Uninstall ?
-                string.Format(CultureInfo.CurrentCulture, UninstallPackageFinished, _package.Name) :
-                string.Format(CultureInfo.CurrentCulture, InstallPackageFinished, _package.Name);
-
-            _installBanner.Progress = null;
-            _installBanner.State = MessageState.Success;
-            _installTask = null;
-
-            _ = Task.Run(async () =>
+            try
             {
-                await Task.Delay(2500).ConfigureAwait(false);
+                await action.AsTask();
 
-                if (_installTask == null)
+                _installBanner.Message = InstallCommandState == PackageInstallCommandState.Uninstall ?
+                    string.Format(CultureInfo.CurrentCulture, UninstallPackageFinished, _package.Name) :
+                    string.Format(CultureInfo.CurrentCulture, InstallPackageFinished, _package.Name);
+
+                _installBanner.Progress = null;
+                _installBanner.State = MessageState.Success;
+                _installTask = null;
+
+                _ = Task.Run(async () =>
                 {
-                    WinGetExtensionHost.Instance.HideStatus(_installBanner);
-                }
-            });
-            InstallStateChanged?.Invoke(this, this);
+                    await Task.Delay(2500).ConfigureAwait(false);
+
+                    if (_installTask == null)
+                    {
+                        WinGetExtensionHost.Instance.HideStatus(_installBanner);
+                    }
+                });
+                InstallStateChanged?.Invoke(this, this);
+            }
+            catch (Exception ex)
+            {
+                ExtensionHost.LogMessage($"[WinGet] TryDoInstallOperation throw exception {ex.Message}");
+            }
         }
         catch (Exception ex)
         {
