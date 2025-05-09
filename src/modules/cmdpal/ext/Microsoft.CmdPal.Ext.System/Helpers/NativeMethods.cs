@@ -37,13 +37,13 @@ public static class NativeMethods
     public static extern uint SHEmptyRecycleBin(IntPtr hWnd, uint dwFlags);
 
     [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode)]
-    public static extern int RmStartSession(out IntPtr pSessionHandle, int dwSessionFlags, string strSessionKey);
+    public static extern uint RmStartSession(out IntPtr pSessionHandle, uint dwSessionFlags, string strSessionKey);
 
     [DllImport("rstrtmgr.dll")]
-    public static extern int RmEndSession(IntPtr pSessionHandle);
+    public static extern uint RmEndSession(IntPtr pSessionHandle);
 
     [DllImport("rstrtmgr.dll", CharSet = CharSet.Auto)]
-    public static extern int RmRegisterResources(
+    public static extern uint RmRegisterResources(
         IntPtr pSessionHandle,
         uint nFiles,
         string[]? rgsFilenames,
@@ -53,10 +53,18 @@ public static class NativeMethods
         string[]? rgsServiceNames);
 
     [DllImport("rstrtmgr.dll")]
-    public static extern int RmShutdown(IntPtr pSessionHandle, RM_SHUTDOWN_TYPE lActionFlags, [Optional] RM_WRITE_STATUS_CALLBACK? fnStatus);
+    public static extern uint RmShutdown(IntPtr pSessionHandle, RM_SHUTDOWN_TYPE lActionFlags, [Optional] RM_WRITE_STATUS_CALLBACK? fnStatus);
 
     [DllImport("rstrtmgr.dll")]
-    public static extern int RmRestart(IntPtr pSessionHandle, int dwRestartFlags, [Optional] RM_WRITE_STATUS_CALLBACK? fnStatus);
+    public static extern uint RmRestart(IntPtr pSessionHandle, uint dwRestartFlags, [Optional] RM_WRITE_STATUS_CALLBACK? fnStatus);
+}
+
+public enum SystemErrorCode : uint
+{
+    /// <summary>
+    /// The function succeeds and returns.
+    /// </summary>
+    ERROR_SUCCESS = 0,
 }
 
 public enum HRESULT : uint
