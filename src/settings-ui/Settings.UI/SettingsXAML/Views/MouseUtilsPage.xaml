@@ -358,6 +358,34 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
+                        Description="Effortless mouse cursor control with a single switch for enhanced visibility"
+                        Header="Gliding cursor"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECE7;}"
+                        IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
+                        <ToggleSwitch />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                Description="How fast the crosshairs are moving"
+                                Header="Travel speed"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xEC4A;}">
+                                <Slider
+                                    Maximum="10"
+                                    Minimum="0"
+                                    Value="5" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Description="Speed when the crosshairs are slowing down"
+                                Header="Delay speed"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
+                                <Slider
+                                    Maximum="10"
+                                    Minimum="0"
+                                    Value="5" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
