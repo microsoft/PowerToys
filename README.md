@@ -222,6 +222,7 @@ In this release, we focused on new features, stability, and automation.
  - Added QuickNotes to the third-party plugins documentation for PowerToys Run. Thanks [@ruslanlap](https://github.com/ruslanlap)!
  - Added Weather and Pomodoro plugins to the PowerToys Run third-party plugin documentation. Thanks [@ruslanlap](https://github.com/ruslanlap)!
  - Added the Linear plugin to PowerToys Run's third-party plugin documentation. Thanks [@vednig](https://github.com/vednig)!
+ - Fixed formatting issues in documentation files and updated contributor and team member information. Thanks [@DanielEScherzer](https://github.com/DanielEScherzer) and [@RokyZevon](https://github.com/RokyZevon)!
 
 ### Development
 
