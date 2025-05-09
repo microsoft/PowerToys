@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
+using Dia2Lib;
 
 namespace Microsoft.CmdPal.Ext.Apps.Utils;
 
@@ -23,7 +24,7 @@ public sealed partial class Native
         string pszFile,
         uint grfMode,
         uint dwAttributes,
-        [MarshalAs(UnmanagedType.Bool)]bool fCreate,
+        [MarshalAs(UnmanagedType.Bool)] bool fCreate,
         IntPtr pstmTemplate,
         out IntPtr ppstm);
 
@@ -139,7 +140,7 @@ public sealed partial class Native
 
         void GetParent(out IShellItem ppsi);
 
-        void GetDisplayName(SIGDN sigdnName, out string ppszName);
+        void GetDisplayName(SIGDN sigdnName, out IntPtr ppszName);
 
         void GetAttributes(uint sfgaoMask, out uint psfgaoAttribs);
 
@@ -172,12 +173,9 @@ public sealed partial class Native
             return (IShellItem)obj;
         }
 
-        public static void Free(IntPtr? managed)
+        public static void Free(IntPtr managed)
         {
-            if (managed != null)
-            {
-                Marshal.ReleaseComObject(managed);
-            }
+            Marshal.FreeCoTaskMem(managed);
         }
     }
 }
