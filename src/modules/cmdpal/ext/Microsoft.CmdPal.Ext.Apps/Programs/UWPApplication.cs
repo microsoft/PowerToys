@@ -15,6 +15,7 @@ using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
 using PackageVersion = Microsoft.CmdPal.Ext.Apps.Programs.UWP.PackageVersion;
+using Theme = Microsoft.CmdPal.Ext.Apps.Utils.Theme;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
