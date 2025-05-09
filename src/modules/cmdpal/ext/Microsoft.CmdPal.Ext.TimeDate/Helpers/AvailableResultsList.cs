@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
