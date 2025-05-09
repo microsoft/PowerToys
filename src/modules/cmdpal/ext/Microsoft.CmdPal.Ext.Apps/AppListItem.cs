@@ -74,11 +74,10 @@ internal sealed partial class AppListItem : ListItem
                     heroImage = IconInfo.FromStream(stream);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Logger.LogError(ex.Message);
-
                 // do nothing if we fail to load an icon.
+                // Logging it would be too NOISY, there's really no need.
             }
         }
 
