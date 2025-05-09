@@ -40,7 +40,7 @@ public class ListRepository<T> : IRepository<T>, IEnumerable<T>
         }
         catch (ArgumentException ex)
         {
-            Logger.LogError(ex.Message);
+            Logger.LogInfo(ex.Message);
         }
     }
 
