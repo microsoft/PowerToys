@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
@@ -73,10 +74,11 @@ internal sealed partial class AppListItem : ListItem
                     heroImage = IconInfo.FromStream(stream);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogError(ex.Message);
+
                 // do nothing if we fail to load an icon.
-                // Logging it would be too NOISY, there's really no need.
             }
         }
 

@@ -8,6 +8,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
@@ -154,8 +155,9 @@ public class UWPApplication : IProgram
                         return true;
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger.LogError(ex.Message);
                 }
             }
         }
