@@ -20,7 +20,10 @@ jobs:
   displayName: Test ${{ parameters.platform }} ${{ parameters.configuration }}
   timeoutInMinutes: 300
   variables:
-    BuildPlatform: ${{ if eq(parameters.platform, 'x64Win10') || eq(parameters.platform, 'x64Win11') }}x64${{ else }}${{ parameters.platform }}${{ end }}
+    ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
+      BuildPlatform: x64
+    ${{ else }}:
+      BuildPlatform: ${{ parameters.platform }}
     BuildConfiguration: ${{ parameters.configuration }}
     SrcPath: $(Build.Repository.LocalPath)
     TestArtifactsName: build-${{ variables.BuildPlatform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
