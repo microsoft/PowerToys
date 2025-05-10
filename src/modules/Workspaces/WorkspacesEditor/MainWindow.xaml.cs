@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Interop;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using WorkspacesEditor.Telemetry;
 using WorkspacesEditor.Utils;
 using WorkspacesEditor.ViewModels;
 
@@ -87,6 +88,8 @@ namespace WorkspacesEditor
                 },
                 Application.Current.Dispatcher,
                 cancellationToken.Token);
+
+            PowerToysTelemetry.Log.WriteEvent(new WorkspacesEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
         private bool IsEditorInsideVisibleArea()

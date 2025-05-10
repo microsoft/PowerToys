@@ -22,6 +22,8 @@ namespace RegistryPreviewUILib
 {
     public sealed partial class RegistryPreviewMainPage : Page
     {
+        private const string NEWFILEHEADER = "Windows Registry Editor Version 5.00\r\n\r\n";
+
         private static SemaphoreSlim _dialogSemaphore = new(1);
         private string lastKeyPath;
 
@@ -77,6 +79,9 @@ namespace RegistryPreviewUILib
             }
             catch
             {
+                // Set default value for empty opening
+                await MonacoEditor.SetTextAsync(NEWFILEHEADER);
+
                 // restore TextChanged handler to make for clean UI
                 MonacoEditor.TextChanged += MonacoEditor_TextChanged;
 
@@ -164,6 +169,25 @@ namespace RegistryPreviewUILib
             registryJumpToKeyButton.IsEnabled = CheckTreeForValidKey();
 
             // enable the UI
+            ChangeCursor(gridPreview, false);
+        }
+
+        private async void ResetEditorAndFile()
+        {
+            // Disable parts of the UI that can cause trouble when loading
+            ChangeCursor(gridPreview, true);
+
+            // clear the treeView and dataGrid no matter what
+            treeView.RootNodes.Clear();
+            ClearTable();
+
+            // update the current window's title with the current filename
+            _updateWindowTitleFunction(string.Empty);
+
+            // Set default value for empty opening
+            await MonacoEditor.SetTextAsync(NEWFILEHEADER);
+
+            // Reset the cursor but leave editor disabled as no content got loaded
             ChangeCursor(gridPreview, false);
         }
 
@@ -967,12 +991,7 @@ namespace RegistryPreviewUILib
         /// </summary>
         private string StripFirstAndLast(string line)
         {
-            if (line.Length > 1)
-            {
-                line = line.Remove(line.Length - 1, 1);
-                line = line.Remove(0, 1);
-            }
-
+            line = ParseHelper.StripFirstAndLast(line);
             return line;
         }
 
@@ -1040,27 +1059,7 @@ namespace RegistryPreviewUILib
         /// </summary>
         private void CheckKeyLineForBrackets(ref string registryLine, ref string imageName)
         {
-            // following the current behavior of the registry editor, find the last ] and treat everything else as ignorable
-            int lastBracket = registryLine.LastIndexOf(']');
-            if (lastBracket == -1)
-            {
-                // since we don't have a last bracket yet, add an extra space and continue processing
-                registryLine += " ";
-                imageName = ERRORIMAGE;
-            }
-            else
-            {
-                // having found the last ] and there is text after it, drop the rest of the string on the floor
-                if (lastBracket < registryLine.Length - 1)
-                {
-                    registryLine = registryLine.Substring(0, lastBracket + 1);
-                }
-
-                if (CheckForKnownGoodBranches(registryLine) == false)
-                {
-                    imageName = ERRORIMAGE;
-                }
-            }
+            ParseHelper.CheckKeyLineForBrackets(ref registryLine, ref imageName);
         }
 
         /// <summary>
@@ -1077,41 +1076,6 @@ namespace RegistryPreviewUILib
             }
 
             return value.TrimEnd();
-        }
-
-        /// <summary>
-        /// Make sure the root of a full path start with one of the five "hard coded" roots.  Throw an error for the branch if it doesn't.
-        /// </summary>
-        private bool CheckForKnownGoodBranches(string key)
-        {
-            if ((key.StartsWith("[HKEY_CLASSES_ROOT]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_CURRENT_USER]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_USERS]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_LOCAL_MACHINE]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKEY_CURRENT_CONFIG]", StringComparison.InvariantCultureIgnoreCase) == false)
-                &&
-                (key.StartsWith(@"[HKEY_CLASSES_ROOT\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_CURRENT_USER\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_USERS\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_LOCAL_MACHINE\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKEY_CURRENT_CONFIG\", StringComparison.InvariantCultureIgnoreCase) == false)
-                &&
-                (key.StartsWith("[HKCR]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKCU]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKU]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKLM]", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith("[HKCC]", StringComparison.InvariantCultureIgnoreCase) == false)
-                &&
-                (key.StartsWith(@"[HKCR\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKCU\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKU\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKLM\", StringComparison.InvariantCultureIgnoreCase) == false &&
-                key.StartsWith(@"[HKCC\", StringComparison.InvariantCultureIgnoreCase) == false))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>

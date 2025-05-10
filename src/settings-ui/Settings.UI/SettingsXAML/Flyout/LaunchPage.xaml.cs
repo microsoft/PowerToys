@@ -133,6 +133,14 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
+                case ModuleType.CmdPal: // Show CmdPal
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowCmdPalEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    break;
+
                 default:
                     moduleRun = false;
                     break;

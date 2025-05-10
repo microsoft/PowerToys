@@ -153,7 +153,7 @@ namespace MouseWithoutBorders
 
                         string filePath = stringData;
 
-                        _ = Common.ImpersonateLoggedOnUserAndDoSomething(() =>
+                        _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                         {
                             if (File.Exists(filePath) || Directory.Exists(filePath))
                             {
@@ -579,7 +579,7 @@ namespace MouseWithoutBorders
                 {
                     if (postAct.Equals("desktop", StringComparison.OrdinalIgnoreCase))
                     {
-                        _ = ImpersonateLoggedOnUserAndDoSomething(() =>
+                        _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                         {
                             savingFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\MouseWithoutBorders\\";
 
@@ -696,7 +696,7 @@ namespace MouseWithoutBorders
                                 Path.GetFileName(fileName),
                                 remoteMachine);
 
-                            _ = ImpersonateLoggedOnUserAndDoSomething(() =>
+                            _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                             {
                                 ProcessStartInfo startInfo = new();
                                 startInfo.UseShellExecute = true;

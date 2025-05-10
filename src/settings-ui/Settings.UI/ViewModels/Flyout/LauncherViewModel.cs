@@ -40,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
 
             AddFlyoutMenuItem(ModuleType.ColorPicker);
+            AddFlyoutMenuItem(ModuleType.CmdPal);
             AddFlyoutMenuItem(ModuleType.EnvironmentVariables);
             AddFlyoutMenuItem(ModuleType.FancyZones);
             AddFlyoutMenuItem(ModuleType.Hosts);

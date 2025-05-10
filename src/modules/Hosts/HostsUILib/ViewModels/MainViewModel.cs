@@ -202,7 +202,9 @@ namespace HostsUILib.ViewModels
                     }
 
                     _entries.CollectionChanged += Entries_CollectionChanged;
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
                     Entries = new AdvancedCollectionView(_entries, true);
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
                     Entries.SortDescriptions.Add(new SortDescription(nameof(Entry.Id), SortDirection.Ascending));
                     ApplyFilters();
                     OnPropertyChanged(nameof(Entries));
