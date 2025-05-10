@@ -13,6 +13,7 @@ namespace RunnerCLI;
 
 public class Program
 {
+    private const string _powerToys = "PowerToys";
     private static SettingsUtils _settingsUtils = new();
     private static Option<string> moduleOption = new("--module", $"The module name: {DescriptiveModuleNames}")
     {
@@ -27,13 +28,13 @@ public class Program
         {
             var value = result.GetValueOrDefault<string>() ?? string.Empty;
             var validValues = GetSettingsConfigTypes().Keys.ToList();
-            if (!validValues.Contains(value))
+            if (!validValues.Contains(value) && value != _powerToys)
             {
                 result.ErrorMessage = $"Invalid module name. Valid values are: {DescriptiveModuleNames}";
             }
         });
 
-        var rootCommand = new RootCommand("MyApp Command-Line Interface");
+        var rootCommand = new RootCommand("PowerToys Command-Line Interface");
         var dscCommand = new Command("dsc", "Manage DSC modules");
 
         AddGetCommand(dscCommand);
@@ -92,12 +93,27 @@ public class Program
 
     private static string GetSettings(string moduleName)
     {
-        if (GetSettingsConfigTypes().TryGetValue(moduleName, out var moduleType))
+        if (moduleName == _powerToys)
         {
-            var method = typeof(Program).GetMethod(nameof(GetSettingsInternal), BindingFlags.NonPublic | BindingFlags.Static);
-            var genericMethod = method!.MakeGenericMethod(moduleType);
-            var result = genericMethod.Invoke(null, null);
-            return result!.ToString()!;
+            var allSettings = new Dictionary<string, object>();
+            foreach (var moduleType in GetSettingsConfigTypes().Values)
+            {
+                try
+                {
+                    var settings = GetSettings(moduleType);
+                    allSettings.Add(moduleType.Name, settings);
+                }
+                catch
+                {
+                    allSettings.Add(moduleType.Name, new JsonObject());
+                }
+            }
+
+            return JsonSerializer.Serialize(allSettings);
+        }
+        else if (GetSettingsConfigTypes().TryGetValue(moduleName, out var moduleType))
+        {
+            return ((ISettingsConfig)GetSettings(moduleType)).ToJsonString();
         }
         else
         {
@@ -107,11 +123,26 @@ public class Program
 
     private static void SaveSettings(string moduleName, string settings)
     {
-        if (GetSettingsConfigTypes().TryGetValue(moduleName, out var moduleType))
+        if (moduleName == _powerToys)
         {
-            var method = typeof(Program).GetMethod(nameof(SaveSettingsInternal), BindingFlags.NonPublic | BindingFlags.Static);
-            var genericMethod = method!.MakeGenericMethod(moduleType);
-            genericMethod.Invoke(null, [settings]);
+            var allSettings = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(settings);
+            if (allSettings == null)
+            {
+                throw new ArgumentException("Invalid JSON format.");
+            }
+
+            var settingsConfigTypes = GetSettingsConfigTypes();
+            foreach (var module in allSettings)
+            {
+                if (settingsConfigTypes.TryGetValue(module.Key, out var moduleType))
+                {
+                    SaveSettings(moduleType, module.Value.ToJsonString());
+                }
+            }
+        }
+        else if (GetSettingsConfigTypes().TryGetValue(moduleName, out var moduleType))
+        {
+            SaveSettings(moduleType, settings);
         }
         else
         {
@@ -119,17 +150,39 @@ public class Program
         }
     }
 
-    private static string GetSettingsInternal<T>()
+    private static object GetSettings(Type moduleType)
+    {
+        var method = typeof(Program).GetMethod(nameof(GetSettingsInternal), BindingFlags.NonPublic | BindingFlags.Static);
+        var genericMethod = method!.MakeGenericMethod(moduleType);
+        var result = genericMethod.Invoke(null, null);
+        return result!;
+    }
+
+    private static void SaveSettings(Type moduleType, string settings)
+    {
+        var method = typeof(Program).GetMethod(nameof(SaveSettingsInternal), BindingFlags.NonPublic | BindingFlags.Static);
+        var genericMethod = method!.MakeGenericMethod(moduleType);
+        genericMethod.Invoke(null, [settings]);
+    }
+
+    private static T GetSettingsInternal<T>()
         where T : ISettingsConfig, new()
     {
         var setting = new T();
-        return _settingsUtils.GetSettings<T>(setting.GetModuleName()).ToJsonString();
+        return _settingsUtils.GetSettings<T>(setting.GetModuleName());
     }
 
     private static void SaveSettingsInternal<T>(string json)
         where T : ISettingsConfig, new()
     {
         var setting = new T();
-        _settingsUtils.SaveSettings(json, setting.GetModuleName());
+        if (setting is GeneralSettings)
+        {
+            _settingsUtils.SaveSettings(json);
+        }
+        else
+        {
+            _settingsUtils.SaveSettings(json, setting.GetModuleName());
+        }
     }
 }

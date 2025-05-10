@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2024/04/resource/manifest.json",
-    "type": "Microsoft.DSC.Hackathon/Powertoys.Template",
+    "type": "Microsoft.DSC.Hackathon/Powertoys.Powertoys",
     "version": "1.0.0",
     "get": {
         "executable": "runner-cli",
@@ -8,7 +8,7 @@
             "dsc",
             "get",
             "--module",
-            "Template"
+            "PowerToys"
         ]
     },
     "set": {
@@ -17,20 +17,20 @@
             "dsc",
             "set",
             "--module",
-            "Template",
+            "PowerToys",
             {
                 "jsonInputArg": "--write",
                 "mandatory": true
             }
         ]
     },
-    "export":{
+    "export": {
         "executable": "runner-cli",
         "args": [
             "dsc",
             "get",
             "--module",
-            "Template"
+            "PowerToys"
         ]
     },
     "schema": {
