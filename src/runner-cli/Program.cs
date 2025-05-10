@@ -176,13 +176,6 @@ public class Program
         where T : ISettingsConfig, new()
     {
         var setting = new T();
-        if (setting is GeneralSettings)
-        {
-            _settingsUtils.SaveSettings(json);
-        }
-        else
-        {
-            _settingsUtils.SaveSettings(json, setting.GetModuleName());
-        }
+        _settingsUtils.SaveSettings(json, setting.GetModuleName());
     }
 }
