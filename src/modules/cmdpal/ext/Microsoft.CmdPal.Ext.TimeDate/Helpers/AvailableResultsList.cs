@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
@@ -109,10 +110,11 @@ internal static class AvailableResultsList
                         {
                             value = dtObject.ToString(value, CultureInfo.CurrentCulture);
                         }
-                        catch
+                        catch (Exception ex)
                         {
                             if (!containsCustomSyntax)
                             {
+                                Logger.LogError($"Unable to format date time with format: {value}. Error: {ex.Message}");
                                 throw;
                             }
                             else
@@ -133,6 +135,7 @@ internal static class AvailableResultsList
                     }
                     catch (ArgumentOutOfRangeException e)
                     {
+                        Logger.LogError($"ArgumentOutOfRangeException with format: {formatSyntax}. Error: {e.Message}");
                         results.Add(new AvailableResult()
                         {
                             Value = Resources.Microsoft_plugin_timedate_ErrorConvertCustomFormat,
@@ -144,6 +147,7 @@ internal static class AvailableResultsList
                     }
                     catch (Exception e)
                     {
+                        Logger.LogError($"Exception with format: {formatSyntax}. Error: {e.Message}");
                         results.Add(new AvailableResult()
                         {
                             Value = Resources.Microsoft_plugin_timedate_InvalidCustomFormat + " " + formatSyntax,
@@ -325,8 +329,9 @@ internal static class AvailableResultsList
                     IconType = ResultIconType.DateTime,
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError($"Unable to convert to Windows file time: {ex.Message}");
                 results.Add(new AvailableResult()
                 {
                     Value = Resources.Microsoft_plugin_timedate_ErrorConvertWft,

@@ -15,6 +15,7 @@ using System.Security;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
@@ -239,10 +240,12 @@ public class Win32Program : IProgram
         }
         catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
         {
+            Logger.LogError(e.Message);
             return InvalidProgram;
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            Logger.LogError(e.Message);
             return InvalidProgram;
         }
     }
@@ -317,11 +320,13 @@ public class Win32Program : IProgram
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
+                Logger.LogError(e.Message);
                 return InvalidProgram;
             }
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            Logger.LogError(e.Message);
             return InvalidProgram;
         }
     }
@@ -374,15 +379,17 @@ public class Win32Program : IProgram
 
             return program;
         }
-        catch (System.IO.FileLoadException)
+        catch (System.IO.FileLoadException e)
         {
+            Logger.LogError(e.Message);
             return InvalidProgram;
         }
 
         // Only do a catch all in production. This is so make developer aware of any unhandled exception and add the exception handling in.
         // Error caused likely due to trying to get the description of the program
-        catch (Exception)
+        catch (Exception e)
         {
+            Logger.LogError(e.Message);
             return InvalidProgram;
         }
     }
@@ -402,14 +409,17 @@ public class Win32Program : IProgram
         }
         catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
         {
+            Logger.LogError(e.Message);
             return InvalidProgram;
         }
-        catch (FileNotFoundException)
+        catch (FileNotFoundException e)
         {
+            Logger.LogError(e.Message);
             return InvalidProgram;
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            Logger.LogError(e.Message);
             return InvalidProgram;
         }
     }
@@ -515,16 +525,19 @@ public class Win32Program : IProgram
                     {
                         files.AddRange(Directory.EnumerateFiles(currentDirectory, $"*.{suffix}", SearchOption.TopDirectoryOnly));
                     }
-                    catch (DirectoryNotFoundException)
+                    catch (DirectoryNotFoundException e)
                     {
+                        Logger.LogError(e.Message);
                     }
                 }
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
+                Logger.LogError(e.Message);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger.LogError(e.Message);
             }
 
             try
@@ -548,9 +561,11 @@ public class Win32Program : IProgram
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
             {
+                Logger.LogError(e.Message);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger.LogError(e.Message);
             }
         }
         while (folderQueue.Count > 0);
@@ -682,6 +697,7 @@ public class Win32Program : IProgram
         }
         catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
         {
+            Logger.LogError(e.Message);
             return string.Empty;
         }
     }
@@ -769,8 +785,9 @@ public class Win32Program : IProgram
             icoPath = ExpandEnvironmentVariables(redirectionPath);
             return true;
         }
-        catch (IOException)
+        catch (IOException e)
         {
+            Logger.LogError(e.Message);
         }
 
         icoPath = null;
@@ -839,8 +856,9 @@ public class Win32Program : IProgram
 
             return DeduplicatePrograms(programs.Concat(runCommandPrograms).Where(program => program?.Valid == true));
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            Logger.LogError(e.Message);
             return Array.Empty<Win32Program>();
         }
     }

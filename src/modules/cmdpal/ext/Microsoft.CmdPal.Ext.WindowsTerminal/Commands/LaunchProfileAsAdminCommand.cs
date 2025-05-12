@@ -9,6 +9,7 @@ using System.Linq;
 using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -60,6 +61,7 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
             //var message = Resources.run_terminal_failed;
             //Log.Exception("Failed to open Windows Terminal", ex, GetType());
             //_context.API.ShowMsg(name, message, string.Empty);
+            Logger.LogError($"Failed to open Windows Terminal: {ex.Message}");
         }
     }
 #pragma warning restore IDE0059, CS0168, SA1005
@@ -81,6 +83,7 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
             // var message = Resources.run_terminal_failed;
             // Log.Exception("Failed to open Windows Terminal", ex, GetType());
             // _context.API.ShowMsg(name, message, string.Empty);
+            Logger.LogError($"Failed to open Windows Terminal: {ex.Message}");
         }
     }
 #pragma warning restore IDE0059, CS0168
@@ -94,6 +97,7 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
         catch
         {
             // TODO GH #108 We need to figure out some logging
+            // No need to log here, as the exception is already logged in LaunchElevated
         }
 
         return CommandResult.Dismiss();

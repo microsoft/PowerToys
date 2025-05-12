@@ -6,6 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.Apps.Utils;
 
@@ -138,9 +139,9 @@ public class ShellLinkHelper : IShellLinkHelper
         {
             ((IPersistFile)link).Load(path, STGM_READ);
         }
-        catch (System.IO.FileNotFoundException)
+        catch (System.IO.FileNotFoundException ex)
         {
-            // Log.Exception("Path could not be retrieved", ex, GetType(), path);
+            Logger.LogError(ex.Message);
             return string.Empty;
         }
 
@@ -163,9 +164,9 @@ public class ShellLinkHelper : IShellLinkHelper
                 ((IShellLinkW)link).GetDescription(buffer, MAX_PATH);
                 Description = buffer.ToString();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log.Exception($"Failed to fetch description for {target}, {e.Message}", e, GetType());
+                Logger.LogError(ex.Message);
                 Description = string.Empty;
             }
 
