@@ -141,7 +141,6 @@ internal static class ResultHelper
         }
         catch (Exception exception)
         {
-            Logger.LogError(exception.Message);
             var registryEntry = new RegistryEntry(key.Name, exception);
 
             resultList.Add(new ListItem(new OpenKeyInEditorCommand(registryEntry))

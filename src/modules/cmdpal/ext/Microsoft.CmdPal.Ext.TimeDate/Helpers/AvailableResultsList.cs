@@ -112,9 +112,9 @@ internal static class AvailableResultsList
                         }
                         catch (Exception ex)
                         {
-                            Logger.LogError($"Unable to format date time with format: {value}. Error: {ex.Message}");
                             if (!containsCustomSyntax)
                             {
+                                Logger.LogError($"Unable to format date time with format: {value}. Error: {ex.Message}");
                                 throw;
                             }
                             else
