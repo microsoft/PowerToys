@@ -84,9 +84,15 @@ internal sealed class SearchResult
         {
             var pwszVal = propVariant._ptr;
 
+            if (pwszVal == IntPtr.Zero)
+            {
+                return string.Empty;
+            }
+
             // convert to string
             var str = Marshal.PtrToStringUni(pwszVal);
-            Marshal.FreeCoTaskMem(pwszVal);
+
+            // Marshal.FreeCoTaskMem(pwszVal);
             return str;
         }
 
