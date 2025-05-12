@@ -99,17 +99,10 @@ In this release, we focused on new features, stability, and automation.
 
 **✨Highlights**
 
- - Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from Command Palette.
- - Added the ability to make the Command Palette global hotkey a low-level keyboard hook.
- - Added the ability to immediately select search text on opening page, enhancing the search experience in Command Palette.
- - Refactored and ported the PowerToys Run v1 calculator logic into Command Palette, added settings support, and improved fallback behavior.
- - Re-added support for list item keyboard shortcuts in Command Palette.
- - Ported custom format support to the Time and Date plugin, reordered and cleaned up settings, improved error messaging, and fixed edge-case crashes for more robust and user-friendly behavior.
- - Added fallback support to the TimeDate extension in Command Palette, enabling direct date/time queries without pre-selecting the command.
- - Added support for filterable, nested context menus in CmdPal, including a search box to maintain focus behavior.
  - Added the ability for Command Palette to search any file using a fallback command.
+ - Added the ability to make the Command Palette global hotkey a low-level keyboard hook.
+ - Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from Command Palette.
  - Enhanced Registry Preview to support pasting registry keys and values without manually writing the file header, and added a new button for resetting the app. Thanks [@htcfreek](https://github.com/htcfreek)!
- - Added support for Oklab and Oklch color formats in Color Picker. Thanks [@lemonyte](https://github.com/lemonyte)!
 
 ### Advanced Paste
 
