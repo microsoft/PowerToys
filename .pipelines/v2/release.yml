@@ -40,6 +40,9 @@ parameters:
 
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
+variables:
+  - template: templates/variables-nuget-package-version.yml
+
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
