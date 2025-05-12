@@ -167,7 +167,7 @@ internal static class TimeAndDateHelper
         if (DateTime.TryParse(input, out timestamp))
         {
             // Known date/time format
-            Logger.LogInfo($"Successfully parsed standard date/time format: '{input}' as {timestamp}");
+            Logger.LogDebug($"Successfully parsed standard date/time format: '{input}' as {timestamp}");
             return true;
         }
         else if (Regex.IsMatch(input, @"^u[\+-]?\d+$"))
@@ -186,7 +186,7 @@ internal static class TimeAndDateHelper
             }
 
             timestamp = DateTimeOffset.FromUnixTimeSeconds(secondsU).LocalDateTime;
-            Logger.LogInfo($"Successfully parsed unix timestamp: '{input}' as {timestamp}");
+            Logger.LogDebug($"Successfully parsed unix timestamp: '{input}' as {timestamp}");
             return true;
         }
         else if (Regex.IsMatch(input, @"^ums[\+-]?\d+$"))
@@ -205,7 +205,7 @@ internal static class TimeAndDateHelper
             }
 
             timestamp = DateTimeOffset.FromUnixTimeMilliseconds(millisecondsUms).LocalDateTime;
-            Logger.LogInfo($"Successfully parsed unix millisecond timestamp: '{input}' as {timestamp}");
+            Logger.LogDebug($"Successfully parsed unix millisecond timestamp: '{input}' as {timestamp}");
             return true;
         }
         else if (Regex.IsMatch(input, @"^ft\d+$"))
@@ -224,7 +224,7 @@ internal static class TimeAndDateHelper
 
             // DateTime.FromFileTime returns as local time.
             timestamp = DateTime.FromFileTime(secondsFt);
-            Logger.LogInfo($"Successfully parsed Windows file time: '{input}' as {timestamp}");
+            Logger.LogDebug($"Successfully parsed Windows file time: '{input}' as {timestamp}");
             return true;
         }
         else if (Regex.IsMatch(input, @"^oa[+-]?\d+[,.0-9]*$"))
@@ -243,7 +243,7 @@ internal static class TimeAndDateHelper
             }
 
             timestamp = DateTime.FromOADate(oADate);
-            Logger.LogInfo($"Successfully parsed OLE Automation date: '{input}' as {timestamp}");
+            Logger.LogDebug($"Successfully parsed OLE Automation date: '{input}' as {timestamp}");
             return true;
         }
         else if (Regex.IsMatch(input, @"^exc[+-]?\d+[,.0-9]*$"))
@@ -273,7 +273,7 @@ internal static class TimeAndDateHelper
 
             excDate = excDate <= 60 ? excDate + 1 : excDate;
             timestamp = DateTime.FromOADate(excDate);
-            Logger.LogInfo($"Successfully parsed Excel 1900 date value: '{input}' as {timestamp}");
+            Logger.LogDebug($"Successfully parsed Excel 1900 date value: '{input}' as {timestamp}");
             return true;
         }
         else if (Regex.IsMatch(input, @"^exf[+-]?\d+[,.0-9]*$"))
@@ -293,7 +293,7 @@ internal static class TimeAndDateHelper
             }
 
             timestamp = DateTime.FromOADate(exfDate + 1462);
-            Logger.LogInfo($"Successfully parsed Excel 1904 date value: '{input}' as {timestamp}");
+            Logger.LogDebug($"Successfully parsed Excel 1904 date value: '{input}' as {timestamp}");
             return true;
         }
         else
