@@ -64,7 +64,6 @@ public sealed partial class MainWindow : Window,
     private SystemBackdropConfiguration? _configurationSource;
 
     private WindowPosition _currentWindowPosition = new();
-    private bool _openWindowInLastPos = true;
 
     public MainWindow()
     {
@@ -173,7 +172,6 @@ public sealed partial class MainWindow : Window,
 
         SetupHotkey(settings);
         SetupTrayIcon(settings.ShowSystemTrayIcon);
-        _openWindowInLastPos = settings.OpenWindowInLastPos;
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
 
@@ -245,7 +243,7 @@ public sealed partial class MainWindow : Window,
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
-        if (_openWindowInLastPos)
+        if (target == MonitorBehavior.ToLast)
         {
             AppWindow.Resize(new SizeInt32 { Width = _currentWindowPosition.Width, Height = _currentWindowPosition.Height });
             AppWindow.Move(new PointInt32 { X = _currentWindowPosition.X, Y = _currentWindowPosition.Y });
@@ -397,10 +395,7 @@ public sealed partial class MainWindow : Window,
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
             // Save the current window position before hiding the window
-            if (_openWindowInLastPos)
-            {
-                UpdateWindowPositionInMemory();
-            }
+            UpdateWindowPositionInMemory();
 
             // If there's a debugger attached...
             if (System.Diagnostics.Debugger.IsAttached)

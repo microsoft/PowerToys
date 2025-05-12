@@ -63,11 +63,8 @@
                             <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
                             <ComboBoxItem x:Uid="Run_Radio_Position_In_Place" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_LastPosition" />
                         </ComboBox>
-                    </controls:SettingsCard>
-
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_OpenWindowInLastPos_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A7;}">
-                        <ToggleSwitch IsOn="{x:Bind viewModel.OpenWindowInLastPos, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
