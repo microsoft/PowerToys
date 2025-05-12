@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
+
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- These properties can be overridden to support non-default installations. -->
+  <PropertyGroup>
+    <WixHeatBinDir Condition=" '$(WixHeatBinDir)' == '' and '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)..\tools\net6.0\</WixHeatBinDir>
+    <WixHeatBinDir Condition=" '$(WixHeatBinDir)' == '' ">$(MSBuildThisFileDirectory)..\tools\net472\</WixHeatBinDir>
+    <WixHeatTasksPath Condition=" '$(WixHeatTasksPath)' == '' ">$(WixHeatBinDir)WixToolset.HeatTasks.dll</WixHeatTasksPath>
+
+    <!--
+      For backwards compatibility, the MSBuild tasks always default to the x86 heat.exe even though a x64 heat.exe is available.
+      For "dotnet.exe build" the Heat tasks calculate the command-line to start heat.dll in .NET Core.
+    -->
+    <HeatToolDir Condition=" '$(HeatToolDir)' == '' and '$(MSBuildRuntimeType)' != 'Core' ">$(MSBuildThisFileDirectory)..\tools\net472\x86\</HeatToolDir>
+
+    <HeatExe Condition=" '$(HeatExe)' == '' ">$(MSBuildThisFileDirectory)..\tools\net472\x86\heat.exe</HeatExe>
+    <HeatExe64 Condition=" '$(HeatExe64)' == '' ">$(MSBuildThisFileDirectory)..\tools\net472\x64\heat.exe</HeatExe64>
+  </PropertyGroup>
+
+  <!-- These tasks are extensions for harvesting WiX source code from other sources. -->
+  <UsingTask TaskName="HeatFile" AssemblyFile="$(WixHeatTasksPath)" />
+  <UsingTask TaskName="HeatDirectory" AssemblyFile="$(WixHeatTasksPath)" />
+  <UsingTask TaskName="HeatProject" AssemblyFile="$(WixHeatTasksPath)" />
+
+  <UsingTask TaskName="RefreshGeneratedFile" AssemblyFile="$(WixHeatTasksPath)"/>
+  <UsingTask TaskName="RefreshBundleGeneratedFile" AssemblyFile="$(WixHeatTasksPath)"/>
+
+  <!-- Default Harvester properties-->
+  <PropertyGroup>
+    <HarvestNoLogo Condition=" '$(HarvestNoLogo)' == '' ">$(NoLogo)</HarvestNoLogo>
+    <HarvestSuppressAllWarnings Condition=" '$(HarvestSuppressAllWarnings)' == '' ">$(SuppressAllWarnings)</HarvestSuppressAllWarnings>
+    <HarvestSuppressSpecificWarnings Condition=" '$(HarvestSuppressSpecificWarnings)' == '' ">$(SuppressSpecificWarnings)</HarvestSuppressSpecificWarnings>
+    <HarvestTreatWarningsAsErrors Condition=" '$(HarvestTreatWarningsAsErrors)' == '' ">$(TreatWarningsAsErrors)</HarvestTreatWarningsAsErrors>
+    <HarvestTreatSpecificWarningsAsErrors Condition=" '$(HarvestTreatSpecificWarningsAsErrors)' == '' ">$(TreatSpecificWarningsAsErrors)</HarvestTreatSpecificWarningsAsErrors>
+    <HarvestVerboseOutput Condition=" '$(HarvestVerboseOutput)' == '' ">$(VerboseOutput)</HarvestVerboseOutput>
+    <HarvestAutogenerateGuids Condition=" '$(HarvestAutogenerateGuids)' == '' ">true</HarvestAutogenerateGuids>
+    <HarvestGenerateGuidsNow Condition=" '$(HarvestGenerateGuidsNow)' == '' ">false</HarvestGenerateGuidsNow>
+    <HarvestSuppressFragments Condition=" '$(HarvestSuppressFragments)' == '' ">true</HarvestSuppressFragments>
+    <HarvestSuppressUniqueIds Condition=" '$(HarvestSuppressUniqueIds)' == '' ">false</HarvestSuppressUniqueIds>
+  </PropertyGroup>
+
+  <!-- Default HarvestProjects properties -->
+  <PropertyGroup>
+    <!-- Project harvesting is defaulted to off until it works more consistently. -->
+    <EnableProjectHarvesting Condition=" '$(EnableProjectHarvesting)'=='' ">false</EnableProjectHarvesting>
+
+    <HarvestProjectsNoLogo Condition=" '$(HarvestProjectsNoLogo)' == '' ">$(HarvestNoLogo)</HarvestProjectsNoLogo>
+    <HarvestProjectsSuppressAllWarnings Condition=" '$(HarvestProjectsSuppressAllWarnings)' == '' ">$(HarvestSuppressAllWarnings)</HarvestProjectsSuppressAllWarnings>
+    <HarvestProjectsSuppressSpecificWarnings Condition=" '$(HarvestProjectsSuppressSpecificWarnings)' == '' ">$(HarvestSuppressSpecificWarnings)</HarvestProjectsSuppressSpecificWarnings>
+    <HarvestProjectsTreatWarningsAsErrors Condition=" '$(HarvestProjectsTreatWarningsAsErrors)' == '' ">$(HarvestTreatWarningsAsErrors)</HarvestProjectsTreatWarningsAsErrors>
+    <HarvestProjectsTreatSpecificWarningsAsErrors Condition=" '$(HarvestProjectsTreatSpecificWarningsAsErrors)' == '' ">$(HarvestTreatSpecificWarningsAsErrors)</HarvestProjectsTreatSpecificWarningsAsErrors>
+    <HarvestProjectsVerboseOutput Condition=" '$(HarvestProjectsVerboseOutput)' == '' ">$(HarvestVerboseOutput)</HarvestProjectsVerboseOutput>
+    <HarvestProjectsAutogenerateGuids Condition=" '$(HarvestProjectsAutogenerateGuids)' == '' ">$(HarvestAutogenerateGuids)</HarvestProjectsAutogenerateGuids>
+    <HarvestProjectsGenerateGuidsNow Condition=" '$(HarvestProjectsGenerateGuidsNow)' == '' ">$(HarvestGenerateGuidsNow)</HarvestProjectsGenerateGuidsNow>
+    <HarvestProjectsSuppressFragments Condition=" '$(HarvestProjectsSuppressFragments)' == '' ">$(HarvestSuppressFragments)</HarvestProjectsSuppressFragments>
+    <HarvestProjectsSuppressUniqueIds Condition=" '$(HarvestProjectsSuppressUniqueIds)' == '' ">$(HarvestSuppressUniqueIds)</HarvestProjectsSuppressUniqueIds>
+    <HarvestProjectsTransforms Condition=" '$(HarvestProjectsTransforms)' == '' ">$(HarvestTransforms)</HarvestProjectsTransforms>
+    <HarvestProjectsGeneratedFile Condition=" '$(HarvestProjectsGeneratedFile)' == '' and '$(OutputType)' != 'Bundle' ">$(IntermediateOutputPath)Product.Generated.wxs</HarvestProjectsGeneratedFile>
+    <HarvestProjectsGeneratedFile Condition=" '$(HarvestProjectsGeneratedFile)' == '' and '$(OutputType)' == 'Bundle' ">$(IntermediateOutputPath)Bundle.Generated.wxs</HarvestProjectsGeneratedFile>
+    <HarvestProjectsMsbuildBinPath Condition=" '$(HarvestProjectsMsbuildBinPath)' == '' ">$(MSBuildBinPath)</HarvestProjectsMsbuildBinPath>
+  </PropertyGroup>
+
+  <!-- Default HarvestDirectory properties -->
+  <PropertyGroup>
+    <HarvestDirectoryNoLogo Condition=" '$(HarvestDirectoryNoLogo)' == '' ">$(HarvestNoLogo)</HarvestDirectoryNoLogo>
+    <HarvestDirectorySuppressAllWarnings Condition=" '$(HarvestDirectorySuppressAllWarnings)' == '' ">$(HarvestSuppressAllWarnings)</HarvestDirectorySuppressAllWarnings>
+    <HarvestDirectorySuppressSpecificWarnings Condition=" '$(HarvestDirectorySuppressSpecificWarnings)' == '' ">$(HarvestSuppressSpecificWarnings)</HarvestDirectorySuppressSpecificWarnings>
+    <HarvestDirectoryTreatWarningsAsErrors Condition=" '$(HarvestDirectoryTreatWarningsAsErrors)' == '' ">$(HarvestTreatWarningsAsErrors)</HarvestDirectoryTreatWarningsAsErrors>
+    <HarvestDirectoryTreatSpecificWarningsAsErrors Condition=" '$(HarvestDirectoryTreatSpecificWarningsAsErrors)' == '' ">$(HarvestTreatSpecificWarningsAsErrors)</HarvestDirectoryTreatSpecificWarningsAsErrors>
+    <HarvestDirectoryVerboseOutput Condition=" '$(HarvestDirectoryVerboseOutput)' == '' ">$(HarvestVerboseOutput)</HarvestDirectoryVerboseOutput>
+    <HarvestDirectoryAutogenerateGuids Condition=" '$(HarvestDirectoryAutogenerateGuids)' == '' ">$(HarvestAutogenerateGuids)</HarvestDirectoryAutogenerateGuids>
+    <HarvestDirectoryGenerateGuidsNow Condition=" '$(HarvestDirectoryGenerateGuidsNow)' == '' ">$(HarvestGenerateGuidsNow)</HarvestDirectoryGenerateGuidsNow>
+    <HarvestDirectorySuppressFragments Condition=" '$(HarvestDirectorySuppressFragments)' == '' ">$(HarvestSuppressFragments)</HarvestDirectorySuppressFragments>
+    <HarvestDirectorySuppressUniqueIds Condition=" '$(HarvestDirectorySuppressUniqueIds)' == '' ">$(HarvestSuppressUniqueIds)</HarvestDirectorySuppressUniqueIds>
+    <HarvestDirectoryTransforms Condition=" '$(HarvestDirectoryTransforms)' == '' ">$(HarvestTransforms)</HarvestDirectoryTransforms>
+  </PropertyGroup>
+
+  <!-- Default HarvestFile properties -->
+  <PropertyGroup>
+    <HarvestFileNoLogo Condition=" '$(HarvestFileNoLogo)' == '' ">$(HarvestNoLogo)</HarvestFileNoLogo>
+    <HarvestFileSuppressAllWarnings Condition=" '$(HarvestFileSuppressAllWarnings)' == '' ">$(HarvestSuppressAllWarnings)</HarvestFileSuppressAllWarnings>
+    <HarvestFileSuppressSpecificWarnings Condition=" '$(HarvestFileSuppressSpecificWarnings)' == '' ">$(HarvestSuppressSpecificWarnings)</HarvestFileSuppressSpecificWarnings>
+    <HarvestFileTreatWarningsAsErrors Condition=" '$(HarvestFileTreatWarningsAsErrors)' == '' ">$(HarvestTreatWarningsAsErrors)</HarvestFileTreatWarningsAsErrors>
+    <HarvestFileTreatSpecificWarningsAsErrors Condition=" '$(HarvestFileTreatSpecificWarningsAsErrors)' == '' ">$(HarvestTreatSpecificWarningsAsErrors)</HarvestFileTreatSpecificWarningsAsErrors>
+    <HarvestFileVerboseOutput Condition=" '$(HarvestFileVerboseOutput)' == '' ">$(HarvestVerboseOutput)</HarvestFileVerboseOutput>
+    <HarvestFileAutogenerateGuids Condition=" '$(HarvestFileAutogenerateGuids)' == '' ">$(HarvestAutogenerateGuids)</HarvestFileAutogenerateGuids>
+    <HarvestFileGenerateGuidsNow Condition=" '$(HarvestFileGenerateGuidsNow)' == '' ">$(HarvestGenerateGuidsNow)</HarvestFileGenerateGuidsNow>
+    <HarvestFileSuppressFragments Condition=" '$(HarvestFileSuppressFragments)' == '' ">$(HarvestSuppressFragments)</HarvestFileSuppressFragments>
+    <HarvestFileSuppressUniqueIds Condition=" '$(HarvestFileSuppressUniqueIds)' == '' ">$(HarvestSuppressUniqueIds)</HarvestFileSuppressUniqueIds>
+    <HarvestFileTransforms Condition=" '$(HarvestFileTransforms)' == '' ">$(HarvestTransforms)</HarvestFileTransforms>
+  </PropertyGroup>
+
+  <!--
+  ==================================================================================================
+  Harvest
+  ==================================================================================================
+  -->
+  <PropertyGroup>
+    <CoreCompileDependsOn>
+      $(CoreCompileDependsOn);
+      Harvest
+    </CoreCompileDependsOn>
+    <HarvestDependsOn>
+      ConvertReferences;
+      ConvertBundleReferences;
+      HarvestProjects;
+      HarvestDirectory;
+      HarvestFile;
+      GenerateCode;
+    </HarvestDependsOn>
+  </PropertyGroup>
+  <Target
+    Name="Harvest"
+    DependsOnTargets="$(HarvestDependsOn)" />
+
+  <!--
+  ==================================================================================================
+  GenerateCode
+  ==================================================================================================
+  -->
+  <PropertyGroup>
+    <GenerateCodeDependsOn>
+      RefreshGeneratedFile;
+      RefreshBundleGeneratedFile
+    </GenerateCodeDependsOn>
+  </PropertyGroup>
+  <Target
+      Name="GenerateCode"
+      DependsOnTargets="$(GenerateCodeDependsOn)" />
+
+  <!--
+  ================================================================================================
+  ConvertReferences
+
+    Converts project references to HeatProject items to auto generate authoring.
+  ================================================================================================
+  -->
+  <Target
+      Name="ConvertReferences"
+      Condition=" $(EnableProjectHarvesting) and ('$(OutputType)' == 'Package' or '$(OutputType)' == 'PatchCreation' or '$(OutputType)' == 'Module') ">
+
+    <ItemGroup>
+      <_HeatProjectReference Include="@(_MSBuildProjectReferenceExistent)" Condition=" '%(_MSBuildProjectReferenceExistent.DoNotHarvest)' == '' ">
+        <DirectoryIds>%(_MSBuildProjectReferenceExistent.RefTargetDir)</DirectoryIds>
+        <ProjectOutputGroups>Binaries;Symbols;Sources;Content;Satellites;Documents</ProjectOutputGroups>
+        <ProjectName>%(_MSBuildProjectReferenceExistent.Name)</ProjectName>
+        <HeatOutput>$(IntermediateOutputPath)_%(_MSBuildProjectReferenceExistent.Filename).wxs</HeatOutput>
+      </_HeatProjectReference>
+      <HeatProject Include="@(_HeatProjectReference)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- Unconditionally generate Compile items so they are always linked in. -->
+      <Compile Include="$(HarvestProjectsGeneratedFile)" />
+      <_GeneratedFiles Include="$(HarvestProjectsGeneratedFile)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+  ================================================================================================
+  ConvertBundleReferences
+
+    Converts project references in Bundle projects to HeatProject items to auto generate authoring.
+  ================================================================================================
+  -->
+  <Target
+    Name="ConvertBundleReferences"
+    Condition=" $(EnableProjectHarvesting) and ('$(OutputType)' == 'Bundle') ">
+
+    <ItemGroup>
+      <_HeatProjectReference Include="@(_MSBuildProjectReferenceExistent)" Condition=" '%(_MSBuildProjectReferenceExistent.DoNotHarvest)' == '' ">
+        <ProjectOutputGroups>Binaries;Symbols;Sources;Content;Satellites;Documents</ProjectOutputGroups>
+        <GenerateType>payloadgroup</GenerateType>
+        <HeatOutput>$(IntermediateOutputPath)_%(_MSBuildProjectReferenceExistent.Filename).wxs</HeatOutput>
+      </_HeatProjectReference>
+      <HeatProject Include="@(_HeatProjectReference)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- Unconditionally generate Compile items so they are always linked in. -->
+      <Compile Include="$(HarvestProjectsGeneratedFile)" />
+      <_GeneratedFiles Include="$(HarvestProjectsGeneratedFile)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+  ================================================================================================
+  CombineHarvestProjects
+
+    Combines HeatProject and HarvestProject items together and ensures each has HeatOutput metadata.
+  ================================================================================================
+  -->
+  <Target
+      Name="CombineHarvestProjects"
+      Condition=" '@(HeatProject)' != '' or '@(HarvestProject)' != '' ">
+
+    <!-- Add default HeatOutputs for those without one specified -->
+    <CreateItem Include="@(HeatProject)" Condition= " '%(HeatProject.HeatOutput)' == '' "
+    AdditionalMetadata="HeatOutput=$(IntermediateOutputPath)_%(HeatProject.Filename).wxs">
+      <Output TaskParameter="Include" ItemName="_AllHeatProjects" />
+    </CreateItem>
+    <CreateItem Include="@(HarvestProject)" Condition= " '%(HarvestProject.HeatOutput)' == '' "
+    AdditionalMetadata="HeatOutput=$(IntermediateOutputPath)_%(HarvestProject.Filename).wxs">
+      <Output TaskParameter="Include" ItemName="_AllHeatProjects" />
+    </CreateItem>
+
+
+    <CreateItem Include="@(HeatProject)" Condition= " '%(HeatProject.HeatOutput)' != '' ">
+      <Output TaskParameter="Include" ItemName="_AllHeatProjects" />
+    </CreateItem>
+    <CreateItem Include="@(HarvestProject)" Condition= " '%(HarvestProject.HeatOutput)' != '' ">
+      <Output TaskParameter="Include" ItemName="_AllHeatProjects" />
+    </CreateItem>
+
+  </Target>
+
+  <!--
+  ================================================================================================
+  HarvestProjects
+
+    Harvests outputs of other MSBuild projects files using the VS project extension to heat.exe.
+
+    [IN]
+    @(HarvestProject)
+    @(HeatProject)
+        - The list of projects to harvest. HeatProject is provided for backward compatibility.
+          You should use HarvestProject instead.
+
+    %(HarvestProject.Transforms)
+    %(HeatProject.Transforms)
+        - XSL transforms to apply to the harvested WiX.
+
+    %(HarvestProject.ProjectOutputGroups)
+    %(HeatProjects.ProjectOutputGroups)
+        - The project output groups to harvest
+
+    %(HarvestProject.AdditionalOptions)
+    %(HeatProjects.AdditionalOptions)
+        - Any additional harvesting command line options
+
+    [OUT]
+    %(HeatOutput)
+        - The generated .wxs files which are added to the @(Compile) item list.
+  ================================================================================================
+  -->
+  <ItemDefinitionGroup>
+    <HeatProject>
+      <Transforms>$(HarvestProjectsTransforms)</Transforms>
+      <ProjectOutputGroups>$(HarvestProjectsProjectOutputGroups)</ProjectOutputGroups>
+      <DirectoryIds>$(HarvestProjectsDirectoryIds)</DirectoryIds>
+      <AdditionalOptions>$(HarvestProjectsAdditionalOptions)</AdditionalOptions>
+    </HeatProject>
+    <HarvestProject>
+      <Transforms>$(HarvestProjectsTransforms)</Transforms>
+      <ProjectOutputGroups>$(HarvestProjectsProjectOutputGroups)</ProjectOutputGroups>
+      <DirectoryIds>$(HarvestProjectsDirectoryIds)</DirectoryIds>
+      <AdditionalOptions>$(HarvestProjectsAdditionalOptions)</AdditionalOptions>
+    </HarvestProject>
+  </ItemDefinitionGroup>
+
+  <PropertyGroup>
+    <HarvestProjectsDependsOn>CombineHarvestProjects</HarvestProjectsDependsOn>
+  </PropertyGroup>
+  <Target Name="HarvestProjects"
+    DependsOnTargets="$(HarvestProjectsDependsOn)"
+    Inputs="@(_AllHeatProjects);%(_AllHeatProjects.Transforms);$(ProjectPath)"
+    Outputs="@(_AllHeatProjects -> '%(HeatOutput)')"
+    Condition=" $(EnableProjectHarvesting) and ('@(HeatProject)' != '' or '@(HarvestProject)' != '') ">
+
+    <HeatProject
+      NoLogo="true"
+      SuppressAllWarnings="$(HarvestProjectsSuppressAllWarnings)"
+      SuppressSpecificWarnings="$(HarvestProjectsSuppressSpecificWarnings)"
+      TreatWarningsAsErrors="$(HarvestProjectsTreatWarningsAsErrors)"
+      TreatSpecificWarningsAsErrors="$(HarvestProjectsTreatSpecificWarningsAsErrors)"
+      VerboseOutput="$(HarvestProjectsVerboseOutput)"
+      AutogenerateGuids="$(HarvestProjectsAutogenerateGuids)"
+      GenerateGuidsNow="$(HarvestProjectsGenerateGuidsNow)"
+      OutputFile="%(_AllHeatProjects.HeatOutput)"
+      SuppressFragments="$(HarvestProjectsSuppressFragments)"
+      SuppressUniqueIds="$(HarvestProjectsSuppressUniqueIds)"
+      Transforms="%(_AllHeatProjects.Transforms)"
+      Project="%(_AllHeatProjects.FullPath)"
+      ProjectOutputGroups="%(_AllHeatProjects.ProjectOutputGroups)"
+      GenerateType="%(_AllHeatProjects.GenerateType)"
+      MsbuildBinPath="$(HarvestProjectsMsbuildBinPath)"
+      DirectoryIds="%(_AllHeatProjects.DirectoryIds)"
+      ProjectName="%(_AllHeatProjects.ProjectName)"
+      Configuration="%(_AllHeatProjects.Configuration)"
+      Platform="%(_AllHeatProjects.Platform)"
+      GenerateWixVariables="$(HarvestProjectsGenerateWixVariables)"
+      UseToolsVersion="$(HarvestProjectsUseToolsVersion)"
+      AdditionalOptions="%(_AllHeatProjects.AdditionalOptions)"
+      ToolPath="$(HeatToolDir)">
+
+      <Output TaskParameter="OutputFile" ItemName="Compile" />
+      <Output TaskParameter="OutputFile" ItemName="FileWrites" />
+
+    </HeatProject>
+
+  </Target>
+
+  <!--
+  ================================================================================================
+  HarvestDirectory
+
+    Harvests directories using heat.exe.
+
+    [IN]
+    @(HarvestDirectory) - The list of directories to harvest.
+    %(HarvestDirectory.Transforms) - XSL transforms to apply to the harvested WiX.
+    %(HarvestDirectory.ComponentGroupName) -  The name of the ComponentGroup to create.
+    %(HarvestDirectory.DirectoryRefId) - The ID of the directory to reference instead of TARGETDIR.
+    %(HarvestDirectory.KeepEmptyDirectories) - Whether to create Directory entries for empty directories.
+    %(HarvestDirectory.PreprocessorVariable) - Substitute SourceDir for another variable name (ex: var.Dir).
+    %(HarvestDirectory.SuppressCom) - Suppress COM elements.
+    %(HarvestDirectory.SuppressRootDirectory) - Suppress a Directory element for the root directory.
+    %(HarvestDirectory.SuppressRegistry) - Suppress registry harvesting.
+    %(HarvestDirectory.AdditionalOptions) - Any additional harvesting command line options.
+
+    [OUT]
+    $(IntermediateOutputPath)_%(HarvestDirectory.ComponentGroupName)_dir.wxs
+        - The generated .wxs files which are added to the @(Compile) item list.
+  ================================================================================================
+  -->
+
+  <ItemDefinitionGroup>
+    <HarvestDirectory>
+      <Transforms>$(HarvestDirectoryTransforms)</Transforms>
+      <ComponentGroupName>$(HarvestDirectoryComponentGroupName)</ComponentGroupName>
+      <DirectoryRefId>$(HarvestDirectoryDirectoryRefId)</DirectoryRefId>
+      <KeepEmptyDirectories>$(HarvestDirectoryKeepEmptyDirectories)</KeepEmptyDirectories>
+      <PreprocessorVariable>$(HarvestDirectoryPreprocessorVariable)</PreprocessorVariable>
+      <SuppressCom>$(HarvestDirectorySuppressCom)</SuppressCom>
+      <SuppressRootDirectory>$(HarvestDirectorySuppressRootDirectory)</SuppressRootDirectory>
+      <SuppressRegistry>$(HarvestDirectorySuppressRegistry)</SuppressRegistry>
+      <AdditionalOptions>$(HarvestDirectoryAdditionalOptions)</AdditionalOptions>
+    </HarvestDirectory>
+  </ItemDefinitionGroup>
+
+  <PropertyGroup>
+    <HarvestDirectoryDependsOn>
+      GetHarvestDirectoryContent
+    </HarvestDirectoryDependsOn>
+  </PropertyGroup>
+
+  <!-- Creates items to include content since wildcards will not work in Target/@Inputs. -->
+  <Target Name="GetHarvestDirectoryContent">
+    <CreateItem Include="@(HarvestDirectory->'%(FullPath)\**\*')">
+      <Output TaskParameter="Include" ItemName="_HarvestDirectoryContent" />
+    </CreateItem>
+  </Target>
+
+  <Target Name="HarvestDirectory"
+    DependsOnTargets="$(HarvestDirectoryDependsOn)"
+    Inputs="@(_HarvestDirectoryContent);%(HarvestDirectory.Transforms)"
+    Outputs="$(IntermediateOutputPath)_%(HarvestDirectory.ComponentGroupName)_dir.wxs"
+    Condition=" '@(HarvestDirectory)' != '' ">
+
+    <HeatDirectory
+      NoLogo="true"
+      SuppressAllWarnings="$(HarvestDirectorySuppressAllWarnings)"
+      SuppressSpecificWarnings="$(HarvestDirectorySuppressSpecificWarnings)"
+      TreatWarningsAsErrors="$(HarvestDirectoryTreatWarningsAsErrors)"
+      TreatSpecificWarningsAsErrors="$(HarvestDirectoryTreatSpecificWarningsAsErrors)"
+      VerboseOutput="$(HarvestDirectoryVerboseOutput)"
+      AutogenerateGuids="$(HarvestDirectoryAutogenerateGuids)"
+      GenerateGuidsNow="$(HarvestDirectoryGenerateGuidsNow)"
+      OutputFile="$(IntermediateOutputPath)_%(HarvestDirectory.ComponentGroupName)_dir.wxs"
+      SuppressFragments="$(HarvestDirectorySuppressFragments)"
+      SuppressUniqueIds="$(HarvestDirectorySuppressUniqueIds)"
+      Transforms="%(HarvestDirectory.Transforms)"
+      Directory="@(HarvestDirectory)"
+      ComponentGroupName="%(HarvestDirectory.ComponentGroupName)"
+      DirectoryRefId="%(HarvestDirectory.DirectoryRefId)"
+      KeepEmptyDirectories="%(HarvestDirectory.KeepEmptyDirectories)"
+      PreprocessorVariable="%(HarvestDirectory.PreprocessorVariable)"
+      SuppressCom="%(HarvestDirectory.SuppressCom)"
+      SuppressRootDirectory="%(HarvestDirectory.SuppressRootDirectory)"
+      SuppressRegistry="%(HarvestDirectory.SuppressRegistry)"
+      AdditionalOptions="%(HarvestDirectory.AdditionalOptions)"
+      ToolPath="$(HeatToolDir)">
+
+      <Output TaskParameter="OutputFile" ItemName="Compile" />
+      <Output TaskParameter="OutputFile" ItemName="FileWrites" />
+
+    </HeatDirectory>
+
+  </Target>
+
+  <!--
+  ================================================================================================
+  HarvestFile
+
+    Harvests files of different types using heat.exe. This can harvest registry from
+    self-registering files, files with typelibs, and more.
+
+    [IN]
+    @(HarvestFile) - The list of files to harvest.
+    %(HarvestFile.Transforms) - XSL transforms to apply to the harvested WiX.
+    %(HarvestFile.ComponentGroupName) - The name of the ComponentGroup to create.
+    %(HarvestFile.DirectoryRefId) - The ID of the directory to reference instead of TARGETDIR.
+    %(HarvestFile.PreprocessorVariable) - Substitute SourceDir for another variable name (ex: var.Dir).
+    %(HarvestFile.SuppressCom) - Suppress COM elements.
+    %(HarvestFile.SuppressRootDirectory) - Suppress a Directory element for the root directory.
+    $(HarvestFile.SuppressRegistry) - Suppress registry harvesting.
+    %(HarvestFile.AdditionalOptions) - Any additional harvesting command line options.
+
+    [OUT]
+    $(IntermediateOutputPath)_%(HarvestFile.Filename)_file.wxs
+        - The generated .wxs files which are added to the @(Compile) item list.
+  ================================================================================================
+  -->
+
+  <ItemDefinitionGroup>
+    <HarvestFile>
+      <Transforms>$(HarvestFileTransforms)</Transforms>
+      <ComponentGroupName>$(HarvestFileComponentGroupName)</ComponentGroupName>
+      <DirectoryRefId>$(HarvestFileDirectoryRefId)</DirectoryRefId>
+      <PreprocessorVariable>$(HarvestFilePreprocessorVariable)</PreprocessorVariable>
+      <SuppressCom>$(HarvestFileSuppressCom)</SuppressCom>
+      <SuppressRegistry>$(HarvestFileSuppressRegistry)</SuppressRegistry>
+      <SuppressRootDirectory>$(HarvestFileSuppressRootDirectory)</SuppressRootDirectory>
+      <AdditionalOptions>$(HarvestFileAdditionalOptions)</AdditionalOptions>
+    </HarvestFile>
+  </ItemDefinitionGroup>
+
+  <PropertyGroup>
+    <HarvestFileDependsOn></HarvestFileDependsOn>
+  </PropertyGroup>
+  <Target Name="HarvestFile"
+    DependsOnTargets="$(HarvestFileDependsOn)"
+    Inputs="@(HarvestFile);%(HarvestFile.Transforms)"
+    Outputs="@(HarvestFile->'$(IntermediateOutputPath)_%(ComponentGroupName)_%(DirectoryRefId)_%(Filename)%(Extension)_file.wxs')"
+    Condition=" '@(HarvestFile)' != '' ">
+
+    <HeatFile
+      NoLogo="true"
+      SuppressAllWarnings="$(HarvestFileSuppressAllWarnings)"
+      SuppressSpecificWarnings="$(HarvestFileSuppressSpecificWarnings)"
+      TreatWarningsAsErrors="$(HarvestFileTreatWarningsAsErrors)"
+      TreatSpecificWarningsAsErrors="$(HarvestFileTreatSpecificWarningsAsErrors)"
+      VerboseOutput="$(HarvestFileVerboseOutput)"
+      AutogenerateGuids="$(HarvestFileAutogenerateGuids)"
+      GenerateGuidsNow="$(HarvestFileGenerateGuidsNow)"
+      OutputFile="$(IntermediateOutputPath)_%(HarvestFile.ComponentGroupName)_%(HarvestFile.DirectoryRefId)_%(HarvestFile.Filename)%(HarvestFile.Extension)_file.wxs"
+      SuppressFragments="$(HarvestFileSuppressFragments)"
+      SuppressUniqueIds="$(HarvestFileSuppressUniqueIds)"
+      Transforms="%(HarvestFile.Transforms)"
+      File="@(HarvestFile)"
+      ComponentGroupName="%(HarvestFile.ComponentGroupName)"
+      DirectoryRefId="%(HarvestFile.DirectoryRefId)"
+      PreprocessorVariable="%(HarvestFile.PreprocessorVariable)"
+      SuppressCom="%(HarvestFile.SuppressCom)"
+      SuppressRegistry="%(HarvestFile.SuppressRegistry)"
+      SuppressRootDirectory="%(HarvestFile.SuppressRootDirectory)"
+      AdditionalOptions="%(HarvestFile.AdditionalOptions)"
+      ToolPath="$(HeatToolDir)">
+
+      <Output TaskParameter="OutputFile" ItemName="Compile" />
+      <Output TaskParameter="OutputFile" ItemName="FileWrites" />
+
+    </HeatFile>
+
+  </Target>
+
+  <!--
+  ================================================================================================
+  RefreshGeneratedFile
+
+    Generates code based on metadata defined in project references.
+
+    [IN]
+    @(_MSBuildResolvedProjectReferencePaths) - The list of MSBuildable project references.
+
+    [OUT]
+    @(_GeneratedFiles) - The generated source file.
+  ================================================================================================
+  -->
+  <PropertyGroup>
+    <RefreshGeneratedFileDependsOn></RefreshGeneratedFileDependsOn>
+  </PropertyGroup>
+  <Target Name="RefreshGeneratedFile"
+    DependsOnTargets="$(RefreshGeneratedFileDependsOn)"
+    Inputs="@(_MSBuildResolvedProjectReferencePaths);@(Compile);$(ProjectPath)"
+    Outputs="@(_GeneratedFiles)"
+    Condition=" $(EnableProjectHarvesting) and ('$(OutputType)' == 'Package' or '$(OutputType)' == 'PatchCreation' or '$(OutputType)' == 'Module') and '@(_GeneratedFiles)' != '' ">
+
+    <RefreshGeneratedFile
+      GeneratedFiles="@(_GeneratedFiles)"
+      ProjectReferencePaths="@(_MSBuildResolvedProjectReferencePaths)" />
+
+  </Target>
+
+  <!--
+  ================================================================================================
+  RefreshBundleGeneratedFile
+
+    Generates code for bundle projects based on metadata defined in project references.
+
+    [IN]
+    @(_MSBuildResolvedProjectReferencePaths) - The list of MSBuildable project references.
+
+    [OUT]
+    @(_GeneratedFiles) - The generated source file.
+  ================================================================================================
+  -->
+  <PropertyGroup>
+    <RefreshBundleGeneratedFileDependsOn></RefreshBundleGeneratedFileDependsOn>
+  </PropertyGroup>
+  <Target Name="RefreshBundleGeneratedFile"
+    DependsOnTargets="$(RefreshBundleGeneratedFileDependsOn)"
+    Inputs="@(_MSBuildResolvedProjectReferencePaths);@(Compile);$(ProjectPath)"
+    Outputs="@(_GeneratedFiles)"
+    Condition=" $(EnableProjectHarvesting) and ('$(OutputType)' == 'Bundle' and '@(_GeneratedFiles)' != '') ">
+
+    <RefreshBundleGeneratedFile
+      GeneratedFiles="@(_GeneratedFiles)"
+      ProjectReferencePaths="@(_MSBuildResolvedProjectReferencePaths)" />
+  </Target>
+
+</Project>
