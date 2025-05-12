@@ -108,16 +108,6 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool OpenWindowInLastPos
-    {
-        get => _settings.OpenWindowInLastPos;
-        set
-        {
-            _settings.OpenWindowInLastPos = value;
-            Save();
-        }
-    }
-
     public bool IgnoreShortcutWhenFullscreen
     {
         get => _settings.IgnoreShortcutWhenFullscreen;
