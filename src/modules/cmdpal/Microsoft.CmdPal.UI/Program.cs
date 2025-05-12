@@ -34,6 +34,15 @@ internal sealed class Program
             return 0;
         }
 
+        WinRT.ComWrappersSupport.InitializeComWrappers();
+
+        var isRedirect = DecideRedirection();
+
+        if (isRedirect)
+        {
+            return 0;
+        }
+
         try
         {
             Logger.InitializeLogger("\\CmdPal\\Logs\\");
@@ -64,17 +73,12 @@ internal sealed class Program
         Logger.LogDebug($"Starting at {DateTime.UtcNow}");
         PowerToysTelemetry.Log.WriteEvent(new CmdPalProcessStarted());
 
-        WinRT.ComWrappersSupport.InitializeComWrappers();
-        var isRedirect = DecideRedirection();
-        if (!isRedirect)
+        Microsoft.UI.Xaml.Application.Start((p) =>
         {
-            Microsoft.UI.Xaml.Application.Start((p) =>
-            {
-                Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext context = new(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
-                SynchronizationContext.SetSynchronizationContext(context);
-                app = new App();
-            });
-        }
+            Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext context = new(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
+            SynchronizationContext.SetSynchronizationContext(context);
+            app = new App();
+        });
 
         return 0;
     }
@@ -94,7 +98,7 @@ internal sealed class Program
         {
             isRedirect = true;
             PowerToysTelemetry.Log.WriteEvent(new ReactivateInstance());
-            keyInstance.RedirectActivationToAsync(args).AsTask().ConfigureAwait(false);
+            keyInstance.RedirectActivationToAsync(args).AsTask().GetAwaiter().GetResult();
         }
 
         return isRedirect;
@@ -109,7 +113,10 @@ internal sealed class Program
             if (thisApp.AppWindow is not null and
                 MainWindow mainWindow)
             {
-                mainWindow.HandleLaunch(args);
+                mainWindow.DispatcherQueue.TryEnqueue(() =>
+                {
+                    mainWindow.HandleLaunch(args);
+                });
 
                 // mainWindow.Summon(string.Empty);
             }
