@@ -9,7 +9,7 @@ variables:
   # ------------------|----------------------------|
   # stable            | 0.2.250512001              |
   # main              | 0.2.250512001-experimental |
-  # all others        | 0.2.250512001-mybranch     |
+  # all others        | 0.2.250512001-branch       |
   ${{ if startsWith(variables['Build.SourceBranchName'], 'stable') }}:
     NoNuGetPackBetaVersion: true
   ${{ elseif eq(variables['Build.SourceBranchName'], 'main') }}:
