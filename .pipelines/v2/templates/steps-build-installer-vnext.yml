@@ -36,12 +36,12 @@ steps:
 
   # This dll needs to be built and signed before building the MSI.
   - task: VSBuild@1
-    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build PowerToysSetupCustomActions
+    displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Build PowerToysSetupCustomActionsVNext
     inputs:
       solution: "**/installer/PowerToysSetup.sln"
       vsVersion: 17.0
       msbuildArgs: >-
-        /t:PowerToysSetupCustomActions
+        /t:PowerToysSetupCustomActionsVNext
         /p:RunBuildEvents=true;PerUser=${{parameters.buildUserInstaller}};RestorePackagesConfig=true;CIBuild=true
         -restore -graph
         /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-actions.binlog
@@ -55,10 +55,10 @@ steps:
   - ${{ if eq(parameters.codeSign, true) }}:
     - template: steps-esrp-signing.yml
       parameters:
-        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign PowerToysSetupCustomActions
+        displayName: ${{replace(replace(parameters.buildUserInstaller,'True','👤'),'False','💻')}} Sign PowerToysSetupCustomActionsVNext
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
-          FolderPath: 'installer/PowerToysSetupCustomActions/$(InstallerRelativePath)'
+          FolderPath: 'installer/PowerToysSetupCustomActionsVNext/$(InstallerRelativePath)'
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_installer.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
