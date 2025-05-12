@@ -282,15 +282,24 @@ Select Move windows based on `Relative position`.
 
 ### Layout apply
 Enable `Enable quick layout switch`, assign numbers to custom layouts.
-- [ ] 1. Switch with `Win` + `Ctrl` + `Alt` + `key`.
-- [ ] 2. Switch with just a key while dragging a window.
-- [ ] 3. Turn `Flash zones when switching layout` on/off, verify it's flashing/not flashing after pressing the shortcut.
-- [ ] 4. Disable `Enable quick layout switch`, verify shortcuts don't work.
-- [ ] 5. Disable spacing on any grid layout, verify that there is no space between zones while dragging a window.
-- [ ] 6. Create a new virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
-- [ ] 7. After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
-- [ ] 8. Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
-- [ ] 9. Apply a grid layout, change the screen resolution or scaling, verify that the assigned layout fits the screen. NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
+- [x] 1. Switch with `Win` + `Ctrl` + `Alt` + `key`.
+      - TestMethod("FancyZones.Settings.TestApplyHotKey")
+- [x] 2. Switch with just a key while dragging a window.
+      - TestMethod("FancyZones.Settings.TestDragShiftHotKey")
+- [x] 3. Turn `Flash zones when switching layout` on/off, verify it's flashing/not flashing after pressing the shortcut.
+      - TestMethod("FancyZones.Settings.HotKeyWindowFlashTest")
+- [x] 4. Disable `Enable quick layout switch`, verify shortcuts don't work.
+      - TestMethod("FancyZones.Settings.TestDisableApplyHotKey")
+- [x] 5. Disable spacing on any grid layout, verify that there is no space between zones while dragging a window.
+      - This feature is not available in the current release version.
+- [x] 6. Create a new virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
+      - TestMethod("FancyZones.Settings.TestVirtualDesktopLayout")
+- [x] 7. After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
+      - TestMethod("FancyZones.Settings.TestVirtualDesktopLayoutExt")
+- [x] 8. Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
+      - TestMethod("FancyZones.Settings.TestDeleteCustomLayoutBehavior")
+- [x] 9. Apply a grid layout, change the screen resolution or scaling, verify that the assigned layout fits the screen. NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
+      - TestMethod("FancyZones.Settings.TestCreateGridLayoutChangeMonitorSetting")
 
 ### Layout reset
 * Test layout resetting.

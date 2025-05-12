@@ -276,7 +276,8 @@ namespace Microsoft.FancyZones.UITests
             this.RestartScopeExe();
         }
 
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestApplyHotKey")]
+        [TestCategory("FancyZones #1")]
         public void TestApplyHotKey()
         {
             this.OpenFancyZonesPanel();
@@ -304,7 +305,8 @@ namespace Microsoft.FancyZones.UITests
             this.AttachPowertoySetting();
         }
 
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestDragShiftHotKey")]
+        [TestCategory("FancyZones #2")]
         public void TestDragShiftHotKey()
         {
             this.OpenFancyZonesPanel();
@@ -369,7 +371,8 @@ namespace Microsoft.FancyZones.UITests
             Session.KillAllProcessesByName("explorer");
         }
 
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.HotKeyWindowFlashTest")]
+        [TestCategory("FancyZones #3")]
         public void HotKeyWindowFlashTest()
         {
             this.OpenFancyZonesPanel();
@@ -402,7 +405,8 @@ namespace Microsoft.FancyZones.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestDisableApplyHotKey")]
+        [TestCategory("FancyZones #4")]
         public void TestDisableApplyHotKey()
         {
             this.OpenFancyZonesPanel();
@@ -430,7 +434,8 @@ namespace Microsoft.FancyZones.UITests
             this.AttachPowertoySetting();
         }
 
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestVirtualDesktopLayout")]
+        [TestCategory("FancyZones #6")]
         public void TestVirtualDesktopLayout()
         {
             this.OpenFancyZonesPanel();
@@ -457,7 +462,8 @@ namespace Microsoft.FancyZones.UITests
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
         }
 
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestVirtualDesktopLayoutExt")]
+        [TestCategory("FancyZones #7")]
         public void TestVirtualDesktopLayoutExt()
         {
             this.OpenFancyZonesPanel();
@@ -494,7 +500,8 @@ namespace Microsoft.FancyZones.UITests
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
         }
 
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestDeleteCustomLayoutBehavior")]
+        [TestCategory("FancyZones #8")]
         public void TestDeleteCustomLayoutBehavior()
         {
             this.OpenFancyZonesPanel();
@@ -509,7 +516,8 @@ namespace Microsoft.FancyZones.UITests
             Assert.IsTrue(Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.Blank])!.Selected);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestCreateGridLayoutChangeMonitorSetting")]
+        [TestCategory("FancyZones #9")]
         public void TestCreateGridLayoutChangeMonitorSetting()
         {
             this.OpenFancyZonesPanel();
