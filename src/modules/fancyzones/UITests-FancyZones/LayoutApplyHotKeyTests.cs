@@ -322,7 +322,7 @@ namespace Microsoft.FancyZones.UITests
             Session.StartExe("explorer.exe", "C:\\");
 
             Session.Attach(WindowName, WindowSize.UnSpecified);
-            var tabView = Find<Element>(PowerToys.UITest.By.AccessibilityId("TabView"));
+            var tabView = Find<Tab>(By.AccessibilityId("TabView"));
             tabView.DoubleClick(); // maximize the window
             tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
             SendKeys(Key.Num0);
@@ -337,7 +337,7 @@ namespace Microsoft.FancyZones.UITests
             this.CloseFancyZonesEditor();
 
             Session.Attach(WindowName, WindowSize.UnSpecified);
-            tabView = Find<Element>(PowerToys.UITest.By.AccessibilityId("TabView"));
+            tabView = Find<Tab>(By.AccessibilityId("TabView"));
             tabView.DoubleClick(); // maximize the window
             tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
             SendKeys(Key.Num1);
@@ -352,7 +352,7 @@ namespace Microsoft.FancyZones.UITests
             this.CloseFancyZonesEditor();
 
             Session.Attach(WindowName, WindowSize.UnSpecified);
-            tabView = Find<Element>(PowerToys.UITest.By.AccessibilityId("TabView"));
+            tabView = Find<Tab>(By.AccessibilityId("TabView"));
             tabView.DoubleClick(); // maximize the window
             tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
             SendKeys(Key.Num2);

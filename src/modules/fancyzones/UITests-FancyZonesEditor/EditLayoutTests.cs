@@ -370,7 +370,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
             FancyZonesEditorHelper.ClickContextMenuItem(Session, canvas.Name, FancyZonesEditorHelper.ElementName.EditZones);
 
-            FancyZonesEditorHelper.GetZone(Session, zoneNumber, FancyZonesEditorHelper.ClassName.CanvasZone)?.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.TopRightCorner)).Drag(xOffset, yOffset);
+            FancyZonesEditorHelper.GetZone(Session, zoneNumber, FancyZonesEditorHelper.ClassName.CanvasZone)?.Find<Thumb>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.TopRightCorner)).Drag(xOffset, yOffset);
             Session.Find<Button>(ElementName.Save).Click();
 
             // check the file
@@ -408,7 +408,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
             FancyZonesEditorHelper.ClickContextMenuItem(Session, canvas.Name, FancyZonesEditorHelper.ElementName.EditZones);
 
-            FancyZonesEditorHelper.GetZone(Session, zoneNumber, FancyZonesEditorHelper.ClassName.CanvasZone)?.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.TopRightCorner)).Drag(xOffset, yOffset);
+            FancyZonesEditorHelper.GetZone(Session, zoneNumber, FancyZonesEditorHelper.ClassName.CanvasZone)?.Find<Thumb>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.TopRightCorner)).Drag(xOffset, yOffset);
             Session.Find<Button>(ElementName.Cancel).Click();
 
             // check the file
