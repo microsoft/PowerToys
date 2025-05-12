@@ -45,7 +45,17 @@ public partial class InstallPackageListItem : ListItem
 
         _details = new Lazy<Details?>(() => BuildDetails(version));
 
-        _ = Task.Run(UpdatedInstalledStatus);
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                UpdatedInstalledStatus();
+            }
+            catch (Exception ex)
+            {
+                ExtensionHost.LogMessage($"[WinGet] UpdatedInstalledStatus throw exception: {ex.Message}");
+            }
+        });
     }
 
     private Details? BuildDetails(PackageVersionInfo? version)
