@@ -17,8 +17,6 @@
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Common" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="AdaptiveCards.Templating" />
-    <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
 
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
@@ -70,14 +68,14 @@
   </ItemGroup>
 
   <!-- Just mark it as AOT compatible. Do not publish with AOT now. We need fully test before we really publish it as AOT enabled-->
-  <!--<PropertyGroup>
+  <PropertyGroup>
     <SelfContained>true</SelfContained>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <PublishTrimmed>true</PublishTrimmed>
     <PublishSingleFile>true</PublishSingleFile>
-    --><!-- <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling> --><!--
+    <!--<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>--> 
     <PublishAot>true</PublishAot>
-	<EnableMsixTooling>true</EnableMsixTooling>
-  </PropertyGroup>-->
+	  <EnableMsixTooling>true</EnableMsixTooling>
+  </PropertyGroup>
 
 </Project>

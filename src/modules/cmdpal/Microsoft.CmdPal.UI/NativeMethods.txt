@@ -1,12 +1,12 @@
 GetPhysicallyInstalledSystemMemory
 GlobalMemoryStatusEx
 GetSystemInfo
-CoCreateInstance
 GetForegroundWindow
 SetForegroundWindow
 GetWindowRect
 GetCursorPos
 SetWindowPos
+IsIconic
 RegisterHotKey
 UnregisterHotKey
 SetWindowLongPtr
@@ -20,16 +20,18 @@ SetActiveWindow
 MonitorFromWindow
 GetMonitorInfo
 GetDpiForMonitor
-SHCreateStreamOnFileEx
 CoAllowSetForegroundWindow
-SHCreateStreamOnFileEx
 SHLoadIndirectString
 WM_HOTKEY
 WM_NCLBUTTONDBLCLK
 
+Shell_NotifyIcon
+LoadIcon
 WM_USER
 WM_WINDOWPOSCHANGING
 RegisterWindowMessageW
+
+ExtractIconEx
 WM_RBUTTONUP
 WM_LBUTTONUP
 WM_LBUTTONDBLCLK

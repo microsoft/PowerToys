@@ -24,6 +24,16 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishSingleFile>true</PublishSingleFile>
+    <!--<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>-->
+    <PublishAot>true</PublishAot>
+    <EnableMsixTooling>true</EnableMsixTooling>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
   </PropertyGroup>
 
@@ -61,7 +71,6 @@
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
@@ -80,9 +89,6 @@
     <PackageReference Include="System.Text.Json" />
 
     <!-- LOAD BEARING: GeneratePathProperty=true on BOTH the AC dependencies. Don't forget the AdaptiveCardsWorkaround below -->
-    <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
-    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" />
-    <PackageReference Include="AdaptiveCards.Templating" />
     <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
 
@@ -156,13 +162,6 @@
   <!-- <AdaptiveCardsWorkaround> -->
   <!-- Workaround for Adaptive Cards not supporting correct RIDs when using .NET 8.
        Don't forget GeneratePathProperty on the AdaptiveCards PackageReference's above -->
-  <PropertyGroup>
-    <AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
-  </PropertyGroup>
-  <ItemGroup>
-    <Content Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.ObjectModel.WinUI3.dll" Link="AdaptiveCards.ObjectModel.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" Link="AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
   <ItemGroup>
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
