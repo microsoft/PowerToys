@@ -40,7 +40,7 @@
 
   <!-- BODGY: XES Versioning and WinAppSDK get into a fight about the app manifest, which breaks WinAppSDK. -->
   <Target Name="RearrangeXefVersioningAndWinAppSDKResourceGeneration"
-          DependsOnTargets="GetNewAppManifestValues"
+          DependsOnTargets="GetNewAppManifestValues;CreateWinRTRegistration"
           BeforeTargets="XesWriteVersionInfoResourceFile">
     <PropertyGroup>
       <!-- XES uses this property to store the "final" location of the app manifest, before it erases it.
