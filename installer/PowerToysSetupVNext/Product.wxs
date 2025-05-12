@@ -234,7 +234,7 @@
 
   <!-- Installation directory structure -->
   <Fragment>
-      <Directory Id="$(var.DefaultInstallDir)">
+      <StandardDirectory Id="$(var.DefaultInstallDir)">
         <Directory Id="INSTALLFOLDER" Name="PowerToys">
           <Directory Id="BaseApplicationsAssetsFolder" Name="Assets">
           </Directory>
@@ -248,7 +248,7 @@
           </Directory>
           <Directory Id="ToolsFolder" Name="Tools" />
         </Directory>
-      </Directory>
+      </StandardDirectory>
       <StandardDirectory Id="ProgramMenuFolder">
         <Directory Id="ApplicationProgramsFolder" Name="PowerToys (Preview)" />
       </StandardDirectory>

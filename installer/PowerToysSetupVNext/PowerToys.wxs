@@ -40,7 +40,7 @@
       <?endif?>
 
       <Variable Name="DetectedWindowsBuildNumber" Type="version" Value="0" />
-      <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Format="raw" Variable="DetectedWindowsBuildNumber" />
+      <util:RegistrySearch Id="SearchWindowsBuildNumber" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Value="CurrentBuildNumber" Result="value" Variable="DetectedWindowsBuildNumber" />
       <bal:Condition Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher." Condition="DetectedWindowsBuildNumber &gt;= 19041 OR WixBundleInstalled" />
     
         <Chain>
@@ -48,7 +48,7 @@
             </ExePackage>
             <ExePackage DisplayName="Microsoft Edge WebView2" Name="MicrosoftEdgeWebview2Setup.exe" Compressed="yes" Id="WebView2" DetectCondition="HasWebView2PerMachine OR HasWebView2PerUser" SourceFile="WebView2\MicrosoftEdgeWebview2Setup.exe" Permanent="yes" PerMachine="$(var.PerMachineYesNo)" InstallArguments="/silent /install" RepairArguments="/repair /passive" UninstallArguments="/silent /uninstall">
             </ExePackage>
-            <MsiPackage DisplayName="PowerToys MSI" SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)" Compressed="yes" DisplayInternalUI="no">
+            <MsiPackage DisplayName="PowerToys MSI" SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)" Compressed="yes" >
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />
             </MsiPackage>
         </Chain>
