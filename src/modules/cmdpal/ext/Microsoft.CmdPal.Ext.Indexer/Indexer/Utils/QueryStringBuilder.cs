@@ -7,7 +7,7 @@ using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
 
-internal sealed class QueryStringBuilder
+internal sealed partial class QueryStringBuilder
 {
     private const string Properties = "System.ItemUrl, System.ItemNameDisplay, path, System.Search.EntryID, System.Kind, System.KindText";
     private const string SystemIndex = "SystemIndex";

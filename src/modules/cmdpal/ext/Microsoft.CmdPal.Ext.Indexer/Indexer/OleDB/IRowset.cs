@@ -4,13 +4,14 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
 
-[ComImport]
 [Guid("0c733a7c-2a1c-11ce-ade5-00aa0044773d")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-public interface IRowset
+[GeneratedComInterface]
+public partial interface IRowset
 {
     [PreserveSig]
     int AddRefRows(

@@ -50,4 +50,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <PropertyGroup>
+    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+  </PropertyGroup>
+
 </Project>
