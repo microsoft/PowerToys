@@ -19,8 +19,8 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <ScrollViewer Grid.Row="1" Padding="0,0,8,0">
-            <Grid Padding="8,16,8,8">
+        <ScrollViewer Grid.Row="1">
+            <Grid Padding="16">
                 <StackPanel
                     MaxWidth="1000"
                     HorizontalAlignment="Stretch"
@@ -48,8 +48,7 @@
                                         </cpcontrols:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>
 
-                                    <!--  In the near future: add a toggle to actually expose if a extension is enabled  -->
-                                    <!-- <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" /> -->
+                                    <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
 
                                 </controls:SettingsCard>
                             </DataTemplate>

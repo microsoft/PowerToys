@@ -130,6 +130,7 @@ namespace CommonSharedConstants
 
     // used from quick access window
     const wchar_t CMDPAL_SHOW_EVENT[] = L"Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a";
+    const wchar_t CMDPAL_EXIT_EVENT[] = L"Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd";
 
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;

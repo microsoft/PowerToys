@@ -110,6 +110,7 @@ Lambson
 Laute
 laviusmotileng
 Leilei
+Loewen
 Luecking
 Mahalingam
 Markovic
@@ -154,6 +155,7 @@ Santossio
 Schoen
 Sekan
 Seraphima
+Shmuelie
 skttl
 somil
 Soref
@@ -186,6 +188,8 @@ zhaoqpcn
 Zoltan
 Zykova
 Sameerjs
+ruslanlap
+vednig
 
 # OTHERS
 

@@ -11,10 +11,11 @@ using System.Text.Json.Serialization;
 
 using ImageResizer.Helpers;
 using ImageResizer.Properties;
+using ManagedCommon;
 
 namespace ImageResizer.Models
 {
-    public class ResizeSize : Observable
+    public class ResizeSize : Observable, IHasId
     {
         private static readonly Dictionary<string, string> _tokens = new Dictionary<string, string>
         {
@@ -24,6 +25,7 @@ namespace ImageResizer.Models
             ["$phone$"] = Resources.Phone,
         };
 
+        private int _id;
         private string _name;
         private ResizeFit _fit = ResizeFit.Fit;
         private double _width;
@@ -31,8 +33,9 @@ namespace ImageResizer.Models
         private bool _showHeight = true;
         private ResizeUnit _unit = ResizeUnit.Pixel;
 
-        public ResizeSize(string name, ResizeFit fit, double width, double height, ResizeUnit unit)
+        public ResizeSize(int id, string name, ResizeFit fit, double width, double height, ResizeUnit unit)
         {
+            Id = id;
             Name = name;
             Fit = fit;
             Width = width;
@@ -42,6 +45,13 @@ namespace ImageResizer.Models
 
         public ResizeSize()
         {
+        }
+
+        [JsonPropertyName("Id")]
+        public int Id
+        {
+            get => _id;
+            set => Set(ref _id, value);
         }
 
         [JsonPropertyName("name")]

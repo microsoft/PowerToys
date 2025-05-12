@@ -29,6 +29,7 @@
     <DisplayName>ms-resource:AppName</DisplayName>
     <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
+    <desktop6:RegistryWriteVirtualization>disabled</desktop6:RegistryWriteVirtualization>
   </Properties>
 
   <Dependencies>
@@ -65,9 +66,17 @@
         <uap5:Extension Category="windows.startupTask">
           <uap5:StartupTask
             TaskId="CmdPalStartup"
-            Enabled="true"
+            Enabled="false"
             DisplayName="ms-resource:StartupTaskName" />
         </uap5:Extension>
+
+
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="x-cmdpal">
+            <uap:Logo>Assets\StoreLogo.png</uap:Logo>
+            <uap:DisplayName>Command Palette URI scheme</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
 
       </Extensions>
 
@@ -77,5 +86,6 @@
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
     <rescap:Capability Name="unvirtualizedResources" />
+    <rescap:Capability Name="appLicensing" />
   </Capabilities>
 </Package>

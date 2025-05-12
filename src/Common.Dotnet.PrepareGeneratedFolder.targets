@@ -1,0 +1,16 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Target Name="EnsureGeneratedBaseFolder" BeforeTargets="XamlPreCompile">
+    <PropertyGroup>
+      <!-- Only create the base 'generated' folder -->
+      <CompilerGeneratedFilesOutputPath>$(ProjectDir)obj\g</CompilerGeneratedFilesOutputPath>
+    </PropertyGroup>
+
+    <!-- Create 'generated' folder if missing -->
+    <MakeDir Directories="$(CompilerGeneratedFilesOutputPath)" />
+
+    <!-- Optional logging for debugging -->
+    <Message Text="Ensured: $(GeneratedBasePath)" Importance="Low" />
+  </Target>
+
+</Project>
