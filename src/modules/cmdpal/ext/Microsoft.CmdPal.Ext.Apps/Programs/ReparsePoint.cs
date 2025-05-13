@@ -195,7 +195,7 @@ public static class ReparsePoint
         public AppExecutionAliasReparseTagBufferLayoutVersion Version;
     }
 
-    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    [LibraryImport("kernel32.dll")]
     private static extern bool DeviceIoControl(
         IntPtr hDevice,
         uint dwIoControlCode,
@@ -206,7 +206,7 @@ public static class ReparsePoint
         out int pBytesReturned,
         IntPtr lpOverlapped);
 
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    [LibraryImport("kernel32.dll")]
     private static extern IntPtr CreateFile(
         string lpFileName,
         FileAccessType dwDesiredAccess,

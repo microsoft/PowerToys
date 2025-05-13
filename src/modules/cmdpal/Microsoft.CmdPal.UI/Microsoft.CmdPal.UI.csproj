@@ -108,8 +108,6 @@
     <ProjectReference Include="..\Microsoft.CmdPal.UI.ViewModels\Microsoft.CmdPal.UI.ViewModels.csproj" />
 
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
-
-    <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Shell\Microsoft.CmdPal.Ext.Shell.csproj" />
 
     <ProjectReference Include="..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">

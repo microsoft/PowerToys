@@ -2,10 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.UI.ViewModels;
@@ -96,8 +94,6 @@ public partial class App : Application
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
 
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
-        var allApps = new AllAppsCommandProvider();
-        services.AddSingleton<ICommandProvider>(allApps);
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
 
