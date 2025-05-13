@@ -50,12 +50,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     CreateNoWindow = false,
                 };
 
-                Process process = Process.Start(processStartInfo) ?? throw new InvalidOperationException("Failed to start the process.");
-                process.WaitForInputIdle();
+                Process process = Process.Start(processStartInfo);
+                if (process == null)
+                {
+                    Logger.LogError($"Failed to launch CmdPal settings page.");
+                }
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Failed to launch CmdPal settings: {ex.Message}");
+                Logger.LogError($"Failed to launch CmdPal settings: {ex.Message}");
             }
         }
 
