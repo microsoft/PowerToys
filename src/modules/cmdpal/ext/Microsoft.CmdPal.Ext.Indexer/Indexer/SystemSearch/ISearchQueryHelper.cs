@@ -10,117 +10,55 @@ using System.Runtime.InteropServices.Marshalling;
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
 [Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF63")]
-[InterfaceType(1)]
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [GeneratedComInterface]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1212:Property accessors should follow order", Justification = "The order of the property accessors must match the order in which the methods were defined in the vtable")]
 public partial interface ISearchQueryHelper
 {
-    [DispId(1610678272)]
-    string ConnectionString
-    {
-    
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-    }
+    [return: MarshalAs(UnmanagedType.LPWStr)]
+    string GetConnectionString();
 
-    [DispId(1610678273)]
-    uint QueryContentLocale
-    {
-    
-        set;
-    
-        get;
-    }
+    uint GetQueryContentLocale();
 
-    [DispId(1610678275)]
-    uint QueryKeywordLocale
-    {
-    
-        set;
-    
-        get;
-    }
+    uint GetQueryKeywordLocale();
 
-    [DispId(1610678277)]
-    object QueryTermExpansion
-    {
-    
-        set;
-    
-        get;
-    }
+    [return: MarshalAs(UnmanagedType.Interface)]
+    object GetQueryTermExpansion();
 
-    [DispId(1610678279)]
-    object QuerySyntax
-    {
-    
-        set;
-    
-        get;
-    }
-
-    [DispId(1610678281)]
-    string QueryContentProperties
-    {
-    
-        [param: MarshalAs(UnmanagedType.LPWStr)]
-        set;
-    
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-    }
-
-    [DispId(1610678283)]
-    string QuerySelectColumns
-    {
-    
-        [param: MarshalAs(UnmanagedType.LPWStr)]
-        set;
-    
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-    }
-
-    [DispId(1610678285)]
-    string QueryWhereRestrictions
-    {
-    
-        [param: MarshalAs(UnmanagedType.LPWStr)]
-        set;
-    
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-    }
-
-    [DispId(1610678287)]
-    string QuerySorting
-    {
-    
-        [param: MarshalAs(UnmanagedType.LPWStr)]
-        set;
-    
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-    }
-
+    [return: MarshalAs(UnmanagedType.Interface)]
+    object GetQuerySyntax();
 
     [return: MarshalAs(UnmanagedType.LPWStr)]
-    string GenerateSQLFromUserQuery([MarshalAs(UnmanagedType.LPWStr), In] string pszQuery);
+    string GetQueryContentProperties();
 
+    void SetQueryContentProperties([MarshalAs(UnmanagedType.LPWStr)] string pszProperties);
+
+    [return: MarshalAs(UnmanagedType.LPWStr)]
+    string GetQuerySelectColumns();
+
+    void SetQuerySelectColumns([MarshalAs(UnmanagedType.LPWStr)] string pszColumns);
+
+    [return: MarshalAs(UnmanagedType.LPWStr)]
+    string GetQueryWhereRestrictions();
+
+    void SetQueryWhereRestrictions([MarshalAs(UnmanagedType.LPWStr)] string pszRestrictions);
+
+    [return: MarshalAs(UnmanagedType.LPWStr)]
+    string GetQuerySorting();
+
+    void SetQuerySorting([MarshalAs(UnmanagedType.LPWStr)] string pszSorting);
+
+    [return: MarshalAs(UnmanagedType.LPWStr)]
+    string GenerateSQLFromUserQuery([MarshalAs(UnmanagedType.LPWStr)] string pszQuery);
 
     void WriteProperties(
-      [In] int itemID,
-      [In] uint dwNumberOfColumns,
-      [In] ref object pColumns,
-      [In] ref object pValues,
-      [In] ref object pftGatherModifiedTime);
+      int itemID,
+      uint dwNumberOfColumns,
+      [MarshalAs(UnmanagedType.Interface)] ref object pColumns,
+      [MarshalAs(UnmanagedType.Interface)] ref object pValues,
+      [MarshalAs(UnmanagedType.Interface)] ref object pftGatherModifiedTime);
 
-    [DispId(1610678291)]
-    int QueryMaxResults
-    {
-    
-        set;
-    
-        get;
-    }
+    int GetQueryMaxResults();
+
+    void SetQueryMaxResults(int lMaxResults);
 }

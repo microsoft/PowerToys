@@ -28,7 +28,7 @@
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <PublishTrimmed>true</PublishTrimmed>
     <PublishSingleFile>true</PublishSingleFile>
-    <!--<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>-->
+    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
     <PublishAot>true</PublishAot>
     <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>

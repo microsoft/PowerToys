@@ -52,4 +52,8 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+
+	<PropertyGroup>
+		<DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+	</PropertyGroup>
 </Project>

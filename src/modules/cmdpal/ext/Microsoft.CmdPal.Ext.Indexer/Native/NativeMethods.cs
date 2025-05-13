@@ -13,7 +13,7 @@ public sealed partial class NativeMethods
 {
     public static readonly Guid PropertyStoreGUID = new Guid("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99");
 
-    [LibraryImport("ole32.dll", SetLastError = true)]
+    [LibraryImport("ole32.dll")]
     [return: MarshalAs(UnmanagedType.U4)]
     public static partial uint CoCreateInstance(
         Guid rclsid,
@@ -22,7 +22,7 @@ public sealed partial class NativeMethods
         Guid riid,
         out IntPtr rReturnedComObject);
 
-    [LibraryImport("shell32.dll", SetLastError = true)]
+    [LibraryImport("shell32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool ShellExecuteEx([MarshalUsing(typeof(SHELLEXECUTEINFOWMarshaller))]ref SHELLEXECUTEINFOW lpExecInfo);
 

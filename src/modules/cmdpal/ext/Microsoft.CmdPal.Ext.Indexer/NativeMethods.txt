@@ -5,4 +5,3 @@ IDBCreateCommand
 IDBCreateSession
 IDBInitialize
 IGetRow
-ShellExecuteEx

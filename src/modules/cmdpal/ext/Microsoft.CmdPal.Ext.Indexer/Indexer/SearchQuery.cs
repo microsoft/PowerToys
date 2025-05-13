@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
@@ -120,7 +121,7 @@ internal sealed partial class SearchQuery : IDisposable
                 {
                     if (reuseRowset != null)
                     {
-                        Marshal.ReleaseComObject(reuseRowset);
+                        // Marshal.ReleaseComObject(reuseRowset);
                     }
 
                     // We have a previous rowset, this means the user is typing and we should store this
@@ -275,7 +276,7 @@ internal sealed partial class SearchQuery : IDisposable
         {
             if (reuseRowset != null)
             {
-                Marshal.ReleaseComObject(reuseRowset);
+                // Marshal.ReleaseComObject(reuseRowset);
             }
 
             reuseRowset = rowset;
@@ -349,46 +350,52 @@ internal sealed partial class SearchQuery : IDisposable
         var rowsetPtr = IntPtr.Zero;
         var rowsetInfoPtr = IntPtr.Zero;
 
-        try
+        unsafe
         {
-            // Get the IUnknown pointer for the IRowset object
-            rowsetPtr = Marshal.GetIUnknownForObject(rowset);
-
-            // Query for IRowsetInfo interface
-            var rowsetInfoGuid = typeof(IRowsetInfo).GUID;
-            var res = Marshal.QueryInterface(rowsetPtr, in rowsetInfoGuid, out rowsetInfoPtr);
-            if (res != 0)
+            try
             {
-                Logger.LogError($"Error getting IRowsetInfo interface: {res}");
+                IRowsetInfo rowsetInfo = (IRowsetInfo)rowset;
+
+                /*
+                // Get the IUnknown pointer for the IRowset object
+                rowsetPtr = Marshal.GetIUnknownForObject(rowset);
+
+                // Query for IRowsetInfo interface
+                var rowsetInfoGuid = typeof(IRowsetInfo).GUID;
+                var res = Marshal.QueryInterface(rowsetPtr, in rowsetInfoGuid, out rowsetInfoPtr);
+                if (res != 0)
+                {
+                    Logger.LogError($"Error getting IRowsetInfo interface: {res}");
+                    return null;
+                }
+
+                // Marshal the interface pointer to the actual IRowsetInfo object
+                var rowsetInfo = (IRowsetInfo)Marshal.GetObjectForIUnknown(rowsetInfoPtr);*/
+                return rowsetInfo;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Exception occurred while getting IRowsetInfo. ", ex);
                 return null;
             }
-
-            // Marshal the interface pointer to the actual IRowsetInfo object
-            var rowsetInfo = (IRowsetInfo)Marshal.GetObjectForIUnknown(rowsetInfoPtr);
-            return rowsetInfo;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Exception occurred while getting IRowsetInfo. ", ex);
-            return null;
-        }
-        finally
-        {
-            // Release the IRowsetInfo pointer if it was obtained
-            if (rowsetInfoPtr != IntPtr.Zero)
+            finally
             {
-                Marshal.Release(rowsetInfoPtr); // Release the IRowsetInfo pointer
-            }
+                // Release the IRowsetInfo pointer if it was obtained
+                if (rowsetInfoPtr != IntPtr.Zero)
+                {
+                    Marshal.Release(rowsetInfoPtr); // Release the IRowsetInfo pointer
+                }
 
-            // Release the IUnknown pointer for the IRowset object
-            if (rowsetPtr != IntPtr.Zero)
-            {
-                Marshal.Release(rowsetPtr);
+                // Release the IUnknown pointer for the IRowset object
+                if (rowsetPtr != IntPtr.Zero)
+                {
+                    Marshal.Release(rowsetPtr);
+                }
             }
         }
     }
 
-    private DBPROP? GetPropset(IRowsetInfo rowsetInfo)
+    private unsafe DBPROP? GetPropset(IRowsetInfo rowsetInfo)
     {
         var prgPropSetsPtr = IntPtr.Zero;
 
@@ -409,14 +416,14 @@ internal sealed partial class SearchQuery : IDisposable
             }
 
             var firstPropSetPtr = new IntPtr(prgPropSetsPtr.ToInt64());
-            var propSet = Marshal.PtrToStructure<DBPROPSET>(firstPropSetPtr);
+            var propSet = *(DBPROPSET*)firstPropSetPtr;
             if (propSet.cProperties == 0 || propSet.rgProperties == IntPtr.Zero)
             {
                 return null;
             }
 
             var propPtr = new IntPtr(propSet.rgProperties.ToInt64());
-            var prop = Marshal.PtrToStructure<DBPROP>(propPtr);
+            var prop = *(DBPROP*)propPtr;
             return prop;
         }
         catch (Exception ex)
@@ -469,13 +476,13 @@ internal sealed partial class SearchQuery : IDisposable
 
         if (reuseRowset != null)
         {
-            Marshal.ReleaseComObject(reuseRowset);
+            // Marshal.ReleaseComObject(reuseRowset);
             reuseRowset = null;
         }
 
         if (currentRowset != null)
         {
-            Marshal.ReleaseComObject(currentRowset);
+            // Marshal.ReleaseComObject(currentRowset);
             currentRowset = null;
         }
 

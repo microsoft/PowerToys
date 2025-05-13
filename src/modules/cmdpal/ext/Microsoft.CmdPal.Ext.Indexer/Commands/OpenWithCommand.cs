@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Native;
@@ -30,7 +31,7 @@ internal sealed partial class OpenWithCommand : InvokableCommand
 
             var info = new NativeMethods.SHELLEXECUTEINFOW
             {
-                cbSize = Marshal.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
+                cbSize = Unsafe.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
                 lpVerb = verbPCWSTR.ToString(),
                 lpFile = filenamePCWSTR.ToString(),
 

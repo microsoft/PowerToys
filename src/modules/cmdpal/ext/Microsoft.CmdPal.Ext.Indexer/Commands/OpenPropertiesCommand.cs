@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Data;
@@ -33,7 +34,7 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
 
             var info = new NativeMethods.SHELLEXECUTEINFOW
             {
-                cbSize = Marshal.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
+                cbSize = Unsafe.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
                 lpVerb = propertiesPCWSTR.ToString(),
                 lpFile = filenamePCWSTR.ToString(),
 
