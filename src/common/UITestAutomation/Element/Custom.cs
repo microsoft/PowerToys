@@ -24,6 +24,18 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Sends a combination of keys.
+        /// </summary>
+        /// <param name="keys">The keys to send.</param>
+        public void SendKeys(params Key[] keys)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                KeyboardHelper.SendKeys(keys);
+            });
+        }
+
+        /// <summary>
         /// Drag element move offset.
         /// </summary>
         /// <param name="offsetX">The offsetX to move.</param>
