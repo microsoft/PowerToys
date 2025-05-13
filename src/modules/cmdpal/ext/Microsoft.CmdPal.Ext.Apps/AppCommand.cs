@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -33,8 +35,9 @@ internal sealed partial class AppCommand : InvokableCommand
             {
                 appManager.ActivateApplication(aumid, /*queryArguments*/ string.Empty, noFlags, out var unusedPid);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
+                Logger.LogError(ex.Message);
             }
         }).ConfigureAwait(false);
     }
@@ -46,7 +49,14 @@ internal sealed partial class AppCommand : InvokableCommand
         // const ActivateOptions noFlags = ActivateOptions.None;
         await Task.Run(() =>
         {
-            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            try
+            {
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError(ex.Message);
+            }
         });
     }
 

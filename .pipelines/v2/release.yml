@@ -112,10 +112,12 @@ extends:
                 # Prepare the localizations and telemetry config before the release build
                 - template: .pipelines/v2/templates/steps-fetch-and-prepare-localizations.yml@self
 
-                - script: |
-                    call nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config || exit /b 1
-                    move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h" || exit /b 1
-                    move /Y "Microsoft.PowerToys.Telemetry.2.0.2\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs" || exit /b 1
+                - pwsh: |-
+                    $ErrorActionPreference = 'Stop'
+                    $PSNativeCommandUseErrorActionPreference = $true
+                    & nuget.exe restore -configFile .pipelines/release-nuget.config -PackagesDirectory . .pipelines/packages.config
+                    Move-Item -Force -Verbose "Microsoft.PowerToys.Telemetry.*\build\include\TraceLoggingDefines.h" "src\common\Telemetry\TraceLoggingDefines.h"
+                    Move-Item -Force -Verbose "Microsoft.PowerToys.Telemetry.*\build\include\TelemetryBase.cs" "src\common\Telemetry\TelemetryBase.cs"
                   displayName: Emplace telemetry files
 
       - stage: Build_SDK

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
 
@@ -47,8 +48,9 @@ internal sealed partial class Win32ProgramFileSystemWatchers : IDisposable
             {
                 Directory.GetFiles(path);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Logger.LogError(e.Message);
                 invalidPaths.Add(path);
             }
         }
