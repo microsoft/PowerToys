@@ -66,6 +66,7 @@
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
+      <ComponentGroupRef Id="CmdPalComponentGroup" />
     </Feature>
 
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
@@ -105,6 +106,7 @@
     <InstallExecuteSequence>
       <Custom Action="DetectPrevInstallPath" After="AppSearch" />
       <Custom Action="SetLaunchPowerToysParam" Before="LaunchPowerToys" />
+      <Custom Action="SetInstallCmdPalPackageParam" Before="InstallCmdPalPackage" />
       <Custom Action="SetUninstallCommandNotFoundParam" Before="UninstallCommandNotFound" />
       <Custom Action="SetUpgradeCommandNotFoundParam" Before="UpgradeCommandNotFound" />
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
@@ -116,6 +118,7 @@
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="CheckGPO" After="InstallInitialize" Condition="NOT Installed" />
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
+      <Custom Action="InstallCmdPalPackage" After="InstallFiles" Condition="NOT Installed" />
       <Custom Action="override Wix4CloseApplications_$(sys.BUILDARCHSHORT)" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
       <!-- TODO: Use to activate embedded MSIX -->
@@ -130,6 +133,7 @@
       <Custom Action="UnApplyModulesRegistryChangeSets" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UnRegisterContextMenuPackages" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UnsetAdvancedPasteAPIKey" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="UnRegisterCmdPalPackage" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UninstallCommandNotFound" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UpgradeCommandNotFound" After="InstallFiles" Condition="WIX_UPGRADE_DETECTED" />
       <Custom Action="UninstallServicesTask" After="InstallFinalize" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
@@ -149,6 +153,8 @@
     </InstallExecuteSequence>
 
     <CustomAction Id="SetLaunchPowerToysParam" Property="LaunchPowerToys" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="SetInstallCmdPalPackageParam" Property="InstallCmdPalPackage" Value="[INSTALLFOLDER]" />
 
     <CustomAction Id="LaunchPowerToys" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="LaunchPowerToysCA" BinaryRef="PTCustomActions" />
 
@@ -186,15 +192,15 @@
 
     <CustomAction Id="UninstallDSCModule" Return="ignore" Impersonate="yes" DllEntry="UninstallDSCModuleCA" BinaryRef="PTCustomActions" />
 
-      <CustomAction Id="UninstallServicesTask" Return="ignore" Impersonate="yes" DllEntry="UninstallServicesCA" BinaryRef="PTCustomActions" />
+    <CustomAction Id="UninstallServicesTask" Return="ignore" Impersonate="yes" DllEntry="UninstallServicesCA" BinaryRef="PTCustomActions" />
 
-      <CustomAction Id="UninstallCommandNotFound" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UninstallCommandNotFoundModuleCA" BinaryRef="PTCustomActions" />
-      
-      <CustomAction Id="UpgradeCommandNotFound" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UpgradeCommandNotFoundModuleCA" BinaryRef="PTCustomActions" />
+    <CustomAction Id="UninstallCommandNotFound" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UninstallCommandNotFoundModuleCA" BinaryRef="PTCustomActions" />
+    
+    <CustomAction Id="UpgradeCommandNotFound" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UpgradeCommandNotFoundModuleCA" BinaryRef="PTCustomActions" />
 
-      <CustomAction Id="UnsetAdvancedPasteAPIKey" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnsetAdvancedPasteAPIKeyCA" BinaryRef="PTCustomActions" />
+    <CustomAction Id="UnsetAdvancedPasteAPIKey" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnsetAdvancedPasteAPIKeyCA" BinaryRef="PTCustomActions" />
 
-      <CustomAction Id="TelemetryLogInstallSuccess" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogInstallSuccessCA" BinaryRef="PTCustomActions" />
+    <CustomAction Id="TelemetryLogInstallSuccess" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogInstallSuccessCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="TelemetryLogInstallCancel" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogInstallCancelCA" BinaryRef="PTCustomActions" />
 
@@ -220,7 +226,11 @@
 
     <CustomAction Id="UnRegisterContextMenuPackages" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnRegisterContextMenuPackagesCA" BinaryRef="PTCustomActions" />
 
+    <CustomAction Id="UnRegisterCmdPalPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="UnRegisterCmdPalPackageCA" BinaryRef="PTCustomActions" />
+
     <CustomAction Id="CheckGPO" Return="check" Impersonate="yes" DllEntry="CheckGPOCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="InstallCmdPalPackage" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallCmdPalPackageCA" BinaryRef="PTCustomActions" />
 
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />
