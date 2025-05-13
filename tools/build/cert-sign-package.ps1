@@ -1,6 +1,6 @@
 param (
     [string]$certSubject = "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
-    [string[]]$TargetPaths = "C:\PowerToys\ARM64\Release\WinUI3Apps\CmdPal\AppPackages\Microsoft.CmdPal.UI_0.0.1.0_Test\Microsoft.CmdPal.UI_0.0.1.0_arm64.msix"
+    [string[]]$TargetPaths = "C:\Program Files\PowerToys\WinUI3Apps\CmdPal\Microsoft.CmdPal.UI_0.0.1.0_x64.msix"
 )
 
 . "$PSScriptRoot\cert-management.ps1"
@@ -25,5 +25,5 @@ foreach ($filePath in $TargetPaths) {
     }
 
     Write-Host "Signing: $filePath"
-    & signtool sign /sha1 $($cert.Thumbprint) /fd SHA256 /t http://timestamp.digicert.com "$filePath"
+    & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" sign /sha1 $($cert.Thumbprint) /fd SHA256 /t http://timestamp.digicert.com "$filePath"
 }
