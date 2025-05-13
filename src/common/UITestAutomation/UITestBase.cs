@@ -334,7 +334,7 @@ namespace Microsoft.PowerToys.UITest
         /// <returns>The color of the pixel at the specified coordinates.</returns>
         public Color GetPixelColor(int x, int y)
         {
-            return this.Session.GetPixelColor(x, y);
+            return WindowHelper.GetPixelColor(x, y);
         }
 
         /// <summary>
@@ -345,7 +345,7 @@ namespace Microsoft.PowerToys.UITest
         /// </returns
         public Tuple<int, int> GetDisplaySize()
         {
-            return this.Session.GetDisplaySize();
+            return WindowHelper.GetDisplaySize();
         }
 
         /// <summary>
