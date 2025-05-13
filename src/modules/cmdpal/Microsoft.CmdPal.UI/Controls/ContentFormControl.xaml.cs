@@ -135,16 +135,10 @@ public sealed partial class ContentFormControl : UserControl
             if (child is Control control &&
                 control.IsEnabled &&
                 control.IsTabStop &&
-                control.Visibility == Visibility.Visible)
+                control.Visibility == Visibility.Visible &&
+                control.AllowFocusOnInteraction)
             {
-                // TextBox and ComboBox are the most common form input controls
-                if (control is TextBox || control is ComboBox ||
-                    control is CheckBox || control is RadioButton ||
-                    control is ToggleSwitch || control is Slider ||
-                    control is NumberBox || control is DatePicker)
-                {
-                    return control;
-                }
+                return control;
             }
 
             // Recursively check children
