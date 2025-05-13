@@ -91,10 +91,10 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
         }
         DestroyWindow(window);
         break;
-    case ID_HIDE_TRAY_ICON_MENU_COMMAND:
+    case ID_SHOW_TRAY_ICON_MENU_COMMAND:
     {
         GeneralSettings settings = get_general_settings();
-        settings.hideSystemTrayIcon = true;
+        settings.showSystemTrayIcon = true;
         apply_general_settings(settings.to_json(), true);
         break;
     }
@@ -199,13 +199,13 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                 {
                     static std::wstring settings_menuitem_label = GET_RESOURCE_STRING(IDS_SETTINGS_MENU_TEXT);
                     static std::wstring exit_menuitem_label = GET_RESOURCE_STRING(IDS_EXIT_MENU_TEXT);
-                    static std::wstring hide_tray_icon_menuitem_label = GET_RESOURCE_STRING(IDS_HIDE_TRAY_ICON_MENU_TEXT);
+                    static std::wstring show_tray_icon_menuitem_label = GET_RESOURCE_STRING(IDS_SHOW_TRAY_ICON_MENU_TEXT);
                     static std::wstring submit_bug_menuitem_label = GET_RESOURCE_STRING(IDS_SUBMIT_BUG_TEXT);
                     static std::wstring documentation_menuitem_label = GET_RESOURCE_STRING(IDS_DOCUMENTATION_MENU_TEXT);
                     static std::wstring quick_access_menuitem_label = GET_RESOURCE_STRING(IDS_QUICK_ACCESS_MENU_TEXT);
                     change_menu_item_text(ID_SETTINGS_MENU_COMMAND, settings_menuitem_label.data());
                     change_menu_item_text(ID_EXIT_MENU_COMMAND, exit_menuitem_label.data());
-                    change_menu_item_text(ID_HIDE_TRAY_ICON_MENU_COMMAND, hide_tray_icon_menuitem_label.data());
+                    change_menu_item_text(ID_SHOW_TRAY_ICON_MENU_COMMAND, show_tray_icon_menuitem_label.data());
                     change_menu_item_text(ID_REPORT_BUG_COMMAND, submit_bug_menuitem_label.data());
                     change_menu_item_text(ID_DOCUMENTATION_MENU_COMMAND, documentation_menuitem_label.data());
                     change_menu_item_text(ID_QUICK_ACCESS_MENU_COMMAND, quick_access_menuitem_label.data());
@@ -325,7 +325,7 @@ void start_tray_icon(bool isProcessElevated)
 void set_tray_icon_visible(bool shouldIconBeVisible)
 {
     tray_icon_data.uFlags |= NIF_STATE;
-    tray_icon_data.dwState = shouldIconBeVisible ? 0 : NIS_HIDDEN;
+    tray_icon_data.dwState = shouldIconBeVisible ? NIS_HIDDEN : 0;
     tray_icon_data.dwStateMask = NIS_HIDDEN;
     Shell_NotifyIcon(NIM_MODIFY, &tray_icon_data);
 }

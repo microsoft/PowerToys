@@ -225,14 +225,14 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void IsHideSysTrayIconDisabledByDefaultShouldEnableWhenSuccessful()
+        public void IsShowSysTrayIconDisabledByDefaultShouldEnableWhenSuccessful()
         {
             // Arrange
             // Assert
             Func<string, int> sendMockIPCConfigMSG = msg =>
             {
                 OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
-                Assert.IsTrue(snd.GeneralSettings.HideSysTrayIcon);
+                Assert.IsTrue(snd.GeneralSettings.ShowSysTrayIcon);
                 return 0;
             };
 
@@ -248,10 +248,10 @@ namespace ViewModelTests
                 sendRestartAdminIPCMessage,
                 sendCheckForUpdatesIPCMessage,
                 GeneralSettingsFileName);
-            Assert.IsFalse(viewModel.HideSysTrayIcon);
+            Assert.IsFalse(viewModel.ShowSysTrayIcon);
 
             // Act
-            viewModel.HideSysTrayIcon = true;
+            viewModel.ShowSysTrayIcon = true;
         }
 
         [TestMethod]

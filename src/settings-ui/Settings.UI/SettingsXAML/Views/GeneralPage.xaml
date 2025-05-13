@@ -267,8 +267,8 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="HideSystemTrayIcon">
-                        <ToggleSwitch x:Uid="HideSystemTrayIcon_ToggleSwitch" IsOn="{x:Bind ViewModel.HideSysTrayIcon, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="ShowSystemTrayIcon">
+                        <ToggleSwitch x:Uid="ShowSystemTrayIcon_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowSysTrayIcon, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_SettingIsManaged"
@@ -453,16 +453,11 @@
                                 <Button x:Uid="GeneralPage_ViewDiagnosticDataViewerInfoButton" Click="Click_ViewDiagnosticDataViewerRestart" />
                             </InfoBar.ActionButton>
                         </InfoBar>
-
-                    </StackPanel>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="General_System" Visibility="Visible">
-                    <StackPanel>
-                        <tkcontrols:SettingsCard x:Uid="GeneralPage_ExitPowerToys" HeaderIcon="{ui:FontIcon Glyph=&#xE7E8;}">
+                        <tkcontrols:SettingsCard x:Uid="GeneralPage_ReportBugPackage" HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}">
                             <Button
-                                x:Uid="GeneralPageExitPowerToys"
+                                x:Uid="GeneralPageReportBugPackage"
                                 HorizontalAlignment="Right"
-                                Click="ExitPTItem_Tapped" />
+                                Click="BugReportToolClicked" />
                         </tkcontrols:SettingsCard>
                     </StackPanel>
                 </controls:SettingsGroup>

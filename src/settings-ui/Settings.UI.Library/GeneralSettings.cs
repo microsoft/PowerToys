@@ -20,8 +20,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool Startup { get; set; }
 
         // Gets or sets a value indicating whether the powertoys system tray icon should be hidden.
-        [JsonPropertyName("hide_tray_icon")]
-        public bool HideSysTrayIcon { get; set; }
+        [JsonPropertyName("show_tray_icon")]
+        public bool ShowSysTrayIcon { get; set; }
 
         // Gets or sets a value indicating whether the powertoy elevated.
         [CmdConfigureIgnoreAttribute]
@@ -79,7 +79,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public GeneralSettings()
         {
             Startup = false;
-            HideSysTrayIcon = false;
+            ShowSysTrayIcon = true;
             IsAdmin = false;
             EnableWarningsElevatedApps = true;
             IsElevated = false;

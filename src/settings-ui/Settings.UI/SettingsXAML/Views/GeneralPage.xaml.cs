@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Flyout;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -177,6 +178,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // Invoke the exit command from the tray icon
             IntPtr hWnd = NativeMethods.FindWindow(ptTrayIconWindowClass, ptTrayIconWindowClass);
             NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_EXIT_MENU_COMMAND, 0);
+        }
+
+        private void BugReportToolClicked(object sender, RoutedEventArgs e)
+        {
+            var launchPage = new LaunchPage();
+            launchPage.ReportBugBtn_Click(sender, e);
         }
     }
 }
