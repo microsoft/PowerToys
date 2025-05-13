@@ -116,18 +116,8 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         IsLoading = true;
 
-        try
-        {
-            // Save the latest search task
-            _currentSearchTask = DoSearchAsync(newSearch, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            ExtensionHost.LogMessage($"[WinGet] DoUpdateSearchText throw exception: {ex.Message}");
-            return;
-        }
+        _currentSearchTask = DoSearchAsync(newSearch, cancellationToken);
 
-        // Await the task to ensure only the latest one gets processed
         _ = ProcessSearchResultsAsync(_currentSearchTask, newSearch);
     }
 
@@ -262,7 +252,9 @@ internal sealed partial class WinGetExtensionPage : DynamicListPage, IDisposable
 
         Logger.LogDebug($"Search \"{searchDebugText}\" took {stopwatch.ElapsedMilliseconds}ms", memberName: nameof(DoSearchAsync));
 
-        return results;
+        throw new ArgumentException("test");
+
+        // return results;
     }
 
     public void Dispose() => throw new NotImplementedException();
