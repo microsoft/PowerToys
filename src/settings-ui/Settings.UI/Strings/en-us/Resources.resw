@@ -4466,7 +4466,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="NewPlus_Behaviour_Replace_Variables_Info_Card_Title.Text" xml:space="preserve">
     <value>Commonly used variables</value>
     <comment>New+ commonly used variables header in the flyout info card</comment>
-  </data>   
+  </data>
   <data name="NewPlus_Year_YYYY_Variable_Description.Text" xml:space="preserve">
     <value>Year, represented by a full four or five digits, depending on the calendar used.</value>
     <comment>New+ description of the year $YYYY variable - casing of $YYYY is important</comment>
@@ -5007,5 +5007,20 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="ExitPT_NavViewItem.Content" xml:space="preserve">
     <value>Exit PowerToys</value>
+  </data>
+  <data name="General_System.Header" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="GeneralPage_ExitPowerToys.Header" xml:space="preserve">
+    <value>Exit PowerToys</value>
+  </data>
+  <data name="GeneralPage_ExitPowerToys.Description" xml:space="preserve">
+    <value>Shut down the PowerToys process</value>
+  </data>
+  <data name="GeneralPageExitPowerToys.Content" xml:space="preserve">
+    <value>End process</value>
+  </data>
+  <data name="AppTitleBarShutDown_Tooltip.Text" xml:space="preserve">
+    <value>Shut down</value>
   </data>
 </root>

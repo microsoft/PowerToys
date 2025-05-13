@@ -456,6 +456,16 @@
 
                     </StackPanel>
                 </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="General_System" Visibility="Visible">
+                    <StackPanel>
+                        <tkcontrols:SettingsCard x:Uid="GeneralPage_ExitPowerToys" HeaderIcon="{ui:FontIcon Glyph=&#xE7E8;}">
+                            <Button
+                                x:Uid="GeneralPageExitPowerToys"
+                                HorizontalAlignment="Right"
+                                Click="ExitPTItem_Tapped" />
+                        </tkcontrols:SettingsCard>
+                    </StackPanel>
+                </controls:SettingsGroup>
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>
