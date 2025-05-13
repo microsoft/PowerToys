@@ -85,6 +85,52 @@ namespace KeyboardManagerEditorUI.Helpers
             return ValidationErrorType.NoError;
         }
 
+        public static ValidationErrorType ValidateTextMapping(
+            List<string> keys,
+            string textContent,
+            bool isAppSpecific,
+            string appName,
+            KeyboardMappingService mappingService)
+        {
+            // Check if original keys are empty
+            if (keys == null || keys.Count == 0)
+            {
+                return ValidationErrorType.EmptyOriginalKeys;
+            }
+
+            // Check if text content is empty
+            if (string.IsNullOrWhiteSpace(textContent))
+            {
+                return ValidationErrorType.EmptyTargetText;
+            }
+
+            // Check if shortcut contains only modifier keys
+            if (keys.Count > 1 && ContainsOnlyModifierKeys(keys))
+            {
+                return ValidationErrorType.ModifierOnly;
+            }
+
+            // Check if app specific is checked but no app name is provided
+            if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
+            {
+                return ValidationErrorType.EmptyAppName;
+            }
+
+            // Check if this is a shortcut (multiple keys) and if it's an illegal combination
+            if (keys.Count > 1)
+            {
+                string shortcutKeysString = string.Join(";", keys.Select(k => mappingService.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+
+                if (KeyboardManagerInterop.IsShortcutIllegal(shortcutKeysString))
+                {
+                    return ValidationErrorType.IllegalShortcut;
+                }
+            }
+
+            // No errors found
+            return ValidationErrorType.NoError;
+        }
+
         public static bool IsDuplicateMapping(
             List<string> originalKeys,
             bool isAppSpecific,
