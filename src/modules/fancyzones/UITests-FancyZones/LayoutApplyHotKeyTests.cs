@@ -391,7 +391,7 @@ namespace Microsoft.FancyZones.UITests
             this.Session.PressKey(Key.Ctrl);
             this.Session.PressKey(Key.Alt);
             this.Session.PressKey(Key.Num0);
-            bool res = this.Session.IsWindowOpen("FancyZones_ZonesOverlay");
+            bool res = this.IsWindowOpen("FancyZones_ZonesOverlay");
             Assert.IsTrue(res, $" HotKeyWindowFlash Test error: FancyZones_ZonesOverlay is not open");
             this.Session.ReleaseKey(Key.Win);
             this.Session.ReleaseKey(Key.Ctrl);

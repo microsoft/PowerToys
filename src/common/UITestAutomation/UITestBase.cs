@@ -15,6 +15,7 @@ using OpenQA.Selenium.Appium.Windows;
 using Windows.Devices.Display.Core;
 using Windows.Foundation.Metadata;
 using static Microsoft.PowerToys.UITest.UITestBase.NativeMethods;
+using static Microsoft.PowerToys.UITest.WindowHelper;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -338,6 +339,17 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Retrieves the color of the pixel at the specified screen coordinates as a string.
+        /// </summary>
+        /// <param name="x">The X coordinate on the screen.</param>
+        /// <param name="y">The Y coordinate on the screen.</param>
+        /// <returns>The color of the pixel at the specified coordinates.</returns>
+        public string GetPixelColorString(int x, int y)
+        {
+            return WindowHelper.GetPixelColorString(x, y);
+        }
+
+        /// <summary>
         /// Gets the size of the display.
         /// </summary>
         /// <returns>
@@ -373,6 +385,20 @@ namespace Microsoft.PowerToys.UITest
         public Tuple<int, int> GetMousePosition()
         {
             return this.Session.GetMousePosition();
+        }
+
+        /// <summary>
+        /// Gets the screen center coordinates.
+        /// </summary>
+        /// <returns>(x, y)</returns>
+        public (int CenterX, int CenterY) GetScreenCenter()
+        {
+            return WindowHelper.GetScreenCenter();
+        }
+
+        public bool IsWindowOpen(string windowName)
+        {
+            return WindowHelper.IsWindowOpen(windowName);
         }
 
         /// <summary>

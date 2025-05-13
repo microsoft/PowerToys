@@ -510,6 +510,24 @@ namespace Microsoft.PowerToys.UITest
             return this;
         }
 
+        /// <summary>
+        /// Sets the main window size.
+        /// </summary>
+        /// <param name="size">WindowSize enum</param>
+        public void SetMainWindowSize(WindowSize size)
+        {
+            WindowHelper.SetWindowSize(this.MainWindowHandler, size);
+        }
+
+        /// <summary>
+        /// Gets the main window center coordinates.
+        /// </summary>
+        /// <returns>(x, y)</returns>
+        public (int CenterX, int CenterY) GetMainWindowCenter()
+        {
+            return WindowHelper.GetWindowCenter(this.MainWindowHandler);
+        }
+
         public void StartExe(string executablePath, string arguments = "", int msPreAction = 0, int msPostAction = 2000)
         {
             PerformAction(
