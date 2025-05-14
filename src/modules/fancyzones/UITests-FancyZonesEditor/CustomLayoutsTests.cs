@@ -376,7 +376,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             slider.SendKeys(Key.Right);
             Assert.AreEqual($"{expected}", slider.Text);
 
-            Session.Find<Element>(ElementName.Save).Click();
+            Session.Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.PrimaryButton)).Click();
 
             // verify the file
             var customLayouts = new CustomLayouts();
