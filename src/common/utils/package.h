@@ -301,6 +301,7 @@ namespace package
         if (!std::filesystem::exists(directoryPath))
         {
             Logger::error(L"The directory '" + directoryPath + L"' does not exist.");
+            return {};
         }
 
         const std::regex pattern(R"(^.+\.(appx|msix|msixbundle)$)", std::regex_constants::icase);
