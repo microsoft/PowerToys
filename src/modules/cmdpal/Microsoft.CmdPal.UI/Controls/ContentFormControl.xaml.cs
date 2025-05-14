@@ -113,6 +113,11 @@ public sealed partial class ContentFormControl : UserControl
         {
             element.Loaded -= OnFrameworkElementLoaded;
 
+            if (!ViewModel?.OnlyControlOnPage ?? true)
+            {
+                return;
+            }
+
             // Focus on the first focusable element asynchronously to ensure the visual tree is fully built
             element.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
             {
