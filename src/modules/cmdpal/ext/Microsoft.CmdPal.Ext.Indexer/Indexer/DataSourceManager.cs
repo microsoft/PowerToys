@@ -4,9 +4,11 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Native;
 using Windows.Win32.System.Search;
+using WinRT;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
@@ -36,16 +38,26 @@ internal static class DataSourceManager
             return false;
         }
 
-        // create datasource object from ptr
-        var dataSourceObj = Marshal.GetObjectForIUnknown(dataSourceObjPtr);
+        /*
+        var comWrappers = new StrategyBasedComWrappers();
+        var ptr = dataSourceObjPtr;
+        var dataSourceObj = comWrappers.GetOrCreateObjectForComInstance(ptr, CreateObjectFlags.None);
 
+        // create datasource object from ptr
+        // var dataSourceObj = Marshal.GetObjectForIUnknown(dataSourceObjPtr);
         if (dataSourceObj == null)
         {
             Logger.LogError("CoCreateInstance failed: dataSourceObj is null");
             return false;
+        }*/
+
+        if (dataSourceObjPtr == IntPtr.Zero)
+        {
+            Logger.LogError("CoCreateInstance failed: dataSourceObjPtr is null");
+            return false;
         }
 
-        _dataSource = (IDBInitialize)dataSourceObj;
+        _dataSource = MarshalInterface<IDBInitialize>.FromAbi(dataSourceObjPtr);
         _dataSource.Initialize();
 
         return true;
