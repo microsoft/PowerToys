@@ -17,6 +17,7 @@ steps:
     arguments: >
       -winAppSdkVersionNumber ${{ parameters.versionNumber }}
       -useExperimentalVersion $${{ parameters.useExperimentalVersion }}
+      -rootPath "$(build.sourcesdirectory)"
 
 - script: echo $(WinAppSDKVersion)
   displayName: 'Display WinAppSDK Version Found'
