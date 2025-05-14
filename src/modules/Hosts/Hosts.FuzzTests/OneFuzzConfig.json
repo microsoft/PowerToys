@@ -158,19 +158,19 @@
         // the DLL and PDB files
         // you will need to add any other files required
         // (globs are supported)
+        "Castle.Core.dll",
+        "CommunityToolkit.Mvvm.dll",
         "Hosts.FuzzTests.dll",
         "Hosts.FuzzTests.pdb",
         "Microsoft.Windows.SDK.NET.dll",
-        "WinRT.Runtime.dll",
         "Moq.dll",
-        "testhost.dll",
-        "Castle.Core.dll",
         "System.IO.Abstractions.dll",
-        "CommunityToolkit.Mvvm.dll",
         "System.IO.Abstractions.TestingHelpers.dll",
         "TestableIO.System.IO.Abstractions.dll",
         "TestableIO.System.IO.Abstractions.TestingHelpers.dll",
-        "TestableIO.System.IO.Abstractions.Wrappers.dll"
+        "TestableIO.System.IO.Abstractions.Wrappers.dll",
+        "Testably.Abstractions.FileSystem.Interface.dll",
+        "WinRT.Runtime.dll"
       ],
       "SdlWorkItemId": 49911822
     }
