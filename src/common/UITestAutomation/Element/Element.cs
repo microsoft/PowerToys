@@ -195,7 +195,8 @@ namespace Microsoft.PowerToys.UITest
         {
             PerformAction((actions, windowElement) =>
             {
-                windowElement.SendKeys(key);
+                actions.MoveToElement(windowElement).MoveByOffset(10, 10).ClickAndHold(windowElement).MoveByOffset(offsetX, offsetY);
+                actions.Build().Perform();
             });
         }
 
