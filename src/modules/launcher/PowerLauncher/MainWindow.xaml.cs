@@ -195,17 +195,37 @@ namespace PowerLauncher
             _viewModel.RegisterHotkey(_hwndSource.Handle);
             if (OSVersionHelper.IsGreaterThanWindows11_21H2())
             {
-                // ResizeMode="NoResize" removes rounded corners. So force them to rounded.
-                IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
-                DWMWINDOWATTRIBUTE attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
-                DWM_WINDOW_CORNER_PREFERENCE preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
-                DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
+                try
+                {
+                    // ResizeMode="NoResize" removes rounded corners. So force them to rounded.
+                    IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
+                    DWMWINDOWATTRIBUTE attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
+                    DWM_WINDOW_CORNER_PREFERENCE preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
+                    DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
+                }
+                catch (COMException ex) when (ex.HResult == unchecked((int)0xD0000701))
+                {
+                    // Ignore this specific DWM error which can occur after resuming from sleep
+                    // This error is related to window styling and doesn't affect functionality
+                    Log.Exception("DWM styling error occurred (typically after sleep resume). This is non-critical.", ex, GetType());
+
+                    // Fallback to non-rounded corners
+                    MainBorder.BorderThickness = new Thickness(0.5);
+                }
+                catch (Exception ex)
+                {
+                    // Log other errors but continue execution
+                    Log.Exception("Error setting DWM window attributes", ex, GetType());
+
+                    // Fallback to non-rounded corners
+                    MainBorder.BorderThickness = new Thickness(0.5);
+                }
             }
             else
             {
                 // On Windows10 ResizeMode="NoResize" removes the border so we add a new one.
                 // Also on 22000 it crashes due to DWMWA_WINDOW_CORNER_PREFERENCE https://github.com/microsoft/PowerToys/issues/36558
-                MainBorder.BorderThickness = new System.Windows.Thickness(0.5);
+                MainBorder.BorderThickness = new Thickness(0.5);
             }
         }
 

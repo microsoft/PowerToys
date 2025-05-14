@@ -47,7 +47,9 @@ namespace ManagedCommon
             if (OSVersionHelper.IsWindows10())
             {
                 var margins = new NativeMethods.MARGINS { cxLeftWidth = 0, cxRightWidth = 0, cyBottomHeight = 0, cyTopHeight = 2 };
-                NativeMethods.DwmExtendFrameIntoClientArea(handle, ref margins);
+
+                // Use the safe version of DwmExtendFrameIntoClientArea that handles resume-from-sleep issues
+                NativeMethods.SafeDwmExtendFrameIntoClientArea(handle, ref margins);
             }
         }
     }
