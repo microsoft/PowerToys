@@ -249,7 +249,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsNotNull(slider);
             slider.SendKeys(Key.Right);
 
-            var expected = value + 1; // one step right
+            var expected = value; // one step right
             Assert.AreEqual($"{expected}", slider.Text);
 
             Session.Find<Button>(ElementName.Save).Click();
@@ -315,7 +315,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
             var type = LayoutType.PriorityGrid;
             var layout = Layouts.LayoutTemplates.Find(x => x.Type == type.TypeToString());
-            var expected = layout.Spacing + 1;
+            var expected = layout.Spacing;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
             var slider = Session.Find<Custom>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
@@ -344,7 +344,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var slider = Session.Find<Custom>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
             Assert.IsNotNull(slider);
             slider.SendKeys(Key.Right);
-            Assert.AreEqual($"{expected + 1}", slider.Text);
+            Assert.AreEqual($"{expected}", slider.Text);
 
             Session.Find<Button>(ElementName.Cancel).Click();
 
