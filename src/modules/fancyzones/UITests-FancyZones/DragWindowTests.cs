@@ -371,7 +371,7 @@ namespace UITests_FancyZones
             string appZoneHistoryJson = AppZoneHistory.GetData();
             Console.WriteLine($"[{TestContext.TestName}] AppZoneHistory layout is {appZoneHistoryJson}.");
 
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 2000);
+            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
         }
@@ -393,13 +393,15 @@ namespace UITests_FancyZones
         {
             var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
+            Session.PressKey(Key.Shift);
             dragElement.DragAndHold(offSet.Dx, offSet.Dy);
             Tuple<int, int> pos = GetMousePosition();
             string pixelInWindow = Session.GetPixelColorString(pos.Item1, pos.Item2);
-            Session.PressKey(Key.Shift);
-            string transPixel = Session.GetPixelColorString(pos.Item1, pos.Item2);
             Session.ReleaseKey(Key.Shift);
+            pos = GetMousePosition();
+            string transPixel = Session.GetPixelColorString(pos.Item1, pos.Item2);
             dragElement.ReleaseDrag();
+
             return (pixelInWindow, transPixel);
         }
 
