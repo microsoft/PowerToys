@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.Tracing;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
 
@@ -17,6 +16,8 @@ public class OpenPage : EventBase, IEvent
     public OpenPage(int pageDepth)
     {
         PageDepth = pageDepth;
+
+        EventName = "CmdPal_OpenPage";
     }
 
     public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;

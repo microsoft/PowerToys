@@ -12,6 +12,7 @@ using Windows.Win32;
 using Windows.Win32.System.Com;
 using WinRT;
 
+// [assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 public class ExtensionWrapper : IExtensionWrapper
@@ -113,25 +114,36 @@ public class ExtensionWrapper : IExtensionWrapper
                         // -2147467262: E_NOINTERFACE
                         // -2147024893: E_PATH_NOT_FOUND
                         var guid = typeof(IExtension).GUID;
-                        var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out var extensionObj);
 
-                        if (hr.Value == -2147024893)
+                        unsafe
                         {
-                            Logger.LogDebug($"Failed to find {ExtensionDisplayName}: {hr}. It may have been uninstalled or deleted.");
+                            var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out var extensionObj);
 
-                            // We don't really need to throw this exception.
-                            // We'll just return out nothing.
-                            return;
+                            if (hr.Value == -2147024893)
+                            {
+                                Logger.LogDebug($"Failed to find {ExtensionDisplayName}: {hr}. It may have been uninstalled or deleted.");
+
+                                // We don't really need to throw this exception.
+                                // We'll just return out nothing.
+                                return;
+                            }
+
+                            extensionPtr = Marshal.GetIUnknownForObject((nint)extensionObj);
+                            if (hr < 0)
+                            {
+                                Logger.LogDebug($"Failed to instantiate {ExtensionDisplayName}: {hr}");
+                                Marshal.ThrowExceptionForHR(hr);
+                            }
+
+                            // extensionPtr = Marshal.GetIUnknownForObject(extensionObj);
+                            extensionPtr = (nint)extensionObj;
+                            if (hr < 0)
+                            {
+                                Marshal.ThrowExceptionForHR(hr);
+                            }
+
+                            _extensionObject = MarshalInterface<IExtension>.FromAbi(extensionPtr);
                         }
-
-                        extensionPtr = Marshal.GetIUnknownForObject(extensionObj);
-                        if (hr < 0)
-                        {
-                            Logger.LogDebug($"Failed to instantiate {ExtensionDisplayName}: {hr}");
-                            Marshal.ThrowExceptionForHR(hr);
-                        }
-
-                        _extensionObject = MarshalInterface<IExtension>.FromAbi(extensionPtr);
                     }
                     finally
                     {

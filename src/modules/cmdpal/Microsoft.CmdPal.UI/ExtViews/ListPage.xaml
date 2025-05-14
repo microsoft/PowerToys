@@ -28,21 +28,22 @@
             NotEmptyValue="Visible" />
 
         <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
-            <ItemContainer>
-                <cpcontrols:Tag
-                    BackgroundColor="{x:Bind Background, Mode=OneWay}"
-                    FontSize="12"
-                    ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
-                    Icon="{x:Bind Icon, Mode=OneWay}"
-                    Text="{x:Bind Text, Mode=OneWay}"
-                    ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
-            </ItemContainer>
+            <cpcontrols:Tag
+                AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
+                BackgroundColor="{x:Bind Background, Mode=OneWay}"
+                FontSize="12"
+                ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
+                Icon="{x:Bind Icon, Mode=OneWay}"
+                Text="{x:Bind Text, Mode=OneWay}"
+                ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
         </DataTemplate>
 
         <!--  https://learn.microsoft.com/windows/apps/design/controls/itemsview#specify-the-look-of-the-items  -->
         <DataTemplate x:Key="ListItemViewModelTemplate" x:DataType="viewmodels:ListItemViewModel">
-
-            <Grid Padding="0,12,0,12" ColumnSpacing="12">
+            <Grid
+                Padding="0,12,0,12"
+                AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
+                ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="28" />
                     <ColumnDefinition Width="*" />
@@ -55,6 +56,7 @@
                     Width="20"
                     Height="20"
                     Margin="4,0,4,0"
+                    AutomationProperties.AccessibilityView="Raw"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
@@ -136,14 +138,15 @@
             </controls:Case>
             <controls:Case Value="True">
                 <StackPanel
+                    Margin="24"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Orientation="Vertical"
                     Spacing="4">
                     <cpcontrols:IconBox
                         x:Name="IconBorder"
-                        Width="56"
-                        Height="56"
+                        Width="48"
+                        Height="48"
                         Margin="8"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         SourceKey="{x:Bind ViewModel.EmptyContent.Icon, Mode=OneWay}"
@@ -152,11 +155,15 @@
                         Margin="0,4,0,0"
                         HorizontalAlignment="Center"
                         FontWeight="SemiBold"
-                        Text="{x:Bind ViewModel.EmptyContent.Title, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.EmptyContent.Title, Mode=OneWay}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
                     <TextBlock
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="{x:Bind ViewModel.EmptyContent.Subtitle, Mode=OneWay}" />
+                        Text="{x:Bind ViewModel.EmptyContent.Subtitle, Mode=OneWay}"
+                        TextAlignment="Center"
+                        TextWrapping="Wrap" />
                 </StackPanel>
             </controls:Case>
         </controls:SwitchPresenter>

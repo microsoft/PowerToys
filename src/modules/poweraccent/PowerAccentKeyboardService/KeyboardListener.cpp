@@ -13,7 +13,7 @@
 namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 {
     KeyboardListener::KeyboardListener() :
-        m_toolbarVisible(false), m_triggeredWithSpace(false), m_leftShiftPressed(false), m_rightShiftPressed(false), m_triggeredWithLeftArrow(false), m_triggeredWithRightArrow(false)
+           m_toolbarVisible(false), m_activationKeyHold(false), m_triggeredWithSpace(false), m_leftShiftPressed(false), m_rightShiftPressed(false), m_triggeredWithLeftArrow(false), m_triggeredWithRightArrow(false)
     {
         s_instance = this;
         LoggerHelpers::init_logger(L"PowerAccent", L"PowerAccentKeyboardService", "PowerAccent");
@@ -53,8 +53,8 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     void KeyboardListener::SetShowToolbarEvent(ShowToolbar showToolbarEvent)
     {
-        m_showToolbarCb = [trigger = std::move(showToolbarEvent)](LetterKey key) {
-            trigger(key);
+        m_showToolbarCb = [trigger = std::move(showToolbarEvent)](LetterKey key, TriggerKey triggerKey) {
+            trigger(key, triggerKey);
         };
     }
 
@@ -152,6 +152,17 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         return false;
     }
 
+    void KeyboardListener::BeginShowToolbar(std::chrono::milliseconds delay, LetterKey key, TriggerKey trigger)
+    {
+        std::unique_lock<std::mutex> lock(toolbarMutex);
+        auto result = toolbarCV.wait_for(lock, delay);
+        if (result == std::cv_status::timeout)
+        {
+            m_toolbarVisible = true;
+            m_showToolbarCb(key, trigger);
+        }
+    }
+
     bool KeyboardListener::OnKeyDown(KBDLLHOOKSTRUCT info) noexcept
     {
         auto letterKey = static_cast<LetterKey>(info.vkCode);
@@ -169,6 +180,14 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
         if (std::find(letters.begin(), letters.end(), letterKey) != cend(letters) && m_isLanguageLetterCb(letterKey))
         {
+            if (m_toolbarVisible && letterPressed == letterKey)
+            {
+                // On-screen keyboard continuously sends WM_KEYDOWN when a key is held down
+                // If Quick Accent is visible, prevent the letter key from being processed
+                // https://github.com/microsoft/PowerToys/issues/36853
+                return true;
+            }
+
             m_stopwatch.reset();
             letterPressed = letterKey;
         }
@@ -191,7 +210,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             }
         }
 
-        if (!m_toolbarVisible && letterPressed != LetterKey::None && triggerPressed && !IsSuppressedByGameMode() && !IsForegroundAppExcluded())
+        if (!m_toolbarVisible && !m_activationKeyHold && letterPressed != LetterKey::None && triggerPressed && !IsSuppressedByGameMode() && !IsForegroundAppExcluded())
         {
             Logger::debug(L"Show toolbar. Letter: {}, Trigger: {}", letterPressed, triggerPressed);
 
@@ -199,11 +218,21 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             m_triggeredWithSpace = triggerPressed == VK_SPACE;
             m_triggeredWithLeftArrow = triggerPressed == VK_LEFT;
             m_triggeredWithRightArrow = triggerPressed == VK_RIGHT;
-            m_toolbarVisible = true;
-            m_showToolbarCb(letterPressed);
+            m_activationKeyHold = true;
+            m_bothKeysPressed = true;
+            if (toolbarThread != nullptr)
+            {
+                toolbarCV.notify_all();
+                toolbarThread->join();
+            }
+            toolbarThread = std::make_unique<std::thread>(std::bind(&KeyboardListener::BeginShowToolbar, this, m_settings.inputTime, letterPressed,static_cast<TriggerKey>(triggerPressed)));
         }
 
-        if (m_toolbarVisible && triggerPressed)
+        if (m_activationKeyHold && triggerPressed && !m_toolbarVisible)
+        {
+            return true;
+        }
+        else if (m_toolbarVisible && triggerPressed)
         {
             if (triggerPressed == VK_LEFT)
             {
@@ -243,8 +272,9 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         {
             letterPressed = LetterKey::None;
 
-            if (m_toolbarVisible)
+            if (m_toolbarVisible || m_bothKeysPressed)
             {
+                m_bothKeysPressed = false;
                 if (m_stopwatch.elapsed() < m_settings.inputTime)
                 {
                     Logger::debug(L"Activation too fast. Do nothing.");
@@ -272,9 +302,16 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                 Logger::debug(L"Hide toolbar event and input char");
 
                 m_hideToolbarCb(InputType::Char);
-
                 m_toolbarVisible = false;
             }
+        }
+
+        auto triggerPressed = info.vkCode;
+
+        if (m_activationKeyHold && (letterPressed == LetterKey::None || (triggerPressed == VK_SPACE || triggerPressed == VK_LEFT || triggerPressed == VK_RIGHT)))
+        {
+            m_activationKeyHold = false;
+            toolbarCV.notify_all();
         }
 
         return false;
@@ -282,12 +319,11 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     LRESULT KeyboardListener::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
+        if (nCode == HC_ACTION && s_instance != nullptr)
         {
-            if (nCode == HC_ACTION && s_instance != nullptr)
+            KBDLLHOOKSTRUCT* key = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+            switch (wParam)
             {
-                KBDLLHOOKSTRUCT* key = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-                switch (wParam)
-                {
                 case WM_KEYDOWN:
                 {
                     if (s_instance->OnKeyDown(*key))
@@ -304,10 +340,9 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                     }
                 }
                 break;
-                }
             }
-
-            return CallNextHookEx(NULL, nCode, wParam, lParam);
         }
+
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
 }
