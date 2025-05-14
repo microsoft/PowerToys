@@ -38,8 +38,12 @@
         "FancyZones.FuzzTests.dll",
         "FancyZones.FuzzTests.pdb",
         "Microsoft.Windows.SDK.NET.dll",
-        "WinRT.Runtime.dll",
-        "System.IO.Abstractions.dll"
+        "Newtonsoft.Json.dll",
+        "System.IO.Abstractions.dll",
+        "Testably.Abstractions.FileSystem.Interface.dll",
+        "TestableIO.System.IO.Abstractions.dll",
+        "TestableIO.System.IO.Abstractions.Wrappers.dll",
+        "WinRT.Runtime.dll"
       ],
       "SdlWorkItemId": 49911822
     }
