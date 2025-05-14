@@ -113,7 +113,24 @@
                                     Visibility="{x:Bind ViewModel.HasSettings}" />
 
                                 <Frame x:Name="SettingsFrame" Visibility="{x:Bind ViewModel.HasSettings}">
-                                    <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
+
+                                    <controls:SwitchPresenter
+                                        HorizontalAlignment="Stretch"
+                                        TargetType="x:Boolean"
+                                        Value="{x:Bind ViewModel.LoadingSettings, Mode=OneWay}">
+                                        <controls:Case Value="True">
+                                            <ProgressRing
+                                                Width="36"
+                                                Height="36"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                IsIndeterminate="True" />
+                                        </controls:Case>
+                                        <controls:Case Value="False">
+                                            <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
+                                        </controls:Case>
+                                    </controls:SwitchPresenter>
+
                                 </Frame>
 
                                 <TextBlock
