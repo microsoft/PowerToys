@@ -73,15 +73,15 @@
             </StackPanel>
             <StackPanel
                 Grid.Column="1"
-                Margin="0,-15,140,0"
+                Margin="0,0,148,0"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal">
                 <Button
                     x:Name="ShutDownBtn"
-                    Background="Transparent"
-                    BorderBrush="Transparent"
-                    Click="ExitPTItem_Tapped">
-                    <FontIcon FontSize="14" Glyph="&#xE7E8;" />
+                    Height="48"
+                    Click="ExitPTItem_Tapped"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon FontSize="16" Glyph="&#xE7E8;" />
                     <ToolTipService.ToolTip>
                         <ToolTip>
                             <TextBlock x:Uid="AppTitleBarShutDown_Tooltip" />

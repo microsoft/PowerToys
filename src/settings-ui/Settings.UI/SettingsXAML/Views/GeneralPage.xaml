@@ -406,10 +406,11 @@
                     </InfoBar>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="General_DiagnosticsAndFeedback" Visibility="Visible">
-                    <StackPanel>
+                    <StackPanel Spacing="{StaticResource SettingsCardSpacing}">
                         <HyperlinkButton
                             x:Uid="GeneralPage_DiagnosticsAndFeedback_Link"
-                            Margin="-8,0,0,0"
+                            Margin="0,0,0,8"
+                            Padding="0"
                             NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
                         <tkcontrols:SettingsCard
                             x:Uid="GeneralPage_EnableDataDiagnostics"
