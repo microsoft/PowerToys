@@ -102,7 +102,7 @@ In this release, we focused on new features, stability, and automation.
  - Added the ability for Command Palette to search any file using a fallback command.
  - Added the ability to make the Command Palette global hotkey a low-level keyboard hook.
  - Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from Command Palette.
- - Enhanced Registry Preview to support pasting registry keys and values without manually writing the file header, and added a new button for resetting the app. Thanks [@htcfreek](https://github.com/htcfreek)!
+ - You can now define custom formats in the Date and Time plugins of PT Run and Command Palette. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Advanced Paste
 
@@ -196,10 +196,6 @@ In this release, we focused on new features, stability, and automation.
 
  - Updated the letter mapping in GetDefaultLetterKeyEPO, replacing "ǔ" with "ŭ" for the VK_U key to accurately reflect Esperanto phonetics. Thanks [@OlegKharchevkin](https://github.com/OlegKharchevkin)!
  - Fixed an issue where Quick Accent did not work properly when using the on-screen keyboard. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
-
-### Registry Preview
-
- - Enhanced Registry Preview to support pasting registry keys and values without manually writing the file header, and added a new button for resetting the app. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Settings
 
