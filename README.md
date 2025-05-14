@@ -99,6 +99,7 @@ In this release, we focused on new features, stability, and automation.
 
 **✨Highlights**
 
+ - We focused on greatly improving Command Palette's performance and fixing a large amount of bugs. Some new features we've added are:
  - Added the ability for Command Palette to search any file using a fallback command.
  - Added the ability to make the Command Palette global hotkey a low-level keyboard hook.
  - Added open URL fallback command for the WebSearch extension, enabling users to directly open URLs in the browser from Command Palette.
@@ -196,6 +197,10 @@ In this release, we focused on new features, stability, and automation.
 
  - Updated the letter mapping in GetDefaultLetterKeyEPO, replacing "ǔ" with "ŭ" for the VK_U key to accurately reflect Esperanto phonetics. Thanks [@OlegKharchevkin](https://github.com/OlegKharchevkin)!
  - Fixed an issue where Quick Accent did not work properly when using the on-screen keyboard. Thanks [@davidegiacometti](https://github.com/davidegiacometti)!
+
+### Registry Preview
+
+ - Enhanced Registry Preview to support pasting registry keys and values without manually writing the file header, and added a new button for resetting the app. Thanks [@htcfreek](https://github.com/htcfreek)!
 
 ### Settings
 
