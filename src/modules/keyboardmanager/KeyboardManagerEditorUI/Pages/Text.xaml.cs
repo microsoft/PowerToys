@@ -137,24 +137,12 @@ namespace KeyboardManagerEditorUI.Pages
             string appName = TextInputControl.GetAppName();
 
             // Validate inputs
-            if (keys.Count == 0)
-            {
-                await ShowErrorDialog("Missing Keys", "Please enter at least one key or shortcut.");
-                args.Cancel = true;
-                return;
-            }
+            ValidationErrorType errorType = ValidationHelper.ValidateTextMapping(
+                keys, textContent, isAppSpecific, appName, _mappingService);
 
-            if (string.IsNullOrWhiteSpace(textContent))
+            if (errorType != ValidationErrorType.NoError)
             {
-                await ShowErrorDialog("Missing Text", "Please enter text content to insert.");
-                args.Cancel = true;
-                return;
-            }
-
-            if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
-            {
-                await ShowErrorDialog("Missing Application Name", "Please enter an application name for app-specific mapping.");
-                args.Cancel = true;
+                ShowValidationError(errorType, args);
                 return;
             }
 
@@ -255,6 +243,17 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 Logger.LogError("Error deleting text mapping: " + ex.Message);
                 await ShowErrorDialog("Error", "An error occurred while deleting the mapping.");
+            }
+        }
+
+        private void ShowValidationError(ValidationErrorType errorType, ContentDialogButtonClickEventArgs args)
+        {
+            if (ValidationHelper.ValidationMessages.TryGetValue(errorType, out (string Title, string Message) error))
+            {
+                ValidationTip.Title = error.Title;
+                ValidationTip.Subtitle = error.Message;
+                ValidationTip.IsOpen = true;
+                args.Cancel = true;
             }
         }
 
