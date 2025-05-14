@@ -708,6 +708,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CmdPal.Ext.System
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MouseUtils.UITests", "src\modules\MouseUtils\MouseUtils.UITests\MouseUtils.UITests.csproj", "{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkspacesEditorUITest", "src\modules\Workspaces\WorkspacesEditorUITest\WorkspacesEditorUITest.csproj", "{43E779F3-D83C-48B1-BA8D-1912DBD76FC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -2588,6 +2590,14 @@ Global
 		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1}.Release|ARM64.Build.0 = Release|ARM64
 		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1}.Release|x64.ActiveCfg = Release|x64
 		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1}.Release|x64.Build.0 = Release|x64
+		{43E779F3-D83C-48B1-BA8D-1912DBD76FC9}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{43E779F3-D83C-48B1-BA8D-1912DBD76FC9}.Debug|ARM64.Build.0 = Debug|ARM64
+		{43E779F3-D83C-48B1-BA8D-1912DBD76FC9}.Debug|x64.ActiveCfg = Debug|x64
+		{43E779F3-D83C-48B1-BA8D-1912DBD76FC9}.Debug|x64.Build.0 = Debug|x64
+		{43E779F3-D83C-48B1-BA8D-1912DBD76FC9}.Release|ARM64.ActiveCfg = Release|ARM64
+		{43E779F3-D83C-48B1-BA8D-1912DBD76FC9}.Release|ARM64.Build.0 = Release|ARM64
+		{43E779F3-D83C-48B1-BA8D-1912DBD76FC9}.Release|x64.ActiveCfg = Release|x64
+		{43E779F3-D83C-48B1-BA8D-1912DBD76FC9}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2859,6 +2869,7 @@ Global
 		{5702B3CC-8575-48D5-83D8-15BB42269CD3} = {929C1324-22E8-4412-A9A8-80E85F3985A5}
 		{64B88F02-CD88-4ED8-9624-989A800230F9} = {ECB8E0D1-7603-4E5C-AB10-D1E545E6F8E2}
 		{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1} = {322566EF-20DC-43A6-B9F8-616AF942579A}
+		{43E779F3-D83C-48B1-BA8D-1912DBD76FC9} = {A2221D7E-55E7-4BEA-90D1-4F162D670BBF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}
