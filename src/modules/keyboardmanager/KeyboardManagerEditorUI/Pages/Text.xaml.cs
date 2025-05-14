@@ -124,7 +124,7 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
-        private async void KeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        private void KeyDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             if (_mappingService == null)
             {
@@ -158,7 +158,7 @@ namespace KeyboardManagerEditorUI.Pages
                         int originalKey = _mappingService.GetKeyCodeFromName(_editingMapping.Keys[0]);
                         if (originalKey != 0)
                         {
-                            _mappingService.DeleteSingleKeyMapping(originalKey);
+                            _mappingService.DeleteSingleKeyToTextMapping(originalKey);
                         }
                     }
                     else
@@ -202,12 +202,11 @@ namespace KeyboardManagerEditorUI.Pages
             catch (Exception ex)
             {
                 Logger.LogError("Error saving text mapping: " + ex.Message);
-                await ShowErrorDialog("Error", "An error occurred while saving the mapping.");
                 args.Cancel = true;
             }
         }
 
-        private async void DeleteButton_Click(object sender, RoutedEventArgs e)
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             if (_mappingService == null || !(sender is Button button) || !(button.DataContext is TextMapping mapping))
             {
@@ -242,7 +241,6 @@ namespace KeyboardManagerEditorUI.Pages
             catch (Exception ex)
             {
                 Logger.LogError("Error deleting text mapping: " + ex.Message);
-                await ShowErrorDialog("Error", "An error occurred while deleting the mapping.");
             }
         }
 
@@ -255,19 +253,6 @@ namespace KeyboardManagerEditorUI.Pages
                 ValidationTip.IsOpen = true;
                 args.Cancel = true;
             }
-        }
-
-        private async Task ShowErrorDialog(string title, string message)
-        {
-            ContentDialog errorDialog = new ContentDialog
-            {
-                Title = title,
-                Content = message,
-                CloseButtonText = "OK",
-                XamlRoot = this.XamlRoot,
-            };
-
-            await errorDialog.ShowAsync();
         }
 
         public void Dispose()
