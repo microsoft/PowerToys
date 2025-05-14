@@ -38,6 +38,18 @@
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
+  <!-- BODGY: XES Versioning and WinAppSDK get into a fight about the app manifest, which breaks WinAppSDK. -->
+  <Target Name="RearrangeXefVersioningAndWinAppSDKResourceGeneration"
+          DependsOnTargets="GetNewAppManifestValues;CreateWinRTRegistration"
+          BeforeTargets="XesWriteVersionInfoResourceFile">
+    <PropertyGroup>
+      <!-- XES uses this property to store the "final" location of the app manifest, before it erases it.
+           We have to update it to the value WinAppSDK set it to. -->
+      <OriginalApplicationManifest>$(ApplicationManifest.Replace("$(MSBuildProjectDirectory)\",""))</OriginalApplicationManifest>
+    </PropertyGroup>
+    <Message Importance="High" Text="Updated final manifest path to $(OriginalApplicationManifest)" />
+  </Target>
+
   <ItemGroup>
     <None Remove="Controls\ActionBar.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
