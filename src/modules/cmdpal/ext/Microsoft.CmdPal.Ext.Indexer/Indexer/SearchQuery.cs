@@ -9,10 +9,9 @@ using System.Runtime.InteropServices.Marshalling;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
+using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
 using Microsoft.CmdPal.Ext.Indexer.Native;
-using Windows.Win32;
-using Windows.Win32.System.Search;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
@@ -147,11 +146,11 @@ internal sealed partial class SearchQuery : IDisposable
 
     private bool HandleRow(IGetRow getRow, nuint rowHandle)
     {
-        object propertyStorePtr = null;
+        NativeMethods.IPropertyStore propertyStorePtr = null;
 
         try
         {
-            getRow.GetRowFromHROW(null, rowHandle, NativeMethods.PropertyStoreGUID, out propertyStorePtr);
+            getRow.GetRowFromHROW(IntPtr.Zero, rowHandle, NativeMethods.PropertyStoreGUID, out propertyStorePtr);
 
             // get IpropertyStore from propertyStorePtr
             if (propertyStorePtr == null)
@@ -187,7 +186,7 @@ internal sealed partial class SearchQuery : IDisposable
             // Ensure the COM object is released if not returned
             if (propertyStorePtr != null)
             {
-                Marshal.ReleaseComObject(propertyStorePtr);
+                // Marshal.ReleaseComObject(propertyStorePtr);
             }
         }
     }
@@ -286,21 +285,31 @@ internal sealed partial class SearchQuery : IDisposable
 
     private unsafe IRowset ExecuteCommand(string queryStr)
     {
-        object sessionPtr = null;
-        object commandPtr = null;
+        if (string.IsNullOrEmpty(queryStr))
+        {
+            return null;
+        }
+
+        var sessionPtr = IntPtr.Zero;
+        ICommandText commandPtr = null;
 
         try
         {
+            var cw = new StrategyBasedComWrappers();
             var session = (IDBCreateSession)DataSourceManager.GetDataSource();
-            session.CreateSession(null, typeof(IDBCreateCommand).GUID, out sessionPtr);
-            if (sessionPtr == null)
+            var guid = new Guid("0C733A8B-2A1C-11CE-ADE5-00AA0044773D");
+
+            var hr = session.CreateSession(IntPtr.Zero, ref guid, out sessionPtr);
+
+            if (sessionPtr == IntPtr.Zero)
             {
                 Logger.LogError("CreateSession failed");
                 return null;
             }
 
-            var createCommand = (IDBCreateCommand)sessionPtr;
-            createCommand.CreateCommand(null, typeof(ICommandText).GUID, out commandPtr);
+            // Marshal the session pointer to the actual IDBCreateCommand object
+            var createCommand = (IDBCreateCommand)cw.GetOrCreateObjectForComInstance(sessionPtr, CreateObjectFlags.None);
+            createCommand.CreateCommand(IntPtr.Zero, typeof(ICommandText).GUID, out commandPtr);
             if (commandPtr == null)
             {
                 Logger.LogError("CreateCommand failed");
@@ -314,10 +323,10 @@ internal sealed partial class SearchQuery : IDisposable
                 return null;
             }
 
-            commandText.SetCommandText(in NativeHelpers.OleDb.DbGuidDefault, queryStr);
-            commandText.Execute(null, typeof(IRowset).GUID, null, null, out var rowsetPointer);
+            commandText.SetCommandText(NativeHelpers.OleDb.DbGuidDefault, queryStr);
+            commandText.Execute(IntPtr.Zero, typeof(IRowset).GUID, IntPtr.Zero, IntPtr.Zero, out var rowsetPointer);
 
-            return rowsetPointer as IRowset;
+            return rowsetPointer;
         }
         catch (Exception ex)
         {
@@ -329,14 +338,15 @@ internal sealed partial class SearchQuery : IDisposable
             // Release the command pointer
             if (commandPtr != null)
             {
-                Marshal.ReleaseComObject(commandPtr);
+                // Marshal.ReleaseComObject(commandPtr);
             }
 
             // Release the session pointer
+            /*
             if (sessionPtr != null)
             {
                 Marshal.ReleaseComObject(sessionPtr);
-            }
+            }*/
         }
     }
 
