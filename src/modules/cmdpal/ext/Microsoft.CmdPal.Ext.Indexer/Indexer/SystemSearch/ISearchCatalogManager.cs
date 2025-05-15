@@ -12,71 +12,63 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 [Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF50")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [GeneratedComInterface]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1212:Property accessors should follow order", Justification = "The order of the property accessors must match the order in which the methods were defined in the vtable")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Please do not change the function name")]
 public partial interface ISearchCatalogManager
 {
-    [return: MarshalAs(UnmanagedType.LPWStr)]
-    string GetName();
+    [return: MarshalAs(UnmanagedType.BStr)]
+    string get_Name();
 
-    IntPtr GetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName);
-
-    void SetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, [MarshalAs(UnmanagedType.Interface)] ref object pValue);
-
-    void GetCatalogStatus([MarshalAs(UnmanagedType.Interface)] out object pStatus, [MarshalAs(UnmanagedType.Interface)] out object pPausedReason);
+    void GetCatalogStatus(out uint pdwStatus, out uint pdwPausedReason);
 
     void Reset();
 
     void Reindex();
 
-    void ReindexMatchingURLs([MarshalAs(UnmanagedType.LPWStr)] string pszPattern);
-
     void ReindexSearchRoot([MarshalAs(UnmanagedType.LPWStr)] string pszRoot);
 
-    [return: MarshalAs(UnmanagedType.LPWStr)]
-    string GetConnectTimeout();
+    IntPtr GetCrawlScopeManager();
 
-    [return: MarshalAs(UnmanagedType.LPWStr)]
-    string GetDataTimeout();
+    [return: MarshalAs(UnmanagedType.Interface)]
+    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+    ISearchQueryHelper GetQueryHelper();
 
-    int NumberOfItems();
+    uint NumberOfItems();
 
-    void NumberOfItemsToIndex(
-      out int plIncrementalCount,
-      out int plNotificationQueue,
-      out int plHighPriorityQueue);
+    uint NumberOfItemsToIndex();
 
     [return: MarshalAs(UnmanagedType.LPWStr)]
     string URLBeingIndexed();
 
-    uint GetURLIndexingState([MarshalAs(UnmanagedType.LPWStr)] string psz);
+    IntPtr GetItemsChangedSink();
 
-    [return: MarshalAs(UnmanagedType.Interface)]
-    object GetPersistentItemsChangedSink();
+    IntPtr GetPersistentItemsChangedSink();
 
-    void RegisterViewForNotification(
-      [MarshalAs(UnmanagedType.LPWStr)] string pszView,
-      [MarshalAs(UnmanagedType.Interface)] object pViewChangedSink,
-      out uint pdwCookie);
-
-    void GetItemsChangedSink(
-      [MarshalAs(UnmanagedType.Interface)] object pISearchNotifyInlineSite,
-      ref Guid riid,
-      out IntPtr ppv,
-      out Guid pGUIDCatalogResetSignature,
-      out Guid pGUIDCheckPointSignature,
-      out uint pdwLastCheckPointNumber);
+    void RegisterViewForNotification([MarshalAs(UnmanagedType.LPWStr)] string pszView, IntPtr pViewNotify, out uint pdwCookie);
 
     void UnregisterViewForNotification(uint dwCookie);
 
-    void SetExtensionClusion([MarshalAs(UnmanagedType.LPWStr)] string pszExtension, int fExclude);
+    void GetURLIndexingState([MarshalAs(UnmanagedType.LPWStr)] string pszURL, out uint pdwState);
 
-    [return: MarshalAs(UnmanagedType.Interface)]
-    object EnumerateExcludedExtensions();
+    uint get_DataTimeout();
 
-    ISearchQueryHelper GetQueryHelper();
+    void put_DataTimeout(uint dwTimeout);
 
-    int GetDiacriticSensitivity();
+    uint get_ConnectTimeout();
 
-    [return: MarshalAs(UnmanagedType.Interface)]
-    object GetCrawlScopeManager();
+    void put_ConnectTimeout(uint dwTimeout);
+
+    void EnumerateExcludedExtensions();
+
+    void SetExtensionClusion([MarshalAs(UnmanagedType.LPWStr)] string pszExtension, [MarshalAs(UnmanagedType.Bool)] bool fExclude);
+
+    [return: MarshalAs(UnmanagedType.Bool)]
+    bool get_DiacriticSensitivity();
+
+    void put_DiacriticSensitivity([MarshalAs(UnmanagedType.Bool)] bool fDiacriticSensitive);
+
+    void GetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, out IntPtr pValue);
+
+    void SetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, ref IntPtr pValue);
+
+    void ReindexMatchingURLs([MarshalAs(UnmanagedType.LPWStr)] string pszPattern);
 }
