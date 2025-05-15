@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -38,9 +39,9 @@ internal sealed partial class OpenInConsoleCommand : InvokableCommand
 
                 Process.Start(processStartInfo);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log.Exception($"Failed to open {Name} in console, {e.Message}", e, GetType());
+                Logger.LogError(ex.Message);
             }
         });
     }

@@ -217,7 +217,7 @@ public:
         CmdPal::m_enabled.store(true);
 
         std::wstring packageName = L"Microsoft.CommandPalette";
-        std::wstring launchPath = L"x-cmdpal://background";
+        std::wstring launchPath = L"explorer.exe x-cmdpal://background";
 #ifdef IS_DEV_BRANDING
         packageName = L"Microsoft.CommandPalette.Dev";
 #endif
