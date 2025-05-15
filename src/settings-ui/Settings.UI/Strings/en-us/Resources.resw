@@ -4996,8 +4996,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
   </data>
-  <data name="CmdPal_ActivationShortcut.Description" xml:space="preserve">
-    <value>Go to Command Palette settings to customize the activation shortcut.</value>
+  <data name="CmdPal_DeeplinkContent.Content" xml:space="preserve">
+    <value>Open Command Palette settings to customize the activation shortcut</value>
   </data>
   <data name="Help_chromaCIE" xml:space="preserve">
     <value>chroma (CIE LCh)</value>

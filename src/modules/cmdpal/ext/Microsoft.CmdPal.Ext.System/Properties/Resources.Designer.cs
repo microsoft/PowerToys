@@ -205,11 +205,20 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Windows System Command.
+        ///   Looks up a localized string similar to System Commands.
         /// </summary>
         public static string Microsoft_plugin_ext_system_page_name {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_ext_system_page_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows System Commands.
+        /// </summary>
+        public static string Microsoft_plugin_ext_system_page_title {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_ext_system_page_title", resourceCulture);
             }
         }
         

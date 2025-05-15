@@ -217,10 +217,9 @@ public:
         CmdPal::m_enabled.store(true);
 
         std::wstring packageName = L"Microsoft.CommandPalette";
-        std::wstring launchPath = L"shell:AppsFolder\\Microsoft.CommandPalette_8wekyb3d8bbwe!App";
+        std::wstring launchPath = L"x-cmdpal://background";
 #ifdef IS_DEV_BRANDING
         packageName = L"Microsoft.CommandPalette.Dev";
-        launchPath = L"shell:AppsFolder\\Microsoft.CommandPalette.Dev_8wekyb3d8bbwe!App";
 #endif
 
         if (!package::GetRegisteredPackage(packageName, false).has_value())
@@ -269,7 +268,7 @@ public:
         if (!firstEnableCall)
         {
             Logger::trace("Not first attempt, try to launch");
-            LaunchApp(launchPath, L"RunFromPT", false /*no elevated*/, false /*error pop up*/);
+            LaunchApp(launchPath, L"", false /*no elevated*/, false /*error pop up*/);
         }
         else
         {
@@ -297,7 +296,7 @@ public:
         int retry = 0;
         do
         {
-            auto launch_result = LaunchApp(path, L"RunFromPT", false, retry < max_retry);
+            auto launch_result = LaunchApp(path, L"", false, retry < max_retry);
             if (launch_result)
             {
                 Logger::info(L"CmdPal launched successfully after {} retries.", retry);

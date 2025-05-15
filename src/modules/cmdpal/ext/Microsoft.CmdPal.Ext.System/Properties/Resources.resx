@@ -160,8 +160,11 @@
   <data name="Microsoft_plugin_ext_settings_hideDisconnectedNetworkInfo" xml:space="preserve">
     <value>Hide disconnected network info</value>
   </data>
+  <data name="Microsoft_plugin_ext_system_page_title" xml:space="preserve">
+    <value>Windows System Commands</value>
+  </data>
   <data name="Microsoft_plugin_ext_system_page_name" xml:space="preserve">
-    <value>Windows System Command</value>
+    <value>System Commands</value>
   </data>
   <data name="Microsoft_plugin_sys_AdapterName" xml:space="preserve">
     <value>Adapter name</value>

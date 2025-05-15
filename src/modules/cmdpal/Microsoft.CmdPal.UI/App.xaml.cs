@@ -76,25 +76,12 @@ public partial class App : Application
     /// Invoked when the application is launched.
     /// </summary>
     /// <param name="args">Details about the launch request and process.</param>
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
-        var cmdArgs = Environment.GetCommandLineArgs();
-
-        foreach (var arg in cmdArgs)
-        {
-            if (arg == "RunFromPT")
-            {
-                RunFromPowerToys = true;
-                break;
-            }
-        }
-
         AppWindow = new MainWindow();
 
-        if (!RunFromPowerToys)
-        {
-            AppWindow.Activate();
-        }
+        var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+        ((MainWindow)AppWindow).HandleLaunch(activatedEventArgs);
     }
 
     /// <summary>
