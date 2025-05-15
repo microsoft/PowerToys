@@ -627,6 +627,22 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Scrolls the page
+        /// </summary>
+        /// <param name="scrollCount">The number of scroll attempts.</param>
+        /// <param name="direction">The direction to scroll.</param>
+        /// <param name="msPreAction">Pre-action delay in milliseconds.</param>
+        /// <param name="msPostAction">Post-action delay in milliseconds.</param>
+        public void Scroll(int scrollCount = 5, string direction = "Up", int msPreAction = 500, int msPostAction = 500)
+        {
+            MouseActionType mouseAction = direction == "Up" ? MouseActionType.ScrollUp : MouseActionType.ScrollDown;
+            for (int i = 0; i < scrollCount; i++)
+            {
+                PerformMouseAction(mouseAction, msPreAction, msPostAction); // Ensure settings are visible
+            }
+        }
+
+        /// <summary>
         /// Attaches to an existing PowerToys module.
         /// </summary>
         /// <param name="module">The PowerToys module to attach to.</param>

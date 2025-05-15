@@ -28,9 +28,10 @@ namespace Microsoft.PowerToys.UITest
 
         public required Session Session { get; set; }
 
+        public bool IsInPipeline { get; }
+
         public static MonitorInfoData.ParamsWrapper MonitorInfoData { get; set; } = new MonitorInfoData.ParamsWrapper() { Monitors = new List<MonitorInfoData.MonitorInfoDataWrapper>() };
 
-        private readonly bool isInPipeline;
         private readonly PowerToysModule scope;
         private readonly WindowSize size;
         private SessionHelper? sessionHelper;
@@ -41,9 +42,9 @@ namespace Microsoft.PowerToys.UITest
         // private string? screenshotDirectory;
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
         {
-            this.isInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
+            this.IsInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
             Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
-            if (isInPipeline)
+            if (IsInPipeline)
             {
                 NativeMethods.ChangeDisplayResolution(1920, 1080);
                 NativeMethods.GetMonitorInfo();
@@ -62,7 +63,7 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
-            if (isInPipeline)
+            if (IsInPipeline)
             {
                 screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
                 Directory.CreateDirectory(screenshotDirectory);
@@ -91,7 +92,7 @@ namespace Microsoft.PowerToys.UITest
         [TestCleanup]
         public void TestCleanup()
         {
-            if (isInPipeline)
+            if (IsInPipeline)
             {
                 screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
                 Dispose();

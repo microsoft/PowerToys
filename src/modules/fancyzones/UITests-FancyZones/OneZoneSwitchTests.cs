@@ -248,28 +248,18 @@ namespace UITests_FancyZones
 
             // should bind mouse to suitable zone for scrolling
             Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
-            Scroll(9, "Down"); // Pull the setting page up to make sure the setting is visible
+            Session.Scroll(9, "Down"); // Pull the setting page up to make sure the setting is visible
             bool switchWindowEnable = TestContext.TestName == "TestSwitchShortCutDisable" ? false : true;
 
             this.Find<ToggleSwitch>("Switch between windows in the current zone").Toggle(switchWindowEnable);
 
             Task.Delay(500).Wait(); // Wait for the setting to be applied
-            Scroll(9, "Up"); // Pull the setting page down to make sure the setting is visible
+            Session.Scroll(9, "Up"); // Pull the setting page down to make sure the setting is visible
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Element>(By.Name("Custom Column")).Click();
             this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
             this.Session.Attach(PowerToysModule.PowerToysSettings);
-        }
-
-        // Pull the setting page up or down
-        private void Scroll(int tries = 5, string direction = "Up")
-        {
-            MouseActionType mouseAction = direction == "Up" ? MouseActionType.ScrollUp : MouseActionType.ScrollDown;
-            for (int i = 0; i < tries; i++)
-            {
-                Session.PerformMouseAction(mouseAction, 100, 1000); // Ensure settings are visible
-            }
         }
 
         private void Clean()
