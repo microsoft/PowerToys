@@ -5,7 +5,9 @@
 using System;
 using System.Runtime.CompilerServices;
 
+#if !BUILDING_SDK
 [assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
+#endif
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
