@@ -9,6 +9,7 @@ ACCEPTFILES
 ACCESSDENIED
 ACCESSTOKEN
 acfs
+ACIE
 AClient
 AColumn
 acrt
@@ -48,6 +49,7 @@ ansicolor
 ANull
 AOC
 aocfnapldcnfbofgmbbllojgocaelgdd
+AOklab
 APARTMENTTHREADED
 APeriod
 apicontract
@@ -103,6 +105,7 @@ azcliversion
 azman
 backtracer
 bbwe
+BCIE
 bck
 BESTEFFORT
 bezelled
@@ -132,6 +135,7 @@ bms
 BNDBk
 BNumber
 BODGY
+BOklab
 BOOTSTRAPPERINSTALLFOLDER
 bostrot
 BOTTOMALIGN
@@ -184,6 +188,7 @@ CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
 cidl
+CIELCh
 cim
 CImage
 cla
@@ -269,6 +274,7 @@ CTest
 CTEXT
 Ctl
 CTLCOLORSTATIC
+culori
 currentculture
 CURRENTDIR
 CURSORINFO
@@ -347,6 +353,7 @@ DEVMODE
 DEVMODEW
 devpal
 DIALOGEX
+dictionaryapi
 digicert
 dimm
 DISABLEASACTIONKEY
@@ -446,6 +453,7 @@ eula
 eurochange
 eventlog
 eventvwr
+Evercoder
 evt
 EWXFORCE
 EWXFORCEIFHUNG
@@ -628,12 +636,12 @@ homljgmgpmcbpjbnjpfijnhipfkiclkd
 HORZRES
 HORZSIZE
 Hostbackdropbrush
+Hostx
 hotkeycontrol
 HOTKEYF
 hotkeys
 hotlight
 hotspot
-Hostx
 HPAINTBUFFER
 HRAWINPUT
 HREDRAW
@@ -677,7 +685,6 @@ IDR
 IDXGI
 ietf
 IEXPLORE
-iextn
 IFACEMETHOD
 IFACEMETHODIMP
 IFile
@@ -781,6 +788,7 @@ lastcodeanalysissucceeded
 Lastdevice
 LASTEXITCODE
 LAYOUTRTL
+LCh
 LCIDTo
 Lclean
 Ldone
@@ -807,7 +815,6 @@ LMENU
 lnks
 LOADFROMFILE
 LOBYTE
-localappdata
 LOCALDISPLAY
 localpackage
 LOCALSYSTEM
@@ -1083,8 +1090,8 @@ NOTOPMOST
 NOTRACK
 NOTSRCCOPY
 NOTSRCERASE
-NOTXORPEN
 notwindows
+NOTXORPEN
 NOZORDER
 NPH
 npmjs
@@ -1279,7 +1286,6 @@ pstm
 PStr
 pstream
 pstrm
-pswd
 PSYSTEM
 psz
 ptb
@@ -1310,8 +1316,8 @@ QUNS
 QXZ
 RAII
 RAlt
-Rappl
 randi
+Rappl
 Rasterization
 Rasterize
 RAWINPUTDEVICE
@@ -1471,16 +1477,12 @@ SHELLDLL
 shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
-SHELLEXTENSION
 SHELLICONSIZE
-SHELLNEWVALUE
 SHFILEINFO
 SHFILEOPSTRUCT
 SHGDN
 SHGDNF
 SHGFI
-SHGFIICON
-SHGFILARGEICON
 SHIL
 shinfo
 shlwapi
@@ -1513,8 +1515,8 @@ SIDs
 siex
 sigdn
 SIGNINGSCENARIO
-signtool
 Signtool
+signtool
 SINGLEKEY
 sipolicy
 SIZEBOX
@@ -1983,11 +1985,3 @@ ZOOMITX
 ZXk
 ZXNs
 zzz
-ACIE
-AOklab
-BCIE
-BOklab
-culori
-Evercoder
-LCh
-CIELCh
