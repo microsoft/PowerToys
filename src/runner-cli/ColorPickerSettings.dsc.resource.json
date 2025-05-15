@@ -1,0 +1,43 @@
+{
+    "$schema": "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2024/04/resource/manifest.json",
+    "type": "Microsoft.DSC.Hackathon/Powertoys.ColorPickerSettings",
+    "version": "1.0.0",
+    "get": {
+        "executable": "runner-cli",
+        "args": [
+            "dsc",
+            "get",
+            "--module",
+            "ColorPickerSettings"
+        ]
+    },
+    "set": {
+        "executable": "runner-cli",
+        "args": [
+            "dsc",
+            "set",
+            "--module",
+            "ColorPickerSettings",
+            {
+                "jsonInputArg": "--write",
+                "mandatory": true
+            }
+        ]
+    },
+    "export":{
+        "executable": "runner-cli",
+        "args": [
+            "dsc",
+            "get",
+            "--module",
+            "ColorPickerSettings"
+        ]
+    },
+    "schema": {
+        "embedded": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {}
+        }
+    }
+}

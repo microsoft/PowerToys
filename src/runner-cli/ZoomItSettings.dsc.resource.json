@@ -1,0 +1,43 @@
+{
+    "$schema": "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2024/04/resource/manifest.json",
+    "type": "Microsoft.DSC.Hackathon/Powertoys.ZoomItSettings",
+    "version": "1.0.0",
+    "get": {
+        "executable": "runner-cli",
+        "args": [
+            "dsc",
+            "get",
+            "--module",
+            "ZoomItSettings"
+        ]
+    },
+    "set": {
+        "executable": "runner-cli",
+        "args": [
+            "dsc",
+            "set",
+            "--module",
+            "ZoomItSettings",
+            {
+                "jsonInputArg": "--write",
+                "mandatory": true
+            }
+        ]
+    },
+    "export":{
+        "executable": "runner-cli",
+        "args": [
+            "dsc",
+            "get",
+            "--module",
+            "ZoomItSettings"
+        ]
+    },
+    "schema": {
+        "embedded": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "properties": {}
+        }
+    }
+}
