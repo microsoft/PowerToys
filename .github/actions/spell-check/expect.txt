@@ -1535,6 +1535,7 @@ SMALLICON
 smartphone
 SMTO
 SNAPPROCESS
+snk
 snwprintf
 softline
 SOURCECLIENTAREAONLY
