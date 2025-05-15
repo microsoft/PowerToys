@@ -18,19 +18,27 @@ public partial interface ISearchCatalogManager
     [return: MarshalAs(UnmanagedType.BStr)]
     string get_Name();
 
+    void GetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, out IntPtr pValue);
+
+    void SetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, ref IntPtr pValue);
+
     void GetCatalogStatus(out uint pdwStatus, out uint pdwPausedReason);
 
     void Reset();
 
     void Reindex();
 
+    void ReindexMatchingURLs([MarshalAs(UnmanagedType.LPWStr)] string pszPattern);
+
     void ReindexSearchRoot([MarshalAs(UnmanagedType.LPWStr)] string pszRoot);
 
-    IntPtr GetCrawlScopeManager();
+    uint get_ConnectTimeout();
 
-    [return: MarshalAs(UnmanagedType.Interface)]
-    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-    ISearchQueryHelper GetQueryHelper();
+    void put_ConnectTimeout(uint dwTimeout);
+
+    uint get_DataTimeout();
+
+    void put_DataTimeout(uint dwTimeout);
 
     uint NumberOfItems();
 
@@ -39,36 +47,28 @@ public partial interface ISearchCatalogManager
     [return: MarshalAs(UnmanagedType.LPWStr)]
     string URLBeingIndexed();
 
-    IntPtr GetItemsChangedSink();
+    void GetURLIndexingState([MarshalAs(UnmanagedType.LPWStr)] string pszURL, out uint pdwState);
 
     IntPtr GetPersistentItemsChangedSink();
 
     void RegisterViewForNotification([MarshalAs(UnmanagedType.LPWStr)] string pszView, IntPtr pViewNotify, out uint pdwCookie);
 
+    IntPtr GetItemsChangedSink();
+
     void UnregisterViewForNotification(uint dwCookie);
 
-    void GetURLIndexingState([MarshalAs(UnmanagedType.LPWStr)] string pszURL, out uint pdwState);
-
-    uint get_DataTimeout();
-
-    void put_DataTimeout(uint dwTimeout);
-
-    uint get_ConnectTimeout();
-
-    void put_ConnectTimeout(uint dwTimeout);
+    void SetExtensionClusion([MarshalAs(UnmanagedType.LPWStr)] string pszExtension, [MarshalAs(UnmanagedType.Bool)] bool fExclude);
 
     void EnumerateExcludedExtensions();
 
-    void SetExtensionClusion([MarshalAs(UnmanagedType.LPWStr)] string pszExtension, [MarshalAs(UnmanagedType.Bool)] bool fExclude);
+    [return: MarshalAs(UnmanagedType.Interface)]
+    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+    ISearchQueryHelper GetQueryHelper();
 
     [return: MarshalAs(UnmanagedType.Bool)]
     bool get_DiacriticSensitivity();
 
     void put_DiacriticSensitivity([MarshalAs(UnmanagedType.Bool)] bool fDiacriticSensitive);
 
-    void GetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, out IntPtr pValue);
-
-    void SetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, ref IntPtr pValue);
-
-    void ReindexMatchingURLs([MarshalAs(UnmanagedType.LPWStr)] string pszPattern);
+    IntPtr GetCrawlScopeManager();
 }

@@ -15,14 +15,29 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Please do not change the function name")]
 public partial interface ISearchManager
 {
-    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-    [return: MarshalAs(UnmanagedType.Interface)]
-    ISearchCatalogManager GetCatalog([MarshalAs(UnmanagedType.LPWStr)] string pszCatalog);
-
     void GetIndexerVersion(out uint pdwMajor, out uint pdwMinor);
 
     [return: MarshalAs(UnmanagedType.BStr)]
     string GetIndexerVersionStr();
+
+    void GetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, [MarshalAs(UnmanagedType.Struct)] out object pValue);
+
+    void SetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, [MarshalAs(UnmanagedType.Struct)] ref object pValue);
+
+    [return: MarshalAs(UnmanagedType.Bool)]
+    bool get_UseProxy();
+
+    [return: MarshalAs(UnmanagedType.BStr)]
+    string get_BypassList();
+
+    void SetProxy(
+        [MarshalAs(UnmanagedType.BStr)] string pszProxyName,
+        [MarshalAs(UnmanagedType.Bool)] bool fLocalBypass,
+        [MarshalAs(UnmanagedType.BStr)] string pszBypassList,
+        uint dwPortNumber);
+
+    [return: MarshalAs(UnmanagedType.Interface)]
+    ISearchCatalogManager GetCatalog([MarshalAs(UnmanagedType.LPWStr)] string pszCatalog);
 
     [return: MarshalAs(UnmanagedType.BStr)]
     string get_UserAgent();
@@ -34,22 +49,6 @@ public partial interface ISearchManager
 
     uint get_PortNumber();
 
-    [return: MarshalAs(UnmanagedType.BStr)]
-    string get_BypassList();
-
-    [return: MarshalAs(UnmanagedType.Bool)]
-    bool get_UseProxy();
-
     [return: MarshalAs(UnmanagedType.Bool)]
     bool get_LocalBypass();
-
-    void SetProxy(
-        [MarshalAs(UnmanagedType.BStr)] string pszProxyName,
-        [MarshalAs(UnmanagedType.Bool)] bool fLocalBypass,
-        [MarshalAs(UnmanagedType.BStr)] string pszBypassList,
-        uint dwPortNumber);
-
-    void GetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, [MarshalAs(UnmanagedType.Struct)] out object pValue);
-
-    void SetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, [MarshalAs(UnmanagedType.Struct)] ref object pValue);
 }

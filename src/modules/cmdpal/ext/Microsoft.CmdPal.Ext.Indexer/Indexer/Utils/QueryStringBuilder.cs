@@ -26,7 +26,7 @@ internal sealed partial class QueryStringBuilder
 
     private static readonly Guid CLSIDSearchManager = new Guid("7D096C5F-AC08-4F1F-BEB7-5C22C517CE39");
     private static readonly Guid IIDISearchManager = new Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF69");
-    private const uint CLSCTXINPROCSERVER = 23;
+    private const uint CLSCTXINPROCSERVER = 0x17;
 
     public static string GenerateQuery(string searchText, uint whereId)
     {
