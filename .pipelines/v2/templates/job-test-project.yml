@@ -24,6 +24,7 @@ jobs:
       BuildPlatform: x64
     ${{ else }}:
       BuildPlatform: ${{ parameters.platform }}
+    TestPlatform: ${{ parameters.platform }}
     BuildConfiguration: ${{ parameters.configuration }}
     SrcPath: $(Build.Repository.LocalPath)
     TestArtifactsName: build-${{ variables.BuildPlatform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
@@ -124,4 +125,4 @@ jobs:
           !**\obj\**
           !**\ref\**
     env:
-      platform: '$(BuildPlatform)'
+      platform: '$(TestPlatform)'

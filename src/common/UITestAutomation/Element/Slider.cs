@@ -29,6 +29,18 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Sends a combination of keys.
+        /// </summary>
+        /// <param name="keys">The keys to send.</param>
+        public void SendKeys(params Key[] keys)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                KeyboardHelper.SendKeys(keys);
+            });
+        }
+
+        /// <summary>
         /// Sets the value of a Slider (WindowsElement) to the specified integer value.
         /// Throws an exception if the value is out of the slider's valid range.
         /// </summary>
