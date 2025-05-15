@@ -89,6 +89,7 @@ namespace UITests_FancyZones
 
             // make window small to detect zone easily
             Session.Attach(powertoysWindowName, WindowSize.Small);
+            this.RestartScopeExe();
         }
 
         /// <summary>
