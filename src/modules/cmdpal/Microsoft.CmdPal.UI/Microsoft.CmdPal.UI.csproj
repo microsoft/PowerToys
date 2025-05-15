@@ -23,7 +23,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <!--<PropertyGroup>
     <SelfContained>true</SelfContained>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <PublishTrimmed>true</PublishTrimmed>
@@ -31,7 +31,7 @@
     <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
     <PublishAot>true</PublishAot>
     <EnableMsixTooling>true</EnableMsixTooling>
-  </PropertyGroup>
+  </PropertyGroup>-->
   
   <PropertyGroup>
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
