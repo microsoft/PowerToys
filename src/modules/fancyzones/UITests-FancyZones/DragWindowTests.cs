@@ -391,15 +391,22 @@ namespace UITests_FancyZones
         public (string PixelInWindow, string TransPixel) GetPixelWhenMakeDraggedWindow()
         {
             var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
+
+            // maximize the window to make sure get pixel color more accurate
+            dragElement.DoubleClick();
+
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
             Session.PressKey(Key.Shift);
             dragElement.DragAndHold(offSet.Dx, offSet.Dy);
+            Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure the window is in position
             Tuple<int, int> pos = GetMousePosition();
             string pixelInWindow = Session.GetPixelColorString(pos.Item1, pos.Item2);
             Session.ReleaseKey(Key.Shift);
-            pos = GetMousePosition();
+            Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure the window is in position
             string transPixel = Session.GetPixelColorString(pos.Item1, pos.Item2);
             dragElement.ReleaseDrag();
+
+            Console.WriteLine($"[pixelInWindow: {pixelInWindow}], [transPixel: {transPixel}]");
 
             return (pixelInWindow, transPixel);
         }
