@@ -664,7 +664,7 @@ public sealed partial class MainWindow : WindowEx,
         // var exePath = System.Reflection.Assembly.GetExecutingAssembly().Location;
 
         // todo: use the path to the current assembly
-        var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.dll");
+        var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
         DestroyIconSafeHandle largeIcon;
         PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out _, 1);
         return largeIcon;
