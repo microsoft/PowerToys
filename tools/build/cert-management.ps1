@@ -153,3 +153,15 @@ function Export-CertificateFiles {
         Write-Warning "No output path specified. Nothing was exported."
     }
 }
+
+$cert = EnsureCertificate
+if ($cert) {
+    $cerPath = "$env:TEMP\CodeSigningCert.cer"
+
+    Export-CertificateFiles -Certificate $cert -CerPath $cerPath
+
+    Write-Host "Certificate exported to $cerPath"
+} else {
+    Write-Warning "Failed to ensure certificate. Export skipped."
+}
+ 
