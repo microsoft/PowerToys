@@ -152,7 +152,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == name));
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.CreateWithCustomName")]
+        [TestCategory("FancyZones Editor #3")]
         public void CreateWithCustomName()
         {
             string name = "Layout Name";
@@ -173,7 +174,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == name));
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.CreateGrid")]
+        [TestCategory("FancyZones Editor #3")]
         public void CreateGrid()
         {
             CustomLayout type = CustomLayout.Grid;
@@ -189,7 +191,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Type == type.TypeToString()));
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.CreateCanvas")]
+        [TestCategory("FancyZones Editor #3")]
         public void CreateCanvas()
         {
             CustomLayout type = CustomLayout.Canvas;
@@ -205,7 +208,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Type == type.TypeToString()));
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.CancelGridCreation")]
+        [TestCategory("FancyZones Editor #3")]
         public void CancelGridCreation()
         {
             Session.Find<Element>(By.AccessibilityId(AccessibilityId.NewLayoutButton)).Click();
@@ -219,7 +223,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(0, data.CustomLayouts.Count);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.CancelCanvasCreation")]
+        [TestCategory("FancyZones Editor #3")]
         public void CancelCanvasCreation()
         {
             Session.Find<Element>(By.AccessibilityId(AccessibilityId.NewLayoutButton)).Click();

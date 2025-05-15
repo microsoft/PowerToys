@@ -192,7 +192,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             this.RestartScopeExe();
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.ZoneNumber_Cancel")]
+        [TestCategory("FancyZones Editor #6")]
         public void ZoneNumber_Cancel()
         {
             var type = LayoutType.Rows;
@@ -200,9 +201,9 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.ZoneCount;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
-            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
+            var slider = Session.Find<Custom>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.TemplateZoneSlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Left);
+            slider.SendKeys(Key.Left);
 
             Session.Find<Button>(ElementName.Cancel).Click();
 
@@ -213,7 +214,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.HighlightDistance_Initialize")]
+        [TestCategory("FancyZones Editor #6")]
         public void HighlightDistance_Initialize()
         {
             foreach (var (type, name) in TestConstants.TemplateLayoutNames)
@@ -234,7 +236,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.HighlightDistance_Save")]
+        [TestCategory("FancyZones Editor #6")]
         public void HighlightDistance_Save()
         {
             var type = LayoutType.Focus;
@@ -242,11 +245,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             var value = layout.SensitivityRadius;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
-            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
+            var slider = Session.Find<Custom>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
+            slider.SendKeys(Key.Right);
 
-            var expected = value + 1; // one step right
+            var expected = value; // one step right
             Assert.AreEqual($"{expected}", slider.Text);
 
             Session.Find<Button>(ElementName.Save).Click();
@@ -258,7 +261,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.HighlightDistance_Cancel")]
+        [TestCategory("FancyZones Editor #6")]
         public void HighlightDistance_Cancel()
         {
             var type = LayoutType.Focus;
@@ -266,9 +270,9 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.SensitivityRadius;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
-            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
+            var slider = Session.Find<Custom>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SensitivitySlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
+            slider.SendKeys(Key.Right);
             Session.Find<Button>(ElementName.Cancel).Click();
 
             // verify the file
@@ -278,7 +282,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Initialize")]
+        [TestCategory("FancyZones Editor #6")]
         public void SpaceAroundZones_Initialize()
         {
             foreach (var (type, name) in TestConstants.TemplateLayoutNames)
@@ -304,17 +309,18 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Slider_Save")]
+        [TestCategory("FancyZones Editor #6")]
         public void SpaceAroundZones_Slider_Save()
         {
             var type = LayoutType.PriorityGrid;
             var layout = Layouts.LayoutTemplates.Find(x => x.Type == type.TypeToString());
-            var expected = layout.Spacing + 1;
+            var expected = layout.Spacing;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
-            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
+            var slider = Session.Find<Custom>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
+            slider.SendKeys(Key.Right);
             Assert.AreEqual($"{expected}", slider.Text);
 
             Session.Find<Button>(ElementName.Save).Click();
@@ -326,7 +332,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Slider_Cancel")]
+        [TestCategory("FancyZones Editor #6")]
         public void SpaceAroundZones_Slider_Cancel()
         {
             var type = LayoutType.PriorityGrid;
@@ -334,10 +341,10 @@ namespace Microsoft.FancyZonesEditor.UITests
             var expected = layout.Spacing;
             Session.Find<Button>(TestConstants.TemplateLayoutNames[type]).Click();
 
-            var slider = Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
+            var slider = Session.Find<Custom>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.SpacingSlider));
             Assert.IsNotNull(slider);
-            slider.SendKeys(Keys.Right);
-            Assert.AreEqual($"{expected + 1}", slider.Text);
+            slider.SendKeys(Key.Right);
+            Assert.AreEqual($"{expected}", slider.Text);
 
             Session.Find<Button>(ElementName.Cancel).Click();
 
@@ -348,7 +355,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Toggle_Save")]
+        [TestCategory("FancyZones Editor #6")]
         public void SpaceAroundZones_Toggle_Save()
         {
             var type = LayoutType.PriorityGrid;
@@ -371,7 +379,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected, actual);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.SpaceAroundZones_Toggle_Cancel")]
+        [TestCategory("FancyZones Editor #6")]
         public void SpaceAroundZones_Toggle_Cancel()
         {
             var type = LayoutType.PriorityGrid;

@@ -276,13 +276,13 @@ namespace MouseUtils.UITests
 
             var location = Session.GetMousePosition();
             int radius = int.Parse(settings.Radius, CultureInfo.InvariantCulture);
-            var colorSpotlight = Session.GetPixelColorString(location.Item1, location.Item2);
+            var colorSpotlight = this.GetPixelColorString(location.Item1, location.Item2);
             Assert.AreNotEqual("#" + settings.SpotlightColor, colorSpotlight);
 
-            var colorBackground = Session.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
+            var colorBackground = this.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
             Assert.AreNotEqual("#" + settings.BackgroundColor, colorBackground);
 
-            var colorBackground2 = Session.GetPixelColorString(location.Item1 + radius + 100, location.Item2 + radius + 100);
+            var colorBackground2 = this.GetPixelColorString(location.Item1 + radius + 100, location.Item2 + radius + 100);
             Assert.AreNotEqual("#" + settings.BackgroundColor, colorBackground2);
         }
 
@@ -292,19 +292,19 @@ namespace MouseUtils.UITests
 
             var location = Session.GetMousePosition();
             int radius = int.Parse(settings.Radius, CultureInfo.InvariantCulture);
-            var colorSpotlight = Session.GetPixelColorString(location.Item1, location.Item2);
+            var colorSpotlight = this.GetPixelColorString(location.Item1, location.Item2);
             Assert.AreEqual("#" + settings.SpotlightColor, colorSpotlight);
 
-            var colorSpotlight2 = Session.GetPixelColorString(location.Item1 + radius - 1, location.Item2);
+            var colorSpotlight2 = this.GetPixelColorString(location.Item1 + radius - 1, location.Item2);
 
             // Session.MoveMouseTo(location.Item1 + radius - 10, location.Item2);
             Assert.AreEqual("#" + settings.SpotlightColor, colorSpotlight2);
             Task.Delay(100).Wait();
 
-            var colorBackground = Session.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
+            var colorBackground = this.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
             Assert.AreEqual("#" + settings.BackgroundColor, colorBackground);
 
-            var colorBackground2 = Session.GetPixelColorString(location.Item1 + radius + 100, location.Item2 + radius + 100);
+            var colorBackground2 = this.GetPixelColorString(location.Item1 + radius + 100, location.Item2 + radius + 100);
             Assert.AreEqual("#" + settings.BackgroundColor, colorBackground2);
         }
 
@@ -537,7 +537,7 @@ namespace MouseUtils.UITests
         private void LaunchFromSetting(bool reload = false, bool launchAsAdmin = false)
         {
             // this.Session.Attach(PowerToysModule.PowerToysSettings);
-            Session.SetMainWindowSize(WindowSize.Large);
+            this.Session.SetMainWindowSize(WindowSize.Large);
 
             // Goto Hosts File Editor setting page
             if (this.FindAll<NavigationViewItem>("Mouse utilities", 10000).Count == 0)
