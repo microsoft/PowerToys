@@ -99,7 +99,7 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        // [TestMethod]
+        [TestMethod]
         public void TestShowZonesOnShiftDuringDrag()
         {
             string testCaseName = nameof(TestShowZonesOnShiftDuringDrag);
@@ -332,6 +332,12 @@ namespace UITests_FancyZones
         {
             var customLayouts = new CustomLayouts();
             var customLayoutListWrapper = CustomLayoutsList;
+
+            if (TestContext.TestName == "TestMakeDraggedWindowTransparentOff")
+            {
+                customLayoutListWrapper = CustomLayoutsListWithTwo;
+            }
+
             FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
         }
 
@@ -507,7 +513,32 @@ namespace UITests_FancyZones
                         CellChildMap = new int[][] { [0] },
                         SensitivityRadius = 20,
                         ShowSpacing = true,
-                        Spacing = 0, // set spacing to 0 make sure the zone is full of the screen
+                        Spacing = 10, // set spacing to 0 make sure the zone is full of the screen
+                    }),
+                },
+            },
+        };
+
+        // set the custom layout
+        private static readonly CustomLayouts.CustomLayoutListWrapper CustomLayoutsListWithTwo = new CustomLayouts.CustomLayoutListWrapper
+        {
+            CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>
+            {
+                new CustomLayouts.CustomLayoutWrapper
+                {
+                    Uuid = "{63F09977-D327-4DAC-98F4-0C886CAE9517}",
+                    Type = CustomLayout.Grid.TypeToString(),
+                    Name = "Custom Column",
+                    Info = new CustomLayouts().ToJsonElement(new CustomLayouts.GridInfoWrapper
+                    {
+                        Rows = 1,
+                        Columns = 2,
+                        RowsPercentage = new List<int> { 10000 },
+                        ColumnsPercentage = new List<int> { 5000, 5000 },
+                        CellChildMap = new int[][] { [0, 1] },
+                        SensitivityRadius = 20,
+                        ShowSpacing = true,
+                        Spacing = 10,
                     }),
                 },
             },
