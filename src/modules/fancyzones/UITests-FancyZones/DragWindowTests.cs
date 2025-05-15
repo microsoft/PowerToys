@@ -27,6 +27,7 @@ using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualBasic.FileIO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ModernWpf.Controls.Primitives;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 
@@ -155,7 +156,7 @@ namespace UITests_FancyZones
         {
             string testCaseName = nameof(TestShowZonesOnDragDuringShift);
 
-            var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
+            var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
 
             var (initialColor, withDragColor) = RunDragInteractions(
@@ -197,7 +198,7 @@ namespace UITests_FancyZones
         public void TestToggleZonesWithNonPrimaryMouseClick()
         {
             string testCaseName = nameof(TestToggleZonesWithNonPrimaryMouseClick);
-            var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
+            var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
 
             var (initialColor, withMouseColor) = RunDragInteractions(
@@ -361,7 +362,7 @@ namespace UITests_FancyZones
 
             this.Session.SetMainWindowSize(WindowSize.Large);
             Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
-            Session.Scroll(6, "Down"); // Pull the settings page up to make sure the settings are visible
+            this.Scroll(6, "Down"); // Pull the settings page up to make sure the settings are visible
             ZoneBehaviourSettings(TestContext.TestName);
 
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
@@ -372,7 +373,7 @@ namespace UITests_FancyZones
         // Get the screen margins to calculate the dragged window position
         private void GetScreenMargins()
         {
-            var rect = this.Session.GetWindowRect();
+            var rect = Session.GetMainWindowRect();
             screenMarginTop = rect.Top;
             screenMarginLeft = rect.Left;
             screenMarginRight = rect.Right;
@@ -383,7 +384,7 @@ namespace UITests_FancyZones
         // Get the mouse color of the pixel when make dragged window
         public (string PixelInWindow, string TransPixel) GetPixelWhenMakeDraggedWindow()
         {
-            var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
+            var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
 
             // maximize the window to make sure get pixel color more accurate
             dragElement.DoubleClick();
@@ -393,10 +394,10 @@ namespace UITests_FancyZones
             dragElement.DragAndHold(offSet.Dx, offSet.Dy);
             Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure the window is in position
             Tuple<int, int> pos = GetMousePosition();
-            string pixelInWindow = Session.GetPixelColorString(pos.Item1, pos.Item2);
+            string pixelInWindow = this.GetPixelColorString(pos.Item1, pos.Item2);
             Session.ReleaseKey(Key.Shift);
             Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure the window is in position
-            string transPixel = Session.GetPixelColorString(pos.Item1, pos.Item2);
+            string transPixel = this.GetPixelColorString(pos.Item1, pos.Item2);
             dragElement.ReleaseDrag();
 
             return (pixelInWindow, transPixel);
@@ -414,7 +415,7 @@ namespace UITests_FancyZones
         /// </returns>
         public string GetOutWindowPixelColor(int spacing)
         {
-            var rect = this.Session.GetWindowRect();
+            var rect = Session.GetMainWindowRect();
             int checkX, checkY;
 
             if ((rect.Top - screenMarginTop) >= spacing)
@@ -443,7 +444,7 @@ namespace UITests_FancyZones
             }
 
             Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure the mouse is in position
-            string zoneColor = this.Session.GetPixelColorString(checkX, checkY);
+            string zoneColor = this.GetPixelColorString(checkX, checkY);
             return zoneColor;
         }
 
@@ -471,7 +472,7 @@ namespace UITests_FancyZones
             preAction?.Invoke();
 
             // Capture initial window state and zone color
-            var initialWindowRect = this.Session.GetWindowRect();
+            var initialWindowRect = Session.GetMainWindowRect();
             string initialZoneColor = GetOutWindowPixelColor(30);
 
             // Invoke the post-action
@@ -573,9 +574,9 @@ namespace UITests_FancyZones
             highlightColor = GetZoneColor("Highlight color");
             inactivateColor = GetZoneColor("Inactive color");
 
-            Session.Scroll(2, "Down");
+            this.Scroll(2, "Down");
             makeDraggedWindowTransparent.SetCheck(false, 500); // set make dragged window transparent to false or will infuluence the color comparision
-            Session.Scroll(6, "Up");
+            this.Scroll(6, "Up");
 
             switch (testName)
             {
@@ -606,9 +607,9 @@ namespace UITests_FancyZones
                 case "TestMakeDraggedWindowTransparentOn":
                     useNonPrimaryMouseCheckBox.SetCheck(false, 500);
                     useShiftCheckBox.SetCheck(true, 500);
-                    Session.Scroll(5, "Down"); // Pull the settings page up to make sure the settings are visible
+                    this.Scroll(5, "Down"); // Pull the settings page up to make sure the settings are visible
                     makeDraggedWindowTransparent.SetCheck(true, 500);
-                    Session.Scroll(5, "Up");
+                    this.Scroll(5, "Up");
                     break; // Added break to prevent fall-through
                 default:
                     throw new ArgumentException("Unsupported Test Case.", testName);

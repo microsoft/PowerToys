@@ -23,6 +23,7 @@ using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ModernWpf.Controls.Primitives;
 using OpenQA.Selenium.Appium.Windows;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
@@ -156,10 +157,10 @@ namespace UITests_FancyZones
         {
             this.Session.Attach(PowerToysModule.Hosts, WindowSize.Large_Vertical);
 
-            var hostsView = Find<Element>(By.Name("Non Client Input Sink Window"));
+            var hostsView = Find<Pane>(By.Name("Non Client Input Sink Window"));
             hostsView.DoubleClick(); // maximize the window
 
-            var rect = Session.GetWindowRect();
+            var rect = Session.GetMainWindowRect();
             var (targetX, targetY) = ZoneSwitchHelper.GetScreenMargins(rect, 4);
             var offSet = ZoneSwitchHelper.GetOffset(hostsView, targetX, targetY);
 
@@ -170,7 +171,7 @@ namespace UITests_FancyZones
             // Attach the PowerToys settings window to the front
             Session.Attach(powertoysWindowName, WindowSize.UnSpecified);
             string windowNameFront = ZoneSwitchHelper.GetActiveWindowTitle();
-            Element settingsView = Find<Element>(By.Name("Non Client Input Sink Window"));
+            Element settingsView = Find<Pane>(By.Name("Non Client Input Sink Window"));
             settingsView.DoubleClick(); // maximize the window
 
             DragWithShift(settingsView, offSet);
@@ -248,13 +249,13 @@ namespace UITests_FancyZones
 
             // should bind mouse to suitable zone for scrolling
             Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
-            Session.Scroll(9, "Down"); // Pull the setting page up to make sure the setting is visible
+            this.Scroll(9, "Down"); // Pull the setting page up to make sure the setting is visible
             bool switchWindowEnable = TestContext.TestName == "TestSwitchShortCutDisable" ? false : true;
 
             this.Find<ToggleSwitch>("Switch between windows in the current zone").Toggle(switchWindowEnable);
 
             Task.Delay(500).Wait(); // Wait for the setting to be applied
-            Session.Scroll(9, "Up"); // Pull the setting page down to make sure the setting is visible
+            this.Scroll(9, "Up"); // Pull the setting page down to make sure the setting is visible
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Element>(By.Name("Custom Column")).Click();

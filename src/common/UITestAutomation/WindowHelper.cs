@@ -80,6 +80,23 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Gets the main window center coordinates.
+        /// </summary>
+        /// <returns>(x, y)</returns>
+        public static (int Left, int Top, int Right, int Bottom) GetWindowRect(IntPtr windowHandler)
+        {
+            if (windowHandler == IntPtr.Zero)
+            {
+                return (0, 0, 0, 0);
+            }
+            else
+            {
+                var rect = ApiHelper.GetWindowRect(windowHandler);
+                return (rect.Left, rect.Top, rect.Right, rect.Bottom);
+            }
+        }
+
+        /// <summary>
         /// Gets the screen center coordinates.
         /// </summary>
         /// <returns>(x, y)</returns>
@@ -266,6 +283,23 @@ namespace Microsoft.PowerToys.UITest
                     int centerY = rect.Top + (height / 2);
 
                     return (centerX, centerY);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Failed to retrieve window coordinates");
+                }
+            }
+
+            public static (int Left, int Top, int Right, int Bottom) GetWindowRect(IntPtr hWnd)
+            {
+                if (hWnd == IntPtr.Zero)
+                {
+                    throw new ArgumentException("Invalid window handle");
+                }
+
+                if (GetWindowRect(hWnd, out RECT rect))
+                {
+                    return (rect.Left, rect.Top, rect.Right, rect.Bottom);
                 }
                 else
                 {

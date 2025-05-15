@@ -21,6 +21,20 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
+        /// Drag element move offset.
+        /// </summary>
+        /// <param name="offsetX">The offsetX to move.</param>
+        /// <param name="offsetY">The offsetY to move.</param>
+        public void Drag(int offsetX, int offsetY)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                actions.MoveToElement(windowElement).MoveByOffset(10, 10).ClickAndHold(windowElement).MoveByOffset(offsetX, offsetY).Release();
+                actions.Build().Perform();
+            });
+        }
+
+        /// <summary>
         /// Simulates holding a key, clicking and dragging a UI element to the specified screen coordinates.
         /// </summary>
         /// <param name="key">The keyboard key to press and hold during the drag operation.</param>
