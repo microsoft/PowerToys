@@ -46,47 +46,28 @@ namespace UITests_FancyZones
             // get PowerToys window Name
             powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
 
-            // set a custom layout with 2 subzones
-            CustomLayouts customLayouts = new CustomLayouts();
-            CustomLayouts.CustomLayoutListWrapper customLayoutListWrapper = CustomLayoutsList;
-            Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
-
             // clear the app zone history
             AppZoneHistory.DeleteFile();
 
-            // Goto FancyZones setting page
-            if (this.FindAll<NavigationViewItem>("FancyZones").Count == 0)
-            {
-                // Expand Advanced list-group if needed
-                this.Find<NavigationViewItem>("Windowing & Layouts").Click();
-            }
+            // set a custom layout with 2 subzones
+            SetupCustomLayouts();
 
-            this.Find<NavigationViewItem>("FancyZones").Click();
-            this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
-            this.Session.SetMainWindowSize(WindowSize.Large);
+            // Launch FancyZones
+            LaunchFancyZones();
 
-            // fixed settings
-            this.Find<Microsoft.PowerToys.UITest.CheckBox>("Hold Shift key to activate zones while dragging a window").SetCheck(true, 500);
-
-            // should bind mouse to suitable zone for scrolling
-            Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
-            Scroll(9, "Down"); // Pull the setting page up to make sure the setting is visible
-            bool switchWindowEnable = TestContext.TestName == "TestSwitchShortCutDisable" ? false : true;
-
-            this.Find<ToggleSwitch>("Switch between windows in the current zone").Toggle(switchWindowEnable);
-
-            Console.WriteLine($"Switch between windows in the current zone: {Find<ToggleSwitch>("Switch between windows in the current zone").IsOn}");
-            Task.Delay(500).Wait(); // Wait for the setting to be applied
-            Scroll(9, "Up"); // Pull the setting page down to make sure the setting is visible
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
-            this.Session.Attach(PowerToysModule.FancyZone);
-            this.Find<Element>(By.Name("Custom Column")).Click();
-            this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
-            this.Session.Attach(PowerToysModule.PowerToysSettings);
+            // Launch the Hosts File Editor
             LaunchFromSetting();
             this.RestartScopeExe();
         }
 
+        /// <summary>
+        /// Test switching between two snapped windows using keyboard shortcuts in FancyZones
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Verifies that after snapping two windows, the active window switches correctly using Win+PageDown.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
         [TestMethod]
         public void TestSwitchWindow()
         {
@@ -105,6 +86,13 @@ namespace UITests_FancyZones
             Clean();
         }
 
+        /// <summary>
+        /// Test window switch behavior across virtual desktops in FancyZones
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Verifies that a window remains correctly snapped after switching desktops and can be switched using Win+PageDown.</description>
+        /// </item>
+        /// </summary>
         [TestMethod]
         public void TestSwitchAfterDesktopChange()
         {
@@ -137,6 +125,14 @@ namespace UITests_FancyZones
             Clean();
         }
 
+        /// <summary>
+        /// Test window switching shortcut behavior when the shortcut is disabled in FancyZones settings
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Verifies that pressing Win+PageDown does not switch to the previously snapped window when the shortcut is disabled.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
         [TestMethod]
         public void TestSwitchShortCutDisable()
         {
@@ -170,40 +166,19 @@ namespace UITests_FancyZones
             DragWithShift(hostsView, offSet);
 
             string preWindow = ZoneSwitchHelper.GetActiveWindowTitle();
-            Console.WriteLine($"Window name: {preWindow}");
 
             // Attach the PowerToys settings window to the front
             Session.Attach(powertoysWindowName, WindowSize.UnSpecified);
             string windowNameFront = ZoneSwitchHelper.GetActiveWindowTitle();
-            Console.WriteLine($"Window name: {windowNameFront}");
             Element settingsView = Find<Element>(By.Name("Non Client Input Sink Window"));
             settingsView.DoubleClick(); // maximize the window
 
             DragWithShift(settingsView, offSet);
 
-            // Session.PressKey(Key.Shift);
-            // settingsView.DragAndHold(offSet.Dx, offSet.Dy);
-            // Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the drag is in progress
-            // settingsView.ReleaseDrag();
-            // Task.Delay(1000).Wait();
-            // Session.ReleaseKey(Key.Shift);
-
-            // Assert.IsNotNull(zoneIndexOfPowertoys, "Powertoys Drag to zone Failed");
-
-            // start exe
-            // Session.KillAllProcessesByName("explorer");
-            // Session.StartExe("explorer.exe", "C:\\");
-            // Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the window is open
-
-            // Start Windows Explorer process
-            // Session.Attach(windowName, WindowSize.Large_Vertical); // display window1
-            // tabView.KeyDownAndDrag(Key.Shift, targetX, targetY);
             string appZoneHistoryJson = AppZoneHistory.GetData();
 
             string? zoneIndexOfFileWindow = ZoneSwitchHelper.GetZoneIndexSetByAppName("PowerToys.Hosts.exe", appZoneHistoryJson); // explorer.exe
             string? zoneIndexOfPowertoys = ZoneSwitchHelper.GetZoneIndexSetByAppName("PowerToys.Settings.exe", appZoneHistoryJson);
-
-            Console.WriteLine($"zoneIndexOfFileWindow: {zoneIndexOfFileWindow}, zoneIndexOfPowertoys {zoneIndexOfPowertoys}");
 
             // check the AppZoneHistory layout is set and in the same zone
             Assert.AreEqual(zoneIndexOfPowertoys, zoneIndexOfFileWindow);
@@ -244,6 +219,48 @@ namespace UITests_FancyZones
                 },
             },
         };
+
+        // Setup custom layout with 1 subzones
+        private void SetupCustomLayouts()
+        {
+            var customLayouts = new CustomLayouts();
+            var customLayoutListWrapper = CustomLayoutsList;
+
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+        }
+
+        // launch FancyZones settings page
+        private void LaunchFancyZones()
+        {
+            // Goto FancyZones setting page
+            if (this.FindAll<NavigationViewItem>("FancyZones").Count == 0)
+            {
+                // Expand Advanced list-group if needed
+                this.Find<NavigationViewItem>("Windowing & Layouts").Click();
+            }
+
+            this.Find<NavigationViewItem>("FancyZones").Click();
+            this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
+            this.Session.SetMainWindowSize(WindowSize.Large);
+
+            // fixed settings
+            this.Find<Microsoft.PowerToys.UITest.CheckBox>("Hold Shift key to activate zones while dragging a window").SetCheck(true, 500);
+
+            // should bind mouse to suitable zone for scrolling
+            Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
+            Scroll(9, "Down"); // Pull the setting page up to make sure the setting is visible
+            bool switchWindowEnable = TestContext.TestName == "TestSwitchShortCutDisable" ? false : true;
+
+            this.Find<ToggleSwitch>("Switch between windows in the current zone").Toggle(switchWindowEnable);
+
+            Task.Delay(500).Wait(); // Wait for the setting to be applied
+            Scroll(9, "Up"); // Pull the setting page down to make sure the setting is visible
+            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
+            this.Session.Attach(PowerToysModule.FancyZone);
+            this.Find<Element>(By.Name("Custom Column")).Click();
+            this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
+            this.Session.Attach(PowerToysModule.PowerToysSettings);
+        }
 
         // Pull the setting page up or down
         private void Scroll(int tries = 5, string direction = "Up")
