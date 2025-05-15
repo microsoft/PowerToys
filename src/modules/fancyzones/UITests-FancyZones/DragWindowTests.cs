@@ -29,7 +29,6 @@ using Microsoft.VisualBasic.FileIO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
-using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace UITests_FancyZones
 {
@@ -72,11 +71,12 @@ namespace UITests_FancyZones
             // get PowerToys window Name
             powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
 
-            // Set a custom layout with 2 subzones and clear app zone history
+            // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
 
             // Ensure FancyZones settings page is visible and enable FancyZones
             LaunchFancyZones();
+            Console.WriteLine($"[highlight color is {highlightColor}]. inactivate color is {inactivateColor}");
 
             // Get screen margins for positioning checks
             GetScreenMargins();
@@ -89,7 +89,6 @@ namespace UITests_FancyZones
 
             // make window small to detect zone easily
             Session.Attach(powertoysWindowName, WindowSize.Small);
-            this.RestartScopeExe();
         }
 
         /// <summary>
@@ -310,7 +309,7 @@ namespace UITests_FancyZones
         public void TestMakeDraggedWindowTransparentOn()
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
-            Assert.AreNotEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}]  Window transparency failed.");
+            Assert.AreNotEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOn)}]  Window transparency failed.");
         }
 
         /// <summary>
@@ -333,7 +332,7 @@ namespace UITests_FancyZones
         {
             var customLayouts = new CustomLayouts();
             var customLayoutListWrapper = CustomLayoutsList;
-            Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
         }
 
         // launch FancyZones settings page
@@ -365,7 +364,7 @@ namespace UITests_FancyZones
             bool transparentIsChecked = transparentsetting.IsChecked;
             Console.WriteLine($"[{TestContext.TestName}] Make dragged window transparent setting is {transparentIsChecked}.");
 
-            Find<Element>(By.AccessibilityId("ZonesSettingsGroup")).Click();
+            Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
             Scroll(7, "Up");
 
             string appZoneHistoryJson = AppZoneHistory.GetData();
@@ -453,8 +452,6 @@ namespace UITests_FancyZones
         Action? releaseAction,
         string testCaseName)
         {
-            Console.WriteLine($"[highlight color is {highlightColor}]. inactivate color is {inactivateColor}");
-
             // Invoke the pre-action
             preAction?.Invoke();
 
@@ -572,16 +569,16 @@ namespace UITests_FancyZones
                     useShiftCheckBox.SetCheck(true, 500);
                     useNonPrimaryMouseCheckBox.SetCheck(true, 500);
                     break;
+                case "TestMakeDraggedWindowTransparentOff":
+                    useShiftCheckBox.SetCheck(true, 500);
+                    useNonPrimaryMouseCheckBox.SetCheck(false, 500);
+                    break; // Added break to prevent fall-through
                 case "TestMakeDraggedWindowTransparentOn":
                     useNonPrimaryMouseCheckBox.SetCheck(false, 500);
                     useShiftCheckBox.SetCheck(true, 500);
                     Scroll(5, "Down"); // Pull the settings page up to make sure the settings are visible
                     makeDraggedWindowTransparent.SetCheck(true, 500);
                     Scroll(5, "Up");
-                    break; // Added break to prevent fall-through
-                case "TestMakeDraggedWindowTransparentOff":
-                    useShiftCheckBox.SetCheck(true, 500);
-                    useNonPrimaryMouseCheckBox.SetCheck(false, 500);
                     break; // Added break to prevent fall-through
                 default:
                     throw new ArgumentException("Unsupported Test Case.", testName);
