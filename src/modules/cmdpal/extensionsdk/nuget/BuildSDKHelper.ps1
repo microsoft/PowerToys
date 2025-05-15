@@ -69,6 +69,10 @@ if (($BuildStep -ieq "all") -Or ($BuildStep -ieq "build")) {
           ("/p:VersionNumber="+$VersionOfSDK)
           )
 
+        if ($IsAzurePipelineBuild) {
+          $msbuildArgs += "/p:CIBuild=true"
+        }
+
         & $msbuildPath $msbuildArgs
       }
     }
