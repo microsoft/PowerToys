@@ -42,8 +42,6 @@ public partial class App : Application
     /// </summary>
     public static new App Current => (App)Application.Current;
 
-    public bool RunFromPowerToys { get; private set; }
-
     public Window? AppWindow { get; private set; }
 
     public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
