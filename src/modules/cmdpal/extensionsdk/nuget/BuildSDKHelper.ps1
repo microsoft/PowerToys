@@ -70,7 +70,7 @@ if (($BuildStep -ieq "all") -Or ($BuildStep -ieq "build")) {
           )
 
         if ($IsAzurePipelineBuild) {
-          $msbuildArgs += "/p:CIBuild=true;BuildingSDK=true"
+          $msbuildArgs += "/p:CIBuild=true"
         }
 
         & $msbuildPath $msbuildArgs

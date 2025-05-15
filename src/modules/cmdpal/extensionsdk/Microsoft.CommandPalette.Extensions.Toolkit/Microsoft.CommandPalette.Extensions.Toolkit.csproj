@@ -15,10 +15,6 @@
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildingSDK)'=='true'">
-    <DefineConstants>BUILDING_SDK;$(DefineConstants)</DefineConstants>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(CIBuild)'=='true'">
     <SignAssembly>true</SignAssembly>
     <DelaySign>true</DelaySign>
