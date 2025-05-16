@@ -215,7 +215,7 @@ namespace Microsoft.FancyZones.UITests
             },
         };
 
-        // [TestInitialize]
+        [TestInitialize]
         public void TestInitialize()
         {
             this.RestartScopeExe();

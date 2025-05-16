@@ -69,7 +69,8 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestSwitchWindow")]
+        [TestCategory("FancyZones #Switch between windows in the current zone #1")]
         public void TestSwitchWindow()
         {
             var (preWindow, postWindow) = SnapToOneZone();
@@ -94,7 +95,8 @@ namespace UITests_FancyZones
         /// <description>Verifies that a window remains correctly snapped after switching desktops and can be switched using Win+PageDown.</description>
         /// </item>
         /// </summary>
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestSwitchAfterDesktopChange")]
+        [TestCategory("FancyZones #Switch between windows in the current zone #2")]
         public void TestSwitchAfterDesktopChange()
         {
             var (preWindow, postWindow) = SnapToOneZone();
@@ -134,7 +136,8 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestSwitchShortCutDisable")]
+        [TestCategory("FancyZones #Switch between windows in the current zone #3")]
         public void TestSwitchShortCutDisable()
         {
             var (preWindow, postWindow) = SnapToOneZone();

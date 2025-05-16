@@ -107,7 +107,8 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestShowZonesOnShiftDuringDrag")]
+        [TestCategory("FancyZones_Dragging #1")]
         public void TestShowZonesOnShiftDuringDrag()
         {
             string testCaseName = nameof(TestShowZonesOnShiftDuringDrag);
@@ -151,7 +152,8 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestShowZonesOnDragDuringShift")]
+        [TestCategory("FancyZones_Dragging #2")]
         public void TestShowZonesOnDragDuringShift()
         {
             string testCaseName = nameof(TestShowZonesOnDragDuringShift);
@@ -194,7 +196,8 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestToggleZonesWithNonPrimaryMouseClick")]
+        [TestCategory("FancyZones_Dragging #3")]
         public void TestToggleZonesWithNonPrimaryMouseClick()
         {
             string testCaseName = nameof(TestToggleZonesWithNonPrimaryMouseClick);
@@ -234,7 +237,8 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestShowZonesWhenShiftAndMouseOff")]
+        [TestCategory("FancyZones_Dragging #4")]
         public void TestShowZonesWhenShiftAndMouseOff()
         {
             string testCaseName = nameof(TestShowZonesWhenShiftAndMouseOff);
@@ -272,7 +276,8 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestShowZonesWhenShiftAndMouseOn")]
+        [TestCategory("FancyZones_Dragging #5")]
         public void TestShowZonesWhenShiftAndMouseOn()
         {
             string testCaseName = nameof(TestShowZonesWhenShiftAndMouseOn);
@@ -313,7 +318,8 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestMakeDraggedWindowTransparentOn")]
+        [TestCategory("FancyZones_Dragging #8")]
         public void TestMakeDraggedWindowTransparentOn()
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
@@ -328,7 +334,8 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("FancyZones.Settings.TestMakeDraggedWindowTransparentOff")]
+        [TestCategory("FancyZones_Dragging #8")]
         public void TestMakeDraggedWindowTransparentOff()
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
