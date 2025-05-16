@@ -85,22 +85,26 @@ namespace KeyboardManagerEditorUI.Styles
 
         public void ShowNotificationTip(string message)
         {
+            CloseExistingNotification();
+
+            currentNotification = new TeachingTip
+            {
+                Title = "Input Limit",
+                Subtitle = message,
+                IsLightDismissEnabled = true,
+                PreferredPlacement = TeachingTipPlacementMode.Top,
+                XamlRoot = this.XamlRoot,
+                IconSource = new SymbolIconSource { Symbol = Symbol.Important },
+                Target = ShortcutToggleBtn,
+            };
+
             if (this.Content is Panel rootPanel)
             {
-                CloseExistingNotification();
-
-                currentNotification = new TeachingTip
-                {
-                    Title = "Input Limit",
-                    Subtitle = message,
-                    IsLightDismissEnabled = true,
-                };
-
                 rootPanel.Children.Add(currentNotification);
                 currentNotification.IsOpen = true;
 
                 notificationTimer = new DispatcherTimer();
-                notificationTimer.Interval = TimeSpan.FromSeconds(3);
+                notificationTimer.Interval = TimeSpan.FromMilliseconds(EditorConstants.DefaultNotificationTimeout);
                 notificationTimer.Tick += (s, e) =>
                 {
                     CloseExistingNotification();
