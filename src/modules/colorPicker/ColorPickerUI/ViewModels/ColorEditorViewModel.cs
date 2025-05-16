@@ -360,7 +360,7 @@ namespace ColorPicker.ViewModels
 
             foreach (var colorFormat in _userSettings.VisibleColorFormats)
             {
-                ColorRepresentations.Add(new ColorFormatModel() { FormatName = colorFormat.Key.ToUpperInvariant(), Convert = null, FormatString = colorFormat.Value });
+                ColorRepresentations.Add(new ColorFormatModel() { FormatName = colorFormat.Key, Convert = null, FormatString = colorFormat.Value });
             }
         }
     }
