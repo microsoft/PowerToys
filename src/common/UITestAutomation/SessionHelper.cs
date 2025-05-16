@@ -75,6 +75,9 @@ namespace Microsoft.PowerToys.UITest
             this.ExitExe(this.locationPath + ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings));
 
             this.ExitExe(this.locationPath + this.sessionPath);
+
+            // Add wait time before startExe
+            Task.Delay(2000).Wait();
             this.StartExe(this.locationPath + this.sessionPath);
 
             Assert.IsNotNull(this.Driver, $"Failed to initialize the test environment. Driver is null.");

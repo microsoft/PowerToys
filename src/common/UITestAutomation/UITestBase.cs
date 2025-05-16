@@ -107,9 +107,6 @@ namespace Microsoft.PowerToys.UITest
 
             this.Session.Cleanup();
             this.sessionHelper!.Cleanup();
-
-            // Wait for the cleanup complete
-            Task.Delay(2000).Wait();
         }
 
         public void Dispose()
