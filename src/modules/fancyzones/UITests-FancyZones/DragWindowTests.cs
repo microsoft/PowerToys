@@ -47,20 +47,27 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
-            // clean app zone history file
-            AppZoneHistory.DeleteFile();
-            FancyZonesEditorHelper.Files.Restore();
+            // Get the current mouse button setting
+            nonPrimaryMouseButton = SystemInformation.MouseButtonsSwapped ? "Left" : "Right";
 
             this.RestartScopeExe();
 
-            // Get the current mouse button setting
-            nonPrimaryMouseButton = SystemInformation.MouseButtonsSwapped ? "Left" : "Right";
+            // clean app zone history file
+            AppZoneHistory.DeleteFile();
+            FancyZonesEditorHelper.Files.Restore();
 
             // get PowerToys window Name
             powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
 
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
+
+            // Restart for Cleaning  the pipeline
+            if (this.IsInPipeline)
+            {
+                Console.WriteLine($"IsInPipeline{this.IsInPipeline}.");
+                this.RestartScopeExe();
+            }
 
             // Ensure FancyZones settings page is visible and enable FancyZones
             LaunchFancyZones();
@@ -76,12 +83,6 @@ namespace UITests_FancyZones
 
             // make window small to detect zone easily
             Session.Attach(powertoysWindowName, WindowSize.Small);
-
-            // Restart for Cleaning  the pipeline
-            if (this.IsInPipeline)
-            {
-                this.RestartScopeExe();
-            }
         }
 
         /// <summary>
