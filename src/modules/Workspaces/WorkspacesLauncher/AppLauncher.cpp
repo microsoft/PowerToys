@@ -25,6 +25,7 @@ namespace AppLauncher
         const std::wstring ChromeFilename = L"chrome.exe";
         const std::wstring ChromePwaFilename = L"chrome_proxy.exe";
         const std::wstring PwaCommandLineAddition = L"--profile-directory=Default --app-id=";
+        const std::wstring SteamProtocolPrefix = L"steam:";
     }
 
     Result<SHELLEXECUTEINFO, std::wstring> LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
@@ -134,12 +135,11 @@ namespace AppLauncher
             }
         }
 
-        // win32 app with appUserModelId:
-        // usage example: steam games
-        if (!launched && !app.appUserModelId.empty())
+        // protocol launch for steam
+        if (!launched && !app.appUserModelId.empty() && app.appUserModelId.contains(NonLocalizable::SteamProtocolPrefix))
         {
             Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
-            auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
+            auto res = LaunchApp(app.appUserModelId, app.commandLineArgs, app.isElevated);
             if (res.isOk())
             {
                 launched = true;
