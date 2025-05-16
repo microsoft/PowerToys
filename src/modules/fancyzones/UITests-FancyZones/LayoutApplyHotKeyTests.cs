@@ -17,7 +17,7 @@ using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace Microsoft.FancyZones.UITests
 {
-    // [TestClass]
+    [TestClass]
     public class LayoutApplyHotKeyTests : UITestBase
     {
         private static readonly string WindowName = "Windows (C:) - File Explorer"; // set launch explorer window name

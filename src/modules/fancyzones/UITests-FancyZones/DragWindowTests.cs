@@ -4,30 +4,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Diagnostics;
-using System.DirectoryServices;
-using System.Drawing;
-using System.Globalization;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Documents;
 using System.Windows.Forms;
-using System.Windows.Media;
-using System.Xml.Linq;
 using FancyZonesEditor.Models;
 using FancyZonesEditorCommon.Data;
-using Microsoft.Diagnostics.Tracing.AutomatedAnalysis;
 using Microsoft.FancyZones.UITests.Utils;
 using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
-using Microsoft.VisualBasic.FileIO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ModernWpf.Controls.Primitives;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 

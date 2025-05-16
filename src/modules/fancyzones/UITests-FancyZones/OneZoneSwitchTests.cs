@@ -4,18 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Diagnostics;
-using System.DirectoryServices;
-using System.Globalization;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Automation;
-using System.Windows.Forms;
-using System.Xml.Linq;
 using FancyZonesEditor.Models;
 using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZones.UITests.Utils;
@@ -23,9 +12,6 @@ using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ModernWpf.Controls.Primitives;
-using OpenQA.Selenium.Appium.Windows;
-using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace UITests_FancyZones
 {
