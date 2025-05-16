@@ -399,11 +399,11 @@ namespace UITests_FancyZones
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
             Session.PressKey(Key.Shift);
             dragElement.DragAndHold(offSet.Dx, offSet.Dy);
-            Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure the window is in position
+            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the window is in position
             Tuple<int, int> pos = GetMousePosition();
             string pixelInWindow = this.GetPixelColorString(pos.Item1, pos.Item2);
             Session.ReleaseKey(Key.Shift);
-            Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure the window is in position
+            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the window is in position
             string transPixel = this.GetPixelColorString(pos.Item1, pos.Item2);
             dragElement.ReleaseDrag();
 
@@ -450,7 +450,7 @@ namespace UITests_FancyZones
                 throw new ArgumentOutOfRangeException(nameof(spacing), "No sufficient margin to sample outside the window.");
             }
 
-            Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure the mouse is in position
+            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the mouse is in position
             string zoneColor = this.GetPixelColorString(checkX, checkY);
             return zoneColor;
         }
