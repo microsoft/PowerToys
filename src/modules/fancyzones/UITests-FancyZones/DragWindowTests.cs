@@ -33,7 +33,7 @@ namespace UITests_FancyZones
         private static int screenMarginRight;
         private static int screenMarginBottom;
 
-        // set 1/4 coodinates
+        // set 1/4 margin
         private static int quarterX;
         private static int quarterY;
 
@@ -556,7 +556,7 @@ namespace UITests_FancyZones
             Microsoft.PowerToys.UITest.CheckBox makeDraggedWindowTransparent = this.Find<Microsoft.PowerToys.UITest.CheckBox>("Make dragged window transparent");
 
             Find<Microsoft.PowerToys.UITest.CheckBox>("Show zone number").SetCheck(false, 100);
-            Find<Slider>("Opacity (%)").QuickSetValue(100); // make highlight color visible with opacit 100
+            Find<Slider>("Opacity (%)").QuickSetValue(100); // make highlight color visible with opacity 100
 
             // Get the highlight and inactivate color from appearance settings
             Find<Microsoft.PowerToys.UITest.ComboBox>("Zone appearance").Click();
@@ -567,7 +567,7 @@ namespace UITests_FancyZones
             inactivateColor = GetZoneColor("Inactive color");
 
             this.Scroll(2, "Down");
-            makeDraggedWindowTransparent.SetCheck(false, 500); // set make dragged window transparent to false or will infuluence the color comparision
+            makeDraggedWindowTransparent.SetCheck(false, 500); // set make dragged window transparent to false or will influence the color comparison
             this.Scroll(6, "Up");
 
             switch (testName)
