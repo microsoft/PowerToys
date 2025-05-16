@@ -1182,14 +1182,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private void SendCustomAction(string actionName)
+        private void SendCustomAction(string actionName, string value = "")
         {
-            SendConfigMSG("{\"action\":{\"MouseWithoutBorders\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+            var payload = new
+            {
+                action = new
+                {
+                    MouseWithoutBorders = new
+                    {
+                        action_name = actionName,
+                        value,
+                    },
+                },
+            };
+
+            string json = JsonSerializer.Serialize(payload);
+            SendConfigMSG(json);
         }
 
         public void AddFirewallRule()
         {
-            SendCustomAction("add_firewall");
+            var param = string.Empty;
+            if (Settings.Properties.SameSubnetOnly)
+            {
+                param += "-samesubnetonly";
+            }
+
+            SendCustomAction("add_firewall", param);
         }
 
         public void RefreshEnabledState()

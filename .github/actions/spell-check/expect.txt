@@ -1410,6 +1410,7 @@ sacl
 safeprojectname
 SAMEKEYPREVIOUSLYMAPPED
 SAMESHORTCUTPREVIOUSLYMAPPED
+samesubnetonly
 sancov
 SAVEFAILED
 scanled

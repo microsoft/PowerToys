@@ -552,7 +552,7 @@ public:
         return m_enabled;
     }
 
-    void launch_add_firewall_process()
+    void launch_add_firewall_process(std::wstring param)
     {
         Logger::trace(L"Starting Process to add firewall rule");
 
@@ -567,7 +567,16 @@ public:
         executable_args.append(L"\" & echo \"Adding an inbound firewall rule for PowerToys.MouseWithoutBorders.exe\"");
         executable_args.append(L" & netsh advfirewall firewall add rule name=\"PowerToys.MouseWithoutBorders\" dir=in action=allow program=\"");
         executable_args.append(executable_path);
-        executable_args.append(L"\" enable=yes remoteip=LocalSubnet profile=any protocol=tcp & pause\"");
+
+        std::wstring extra_rule_params = L"";
+        if (param.find(L"-samesubnetonly") != std::wstring::npos)
+        {
+            extra_rule_params += L" remoteip=LocalSubnet";
+        }
+
+        executable_args.append(L"\" enable=yes profile=any protocol=tcp");
+        executable_args.append(extra_rule_params);
+        executable_args.append(L" & pause\"");
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -590,12 +599,12 @@ public:
     {
         try
         {
-            PowerToysSettings::CustomActionObject action_object =
+            auto action_object =
                 PowerToysSettings::CustomActionObject::from_json_string(action);
 
             if (action_object.get_name() == L"add_firewall")
             {
-                launch_add_firewall_process();
+                launch_add_firewall_process(action_object.get_value());
                 Trace::MouseWithoutBorders::AddFirewallRule();
             }
             else if (action_object.get_name() == L"uninstall_service")
