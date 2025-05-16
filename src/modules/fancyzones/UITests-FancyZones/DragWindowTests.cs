@@ -47,6 +47,9 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
+            // Ensure the desktop has no open windows
+            Session.Find<Microsoft.PowerToys.UITest.Button>(By.Name("Show Desktop"), 5000, true).Click(false, 500, 2000);
+
             // Get the current mouse button setting
             nonPrimaryMouseButton = SystemInformation.MouseButtonsSwapped ? "Left" : "Right";
 
@@ -98,7 +101,7 @@ namespace UITests_FancyZones
         public void TestShowZonesOnShiftDuringDrag()
         {
             string testCaseName = nameof(TestShowZonesOnShiftDuringDrag);
-            Element dragElement = Find<Element>(By.Name("Non Client Input Sink Window")); // element to drag
+            Pane dragElement = Find<Pane>(By.Name("Non Client Input Sink Window")); // element to drag
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
 
             var (initialColor, withShiftColor) = RunDragInteractions(
@@ -228,7 +231,7 @@ namespace UITests_FancyZones
         public void TestShowZonesWhenShiftAndMouseOff()
         {
             string testCaseName = nameof(TestShowZonesWhenShiftAndMouseOff);
-            Element dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
+            Pane dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
 
             var (initialColor, withShiftColor) = RunDragInteractions(
@@ -268,7 +271,7 @@ namespace UITests_FancyZones
         {
             string testCaseName = nameof(TestShowZonesWhenShiftAndMouseOn);
 
-            var dragElement = Find<Element>(By.Name("Non Client Input Sink Window"));
+            var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
             var (initialColor, withShiftColor) = RunDragInteractions(
              preAction: () =>
@@ -533,7 +536,7 @@ namespace UITests_FancyZones
         private string GetZoneColor(string color)
         {
             // Click on the "Highlight color" group
-            Find<Microsoft.PowerToys.UITest.Group>(color).Click();
+            Find<Group>(color).Click();
 
             // Optional: Ensure the hex textbox is found (to wait until the UI loads)
             var hexBox = Find<Element>(By.AccessibilityId("HexTextBox"));
@@ -543,7 +546,7 @@ namespace UITests_FancyZones
             var hexColorElement = Find<Element>("RGB hex");
 
             // return mouse to color set position
-            Find<Microsoft.PowerToys.UITest.Group>(color).Click();
+            Find<Group>(color).Click();
 
             return hexColorElement.Text;
         }

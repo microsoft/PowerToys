@@ -167,15 +167,6 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
-        public void DragAndHold(int offsetX, int offsetY)
-        {
-            PerformAction((actions, windowElement) =>
-            {
-                actions.MoveToElement(windowElement).MoveByOffset(10, 10).ClickAndHold(windowElement).MoveByOffset(offsetX, offsetY);
-                actions.Build().Perform();
-            });
-        }
-
         /// <summary>
         /// Release action
         /// </summary>

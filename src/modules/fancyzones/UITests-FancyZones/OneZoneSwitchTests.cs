@@ -30,6 +30,9 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
+            // Ensure the desktop has no open windows
+            Session.Find<Button>(By.Name("Show Desktop"), 5000, true).Click(false, 500, 2000);
+
             // get PowerToys window Name
             powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
 
@@ -39,12 +42,13 @@ namespace UITests_FancyZones
             // set a custom layout with 2 subzones
             SetupCustomLayouts();
 
+            this.RestartScopeExe();
+
             // Launch FancyZones
             LaunchFancyZones();
 
             // Launch the Hosts File Editor
             LaunchFromSetting();
-            this.RestartScopeExe();
         }
 
         /// <summary>
@@ -160,7 +164,7 @@ namespace UITests_FancyZones
             // Attach the PowerToys settings window to the front
             Session.Attach(powertoysWindowName, WindowSize.UnSpecified);
             string windowNameFront = ZoneSwitchHelper.GetActiveWindowTitle();
-            Element settingsView = Find<Pane>(By.Name("Non Client Input Sink Window"));
+            Pane settingsView = Find<Pane>(By.Name("Non Client Input Sink Window"));
             settingsView.DoubleClick(); // maximize the window
 
             DragWithShift(settingsView, offSet);
@@ -176,7 +180,7 @@ namespace UITests_FancyZones
             return (preWindow, powertoysWindowName);
         }
 
-        private void DragWithShift(Element settingsView, (int Dx, int Dy) offSet)
+        private void DragWithShift(Pane settingsView, (int Dx, int Dy) offSet)
         {
             Session.PressKey(Key.Shift);
             settingsView.DragAndHold(offSet.Dx, offSet.Dy);
@@ -245,10 +249,10 @@ namespace UITests_FancyZones
 
             Task.Delay(500).Wait(); // Wait for the setting to be applied
             this.Scroll(9, "Up"); // Pull the setting page down to make sure the setting is visible
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
+            this.Find<Button>("Launch layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Element>(By.Name("Custom Column")).Click();
-            this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
+            this.Find<Button>("Close").Click();
             this.Session.Attach(PowerToysModule.PowerToysSettings);
         }
 
@@ -274,7 +278,7 @@ namespace UITests_FancyZones
             this.Find<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
 
             // launch Hosts File Editor
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch Hosts File Editor").Click();
+            this.Find<Button>("Launch Hosts File Editor").Click();
 
             Task.Delay(1000).Wait();
         }
