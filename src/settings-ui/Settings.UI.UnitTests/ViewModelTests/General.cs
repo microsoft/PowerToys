@@ -225,6 +225,36 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void IsShowSysTrayIconDisabledByDefaultShouldEnableWhenSuccessful()
+        {
+            // Arrange
+            // Assert
+            Func<string, int> sendMockIPCConfigMSG = msg =>
+            {
+                OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
+                Assert.IsTrue(snd.GeneralSettings.ShowSysTrayIcon);
+                return 0;
+            };
+
+            Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
+            Func<string, int> sendCheckForUpdatesIPCMessage = msg => { return 0; };
+            GeneralViewModel viewModel = new(
+                settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                "GeneralSettings_RunningAsAdminText",
+                "GeneralSettings_RunningAsUserText",
+                false,
+                false,
+                sendMockIPCConfigMSG,
+                sendRestartAdminIPCMessage,
+                sendCheckForUpdatesIPCMessage,
+                GeneralSettingsFileName);
+            Assert.IsFalse(viewModel.ShowSysTrayIcon);
+
+            // Act
+            viewModel.ShowSysTrayIcon = true;
+        }
+
+        [TestMethod]
         public void AllModulesAreEnabledByDefault()
         {
             // arrange
