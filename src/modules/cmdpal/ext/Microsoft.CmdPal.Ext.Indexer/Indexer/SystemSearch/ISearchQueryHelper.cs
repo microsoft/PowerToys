@@ -11,11 +11,10 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
 [Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF63")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-[GeneratedComInterface]
+[GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1212:Property accessors should follow order", Justification = "The order of the property accessors must match the order in which the methods were defined in the vtable")]
 public partial interface ISearchQueryHelper
 {
-    [return: MarshalAs(UnmanagedType.LPWStr)]
     string GetConnectionString();
 
     uint GetQueryContentLocale();
@@ -28,28 +27,23 @@ public partial interface ISearchQueryHelper
     [return: MarshalAs(UnmanagedType.Interface)]
     object GetQuerySyntax();
 
-    [return: MarshalAs(UnmanagedType.LPWStr)]
     string GetQueryContentProperties();
 
-    void SetQueryContentProperties([MarshalAs(UnmanagedType.LPWStr)] string pszProperties);
+    void SetQueryContentProperties(string pszProperties);
 
-    [return: MarshalAs(UnmanagedType.LPWStr)]
     string GetQuerySelectColumns();
 
-    void SetQuerySelectColumns([MarshalAs(UnmanagedType.LPWStr)] string pszColumns);
+    void SetQuerySelectColumns(string pszColumns);
 
-    [return: MarshalAs(UnmanagedType.LPWStr)]
     string GetQueryWhereRestrictions();
 
-    void SetQueryWhereRestrictions([MarshalAs(UnmanagedType.LPWStr)] string pszRestrictions);
+    void SetQueryWhereRestrictions(string pszRestrictions);
 
-    [return: MarshalAs(UnmanagedType.LPWStr)]
     string GetQuerySorting();
 
-    void SetQuerySorting([MarshalAs(UnmanagedType.LPWStr)] string pszSorting);
+    void SetQuerySorting(string pszSorting);
 
-    [return: MarshalAs(UnmanagedType.LPWStr)]
-    string GenerateSQLFromUserQuery([MarshalAs(UnmanagedType.LPWStr)] string pszQuery);
+    string GenerateSQLFromUserQuery(string pszQuery);
 
     void WriteProperties(
       int itemID,

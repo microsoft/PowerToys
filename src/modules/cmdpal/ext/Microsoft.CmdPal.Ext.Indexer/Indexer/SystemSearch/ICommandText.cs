@@ -15,7 +15,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
 [Guid("0C733A8B-2A1C-11CE-ADE5-00AA0044773D")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-[GeneratedComInterface]
+[GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 public partial interface ICommandText
 {
     void Cancel();
@@ -26,5 +26,5 @@ public partial interface ICommandText
 
     void GetCommandText([Optional] Guid pguidDialect, out IntPtr ppwszCommand);
 
-    void SetCommandText(Guid rguidDialect, [MarshalAs(UnmanagedType.LPWStr)]string pwszCommand);
+    void SetCommandText(Guid rguidDialect, string pwszCommand);
 }

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 
@@ -11,44 +10,40 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
 [Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF69")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-[GeneratedComInterface]
+[GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Please do not change the function name")]
 public partial interface ISearchManager
 {
-    void GetIndexerVersion(out uint pdwMajor, out uint pdwMinor);
-
-    [return: MarshalAs(UnmanagedType.BStr)]
     string GetIndexerVersionStr();
 
-    void GetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, [MarshalAs(UnmanagedType.Struct)] out object pValue);
+    void GetIndexerVersion(out uint pdwMajor, out uint pdwMinor);
 
-    void SetParameter([MarshalAs(UnmanagedType.LPWStr)] string pszName, [MarshalAs(UnmanagedType.Struct)] ref object pValue);
+    void GetParameter(string pszName, [MarshalAs(UnmanagedType.Struct)] out object pValue);
+
+    void SetParameter(string pszName, [MarshalAs(UnmanagedType.Struct)] ref object pValue);
 
     [return: MarshalAs(UnmanagedType.Bool)]
     bool get_UseProxy();
 
-    [return: MarshalAs(UnmanagedType.BStr)]
     string get_BypassList();
 
     void SetProxy(
-        [MarshalAs(UnmanagedType.BStr)] string pszProxyName,
+        string pszProxyName,
         [MarshalAs(UnmanagedType.Bool)] bool fLocalBypass,
-        [MarshalAs(UnmanagedType.BStr)] string pszBypassList,
+        string pszBypassList,
         uint dwPortNumber);
 
     [return: MarshalAs(UnmanagedType.Interface)]
-    ISearchCatalogManager GetCatalog([MarshalAs(UnmanagedType.LPWStr)] string pszCatalog);
+    ISearchCatalogManager GetCatalog(string pszCatalog);
 
-    [return: MarshalAs(UnmanagedType.BStr)]
     string get_UserAgent();
 
-    void put_UserAgent([MarshalAs(UnmanagedType.BStr)] string pszUserAgent);
+    void put_UserAgent(string pszUserAgent);
 
-    [return: MarshalAs(UnmanagedType.BStr)]
     string get_ProxyName();
-
-    uint get_PortNumber();
 
     [return: MarshalAs(UnmanagedType.Bool)]
     bool get_LocalBypass();
+
+    uint get_PortNumber();
 }

@@ -14,8 +14,8 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
 [Guid("0C733A5D-2A1C-11CE-ADE5-00AA0044773D")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-[GeneratedComInterface]
+[GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 public partial interface IDBCreateSession
 {
-    int CreateSession(IntPtr pUnkOuter, ref Guid riid, out IntPtr ppDBSession);
+    void CreateSession(IntPtr pUnkOuter, ref Guid riid, out IntPtr ppDBSession);
 }

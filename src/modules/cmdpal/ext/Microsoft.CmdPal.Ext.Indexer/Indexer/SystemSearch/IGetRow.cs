@@ -15,10 +15,10 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
 [Guid("0C733A8B-2A1C-11CE-ADE5-00AA0044773D")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-[GeneratedComInterface]
+[GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 public partial interface IGetRow
 {
     unsafe void GetRowFromHROW(IntPtr pUnkOuter, nuint hRow, Guid riid, out NativeMethods.IPropertyStore ppUnk);
 
-    unsafe void GetURLFromHROW(nuint hRow, [MarshalAs(UnmanagedType.LPWStr)] out string ppwszURL);
+    unsafe void GetURLFromHROW(nuint hRow, out string ppwszURL);
 }
