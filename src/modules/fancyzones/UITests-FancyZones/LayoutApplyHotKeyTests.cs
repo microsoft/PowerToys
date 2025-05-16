@@ -539,6 +539,8 @@ namespace Microsoft.FancyZones.UITests
             UITestBase.NativeMethods.ChangeDisplayResolution(width, height);
             this.AttachPowertoySetting();
             this.AttachFancyZonesEditor();
+            var tabView = this.Find<Tab>(By.AccessibilityId("TabView"));
+            tabView.DoubleClick(); // maximize the window
             var resolution = this.Session.Find<Element>(By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Find<Element>(By.AccessibilityId("ResolutionText"));
             if (resolution.Text != "640 × 480")
             {
@@ -586,10 +588,10 @@ namespace Microsoft.FancyZones.UITests
 
         private void AttachFancyZonesEditor()
         {
-            Task.Delay(500).Wait();
+            Task.Delay(1000).Wait();
             this.Find<Button>("Launch layout editor").Click();
 
-            Task.Delay(5000).Wait();
+            Task.Delay(4000).Wait();
             this.Session.Attach(PowerToysModule.FancyZone);
         }
 

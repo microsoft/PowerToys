@@ -37,6 +37,7 @@ namespace Microsoft.PowerToys.UITest
         private SessionHelper? sessionHelper;
         private System.Threading.Timer? screenshotTimer;
         private string? screenshotDirectory;
+        private static bool firstInitSetting = true;
 
         // private System.Threading.Timer? screenshotTimer;
         // private string? screenshotDirectory;
@@ -77,6 +78,15 @@ namespace Microsoft.PowerToys.UITest
 
             if (this.scope == PowerToysModule.PowerToysSettings)
             {
+                if (isInPipeline)
+                {
+                    if (firstInitSetting == true)
+                    {
+                        firstInitSetting = false;
+                        this.RestartScopeExe();
+                    }
+                }
+
                 // close Debug warning dialog if any
                 // Such debug warning dialog seems only appear in PowerToys Settings
                 if (this.FindAll("DEBUG").Count > 0)
