@@ -137,9 +137,18 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
 
         item.PropertyChanged += Item_PropertyChanged;
 
+        _settings.SettingsChanged += SettingsChanged;
+
         // UpdateAlias();
         // UpdateHotkey();
         // UpdateTags();
+    }
+
+    private void SettingsChanged(SettingsModel sender, object? args)
+    {
+        FetchAliasFromAliasManager();
+        UpdateHotkey();
+        UpdateTags();
     }
 
     private void Item_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -188,6 +197,12 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem
                 // Decouple from the alias manager alias object
                 Alias = new CommandAlias(commandAlias.Alias, commandAlias.CommandId, commandAlias.IsDirect);
             }
+            else
+            {
+                Alias = null;
+            }
+
+            UpdateTags();
         }
     }
 

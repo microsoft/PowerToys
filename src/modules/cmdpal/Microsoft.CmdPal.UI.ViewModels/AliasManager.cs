@@ -86,18 +86,24 @@ public partial class AliasManager : ObservableObject
             return;
         }
 
-        // If we already have _this exact alias_, do nothing
+        // Look for the old alias, and remove it
+        List<CommandAlias> toRemove = [];
+
         if (newAlias != null &&
             _aliases.TryGetValue(newAlias.SearchPrefix, out var existingAlias))
         {
             if (existingAlias.CommandId == commandId)
             {
+                // If we already have _this exact alias_, do nothing
                 return;
+            }
+            else
+            {
+                // We have _something else_ bound to this alias. Remove it.
+                toRemove.Add(existingAlias);
             }
         }
 
-        // Look for the old alias, and remove it
-        List<CommandAlias> toRemove = [];
         foreach (var kv in _aliases)
         {
             if (kv.Value.CommandId == commandId)
