@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.RefreshEnabledState();
         }
 
-        private void LaunchApp(string appPath)
+        private void LaunchApp(string appPath, string args)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 var processStartInfo = new ProcessStartInfo
                 {
                     FileName = appPath,
-                    Arguments = string.Empty,
+                    Arguments = args,
                     WorkingDirectory = dir,
                     UseShellExecute = true,
                     Verb = "open",
@@ -64,9 +64,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void CmdPalSettingsDeeplink_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            // Launch CmdPal settings window
-            string launchPath = "x-cmdpal://settings";
-            LaunchApp(launchPath);
+            // Launch CmdPal settings window as normal user using explorer
+            string launchPath = "explorer.exe";
+            string launchArgs = "x-cmdpal://settings";
+            LaunchApp(launchPath, launchArgs);
         }
     }
 }
