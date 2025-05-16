@@ -31,57 +31,81 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
         }
 
         var filteredList = _windowsSettings.Settings
-            .Where(Predicate)
-            .OrderBy(found => found.Name);
+            .Select(SearchScoringPredicate)
+            .Where(scoredSetting => scoredSetting.Score > 0)
+            .OrderByDescending(scoredSetting => scoredSetting.Score)
+            .Select(scoredSetting => scoredSetting.Setting);
 
         var newList = ResultHelper.GetResultList(filteredList, query);
         return newList;
 
-        bool Predicate(WindowsSetting found)
+        // Rank settings by how they matched the search query. Order is:
+        // 1. Exact Name (10 points)
+        // 2. Name Starts With (8 points)
+        // 3. Name (5 points)
+        // 4. Area (4 points)
+        // 5. AltName (2 points)
+        // 6. Settings path (1 point)
+        (WindowsSetting Setting, int Score) SearchScoringPredicate(WindowsSetting setting)
         {
             if (string.IsNullOrWhiteSpace(query))
             {
                 // If no search string is entered skip query comparison.
-                return true;
+                return (setting, 0);
             }
 
-            if (found.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase))
+            if (string.Equals(setting.Name, query, StringComparison.OrdinalIgnoreCase))
             {
-                return true;
+                return (setting, 10);
             }
 
-            if (!(found.Areas is null))
+            if (setting.Name.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
             {
-                foreach (var area in found.Areas)
+                return (setting, 8);
+            }
+
+            if (setting.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase))
+            {
+                return (setting, 5);
+            }
+
+            if (!(setting.Areas is null))
+            {
+                foreach (var area in setting.Areas)
                 {
                     // Search for areas on normal queries.
                     if (area.Contains(query, StringComparison.CurrentCultureIgnoreCase))
                     {
-                        return true;
+                        return (setting, 4);
                     }
 
                     // Search for Area only on queries with action char.
                     if (area.Contains(query.Replace(":", string.Empty), StringComparison.CurrentCultureIgnoreCase)
                     && query.EndsWith(":", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        return true;
+                        return (setting, 4);
                     }
                 }
             }
 
-            if (!(found.AltNames is null))
+            if (!(setting.AltNames is null))
             {
-                foreach (var altName in found.AltNames)
+                foreach (var altName in setting.AltNames)
                 {
                     if (altName.Contains(query, StringComparison.CurrentCultureIgnoreCase))
                     {
-                        return true;
+                        return (setting, 2);
                     }
                 }
             }
 
             // Search by key char '>' for app name and settings path
-            return query.Contains('>') ? ResultHelper.FilterBySettingsPath(found, query) : false;
+            if (query.Contains('>') && ResultHelper.FilterBySettingsPath(setting, query))
+            {
+                return (setting, 1);
+            }
+
+            return (setting, 0);
         }
     }
 
