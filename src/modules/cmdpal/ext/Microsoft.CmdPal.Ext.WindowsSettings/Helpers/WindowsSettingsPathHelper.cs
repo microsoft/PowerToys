@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Linq;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 
@@ -34,6 +35,7 @@ internal static class WindowsSettingsPathHelper
             {
                 // TODO GH #108 Logging is something we have to take care of
                 // Log.Warn($"The type property is not set for setting [{settings.Name}] in json. Skipping generating of settings path.", typeof(WindowsSettingsPathHelper));
+                Logger.LogWarning($"The type property is not set for setting [{settings.Name}] in json. Skipping generating of settings path.");
                 continue;
             }
 
@@ -41,12 +43,14 @@ internal static class WindowsSettingsPathHelper
             if (!string.IsNullOrEmpty(settings.JoinedAreaPath))
             {
                 // Log.Debug($"The property [JoinedAreaPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.", typeof(WindowsSettingsPathHelper));
+                Logger.LogDebug($"The property [JoinedAreaPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.");
             }
 
             if (!string.IsNullOrEmpty(settings.JoinedFullSettingsPath))
             {
                 // TODO GH #108 Logging is something we have to take care of
                 // Log.Debug($"The property [JoinedFullSettingsPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.", typeof(WindowsSettingsPathHelper));
+                Logger.LogDebug($"The property [JoinedFullSettingsPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.");
             }
 
             // Generating path values.

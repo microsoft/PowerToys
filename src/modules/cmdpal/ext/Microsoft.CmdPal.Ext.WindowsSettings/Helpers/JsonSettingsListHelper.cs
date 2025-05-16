@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 
@@ -60,6 +61,7 @@ internal static class JsonSettingsListHelper
         {
             // TODO GH #108 Logging is something we have to take care of
             // Log.Exception("Error loading settings JSON file", exception, typeof(JsonSettingsListHelper));
+            Logger.LogError($"Error loading settings JSON file: {exception.Message}");
         }
 #pragma warning restore CS0168
         return settings ?? new Classes.WindowsSettings();
