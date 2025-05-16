@@ -295,6 +295,7 @@ internal sealed partial class SearchQuery : IDisposable
 
         try
         {
+            var cw = new StrategyBasedComWrappers();
             var session = (IDBCreateSession)DataSourceManager.GetDataSource();
             var guid = new Guid("0C733A8B-2A1C-11CE-ADE5-00AA0044773D");
 
