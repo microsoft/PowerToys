@@ -79,27 +79,34 @@ namespace MouseUtils.UITests
             // [Test Case]  Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
             var xy0 = Session.GetMousePosition();
             Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2);
-            Session.PerformMouseAction(MouseActionType.LeftClick);
+
+            // Session.PerformMouseAction(MouseActionType.LeftClick);
+            IOUtil.MouseClick();
+            Task.Delay(500).Wait();
             Session.SendKeys(Key.Win, Key.Alt, Key.A);
             Task.Delay(1000).Wait();
 
             xy0 = Session.GetMousePosition();
-            Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2 - 100);
-            Session.PerformMouseAction(MouseActionType.LeftClick);
+
+            // Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2 - 100);
+            // Session.PerformMouseAction(MouseActionType.LeftClick);
             VerifyMousePointerCrosshairsAppears(ref settings);
             Task.Delay(500).Wait();
 
-            xy0 = Session.GetMousePosition();
-            Session.MoveMouseTo(xy0.Item1 - 50, xy0.Item2 - 50);
+            // xy0 = Session.GetMousePosition();
+            // Session.MoveMouseTo(xy0.Item1 - 50, xy0.Item2 - 50);
+            for (int i = 0; i < 100; i++)
+            {
+                IOUtil.MoveMouseBy(-1, 0);
+                Task.Delay(10).Wait();
+            }
+
             VerifyMousePointerCrosshairsAppears(ref settings);
 
             // [Test Case] Press the activation shortcut again and verify the crosshairs disappear.
             Session.SendKeys(Key.Win, Key.Alt, Key.A);
             Task.Delay(1000).Wait();
 
-            xy0 = Session.GetMousePosition();
-            Session.MoveMouseTo(xy0.Item1 - 10, xy0.Item2);
-            Session.PerformMouseAction(MouseActionType.LeftClick);
             VerifyMousePointerCrosshairsNotAppears(ref settings);
             Task.Delay(500).Wait();
 
