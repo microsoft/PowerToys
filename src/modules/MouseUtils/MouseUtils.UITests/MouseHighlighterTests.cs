@@ -129,6 +129,120 @@ namespace MouseUtils.UITests
             Task.Delay(500).Wait();
         }
 
+        [TestMethod]
+        public void TestEnableMouseHighlighter2()
+        {
+            LaunchFromSetting();
+            var foundCustom0 = this.Find<Custom>("Find My Mouse");
+            if (foundCustom0 != null)
+            {
+                foundCustom0.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+            }
+            else
+            {
+                Assert.Fail("Find My Mouse custom not found.");
+            }
+
+            var settings = new MouseHighlighterSettings();
+            settings.PrimaryButtonHighlightColor = "FFFF0000";
+            settings.SecondaryButtonHighlightColor = "FF00FF00";
+            settings.AlwaysHighlightColor = "004cFF71";
+            settings.Radius = "50";
+            settings.FadeDelay = "0";
+            settings.FadeDuration = "90";
+
+            var foundCustom = this.Find<Custom>("Mouse Highlighter");
+            if (foundCustom != null)
+            {
+                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
+                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(false);
+
+                var xy = Session.GetMousePosition();
+                Session.MoveMouseTo(xy.Item1, xy.Item2 - 100);
+
+                Session.PerformMouseAction(MouseActionType.ScrollDown);
+                Session.PerformMouseAction(MouseActionType.ScrollDown);
+                Session.PerformMouseAction(MouseActionType.ScrollDown);
+                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
+
+                // Change the shortcut key for MouseHighlighter
+                // [TestCase]Change activation shortcut and test it
+                var activationShortcutButton = foundCustom.Find<Button>("Activation shortcut");
+                Assert.IsNotNull(activationShortcutButton);
+
+                activationShortcutButton.Click();
+                Task.Delay(500).Wait();
+                var activationShortcutWindow = Session.Find<Window>("Activation shortcut");
+                Assert.IsNotNull(activationShortcutWindow);
+
+                // Invalid shortcut key
+                Session.SendKeySequence(Key.H);
+
+                // IOUtil.SimulateKeyPress(0x41);
+                var invalidShortcutText = activationShortcutWindow.Find<TextBlock>("Invalid shortcut");
+                Assert.IsNotNull(invalidShortcutText);
+
+                // IOUtil.SimulateShortcut(0x5B, 0x10, 0x45);
+                Session.SendKeys(Key.Win, Key.Shift, Key.H);
+
+                // Assert.IsNull(activationShortcutWindow.Find<TextBlock>("Invalid shortcut"));
+                var saveButton = activationShortcutWindow.Find<Button>("Save");
+                Assert.IsNotNull(saveButton);
+                saveButton.Click(false, 500, 1000);
+
+                SetMouseHighlighterAppearanceBehavior(ref foundCustom, ref settings);
+
+                var xy0 = Session.GetMousePosition();
+                Session.MoveMouseTo(xy0.Item1 - 100, xy0.Item2);
+                Session.PerformMouseAction(MouseActionType.LeftClick);
+
+                // Check the mouse highlighter is enabled
+                Session.SendKeys(Key.Win, Key.Shift, Key.H);
+
+                // IOUtil.SimulateShortcut(0x5B, 0x10, 0x45);
+                Task.Delay(1000).Wait();
+
+                // MouseSimulator.LeftClick();
+                // [Test Case] Press the activation shortcut and press left and right click somewhere, verifying the highlights are applied.
+                // [Test Case] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
+                VerifyMouseHighlighterAppears(ref settings, "leftClick");
+                VerifyMouseHighlighterAppears(ref settings, "rightClick");
+
+                // Disable mouse highlighter
+                Session.SendKeys(Key.Win, Key.Shift, Key.H);
+                Task.Delay(1000).Wait();
+
+                VerifyMouseHighlighterNotAppears(ref settings, "leftClick");
+                VerifyMouseHighlighterNotAppears(ref settings, "rightClick");
+
+                // [Test Case] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
+                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(false);
+                xy = Session.GetMousePosition();
+                Session.MoveMouseTo(xy.Item1 - 100, xy.Item2);
+
+                Session.SendKeys(Key.Win, Key.Shift, Key.H);
+                Task.Delay(1000).Wait();
+
+                VerifyMouseHighlighterNotAppears(ref settings, "leftClick");
+                VerifyMouseHighlighterNotAppears(ref settings, "rightClick");
+
+                foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
+                xy = Session.GetMousePosition();
+                Session.MoveMouseTo(xy.Item1 - 100, xy.Item2);
+
+                Session.SendKeys(Key.Win, Key.Shift, Key.H);
+                Task.Delay(1000).Wait();
+                VerifyMouseHighlighterDrag(ref settings, "leftClick");
+                VerifyMouseHighlighterDrag(ref settings, "rightClick");
+            }
+            else
+            {
+                Assert.Fail("Mouse Highlighter Custom not found.");
+            }
+
+            Task.Delay(500).Wait();
+        }
+
         private void VerifyMouseHighlighterDrag(ref MouseHighlighterSettings settings, string action = "leftClick")
         {
             Task.Delay(500).Wait();

@@ -34,6 +34,11 @@ namespace Microsoft.PowerToys.UITest
         public IntPtr MainWindowHandler { get; private set; }
 
         /// <summary>
+        /// Gets Init Scope
+        /// </summary>
+        public PowerToysModule InitScope { get; private set; }
+
+        /// <summary>
         /// Gets the RunAsAdmin flag.
         /// If true, the session is running as admin.
         /// If false, the session is not running as admin.
@@ -46,9 +51,13 @@ namespace Microsoft.PowerToys.UITest
             this.MainWindowHandler = IntPtr.Zero;
             this.Root = root;
             this.WindowsDriver = windowsDriver;
+            this.InitScope = scope;
 
-            // Attach to the scope & reset MainWindowHandler
-            this.Attach(scope, size);
+            if (size != WindowSize.UnSpecified)
+            {
+                // Attach to the scope & reset MainWindowHandler
+                this.Attach(scope, size);
+            }
         }
 
         /// <summary>
@@ -382,6 +391,12 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="height">the height in pixel</param>
         public void SetMainWindowSize(int width, int height)
         {
+            if (this.MainWindowHandler == IntPtr.Zero)
+            {
+                // Attach to the scope & reset MainWindowHandler
+                this.Attach(this.InitScope);
+            }
+
             if (this.MainWindowHandler == IntPtr.Zero
                 || width <= 0
                 || height <= 0)

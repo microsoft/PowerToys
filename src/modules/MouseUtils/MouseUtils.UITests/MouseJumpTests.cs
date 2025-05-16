@@ -15,6 +15,12 @@ namespace MouseUtils.UITests
         [TestMethod]
         public void TestEnableMouseJump()
         {
+            LaunchFromSetting(true);
+        }
+
+        [TestMethod]
+        public void TestEnableMouseJump2()
+        {
             LaunchFromSetting();
             var foundCustom0 = this.Find<Custom>("Find My Mouse");
             if (foundCustom0 != null)
@@ -124,7 +130,7 @@ namespace MouseUtils.UITests
             return Math.Sqrt((dx * dx) + (dy * dy));
         }
 
-        private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
+        private void LaunchFromSetting(bool firstTime = false, bool launchAsAdmin = false)
         {
             Session.SetMainWindowSize(WindowSize.Large);
             Task.Delay(1000).Wait();
@@ -134,11 +140,19 @@ namespace MouseUtils.UITests
             {
                 // Expand Advanced list-group if needed
                 this.Find<NavigationViewItem>("Input / Output").ClickCenter();
+                Task.Delay(2000).Wait();
             }
 
             // Click on the Mouse utilities
-            Task.Delay(2000).Wait();
-            this.Find<NavigationViewItem>("Mouse utilities").Click();
+            // Task.Delay(2000).Wait();
+            if (firstTime)
+            {
+                return;
+            }
+            else
+            {
+                this.Find<NavigationViewItem>("Mouse utilities").Click();
+            }
         }
     }
 }
