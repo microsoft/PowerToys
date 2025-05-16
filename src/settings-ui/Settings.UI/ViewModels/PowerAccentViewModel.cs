@@ -52,6 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             new PowerAccentLanguageModel("KU", "QuickAccent_SelectedLanguage_Kurdish", LanguageGroup),
             new PowerAccentLanguageModel("LT", "QuickAccent_SelectedLanguage_Lithuanian", LanguageGroup),
             new PowerAccentLanguageModel("MK", "QuickAccent_SelectedLanguage_Macedonian", LanguageGroup),
+            new PowerAccentLanguageModel("MT", "QuickAccent_SelectedLanguage_Maltese", LanguageGroup),
             new PowerAccentLanguageModel("MI", "QuickAccent_SelectedLanguage_Maori", LanguageGroup),
             new PowerAccentLanguageModel("NO", "QuickAccent_SelectedLanguage_Norwegian", LanguageGroup),
             new PowerAccentLanguageModel("PI", "QuickAccent_SelectedLanguage_Pinyin", LanguageGroup),
