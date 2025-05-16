@@ -168,18 +168,6 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Send Key of the element.
-        /// </summary>
-        /// <param name="key">The Key to Send.</param>
-        public void SendKeys(string key)
-        {
-            PerformAction((actions, windowElement) =>
-            {
-                windowElement.SendKeys(key);
-            });
-        }
-
-        /// <summary>
         /// Release action
         /// </summary>
         public void ReleaseAction()
@@ -333,6 +321,18 @@ namespace Microsoft.PowerToys.UITest
         public ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 5000)
         {
             return this.FindAll<Element>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Send Key of the element.
+        /// </summary>
+        /// <param name="key">The Key to Send.</param>
+        protected void SendKeys(string key)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                windowElement.SendKeys(key);
+            });
         }
 
         /// <summary>
