@@ -12,19 +12,17 @@ namespace Microsoft.CmdPal.Ext.Shell;
 internal sealed partial class FallbackExecuteItem : FallbackCommandItem
 {
     private readonly ExecuteItem _executeItem;
+    private readonly SettingsManager _settings;
 
     public FallbackExecuteItem(SettingsManager settings)
         : base(new ExecuteItem(string.Empty, settings), Resources.shell_command_display_title)
     {
+        _settings = settings;
         _executeItem = (ExecuteItem)this.Command!;
         Title = string.Empty;
         _executeItem.Name = string.Empty;
         Subtitle = Properties.Resources.generic_run_command;
         Icon = Icons.RunV2; // Defined in Icons.cs and contains the execute command icon.
-        MoreCommands = [
-            new CommandContextItem(new ExecuteItem(Properties.Resources.cmd_run_as_administrator, settings, RunAsType.Administrator)),
-            new CommandContextItem(new ExecuteItem(Properties.Resources.cmd_run_as_user, settings, RunAsType.OtherUser)),
-        ];
     }
 
     public override void UpdateQuery(string query)
@@ -32,5 +30,9 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
         _executeItem.Cmd = query;
         _executeItem.Name = string.IsNullOrEmpty(query) ? string.Empty : Properties.Resources.generic_run_command;
         Title = query;
+        MoreCommands = [
+            new CommandContextItem(new ExecuteItem(query, _settings, RunAsType.Administrator)),
+            new CommandContextItem(new ExecuteItem(query, _settings, RunAsType.OtherUser)),
+        ];
     }
 }
