@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 
-namespace UITests_FancyZones
+namespace Microsoft.FancyZones.UITests
 {
     [TestClass]
     public class DragWindowTests : UITestBase
@@ -47,8 +47,8 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
-            // Ensure the desktop has no open windows
-            Session.Find<Microsoft.PowerToys.UITest.Button>(By.Name("Show Desktop"), 5000, true).Click(false, 500, 2000);
+            // ClearOpenWindows
+            ClearOpenWindows();
 
             // Get the current mouse button setting
             nonPrimaryMouseButton = SystemInformation.MouseButtonsSwapped ? "Left" : "Right";
@@ -329,6 +329,25 @@ namespace UITests_FancyZones
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
             Assert.AreEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}]  Window without transparency failed.");
+        }
+
+        // Helper method to ensure the desktop has no open windows by clicking the "Show Desktop" button
+        private void ClearOpenWindows()
+        {
+            string desktopButtonName;
+
+            // Check for both possible button names (Win10/Win11)
+            if (this.FindAll<Microsoft.PowerToys.UITest.Button>("Show Desktop", 5000, true).Count == 0)
+            {
+                // win10
+                desktopButtonName = "Show desktop";
+            }
+            else
+            {
+                desktopButtonName = "Show Desktop";
+            }
+
+            this.Find<Microsoft.PowerToys.UITest.Button>(By.Name(desktopButtonName), 5000, true).Click(false, 500, 2000);
         }
 
         // Setup custom layout with 1 subzones

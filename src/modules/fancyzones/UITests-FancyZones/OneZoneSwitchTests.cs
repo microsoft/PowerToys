@@ -13,7 +13,7 @@ using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UITests_FancyZones
+namespace Microsoft.FancyZones.UITests
 {
     [TestClass]
     public class OneZoneSwitchTests : UITestBase
@@ -31,7 +31,7 @@ namespace UITests_FancyZones
         public void TestInitialize()
         {
             // Ensure the desktop has no open windows
-            Session.Find<Button>(By.Name("Show Desktop"), 5000, true).Click(false, 500, 2000);
+            ClearOpenWindows();
 
             // get PowerToys window Name
             powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
@@ -146,6 +146,25 @@ namespace UITests_FancyZones
             Clean();
         }
 
+        // Helper method to ensure the desktop has no open windows by clicking the "Show Desktop" button
+        private void ClearOpenWindows()
+        {
+            string desktopButtonName;
+
+            // Check for both possible button names (Win10/Win11)
+            if (this.FindAll<Button>("Show Desktop", 5000, true).Count == 0)
+            {
+                // win10
+                desktopButtonName = "Show desktop";
+            }
+            else
+            {
+                desktopButtonName = "Show Desktop";
+            }
+
+            this.Find<Button>(By.Name(desktopButtonName), 5000, true).Click(false, 500, 2000);
+        }
+
         private (string PreWindow, string PostWindow) SnapToOneZone()
         {
             this.Session.Attach(PowerToysModule.Hosts, WindowSize.Large_Vertical);
@@ -238,7 +257,7 @@ namespace UITests_FancyZones
             this.Session.SetMainWindowSize(WindowSize.Large);
 
             // fixed settings
-            this.Find<Microsoft.PowerToys.UITest.CheckBox>("Hold Shift key to activate zones while dragging a window").SetCheck(true, 500);
+            this.Find<CheckBox>("Hold Shift key to activate zones while dragging a window").SetCheck(true, 500);
 
             // should bind mouse to suitable zone for scrolling
             Find<Element>(By.AccessibilityId("HeaderPresenter")).Click();
