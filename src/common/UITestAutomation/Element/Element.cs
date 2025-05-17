@@ -323,6 +323,12 @@ namespace Microsoft.PowerToys.UITest
             return this.FindAll<Element>(By.Name(name), timeoutMS);
         }
 
+        public void ReleaseDrag()
+        {
+            var releaseAction = new Actions(driver);
+            releaseAction.Release().Perform();
+        }
+
         /// <summary>
         /// Send Key of the element.
         /// </summary>
@@ -366,6 +372,18 @@ namespace Microsoft.PowerToys.UITest
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method SaveToFile with parameter: path = {path}");
             this.windowsElement.GetScreenshot().SaveAsFile(path);
+        }
+
+        /// <summary>
+        /// Send Key of the element.
+        /// </summary>
+        /// <param name="key">The Key to Send.</param>
+        public void SendKeys(string key)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                windowElement.SendKeys(key);
+            });
         }
     }
 }

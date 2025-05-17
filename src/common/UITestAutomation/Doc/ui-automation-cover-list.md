@@ -181,14 +181,21 @@
 - [ ] 1. Exclude some apps, verify that they're not applicable to a zone.
 
 ### Dragging
-- [ ] 1. `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Start dragging a window, then press shift. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [ ] 2. `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [ ] 3.  `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` on. Zones are shown immediately when dragging a window and hidden when you click a non-primary mouse button or press shift.
-- [ ] 4. `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` off. Zones are shown immediately when dragging a window, hidden when you press shift.
-- [ ] 5. `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
+- [X] 1. `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Start dragging a window, then press shift. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
+        - TestMethod("FancyZones.Settings.TestShowZonesOnShiftDuringDrag")
+- [X] 2. `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
+        - TestMethod("FancyZones.Settings.TestShowZonesOnDragDuringShift")
+- [X] 3.  `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` on. Zones are shown immediately when dragging a window and hidden when you click a non-primary mouse button or press shift.
+        - TestMethod("FancyZones.Settings.TestToggleZonesWithNonPrimaryMouseClick")
+- [X] 4. `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` off. Zones are shown immediately when dragging a window, hidden when you press shift.
+        - TestMethod("FancyZones.Settings.TestShowZonesWhenShiftAndMouseOff")
+- [X] 5. `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
+        - TestMethod("FancyZones.Settings.TestShowZonesWhenShiftAndMouseOn")
 - [ ] 6. `Show zones on all monitor whilw dragging a window` - turn on,off, verify behavior.
 - [ ] 7. Create a canvas layout with overlapping zones, check zone activation behavior with all `When multiple zones overlap` options
-- [ ] 8. `Make dragged window transparent` - turn on, off, verify behavior
+- [X] 8. `Make dragged window transparent` - turn on, off, verify behavior
+        - TestMethod("FancyZones.Settings.TestMakeDraggedWindowTransparentOn")
+        - TestMethod("FancyZones.Settings.TestMakeDraggedWindowTransparentOff")
 
 ### Snapping
 Disable FZ and clear `app-zone-history.json` before starting. FancyZones should be disabled, otherwise, it'll save cashed values back to the file.
@@ -240,10 +247,13 @@ Enable `Move newly created windows to the current active monitor`.
 
 ### Switch between windows in the current zone
 Enable `Switch between windows in the current zone` (default shortcut is `Win + PgUp/PgDown`)
-- [ ] 1. Snap several windows to one zone, verify switching works.
-- [ ] 2. Snap several windows to one zone, switch virtual desktop, return back, verify window switching works.
-- [ ] 3. Disable `Switch between windows in the current zone`, verify switching doesn't work.
-  
+- [X] 1. Snap several windows to one zone, verify switching works.
+        - TestMethod("FancyZones.Settings.TestSwitchWindow")
+- [X] 2. Snap several windows to one zone, switch virtual desktop, return back, verify window switching works.
+        - TestMethod("FancyZones.Settings.TestSwitchAfterDesktopChange")
+- [X] 3. Disable `Switch between windows in the current zone`, verify switching doesn't work.
+        - TestMethod("FancyZones.Settings.TestSwitchShortCutDisable")
+
 ### Override Windows Snap
 - [ ] 1. Disable `Override Windows Snap`, verify it's disabled.
 
