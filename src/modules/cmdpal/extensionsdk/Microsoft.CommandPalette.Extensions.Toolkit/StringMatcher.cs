@@ -71,8 +71,8 @@ public partial class StringMatcher
 
         var bestResult = new MatchResult(false, UserSettingSearchPrecision);
 
-        List<string> queryList = [query];
-        List<string> stringToCompareList = [stringToCompare];
+        List<string> queryList = new List<string> { query };
+        List<string> stringToCompareList = new List<string> { stringToCompare };
 
         // TODO: Add switch for Chinese.
         if (true)
