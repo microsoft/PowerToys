@@ -105,6 +105,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool NoWhiteSpace
+        {
+            get => Settings.Properties.NoWhiteSpace;
+            set
+            {
+                if (value != Settings.Properties.NoWhiteSpace)
+                {
+                    Settings.Properties.NoWhiteSpace = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public int AdditionalLinesPosition
         {
             get => (int)Settings.Properties.AdditionalLinesPosition;
