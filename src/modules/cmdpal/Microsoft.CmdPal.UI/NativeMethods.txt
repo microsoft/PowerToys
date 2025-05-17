@@ -39,6 +39,7 @@ WM_RBUTTONUP
 WM_LBUTTONUP
 WM_LBUTTONDBLCLK
 
+MessageBox
 DwmGetWindowAttribute
 DwmSetWindowAttribute
 DWM_CLOAKED_APP

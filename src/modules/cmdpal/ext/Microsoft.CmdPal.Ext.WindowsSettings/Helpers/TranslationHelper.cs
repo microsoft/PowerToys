@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
@@ -36,6 +37,7 @@ internal static class TranslationHelper
                 if (string.IsNullOrEmpty(name))
                 {
                     // Log.Warn($"Resource string for [{settings.Name}] not found", typeof(TranslationHelper));
+                    Logger.LogWarning($"Resource string for [{settings.Name}] not found");
                 }
 
                 settings.Name = name ?? settings.Name ?? string.Empty;
@@ -48,6 +50,7 @@ internal static class TranslationHelper
                 if (string.IsNullOrEmpty(type))
                 {
                     // Log.Warn($"Resource string for [{settings.Type}] not found", typeof(TranslationHelper));
+                    Logger.LogWarning($"Resource string for [{settings.Type}] not found");
                 }
 
                 settings.Type = type ?? settings.Type ?? string.Empty;
@@ -69,6 +72,7 @@ internal static class TranslationHelper
                     if (string.IsNullOrEmpty(translatedArea))
                     {
                         // Log.Warn($"Resource string for [{area}] not found", typeof(TranslationHelper));
+                        Logger.LogWarning($"Resource string for [{area}] not found");
                     }
 
                     translatedAreas.Add(translatedArea ?? area);
@@ -93,6 +97,7 @@ internal static class TranslationHelper
                     if (string.IsNullOrEmpty(translatedAltName))
                     {
                         // Log.Warn($"Resource string for [{altName}] not found", typeof(TranslationHelper));
+                        Logger.LogWarning($"Resource string for [{altName}] not found");
                     }
 
                     translatedAltNames.Add(translatedAltName ?? altName);
@@ -108,6 +113,7 @@ internal static class TranslationHelper
                 if (string.IsNullOrEmpty(note))
                 {
                     // Log.Warn($"Resource string for [{settings.Note}] not found", typeof(TranslationHelper));
+                    Logger.LogWarning($"Resource string for [{settings.Note}] not found");
                 }
 
                 settings.Note = note ?? settings.Note ?? string.Empty;
