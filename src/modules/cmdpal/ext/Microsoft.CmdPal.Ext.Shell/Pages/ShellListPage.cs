@@ -86,12 +86,27 @@ internal sealed partial class ShellListPage : DynamicListPage
 
         ParseExecutableAndArgs(searchText, out var exe, out var args);
 
-        if (string.IsNullOrEmpty(args))
+        var exeExists = Path.Exists(exe);
+        var pathIsDir = Directory.Exists(exe);
+
+        _pathItems.Clear();
+
+        // We want to show path items:
+        // * If there's no args, AND (the path doesn't exist OR the path is a dir)
+        if (string.IsNullOrEmpty(args)
+            && (!exeExists || pathIsDir))
         {
             CreatePathItems(exe);
         }
 
-        CreateExeItems(exe, args);
+        if (exeExists)
+        {
+            CreateExeItems(exe, args);
+        }
+        else
+        {
+            _exeItems.Clear();
+        }
 
         RaiseItemsChanged();
     }
@@ -118,6 +133,14 @@ internal sealed partial class ShellListPage : DynamicListPage
 
         // var command = new AnonymousCommand(() => { ShellHelpers.OpenInShell(exe, args); }) { Result = CommandResult.Dismiss() };
         var exeItem = new RunExeItem(exe, args);
+
+        var pathItem = PathToListItem(exe);
+        exeItem.MoreCommands = [
+            .. exeItem.MoreCommands,
+
+            // new CommandContextItem(pathItem.Command!),
+            .. pathItem.MoreCommands];
+
         _exeItems.Add(exeItem);
     }
 

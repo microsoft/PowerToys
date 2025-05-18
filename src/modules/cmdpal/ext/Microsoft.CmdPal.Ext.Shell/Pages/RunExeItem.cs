@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -30,6 +31,7 @@ internal sealed partial class RunExeItem : ListItem
         };
         Command = command;
         Title = string.IsNullOrEmpty(args) ? exe : exe + " " + args; // todo! you're smarter than this
+        Subtitle = Path.GetFullPath(exe);
 
         _icon = new Lazy<IconInfo>(() =>
         {

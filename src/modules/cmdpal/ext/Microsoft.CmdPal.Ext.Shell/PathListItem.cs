@@ -31,9 +31,16 @@ internal sealed partial class PathListItem : ListItem
         Subtitle = path;
         TextToSuggest = path;
         MoreCommands = [
-            new CommandContextItem(new CopyTextCommand(path))
+            new CommandContextItem(new CopyTextCommand(path) { Name = "Copy path" }) { } // TODO:LOC
         ];
 
+        // MoreCommands = [
+        //    new CommandContextItem(new OpenWithCommand(indexerItem)),
+        //    new CommandContextItem(new ShowFileInFolderCommand(indexerItem.FullPath) { Name = Resources.Indexer_Command_ShowInFolder }),
+        //    new CommandContextItem(new CopyPathCommand(indexerItem)),
+        //    new CommandContextItem(new OpenInConsoleCommand(indexerItem)),
+        //    new CommandContextItem(new OpenPropertiesCommand(indexerItem)),
+        // ];
         _icon = new Lazy<IconInfo>(() =>
         {
             var iconStream = ThumbnailHelper.GetThumbnail(path).Result;
