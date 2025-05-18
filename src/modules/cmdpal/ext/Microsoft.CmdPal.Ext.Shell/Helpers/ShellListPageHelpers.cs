@@ -5,10 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Shell.Commands;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -26,7 +25,7 @@ public class ShellListPageHelpers
 
     private ListItem GetCurrentCmd(string cmd)
     {
-        ListItem result = new ListItem(new ExecuteItem(cmd, _settings))
+        var result = new ListItem(new ExecuteItem(cmd, _settings))
         {
             Title = cmd,
             Subtitle = Properties.Resources.cmd_plugin_name + ": " + Properties.Resources.cmd_execute_through_shell,
@@ -38,7 +37,7 @@ public class ShellListPageHelpers
 
     private List<ListItem> GetHistoryCmds(string cmd, ListItem result)
     {
-        IEnumerable<ListItem?> history = _settings.Count.Where(o => o.Key.Contains(cmd, StringComparison.CurrentCultureIgnoreCase))
+        var history = _settings.Count.Where(o => o.Key.Contains(cmd, StringComparison.CurrentCultureIgnoreCase))
             .OrderByDescending(o => o.Value)
             .Select(m =>
             {
@@ -66,7 +65,7 @@ public class ShellListPageHelpers
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        List<ListItem> results = new List<ListItem>();
+        var results = new List<ListItem>();
         var cmd = query;
         if (string.IsNullOrEmpty(cmd))
         {
@@ -101,7 +100,7 @@ public class ShellListPageHelpers
 
     private List<ListItem> ResultsFromlHistory()
     {
-        IEnumerable<ListItem> history = _settings.Count.OrderByDescending(o => o.Value)
+        var history = _settings.Count.OrderByDescending(o => o.Value)
             .Select(m => new ListItem(new ExecuteItem(m.Key, _settings))
             {
                 Title = m.Key,
@@ -112,5 +111,49 @@ public class ShellListPageHelpers
             }).Take(5);
 
         return history.ToList();
+    }
+
+    internal static bool FileExistInPath(string filename)
+    {
+        return FileExistInPath(filename, out var _);
+    }
+
+    internal static bool FileExistInPath(string filename, out string fullPath)
+    {
+        fullPath = string.Empty;
+        if (File.Exists(filename))
+        {
+            fullPath = Path.GetFullPath(filename);
+            return true;
+        }
+        else
+        {
+            var values = Environment.GetEnvironmentVariable("PATH");
+            if (values != null)
+            {
+                foreach (var path in values.Split(';'))
+                {
+                    var path1 = Path.Combine(path, filename);
+                    if (File.Exists(path1))
+                    {
+                        fullPath = Path.GetFullPath(path1);
+                        return true;
+                    }
+
+                    var path2 = Path.Combine(path, filename + ".exe");
+                    if (File.Exists(path2))
+                    {
+                        fullPath = Path.GetFullPath(path2);
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

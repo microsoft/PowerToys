@@ -80,13 +80,14 @@ internal sealed partial class ShellListPage : DynamicListPage
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
             _pathItems.Clear();
+            _exeItems.Clear();
             RaiseItemsChanged();
             return;
         }
 
         ParseExecutableAndArgs(searchText, out var exe, out var args);
 
-        var exeExists = Path.Exists(exe);
+        var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
         var pathIsDir = Directory.Exists(exe);
 
         _pathItems.Clear();
@@ -101,7 +102,7 @@ internal sealed partial class ShellListPage : DynamicListPage
 
         if (exeExists)
         {
-            CreateExeItems(exe, args);
+            CreateExeItems(exe, args, fullExePath);
         }
         else
         {
@@ -127,14 +128,14 @@ internal sealed partial class ShellListPage : DynamicListPage
             .ToArray();
     }
 
-    private void CreateExeItems(string exe, string args)
+    private void CreateExeItems(string exe, string args, string fullExePath)
     {
         _exeItems.Clear();
 
         // var command = new AnonymousCommand(() => { ShellHelpers.OpenInShell(exe, args); }) { Result = CommandResult.Dismiss() };
-        var exeItem = new RunExeItem(exe, args);
+        var exeItem = new RunExeItem(exe, args, fullExePath);
 
-        var pathItem = PathToListItem(exe);
+        var pathItem = PathToListItem(fullExePath);
         exeItem.MoreCommands = [
             .. exeItem.MoreCommands,
 

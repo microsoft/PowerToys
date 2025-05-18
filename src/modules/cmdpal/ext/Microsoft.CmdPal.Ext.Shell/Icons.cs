@@ -11,4 +11,8 @@ internal sealed class Icons
     internal static IconInfo RunV2 { get; } = IconHelpers.FromRelativePath("Assets\\Run.svg");
 
     internal static IconInfo Folder { get; } = new("📁");
+
+    internal static IconInfo RunAsAdmin { get; } = new("\xE7EF"); // admin
+
+    internal static IconInfo RunAsUser { get; } = new("\uE7EE"); // user
 }
