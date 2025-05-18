@@ -230,10 +230,28 @@ public sealed partial class SearchBar : UserControl,
 
         if (_inSuggestion)
         {
+            if (
+                 e.Key == VirtualKey.Back ||
+                 e.Key == VirtualKey.Delete
+                 )
+            {
+                FilterBox.Text = _lastText ?? string.Empty;
+                FilterBox.Select(FilterBox.Text.Length, 0);
+
+                Logger.LogInfo("deleting suggestion");
+                _inSuggestion = false;
+                _lastText = null;
+                e.Handled = true;
+                return;
+            }
+
             var ignoreLeave =
 
                 // e.Key == VirtualKey.Back ||
                 // e.Key == VirtualKey.Delete ||
+                e.Key == VirtualKey.Up ||
+                e.Key == VirtualKey.Down ||
+
                 e.Key == VirtualKey.RightMenu ||
                 e.Key == VirtualKey.LeftMenu ||
                 e.Key == VirtualKey.Menu ||
@@ -281,6 +299,7 @@ public sealed partial class SearchBar : UserControl,
 
         if (_inSuggestion)
         {
+            Logger.LogInfo($"-- skipping, in suggestion --");
             return;
         }
 
@@ -300,6 +319,12 @@ public sealed partial class SearchBar : UserControl,
 
     private void DoFilterBoxUpdate()
     {
+        if (_inSuggestion)
+        {
+            Logger.LogInfo($"--- skipping ---");
+            return;
+        }
+
         // Actually plumb Filtering to the viewmodel
         if (CurrentPageViewModel != null)
         {

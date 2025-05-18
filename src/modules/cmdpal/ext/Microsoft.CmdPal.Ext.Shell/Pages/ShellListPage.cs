@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
@@ -61,6 +62,8 @@ internal sealed partial class ShellListPage : DynamicListPage
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        Debug.WriteLine($"Run: update search \"{oldSearch}\" -> \"{newSearch}\"");
+
         // If the search text is the start of a path to a file (it might be a
         // UNC path), then we want to list all the files that start with that text:
 
