@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup>

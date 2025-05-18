@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.Views;
@@ -21,6 +22,7 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class SearchBar : UserControl,
     IRecipient<GoHomeMessage>,
     IRecipient<FocusSearchBoxMessage>,
+    IRecipient<UpdateSuggestionMessage>,
     ICurrentPageAware
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -30,6 +32,9 @@ public sealed partial class SearchBar : UserControl,
     /// </summary>
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
     private bool _isBackspaceHeld;
+
+    private bool _inSuggestion;
+    private string? _lastText;
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -69,6 +74,7 @@ public sealed partial class SearchBar : UserControl,
         this.InitializeComponent();
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
+        WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(this);
     }
 
     public void ClearSearch()
@@ -125,15 +131,19 @@ public sealed partial class SearchBar : UserControl,
             WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>();
             e.Handled = true;
         }
-        else if (e.Key == VirtualKey.Right)
-        {
-            if (CurrentPageViewModel != null && !string.IsNullOrEmpty(CurrentPageViewModel.TextToSuggest))
-            {
-                FilterBox.Text = CurrentPageViewModel.TextToSuggest;
-                FilterBox.Select(FilterBox.Text.Length, 0);
-                e.Handled = true;
-            }
-        }
+
+        // else if (e.Key == VirtualKey.Right)
+        // {
+        //    var suggestion = CurrentPageViewModel?.TextToSuggest;
+        //    if (CurrentPageViewModel != null && !string.IsNullOrEmpty(suggestion))
+        //    {
+        //        var currentText = FilterBox.Text;
+
+        // FilterBox.Text = suggestion;
+        //        FilterBox.Select(FilterBox.Text.Length, 0);
+        //        e.Handled = true;
+        //    }
+        // }
         else if (e.Key == VirtualKey.Escape)
         {
             if (string.IsNullOrEmpty(FilterBox.Text))
@@ -204,11 +214,43 @@ public sealed partial class SearchBar : UserControl,
 
             e.Handled = true;
         }
+        else if (e.Key == VirtualKey.Right)
+        {
+            if (_inSuggestion)
+            {
+                DoFilterBoxUpdate();
+            }
+        }
         else if (e.Key == VirtualKey.Down)
         {
             WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
 
             e.Handled = true;
+        }
+
+        if (_inSuggestion)
+        {
+            var ignoreLeave =
+
+                // e.Key == VirtualKey.Back ||
+                // e.Key == VirtualKey.Delete ||
+                e.Key == VirtualKey.RightMenu ||
+                e.Key == VirtualKey.LeftMenu ||
+                e.Key == VirtualKey.Menu ||
+                e.Key == VirtualKey.Shift ||
+                e.Key == VirtualKey.RightShift ||
+                e.Key == VirtualKey.LeftShift ||
+                e.Key == VirtualKey.RightControl ||
+                e.Key == VirtualKey.LeftControl ||
+                e.Key == VirtualKey.Control;
+            if (ignoreLeave)
+            {
+                return;
+            }
+
+            Logger.LogInfo("leaving suggestion");
+            _inSuggestion = false;
+            _lastText = null;
         }
     }
 
@@ -232,11 +274,13 @@ public sealed partial class SearchBar : UserControl,
         // (otherwise aliases just stop working)
         if (FilterBox.Text.Length == 1)
         {
-            if (CurrentPageViewModel != null)
-            {
-                CurrentPageViewModel.Filter = FilterBox.Text;
-            }
+            DoFilterBoxUpdate();
 
+            return;
+        }
+
+        if (_inSuggestion)
+        {
             return;
         }
 
@@ -244,11 +288,7 @@ public sealed partial class SearchBar : UserControl,
         _debounceTimer.Debounce(
             () =>
             {
-                // Actually plumb Filtering to the viewmodel
-                if (CurrentPageViewModel != null)
-                {
-                    CurrentPageViewModel.Filter = FilterBox.Text;
-                }
+                DoFilterBoxUpdate();
             },
             //// Couldn't find a good recommendation/resource for value here. PT uses 50ms as default, so that is a reasonable default
             //// This seems like a useful testing site for typing times: https://keyboardtester.info/keyboard-latency-test/
@@ -256,6 +296,15 @@ public sealed partial class SearchBar : UserControl,
             interval: TimeSpan.FromMilliseconds(50),
             //// If we're not already waiting, and this is blanking out or the first character type, we'll start filtering immediately instead to appear more responsive and either clear the filter to get back home faster or at least chop to the first starting letter.
             immediate: FilterBox.Text.Length <= 1);
+    }
+
+    private void DoFilterBoxUpdate()
+    {
+        // Actually plumb Filtering to the viewmodel
+        if (CurrentPageViewModel != null)
+        {
+            CurrentPageViewModel.Filter = FilterBox.Text;
+        }
     }
 
     // Used to handle the case when a ListPage's `SearchText` may have changed
@@ -277,6 +326,8 @@ public sealed partial class SearchBar : UserControl,
                     // ... Move the cursor to the end of the input
                     FilterBox.Select(FilterBox.Text.Length, 0);
                 }
+
+                // TODO! deal with suggestion
             }
             else if (property == nameof(ListViewModel.InitialSearchText))
             {
@@ -294,4 +345,80 @@ public sealed partial class SearchBar : UserControl,
     public void Receive(GoHomeMessage message) => ClearSearch();
 
     public void Receive(FocusSearchBoxMessage message) => FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+
+    public void Receive(UpdateSuggestionMessage message)
+    {
+        var suggestion = message.TextToSuggest;
+
+        _queue.TryEnqueue(new(() =>
+        {
+            var clearSuggestion = string.IsNullOrEmpty(suggestion);
+
+            if (clearSuggestion && _inSuggestion)
+            {
+                Logger.LogInfo($"Cleared suggestion \"{_lastText}\" to {suggestion}");
+                _inSuggestion = false;
+                FilterBox.Text = _lastText ?? string.Empty;
+                _lastText = null;
+                return;
+            }
+
+            if (clearSuggestion)
+            {
+                return;
+            }
+
+            var currentText = _lastText ?? FilterBox.Text;
+
+            // var isSubstring = suggestion.StartsWith(currentText, StringComparison.CurrentCultureIgnoreCase);
+
+            // if ()
+            // {
+            //    _lastText = null;
+            //    _inSuggestion = false;
+            // }
+            _lastText = currentText;
+
+            if (_inSuggestion)
+            {
+                Logger.LogInfo($"Suggestion from \"{_lastText}\" to {suggestion}");
+            }
+            else
+            {
+                Logger.LogInfo($"Entering suggestion from \"{_lastText}\" to {suggestion}");
+            }
+
+            _inSuggestion = true;
+
+            var matchedChars = 0;
+            for (var i = 0; i < suggestion.Length && i < currentText.Length; i++)
+            {
+                if (string.Equals(
+                    suggestion[i].ToString(),
+                    currentText[i].ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    matchedChars++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            var newText = string.Concat(currentText.AsSpan(0, matchedChars), suggestion.AsSpan(matchedChars));
+            FilterBox.Text = newText;
+
+            FilterBox.Select(matchedChars, suggestion.Length - matchedChars);
+
+            // if (isSubstring)
+            // {
+            //    FilterBox.Select(currentText.Length, suggestion.Length - currentText.Length);
+            // }
+            // else
+            // {
+            //    FilterBox.SelectAll();
+            // }
+        }));
+    }
 }

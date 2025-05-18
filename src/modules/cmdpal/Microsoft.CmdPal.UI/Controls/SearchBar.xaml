@@ -27,7 +27,6 @@
         PreviewKeyDown="FilterBox_PreviewKeyDown"
         PreviewKeyUp="FilterBox_PreviewKeyUp"
         Style="{StaticResource SearchTextBoxStyle}"
-        Description="{x:Bind CurrentPageViewModel.TextToSuggest, Mode=OneWay}"
         TextChanged="FilterBox_TextChanged" />
     <!--  Disabled Description="{x:Bind CurrentPageViewModel.TextToSuggest, Mode=OneWay}" for now, needs more work  -->
 </UserControl>
