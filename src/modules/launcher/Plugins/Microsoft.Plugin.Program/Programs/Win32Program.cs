@@ -1012,8 +1012,8 @@ namespace Microsoft.Plugin.Program.Programs
                 paths.UnionWith(sources
                     .AsParallel()
                     .SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>())
-                    .Where(programPath => disabledProgramsList.All(x => x.UniqueIdentifier != programPath))
-                    .Where(path => !ExecutableApplicationExtensions.Contains(Extension(path))));
+                    .Where(programPath => disabledProgramsList.All(x => x.UniqueIdentifier != programPath)));
+
                 runCommandPaths.UnionWith(runCommandSources
                     .AsParallel()
                     .SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>())
