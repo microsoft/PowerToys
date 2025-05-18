@@ -16,8 +16,9 @@ internal sealed partial class ShellListPage : DynamicListPage
 {
     private readonly ShellListPageHelpers _helper;
 
+    private readonly List<ListItem> _exeItems = new();
     private readonly List<ListItem> _topLevelItems = new();
-    private List<ListItem> _historyItems = new();
+    private readonly List<ListItem> _historyItems = new();
     private List<ListItem> _pathItems = new();
 
     public ShellListPage(SettingsManager settingsManager, bool addBuiltins = false)
@@ -67,12 +68,12 @@ internal sealed partial class ShellListPage : DynamicListPage
         // 2. If it is, then list all the files that start with that text
         var searchText = newSearch.Trim();
 
-        _historyItems = _helper.Query(searchText);
-        _historyItems.ForEach(i =>
-        {
-            i.Icon = Icons.RunV2;
-            i.Subtitle = string.Empty;
-        });
+        // _historyItems = _helper.Query(searchText);
+        // _historyItems.ForEach(i =>
+        // {
+        //    i.Icon = Icons.RunV2;
+        //    i.Subtitle = string.Empty;
+        // });
 
         // TODO we can be smarter about only re-reading the filesystem if the
         // new search is just the oldSearch+some chars
@@ -83,27 +84,67 @@ internal sealed partial class ShellListPage : DynamicListPage
             return;
         }
 
+        ParseExecutableAndArgs(searchText, out var exe, out var args);
+
+        if (string.IsNullOrEmpty(args))
+        {
+            CreatePathItems(exe);
+        }
+
+        CreateExeItems(exe, args);
+
+        RaiseItemsChanged();
+    }
+
+    private ListItem PathToListItem(string path)
+    {
+        return new PathListItem(path);
+    }
+
+    public override IListItem[] GetItems()
+    {
+        var filteredTopLevel = ListHelpers.FilterList(_topLevelItems, SearchText);
+        return
+            _exeItems
+            .Concat(filteredTopLevel)
+            .Concat(_historyItems)
+            .Concat(_pathItems)
+            .ToArray();
+    }
+
+    private void CreateExeItems(string exe, string args)
+    {
+        _exeItems.Clear();
+
+        // var command = new AnonymousCommand(() => { ShellHelpers.OpenInShell(exe, args); }) { Result = CommandResult.Dismiss() };
+        var exeItem = new RunExeItem(exe, args);
+        _exeItems.Add(exeItem);
+    }
+
+    private void CreatePathItems(string searchPath)
+    {
         var directoryPath = string.Empty;
         var searchPattern = string.Empty;
 
         // Check if the search text is a valid path
-        if (Path.IsPathRooted(searchText) && Path.GetDirectoryName(searchText) is string directoryName)
+        if (Path.IsPathRooted(searchPath) && Path.GetDirectoryName(searchPath) is string directoryName)
         {
             directoryPath = directoryName;
-            searchPattern = $"{Path.GetFileName(searchText)}*";
+            searchPattern = $"{Path.GetFileName(searchPath)}*";
         }
 
         // we should also handle just drive roots, ala c:\ or d:\
-        else if (searchText.Length == 2 && searchText[1] == ':')
+        else if (searchPath.Length == 2 && searchPath[1] == ':')
         {
-            directoryPath = searchText + "\\";
+            directoryPath = searchPath + "\\";
             searchPattern = $"*";
         }
 
         // Check if the search text is a valid UNC path
-        else if (searchText.StartsWith(@"\\", System.StringComparison.CurrentCultureIgnoreCase) && searchText.Contains(@"\\"))
+        else if (searchPath.StartsWith(@"\\", System.StringComparison.CurrentCultureIgnoreCase) &&
+                 searchPath.Contains(@"\\"))
         {
-            directoryPath = searchText;
+            directoryPath = searchPath;
             searchPattern = $"*";
         }
 
@@ -123,20 +164,45 @@ internal sealed partial class ShellListPage : DynamicListPage
         {
             _pathItems.Clear();
         }
-
-        RaiseItemsChanged();
     }
 
-    private ListItem PathToListItem(string path)
+    private static void ParseExecutableAndArgs(string input, out string executable, out string arguments)
     {
-        return new PathListItem(path);
-    }
+        input = input.Trim();
+        executable = string.Empty;
+        arguments = string.Empty;
 
-    public override IListItem[] GetItems()
-    {
-        return ListHelpers.FilterList(_topLevelItems, SearchText)
-            .Concat(_historyItems)
-            .Concat(_pathItems)
-            .ToArray();
+        if (string.IsNullOrEmpty(input))
+        {
+            return;
+        }
+
+        if (input.StartsWith("\"", System.StringComparison.InvariantCultureIgnoreCase))
+        {
+            // Find the closing quote
+            var closingQuoteIndex = input.IndexOf('\"', 1);
+            if (closingQuoteIndex > 0)
+            {
+                executable = input.Substring(1, closingQuoteIndex - 1);
+                if (closingQuoteIndex + 1 < input.Length)
+                {
+                    arguments = input.Substring(closingQuoteIndex + 1).TrimStart();
+                }
+            }
+        }
+        else
+        {
+            // Executable ends at first space
+            var firstSpaceIndex = input.IndexOf(' ');
+            if (firstSpaceIndex > 0)
+            {
+                executable = input.Substring(0, firstSpaceIndex);
+                arguments = input.Substring(firstSpaceIndex + 1).TrimStart();
+            }
+            else
+            {
+                executable = input;
+            }
+        }
     }
 }

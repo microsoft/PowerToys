@@ -13,7 +13,8 @@ namespace Microsoft.CmdPal.Ext.Shell;
 public partial class ShellCommandsProvider : CommandProvider
 {
     private readonly CommandItem _shellPageItem;
-    private readonly CommandItem _runMainPageItem;
+
+    // private readonly CommandItem _runMainPageItem;
     private readonly SettingsManager _settingsManager = new();
     private readonly FallbackCommandItem _fallbackItem;
 
@@ -35,18 +36,19 @@ public partial class ShellCommandsProvider : CommandProvider
                 new CommandContextItem(Settings.SettingsPage),
             ],
         };
-        _runMainPageItem = new CommandItem(new RunMainPage(_settingsManager))
-        {
-            Icon = Icons.RunV2,
-            Title = "Run 2 electric boogaloo", // LOC!
-            Subtitle = Resources.cmd_plugin_description,
-            MoreCommands = [
-                new CommandContextItem(Settings.SettingsPage),
-            ],
-        };
+
+        // _runMainPageItem = new CommandItem(new RunMainPage(_settingsManager))
+        // {
+        //    Icon = Icons.RunV2,
+        //    Title = "Run 2 electric boogaloo", // LOC!
+        //    Subtitle = Resources.cmd_plugin_description,
+        //    MoreCommands = [
+        //        new CommandContextItem(Settings.SettingsPage),
+        //    ],
+        // };
     }
 
-    public override ICommandItem[] TopLevelCommands() => [_shellPageItem, _runMainPageItem];
+    public override ICommandItem[] TopLevelCommands() => [_shellPageItem];
 
     public override IFallbackCommandItem[]? FallbackCommands() => [_fallbackItem];
 }
