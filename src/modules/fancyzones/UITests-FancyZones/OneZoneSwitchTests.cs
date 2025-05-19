@@ -30,9 +30,6 @@ namespace Microsoft.FancyZones.UITests
         [TestInitialize]
         public void TestInitialize()
         {
-            // Ensure the desktop has no open windows
-            ClearOpenWindows();
-
             // get PowerToys window Name
             powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
 
@@ -144,25 +141,6 @@ namespace Microsoft.FancyZones.UITests
 
             // Clean Setting
             Clean();
-        }
-
-        // Helper method to ensure the desktop has no open windows by clicking the "Show Desktop" button
-        private void ClearOpenWindows()
-        {
-            string desktopButtonName;
-
-            // Check for both possible button names (Win10/Win11)
-            if (this.FindAll<Button>("Show Desktop", 5000, true).Count == 0)
-            {
-                // win10
-                desktopButtonName = "Show desktop";
-            }
-            else
-            {
-                desktopButtonName = "Show Desktop";
-            }
-
-            this.Find<Button>(By.Name(desktopButtonName), 5000, true).Click(false, 500, 2000);
         }
 
         private (string PreWindow, string PostWindow) SnapToOneZone()
