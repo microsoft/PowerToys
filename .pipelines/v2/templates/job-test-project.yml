@@ -113,6 +113,7 @@ jobs:
       vsTestVersion: 'toolsInstaller'
       uiTests: true
       rerunFailedTests: true
+      retryCountOnTaskFailure: 2
       ${{ if eq(parameters.isUIAutomationPipeline, true) }}:
         testAssemblyVer2: |
           **\*UITest*.dll
