@@ -50,8 +50,14 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <PropertyGroup>
-    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
-  </PropertyGroup>
+	<PropertyGroup>
+		<SelfContained>true</SelfContained>
+		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+		<PublishTrimmed>true</PublishTrimmed>
+		<PublishSingleFile>true</PublishSingleFile>
+		<DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+		<PublishAot>true</PublishAot>
+		<EnableMsixTooling>true</EnableMsixTooling>
+	</PropertyGroup>
 
 </Project>
