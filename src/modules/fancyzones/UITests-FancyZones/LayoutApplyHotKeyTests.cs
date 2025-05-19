@@ -218,7 +218,6 @@ namespace Microsoft.FancyZones.UITests
         [TestInitialize]
         public void TestInitialize()
         {
-            this.Find<Window>("FancyZones main editor").Find<Button>(By.AccessibilityId("CloseButton")).Click();
             this.RestartScopeExe();
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();

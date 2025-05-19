@@ -94,6 +94,8 @@ namespace Microsoft.PowerToys.UITest
                     this.Find("DEBUG").Find<Button>("Close").Click();
                 }
             }
+
+            CloseOtherApplications();
         }
 
         /// <summary>
@@ -449,6 +451,26 @@ namespace Microsoft.PowerToys.UITest
         {
             this.sessionHelper!.ExitScopeExe();
             return;
+        }
+
+        private void CloseOtherApplications()
+        {
+            // Close other applications
+            var processNamesToClose = new List<string>
+            {
+                "PowerToys",
+                "PowerToys.Settings",
+                "PowerToys.FancyZonesEditor",
+            };
+            foreach (var processName in processNamesToClose)
+            {
+                var processes = Process.GetProcessesByName(processName);
+                foreach (var process in processes)
+                {
+                    process.Kill();
+                    process.WaitForExit();
+                }
+            }
         }
 
         public class NativeMethods
