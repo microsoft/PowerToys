@@ -13,14 +13,14 @@ using Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
-[Guid("0C733A8B-2A1C-11CE-ADE5-00AA0044773D")]
+[Guid("0C733A27-2A1C-11CE-ADE5-00AA0044773D")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 public partial interface ICommandText
 {
     void Cancel();
 
-    void Execute(IntPtr pUnkOuter, Guid riid, [Optional] IntPtr pParams, [Optional] nint pcRowsAffected, [MarshalAs(UnmanagedType.Interface)] out IRowset ppRowset);
+    void Execute(IntPtr pUnkOuter, Guid riid, [Optional] IntPtr pParams, [Optional] nint pcRowsAffected, out IRowset ppRowset);
 
     void GetDBSession(Guid riid, out IntPtr ppSession);
 

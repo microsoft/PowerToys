@@ -8,10 +8,10 @@ using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
-[Guid("0C733A8B-2A1C-11CE-ADE5-00AA0044773D")]
+[Guid("0C733A1D-2A1C-11CE-ADE5-00AA0044773D")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 public partial interface IDBCreateCommand
 {
-    void CreateCommand(IntPtr pUnkOuter, Guid riid, [MarshalAs(UnmanagedType.Interface)] out ICommandText ppCommand);
+    void CreateCommand(IntPtr pUnkOuter, ref Guid riid, out ICommandText ppCommand);
 }

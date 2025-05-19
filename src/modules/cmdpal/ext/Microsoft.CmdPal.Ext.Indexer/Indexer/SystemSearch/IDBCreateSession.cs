@@ -17,5 +17,5 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 public partial interface IDBCreateSession
 {
-    void CreateSession(IntPtr pUnkOuter, ref Guid riid, out IntPtr ppDBSession);
+    void CreateSession(IntPtr pUnkOuter, ref Guid riid, [MarshalAs(UnmanagedType.Interface)] out object ppDBSession);
 }

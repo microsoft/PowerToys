@@ -290,33 +290,23 @@ internal sealed partial class SearchQuery : IDisposable
             return null;
         }
 
-        var sessionPtr = IntPtr.Zero;
-        ICommandText commandPtr = null;
-
         try
         {
-            var cw = new StrategyBasedComWrappers();
             var session = (IDBCreateSession)DataSourceManager.GetDataSource();
-            var guid = new Guid("0C733A8B-2A1C-11CE-ADE5-00AA0044773D");
+            var guid = typeof(IDBCreateCommand).GUID;
+            session.CreateSession(IntPtr.Zero, ref guid, out var sessionPtr);
 
-            session.CreateSession(IntPtr.Zero, ref guid, out sessionPtr);
-
-            if (sessionPtr == IntPtr.Zero)
+            if (sessionPtr == null)
             {
                 Logger.LogError("CreateSession failed");
                 return null;
             }
 
             // Marshal the session pointer to the actual IDBCreateCommand object
-            var createCommand = (IDBCreateCommand)cw.GetOrCreateObjectForComInstance(sessionPtr, CreateObjectFlags.None);
-            createCommand.CreateCommand(IntPtr.Zero, typeof(ICommandText).GUID, out commandPtr);
-            if (commandPtr == null)
-            {
-                Logger.LogError("CreateCommand failed");
-                return null;
-            }
+            var createCommand = (IDBCreateCommand)sessionPtr;
+            guid = typeof(ICommandText).GUID;
+            createCommand.CreateCommand(IntPtr.Zero, ref guid, out ICommandText commandText);
 
-            var commandText = (ICommandText)commandPtr;
             if (commandText == null)
             {
                 Logger.LogError("Failed to get ICommandText interface");
@@ -332,21 +322,6 @@ internal sealed partial class SearchQuery : IDisposable
         {
             Logger.LogError("Unexpected error.", ex);
             return null;
-        }
-        finally
-        {
-            // Release the command pointer
-            if (commandPtr != null)
-            {
-                // Marshal.ReleaseComObject(commandPtr);
-            }
-
-            // Release the session pointer
-            /*
-            if (sessionPtr != null)
-            {
-                Marshal.ReleaseComObject(sessionPtr);
-            }*/
         }
     }
 
