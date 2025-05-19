@@ -92,6 +92,7 @@ internal sealed partial class ShellListPage : DynamicListPage
 
         var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
         var pathIsDir = Directory.Exists(exe);
+        Debug.WriteLine($"Run: exeExists={exeExists}, pathIsDir={pathIsDir}");
 
         _pathItems.Clear();
 
@@ -175,8 +176,11 @@ internal sealed partial class ShellListPage : DynamicListPage
             searchPattern = $"*";
         }
 
+        var dirExists = Directory.Exists(directoryPath);
+        Debug.WriteLine($"Run: dirExists({directoryPath})={dirExists}");
+
         // Check if the directory exists
-        if (Directory.Exists(directoryPath))
+        if (dirExists)
         {
             // Get all the files in the directory that start with the search text
             var files = Directory.GetFileSystemEntries(directoryPath, searchPattern);
