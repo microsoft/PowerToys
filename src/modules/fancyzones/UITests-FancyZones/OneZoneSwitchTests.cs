@@ -238,6 +238,7 @@ namespace Microsoft.FancyZones.UITests
         {
             var customLayouts = new CustomLayouts();
             var customLayoutListWrapper = CustomLayoutsList;
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
 
             FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
         }

@@ -353,6 +353,10 @@ namespace Microsoft.FancyZones.UITests
         // Setup custom layout with 1 subzones
         private void SetupCustomLayouts()
         {
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
+
+            string customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+            Console.WriteLine($"After delete, Custom layout data: {customLayoutData}");
             var customLayouts = new CustomLayouts();
             var customLayoutListWrapper = CustomLayoutsList;
 
@@ -362,6 +366,9 @@ namespace Microsoft.FancyZones.UITests
             }
 
             FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the file is written
+            customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+            Console.WriteLine($"After rewrite, Custom layout data: {customLayoutData}");
         }
 
         // launch FancyZones settings page
