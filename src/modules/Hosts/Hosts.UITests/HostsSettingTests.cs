@@ -128,7 +128,7 @@ namespace Hosts.UITests
             // launch Hosts File Editor
             this.Find<Button>("Launch Hosts File Editor").Click();
 
-            Task.Delay(500).Wait();
+            Task.Delay(2000).Wait();
 
             this.Session.Attach(PowerToysModule.Hosts);
         }
