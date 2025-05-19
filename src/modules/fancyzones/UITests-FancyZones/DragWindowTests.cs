@@ -60,16 +60,20 @@ namespace UITests_FancyZones
 
             // clean app zone history file
             AppZoneHistory.DeleteFile();
-            FancyZonesEditorHelper.Files.Restore();
 
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
 
             // Restart for Cleaning  the pipeline
             this.RestartScopeExe();
+            string customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+            Console.WriteLine($"After RestartScopeExe, Custom layout data: {customLayoutData}");
 
             // Ensure FancyZones settings page is visible and enable FancyZones
             LaunchFancyZones();
+
+            customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+            Console.WriteLine($"After LaunchFancyZones, Custom layout data: {customLayoutData}");
 
             // Get screen margins for positioning checks
             GetScreenMargins();
