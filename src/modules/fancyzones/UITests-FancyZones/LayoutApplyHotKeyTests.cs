@@ -297,8 +297,10 @@ namespace Microsoft.FancyZones.UITests
 
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
-            this.AttachFancyZonesEditor();
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
+            this.AttachFancyZonesEditor();
+            this.CloseFancyZonesEditor();
+            this.AttachFancyZonesEditor();
             var element = this.Find<Element>(layout);
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
