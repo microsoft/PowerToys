@@ -152,7 +152,7 @@ namespace MouseUtils.UITests
                 Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY, 500, 1000);
                 Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY - 300, 500, 1000);
 
-                // [TestCase] Enable Mouse Jump. Then - Change activation shortcut and verify that new shorctut triggers Mouse Jump.
+                // [TestCase] Enable Mouse Jump. Then - Change activation shortcut and verify that new shortcut triggers Mouse Jump.
                 Session.SendKeys(Key.Win, Key.Shift, Key.J);
                 VerifyWindowAppears();
             }
