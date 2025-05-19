@@ -218,6 +218,8 @@ public sealed partial class SearchBar : UserControl,
         {
             if (_inSuggestion)
             {
+                _inSuggestion = false;
+                _lastText = null;
                 DoFilterBoxUpdate();
             }
         }
