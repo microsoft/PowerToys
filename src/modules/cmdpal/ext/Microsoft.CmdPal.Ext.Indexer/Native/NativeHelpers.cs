@@ -95,7 +95,7 @@ public sealed partial class NativeHelpers
     {
         public static void Free(IntPtr managed)
         {
-            Marshal.FreeCoTaskMem(managed);
+            // Marshal.FreeCoTaskMem(managed);
         }
 
         public static PROPVARIANT ConvertToManaged(IntPtr unmanaged)
@@ -117,7 +117,7 @@ public sealed partial class NativeHelpers
     {
         public static void Free(IntPtr managed)
         {
-            Marshal.FreeCoTaskMem(managed);
+            // Marshal.FreeCoTaskMem(managed);
         }
 
         public static PROPVARIANT ConvertToManaged(IntPtr unmanaged)

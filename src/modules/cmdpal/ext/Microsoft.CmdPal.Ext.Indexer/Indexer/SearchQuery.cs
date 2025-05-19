@@ -205,11 +205,13 @@ internal sealed partial class SearchQuery : IDisposable
             ExecuteSyncInternal();
         }
 
+        var getRow = (IGetRow)currentRowset;
+        /*
         if (currentRowset is not IGetRow getRow)
         {
             Logger.LogError("Rowset does not support IGetRow interface");
             return false;
-        }
+        }*/
 
         uint rowCountReturned;
         var prghRows = IntPtr.Zero;
@@ -313,8 +315,12 @@ internal sealed partial class SearchQuery : IDisposable
                 return null;
             }
 
-            commandText.SetCommandText(NativeHelpers.OleDb.DbGuidDefault, queryStr);
-            commandText.Execute(IntPtr.Zero, typeof(IRowset).GUID, IntPtr.Zero, IntPtr.Zero, out var rowsetPointer);
+            var riid = NativeHelpers.OleDb.DbGuidDefault;
+
+            var irowSetRiid = typeof(IRowset).GUID;
+
+            commandText.SetCommandText(ref riid, queryStr);
+            commandText.Execute(null, ref irowSetRiid, null, out var pcRowsAffected, out var rowsetPointer);
 
             return rowsetPointer;
         }
@@ -340,22 +346,6 @@ internal sealed partial class SearchQuery : IDisposable
             try
             {
                 IRowsetInfo rowsetInfo = (IRowsetInfo)rowset;
-
-                /*
-                // Get the IUnknown pointer for the IRowset object
-                rowsetPtr = Marshal.GetIUnknownForObject(rowset);
-
-                // Query for IRowsetInfo interface
-                var rowsetInfoGuid = typeof(IRowsetInfo).GUID;
-                var res = Marshal.QueryInterface(rowsetPtr, in rowsetInfoGuid, out rowsetInfoPtr);
-                if (res != 0)
-                {
-                    Logger.LogError($"Error getting IRowsetInfo interface: {res}");
-                    return null;
-                }
-
-                // Marshal the interface pointer to the actual IRowsetInfo object
-                var rowsetInfo = (IRowsetInfo)Marshal.GetObjectForIUnknown(rowsetInfoPtr);*/
                 return rowsetInfo;
             }
             catch (Exception ex)

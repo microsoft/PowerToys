@@ -67,7 +67,7 @@ internal sealed partial class QueryStringBuilder
             queryHelper.SetQuerySorting(OrderConditions);
         }
 
-        queryHelper.SetQueryWhereRestrictions(SelectQueryWithScope + " AND ReuseWhere(" + whereId.ToString(CultureInfo.InvariantCulture) + ")");
+        queryHelper.SetQueryWhereRestrictions("AND " + ScopeFileConditions + "AND ReuseWhere(" + whereId.ToString(CultureInfo.InvariantCulture) + ")");
         return queryHelper.GenerateSQLFromUserQuery(searchText);
     }
 }

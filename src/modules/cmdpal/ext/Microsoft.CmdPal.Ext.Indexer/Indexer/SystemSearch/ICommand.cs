@@ -3,22 +3,20 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
-[Guid("0C733A27-2A1C-11CE-ADE5-00AA0044773D")]
+[Guid("0C733A63-2A1C-11CE-ADE5-00AA0044773D")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
-public partial interface ICommandText : ICommand
+public partial interface ICommand
 {
-    void GetCommandText([Optional] ref Guid pguidDialect, out IntPtr ppwszCommand);
+    void Cancel();
 
-    void SetCommandText(ref Guid rguidDialect, string pwszCommand);
+    void Execute([MarshalAs(UnmanagedType.Interface)] object pUnkOuter, ref Guid riid, [Optional][MarshalAs(UnmanagedType.Interface)] object pParams, [Optional]out int pcRowsAffected, out IRowset ppRowset);
+
+    void GetDBSession(ref Guid riid, out IntPtr ppSession);
 }
