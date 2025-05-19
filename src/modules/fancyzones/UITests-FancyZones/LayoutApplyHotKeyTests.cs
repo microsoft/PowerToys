@@ -218,6 +218,7 @@ namespace Microsoft.FancyZones.UITests
         [TestInitialize]
         public void TestInitialize()
         {
+            this.Find<Window>("FancyZones main editor").Find<Button>(By.AccessibilityId("CloseButton")).Click();
             this.RestartScopeExe();
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
@@ -347,6 +348,7 @@ namespace Microsoft.FancyZones.UITests
 
             // Attach FancyZones Editor
             this.AttachPowertoySetting();
+            this.Find<Pane>(By.ClassName("InputNonClientPointerSource")).Click();
             this.AttachFancyZonesEditor();
             var element = this.Find<Element>("Grid custom layout");
             Assert.IsTrue(element.Selected, "Grid custom layout is not visible");
@@ -362,6 +364,7 @@ namespace Microsoft.FancyZones.UITests
 
             // Attach FancyZones Editor
             this.AttachPowertoySetting();
+            this.Find<Pane>(By.ClassName("InputNonClientPointerSource")).Click();
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Grid-9");
             Assert.IsTrue(element.Selected, "Grid-9 is not visible");
@@ -377,6 +380,7 @@ namespace Microsoft.FancyZones.UITests
 
             // Attach FancyZones Editor
             this.AttachPowertoySetting();
+            this.Find<Pane>(By.ClassName("InputNonClientPointerSource")).Click();
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Canvas custom layout");
             Assert.IsTrue(element.Selected, "Canvas custom layout is not visible");
