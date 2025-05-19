@@ -18,9 +18,9 @@ public partial interface ISearchManager
 
     void GetIndexerVersion(out uint pdwMajor, out uint pdwMinor);
 
-    void GetParameter(string pszName, [MarshalAs(UnmanagedType.Struct)] out object pValue);
+    void GetParameter(string pszName, [MarshalAs(UnmanagedType.Interface)] out object pValue);
 
-    void SetParameter(string pszName, [MarshalAs(UnmanagedType.Struct)] ref object pValue);
+    void SetParameter(string pszName, [MarshalAs(UnmanagedType.Interface)] ref object pValue);
 
     [return: MarshalAs(UnmanagedType.Bool)]
     bool get_UseProxy();

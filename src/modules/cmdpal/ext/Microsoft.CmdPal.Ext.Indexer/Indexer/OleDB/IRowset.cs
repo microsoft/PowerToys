@@ -13,32 +13,30 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
 [GeneratedComInterface]
 public partial interface IRowset
 {
-    [PreserveSig]
-    int AddRefRows(
+    void AddRefRows(
         uint cRows,
-        [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] IntPtr[] rghRows,
-        [Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] uint[] rgRefCounts,
-        [Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] int[] rgRowStatus);
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] IntPtr[] rghRows,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] uint[] rgRefCounts,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] int[] rgRowStatus);
 
-    [PreserveSig]
-    int GetData(
+    void GetData(
         IntPtr hRow,
         IntPtr hAccessor,
         IntPtr pData);
 
-    [PreserveSig]
-    int GetNextRows(
+    void GetNextRows(
        IntPtr hReserved,
        long lRowsOffset,
        long cRows,
        out uint pcRowsObtained,
        out IntPtr prghRows);
 
-    [PreserveSig]
-    int ReleaseRows(
+    void ReleaseRows(
         uint cRows,
-        [In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] IntPtr[] rghRows,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] IntPtr[] rghRows,
         IntPtr rgRowOptions,
-        [Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] uint[] rgRefCounts,
-        [Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] int[] rgRowStatus);
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] uint[] rgRefCounts,
+        [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] int[] rgRowStatus);
+
+    void RestartPosition(nuint hReserved);
 }

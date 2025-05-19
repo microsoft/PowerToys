@@ -3,22 +3,23 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.CmdPal.Ext.Indexer.Native;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
-[Guid("0C733AAF-2A1C-11CE-ADE5-00AA0044773D")]
+[Guid("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
-public partial interface IGetRow
+public partial interface IPropertyStore
 {
-    unsafe void GetRowFromHROW([MarshalAs(UnmanagedType.Interface)] object pUnkOuter, nuint hRow, ref Guid riid, [MarshalAs(UnmanagedType.Interface)] out IPropertyStore ppUnk);
+    void GetCount(out uint cProps);
 
-    unsafe string GetURLFromHROW(nuint hRow);
+    void GetAt(uint iProp, out PropertyKey pkey);
+
+    unsafe void GetValue(ref PropertyKey key, out IntPtr propVariant);
+
+    int SetValue(ref PropertyKey key, [MarshalUsing(typeof(PROPVARIANTRefMarshaller))] PropVariant spv);
+
+    void Commit();
 }

@@ -5,6 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 using ManagedCommon;
+using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
 using Microsoft.CmdPal.Ext.Indexer.Native;
 
@@ -33,18 +34,22 @@ internal sealed class SearchResult
         }
     }
 
-    public static unsafe SearchResult Create(NativeMethods.IPropertyStore propStore)
+    public static unsafe SearchResult Create(IPropertyStore propStore)
     {
         try
         {
             var key = NativeHelpers.PropertyKeys.PKEYItemNameDisplay;
-            propStore.GetValue(ref key, out var itemNameDisplay);
+            propStore.GetValue(ref key, out var itemNameDisplayPtr);
 
             key = NativeHelpers.PropertyKeys.PKEYItemUrl;
-            propStore.GetValue(ref key, out var itemUrl);
+            propStore.GetValue(ref key, out var itemUrlPtr);
 
             key = NativeHelpers.PropertyKeys.PKEYKindText;
-            propStore.GetValue(ref key, out var kindText);
+            propStore.GetValue(ref key, out var kindTextPtr);
+
+            var itemUrl = *((PropVariant*)itemNameDisplayPtr);
+            var kindText = *((PropVariant*)kindTextPtr);
+            var itemNameDisplay = *((PropVariant*)itemUrlPtr);
 
             var filePath = GetFilePath(ref itemUrl);
             var isFolder = IsFoder(ref kindText);
@@ -65,20 +70,20 @@ internal sealed class SearchResult
         }
     }
 
-    private static bool IsFoder(ref NativeHelpers.PROPVARIANT kindText)
+    private static bool IsFoder(ref PropVariant kindText)
     {
         var kindString = GetStringFromPropVariant(ref kindText);
         return string.Equals(kindString, "Folder", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string GetFilePath(ref NativeHelpers.PROPVARIANT itemUrl)
+    private static string GetFilePath(ref PropVariant itemUrl)
     {
         var filePath = GetStringFromPropVariant(ref itemUrl);
         filePath = UrlToFilePathConverter.Convert(filePath);
         return filePath;
     }
 
-    private static string GetStringFromPropVariant(ref NativeHelpers.PROPVARIANT propVariant)
+    private static string GetStringFromPropVariant(ref PropVariant propVariant)
     {
         if (propVariant.VarType == System.Runtime.InteropServices.VarEnum.VT_LPWSTR)
         {

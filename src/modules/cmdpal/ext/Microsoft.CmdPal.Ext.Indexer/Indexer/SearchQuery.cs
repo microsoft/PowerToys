@@ -146,11 +146,14 @@ internal sealed partial class SearchQuery : IDisposable
 
     private bool HandleRow(IGetRow getRow, nuint rowHandle)
     {
-        NativeMethods.IPropertyStore propertyStorePtr = null;
+        IPropertyStore propertyStorePtr = null;
 
         try
         {
-            getRow.GetRowFromHROW(IntPtr.Zero, rowHandle, NativeMethods.PropertyStoreGUID, out propertyStorePtr);
+            var riid = NativeMethods.PropertyStoreGUID;
+
+            getRow.GetRowFromHROW(null, rowHandle, ref riid, out var ptr);
+            propertyStorePtr = ptr;
 
             // get IpropertyStore from propertyStorePtr
             if (propertyStorePtr == null)
@@ -159,7 +162,7 @@ internal sealed partial class SearchQuery : IDisposable
                 return false;
             }
 
-            var propertyStore = (NativeMethods.IPropertyStore)propertyStorePtr;
+            var propertyStore = (IPropertyStore)propertyStorePtr;
             if (propertyStore == null)
             {
                 Logger.LogError("Failed to get IPropertyStore interface");
@@ -199,31 +202,25 @@ internal sealed partial class SearchQuery : IDisposable
             return false;
         }
 
-        if (currentRowset is not IGetRow)
+        IGetRow getRow = null;
+
+        try
+        {
+            getRow = (IGetRow)currentRowset;
+        }
+        catch (Exception)
         {
             Logger.LogInfo("Reset the current rowset");
             ExecuteSyncInternal();
+            getRow = (IGetRow)currentRowset;
         }
-
-        var getRow = (IGetRow)currentRowset;
-        /*
-        if (currentRowset is not IGetRow getRow)
-        {
-            Logger.LogError("Rowset does not support IGetRow interface");
-            return false;
-        }*/
 
         uint rowCountReturned;
         var prghRows = IntPtr.Zero;
 
         try
         {
-            var res = currentRowset.GetNextRows(IntPtr.Zero, offset, limit, out rowCountReturned, out prghRows);
-            if (res < 0)
-            {
-                Logger.LogError($"Error fetching rows: {res}");
-                return false;
-            }
+            currentRowset.GetNextRows(IntPtr.Zero, offset, limit, out rowCountReturned, out prghRows);
 
             if (rowCountReturned == 0)
             {
@@ -244,13 +241,9 @@ internal sealed partial class SearchQuery : IDisposable
                 }
             }
 
-            res = currentRowset.ReleaseRows(rowCountReturned, rowHandles, IntPtr.Zero, null, null);
-            if (res != 0)
-            {
-                Logger.LogError($"Error releasing rows: {res}");
-            }
+            currentRowset.ReleaseRows(rowCountReturned, rowHandles, IntPtr.Zero, null, null);
 
-            Marshal.FreeCoTaskMem(prghRows);
+            // Marshal.FreeCoTaskMem(prghRows);
             prghRows = IntPtr.Zero;
 
             return true;
@@ -264,7 +257,7 @@ internal sealed partial class SearchQuery : IDisposable
         {
             if (prghRows != IntPtr.Zero)
             {
-                Marshal.FreeCoTaskMem(prghRows);
+                // Marshal.FreeCoTaskMem(prghRows);
             }
         }
     }

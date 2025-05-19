@@ -51,7 +51,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
   </PropertyGroup>
 
 </Project>

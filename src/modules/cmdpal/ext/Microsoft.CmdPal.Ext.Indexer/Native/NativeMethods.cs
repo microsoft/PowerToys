@@ -75,19 +75,4 @@ public sealed partial class NativeMethods
             return obj;
         }
     }
-
-    [GeneratedComInterface]
-    [Guid("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99")]
-    public partial interface IPropertyStore
-    {
-        int GetCount(out uint cProps);
-
-        int GetAt(uint iProp, out NativeHelpers.PropertyKey pkey);
-
-        int GetValue(ref NativeHelpers.PropertyKey key, [MarshalUsing(typeof(PROPVARIANTOutMarshaller))] out NativeHelpers.PROPVARIANT gpv);
-
-        int SetValue(ref NativeHelpers.PropertyKey key, [MarshalUsing(typeof(PROPVARIANTRefMarshaller))] ref NativeHelpers.PROPVARIANT spv);
-
-        int Commit();
-    }
 }
