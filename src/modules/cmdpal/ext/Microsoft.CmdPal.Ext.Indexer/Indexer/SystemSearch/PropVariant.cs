@@ -14,7 +14,7 @@ using VARTYPE = System.Runtime.InteropServices.VarEnum;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
-[StructLayout(LayoutKind.Explicit, Pack = 8, CharSet = CharSet.Unicode)]
+[StructLayout(LayoutKind.Explicit, Pack = 8)]
 public struct PropVariant
 {
     /// <summary>Value type tag.</summary>
@@ -48,13 +48,12 @@ public struct PropVariant
     [FieldOffset(8)]
     internal System.Runtime.InteropServices.ComTypes.FILETIME _ft;
 
+    [FieldOffset(8)]
+    internal BLOB _blob;
+
     /// <summary>The value when a numeric value less than 8 bytes.</summary>
     [FieldOffset(8)]
     internal ulong _ulong;
-
-    public PropVariant()
-    {
-    }
 
     public PropVariant(string value)
     {
@@ -64,6 +63,18 @@ public struct PropVariant
     }
 
     public VarEnum VarType { get => (VarEnum)vt; set => vt = (ushort)(VARTYPE)value; }
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 0)]
+public struct BLOB
+{
+    /// <summary>The count of bytes</summary>
+    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "No need")]
+    public uint cbSize;
+
+    /// <summary>A pointer to the allocated array of bytes.</summary>
+    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "No need")]
+    public IntPtr pBlobData;
 }
 
 [CustomMarshaller(typeof(PropVariant), MarshalMode.UnmanagedToManagedOut, typeof(PROPVARIANTOutMarshaller))]
@@ -77,7 +88,8 @@ public static partial class PROPVARIANTOutMarshaller
 
     public static unsafe PropVariant ConvertToManaged(IntPtr unmanaged)
     {
-        return Marshal.PtrToStructure<PropVariant>(unmanaged);
+        // return Marshal.PtrToStructure<PropVariant>(unmanaged);
+        return new PropVariant("test");
     }
 
     public static nint ConvertToUnmanaged(PropVariant managed)

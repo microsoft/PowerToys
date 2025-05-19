@@ -39,17 +39,13 @@ internal sealed class SearchResult
         try
         {
             var key = NativeHelpers.PropertyKeys.PKEYItemNameDisplay;
-            propStore.GetValue(ref key, out var itemNameDisplayPtr);
+            propStore.GetValue(key, out var itemNameDisplay);
 
             key = NativeHelpers.PropertyKeys.PKEYItemUrl;
-            propStore.GetValue(ref key, out var itemUrlPtr);
+            propStore.GetValue(key, out var itemUrl);
 
             key = NativeHelpers.PropertyKeys.PKEYKindText;
-            propStore.GetValue(ref key, out var kindTextPtr);
-
-            var itemUrl = *((PropVariant*)itemNameDisplayPtr);
-            var kindText = *((PropVariant*)kindTextPtr);
-            var itemNameDisplay = *((PropVariant*)itemUrlPtr);
+            propStore.GetValue(key, out var kindText);
 
             var filePath = GetFilePath(ref itemUrl);
             var isFolder = IsFoder(ref kindText);

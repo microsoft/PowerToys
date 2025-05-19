@@ -6,20 +6,22 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 
+[assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
+
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
-[Guid("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99")]
+[Guid("886d8eeb-8cf2-4446-8d02-cdba1dbdcf99")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 public partial interface IPropertyStore
 {
-    void GetCount(out uint cProps);
+    uint GetCount();
 
-    void GetAt(uint iProp, out PropertyKey pkey);
+    PropertyKey GetAt(uint iProp);
 
-    unsafe void GetValue(ref PropertyKey key, out IntPtr propVariant);
+    void GetValue(in PropertyKey pkey, out PropVariant pv);
 
-    int SetValue(ref PropertyKey key, [MarshalUsing(typeof(PROPVARIANTRefMarshaller))] PropVariant spv);
+    void SetValue(in PropertyKey pkey, in PropVariant pv);
 
     void Commit();
 }
