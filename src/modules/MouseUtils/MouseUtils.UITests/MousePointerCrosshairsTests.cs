@@ -130,7 +130,7 @@ namespace MouseUtils.UITests
 
             int radius = int.Parse(settings.CenterRadius, CultureInfo.InvariantCulture);
 
-            var color = Session.GetPixelColorString(location.Item1, location.Item2);
+            var color = this.GetPixelColorString(location.Item1, location.Item2);
             Assert.AreNotEqual(expectedColor, color);
         }
 
@@ -143,19 +143,19 @@ namespace MouseUtils.UITests
 
             int radius = int.Parse(settings.CenterRadius, CultureInfo.InvariantCulture);
 
-            var color = Session.GetPixelColorString(location.Item1, location.Item2);
+            var color = this.GetPixelColorString(location.Item1, location.Item2);
             Assert.AreEqual(expectedColor, color, "Center color check failed");
 
-            var colorX = Session.GetPixelColorString(location.Item1 + 50, location.Item2);
+            var colorX = this.GetPixelColorString(location.Item1 + 50, location.Item2);
             Assert.AreEqual(expectedColor, colorX, "Center x + 50 color check failed");
 
-            colorX = Session.GetPixelColorString(location.Item1 - 50, location.Item2);
+            colorX = this.GetPixelColorString(location.Item1 - 50, location.Item2);
             Assert.AreEqual(expectedColor, colorX, "Center x - 50 color check failed");
 
-            var colorY = Session.GetPixelColorString(location.Item1, location.Item2 + 50);
+            var colorY = this.GetPixelColorString(location.Item1, location.Item2 + 50);
             Assert.AreEqual(expectedColor, colorY, "Center y + 50 color check failed");
 
-            colorY = Session.GetPixelColorString(location.Item1, location.Item2 - 50);
+            colorY = this.GetPixelColorString(location.Item1, location.Item2 - 50);
             Assert.AreEqual(expectedColor, colorY, "Center y + 50 color check failed");
         }
 

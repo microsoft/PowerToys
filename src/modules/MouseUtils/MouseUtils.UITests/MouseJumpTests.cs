@@ -70,7 +70,7 @@ namespace MouseUtils.UITests
                 Assert.IsNotNull(saveButton);
                 saveButton.Click(false, 500, 1500);
 
-                var screenCenter = this.Session.GetScreenCenter();
+                var screenCenter = this.GetScreenCenter();
                 Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY, 500, 1000);
                 Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY - 300, 500, 1000);
 
@@ -96,10 +96,10 @@ namespace MouseUtils.UITests
         {
             string windowName = "MouseJump";
             Session.Attach(windowName);
-            var center = this.Session.GetWindowCenter();
+            var center = this.Session.GetMainWindowCenter();
             Session.MoveMouseTo(center.CenterX, center.CenterY);
             Session.PerformMouseAction(MouseActionType.LeftClick, 1000, 1000);
-            var screenCenter = this.Session.GetScreenCenter();
+            var screenCenter = this.GetScreenCenter();
 
             // Get Mouse position
             var xy = Session.GetMousePosition();
@@ -111,7 +111,7 @@ namespace MouseUtils.UITests
         private void VerifyWindowNotAppears()
         {
             string windowName = "MouseJump";
-            bool open = Session.IsWindowOpen(windowName);
+            bool open = this.IsWindowOpen(windowName);
             Assert.IsFalse(open, "Mouse Jump window should not be opened.");
         }
 

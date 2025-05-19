@@ -27,7 +27,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.EditorParams_VerifySelectedMonitor")]
+        [TestCategory("FancyZones Editor #10")]
         public void EditorParams_VerifySelectedMonitor()
         {
             InitFileData();

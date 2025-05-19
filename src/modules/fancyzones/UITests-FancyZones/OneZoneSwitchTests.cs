@@ -161,14 +161,14 @@ namespace UITests_FancyZones
 
             // Start Windows Explorer process
             Session.Attach(WindowName, WindowSize.UnSpecified); // display window1
-            var tabView = Find<Element>(By.AccessibilityId("TabView"));
+            var tabView = Find<Tab>(By.AccessibilityId("TabView"));
             tabView.DoubleClick(); // maximize the window
             tabView.KeyDownAndDrag(Key.Shift, targetX, targetY);
 
             // Attach the PowerToys settings window to the front
             Session.Attach(PowertoysWindowName, WindowSize.UnSpecified);
             string name = "Non Client Input Sink Window";
-            Element settingsView = Find<Element>(By.Name(name));
+            Pane settingsView = Find<Pane>(By.Name(name));
             settingsView.DoubleClick(); // maximize the window
             settingsView.KeyDownAndDrag(Key.Shift, targetX, targetY);
 

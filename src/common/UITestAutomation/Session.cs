@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
+using static Microsoft.PowerToys.UITest.WindowHelper;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -21,8 +22,6 @@ namespace Microsoft.PowerToys.UITest
         public WindowsDriver<WindowsElement> Root { get; set; }
 
         private WindowsDriver<WindowsElement> WindowsDriver { get; set; }
-
-        private const string AdministratorPrefix = "Administrator: ";
 
         private List<IntPtr> windowHandlers = new List<IntPtr>();
 
@@ -65,29 +64,6 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void Cleanup()
         {
-            /*
-            foreach (var windowHandle in this.windowHandlers)
-            {
-                if (windowHandle == IntPtr.Zero)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    var process = Process.GetProcessById((int)windowHandle);
-                    if (process != null && !process.HasExited)
-                    {
-                        process.Kill();
-                        process.WaitForExit();
-                    }
-                }
-                catch
-                {
-                }
-            }
-            */
-
             windowHandlers.Clear();
         }
 
@@ -98,13 +74,13 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        public T Find<T>(By by, int timeoutMS = 5000)
+        public T Find<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
             Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
 
             // leverage findAll to filter out mismatched elements
-            var collection = this.FindAll<T>(by, timeoutMS);
+            var collection = this.FindAll<T>(by, timeoutMS, global);
 
             Assert.IsTrue(collection.Count > 0, $"UI-Element({typeof(T).Name}) not found using selector: {by}");
 
@@ -118,10 +94,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        public T Find<T>(string name, int timeoutMS = 5000)
+        public T Find<T>(string name, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.Find<T>(By.Name(name), timeoutMS);
+            return this.Find<T>(By.Name(name), timeoutMS, global);
         }
 
         /// <summary>
@@ -130,9 +106,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        public Element Find(By by, int timeoutMS = 5000)
+        public Element Find(By by, int timeoutMS = 5000, bool global = false)
         {
-            return this.Find<Element>(by, timeoutMS);
+            return this.Find<Element>(by, timeoutMS, global);
         }
 
         /// <summary>
@@ -141,9 +117,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>The found element.</returns>
-        public Element Find(string name, int timeoutMS = 5000)
+        public Element Find(string name, int timeoutMS = 5000, bool global = false)
         {
-            return this.Find<Element>(By.Name(name), timeoutMS);
+            return this.Find<Element>(By.Name(name), timeoutMS, global);
         }
 
         /// <summary>
@@ -153,10 +129,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if only has one element, otherwise false.</returns>
-        public bool HasOne<T>(By by, int timeoutMS = 5000)
+        public bool HasOne<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.FindAll<T>(by, timeoutMS).Count == 1;
+            return this.FindAll<T>(by, timeoutMS, global).Count == 1;
         }
 
         /// <summary>
@@ -165,9 +141,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if only has one element, otherwise false.</returns>
-        public bool HasOne(By by, int timeoutMS = 5000)
+        public bool HasOne(By by, int timeoutMS = 5000, bool global = false)
         {
-            return this.HasOne<Element>(by, timeoutMS);
+            return this.HasOne<Element>(by, timeoutMS, global);
         }
 
         /// <summary>
@@ -177,10 +153,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if only has one element, otherwise false.</returns>
-        public bool HasOne<T>(string name, int timeoutMS = 5000)
+        public bool HasOne<T>(string name, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.HasOne<T>(By.Name(name), timeoutMS);
+            return this.HasOne<T>(By.Name(name), timeoutMS, global);
         }
 
         /// <summary>
@@ -189,9 +165,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if only has one element, otherwise false.</returns>
-        public bool HasOne(string name, int timeoutMS = 5000)
+        public bool HasOne(string name, int timeoutMS = 5000, bool global = false)
         {
-            return this.HasOne<Element>(By.Name(name), timeoutMS);
+            return this.HasOne<Element>(By.Name(name), timeoutMS, global);
         }
 
         /// <summary>
@@ -201,10 +177,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if  has one or more element, otherwise false.</returns>
-        public bool Has<T>(By by, int timeoutMS = 5000)
+        public bool Has<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.FindAll<T>(by, timeoutMS).Count >= 1;
+            return this.FindAll<T>(by, timeoutMS, global).Count >= 1;
         }
 
         /// <summary>
@@ -213,9 +189,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if  has one or more element, otherwise false.</returns>
-        public bool Has(By by, int timeoutMS = 5000)
+        public bool Has(By by, int timeoutMS = 5000, bool global = false)
         {
-            return this.Has<Element>(by, timeoutMS);
+            return this.Has<Element>(by, timeoutMS, global);
         }
 
         /// <summary>
@@ -225,10 +201,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if  has one or more element, otherwise false.</returns>
-        public bool Has<T>(string name, int timeoutMS = 5000)
+        public bool Has<T>(string name, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.Has<T>(By.Name(name), timeoutMS);
+            return this.Has<T>(By.Name(name), timeoutMS, global);
         }
 
         /// <summary>
@@ -237,9 +213,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name of the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>True if  has one or more element, otherwise false.</returns>
-        public bool Has(string name, int timeoutMS = 5000)
+        public bool Has(string name, int timeoutMS = 5000, bool global = false)
         {
-            return this.Has<Element>(name, timeoutMS);
+            return this.Has<Element>(name, timeoutMS, global);
         }
 
         /// <summary>
@@ -249,25 +225,26 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 5000)
+        public ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            Assert.IsNotNull(this.WindowsDriver, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
+            var driver = global ? this.Root : this.WindowsDriver;
+            Assert.IsNotNull(driver, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
             var foundElements = FindHelper.FindAll<T, WindowsElement>(
                 () =>
                 {
                     if (by.GetIsAccessibilityId())
                     {
-                        var elements = this.WindowsDriver.FindElementsByAccessibilityId(by.GetAccessibilityId());
+                        var elements = driver.FindElementsByAccessibilityId(by.GetAccessibilityId());
                         return elements;
                     }
                     else
                     {
-                        var elements = this.WindowsDriver.FindElements(by.ToSeleniumBy());
+                        var elements = driver.FindElements(by.ToSeleniumBy());
                         return elements;
                     }
                 },
-                this.WindowsDriver,
+                driver,
                 timeoutMS);
 
             return foundElements ?? new ReadOnlyCollection<T>([]);
@@ -281,10 +258,10 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name to find the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 5000)
+        public ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 5000, bool global = false)
             where T : Element, new()
         {
-            return this.FindAll<T>(By.Name(name), timeoutMS);
+            return this.FindAll<T>(By.Name(name), timeoutMS, global);
         }
 
         /// <summary>
@@ -294,9 +271,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to find the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 5000)
+        public ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 5000, bool global = false)
         {
-            return this.FindAll<Element>(by, timeoutMS);
+            return this.FindAll<Element>(by, timeoutMS, global);
         }
 
         /// <summary>
@@ -306,108 +283,9 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name to find the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds (default is 5000).</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 5000)
+        public ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 5000, bool global = false)
         {
-            return this.FindAll<Element>(By.Name(name), timeoutMS);
-        }
-
-        /// <summary>
-        /// Sets the main window size.
-        /// </summary>
-        /// <param name="size">WindowSize enum</param>
-        public void SetMainWindowSize(WindowSize size)
-        {
-            if (size == WindowSize.UnSpecified)
-            {
-                return;
-            }
-
-            int width = 0, height = 0;
-
-            switch (size)
-            {
-                case WindowSize.Small:
-                    width = 640;
-                    height = 480;
-                    break;
-                case WindowSize.Small_Vertical:
-                    width = 480;
-                    height = 640;
-                    break;
-                case WindowSize.Medium:
-                    width = 1024;
-                    height = 768;
-                    break;
-                case WindowSize.Medium_Vertical:
-                    width = 768;
-                    height = 1024;
-                    break;
-                case WindowSize.Large:
-                    width = 1920;
-                    height = 1080;
-                    break;
-                case WindowSize.Large_Vertical:
-                    width = 1080;
-                    height = 1920;
-                    break;
-            }
-
-            if (width > 0 && height > 0)
-            {
-                this.SetMainWindowSize(width, height);
-            }
-        }
-
-        /// <summary>
-        /// Gets the main window center coordinates.
-        /// </summary>
-        /// <returns>(x, y)</returns>
-        public (int CenterX, int CenterY) GetWindowCenter()
-        {
-            if (this.MainWindowHandler == IntPtr.Zero)
-            {
-                return (0, 0);
-            }
-            else
-            {
-                var rect = ApiHelper.GetWindowCenter(this.MainWindowHandler);
-                return (rect.CenterX, rect.CenterY);
-            }
-        }
-
-        /// <summary>
-        /// Gets the screen center coordinates.
-        /// </summary>
-        /// <returns>(x, y)</returns>
-        public (int CenterX, int CenterY) GetScreenCenter()
-        {
-            return ApiHelper.GetScreenCenter();
-        }
-
-        /// <summary>
-        /// Sets the main window size based on Width and Height.
-        /// </summary>
-        /// <param name="width">the width in pixel</param>
-        /// <param name="height">the height in pixel</param>
-        public void SetMainWindowSize(int width, int height)
-        {
-            if (this.MainWindowHandler == IntPtr.Zero)
-            {
-                // Attach to the scope & reset MainWindowHandler
-                this.Attach(this.InitScope);
-            }
-
-            if (this.MainWindowHandler == IntPtr.Zero
-                || width <= 0
-                || height <= 0)
-            {
-                return;
-            }
-
-            ApiHelper.SetWindowPos(this.MainWindowHandler, IntPtr.Zero, 0, 0, width, height, ApiHelper.SetWindowPosNoZorder | ApiHelper.SetWindowPosShowWindow);
-
-            // Wait for 1000ms after resize
-            Task.Delay(1000).Wait();
+            return this.FindAll<Element>(By.Name(name), timeoutMS, global);
         }
 
         /// <summary>
@@ -420,53 +298,6 @@ namespace Microsoft.PowerToys.UITest
                 MainWindow.Close();
                 MainWindow = null;
             }
-        }
-
-        /// <summary>
-        /// Retrieves the color of the pixel at the specified screen coordinates.
-        /// </summary>
-        /// <param name="x">The X coordinate on the screen.</param>
-        /// <param name="y">The Y coordinate on the screen.</param>
-        /// <returns>The color of the pixel at the specified coordinates.</returns>
-        public Color GetPixelColor(int x, int y)
-        {
-            IntPtr hdc = ApiHelper.GetDC(IntPtr.Zero);
-            uint pixel = ApiHelper.GetPixel(hdc, x, y);
-            _ = ApiHelper.ReleaseDC(IntPtr.Zero, hdc);
-
-            int r = (int)(pixel & 0x000000FF);
-            int g = (int)((pixel & 0x0000FF00) >> 8);
-            int b = (int)((pixel & 0x00FF0000) >> 16);
-
-            return Color.FromArgb(r, g, b);
-        }
-
-        /// <summary>
-        /// Retrieves the color of the pixel at the specified screen coordinates as a string.
-        /// </summary>
-        /// <param name="x">The X coordinate on the screen.</param>
-        /// <param name="y">The Y coordinate on the screen.</param>
-        /// <returns>The color of the pixel at the specified coordinates.</returns>
-        public string GetPixelColorString(int x, int y)
-        {
-            Color color = this.GetPixelColor(x, y);
-            return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
-        }
-
-        /// <summary>
-        /// Gets the size of the display.
-        /// </summary>
-        /// <returns>
-        /// A tuple containing the width and height of the display.
-        /// </returns
-        public Tuple<int, int> GetDisplaySize()
-        {
-            IntPtr hdc = ApiHelper.GetDC(IntPtr.Zero);
-            int screenWidth = ApiHelper.GetDeviceCaps(hdc, ApiHelper.DESKTOPHORZRES);
-            int screenHeight = ApiHelper.GetDeviceCaps(hdc, ApiHelper.DESKTOPVERTRES);
-            _ = ApiHelper.ReleaseDC(IntPtr.Zero, hdc);
-
-            return Tuple.Create(screenWidth, screenHeight);
         }
 
         /// <summary>
@@ -648,7 +479,7 @@ namespace Microsoft.PowerToys.UITest
             if (this.Root != null)
             {
                 // search window handler by window title (admin and non-admin titles)
-                var matchingWindows = ApiHelper.FindDesktopWindowHandler([windowName, AdministratorPrefix + windowName]);
+                var matchingWindows = WindowHelper.ApiHelper.FindDesktopWindowHandler([windowName, WindowHelper.AdministratorPrefix + windowName]);
                 if (matchingWindows.Count == 0 || matchingWindows[0].HWnd == IntPtr.Zero)
                 {
                     Assert.Fail($"Failed to attach. Window '{windowName}' not found");
@@ -656,7 +487,7 @@ namespace Microsoft.PowerToys.UITest
 
                 // pick one from matching windows
                 this.MainWindowHandler = matchingWindows[0].HWnd;
-                this.IsElevated = matchingWindows[0].Title.StartsWith(AdministratorPrefix);
+                this.IsElevated = matchingWindows[0].Title.StartsWith(WindowHelper.AdministratorPrefix);
 
                 ApiHelper.SetForegroundWindow(this.MainWindowHandler);
 
@@ -671,7 +502,7 @@ namespace Microsoft.PowerToys.UITest
 
                 if (size != WindowSize.UnSpecified)
                 {
-                    this.SetMainWindowSize(size);
+                    WindowHelper.SetWindowSize(this.MainWindowHandler, size);
                 }
 
                 // Set MainWindow
@@ -685,143 +516,28 @@ namespace Microsoft.PowerToys.UITest
             return this;
         }
 
-        public bool IsWindowOpen(string windowName)
+        /// <summary>
+        /// Sets the main window size.
+        /// </summary>
+        /// <param name="size">WindowSize enum</param>
+        public void SetMainWindowSize(WindowSize size)
         {
-            var matchingWindows = ApiHelper.FindDesktopWindowHandler([windowName, AdministratorPrefix + windowName]);
-            return matchingWindows.Count > 0;
+            if (this.MainWindowHandler == IntPtr.Zero)
+            {
+                // Attach to the scope & reset MainWindowHandler
+                this.Attach(this.InitScope);
+            }
+
+            WindowHelper.SetWindowSize(this.MainWindowHandler, size);
         }
 
-        private static class ApiHelper
+        /// <summary>
+        /// Gets the main window center coordinates.
+        /// </summary>
+        /// <returns>(x, y)</returns>
+        public (int CenterX, int CenterY) GetMainWindowCenter()
         {
-            [DllImport("user32.dll")]
-            public static extern bool SetForegroundWindow(IntPtr hWnd);
-
-            public const uint SetWindowPosNoMove = 0x0002;
-            public const uint SetWindowPosNoZorder = 0x0004;
-            public const uint SetWindowPosShowWindow = 0x0040;
-
-            [DllImport("user32.dll", SetLastError = true)]
-            public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
-
-            // Delegate for the EnumWindows callback function
-            private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
-
-            // P/Invoke declaration for EnumWindows
-            [DllImport("user32.dll")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
-
-            // P/Invoke declaration for GetWindowTextLength
-            [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-            private static extern int GetWindowTextLength(IntPtr hWnd);
-
-            // P/Invoke declaration for GetWindowText
-            [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-            private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
-
-            [DllImport("user32.dll")]
-            public static extern IntPtr GetDC(IntPtr hWnd);
-
-            [DllImport("gdi32.dll")]
-            public static extern uint GetPixel(IntPtr hdc, int x, int y);
-
-            [DllImport("gdi32.dll")]
-            public static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
-
-            public const int DESKTOPHORZRES = 118;
-            public const int DESKTOPVERTRES = 117;
-
-            [DllImport("user32.dll")]
-            public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
-
-            // Define the Win32 RECT structure
-            [StructLayout(LayoutKind.Sequential)]
-            public struct RECT
-            {
-                public int Left;    // X coordinate of the left edge of the window
-                public int Top;     // Y coordinate of the top edge of the window
-                public int Right;   // X coordinate of the right edge of the window
-                public int Bottom;  // Y coordinate of the bottom edge of the window
-            }
-
-            // Import GetWindowRect API to retrieve window's screen coordinates
-            [DllImport("user32.dll")]
-            public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-
-            public static List<(IntPtr HWnd, string Title)> FindDesktopWindowHandler(string[] matchingWindowsTitles)
-            {
-                var windows = new List<(IntPtr HWnd, string Title)>();
-
-                _ = EnumWindows(
-                    (hWnd, lParam) =>
-                    {
-                        int length = GetWindowTextLength(hWnd);
-                        if (length > 0)
-                        {
-                            var builder = new StringBuilder(length + 1);
-                            _ = GetWindowText(hWnd, builder, builder.Capacity);
-
-                            var title = builder.ToString();
-                            if (matchingWindowsTitles.Contains(title))
-                            {
-                                windows.Add((hWnd, title));
-                            }
-                        }
-
-                        return true; // Continue enumeration
-                    },
-                    IntPtr.Zero);
-
-                return windows;
-            }
-
-            /// <summary>
-            /// Get the center point coordinates of a specified window (in screen coordinates)
-            /// </summary>
-            /// <param name="hWnd">The window handle</param>
-            /// <returns>The center point (x, y)</returns>
-            public static (int CenterX, int CenterY) GetWindowCenter(IntPtr hWnd)
-            {
-                if (hWnd == IntPtr.Zero)
-                {
-                    throw new ArgumentException("Invalid window handle");
-                }
-
-                if (GetWindowRect(hWnd, out RECT rect))
-                {
-                    int width = rect.Right - rect.Left;
-                    int height = rect.Bottom - rect.Top;
-
-                    int centerX = rect.Left + (width / 2);
-                    int centerY = rect.Top + (height / 2);
-
-                    return (centerX, centerY);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Failed to retrieve window coordinates");
-                }
-            }
-
-            [DllImport("user32.dll")]
-            public static extern int GetSystemMetrics(int nIndex);
-
-            public enum SystemMetric
-            {
-                ScreenWidth = 0,            // Width of the primary screen in pixels (SM_CXSCREEN)
-                ScreenHeight = 1,           // Height of the primary screen in pixels (SM_CYSCREEN)
-                VirtualScreenWidth = 78,    // Width of the virtual screen that includes all monitors (SM_CXVIRTUALSCREEN)
-                VirtualScreenHeight = 79,   // Height of the virtual screen that includes all monitors (SM_CYVIRTUALSCREEN)
-                MonitorCount = 80,          // Number of display monitors (SM_CMONITORS, available on Windows XP+)
-            }
-
-            public static (int CenterX, int CenterY) GetScreenCenter()
-            {
-                int width = GetSystemMetrics((int)SystemMetric.ScreenWidth);
-                int height = GetSystemMetrics((int)SystemMetric.ScreenHeight);
-
-                return (width / 2, height / 2);
-            }
+            return WindowHelper.GetWindowCenter(this.MainWindowHandler);
         }
 
         public void StartExe(string executablePath, string arguments = "", int msPreAction = 0, int msPostAction = 2000)
