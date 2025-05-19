@@ -12,36 +12,43 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 [Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF63")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1212:Property accessors should follow order", Justification = "The order of the property accessors must match the order in which the methods were defined in the vtable")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Please do not change the function name")]
 public partial interface ISearchQueryHelper
 {
     string GetConnectionString();
 
+    void SetQueryContentLocale(int lcid);
+
     uint GetQueryContentLocale();
+
+    void SetQueryKeywordLocale(int lcid);
 
     uint GetQueryKeywordLocale();
 
-    [return: MarshalAs(UnmanagedType.Interface)]
-    object GetQueryTermExpansion();
+    void SetQueryTermExpansion(SEARCH_TERM_EXPANSION expandTerms);
+
+    void GetQueryTermExpansion(out SEARCH_TERM_EXPANSION pExpandTerms);
+
+    void SetQuerySyntax(SEARCH_QUERY_SYNTAX querySyntax);
 
     [return: MarshalAs(UnmanagedType.Interface)]
     object GetQuerySyntax();
 
+    void SetQueryContentProperties(string pszContentProperties);
+
     string GetQueryContentProperties();
-
-    void SetQueryContentProperties(string pszProperties);
-
-    string GetQuerySelectColumns();
 
     void SetQuerySelectColumns(string pszColumns);
 
-    string GetQueryWhereRestrictions();
+    string GetQuerySelectColumns();
 
     void SetQueryWhereRestrictions(string pszRestrictions);
 
-    string GetQuerySorting();
+    string GetQueryWhereRestrictions();
 
     void SetQuerySorting(string pszSorting);
+
+    string GetQuerySorting();
 
     string GenerateSQLFromUserQuery(string pszQuery);
 
@@ -52,7 +59,21 @@ public partial interface ISearchQueryHelper
       [MarshalAs(UnmanagedType.Interface)] ref object pValues,
       [MarshalAs(UnmanagedType.Interface)] ref object pftGatherModifiedTime);
 
-    int GetQueryMaxResults();
-
     void SetQueryMaxResults(int lMaxResults);
+
+    int GetQueryMaxResults();
+}
+
+public enum SEARCH_TERM_EXPANSION
+{
+    SEARCH_TERM_NO_EXPANSION,
+    SEARCH_TERM_PREFIX_ALL,
+    SEARCH_TERM_STEM_ALL,
+}
+
+public enum SEARCH_QUERY_SYNTAX
+{
+    SEARCH_NO_QUERY_SYNTAX,
+    SEARCH_ADVANCED_QUERY_SYNTAX,
+    SEARCH_NATURAL_QUERY_SYNTAX,
 }
