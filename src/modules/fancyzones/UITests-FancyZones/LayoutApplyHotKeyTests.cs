@@ -283,9 +283,23 @@ namespace Microsoft.FancyZones.UITests
             this.OpenFancyZonesPanel();
             this.ControlQuickLayoutSwitch(true);
 
-            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
+            // Set Hotkey
             this.AttachFancyZonesEditor();
-            var element = this.Find<Element>("Grid custom layout");
+            var layout = "Grid custom layout";
+            Session.Find<Element>(layout).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            const string key = "0";
+            var hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
+            Assert.IsNotNull(hotkeyComboBox);
+            hotkeyComboBox.Click();
+            var popup = Session.Find<Element>(By.ClassName(ClassName.Popup));
+            Assert.IsNotNull(popup);
+            popup.Find<Element>($"{key}").Click(); // assign a free hotkey
+
+            this.CloseFancyZonesEditor();
+            this.AttachPowertoySetting();
+            this.AttachFancyZonesEditor();
+            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
+            var element = this.Find<Element>(layout);
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
@@ -539,8 +553,8 @@ namespace Microsoft.FancyZones.UITests
             UITestBase.NativeMethods.ChangeDisplayResolution(width, height);
             this.AttachPowertoySetting();
             this.AttachFancyZonesEditor();
-            var tabView = this.Find<Tab>(By.AccessibilityId("TabView"));
-            tabView.DoubleClick(); // maximize the window
+            var maxButton = this.Find<Button>("Maximize");
+            maxButton.Click(); // maximize the window
             var resolution = this.Session.Find<Element>(By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Find<Element>(By.AccessibilityId("ResolutionText"));
             if (resolution.Text != "640 × 480")
             {
