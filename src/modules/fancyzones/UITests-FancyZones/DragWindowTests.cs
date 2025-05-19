@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 
-namespace Microsoft.FancyZones.UITests
+namespace UITests_FancyZones
 {
     [TestClass]
     public class DragWindowTests : UITestBase
@@ -55,22 +55,18 @@ namespace Microsoft.FancyZones.UITests
 
             this.RestartScopeExe();
 
+            // get PowerToys window Name
+            powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
+
             // clean app zone history file
             AppZoneHistory.DeleteFile();
             FancyZonesEditorHelper.Files.Restore();
-
-            // get PowerToys window Name
-            powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
 
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
 
             // Restart for Cleaning  the pipeline
-            if (this.IsInPipeline)
-            {
-                Console.WriteLine($"IsInPipeline{this.IsInPipeline}.");
-                this.RestartScopeExe();
-            }
+            this.RestartScopeExe();
 
             // Ensure FancyZones settings page is visible and enable FancyZones
             LaunchFancyZones();

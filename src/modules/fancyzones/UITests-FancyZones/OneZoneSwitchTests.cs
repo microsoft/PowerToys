@@ -13,7 +13,7 @@ using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.FancyZones.UITests
+namespace UITests_FancyZones
 {
     [TestClass]
     public class OneZoneSwitchTests : UITestBase
@@ -70,9 +70,6 @@ namespace Microsoft.FancyZones.UITests
 
             activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(preWindow, activeWindowTitle);
-
-            // Clean settings
-            Clean();
         }
 
         /// <summary>
@@ -110,9 +107,6 @@ namespace Microsoft.FancyZones.UITests
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
             SendKeys(Key.Ctrl, Key.Win, Key.F4);
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
-
-            // Clean settings
-            Clean();
         }
 
         /// <summary>
@@ -138,9 +132,6 @@ namespace Microsoft.FancyZones.UITests
 
             activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreNotEqual(preWindow, activeWindowTitle);
-
-            // Clean Setting
-            Clean();
         }
 
         private (string PreWindow, string PostWindow) SnapToOneZone()
@@ -252,11 +243,6 @@ namespace Microsoft.FancyZones.UITests
             this.Find<Element>(By.Name("Custom Column")).Click();
             this.Find<Button>("Close").Click();
             this.Session.Attach(PowerToysModule.PowerToysSettings);
-        }
-
-        private void Clean()
-        {
-            Session.KillAllProcessesByName("explorer");
         }
 
         private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
