@@ -22,6 +22,7 @@ namespace FancyZones.FuzzTests
 
             int inputData = BitConverter.ToInt32(input.Slice(0, 4));
 
+            // mock user input for custom-layouts.json
             string mockCustomLayouts = $@"{{""custom-layouts"": [{{ 
             ""uuid"": ""{{B8C275E-A7BC-485F-A35C-67B69164F51F}}"",
                 ""name"": ""Custom layout 1"",
@@ -55,6 +56,7 @@ namespace FancyZones.FuzzTests
                 return;
             }
 
+            // Get Layout Info from mockCustomLayouts
             foreach (var zoneSet in customLayouts)
             {
                 if (zoneSet.Uuid == null || zoneSet.Uuid.Length == 0)
@@ -63,6 +65,8 @@ namespace FancyZones.FuzzTests
                 }
 
                 CustomLayouts deserializer = new CustomLayouts();
+
+                // Fuzzing the deserializer
                 _ = deserializer.GridFromJsonElement(zoneSet.Info.GetRawText());
             }
         }
