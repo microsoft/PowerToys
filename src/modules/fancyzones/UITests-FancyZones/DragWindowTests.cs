@@ -75,11 +75,11 @@ namespace UITests_FancyZones
             customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
             Console.WriteLine($"After LaunchFancyZones, Custom layout data: {customLayoutData}");
 
-            // Get screen margins for positioning checks
-            GetScreenMargins();
-
             // Set the FancyZones layout to a custom layout
             this.Find<Element>(By.Name("Custom Column")).Click();
+
+            // Get screen margins for positioning checks
+            GetScreenMargins();
 
             // Close window
             SendKeys(Key.Alt, Key.F4);
@@ -371,6 +371,20 @@ namespace UITests_FancyZones
             Console.WriteLine($"After rewrite, Custom layout data: {customLayoutData}");
         }
 
+        private void SetupCustomLayouts2()
+        {
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
+
+            string customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+            Console.WriteLine($"After delete, Custom layout data: {customLayoutData}");
+            var customLayouts = new CustomLayouts();
+            var customLayoutListWrapper = CustomLayoutsListWithTwo;
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the file is written
+            customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+            Console.WriteLine($"After rewrite, Custom layout data: {customLayoutData}");
+        }
+
         // launch FancyZones settings page
         private void LaunchFancyZones()
         {
@@ -389,6 +403,11 @@ namespace UITests_FancyZones
 
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
+            this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
+            SetupCustomLayouts();
+            this.Session.Attach(PowerToysModule.PowerToysSettings);
+            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
+            this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
         }
 
@@ -404,7 +423,7 @@ namespace UITests_FancyZones
         }
 
         // Get the mouse color of the pixel when make dragged window
-        public (string PixelInWindow, string TransPixel) GetPixelWhenMakeDraggedWindow()
+        private (string PixelInWindow, string TransPixel) GetPixelWhenMakeDraggedWindow()
         {
             var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
 
@@ -435,7 +454,7 @@ namespace UITests_FancyZones
         /// <returns>
         /// A string representing the color of the pixel at the computed location outside the window,
         /// </returns>
-        public string GetOutWindowPixelColor(int spacing)
+        private string GetOutWindowPixelColor(int spacing)
         {
             var rect = Session.GetMainWindowRect();
             int checkX, checkY;
@@ -484,7 +503,7 @@ namespace UITests_FancyZones
         ///   <item><description><c>FinalZoneColor</c>: The zone highlight color after interaction completes.</description></item>
         /// </list>
         /// </returns>
-        public (string InitialZoneColor, string FinalZoneColor) RunDragInteractions(
+        private (string InitialZoneColor, string FinalZoneColor) RunDragInteractions(
         Action? preAction,
         Action? postAction,
         Action? releaseAction,
