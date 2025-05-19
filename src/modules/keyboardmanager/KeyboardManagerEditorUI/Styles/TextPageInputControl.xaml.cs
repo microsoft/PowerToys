@@ -83,6 +83,25 @@ namespace KeyboardManagerEditorUI.Styles
             ShowNotificationTip("Shortcuts can only have up to 4 modifier keys");
         }
 
+        public void UpdateAllAppsCheckBoxState()
+        {
+            // Only enable app-specific remapping for shortcuts (multiple keys)
+            bool isShortcut = _shortcutKeys.Count > 1;
+
+            AllAppsCheckBox.IsEnabled = isShortcut;
+
+            // If it's not a shortcut, ensure the checkbox is unchecked and app textbox is hidden
+            if (!isShortcut)
+            {
+                AllAppsCheckBox.IsChecked = false;
+                AppNameTextBox.Visibility = Visibility.Collapsed;
+            }
+            else if (AllAppsCheckBox.IsChecked == true)
+            {
+                AppNameTextBox.Visibility = Visibility.Visible;
+            }
+        }
+
         public void ShowNotificationTip(string message)
         {
             CloseExistingNotification();
