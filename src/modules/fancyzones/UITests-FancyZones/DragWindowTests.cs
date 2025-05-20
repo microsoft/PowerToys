@@ -51,31 +51,26 @@ namespace UITests_FancyZones
             // ClearOpenWindows
             ClearOpenWindows();
 
-            // Get the current mouse button setting
-            nonPrimaryMouseButton = SystemInformation.MouseButtonsSwapped ? "Left" : "Right";
-
             this.RestartScopeExe();
-
-            // get PowerToys window Name
-            powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
-
-            // clean app zone history file
-            AppZoneHistory.DeleteFile();
+            Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure the window is in position
 
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
 
+            // clean app zone history file
+            AppZoneHistory.DeleteFile();
+
+            // Get the current mouse button setting
+            nonPrimaryMouseButton = SystemInformation.MouseButtonsSwapped ? "Left" : "Right";
+
+            // get PowerToys window Name
+            powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
+
             string customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
-            Console.WriteLine($"After SetupCustomLayouts, Custom layout data: {customLayoutData}");
+            Console.WriteLine($"before go into launch, Custom layout data: {customLayoutData}");
 
             // Ensure FancyZones settings page is visible and enable FancyZones
             LaunchFancyZones();
-
-            customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
-            Console.WriteLine($"After LaunchFancyZones, Custom layout data: {customLayoutData}");
-
-            // Set the FancyZones layout to a custom layout
-            this.Find<Element>(By.Name("Custom Column")).Click();
 
             // Get screen margins for positioning checks
             GetScreenMargins();
@@ -386,9 +381,12 @@ namespace UITests_FancyZones
             this.Scroll(6, "Down"); // Pull the settings page up to make sure the settings are visible
             ZoneBehaviourSettings(TestContext.TestName);
 
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
             string customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
-            Console.WriteLine($"After rewrite, Custom layout data: {customLayoutData}");
+            Console.WriteLine($"before launch, Custom layout data: {customLayoutData}");
+
+            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
+            customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+            Console.WriteLine($"After launch, Custom layout data: {customLayoutData}");
 
             // this.Session.Attach(PowerToysModule.FancyZone);
             // this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
@@ -397,6 +395,28 @@ namespace UITests_FancyZones
             // this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
+            try
+            {
+                // Set the FancyZones layout to a custom layout
+                this.Find<Element>(By.Name("Custom Column")).Click();
+            }
+            catch (Exception)
+            {
+                Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure the UI is ready
+                this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
+                customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+                Console.WriteLine($"before retry set , Custom layout data: {customLayoutData}");
+                SetupCustomLayouts();
+                customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+                Console.WriteLine($"after retry set , Custom layout data: {customLayoutData}");
+                this.Session.Attach(PowerToysModule.PowerToysSettings);
+                this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
+                customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+                Console.WriteLine($"after retry launch , Custom layout data: {customLayoutData}");
+
+                // Set the FancyZones layout to a custom layout
+                this.Find<Element>(By.Name("Custom Column")).Click();
+            }
         }
 
         // Get the screen margins to calculate the dragged window position

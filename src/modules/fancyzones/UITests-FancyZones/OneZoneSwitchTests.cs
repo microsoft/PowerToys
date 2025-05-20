@@ -35,6 +35,7 @@ namespace UITests_FancyZones
 
             // clear the app zone history
             AppZoneHistory.DeleteFile();
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
 
             // set a custom layout with 2 subzones
             SetupCustomLayouts();
@@ -207,8 +208,6 @@ namespace UITests_FancyZones
         {
             var customLayouts = new CustomLayouts();
             var customLayoutListWrapper = CustomLayoutsList;
-            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
-
             FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
         }
 
@@ -264,7 +263,7 @@ namespace UITests_FancyZones
             // launch Hosts File Editor
             this.Find<Button>("Launch Hosts File Editor").Click();
 
-            Task.Delay(1000).Wait();
+            Task.Delay(3000).Wait();
         }
     }
 }
