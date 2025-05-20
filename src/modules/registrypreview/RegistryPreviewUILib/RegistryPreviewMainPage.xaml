@@ -56,6 +56,15 @@
                 DefaultLabelPosition="Right">
 
                 <AppBarButton
+                    x:Name="newButton"
+                    x:Uid="NewButton"
+                    Click="NewButton_Click"
+                    Icon="{ui:FontIcon Glyph=&#xe7c3;}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="N" Modifiers="Control" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
+                <AppBarButton
                     x:Name="openButton"
                     x:Uid="OpenButton"
                     Click="OpenButton_Click"

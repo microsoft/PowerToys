@@ -68,3 +68,4 @@ Below are community created plugins that target a website or software.  They are
 | [Bilibili](https://github.com/Whuihuan/PowerToysRun-Bilibili) | [Whuihuan](https://github.com/Whuihuan) | Use AVID or BVID to parse and jump to Bilibili |
 | [YubicoOauthOTP](https://github.com/dlnilsson/Community.PowerToys.Run.Plugin.YubicoOauthOTP) | [dlnilsson](https://github.com/dlnilsson) | Display generated codes from OATH accounts stored on the YubiKey in powerToys Run  |
 | [Firefox Bookmark](https://github.com/8LWXpg/PowerToysRun-FirefoxBookmark) | [8LWXpg](https://github.com/8LWXpg) | Open bookmarks in Firefox based browser |
+[Linear](https://github.com/vednig/powertoys-linear) | [vednig](https://github.com/vednig) | Create Linear Issues directly from Powertoys Run |
