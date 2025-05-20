@@ -361,7 +361,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        // Gets or sets a value indicating whether the PowerToys icon should be hidden in the system tray.
+        // Gets or sets a value indicating whether the PowerToys icon should be shown in the system tray.
         public bool ShowSysTrayIcon
         {
             get

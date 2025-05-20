@@ -225,7 +225,7 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void IsShowSysTrayIconDisabledByDefaultShouldEnableWhenSuccessful()
+        public void IsShowSysTrayIconEnabledByDefaultShouldDisableWhenSuccessful()
         {
             // Arrange
             // Assert
@@ -251,7 +251,7 @@ namespace ViewModelTests
             Assert.IsFalse(viewModel.ShowSysTrayIcon);
 
             // Act
-            viewModel.ShowSysTrayIcon = true;
+            viewModel.ShowSysTrayIcon = false;
         }
 
         [TestMethod]

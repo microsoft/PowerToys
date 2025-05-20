@@ -15,7 +15,7 @@
 
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
 static std::wstring settings_theme = L"system";
-static bool show_tray_icon = false;
+static bool show_tray_icon = true;
 static bool run_as_elevated = false;
 static bool show_new_updates_toast_notification = true;
 static bool download_updates_automatically = true;
@@ -223,7 +223,7 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     {
         show_tray_icon = general_configs.GetNamedBoolean(L"show_tray_icon");
         // Update tray icon visibility when setting is toggled
-        set_tray_icon_visible(!show_tray_icon);
+        set_tray_icon_visible(show_tray_icon);
     }
 
     if (save)
