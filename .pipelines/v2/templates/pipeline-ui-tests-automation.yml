@@ -58,7 +58,7 @@ stages:
                 platform: x64Win10
                 configuration: Release
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                isUIAutomationPipeline: true
+                isUIAutomationPipeline: false
 
     - ${{ if eq(platform, 'x64') }}:
       - stage: Test_x64Win11
@@ -71,7 +71,7 @@ stages:
                 platform: x64Win11
                 configuration: Release
                 useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-                isUIAutomationPipeline: true
+                isUIAutomationPipeline: false
 
     - ${{ if ne(platform, 'x64') }}:
       - stage: Test_${{ platform }}
@@ -84,4 +84,4 @@ stages:
               platform: ${{ platform }}
               configuration: Release
               useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-              isUIAutomationPipeline: true
+              isUIAutomationPipeline: false

@@ -120,7 +120,6 @@ jobs:
       ${{ else }}:
         testAssemblyVer2: |
           **\UITests-FancyZones.dll
-          **\UITests-FancyZonesEditor.dll
           !**\obj\**
           !**\ref\**
     env:
