@@ -561,7 +561,7 @@ namespace UITests_FancyZones
             },
         };
 
-        // set the custom layout
+        // set the custom layout with 1 subzones
         private static readonly CustomLayouts.CustomLayoutListWrapper CustomLayoutsListWithTwo = new CustomLayouts.CustomLayoutListWrapper
         {
             CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>
