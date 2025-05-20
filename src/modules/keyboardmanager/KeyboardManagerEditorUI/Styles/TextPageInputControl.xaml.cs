@@ -17,6 +17,7 @@ namespace KeyboardManagerEditorUI.Styles
         private ObservableCollection<string> _shortcutKeys = new ObservableCollection<string>();
         private TeachingTip? currentNotification;
         private DispatcherTimer? notificationTimer;
+        private bool _internalUpdate;
 
         public TextPageInputControl()
         {
@@ -31,9 +32,9 @@ namespace KeyboardManagerEditorUI.Styles
             KeyboardHookHelper.Instance.ActivateHook(this);
             TextContentBox.GotFocus += TextContentBox_GotFocus;
 
-            AllAppsCheckBox.Checked += Control_FocusChanged;
-            AllAppsCheckBox.Unchecked += Control_FocusChanged;
-            AppNameTextBox.GotFocus += Control_FocusChanged;
+            AllAppsCheckBox.Checked += AllAppsCheckBox_Changed;
+            AllAppsCheckBox.Unchecked += AllAppsCheckBox_Changed;
+            AppNameTextBox.GotFocus += AppNameTextBox_GotFocus;
 
             AppNameTextBox.Visibility = AllAppsCheckBox.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
         }
@@ -72,21 +73,6 @@ namespace KeyboardManagerEditorUI.Styles
             }
         }
 
-        private void Control_FocusChanged(object sender, RoutedEventArgs e)
-        {
-            KeyboardHookHelper.Instance.CleanupHook();
-
-            if (ShortcutToggleBtn != null && ShortcutToggleBtn.IsChecked == true)
-            {
-                ShortcutToggleBtn.IsChecked = false;
-            }
-
-            if (sender as CheckBox == AllAppsCheckBox)
-            {
-                AppNameTextBox.Visibility = AllAppsCheckBox.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
-            }
-        }
-
         public void OnInputLimitReached()
         {
             ShowNotificationTip("Shortcuts can only have up to 4 modifier keys");
@@ -100,14 +86,54 @@ namespace KeyboardManagerEditorUI.Styles
             AllAppsCheckBox.IsEnabled = isShortcut;
 
             // If it's not a shortcut, ensure the checkbox is unchecked and app textbox is hidden
-            if (!isShortcut)
+            try
             {
-                AllAppsCheckBox.IsChecked = false;
-                AppNameTextBox.Visibility = Visibility.Collapsed;
+                if (!isShortcut)
+                {
+                    _internalUpdate = true;
+                    AllAppsCheckBox.IsChecked = false;
+                    AppNameTextBox.Visibility = Visibility.Collapsed;
+                }
+                else if (AllAppsCheckBox.IsChecked == true)
+                {
+                    AppNameTextBox.Visibility = Visibility.Visible;
+                }
             }
-            else if (AllAppsCheckBox.IsChecked == true)
+            finally
             {
-                AppNameTextBox.Visibility = Visibility.Visible;
+                _internalUpdate = false;
+            }
+        }
+
+        private void AllAppsCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_internalUpdate)
+            {
+                return;
+            }
+
+            KeyboardHookHelper.Instance.CleanupHook();
+
+            if (ShortcutToggleBtn != null && ShortcutToggleBtn.IsChecked == true)
+            {
+                ShortcutToggleBtn.IsChecked = false;
+            }
+
+            AppNameTextBox.Visibility = AllAppsCheckBox.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void AppNameTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (_internalUpdate)
+            {
+                return;
+            }
+
+            KeyboardHookHelper.Instance.CleanupHook();
+
+            if (ShortcutToggleBtn != null && ShortcutToggleBtn.IsChecked == true)
+            {
+                ShortcutToggleBtn.IsChecked = false;
             }
         }
 
