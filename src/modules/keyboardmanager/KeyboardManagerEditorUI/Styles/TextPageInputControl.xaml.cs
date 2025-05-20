@@ -34,6 +34,8 @@ namespace KeyboardManagerEditorUI.Styles
             AllAppsCheckBox.Checked += Control_FocusChanged;
             AllAppsCheckBox.Unchecked += Control_FocusChanged;
             AppNameTextBox.GotFocus += Control_FocusChanged;
+
+            AppNameTextBox.Visibility = AllAppsCheckBox.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void ShortcutToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -55,6 +57,8 @@ namespace KeyboardManagerEditorUI.Styles
             {
                 _shortcutKeys.Add(keyName);
             }
+
+            UpdateAllAppsCheckBoxState();
         }
 
         private void TextContentBox_GotFocus(object sender, RoutedEventArgs e)
@@ -75,6 +79,11 @@ namespace KeyboardManagerEditorUI.Styles
             if (ShortcutToggleBtn != null && ShortcutToggleBtn.IsChecked == true)
             {
                 ShortcutToggleBtn.IsChecked = false;
+            }
+
+            if (sender as CheckBox == AllAppsCheckBox)
+            {
+                AppNameTextBox.Visibility = AllAppsCheckBox.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -156,6 +165,7 @@ namespace KeyboardManagerEditorUI.Styles
         public void ClearKeys()
         {
             _shortcutKeys.Clear();
+            UpdateAllAppsCheckBoxState();
         }
 
         public bool IsModifierKey(VirtualKey key)
@@ -205,6 +215,8 @@ namespace KeyboardManagerEditorUI.Styles
                     _shortcutKeys.Add(key);
                 }
             }
+
+            UpdateAllAppsCheckBoxState();
         }
 
         public void SetTextContent(string text)
