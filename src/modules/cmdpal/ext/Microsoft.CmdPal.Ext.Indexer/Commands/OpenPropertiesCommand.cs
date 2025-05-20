@@ -4,17 +4,12 @@
 
 using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Native;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
-using static Microsoft.CmdPal.Ext.Indexer.Native.NativeMethods;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
@@ -24,31 +19,17 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
 
     private static unsafe bool ShowFileProperties(string filename)
     {
-        var propertiesPtr = Marshal.StringToHGlobalUni("properties");
-        var filenamePtr = Marshal.StringToHGlobalUni(filename);
-
-        try
+        var info = new NativeMethods.SHELLEXECUTEINFOW
         {
-            var filenamePCWSTR = new PCWSTR((char*)filenamePtr);
-            var propertiesPCWSTR = new PCWSTR((char*)propertiesPtr);
+            cbSize = Unsafe.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
+            lpVerb = "properties",
+            lpFile = filename,
 
-            var info = new NativeMethods.SHELLEXECUTEINFOW
-            {
-                cbSize = Unsafe.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
-                lpVerb = propertiesPCWSTR.ToString(),
-                lpFile = filenamePCWSTR.ToString(),
+            nShow = (int)NativeMethods.SHOW_WINDOW_CMD.SW_SHOW,
+            fMask = NativeHelpers.SEEMASKINVOKEIDLIST,
+        };
 
-                nShow = (int)SHOW_WINDOW_CMD.SW_SHOW,
-                fMask = NativeHelpers.SEEMASKINVOKEIDLIST,
-            };
-
-            return NativeMethods.ShellExecuteEx(ref info);
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(filenamePtr);
-            Marshal.FreeHGlobal(propertiesPtr);
-        }
+        return NativeMethods.ShellExecuteEx(ref info);
     }
 
     internal OpenPropertiesCommand(IndexerItem item)
