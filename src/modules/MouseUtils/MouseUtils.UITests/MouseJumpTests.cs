@@ -12,13 +12,20 @@ namespace MouseUtils.UITests
     [TestClass]
     public class MouseJumpTests : UITestBase
     {
-        [TestMethod]
+        [TestMethod("MouseUtils.MouseJump.EnableMouseJump")]
+        [TestCategory("Mouse Utils #39")]
+        [TestCategory("Mouse Utils #40")]
+        [TestCategory("Mouse Utils #41")]
+        [TestCategory("Mouse Utils #45")]
         public void TestEnableMouseJump()
         {
             LaunchFromSetting(true);
         }
 
-        [TestMethod]
+        [TestMethod("MouseUtils.MouseJump.EnableMouseJump2")]
+        [TestCategory("Mouse Utils #39")]
+        [TestCategory("Mouse Utils #41")]
+        [TestCategory("Mouse Utils #45")]
         public void TestEnableMouseJump2()
         {
             LaunchFromSetting();
@@ -96,7 +103,8 @@ namespace MouseUtils.UITests
             Task.Delay(500).Wait();
         }
 
-        [TestMethod]
+        [TestMethod("MouseUtils.MouseJump.EnableMouseJump3")]
+        [TestCategory("Mouse Utils #40")]
         public void TestEnableMouseJump3()
         {
             LaunchFromSetting();

@@ -32,7 +32,11 @@ namespace MouseUtils.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("MouseUtils.FindMyMouse.EnableFindMyMouse")]
+        [TestCategory("Mouse Utils #1")]
+        [TestCategory("Mouse Utils #2")]
+        [TestCategory("Mouse Utils #3")]
+        [TestCategory("Mouse Utils #4")]
         public void TestEnableFindMyMouse()
         {
             LaunchFromSetting();
@@ -95,7 +99,10 @@ namespace MouseUtils.UITests
             VerifySpotlightDisappears(ref settings);
         }
 
-        [TestMethod]
+        [TestMethod("MouseUtils.FindMyMouse.FindMyMouseDifferentSettings")]
+        [TestCategory("Mouse Utils #10")]
+        [TestCategory("Mouse Utils #11")]
+        [TestCategory("Mouse Utils #12")]
         public void TestFindMyMouseDifferentSettings()
         {
             LaunchFromSetting();
@@ -149,7 +156,8 @@ namespace MouseUtils.UITests
             VerifySpotlightDisappears(ref settings);
         }
 
-        [TestMethod]
+        [TestMethod("MouseUtils.FindMyMouse.DisableFindMyMouse")]
+        [TestCategory("Mouse Utils #5")]
         public void TestDisableFindMyMouse()
         {
             LaunchFromSetting();
@@ -217,7 +225,8 @@ namespace MouseUtils.UITests
             Session.PerformMouseAction(MouseActionType.LeftClick);
         }
 
-        [TestMethod]
+        [TestMethod("MouseUtils.FindMyMouse.DisableFindMyMouse3")]
+        [TestCategory("Mouse Utils #6")]
         public void TestDisableFindMyMouse3()
         {
             LaunchFromSetting();
@@ -285,7 +294,8 @@ namespace MouseUtils.UITests
             Session.PerformMouseAction(MouseActionType.LeftClick);
         }
 
-        [TestMethod]
+        [TestMethod("MouseUtils.FindMyMouse.DisableFindMyMouse2")]
+        [TestCategory("Mouse Utils #5")]
         public void TestDisableFindMyMouse2()
         {
             LaunchFromSetting();
@@ -539,34 +549,6 @@ namespace MouseUtils.UITests
             {
                 Assert.Fail("Appearance & behavior group not found.");
             }
-        }
-
-        private bool FindGroup(string groupName)
-        {
-            try
-            {
-                var foundElements = this.FindAll<Element>(groupName);
-                foreach (var element in foundElements)
-                {
-                    string className = element.ClassName;
-                    string name = element.Name;
-                    string text = element.Text;
-                    string helptext = element.HelpText;
-                    string controlType = element.ControlType;
-                }
-
-                if (foundElements.Count == 0)
-                {
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Validate if group is not found by checking exception.Message
-                return ex.Message.Contains("No element found");
-            }
-
-            return true;
         }
 
         private bool CheckAnimationEnable(ref Custom? foundCustom)

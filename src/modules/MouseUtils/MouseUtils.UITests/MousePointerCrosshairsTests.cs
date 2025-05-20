@@ -16,7 +16,10 @@ namespace MouseUtils.UITests
     [TestClass]
     public class MousePointerCrosshairsTests : UITestBase
     {
-        [TestMethod]
+        [TestMethod("MouseUtils.MousePointerCrosshairs.EnableMousePointerCrosshairs")]
+        [TestCategory("Mouse Utils #29")]
+        [TestCategory("Mouse Utils #30")]
+        [TestCategory("Mouse Utils #31")]
         public void TestEnableMousePointerCrosshairs()
         {
             LaunchFromSetting();
@@ -114,7 +117,9 @@ namespace MouseUtils.UITests
             VerifyMousePointerCrosshairsNotAppears(ref settings);
         }
 
-        [TestMethod]
+        [TestMethod("MouseUtils.MousePointerCrosshairs.MousePointerCrosshairsDifferentSettings")]
+        [TestCategory("Mouse Utils #32")]
+        [TestCategory("Mouse Utils #33")]
         public void TestMousePointerCrosshairsDifferentSettings()
         {
             LaunchFromSetting();

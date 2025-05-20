@@ -15,7 +15,12 @@ namespace MouseUtils.UITests
     [TestClass]
     public class MouseHighlighterTests : UITestBase
     {
-        [TestMethod]
+        [TestMethod("MouseUtils.MouseHighlighter.EnableMouseHighlighter")]
+        [TestCategory("Mouse Utils #17")]
+        [TestCategory("Mouse Utils #18")]
+        [TestCategory("Mouse Utils #19")]
+        [TestCategory("Mouse Utils #20")]
+        [TestCategory("Mouse Utils #21")]
         public void TestEnableMouseHighlighter()
         {
             LaunchFromSetting();
@@ -112,6 +117,8 @@ namespace MouseUtils.UITests
                 VerifyMouseHighlighterNotAppears(ref settings, "leftClick");
                 VerifyMouseHighlighterNotAppears(ref settings, "rightClick");
 
+                // [Test Case] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+                // [Test Case] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
                 foundCustom.Find<ToggleSwitch>("Enable Mouse Highlighter").Toggle(true);
                 xy = Session.GetMousePosition();
                 Session.MoveMouseTo(xy.Item1 - 100, xy.Item2);
@@ -129,7 +136,10 @@ namespace MouseUtils.UITests
             Task.Delay(500).Wait();
         }
 
-        [TestMethod]
+        [TestMethod("MouseUtils.MouseHighlighter.MouseHighlighterDifferentSettings")]
+        [TestCategory("Mouse Utils #22")]
+        [TestCategory("Mouse Utils #23")]
+        [TestCategory("Mouse Utils #24")]
         public void TestMouseHighlighterDifferentSettings()
         {
             LaunchFromSetting();
