@@ -15,6 +15,7 @@ using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
+using static FancyZonesEditorCommon.Data.CustomLayouts;
 
 namespace UITests_FancyZones
 {
@@ -64,10 +65,8 @@ namespace UITests_FancyZones
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
 
-            // Restart for Cleaning  the pipeline
-            this.RestartScopeExe();
             string customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
-            Console.WriteLine($"After RestartScopeExe, Custom layout data: {customLayoutData}");
+            Console.WriteLine($"After SetupCustomLayouts, Custom layout data: {customLayoutData}");
 
             // Ensure FancyZones settings page is visible and enable FancyZones
             LaunchFancyZones();
@@ -371,20 +370,6 @@ namespace UITests_FancyZones
             Console.WriteLine($"After rewrite, Custom layout data: {customLayoutData}");
         }
 
-        private void SetupCustomLayouts2()
-        {
-            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
-
-            string customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
-            Console.WriteLine($"After delete, Custom layout data: {customLayoutData}");
-            var customLayouts = new CustomLayouts();
-            var customLayoutListWrapper = CustomLayoutsListWithTwo;
-            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
-            Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the file is written
-            customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
-            Console.WriteLine($"After rewrite, Custom layout data: {customLayoutData}");
-        }
-
         // launch FancyZones settings page
         private void LaunchFancyZones()
         {
@@ -402,11 +387,14 @@ namespace UITests_FancyZones
             ZoneBehaviourSettings(TestContext.TestName);
 
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
-            this.Session.Attach(PowerToysModule.FancyZone);
-            this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
-            SetupCustomLayouts();
-            this.Session.Attach(PowerToysModule.PowerToysSettings);
-            this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
+            string customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+            Console.WriteLine($"After rewrite, Custom layout data: {customLayoutData}");
+
+            // this.Session.Attach(PowerToysModule.FancyZone);
+            // this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
+            // SetupCustomLayouts();
+            // this.Session.Attach(PowerToysModule.PowerToysSettings);
+            // this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
         }
