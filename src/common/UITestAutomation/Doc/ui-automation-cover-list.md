@@ -519,13 +519,20 @@ For all the remapping below, try pressing and releasing the remapped key/shortcu
 Find My Mouse:
   * Enable FindMyMouse. Then, without moving your mouse:
     - [x] 1. Press Left Ctrl twice and verify the overlay appears.
+          - TestMethod("MouseUtils.FindMyMouse.EnableFindMyMouse")
     - [x] 2. Press any other key and verify the overlay disappears.
+          - TestMethod("MouseUtils.FindMyMouse.EnableFindMyMouse")
     - [x] 3. Press Left Ctrl twice and verify the overlay appears.
+          - TestMethod("MouseUtils.FindMyMouse.EnableFindMyMouse")
     - [x] 4. Press a mouse button and verify the overlay disappears.
+          - TestMethod("MouseUtils.FindMyMouse.EnableFindMyMouse")
   * Disable FindMyMouse.
     - [x] 5. Verify the overlay no longer appears when you press Left Ctrl twice.
+          - TestMethod("MouseUtils.FindMyMouse.DisableFindMyMouse")
+          - TestMethod("MouseUtils.FindMyMouse.DisableFindMyMouse2")
   * Enable FindMyMouse. Then, without moving your mouse:
     - [x] 6. Press Left Ctrl twice and verify the overlay appears.
+          - TestMethod("MouseUtils.FindMyMouse.DisableFindMyMouse3")
   * Enable the "Do not activate on game mode" option. Start playing a game that uses CG native full screen.
     - [ ] 7. Verify the overlay no longer appears when you press Left Ctrl twice.
   * Disable the "Do not activate on game mode" option. Start playing the same game.
@@ -533,8 +540,11 @@ Find My Mouse:
   * Test the different settings and verify they apply:
     - [ ] 9. Overlay opacity
     - [x] 10. Background color
+          - TestMethod("MouseUtils.FindMyMouse.FindMyMouseDifferentSettings")
     - [x] 11. Spotlight color
+          - TestMethod("MouseUtils.FindMyMouse.FindMyMouseDifferentSettings")
     - [x] 12. Spotlight radius
+          - TestMethod("MouseUtils.FindMyMouse.FindMyMouseDifferentSettings")
     - [ ] 13. Spotlight initial zoom (1x vs 9x will show the difference)
     - [ ] 14. Animation duration
     - [ ] 15. Change activation method to shake and activate by shaking your mouse pointer
@@ -543,14 +553,22 @@ Find My Mouse:
 Mouse Highlighter:
   * Enable Mouse Highlighter. Then:
     - [x] 17. Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
+          - TestMethod("MouseUtils.MouseHighlighter.EnableMouseHighlighter")
     - [x] 18. With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+          - TestMethod("MouseUtils.MouseHighlighter.EnableMouseHighlighter")
     - [x] 19. With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+          - TestMethod("MouseUtils.MouseHighlighter.EnableMouseHighlighter")
     - [x] 20. Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
+          - TestMethod("MouseUtils.MouseHighlighter.EnableMouseHighlighter")
     - [x] 21. Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
+          - TestMethod("MouseUtils.MouseHighlighter.EnableMouseHighlighter")
   * Test the different settings and verify they apply:
     - [x] 22. Change activation shortcut and test it
+          - TestMethod("MouseUtils.MouseHighlighter.MouseHighlighterDifferentSettings")
     - [x] 23. Left button highlight color
+          - TestMethod("MouseUtils.MouseHighlighter.MouseHighlighterDifferentSettings")
     - [x] 24. Right button highlight color
+          - TestMethod("MouseUtils.MouseHighlighter.MouseHighlighterDifferentSettings")
     - [ ] 25. Opacity
     - [ ] 26. Radius
     - [ ] 27. Fade delay
@@ -559,11 +577,16 @@ Mouse Highlighter:
 Mouse Pointer Crosshairs:
   * Enable Mouse Pointer Crosshairs. Then:
     - [x] 29. Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
+          - TestMethod("MouseUtils.MousePointerCrosshairs.EnableMousePointerCrosshairs")
     - [x] 30. Press the activation shortcut again and verify the crosshairs disappear.
+          - TestMethod("MouseUtils.MousePointerCrosshairs.EnableMousePointerCrosshairs")
     - [x] 31. Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
+          - TestMethod("MouseUtils.MousePointerCrosshairs.EnableMousePointerCrosshairs")
   * Test the different settings and verify they apply:
     - [x] 32. Change activation shortcut and test it
+          - TestMethod("MouseUtils.MousePointerCrosshairs.MousePointerCrosshairsDifferentSettings")
     - [x] 33. Crosshairs color
+          - TestMethod("MouseUtils.MousePointerCrosshairs.MousePointerCrosshairsDifferentSettings")
     - [ ] 34. Crosshairs opacity
     - [ ] 35. Crosshairs center radius
     - [ ] 36. Crosshairs thickness
@@ -573,12 +596,20 @@ Mouse Pointer Crosshairs:
 Mouse Jump:
   * Enable Mouse Jump. Then:
     - [x] 39. Press the activation shortcut and verify the screens preview appears.
+          - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
+          - TestMethod("MouseUtils.MouseJump.EnableMouseJump2")
     - [x] 40. Change activation shortcut and verify that new shorctut triggers Mouse Jump.
+          - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
+          - TestMethod("MouseUtils.MouseJump.EnableMouseJump3")
     - [x] 41. Click around the screen preview and ensure that mouse cursor jumped to clicked location.
+          - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
+          - TestMethod("MouseUtils.MouseJump.EnableMouseJump2")
     - [ ] 42. Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
     - [ ] 43. Change scaling of screens and confirm that Mouse Jump still works correctly.
     - [ ] 44. Unplug additional monitors and confirm that Mouse Jump still works correctly.
     - [x] 45. Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
+          - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
+          - TestMethod("MouseUtils.MouseJump.EnableMouseJump2")
 
 ## Awake
  - [ ] 1. Try out the features and see if they work, no list at this time.
