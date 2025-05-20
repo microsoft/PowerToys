@@ -24,19 +24,13 @@ internal sealed partial class QueryStringBuilder
 
     public static string GeneratePrimingQuery() => SelectQueryWithScopeAndOrderConditions;
 
-    private static readonly Guid CLSIDSearchManager = new Guid("7D096C5F-AC08-4F1F-BEB7-5C22C517CE39");
-    private static readonly Guid IIDISearchManager = new Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF69");
-    private const uint CLSCTXINPROCSERVER = 0x17;
-
     public static string GenerateQuery(string searchText, uint whereId)
     {
         if (queryHelper == null)
         {
             ComWrappers cw = new StrategyBasedComWrappers();
-            Guid clsidSearchManager = CLSIDSearchManager;
-            Guid iidSearchManager = IIDISearchManager;
 
-            var hr = NativeMethods.CoCreateInstance(CLSIDSearchManager, IntPtr.Zero, CLSCTXINPROCSERVER, IIDISearchManager, out var searchManagerPtr);
+            var hr = NativeMethods.CoCreateInstance(NativeHelpers.CsWin32GUID.CLSIDSearchManager, IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, NativeHelpers.CsWin32GUID.IIDISearchManager, out var searchManagerPtr);
             if (hr != 0)
             {
                 throw new ArgumentException($"Failed to create SearchManager instance. HR: 0x{hr:X}");

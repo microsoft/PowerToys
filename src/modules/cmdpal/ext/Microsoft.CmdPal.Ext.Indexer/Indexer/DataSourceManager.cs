@@ -13,8 +13,6 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
 internal static class DataSourceManager
 {
-    private static readonly Guid CLSIDCollatorDataSource = new("9E175B8B-F52A-11D8-B9A5-505054503030");
-
     private static IDBInitialize _dataSource;
 
     public static IDBInitialize GetDataSource()
@@ -31,7 +29,7 @@ internal static class DataSourceManager
     {
         uint clsctxInProcServer = 0x17;
 
-        var hr = NativeMethods.CoCreateInstance(CLSIDCollatorDataSource, IntPtr.Zero, clsctxInProcServer, typeof(IDBInitialize).GUID, out var dataSourceObjPtr);
+        var hr = NativeMethods.CoCreateInstance(NativeHelpers.CsWin32GUID.CLSIDCollatorDataSource, IntPtr.Zero, clsctxInProcServer, typeof(IDBInitialize).GUID, out var dataSourceObjPtr);
         if (hr != 0)
         {
             Logger.LogError("CoCreateInstance failed: " + hr);

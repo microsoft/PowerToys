@@ -10,6 +10,8 @@ public sealed partial class NativeHelpers
 {
     public const uint SEEMASKINVOKEIDLIST = 12;
 
+    public const uint CLSCTXINPROCALL = 0x17;
+
     public struct PropertyKeys
     {
         public static readonly PropertyKey PKEYItemNameDisplay = new() { fmtid = new System.Guid("B725F130-47EF-101A-A5F1-02608C9EEBAC"), pid = 10 };
@@ -20,5 +22,12 @@ public sealed partial class NativeHelpers
     public static class OleDb
     {
         public static readonly Guid DbGuidDefault = new("C8B521FB-5CF3-11CE-ADE5-00AA0044773D");
+    }
+
+    public static class CsWin32GUID
+    {
+        public static readonly Guid CLSIDSearchManager = new Guid("7D096C5F-AC08-4F1F-BEB7-5C22C517CE39");
+        public static readonly Guid IIDISearchManager = new Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF69");
+        public static readonly Guid CLSIDCollatorDataSource = new Guid("9E175B8B-F52A-11D8-B9A5-505054503030");
     }
 }
