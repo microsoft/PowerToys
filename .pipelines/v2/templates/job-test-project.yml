@@ -102,6 +102,11 @@ jobs:
       inputs:
         displaySettings: 'optimal'
 
+  - powershell: |
+      $command = {
+          Start-Sleep -Seconds 120
+      }
+
   - task: VSTest@3
     displayName: Run UI Tests
     inputs:
@@ -120,6 +125,7 @@ jobs:
       ${{ else }}:
         testAssemblyVer2: |
           **\UITests-FancyZones.dll
+          **\UITests-FancyZonesEditor.dll
           !**\obj\**
           !**\ref\**
     env:
