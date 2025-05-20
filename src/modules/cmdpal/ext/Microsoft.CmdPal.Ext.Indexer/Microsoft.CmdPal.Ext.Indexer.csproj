@@ -5,13 +5,11 @@
 
 	<PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.Indexer</RootNamespace>
-
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    </PropertyGroup>
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
 
   <ItemGroup>
 	<PackageReference Include="Microsoft.Windows.CsWin32">
