@@ -52,13 +52,13 @@ namespace UITests_FancyZones
             ClearOpenWindows();
 
             this.RestartScopeExe();
-            Task.Delay(5000).Wait(); // Optional: Wait for a moment to ensure the window is in position
 
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
 
             // clean app zone history file
             AppZoneHistory.DeleteFile();
+            Task.Delay(20000).Wait(); // Optional: Wait for a moment to ensure the window is in position
 
             // Get the current mouse button setting
             nonPrimaryMouseButton = SystemInformation.MouseButtonsSwapped ? "Left" : "Right";
