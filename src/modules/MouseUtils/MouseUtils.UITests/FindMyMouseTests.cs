@@ -57,7 +57,6 @@ namespace MouseUtils.UITests
             {
                 foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
 
-                // foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
                 SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
                 Assert.IsNotNull(foundCustom, "Find My Mouse group not found.");
                 SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
@@ -91,14 +90,13 @@ namespace MouseUtils.UITests
             // [Test Case]Enable FindMyMouse. Then, without moving your mouse: Press a mouse button and verify the overlay disappears.
             Task.Delay(1000).Wait();
 
-            // MouseSimulator.LeftClick();
             Session.PerformMouseAction(MouseActionType.LeftClick, 500, 1000);
 
             VerifySpotlightDisappears(ref settings);
         }
 
         [TestMethod]
-        public void TestEnableFindMyMouse2()
+        public void TestFindMyMouseDifferentSettings()
         {
             LaunchFromSetting();
 
@@ -107,8 +105,8 @@ namespace MouseUtils.UITests
             settings.Radius = "80";
             settings.InitialZoom = "1";
             settings.AnimationDuration = "0";
-            settings.BackgroundColor = "FFFFFF";
-            settings.SpotlightColor = "000000";
+            settings.BackgroundColor = "FF0000";
+            settings.SpotlightColor = "0000FF";
 
             var foundCustom = this.Find<Custom>("Find My Mouse");
             Assert.IsNotNull(foundCustom);
@@ -122,7 +120,6 @@ namespace MouseUtils.UITests
             {
                 foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
 
-                // foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
                 SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
                 Assert.IsNotNull(foundCustom, "Find My Mouse group not found.");
                 SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
@@ -148,7 +145,6 @@ namespace MouseUtils.UITests
             // [Test Case]Test the different settings and verify they apply, Spotlight radius
             VerifySpotlightSettings(ref settings);
 
-            // [Test Case]Enable FindMyMouse. Then, without moving your mouse: Press any other key and verify the overlay disappears.
             Session.SendKeys(Key.A);
             VerifySpotlightDisappears(ref settings);
         }
@@ -178,7 +174,77 @@ namespace MouseUtils.UITests
             {
                 foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
 
-                // foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+
+                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+                SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
+                Assert.IsNotNull(foundCustom);
+                SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
+
+                var excludedApps = foundCustom.Find<TextBlock>("Excluded apps");
+                if (excludedApps != null)
+                {
+                    excludedApps.Click();
+                    excludedApps.Click();
+                }
+                else
+                {
+                    Assert.Fail("Activation method group not found.");
+                }
+            }
+            else
+            {
+                Assert.Fail("Find My Mouse group not found.");
+            }
+
+            // [Test Case]Enable FindMyMouse. Then, without moving your mouse: Press Left Ctrl twice and verify the overlay appears.
+            // VerifySpotlightSettings(ref settings);
+            ActivateSpotlight(ref settings);
+            VerifySpotlightAppears(ref settings);
+
+            // [Test Case] Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice
+            foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+            Task.Delay(1000).Wait();
+            ActivateSpotlight(ref settings);
+
+            VerifySpotlightDisappears(ref settings);
+
+            // [Test Case] Press Left Ctrl twice and verify the overlay appears
+            foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+            ActivateSpotlight(ref settings);
+            VerifySpotlightAppears(ref settings);
+
+            Session.PerformMouseAction(MouseActionType.LeftClick);
+        }
+
+        [TestMethod]
+        public void TestDisableFindMyMouse3()
+        {
+            LaunchFromSetting();
+
+            var settings = new FindMyMouseSettings();
+            settings.OverlayOpacity = "100";
+            settings.Radius = "50";
+            settings.InitialZoom = "1";
+            settings.AnimationDuration = "0";
+            settings.BackgroundColor = "000000";
+            settings.SpotlightColor = "FFFFFF";
+            var foundCustom = this.Find<Custom>("Find My Mouse");
+
+            Assert.IsNotNull(foundCustom);
+
+            if (CheckAnimationEnable(ref foundCustom))
+            {
+                foundCustom = this.Find<Custom>("Find My Mouse");
+            }
+
+            if (foundCustom != null)
+            {
+                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+
+                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+
+                foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
                 SetFindMyMouseActivationMethod(ref foundCustom, "Press Left Control twice");
                 Assert.IsNotNull(foundCustom);
                 SetFindMyMouseAppearanceBehavior(ref foundCustom, ref settings);
