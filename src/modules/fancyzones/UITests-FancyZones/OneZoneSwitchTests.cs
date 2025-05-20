@@ -263,7 +263,7 @@ namespace UITests_FancyZones
             // launch Hosts File Editor
             this.Find<Button>("Launch Hosts File Editor").Click();
 
-            Task.Delay(3000).Wait();
+            Task.Delay(5000).Wait();
         }
     }
 }
