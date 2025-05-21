@@ -115,7 +115,7 @@ jobs:
       rerunFailedTests: true
       ${{ if eq(parameters.isUIAutomationPipeline, true) }}:
         testAssemblyVer2: |
-          **\*hosts.uitests.dll
+          **\*UITest*.dll
           !**\obj\**
           !**\ref\**
       ${{ else }}:

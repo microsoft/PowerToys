@@ -138,8 +138,6 @@ namespace Microsoft.PowerToys.UITest
             var opts = new AppiumOptions();
             opts.AddAdditionalCapability("app", appPath);
 
-            // opts.AddAdditionalCapability("ms:waitForAppLaunch", "5");
-
             // Create driver with retry
             var timeout = TimeSpan.FromMinutes(2);
             var retryInterval = TimeSpan.FromSeconds(5);
