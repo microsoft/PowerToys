@@ -115,7 +115,7 @@ jobs:
       rerunFailedTests: true
       ${{ if eq(parameters.isUIAutomationPipeline, true) }}:
         testAssemblyVer2: |
-          **\*UITests*.dll
+          **\UITests-FancyZones.dll
           !**\obj\**
           !**\ref\**
       ${{ else }}:
