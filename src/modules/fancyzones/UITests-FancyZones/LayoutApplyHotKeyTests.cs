@@ -610,7 +610,7 @@ namespace Microsoft.FancyZones.UITests
             Task.Delay(1000).Wait();
             this.Find<Button>("Launch layout editor").Click();
 
-            Task.Delay(4000).Wait();
+            Task.Delay(3000).Wait();
             this.Session.Attach(PowerToysModule.FancyZone);
         }
 

@@ -1,26 +1,64 @@
-## This is for tracking UI-Tests migration progress for Hosts File Editor Module
-Refer to [release check list] (https://github.com/microsoft/PowerToys/blob/releaseChecklist/doc/releases/tests-checklist-template.md#hosts-file-editor) for all manual tests.
+## [Mouse Utils](tests-checklist-template-mouse-utils-section.md)
 
-### Existing Manual Test-cases run by previous PowerToys owner
-For existing manual test-cases, we will convert them to UI-Tests and run them in CI and Release pipeline
+Find My Mouse:
+  * Enable FindMyMouse. Then, without moving your mouse:
+    - [x] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press any other key and verify the overlay disappears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press a mouse button and verify the overlay disappears.
+  * Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice.
+  * Enable FindMyMouse. Then, without moving your mouse:
+    - [x] Press Left Ctrl twice and verify the overlay appears.
+  * Enable the "Do not activate on game mode" option. Start playing a game that uses CG native full screen.
+    - [ ] Verify the overlay no longer appears when you press Left Ctrl twice.
+  * Disable the "Do not activate on game mode" option. Start playing the same game.
+    - [ ] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
+  * Test the different settings and verify they apply:
+    - [ ] Overlay opacity
+    - [x] Background color
+    - [x] Spotlight color
+    - [x] Spotlight radius
+    - [ ] Spotlight initial zoom (1x vs 9x will show the difference)
+    - [ ] Animation duration
+    - [ ] Change activation method to shake and activate by shaking your mouse pointer
+    - [ ] Excluded apps
 
- * Launch Host File Editor:
-   - [x] Verify the application exits if "Quit" is clicked on the initial warning. (**HostsSettingTests.TestWarningDialog**)
-   - [x] Launch Host File Editor again and click "Accept". The module should not close. (**HostModuleTests.TestEmptyView**)
-   - [ ] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
-   - [ ] Enable and disable lines and verify they are applied to the file.
-   - [ ] Add a new entry and verify it's applied.
-   - [ ] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
-   - [x] Try to filter for lines and verify you can find them. (**HostModuleTests.TestFilterControl**)
-   - [ ] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
- * Test the different settings and verify they are applied:
-   - [ ] Launch as Administrator.
-   - [x] Show a warning at startup. (**HostsSettingTests.TestWarningDialog**)
-   - [ ] Additional lines position.
+Mouse Highlighter:
+  * Enable Mouse Highlighter. Then:
+    - [x] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
+    - [x] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [x] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [x] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
+    - [x] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
+  * Test the different settings and verify they apply:
+    - [x] Change activation shortcut and test it
+    - [x] Left button highlight color
+    - [x] Right button highlight color
+    - [ ] Opacity
+    - [ ] Radius
+    - [ ] Fade delay
+    - [ ] Fade duration
 
-### Additional UI-Tests cases
-  - [x] Add manually an entry with more than 9 hosts and Add button should be disabled. (**HostModuleTests.TestTooManyHosts**)
-  - [x] Add manually an entry with less or equal 9 hosts and Add button should be enabled. (**HostModuleTests.TestTooManyHosts**)
-  - [x] Should show empty view if no entries. (**HostModuleTests.TestEmptyView**)
-  - [x] Add a new entry with valid or invalid input (**HostModuleTests.TestAddHost**)
-  - [x] Show save host file error if not run as Administrator. (**HostModuleTests.TestErrorMessageWithNonAdminPermission**)
+Mouse Pointer Crosshairs:
+  * Enable Mouse Pointer Crosshairs. Then:
+    - [x] Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
+    - [x] Press the activation shortcut again and verify the crosshairs disappear.
+    - [x] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
+  * Test the different settings and verify they apply:
+    - [x] Change activation shortcut and test it
+    - [x] Crosshairs color
+    - [ ] Crosshairs opacity
+    - [ ] Crosshairs center radius
+    - [ ] Crosshairs thickness
+    - [ ] Crosshairs border color
+    - [ ] Crosshairs border size
+
+Mouse Jump:
+  * Enable Mouse Jump. Then:
+    - [x] Press the activation shortcut and verify the screens preview appears.
+    - [x] Change activation shortcut and verify that new shorctut triggers Mouse Jump.
+    - [x] Click around the screen preview and ensure that mouse cursor jumped to clicked location.
+    - [ ] Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
+    - [ ] Change scaling of screens and confirm that Mouse Jump still works correctly.
+    - [ ] Unplug additional monitors and confirm that Mouse Jump still works correctly.
+    - [x] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.

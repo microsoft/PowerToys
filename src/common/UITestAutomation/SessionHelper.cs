@@ -137,12 +137,30 @@ namespace Microsoft.PowerToys.UITest
         {
             var opts = new AppiumOptions();
             opts.AddAdditionalCapability("app", appPath);
-            opts.AddAdditionalCapability("ms:waitForAppLaunch", "5");
-            this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
 
-            // Set default timeout to 5 seconds
-            this.Driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
-        }
+            // Create driver with retry
+            var timeout = TimeSpan.FromMinutes(2);
+            var retryInterval = TimeSpan.FromSeconds(5);
+            DateTime startTime = DateTime.Now;
+
+            while (true)
+            {
+                try
+                {
+                    this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
+                    break;
+                }
+                catch (Exception)
+                {
+                    if (DateTime.Now - startTime > timeout)
+                    {
+                        throw;
+                    }
+
+                    Task.Delay(retryInterval).Wait();
+                }
+            }
+        }
 
         /// <summary>
         /// Exit now exe.

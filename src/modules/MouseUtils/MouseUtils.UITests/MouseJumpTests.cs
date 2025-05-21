@@ -12,8 +12,21 @@ namespace MouseUtils.UITests
     [TestClass]
     public class MouseJumpTests : UITestBase
     {
-        [TestMethod]
+        [TestMethod("MouseUtils.MouseJump.EnableMouseJump")]
+        [TestCategory("Mouse Utils #39")]
+        [TestCategory("Mouse Utils #40")]
+        [TestCategory("Mouse Utils #41")]
+        [TestCategory("Mouse Utils #45")]
         public void TestEnableMouseJump()
+        {
+            LaunchFromSetting(true);
+        }
+
+        [TestMethod("MouseUtils.MouseJump.EnableMouseJump2")]
+        [TestCategory("Mouse Utils #39")]
+        [TestCategory("Mouse Utils #41")]
+        [TestCategory("Mouse Utils #45")]
+        public void TestEnableMouseJump2()
         {
             LaunchFromSetting();
             var foundCustom0 = this.Find<Custom>("Find My Mouse");
@@ -68,15 +81,88 @@ namespace MouseUtils.UITests
                 Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY, 500, 1000);
                 Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY - 300, 500, 1000);
 
+                // [TestCase] Enable Mouse Jump. Then - Press the activation shortcut and verify the screens preview appears.
+                // [TestCase] Enable Mouse Jump. Then - Click around the screen preview and ensure that mouse cursor jumped to clicked location.
                 Session.SendKeys(Key.Win, Key.Shift, Key.Z);
                 VerifyWindowAppears();
 
                 Task.Delay(1000).Wait();
+
+                // [TestCase] Enable Mouse Jump. Then - Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
                 foundCustom.Find<ToggleSwitch>("Enable Mouse Jump").Toggle(false);
                 Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY - 300, 500, 1000);
                 Session.SendKeys(Key.Win, Key.Shift, Key.Z);
                 Task.Delay(500).Wait();
                 VerifyWindowNotAppears();
+            }
+            else
+            {
+                Assert.Fail("Mouse Highlighter Custom not found.");
+            }
+
+            Task.Delay(500).Wait();
+        }
+
+        [TestMethod("MouseUtils.MouseJump.EnableMouseJump3")]
+        [TestCategory("Mouse Utils #40")]
+        public void TestEnableMouseJump3()
+        {
+            LaunchFromSetting();
+            var foundCustom0 = this.Find<Custom>("Find My Mouse");
+            if (foundCustom0 != null)
+            {
+                foundCustom0.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+                foundCustom0.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(false);
+            }
+            else
+            {
+                Assert.Fail("Find My Mouse custom not found.");
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                Session.PerformMouseAction(MouseActionType.ScrollDown);
+            }
+
+            var foundCustom = this.Find<Custom>("Mouse Jump");
+            if (foundCustom != null)
+            {
+                foundCustom.Find<ToggleSwitch>("Enable Mouse Jump").Toggle(true);
+
+                var xy = Session.GetMousePosition();
+                Session.MoveMouseTo(xy.Item1, xy.Item2 - 100);
+
+                // Change the shortcut key for MouseHighlighter
+                // [TestCase]Change activation shortcut and test it
+                var activationShortcutButton = foundCustom.Find<Button>("Activation shortcut");
+                Assert.IsNotNull(activationShortcutButton);
+
+                activationShortcutButton.Click(false, 500, 1000);
+                var activationShortcutWindow = Session.Find<Window>("Activation shortcut");
+                Assert.IsNotNull(activationShortcutWindow);
+
+                // Invalid shortcut key
+                Session.SendKeySequence(Key.H);
+
+                // IOUtil.SimulateKeyPress(0x41);
+                var invalidShortcutText = activationShortcutWindow.Find<TextBlock>("Invalid shortcut");
+                Assert.IsNotNull(invalidShortcutText);
+
+                // IOUtil.SimulateShortcut(0x5B, 0x10, 0x45);
+                Session.SendKeys(Key.Win, Key.Shift, Key.J);
+
+                // Assert.IsNull(activationShortcutWindow.Find<TextBlock>("Invalid shortcut"));
+                var saveButton = activationShortcutWindow.Find<Button>("Save");
+                Assert.IsNotNull(saveButton);
+                saveButton.Click(false, 500, 1500);
+
+                var screenCenter = this.GetScreenCenter();
+                Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY, 500, 1000);
+                Session.MoveMouseTo(screenCenter.CenterX, screenCenter.CenterY - 300, 500, 1000);
+
+                // [TestCase] Enable Mouse Jump. Then - Change activation shortcut and verify that new shortcut triggers Mouse Jump.
+                Session.SendKeys(Key.Win, Key.Shift, Key.J);
+                VerifyWindowAppears();
             }
             else
             {
@@ -124,7 +210,7 @@ namespace MouseUtils.UITests
             return Math.Sqrt((dx * dx) + (dy * dy));
         }
 
-        private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
+        private void LaunchFromSetting(bool firstTime = false, bool launchAsAdmin = false)
         {
             Session.SetMainWindowSize(WindowSize.Large);
             Task.Delay(1000).Wait();
@@ -134,11 +220,19 @@ namespace MouseUtils.UITests
             {
                 // Expand Advanced list-group if needed
                 this.Find<NavigationViewItem>("Input / Output").ClickCenter();
+                Task.Delay(2000).Wait();
             }
 
             // Click on the Mouse utilities
-            Task.Delay(2000).Wait();
-            this.Find<NavigationViewItem>("Mouse utilities").Click();
+            // Task.Delay(2000).Wait();
+            if (firstTime)
+            {
+                return;
+            }
+            else
+            {
+                this.Find<NavigationViewItem>("Mouse utilities").Click();
+            }
         }
     }
 }
