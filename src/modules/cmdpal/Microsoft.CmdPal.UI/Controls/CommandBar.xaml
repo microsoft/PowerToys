@@ -34,11 +34,12 @@
                 Orientation="Vertical"
                 Spacing="4" />
 
-            <cmdpalUI:ContextItemTemplateSelector x:Key="ContextItemTemplateSelector"
-                Default="{StaticResource DefaultContextMenuViewModelTemplate}"
-                Critical="{StaticResource CriticalContextMenuViewModelTemplate}"/>
+            <cmdpalUI:ContextItemTemplateSelector
+                x:Key="ContextItemTemplateSelector"
+                Critical="{StaticResource CriticalContextMenuViewModelTemplate}"
+                Default="{StaticResource DefaultContextMenuViewModelTemplate}" />
 
-            <!--  Template for context items in the context item menu -->
+            <!--  Template for context items in the context item menu  -->
             <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
                 <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
@@ -68,7 +69,7 @@
                 </Grid>
             </DataTemplate>
 
-            <!--  Template for context items flagged as critical -->
+            <!--  Template for context items flagged as critical  -->
             <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
                 <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
@@ -81,8 +82,8 @@
                         Height="16"
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
-                        SourceKey="{x:Bind Icon, Mode=OneWay}"
                         Foreground="{StaticResource SystemFillColorCriticalBrush}"
+                        SourceKey="{x:Bind Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
                         Grid.Column="1"
@@ -273,8 +274,8 @@
                                 Margin="-16,-12,-16,-12"
                                 IsItemClickEnabled="True"
                                 ItemClick="CommandsDropdown_ItemClick"
-                                ItemsSource="{x:Bind ViewModel.ContextMenu.FilteredItems, Mode=OneWay}"
                                 ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
+                                ItemsSource="{x:Bind ViewModel.ContextMenu.FilteredItems, Mode=OneWay}"
                                 KeyDown="CommandsDropdown_KeyDown"
                                 SelectionMode="Single">
                                 <ListView.ItemContainerStyle>
