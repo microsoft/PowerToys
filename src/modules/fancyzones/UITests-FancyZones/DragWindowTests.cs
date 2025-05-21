@@ -58,7 +58,8 @@ namespace UITests_FancyZones
 
             // clean app zone history file
             AppZoneHistory.DeleteFile();
-            Task.Delay(20000).Wait(); // Optional: Wait for a moment to ensure the window is in position
+
+            // Task.Delay(20000).Wait(); // Optional: Wait for a moment to ensure the window is in position
 
             // Get the current mouse button setting
             nonPrimaryMouseButton = SystemInformation.MouseButtonsSwapped ? "Left" : "Right";
