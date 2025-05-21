@@ -391,17 +391,17 @@ namespace MouseUtils.UITests
             Task.Delay(1000).Wait();
 
             Session.PerformMouseAction(MouseActionType.LeftClick);
-            Task.Delay(5000).Wait();
+            Task.Delay(1000).Wait();
             if (settings.SelectedActivationMethod == FindMyMouseSettings.ActivationMethod.PressLeftControlTwice)
             {
                 Session.SendKey(Key.LCtrl, 0, 0);
-                Task.Delay(100).Wait();
+                Task.Delay(200).Wait();
                 Session.SendKey(Key.LCtrl, 0, 0);
             }
             else if (settings.SelectedActivationMethod == FindMyMouseSettings.ActivationMethod.PressRightControlTwice)
             {
                 Session.SendKey(Key.RCtrl, 0, 0);
-                Task.Delay(100).Wait();
+                Task.Delay(200).Wait();
                 Session.SendKey(Key.RCtrl, 0, 0);
             }
             else if (settings.SelectedActivationMethod == FindMyMouseSettings.ActivationMethod.ShakeMouse)
@@ -478,12 +478,12 @@ namespace MouseUtils.UITests
                 colorModelComboBox.Click();
                 var selectedItem = colorModelComboBox.Find<NavigationViewItem>("RGB");
                 selectedItem.Click();
-                Task.Delay(100).Wait();
+                Task.Delay(500).Wait();
                 var rgbHexEdit = this.Find<TextBox>("RGB hex");
                 Assert.IsNotNull(rgbHexEdit);
-                Task.Delay(100).Wait();
+                Task.Delay(500).Wait();
                 rgbHexEdit.SetText(settings.BackgroundColor);
-                Task.Delay(100).Wait();
+                Task.Delay(500).Wait();
                 button.Click();
 
                 // Set the Spotlight color
@@ -502,12 +502,12 @@ namespace MouseUtils.UITests
                 var selectedItem2 = spotlightColorModelComboBox.Find<NavigationViewItem>("RGB");
                 Assert.IsNotNull(selectedItem2);
                 selectedItem2.Click();
-                Task.Delay(100).Wait();
+                Task.Delay(500).Wait();
                 var rgbHexEdit2 = this.Find<TextBox>("RGB hex");
                 Assert.IsNotNull(rgbHexEdit2);
-                Task.Delay(100).Wait();
+                Task.Delay(500).Wait();
                 rgbHexEdit2.SetText(settings.SpotlightColor);
-                Task.Delay(100).Wait();
+                Task.Delay(500).Wait();
                 spotlightColorButton.Click(false, 500, 1500);
 
                 // Set the overlay opacity to overlayOpacity%
