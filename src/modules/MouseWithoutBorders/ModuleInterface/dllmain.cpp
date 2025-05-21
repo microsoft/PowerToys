@@ -130,50 +130,57 @@ private:
     // Clean up log folders from previous versions
     void cleanup_old_logs()
     {
-        auto rootPath = PTSettingsHelper::get_root_save_folder_location();
-        if (!rootPath.has_value())
+        try
         {
-            Logger::error("Failed to get root save folder location");
-            return;
-        }
-
-        std::filesystem::path logFolderPath = *rootPath;
-        logFolderPath.append(LOG_FOLDER_NAME);
-
-        if (!LoggerHelpers::dir_exists(logFolderPath))
-        {
-            Logger::trace(L"Log directory {} does not exist", logFolderPath.wstring());
-            return;
-        }
-
-        auto currentVersion = get_product_version();
-        std::filesystem::path currentVersionLogFolder = logFolderPath;
-        currentVersionLogFolder.append(currentVersion);
-
-        Logger::trace(L"Cleaning up old Mouse Without Borders logs. Current version: {}", currentVersion);
-
-        std::error_code err;
-        auto folders = std::filesystem::directory_iterator(logFolderPath, err);
-        if (err.value())
-        {
-            Logger::error(L"Failed to create directory iterator for {}. {}", logFolderPath.wstring(), err.message());
-            return;
-        }
-
-        for (const auto& dir : folders)
-        {
-            if (dir.is_directory() && dir.path() != currentVersionLogFolder)
+            auto rootPath = PTSettingsHelper::get_root_save_folder_location();
+            if (!rootPath.has_value())
             {
-                try
+                Logger::error("Failed to get root save folder location");
+                return;
+            }
+
+            std::filesystem::path logFolderPath = *rootPath;
+            logFolderPath.append(LOG_FOLDER_NAME);
+
+            if (!LoggerHelpers::dir_exists(logFolderPath))
+            {
+                Logger::trace(L"Log directory {} does not exist", logFolderPath.wstring());
+                return;
+            }
+
+            auto currentVersion = get_product_version();
+            std::filesystem::path currentVersionLogFolder = logFolderPath;
+            currentVersionLogFolder.append(currentVersion);
+
+            Logger::trace(L"Cleaning up old Mouse Without Borders logs. Current version: {}", currentVersion);
+
+            std::error_code err;
+            auto folders = std::filesystem::directory_iterator(logFolderPath, err);
+            if (err.value())
+            {
+                Logger::error(L"Failed to create directory iterator for {}. {}", logFolderPath.wstring(), err.message());
+                return;
+            }
+
+            for (const auto& dir : folders)
+            {
+                if (dir.is_directory() && dir.path() != currentVersionLogFolder)
                 {
-                    Logger::trace(L"Deleting old log folder: {}", dir.path().wstring());
-                    std::filesystem::remove_all(dir);
-                }
-                catch (std::filesystem::filesystem_error& e)
-                {
-                    Logger::error(L"Failed to delete old log folder: {}", e.what());
+                    try
+                    {
+                        Logger::trace(L"Deleting old log folder: {}", dir.path().wstring());
+                        std::filesystem::remove_all(dir);
+                    }
+                    catch (std::filesystem::filesystem_error& e)
+                    {
+                        Logger::error(L"Failed to delete old log folder: {}", e.what());
+                    }
                 }
             }
+        }
+        catch (const std::exception& ex)
+        {
+            Logger::error(L"Exception in cleanup_old_logs: {}", ex.what());
         }
     }
 
