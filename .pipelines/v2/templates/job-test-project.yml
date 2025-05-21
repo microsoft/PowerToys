@@ -102,11 +102,6 @@ jobs:
       inputs:
         displaySettings: 'optimal'
 
-  - powershell: |
-      $command = {
-          Start-Sleep -Seconds 120
-      }
-
   - task: VSTest@3
     displayName: Run UI Tests
     inputs:
