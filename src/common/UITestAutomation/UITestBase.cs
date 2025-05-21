@@ -71,6 +71,9 @@ namespace Microsoft.PowerToys.UITest
 
                 // Take screenshot every 1 second
                 screenshotTimer = new System.Threading.Timer(ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
+
+                // Escape Popups before starting
+                System.Windows.Forms.SendKeys.SendWait("{ESC}");
             }
 
             this.sessionHelper = new SessionHelper(scope).Init();
@@ -108,9 +111,6 @@ namespace Microsoft.PowerToys.UITest
 
             this.Session.Cleanup();
             this.sessionHelper!.Cleanup();
-
-            // Wait for the cleanup complete
-            Task.Delay(2000).Wait();
         }
 
         public void Dispose()
