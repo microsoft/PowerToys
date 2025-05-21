@@ -71,6 +71,8 @@ namespace UITests_FancyZones
 
             activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreEqual(preWindow, activeWindowTitle);
+
+            Clean(); // close the windows
         }
 
         /// <summary>
@@ -108,6 +110,8 @@ namespace UITests_FancyZones
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
             SendKeys(Key.Ctrl, Key.Win, Key.F4);
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+
+            Clean(); // close the windows
         }
 
         /// <summary>
@@ -133,6 +137,8 @@ namespace UITests_FancyZones
 
             activeWindowTitle = ZoneSwitchHelper.GetActiveWindowTitle();
             Assert.AreNotEqual(preWindow, activeWindowTitle);
+
+            Clean(); // close the windows
         }
 
         private (string PreWindow, string PostWindow) SnapToOneZone()
@@ -202,6 +208,16 @@ namespace UITests_FancyZones
                 },
             },
         };
+
+        // clean window
+        private void Clean()
+        {
+            // Close First window
+            SendKeys(Key.Alt, Key.F4);
+
+            // Close Second window
+            SendKeys(Key.Alt, Key.F4);
+        }
 
         // Setup custom layout with 1 subzones
         private void SetupCustomLayouts()

@@ -392,8 +392,34 @@ namespace UITests_FancyZones
             this.Session.Attach(PowerToysModule.FancyZone);
             this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
 
-            // Set the FancyZones layout to a custom layout
-            this.Find<Element>(By.Name("Custom Column")).Click();
+            try
+            {
+                this.Session.Attach(PowerToysModule.FancyZone);
+                this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
+                this.Session.Attach(PowerToysModule.FancyZone);
+                this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
+
+                // Set the FancyZones layout to a custom layout
+                this.Find<Element>(By.Name("Custom Column")).Click();
+            }
+            catch (Exception)
+            {
+                this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
+                customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+                Console.WriteLine($"before retry set , Custom layout data: {customLayoutData}");
+                SetupCustomLayouts();
+                customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+                Console.WriteLine($"after retry set , Custom layout data: {customLayoutData}");
+                this.Session.Attach(PowerToysModule.PowerToysSettings);
+                this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 5000, 5000);
+                customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+                Console.WriteLine($"after retry launch , Custom layout data: {customLayoutData}");
+                this.Session.Attach(PowerToysModule.FancyZone);
+                this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
+
+                // Set the FancyZones layout to a custom layout
+                this.Find<Element>(By.Name("Custom Column")).Click();
+            }
         }
 
         // Get the screen margins to calculate the dragged window position
