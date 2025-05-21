@@ -23,7 +23,7 @@ namespace
         // Report last 30 days
         const long long PERIOD = 10 * 24 * 3600ll * 1000;
 
-        const std::wstring QUERY = L"<QueryList>" \
+        const std::wstring QUERY_BY_PROCESS = L"<QueryList>" \
             L"  <Query Id='0'>" \
             L"    <Select Path='Application'>" \
             L"        *[System[TimeCreated[timediff(@SystemTime)&lt;%I64u]]] " \
@@ -32,11 +32,27 @@ namespace
             L"  </Query>" \
             L"</QueryList>";
 
+        const std::wstring QUERY_BY_CHANNEL = L"<QueryList>" \
+            L"  <Query Id='0'>" \
+            L"    <Select Path='%s'>" \
+            L"        *[System[TimeCreated[timediff(@SystemTime)&lt;%I64u]]]" \
+            L"    </Select>" \
+            L"  </Query>" \
+            L"</QueryList>";
+
         std::wstring GetQuery(std::wstring processName)
         {
             wchar_t buff[1000];
             memset(buff, 0, sizeof(buff));
-            _snwprintf_s(buff, sizeof(buff), QUERY.c_str(), PERIOD, processName.c_str());
+            _snwprintf_s(buff, sizeof(buff), QUERY_BY_PROCESS.c_str(), PERIOD, processName.c_str());
+            return buff;
+        }
+
+        std::wstring GetQueryByChannel(std::wstring channelName)
+        {
+            wchar_t buff[1000];
+            memset(buff, 0, sizeof(buff));
+            _snwprintf_s(buff, sizeof(buff), QUERY_BY_CHANNEL.c_str(), channelName.c_str(), PERIOD);
             return buff;
         }
 
@@ -145,6 +161,21 @@ namespace
             }
         }
 
+        EventViewerReporter(const std::filesystem::path& tmpDir, std::wstring channelName, bool isChannel)
+        {
+            auto query = GetQueryByChannel(channelName);
+            auto reportPath = tmpDir;
+            reportPath.append(L"EventViewer-" + channelName + L".xml");
+            report = std::wofstream(reportPath);
+
+            hResults = EvtQuery(NULL, NULL, query.c_str(), EvtQueryChannelPath);
+            if (NULL == hResults)
+            {
+                report << "Failed to report info for channel " << channelName << ". " << get_last_error_or_default(GetLastError()) << std::endl;
+                return;
+            }
+        }
+
         ~EventViewerReporter()
         {
             if (hResults)
@@ -177,4 +208,9 @@ void EventViewer::ReportEventViewerInfo(const std::filesystem::path& tmpDir)
     {
         EventViewerReporter(tmpDir, process).Report();
     }
+}
+
+void EventViewer::ReportAppXDeploymentLogs(const std::filesystem::path& tmpDir)
+{
+    EventViewerReporter(tmpDir, L"Microsoft-Windows-AppXDeploymentServer/Operational", true).Report();
 }
