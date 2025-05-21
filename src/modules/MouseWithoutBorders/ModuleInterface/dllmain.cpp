@@ -13,6 +13,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/processApi.h>
 #include <common/utils/elevation.h>
+#include <common/utils/logger_helper.h>
 
 HINSTANCE g_hInst_MouseWithoutBorders = 0;
 
@@ -114,6 +115,7 @@ const static wchar_t* MODULE_NAME = L"MouseWithoutBorders";
 const static wchar_t* MODULE_DESC = L"A module to move your mouse across computers.";
 const static wchar_t* SERVICE_NAME = L"PowerToys.MWB.Service";
 const static std::wstring_view USE_SERVICE_PROPERTY_NAME = L"UseService";
+const static wchar_t* LOG_FOLDER_NAME = L"\\MouseWithoutBorders\\Logs";
 
 class MouseWithoutBorders : public PowertoyModuleIface
 {
@@ -124,6 +126,56 @@ private:
     bool m_enabled = false;
     bool run_in_service_mode = false;
     PROCESS_INFORMATION p_info = {};
+    
+    // Clean up log folders from previous versions
+    void cleanup_old_logs()
+    {
+        auto rootPath = PTSettingsHelper::get_root_save_folder_location();
+        if (!rootPath.has_value())
+        {
+            Logger::error("Failed to get root save folder location");
+            return;
+        }
+
+        std::filesystem::path logFolderPath = *rootPath;
+        logFolderPath.append(LOG_FOLDER_NAME);
+
+        if (!LoggerHelpers::dir_exists(logFolderPath))
+        {
+            Logger::trace(L"Log directory {} does not exist", logFolderPath.wstring());
+            return;
+        }
+
+        auto currentVersion = get_product_version();
+        std::filesystem::path currentVersionLogFolder = logFolderPath;
+        currentVersionLogFolder.append(currentVersion);
+
+        Logger::trace(L"Cleaning up old Mouse Without Borders logs. Current version: {}", currentVersion);
+
+        std::error_code err;
+        auto folders = std::filesystem::directory_iterator(logFolderPath, err);
+        if (err.value())
+        {
+            Logger::error(L"Failed to create directory iterator for {}. {}", logFolderPath.wstring(), err.message());
+            return;
+        }
+
+        for (const auto& dir : folders)
+        {
+            if (dir.is_directory() && dir.path() != currentVersionLogFolder)
+            {
+                try
+                {
+                    Logger::trace(L"Deleting old log folder: {}", dir.path().wstring());
+                    std::filesystem::remove_all(dir);
+                }
+                catch (std::filesystem::filesystem_error& e)
+                {
+                    Logger::error(L"Failed to delete old log folder: {}", e.what());
+                }
+            }
+        }
+    }
 
     bool is_enabled_by_default() const override
     {
@@ -412,6 +464,9 @@ public:
         std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(app_key));
         logFilePath.append(LogSettings::mouseWithoutBordersLogPath);
         Logger::init(LogSettings::mouseWithoutBordersLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        
+        // Clean up logs from previous versions
+        cleanup_old_logs();
 
         try
         {
@@ -524,6 +579,9 @@ public:
     {
         Trace::MouseWithoutBorders::Enable(true);
 
+        // Clean up logs from previous versions
+        cleanup_old_logs();
+        
         launch_process();
 
         m_enabled = true;
