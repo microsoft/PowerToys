@@ -18,7 +18,10 @@ enum PowerRenameFlags
     Lowercase = 0x400,
     Titlecase = 0x800,
     Capitalized = 0x1000,
-    RandomizeItems = 0x2000
+    RandomizeItems = 0x2000,
+    DateCreated = 0x4000,
+    DateModified = 0x8000,
+    DateAccessed = 0x10000,
 };
 
 enum PowerRenameFilters

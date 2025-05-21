@@ -411,4 +411,16 @@
   <data name="ToggleButton_RandItems.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Random string features</value>
   </data>
+  <data name="TextBlock_FileDate.Text" xml:space="preserve">
+    <value>Which file date want to use</value>
+  </data>
+  <data name="FileDateParts_DateCreated.Content" xml:space="preserve">
+    <value>Date Created</value>
+  </data>
+  <data name="FileDateParts_DateModified.Content" xml:space="preserve">
+    <value>Date Modified</value>
+  </data>
+  <data name="FileDateParts_DateAccessed.Content" xml:space="preserve">
+    <value>Date Accessed</value>
+  </data>
 </root>

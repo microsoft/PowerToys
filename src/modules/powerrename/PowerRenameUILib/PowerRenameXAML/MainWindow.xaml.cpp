@@ -792,6 +792,32 @@ namespace winrt::PowerRenameUI::implementation
         button_settings().Click([&](auto const&, auto const&) {
             OpenSettingsApp();
         });
+
+        // ComboBox RenameParts
+        comboBox_fileDateParts().SelectionChanged([&](auto const&, auto const&) {
+            int selectedIndex = comboBox_fileDateParts().SelectedIndex();
+            if (selectedIndex == 0)
+            { 
+                // default behaviour. Date Created
+                UpdateFlag(DateCreated, UpdateFlagCommand::Set);
+                UpdateFlag(DateModified, UpdateFlagCommand::Reset);
+                UpdateFlag(DateAccessed, UpdateFlagCommand::Reset);
+            }
+            else if (selectedIndex == 1)
+            {
+                // Date Modified
+                UpdateFlag(DateModified, UpdateFlagCommand::Set);
+                UpdateFlag(DateCreated, UpdateFlagCommand::Reset);
+                UpdateFlag(DateAccessed, UpdateFlagCommand::Reset);
+            }
+            else if (selectedIndex == 2)
+            {
+                // Accessed
+                UpdateFlag(DateAccessed, UpdateFlagCommand::Set);
+                UpdateFlag(DateCreated, UpdateFlagCommand::Reset);
+                UpdateFlag(DateModified, UpdateFlagCommand::Reset);
+            }
+        });
     }
 
     void MainWindow::ToggleItem(int32_t id, bool checked)

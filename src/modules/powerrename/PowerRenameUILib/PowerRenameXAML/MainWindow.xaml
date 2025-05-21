@@ -184,6 +184,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="48" />
+                <RowDefinition Height="48" />
             </Grid.RowDefinitions>
 
             <StackPanel
@@ -558,6 +559,33 @@
                         Content="&#xE8B1;"
                         FontFamily="{ThemeResource SymbolThemeFontFamily}" />
                 </StackPanel>
+
+                <TextBlock
+                    x:Name="FileDateLabel"
+                    x:Uid="TextBlock_FileDate"
+                    Margin="0,16,0,8"
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                <StackPanel
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="4">
+                    <ComboBox
+                        x:Name="comboBox_fileDateParts"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Width="200"
+                        HorizontalAlignment="Stretch"
+                        AutomationProperties.LabeledBy="{Binding ElementName=FileDateLabel}"
+                        SelectedIndex="0">
+                        <ComboBoxItem x:Uid="FileDateParts_DateCreated" />
+                        <ComboBoxItem x:Uid="FileDateParts_DateModified" />
+                        <ComboBoxItem x:Uid="FileDateParts_DateAccessed" />
+                    </ComboBox>
+                </StackPanel>
+
             </StackPanel>
 
             <Rectangle
