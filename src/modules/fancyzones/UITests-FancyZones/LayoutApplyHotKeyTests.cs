@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Automation;
 using FancyZonesEditor.Models;
@@ -298,8 +299,7 @@ namespace Microsoft.FancyZones.UITests
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
-            this.AttachFancyZonesEditor();
-            this.CloseFancyZonesEditor();
+            Thread.Sleep(3);
             this.AttachFancyZonesEditor();
             var element = this.Find<Element>(layout);
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
