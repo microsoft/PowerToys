@@ -35,6 +35,7 @@
   
   <PropertyGroup>
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -109,6 +110,7 @@
 
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Shell\Microsoft.CmdPal.Ext.Shell.csproj" />
+    <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj" />
 
     <ProjectReference Include="..\Microsoft.Terminal.UI\Microsoft.Terminal.UI.vcxproj">
       <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
