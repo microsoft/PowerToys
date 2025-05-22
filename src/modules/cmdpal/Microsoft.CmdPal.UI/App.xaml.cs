@@ -2,23 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using ManagedCommon;
+using System.Diagnostics;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Apps;
-using Microsoft.CmdPal.Ext.Bookmarks;
-using Microsoft.CmdPal.Ext.Calc;
-using Microsoft.CmdPal.Ext.Indexer;
-using Microsoft.CmdPal.Ext.Registry;
-using Microsoft.CmdPal.Ext.Shell;
-using Microsoft.CmdPal.Ext.System;
-using Microsoft.CmdPal.Ext.TimeDate;
-using Microsoft.CmdPal.Ext.WebSearch;
-using Microsoft.CmdPal.Ext.WindowsServices;
-using Microsoft.CmdPal.Ext.WindowsSettings;
-using Microsoft.CmdPal.Ext.WindowsTerminal;
-using Microsoft.CmdPal.Ext.WindowWalker;
-using Microsoft.CmdPal.Ext.WinGet;
+
+// using Microsoft.CmdPal.Ext.Indexer;
+// using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -109,41 +99,19 @@ public partial class App : Application
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
         services.AddSingleton<ICommandProvider>(allApps);
-        services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
-        services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
-        services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
-        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
+
+        // services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
+        // services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
 
         // TODO GH #527 re-enable the clipboard commands
         // services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
 
         // GH #38440: Users might not have WinGet installed! Or they might have
         // a ridiculously old version. Or might be running as admin.
         // We shouldn't explode in the App ctor if we fail to instantiate an
         // instance of PackageManager, which will happen in the static ctor
         // for WinGetStatics
-        try
-        {
-            var winget = new WinGetExtensionCommandsProvider();
-            var callback = allApps.LookupApp;
-            winget.SetAllLookup(callback);
-            services.AddSingleton<ICommandProvider>(winget);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Couldn't load winget");
-            Logger.LogError(ex.ToString());
-        }
-
-        services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
-        services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
-        services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
-        services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
-        services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
 
         // Models
         services.AddSingleton<TopLevelCommandManager>();
