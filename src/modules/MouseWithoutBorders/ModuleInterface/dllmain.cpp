@@ -410,7 +410,12 @@ public:
     {
         app_name = L"MouseWithoutBorders";
         app_key = app_name;
+
         LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::mouseWithoutBordersLoggerName);
+
+        std::filesystem::path oldLogPath(PTSettingsHelper::get_module_save_folder_location(app_key));
+        oldLogPath.append("LogsModuleInterface");
+        LoggerHelpers::delete_old_log_folder(oldLogPath);
 
         try
         {
@@ -522,7 +527,7 @@ public:
     virtual void enable()
     {
         Trace::MouseWithoutBorders::Enable(true);
-        
+
         launch_process();
 
         m_enabled = true;
