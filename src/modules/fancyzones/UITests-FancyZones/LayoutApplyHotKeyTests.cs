@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
-namespace Microsoft.FancyZones.UITests
+namespace UITests_FancyZones
 {
     [TestClass]
     public class LayoutApplyHotKeyTests : UITestBase
