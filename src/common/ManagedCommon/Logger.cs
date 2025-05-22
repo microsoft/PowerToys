@@ -8,7 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-
+using System.Threading.Tasks;
 using PowerToys.Interop;
 
 namespace ManagedCommon
@@ -49,7 +49,7 @@ namespace ManagedCommon
             {
                 basePath = Constants.AppDataPath() + applicationLogPath;
             }
-            
+
             string versionedPath = Path.Combine(basePath, Version);
 
             if (!Directory.Exists(versionedPath))
@@ -62,11 +62,11 @@ namespace ManagedCommon
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
             Trace.AutoFlush = true;
-            
+
             // Clean up old version log folders
-            DeleteOldVersionLogFolders(basePath, versionedPath);
+            Task.Run(() => DeleteOldVersionLogFolders(basePath, versionedPath));
         }
-        
+
         /// <summary>
         /// Deletes old version log folders, keeping only the current version's folder.
         /// </summary>
@@ -88,7 +88,6 @@ namespace ManagedCommon
                         try
                         {
                             Directory.Delete(directory, true);
-                            LogTrace(); // Log that deletion happened
                             LogInfo($"Deleted old log directory: {directory}");
                         }
                         catch (Exception ex)
