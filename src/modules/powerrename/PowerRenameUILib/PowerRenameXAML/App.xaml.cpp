@@ -193,6 +193,8 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
     CloseHandle(hStdin);
 #endif
 
+    g_files.push_back(L"C:\\Users\\yuleng\\Desktop\\diff.patch");
+
     Logger::debug(L"Starting PowerRename with {} files selected", g_files.size());
 
     window = make<MainWindow>();

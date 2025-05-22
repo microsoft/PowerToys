@@ -60,8 +60,24 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* 
 {
     CSRWSharedAutoLock lock(&m_lock);
     HRESULT hr = E_FAIL;
+    PowerRenameFlags parsedTimeType;
 
-    if (m_isTimeParsed)
+    // Get Time by PowerRenameFlags
+    if (flags & PowerRenameFlags::ModificationTime)
+    {
+        parsedTimeType = PowerRenameFlags::ModificationTime;
+    }
+    else if (flags & PowerRenameFlags::AccessTime)
+    {
+        parsedTimeType = PowerRenameFlags::AccessTime;
+    }
+    else
+    {
+        // Default to modification time if no specific flag is set
+        parsedTimeType = PowerRenameFlags::CreationTime;
+    }
+
+    if (m_isTimeParsed && parsedTimeType == m_parsedTimeType)
     {
         hr = S_OK;
     }
@@ -74,17 +90,21 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* 
             bool success = false;
 
             // Get Time by PowerRenameFlags
-            if (flags & PowerRenameFlags::CreationTime)
+            switch (parsedTimeType)
             {
+            case PowerRenameFlags::CreationTime:
                 success = GetFileTime(hFile, &FileTime, NULL, NULL);
-            }
-            else if (flags & PowerRenameFlags::ModificationTime)
-            {
+                break;
+            case PowerRenameFlags::ModificationTime:
                 success = GetFileTime(hFile, NULL, NULL, &FileTime);
-            }
-            else if (flags & PowerRenameFlags::AccessTime)
-            {
+                break;
+            case PowerRenameFlags::AccessTime:
                 success = GetFileTime(hFile, NULL, &FileTime, NULL);
+                break;
+            default:
+                // Default to modification time if no specific flag is set
+                success = GetFileTime(hFile, NULL, NULL, &FileTime);
+                break;
             }
 
             if (success)
@@ -96,6 +116,7 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* 
                     {
                         m_time = LocalTime;
                         m_isTimeParsed = true;
+                        m_parsedTimeType = parsedTimeType;
                         hr = S_OK;
                     }
                 }

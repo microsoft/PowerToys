@@ -54,6 +54,7 @@ protected:
     bool                            m_selected = true;
     bool                            m_isFolder = false;
     bool                            m_isTimeParsed = false;
+    PowerRenameFlags                m_parsedTimeType = PowerRenameFlags::CreationTime;
     bool                            m_canRename = true;
     int                             m_id = -1;
     int                             m_iconIndex = -1;
