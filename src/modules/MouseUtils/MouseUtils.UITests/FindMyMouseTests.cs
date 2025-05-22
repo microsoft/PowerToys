@@ -158,6 +158,7 @@ namespace MouseUtils.UITests
 
         [TestMethod("MouseUtils.FindMyMouse.DisableFindMyMouse")]
         [TestCategory("Mouse Utils #5")]
+        [TestCategory("Mouse Utils #6")]
         public void TestDisableFindMyMouse()
         {
             LaunchFromSetting();
@@ -219,6 +220,7 @@ namespace MouseUtils.UITests
 
             // [Test Case] Press Left Ctrl twice and verify the overlay appears
             foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+            Task.Delay(2000).Wait();
             ActivateSpotlight(ref settings);
             VerifySpotlightAppears(ref settings);
 
@@ -288,6 +290,7 @@ namespace MouseUtils.UITests
 
             // [Test Case] Press Left Ctrl twice and verify the overlay appears
             foundCustom.Find<ToggleSwitch>("Enable Find My Mouse").Toggle(true);
+            Task.Delay(2000).Wait();
             ActivateSpotlight(ref settings);
             VerifySpotlightAppears(ref settings);
 

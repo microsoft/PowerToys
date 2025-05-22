@@ -411,8 +411,9 @@ namespace MouseUtils.UITests
                 selectedItem.Click();
                 var rgbHexEdit = this.Find<TextBox>("RGB hex");
                 Assert.IsNotNull(rgbHexEdit);
+                Task.Delay(500).Wait();
                 rgbHexEdit.SetText(colorValue);
-
+                Task.Delay(500).Wait();
                 button.Click();
             }
         }
