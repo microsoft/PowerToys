@@ -26,10 +26,11 @@
   <PropertyGroup>
     <SelfContained>true</SelfContained>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <PublishTrimmed>true</PublishTrimmed>
-    <PublishSingleFile>true</PublishSingleFile>
+    <publishtrimmed>true</publishtrimmed>
+    <publishsinglefile>true</publishsinglefile>
     <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
-    <PublishAot>true</PublishAot>
+	<EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <publishaot>true</publishaot>
     <EnableMsixTooling>true</EnableMsixTooling>
   </PropertyGroup>
   

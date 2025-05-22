@@ -1,26 +1,23 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
-using System.IO.Abstractions;
+using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Storage.Packaging.Appx;
 using Windows.Win32.System.Com;
-using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 [Serializable]
 public partial class UWP
 {
-    private static readonly IPath Path = new FileSystem().Path;
-
     private static readonly Dictionary<string, PackageVersion> _versionFromNamespace = new()
     {
         { "http://schemas.microsoft.com/appx/manifest/foundation/windows10", PackageVersion.Windows10 },
@@ -54,7 +51,7 @@ public partial class UWP
         FamilyName = package.FamilyName;
     }
 
-    public void InitializeAppInfo(string installedLocation)
+    public unsafe void InitializeAppInfo(string installedLocation)
     {
         Location = installedLocation;
         LocationLocalized = ShellLocalization.Instance.GetLocalizedPath(installedLocation);
@@ -64,33 +61,30 @@ public partial class UWP
         InitPackageVersion(namespaces);
 
         const uint noAttribute = 0x80;
+        const uint sTGM_READ = 0x00000000;
 
-        var access = (uint)STGM.READ;
-        var hResult = Native.SHCreateStreamOnFileEx(path, access, noAttribute, false, IntPtr.Zero, out var streamPtr);
-
-        // S_OK
-        if (hResult == 0)
+        IStream* stream = null;
+        try
         {
-            // create IStream from streamPtr
-            var stream = Marshal.GetTypedObjectForIUnknown(streamPtr, typeof(IStream)) as IStream;
-            if (stream == null)
-            {
-                return;
-            }
+            PInvoke.SHCreateStreamOnFileEx(path, sTGM_READ, noAttribute, false, null, &stream).ThrowOnFailure();
 
-            Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest => new UWPApplication(appInManifest, this)).Where(a =>
+            Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest => new UWPApplication((IAppxManifestApplication*)appInManifest, this)).Where(a =>
             {
                 var valid =
-                !string.IsNullOrEmpty(a.UserModelId) &&
-                !string.IsNullOrEmpty(a.DisplayName) &&
-                a.AppListEntry != "none";
-
+                    !string.IsNullOrEmpty(a.UserModelId) &&
+                    !string.IsNullOrEmpty(a.DisplayName) &&
+                    a.AppListEntry != "none";
                 return valid;
             }).ToList();
         }
-        else
+        catch (Exception)
         {
             Apps = Array.Empty<UWPApplication>();
+            return;
+        }
+        finally
+        {
+            ComFreeHelper.ComObjectRelease(stream);
         }
     }
 
@@ -131,7 +125,7 @@ public partial class UWP
         var support = Environment.OSVersion.Version.Major >= windows10.Major;
         if (support)
         {
-            var applications = CurrentUserPackages().AsParallel().SelectMany(p =>
+            var applications = CurrentUserPackages().SelectMany(p =>
             {
                 UWP u;
                 try
@@ -139,7 +133,7 @@ public partial class UWP
                     u = new UWP(p);
                     u.InitializeAppInfo(p.InstalledLocation);
                 }
-                catch (Exception )
+                catch (Exception)
                 {
                     return Array.Empty<UWPApplication>();
                 }

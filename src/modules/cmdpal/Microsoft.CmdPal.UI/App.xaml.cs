@@ -2,10 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Ext.Indexer;
-using Microsoft.CmdPal.Ext.Shell;
+using Microsoft.CmdPal.Ext.Apps;
+
+// using Microsoft.CmdPal.Ext.Indexer;
+// using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -92,10 +95,14 @@ public partial class App : Application
 
         // Root services
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
+        Thread.Sleep(10000);
 
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
-        services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
-        services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
+        var allApps = new AllAppsCommandProvider();
+        services.AddSingleton<ICommandProvider>(allApps);
+
+        // services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
+        // services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
 
         // TODO GH #527 re-enable the clipboard commands
         // services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
