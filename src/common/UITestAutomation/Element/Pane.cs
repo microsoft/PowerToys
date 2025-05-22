@@ -48,6 +48,12 @@ namespace Microsoft.PowerToys.UITest
             });
         }
 
+        public void ReleaseDrag()
+        {
+            var releaseAction = new Actions(this.Driver);
+            releaseAction.Release().Perform();
+        }
+
         /// <summary>
         /// Simulates holding a key, clicking and dragging a UI element to the specified screen coordinates.
         /// </summary>

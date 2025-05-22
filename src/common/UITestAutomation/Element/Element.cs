@@ -323,12 +323,6 @@ namespace Microsoft.PowerToys.UITest
             return this.FindAll<Element>(By.Name(name), timeoutMS);
         }
 
-        public void ReleaseDrag()
-        {
-            var releaseAction = new Actions(driver);
-            releaseAction.Release().Perform();
-        }
-
         /// <summary>
         /// Send Key of the element.
         /// </summary>
