@@ -1,0 +1,18 @@
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="ExtensionTargetsAppSdkCppProp">
+    <Import Project="$(MsbuildThisFileDirectory)\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(MsbuildThisFileDirectory)\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="$(MsbuildThisFileDirectory)\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets" Condition="Exists('$(MsbuildThisFileDirectory)\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets')" />
+    <Import Project="$(MsbuildThisFileDirectory)\..\packages\Microsoft.WindowsAppSDK.1.7.250401001\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('$(MsbuildThisFileDirectory)\..\packages\Microsoft.WindowsAppSDK.1.7.250401001\build\native\Microsoft.WindowsAppSDK.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImportsWinAppSdkCppProp" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(MsbuildThisFileDirectory)\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MsbuildThisFileDirectory)\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('$(MsbuildThisFileDirectory)\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(MsbuildThisFileDirectory)\..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('$(MsbuildThisFileDirectory)\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MsbuildThisFileDirectory)\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.props'))" />
+    <Error Condition="!Exists('$(MsbuildThisFileDirectory)\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(MsbuildThisFileDirectory)\..\packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428\build\Microsoft.Windows.SDK.BuildTools.targets'))" />
+    <Error Condition="!Exists('$(MsbuildThisFileDirectory)\..\packages\Microsoft.WindowsAppSDK.1.7.250401001\build\native\Microsoft.WindowsAppSDK.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MsbuildThisFileDirectory)\..\packages\Microsoft.WindowsAppSDK.1.7.250401001\build\native\Microsoft.WindowsAppSDK.props'))" />
+    <Error Condition="!Exists('$(MsbuildThisFileDirectory)\..\packages\Microsoft.WindowsAppSDK.1.7.250401001\build\native\Microsoft.WindowsAppSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(MsbuildThisFileDirectory)\..\packages\Microsoft.WindowsAppSDK.1.7.250401001\build\native\Microsoft.WindowsAppSDK.targets'))" />
+  </Target>
+</Project>
