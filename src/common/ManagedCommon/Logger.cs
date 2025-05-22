@@ -40,25 +40,68 @@ namespace ManagedCommon
         /// <param name="isLocalLow">If the process using Logger is a low-privilege process.</param>
         public static void InitializeLogger(string applicationLogPath, bool isLocalLow = false)
         {
+            string basePath;
             if (isLocalLow)
             {
-                applicationLogPath = Environment.GetEnvironmentVariable("userprofile") + "\\appdata\\LocalLow\\Microsoft\\PowerToys" + applicationLogPath + "\\" + Version;
+                basePath = Environment.GetEnvironmentVariable("userprofile") + "\\appdata\\LocalLow\\Microsoft\\PowerToys" + applicationLogPath;
             }
             else
             {
-                applicationLogPath = Constants.AppDataPath() + applicationLogPath + "\\" + Version;
+                basePath = Constants.AppDataPath() + applicationLogPath;
             }
+            
+            string versionedPath = Path.Combine(basePath, Version);
 
-            if (!Directory.Exists(applicationLogPath))
+            if (!Directory.Exists(versionedPath))
             {
-                Directory.CreateDirectory(applicationLogPath);
+                Directory.CreateDirectory(versionedPath);
             }
 
-            var logFilePath = Path.Combine(applicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log");
+            var logFilePath = Path.Combine(versionedPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 
             Trace.AutoFlush = true;
+            
+            // Clean up old version log folders
+            DeleteOldVersionLogFolders(basePath, versionedPath);
+        }
+        
+        /// <summary>
+        /// Deletes old version log folders, keeping only the current version's folder.
+        /// </summary>
+        /// <param name="basePath">The base path to the log files folder.</param>
+        /// <param name="currentVersionPath">The path to the current version's log folder.</param>
+        private static void DeleteOldVersionLogFolders(string basePath, string currentVersionPath)
+        {
+            try
+            {
+                if (!Directory.Exists(basePath))
+                {
+                    return;
+                }
+
+                foreach (string directory in Directory.GetDirectories(basePath))
+                {
+                    if (!directory.Equals(currentVersionPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            Directory.Delete(directory, true);
+                            LogTrace(); // Log that deletion happened
+                            LogInfo($"Deleted old log directory: {directory}");
+                        }
+                        catch (Exception ex)
+                        {
+                            LogError($"Failed to delete old log directory: {directory}", ex);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError("Error cleaning up old log folders", ex);
+            }
         }
 
         public static void LogError(string message, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "", [System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "", [System.Runtime.CompilerServices.CallerLineNumber] int sourceLineNumber = 0)

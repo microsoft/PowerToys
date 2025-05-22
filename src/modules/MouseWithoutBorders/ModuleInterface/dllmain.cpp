@@ -13,6 +13,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/processApi.h>
 #include <common/utils/elevation.h>
+#include <common/utils/logger_helper.h>
 
 HINSTANCE g_hInst_MouseWithoutBorders = 0;
 
@@ -409,9 +410,7 @@ public:
     {
         app_name = L"MouseWithoutBorders";
         app_key = app_name;
-        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(app_key));
-        logFilePath.append(LogSettings::mouseWithoutBordersLogPath);
-        Logger::init(LogSettings::mouseWithoutBordersLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::mouseWithoutBordersLoggerName);
 
         try
         {
@@ -523,7 +522,7 @@ public:
     virtual void enable()
     {
         Trace::MouseWithoutBorders::Enable(true);
-
+        
         launch_process();
 
         m_enabled = true;
