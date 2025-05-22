@@ -8,7 +8,6 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Security;
@@ -27,11 +26,6 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 public class Win32Program : IProgram
 {
     public static readonly Win32Program InvalidProgram = new Win32Program { Valid = false, Enabled = false };
-
-    private static readonly IFileSystem FileSystem = new FileSystem();
-    private static readonly IPath Path = FileSystem.Path;
-    private static readonly IFile File = FileSystem.File;
-    private static readonly IDirectory Directory = FileSystem.Directory;
 
     public string Name { get; set; } = string.Empty;
 
@@ -79,8 +73,6 @@ public class Win32Program : IProgram
 
     // Wrappers for File Operations
     public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
-
-    public static IFile FileWrapper { get; set; } = new FileSystem().File;
 
     private const string ShortcutExtension = "lnk";
     private const string ApplicationReferenceExtension = "appref-ms";
@@ -255,7 +247,7 @@ public class Win32Program : IProgram
         try
         {
             // We don't want to read the whole file if we don't need to
-            var lines = FileWrapper.ReadLines(path);
+            var lines = File.ReadLines(path);
             var iconPath = string.Empty;
             var urlPath = string.Empty;
             var validApp = false;
@@ -374,15 +366,17 @@ public class Win32Program : IProgram
 
             return program;
         }
-        catch (System.IO.FileLoadException)
+        catch (System.IO.FileLoadException ex)
         {
+            ExtensionHost.LogMessage(ex.ToString());
             return InvalidProgram;
         }
 
         // Only do a catch all in production. This is so make developer aware of any unhandled exception and add the exception handling in.
         // Error caused likely due to trying to get the description of the program
-        catch (Exception)
+        catch (Exception ex)
         {
+            ExtensionHost.LogMessage(ex.ToString());
             return InvalidProgram;
         }
     }
@@ -457,6 +451,7 @@ public class Win32Program : IProgram
             case ApplicationType.Win32Application:
                 app = ExeProgram(path);
                 break;
+
             case ApplicationType.ShortcutApplication:
                 app = LnkProgram(path);
                 break;
@@ -825,17 +820,15 @@ public class Win32Program : IProgram
 
             // Get all paths but exclude all normal .Executables
             paths.UnionWith(sources
-                .AsParallel()
                 .SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>())
                 .Where(programPath => disabledProgramsList.All(x => x.UniqueIdentifier != programPath))
                 .Where(path => !ExecutableApplicationExtensions.Contains(Extension(path))));
             runCommandPaths.UnionWith(runCommandSources
-                .AsParallel()
                 .SelectMany(source => source.IsEnabled ? source.GetPaths() : Enumerable.Empty<string>())
                 .Where(programPath => disabledProgramsList.All(x => x.UniqueIdentifier != programPath)));
 
-            var programs = paths.AsParallel().Select(source => GetProgramFromPath(source));
-            var runCommandPrograms = runCommandPaths.AsParallel().Select(source => GetRunCommandProgramFromPath(source));
+            var programs = paths.Select(source => GetProgramFromPath(source));
+            var runCommandPrograms = runCommandPaths.Select(source => GetRunCommandProgramFromPath(source));
 
             return DeduplicatePrograms(programs.Concat(runCommandPrograms).Where(program => program?.Valid == true));
         }
