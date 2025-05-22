@@ -88,18 +88,18 @@ namespace KeyboardManagerEditorUI.Helpers
             }
 
             // Count current modifiers
-            int modifierCount = _currentlyPressedKeys.Count(k => _activeTarget.IsModifierKey(k));
+            int modifierCount = _currentlyPressedKeys.Count(k => RemappingHelper.IsModifierKey(k));
 
             // If adding this key would exceed the limits (4 modifiers + 1 action key), don't add it and show notification
-            if ((_activeTarget.IsModifierKey(virtualKey) && modifierCount >= 4) ||
-                (!_activeTarget.IsModifierKey(virtualKey) && _currentlyPressedKeys.Count >= 5))
+            if ((RemappingHelper.IsModifierKey(virtualKey) && modifierCount >= 4) ||
+                (!RemappingHelper.IsModifierKey(virtualKey) && _currentlyPressedKeys.Count >= 5))
             {
                 _activeTarget.OnInputLimitReached();
                 return;
             }
 
             // Check if this is a different variant of a modifier key already pressed
-            if (_activeTarget.IsModifierKey(virtualKey))
+            if (RemappingHelper.IsModifierKey(virtualKey))
             {
                 // Remove existing variant of this modifier key if a new one is pressed
                 // This is to ensure that only one variant of a modifier key is displayed at a time
@@ -151,7 +151,7 @@ namespace KeyboardManagerEditorUI.Helpers
                     continue;
                 }
 
-                if (_activeTarget.IsModifierKey(key))
+                if (RemappingHelper.IsModifierKey(key))
                 {
                     if (!modifierKeys.Contains(key))
                     {
@@ -233,8 +233,6 @@ namespace KeyboardManagerEditorUI.Helpers
         }
 
         void ClearKeys();
-
-        bool IsModifierKey(VirtualKey key);
 
         void OnInputLimitReached();
     }

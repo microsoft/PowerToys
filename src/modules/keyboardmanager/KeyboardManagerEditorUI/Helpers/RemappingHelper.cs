@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using KeyboardManagerEditorUI.Interop;
 using ManagedCommon;
+using Windows.System;
 
 namespace KeyboardManagerEditorUI.Helpers
 {
@@ -123,6 +124,21 @@ namespace KeyboardManagerEditorUI.Helpers
                 Logger.LogError($"Error deleting remapping: {ex.Message}");
                 return false;
             }
+        }
+
+        public static bool IsModifierKey(VirtualKey key)
+        {
+            return key == VirtualKey.Control
+                || key == VirtualKey.LeftControl
+                || key == VirtualKey.RightControl
+                || key == VirtualKey.Menu
+                || key == VirtualKey.LeftMenu
+                || key == VirtualKey.RightMenu
+                || key == VirtualKey.Shift
+                || key == VirtualKey.LeftShift
+                || key == VirtualKey.RightShift
+                || key == VirtualKey.LeftWindows
+                || key == VirtualKey.RightWindows;
         }
     }
 }

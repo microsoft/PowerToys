@@ -194,16 +194,6 @@ namespace KeyboardManagerEditorUI.Styles
             UpdateAllAppsCheckBoxState();
         }
 
-        public bool IsModifierKey(VirtualKey key)
-        {
-            return key == VirtualKey.Control || key == VirtualKey.Menu ||
-                   key == VirtualKey.Shift || key == VirtualKey.LeftWindows ||
-                   key == VirtualKey.RightWindows || key == VirtualKey.LeftControl ||
-                   key == VirtualKey.RightControl || key == VirtualKey.LeftMenu ||
-                   key == VirtualKey.RightMenu || key == VirtualKey.LeftShift ||
-                   key == VirtualKey.RightShift;
-        }
-
         public List<string> GetShortcutKeys()
         {
             List<string> keys = new List<string>();
