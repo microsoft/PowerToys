@@ -52,13 +52,12 @@ namespace UITests_FancyZones
             // ClearOpenWindows
             ClearOpenWindows();
 
-            this.RestartScopeExe();
-
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
 
             // clean app zone history file
             AppZoneHistory.DeleteFile();
+            this.RestartScopeExe();
 
             // Get the current mouse button setting
             nonPrimaryMouseButton = SystemInformation.MouseButtonsSwapped ? "Left" : "Right";
