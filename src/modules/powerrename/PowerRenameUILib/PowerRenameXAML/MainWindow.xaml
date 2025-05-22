@@ -561,8 +561,8 @@
                 </StackPanel>
 
                 <TextBlock
-                    x:Name="FileDateLabel"
-                    x:Uid="TextBlock_FileDate"
+                    x:Name="FileTimeLabel"
+                    x:Uid="TextBlock_FileTime"
                     Margin="0,16,0,8"
                     FontSize="12"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -573,16 +573,16 @@
                     Orientation="Horizontal"
                     Spacing="4">
                     <ComboBox
-                        x:Name="comboBox_fileDateParts"
+                        x:Name="comboBox_fileTimeParts"
                         Grid.Row="1"
                         Grid.Column="0"
                         Width="200"
                         HorizontalAlignment="Stretch"
                         AutomationProperties.LabeledBy="{Binding ElementName=FileDateLabel}"
                         SelectedIndex="0">
-                        <ComboBoxItem x:Uid="FileDateParts_DateCreated" />
-                        <ComboBoxItem x:Uid="FileDateParts_DateModified" />
-                        <ComboBoxItem x:Uid="FileDateParts_DateAccessed" />
+                        <ComboBoxItem x:Uid="FileTimeParts_CreationTime" />
+                        <ComboBoxItem x:Uid="FileTimeParts_ModificationTime" />
+                        <ComboBoxItem x:Uid="FileTimeParts_AccessTime" />
                     </ComboBox>
                 </StackPanel>
 

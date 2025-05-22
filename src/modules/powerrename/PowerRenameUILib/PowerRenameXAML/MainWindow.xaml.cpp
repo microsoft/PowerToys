@@ -794,28 +794,28 @@ namespace winrt::PowerRenameUI::implementation
         });
 
         // ComboBox RenameParts
-        comboBox_fileDateParts().SelectionChanged([&](auto const&, auto const&) {
-            int selectedIndex = comboBox_fileDateParts().SelectedIndex();
+        comboBox_fileTimeParts().SelectionChanged([&](auto const&, auto const&) {
+            int selectedIndex = comboBox_fileTimeParts().SelectedIndex();
             if (selectedIndex == 0)
             { 
                 // default behaviour. Date Created
-                UpdateFlag(DateCreated, UpdateFlagCommand::Set);
-                UpdateFlag(DateModified, UpdateFlagCommand::Reset);
-                UpdateFlag(DateAccessed, UpdateFlagCommand::Reset);
+                UpdateFlag(CreationTime, UpdateFlagCommand::Set);
+                UpdateFlag(ModificationTime, UpdateFlagCommand::Reset);
+                UpdateFlag(AccessTime, UpdateFlagCommand::Reset);
             }
             else if (selectedIndex == 1)
             {
                 // Date Modified
-                UpdateFlag(DateModified, UpdateFlagCommand::Set);
-                UpdateFlag(DateCreated, UpdateFlagCommand::Reset);
-                UpdateFlag(DateAccessed, UpdateFlagCommand::Reset);
+                UpdateFlag(ModificationTime, UpdateFlagCommand::Set);
+                UpdateFlag(CreationTime, UpdateFlagCommand::Reset);
+                UpdateFlag(AccessTime, UpdateFlagCommand::Reset);
             }
             else if (selectedIndex == 2)
             {
                 // Accessed
-                UpdateFlag(DateAccessed, UpdateFlagCommand::Set);
-                UpdateFlag(DateCreated, UpdateFlagCommand::Reset);
-                UpdateFlag(DateModified, UpdateFlagCommand::Reset);
+                UpdateFlag(AccessTime, UpdateFlagCommand::Set);
+                UpdateFlag(CreationTime, UpdateFlagCommand::Reset);
+                UpdateFlag(ModificationTime, UpdateFlagCommand::Reset);
             }
         });
     }

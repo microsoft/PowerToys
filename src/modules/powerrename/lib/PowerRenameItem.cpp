@@ -56,7 +56,7 @@ IFACEMETHODIMP CPowerRenameItem::GetPath(_Outptr_ PWSTR* path)
     return hr;
 }
 
-IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
+IFACEMETHODIMP CPowerRenameItem::GetTime(_In_ DWORD flags, _Outptr_ SYSTEMTIME* time)
 {
     CSRWSharedAutoLock lock(&m_lock);
     HRESULT hr = E_FAIL;
@@ -70,11 +70,27 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
         HANDLE hFile = CreateFileW(m_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
         if (hFile != INVALID_HANDLE_VALUE)
         {
-            FILETIME CreationTime;
-            if (GetFileTime(hFile, &CreationTime, NULL, NULL))
+            FILETIME FileTime;
+            bool success = false;
+
+            // Get Time by PowerRenameFlags
+            if (flags & PowerRenameFlags::CreationTime)
+            {
+                success = GetFileTime(hFile, &FileTime, NULL, NULL);
+            }
+            else if (flags & PowerRenameFlags::ModificationTime)
+            {
+                success = GetFileTime(hFile, NULL, NULL, &FileTime);
+            }
+            else if (flags & PowerRenameFlags::AccessTime)
+            {
+                success = GetFileTime(hFile, NULL, &FileTime, NULL);
+            }
+
+            if (success)
             {
                 SYSTEMTIME SystemTime, LocalTime;
-                if (FileTimeToSystemTime(&CreationTime, &SystemTime))
+                if (FileTimeToSystemTime(&FileTime, &SystemTime))
                 {
                     if (SystemTimeToTzSpecificLocalTime(NULL, &SystemTime, &LocalTime))
                     {
@@ -85,6 +101,7 @@ IFACEMETHODIMP CPowerRenameItem::GetTime(_Outptr_ SYSTEMTIME* time)
                 }
             }
         }
+
         CloseHandle(hFile);
     }
     *time = m_time;
