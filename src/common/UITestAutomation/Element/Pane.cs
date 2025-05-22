@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Simulates holding when dragging to target coodinate.
+        /// Simulates holding when dragging to target position.
         /// </summary>
         /// <param name="offsetX">The offsetX to move.</param>
         /// <param name="offsetY">The offsetY to move.</param>
