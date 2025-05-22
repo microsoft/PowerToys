@@ -156,13 +156,13 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Folder Include="CustomDialogs" />
   </ItemGroup>
   <ItemGroup>
-     <PackageReference Include="WixToolset.Heat" />
-     <PackageReference Include="WixToolset.Firewall.wixext" />
-     <PackageReference Include="WixToolset.Util.wixext" />
-     <PackageReference Include="WixToolset.UI.wixext" />
-     <PackageReference Include="WixToolset.NetFx.wixext" />
+    <PackageReference Include="WixToolset.Heat" />
+      <PackageReference Include="WixToolset.Firewall.wixext" />
+      <PackageReference Include="WixToolset.Util.wixext" />
+      <PackageReference Include="WixToolset.UI.wixext" />
+      <PackageReference Include="WixToolset.NetFx.wixext" />
      <PackageReference Include="WixToolset.Bal.wixext" />
-   </ItemGroup>
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PowerToysSetupCustomActions\PowerToysSetupCustomActions.vcxproj">
       <Name>PowerToysSetupCustomActions</Name>
