@@ -33,6 +33,7 @@ namespace UITests_FancyZones
         private static int screenMarginLeft;
         private static int screenMarginRight;
         private static int screenMarginBottom;
+        private static string setcustomLayoutData = string.Empty; // set custom layout data
 
         // set 1/4 margin
         private static int quarterX;
@@ -354,6 +355,7 @@ namespace UITests_FancyZones
             }
 
             FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
+            setcustomLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
         }
 
         // launch FancyZones settings page
@@ -374,17 +376,19 @@ namespace UITests_FancyZones
 
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
             string customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
-            Console.WriteLine($"before go into launch, Custom layout data: {customLayoutData}");
-            try
+            Console.WriteLine($"after launch, Custom layout data: {customLayoutData}");
+            if (customLayoutData == setcustomLayoutData)
             {
                 this.Session.Attach(PowerToysModule.FancyZone);
                 this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
+                Task.Delay(1000).Wait(); // Optional: Wait for a moment to ensure the window is in position
 
                 // Set the FancyZones layout to a custom layout
                 this.Find<Element>(By.Name("Custom Column")).Click();
             }
-            catch (Exception)
+            else
             {
+                Console.WriteLine($"[Exception] Failed to attach to FancyZones window. Retrying...");
                 this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
                 SetupCustomLayouts();
                 this.Session.Attach(PowerToysModule.PowerToysSettings);
