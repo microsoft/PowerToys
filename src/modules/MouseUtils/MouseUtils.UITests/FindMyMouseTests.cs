@@ -485,8 +485,23 @@ namespace MouseUtils.UITests
                 var rgbHexEdit = this.Find<TextBox>("RGB hex");
                 Assert.IsNotNull(rgbHexEdit);
                 Task.Delay(500).Wait();
-                rgbHexEdit.SetText(settings.BackgroundColor);
-                Task.Delay(500).Wait();
+                int retry = 5;
+                while (retry > 0)
+                {
+                    Task.Delay(500).Wait();
+                    rgbHexEdit.SetText(settings.BackgroundColor);
+                    Task.Delay(500).Wait();
+                    string rgbHex = rgbHexEdit.Text;
+                    bool isValid = rgbHex.StartsWith('#') && rgbHex.Length == 7 && rgbHex.Substring(1) == settings.BackgroundColor;
+                    Task.Delay(500).Wait();
+                    if (isValid)
+                    {
+                        break;
+                    }
+
+                    retry--;
+                }
+
                 button.Click();
 
                 // Set the Spotlight color
@@ -509,7 +524,23 @@ namespace MouseUtils.UITests
                 var rgbHexEdit2 = this.Find<TextBox>("RGB hex");
                 Assert.IsNotNull(rgbHexEdit2);
                 Task.Delay(500).Wait();
-                rgbHexEdit2.SetText(settings.SpotlightColor);
+                retry = 5;
+                while (retry > 0)
+                {
+                    Task.Delay(500).Wait();
+                    rgbHexEdit2.SetText(settings.SpotlightColor);
+                    Task.Delay(500).Wait();
+                    string rgbHex = rgbHexEdit2.Text;
+                    bool isValid = rgbHex.StartsWith('#') && rgbHex.Length == 7 && rgbHex.Substring(1) == settings.SpotlightColor;
+                    Task.Delay(500).Wait();
+                    if (isValid)
+                    {
+                        break;
+                    }
+
+                    retry--;
+                }
+
                 Task.Delay(500).Wait();
                 spotlightColorButton.Click(false, 500, 1500);
 
