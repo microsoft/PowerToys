@@ -13,7 +13,7 @@
         x:Key="ContextItemTitleTextBlockCriticalStyle"
         BasedOn="{StaticResource BaseTextBlockStyle}"
         TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource SystemFillColorCriticalBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
         <Setter Property="FontWeight" Value="Normal" />
     </Style>
 
@@ -21,7 +21,7 @@
         x:Key="ContextItemCaptionTextBlockCriticalStyle"
         BasedOn="{StaticResource CaptionTextBlockStyle}"
         TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource SystemFillColorCriticalBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
     </Style>
 
 </ResourceDictionary>

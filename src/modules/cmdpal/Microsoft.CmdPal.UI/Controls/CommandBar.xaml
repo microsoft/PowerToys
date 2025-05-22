@@ -82,7 +82,7 @@
                         Height="16"
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
-                        Foreground="{StaticResource SystemFillColorCriticalBrush}"
+                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                         SourceKey="{x:Bind Icon, Mode=OneWay}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
