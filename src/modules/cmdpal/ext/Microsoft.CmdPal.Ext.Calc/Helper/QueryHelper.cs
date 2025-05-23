@@ -32,6 +32,11 @@ public static partial class QueryHelper
         NumberTranslator translator = NumberTranslator.Create(inputCulture, new CultureInfo("en-US"));
         var input = translator.Translate(query.Normalize(NormalizationForm.FormKC));
 
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return ErrorHandler.OnError(isFallbackSearch, query, Properties.Resources.calculator_expression_empty);
+        }
+
         if (!CalculateHelper.InputValid(input))
         {
             return null;
