@@ -41,7 +41,7 @@ namespace UITests_FancyZones
             // set a custom layout with 2 subzones
             SetupCustomLayouts();
 
-            this.RestartScopeExe();
+            // this.RestartScopeExe();
 
             // Launch FancyZones
             LaunchFancyZones();

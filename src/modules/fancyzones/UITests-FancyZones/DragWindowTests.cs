@@ -56,17 +56,19 @@ namespace UITests_FancyZones
             // clean app zone history file
             FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
             AppZoneHistory.DeleteFile();
+            this.RestartScopeExe();
 
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
-
-            this.RestartScopeExe();
 
             // Get the current mouse button setting
             nonPrimaryMouseButton = SystemInformation.MouseButtonsSwapped ? "Left" : "Right";
 
             // get PowerToys window Name
             powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
+
+            // Ensure FancyZones settings page is visible and enable FancyZones
+            LaunchFancyZones();
         }
 
         /// <summary>
@@ -81,9 +83,6 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #1")]
         public void TestShowZonesOnShiftDuringDrag()
         {
-            // Ensure FancyZones settings page is visible and enable FancyZones
-            LaunchFancyZones();
-
             string testCaseName = nameof(TestShowZonesOnShiftDuringDrag);
             Pane dragElement = Find<Pane>(By.Name("Non Client Input Sink Window")); // element to drag
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
@@ -129,9 +128,6 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #2")]
         public void TestShowZonesOnDragDuringShift()
         {
-            // Ensure FancyZones settings page is visible and enable FancyZones
-            LaunchFancyZones();
-
             string testCaseName = nameof(TestShowZonesOnDragDuringShift);
 
             var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
@@ -176,9 +172,6 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #3")]
         public void TestToggleZonesWithNonPrimaryMouseClick()
         {
-            // Ensure FancyZones settings page is visible and enable FancyZones
-            LaunchFancyZones();
-
             string testCaseName = nameof(TestToggleZonesWithNonPrimaryMouseClick);
             var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
@@ -220,9 +213,6 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #4")]
         public void TestShowZonesWhenShiftAndMouseOff()
         {
-            // Ensure FancyZones settings page is visible and enable FancyZones
-            LaunchFancyZones();
-
             string testCaseName = nameof(TestShowZonesWhenShiftAndMouseOff);
             Pane dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
@@ -262,9 +252,6 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #5")]
         public void TestShowZonesWhenShiftAndMouseOn()
         {
-            // Ensure FancyZones settings page is visible and enable FancyZones
-            LaunchFancyZones();
-
             string testCaseName = nameof(TestShowZonesWhenShiftAndMouseOn);
 
             var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
@@ -307,8 +294,6 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #8")]
         public void TestMakeDraggedWindowTransparentOn()
         {
-            LaunchFancyZones();
-
             var pixel = GetPixelWhenMakeDraggedWindow();
             Assert.AreNotEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOn)}]  Window transparency failed.");
         }
@@ -325,8 +310,6 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #8")]
         public void TestMakeDraggedWindowTransparentOff()
         {
-            LaunchFancyZones();
-
             var pixel = GetPixelWhenMakeDraggedWindow();
             Assert.AreEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}]  Window without transparency failed.");
         }
@@ -354,8 +337,6 @@ namespace UITests_FancyZones
         // Setup custom layout with 1 subzones
         private void SetupCustomLayouts()
         {
-            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
-
             var customLayouts = new CustomLayouts();
             var customLayoutListWrapper = CustomLayoutsList;
 
@@ -402,9 +383,9 @@ namespace UITests_FancyZones
             {
                 // Console.WriteLine($"[Exception] Failed to attach to FancyZones window. Retrying...");
                 this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
-                SetupCustomLayouts();
                 this.Session.Attach(PowerToysModule.PowerToysSettings);
-                this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 5000, 5000);
+                SetupCustomLayouts();
+                this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 5000);
                 this.Session.Attach(PowerToysModule.FancyZone);
                 this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
 
