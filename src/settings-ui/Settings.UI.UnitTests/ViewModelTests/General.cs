@@ -248,7 +248,7 @@ namespace ViewModelTests
                 sendRestartAdminIPCMessage,
                 sendCheckForUpdatesIPCMessage,
                 GeneralSettingsFileName);
-            Assert.IsFalse(viewModel.ShowSysTrayIcon);
+            Assert.IsTrue(viewModel.ShowSysTrayIcon);
 
             // Act
             viewModel.ShowSysTrayIcon = false;
