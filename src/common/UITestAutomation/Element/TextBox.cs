@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.UITest
                     windowElement.SendKeys(OpenQA.Selenium.Keys.Control + "a");
                     windowElement.SendKeys(OpenQA.Selenium.Keys.Delete);
                 });
-                Task.Delay(1000).Wait();
+                Task.Delay(500).Wait();
             }
 
             PerformAction((actions, windowElement) =>
