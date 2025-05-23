@@ -12,6 +12,7 @@ using Microsoft.FancyZones.UITests.Utils;
 using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
+using Microsoft.VisualBasic.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
@@ -52,11 +53,13 @@ namespace UITests_FancyZones
             // ClearOpenWindows
             ClearOpenWindows();
 
+            // clean app zone history file
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
+            AppZoneHistory.DeleteFile();
+
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
 
-            // clean app zone history file
-            AppZoneHistory.DeleteFile();
             this.RestartScopeExe();
 
             // Get the current mouse button setting
@@ -64,18 +67,6 @@ namespace UITests_FancyZones
 
             // get PowerToys window Name
             powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
-
-            // Ensure FancyZones settings page is visible and enable FancyZones
-            LaunchFancyZones();
-
-            // Get screen margins for positioning checks
-            GetScreenMargins();
-
-            // Close window
-            SendKeys(Key.Alt, Key.F4);
-
-            // make window small to detect zone easily
-            Session.Attach(powertoysWindowName, WindowSize.Small);
         }
 
         /// <summary>
@@ -90,6 +81,9 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #1")]
         public void TestShowZonesOnShiftDuringDrag()
         {
+            // Ensure FancyZones settings page is visible and enable FancyZones
+            LaunchFancyZones();
+
             string testCaseName = nameof(TestShowZonesOnShiftDuringDrag);
             Pane dragElement = Find<Pane>(By.Name("Non Client Input Sink Window")); // element to drag
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
@@ -135,6 +129,9 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #2")]
         public void TestShowZonesOnDragDuringShift()
         {
+            // Ensure FancyZones settings page is visible and enable FancyZones
+            LaunchFancyZones();
+
             string testCaseName = nameof(TestShowZonesOnDragDuringShift);
 
             var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
@@ -179,6 +176,9 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #3")]
         public void TestToggleZonesWithNonPrimaryMouseClick()
         {
+            // Ensure FancyZones settings page is visible and enable FancyZones
+            LaunchFancyZones();
+
             string testCaseName = nameof(TestToggleZonesWithNonPrimaryMouseClick);
             var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
@@ -220,6 +220,9 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #4")]
         public void TestShowZonesWhenShiftAndMouseOff()
         {
+            // Ensure FancyZones settings page is visible and enable FancyZones
+            LaunchFancyZones();
+
             string testCaseName = nameof(TestShowZonesWhenShiftAndMouseOff);
             Pane dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
             var offSet = ZoneSwitchHelper.GetOffset(dragElement, quarterX, quarterY);
@@ -259,6 +262,9 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #5")]
         public void TestShowZonesWhenShiftAndMouseOn()
         {
+            // Ensure FancyZones settings page is visible and enable FancyZones
+            LaunchFancyZones();
+
             string testCaseName = nameof(TestShowZonesWhenShiftAndMouseOn);
 
             var dragElement = Find<Pane>(By.Name("Non Client Input Sink Window"));
@@ -301,6 +307,8 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #8")]
         public void TestMakeDraggedWindowTransparentOn()
         {
+            LaunchFancyZones();
+
             var pixel = GetPixelWhenMakeDraggedWindow();
             Assert.AreNotEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOn)}]  Window transparency failed.");
         }
@@ -317,6 +325,8 @@ namespace UITests_FancyZones
         [TestCategory("FancyZones_Dragging #8")]
         public void TestMakeDraggedWindowTransparentOff()
         {
+            LaunchFancyZones();
+
             var pixel = GetPixelWhenMakeDraggedWindow();
             Assert.AreEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}]  Window without transparency failed.");
         }
@@ -334,6 +344,7 @@ namespace UITests_FancyZones
             }
             else
             {
+                // win11
                 desktopButtonName = "Show Desktop";
             }
 
@@ -403,6 +414,15 @@ namespace UITests_FancyZones
                 // Set the FancyZones layout to a custom layout
                 this.Find<Element>(By.Name("Custom Column")).Click();
             }
+
+            // Get screen margins for positioning checks
+            GetScreenMargins();
+
+            // Close fancyzone editor window
+            SendKeys(Key.Alt, Key.F4);
+
+            // make window small to detect zone easily
+            Session.Attach(powertoysWindowName, WindowSize.Small);
         }
 
         // Get the screen margins to calculate the dragged window position

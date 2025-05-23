@@ -369,6 +369,7 @@ namespace Microsoft.FancyZones.UITests
 
             // Clean
             Session.KillAllProcessesByName("explorer");
+            Clean();
         }
 
         [TestMethod("FancyZones.Settings.HotKeyWindowFlashTest")]
@@ -403,6 +404,8 @@ namespace Microsoft.FancyZones.UITests
             {
                 checkbox2.Click();
             }
+
+            Clean();
         }
 
         [TestMethod("FancyZones.Settings.TestDisableApplyHotKey")]
@@ -432,6 +435,8 @@ namespace Microsoft.FancyZones.UITests
             Assert.IsFalse(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
+
+            Clean();
         }
 
         [TestMethod("FancyZones.Settings.TestVirtualDesktopLayout")]
@@ -460,6 +465,8 @@ namespace Microsoft.FancyZones.UITests
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
             SendKeys(Key.Ctrl, Key.Win, Key.F4);
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+
+            Clean();
         }
 
         [TestMethod("FancyZones.Settings.TestVirtualDesktopLayoutExt")]
@@ -498,6 +505,8 @@ namespace Microsoft.FancyZones.UITests
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
             SendKeys(Key.Ctrl, Key.Win, Key.F4);
             Task.Delay(500).Wait(); // Optional: Wait for a moment to ensure window switch
+
+            Clean();
         }
 
         [TestMethod("FancyZones.Settings.TestDeleteCustomLayoutBehavior")]
@@ -514,6 +523,8 @@ namespace Microsoft.FancyZones.UITests
 
             // verify the empty layout is selected
             Assert.IsTrue(Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.Blank])!.Selected);
+
+            Clean();
         }
 
         [TestMethod("FancyZones.Settings.TestCreateGridLayoutChangeMonitorSetting")]
@@ -549,6 +560,8 @@ namespace Microsoft.FancyZones.UITests
 
             this.CloseFancyZonesEditor();
             UITestBase.NativeMethods.ChangeDisplayResolution(nowWidth, nowHeight);
+
+            Clean();
         }
 
         private void OpenFancyZonesPanel(bool launchAsAdmin = false)
@@ -596,6 +609,14 @@ namespace Microsoft.FancyZones.UITests
         private void CloseFancyZonesEditor()
         {
             this.Session.Find<Element>("Close").Click();
+        }
+
+        private void Clean()
+        {
+            // clean app zone history file
+            FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
+            FancyZonesEditorHelper.Files.LayoutHotkeysIOHelper.DeleteFile();
+            FancyZonesEditorHelper.Files.LayoutTemplatesIOHelper.DeleteFile();
         }
 
         private void Pull(int tries = 5, string direction = "up")
