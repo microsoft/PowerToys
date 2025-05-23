@@ -18,10 +18,10 @@ internal sealed partial class ShellListPage : DynamicListPage
 {
     private readonly ShellListPageHelpers _helper;
 
-    private readonly List<ListItem> _exeItems = new();
-    private readonly List<ListItem> _topLevelItems = new();
-    private readonly List<ListItem> _historyItems = new();
-    private List<ListItem> _pathItems = new();
+    private readonly List<ListItem> _exeItems = [];
+    private readonly List<ListItem> _topLevelItems = [];
+    private readonly List<ListItem> _historyItems = [];
+    private List<ListItem> _pathItems = [];
 
     public ShellListPage(SettingsManager settingsManager, bool addBuiltins = false)
     {
@@ -111,7 +111,7 @@ internal sealed partial class ShellListPage : DynamicListPage
 
         if (exeExists)
         {
-            CreateExeItems(exe, args, fullExePath);
+            CreateAndAddExeItems(exe, args, fullExePath);
         }
         else
         {
@@ -121,7 +121,7 @@ internal sealed partial class ShellListPage : DynamicListPage
         RaiseItemsChanged();
     }
 
-    private ListItem PathToListItem(string path)
+    private static ListItem PathToListItem(string path)
     {
         return new PathListItem(path);
     }
@@ -137,10 +137,8 @@ internal sealed partial class ShellListPage : DynamicListPage
             .ToArray();
     }
 
-    private void CreateExeItems(string exe, string args, string fullExePath)
+    internal static RunExeItem CreateExeItems(string exe, string args, string fullExePath)
     {
-        _exeItems.Clear();
-
         // var command = new AnonymousCommand(() => { ShellHelpers.OpenInShell(exe, args); }) { Result = CommandResult.Dismiss() };
         var exeItem = new RunExeItem(exe, args, fullExePath);
 
@@ -150,6 +148,15 @@ internal sealed partial class ShellListPage : DynamicListPage
 
             // new CommandContextItem(pathItem.Command!),
             .. pathItem.MoreCommands];
+
+        return exeItem;
+    }
+
+    private void CreateAndAddExeItems(string exe, string args, string fullExePath)
+    {
+        _exeItems.Clear();
+
+        var exeItem = CreateExeItems(exe, args, fullExePath);
 
         _exeItems.Add(exeItem);
     }
@@ -202,7 +209,7 @@ internal sealed partial class ShellListPage : DynamicListPage
         }
     }
 
-    private static void ParseExecutableAndArgs(string input, out string executable, out string arguments)
+    internal static void ParseExecutableAndArgs(string input, out string executable, out string arguments)
     {
         input = input.Trim();
         executable = string.Empty;
