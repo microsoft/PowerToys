@@ -589,7 +589,7 @@ namespace UITests_FancyZones
             windowingElement.Find<Element>("FancyZones").Click();
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
             this.Find<Custom>("Editor").Find<TextBlock>(By.AccessibilityId("HeaderPresenter")).Click();
-            this.Session.SetMainWindowSize(WindowSize.Large_Vertical);
+            this.Find<Button>("Maximize").Click(); // maximize the window
         }
 
         private void ControlQuickLayoutSwitch(bool flag)
