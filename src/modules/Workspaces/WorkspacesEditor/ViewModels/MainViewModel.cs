@@ -197,7 +197,10 @@ namespace WorkspacesEditor.ViewModels
         {
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
             string shortcutAddress = Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
-            string shortcutIconFilename = Path.Combine(FolderUtils.Temp(), project.Id + ".ico");
+            string shortcutIconFilename = Path.Combine(FolderUtils.DataFolder(), project.Id + ".ico");
+
+            // Ensure directory exists
+            Directory.CreateDirectory(FolderUtils.DataFolder());
 
             if (!project.IsShortcutNeeded)
             {
@@ -361,7 +364,7 @@ namespace WorkspacesEditor.ViewModels
         private void RemoveShortcut(Project selectedProject)
         {
             string shortcutAddress = Path.Combine(FolderUtils.Desktop(), selectedProject.Name + ".lnk");
-            string shortcutIconFilename = Path.Combine(FolderUtils.Temp(), selectedProject.Id + ".ico");
+            string shortcutIconFilename = Path.Combine(FolderUtils.DataFolder(), selectedProject.Id + ".ico");
 
             if (File.Exists(shortcutIconFilename))
             {
