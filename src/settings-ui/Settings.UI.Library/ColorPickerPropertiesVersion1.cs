@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             VisibleColorFormats.Add("RGB", true);
             VisibleColorFormats.Add("HSL", true);
             ShowColorName = false;
-            ActivationAction = ColorPickerActivationAction.OpenColorPickerAndThenEditor;
+            ActivationAction = ColorPickerActivationAction.OpenColorPicker;
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
