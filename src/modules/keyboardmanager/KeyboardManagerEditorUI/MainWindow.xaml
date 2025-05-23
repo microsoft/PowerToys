@@ -49,14 +49,14 @@
                         <FontIcon Glyph="&#xEDA7;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="Programs" Tag="Programs">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xECAA;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
                 <NavigationViewItem Content="Text" Tag="Text">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE8D2;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Programs" Tag="Programs">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xECAA;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem Content="URLs" Tag="URLs">
