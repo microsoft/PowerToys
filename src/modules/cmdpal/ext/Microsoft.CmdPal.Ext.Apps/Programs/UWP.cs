@@ -63,12 +63,12 @@ public partial class UWP
         InitPackageVersion(namespaces);
 
         const uint noAttribute = 0x80;
-        const uint sTGM_READ = 0x00000000;
+        const uint STGMREAD = 0x00000000;
         IStream* stream = null;
 
         try
         {
-            PInvoke.SHCreateStreamOnFileEx(path, sTGM_READ, noAttribute, false, null, &stream).ThrowOnFailure();
+            PInvoke.SHCreateStreamOnFileEx(path, STGMREAD, noAttribute, false, null, &stream).ThrowOnFailure();
             Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest => new UWPApplication((IAppxManifestApplication*)appInManifest, this)).Where(a =>
             {
                 var valid =

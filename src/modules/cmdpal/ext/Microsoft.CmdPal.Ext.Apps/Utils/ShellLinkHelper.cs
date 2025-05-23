@@ -33,7 +33,7 @@ public class ShellLinkHelper : IShellLinkHelper
         {
             PInvoke.CoCreateInstance(typeof(ShellLink).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out link).ThrowOnFailure();
 
-            const int STGM_READ = 0;
+            const int STGMREAD = 0;
 
             IPersistFile* persistFile = null;
             Guid iid = typeof(IPersistFile).GUID;
@@ -42,7 +42,7 @@ public class ShellLinkHelper : IShellLinkHelper
             {
                 try
                 {
-                    persistFile->Load(path, STGM_READ);
+                    persistFile->Load(path, STGMREAD);
                 }
                 catch (System.IO.FileNotFoundException)
                 {

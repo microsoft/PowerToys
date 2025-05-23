@@ -1589,7 +1589,7 @@ steamapps
 STGC
 STGM
 STGMEDIUM
-sTGM_READ
+STGMREAD
 STICKYKEYS
 sticpl
 storelogo
