@@ -72,6 +72,10 @@ internal sealed partial class ShellListPage : DynamicListPage
         // 2. If it is, then list all the files that start with that text
         var searchText = newSearch.Trim();
 
+        var expanded = Environment.ExpandEnvironmentVariables(searchText);
+        Debug.WriteLine($"Run: searchText={searchText} -> expanded={expanded}");
+        searchText = expanded;
+
         // _historyItems = _helper.Query(searchText);
         // _historyItems.ForEach(i =>
         // {
