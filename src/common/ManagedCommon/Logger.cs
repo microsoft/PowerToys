@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -81,19 +82,24 @@ namespace ManagedCommon
                     return;
                 }
 
-                foreach (string directory in Directory.GetDirectories(basePath))
+                var dirs = Directory.GetDirectories(basePath)
+                    .Select(d => new DirectoryInfo(d))
+                    .OrderBy(d => d.CreationTime)
+                    .Where(d => !string.Equals(d.FullName, currentVersionPath, StringComparison.OrdinalIgnoreCase))
+                    .Take(3)
+                    .ToList();
+
+                foreach (var directory in dirs)
                 {
-                    if (!directory.Equals(currentVersionPath, StringComparison.OrdinalIgnoreCase))
+                    try
                     {
-                        try
-                        {
-                            Directory.Delete(directory, true);
-                            LogInfo($"Deleted old log directory: {directory}");
-                        }
-                        catch (Exception ex)
-                        {
-                            LogError($"Failed to delete old log directory: {directory}", ex);
-                        }
+                        Directory.Delete(directory.FullName, true);
+                        LogInfo($"Deleted old log directory: {directory.FullName}");
+                        Task.Delay(500).Wait();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError($"Failed to delete old log directory: {directory.FullName}", ex);
                     }
                 }
             }
