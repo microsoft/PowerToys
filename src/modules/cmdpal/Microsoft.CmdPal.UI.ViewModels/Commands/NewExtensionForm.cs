@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO.Compression;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -28,69 +29,69 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
     "body": [
         {
             "type": "TextBlock",
-            "text": "{{Properties.Resources.builtin_create_extension_page_title}}",
+            "text": {{FormatJsonString(Properties.Resources.builtin_create_extension_page_title)}},
             "size": "large"
         },
         {
             "type": "TextBlock",
-            "text": "{{Properties.Resources.builtin_create_extension_page_text}}",
+            "text": {{FormatJsonString(Properties.Resources.builtin_create_extension_page_text)}},
             "wrap": true
         },
         {
             "type": "TextBlock",
-            "text": "{{Properties.Resources.builtin_create_extension_name_header}}",
+            "text": {{FormatJsonString(Properties.Resources.builtin_create_extension_name_header)}},
             "weight": "bolder",
             "size": "default"
         },
         {
             "type": "TextBlock",
-            "text": "{{Properties.Resources.builtin_create_extension_name_description}}",
+            "text": {{FormatJsonString(Properties.Resources.builtin_create_extension_name_description)}},
             "wrap": true
         },
         {
             "type": "Input.Text",
-            "label": "{{Properties.Resources.builtin_create_extension_name_label}}",
+            "label": {{FormatJsonString(Properties.Resources.builtin_create_extension_name_label)}},
             "isRequired": true,
-            "errorMessage": "{{Properties.Resources.builtin_create_extension_name_required}}",
+            "errorMessage": {{FormatJsonString(Properties.Resources.builtin_create_extension_name_required)}},
             "id": "ExtensionName",
             "placeholder": "ExtensionName",
-            "regex": "^[^\\s]+$"
+            "regex": "^[a-zA-Z_][a-zA-Z0-9_]*$"
         },
         {
             "type": "TextBlock",
-            "text": "{{Properties.Resources.builtin_create_extension_display_name_header}}",
+            "text": {{FormatJsonString(Properties.Resources.builtin_create_extension_display_name_header)}},
             "weight": "bolder",
             "size": "default"
         },
         {
             "type": "TextBlock",
-            "text": "{{Properties.Resources.builtin_create_extension_display_name_description}}",
+            "text": {{FormatJsonString(Properties.Resources.builtin_create_extension_display_name_description)}},
             "wrap": true
         },
         {
             "type": "Input.Text",
-            "label": "{{Properties.Resources.builtin_create_extension_display_name_label}}",
+            "label": {{FormatJsonString(Properties.Resources.builtin_create_extension_display_name_label)}},
             "isRequired": true,
-            "errorMessage": "{{Properties.Resources.builtin_create_extension_display_name_required}}",
+            "errorMessage": {{FormatJsonString(Properties.Resources.builtin_create_extension_display_name_required)}},
             "id": "DisplayName",
             "placeholder": "My new extension"
         },
         {
             "type": "TextBlock",
-            "text": "{{Properties.Resources.builtin_create_extension_directory_header}}",
+            "text": {{FormatJsonString(Properties.Resources.builtin_create_extension_directory_header)}},
             "weight": "bolder",
             "size": "default"
         },
         {
             "type": "TextBlock",
-            "text": "{{Properties.Resources.builtin_create_extension_directory_description}}",
+            "text": {{FormatJsonString(Properties.Resources.builtin_create_extension_directory_description)}},
             "wrap": true
         },
         {
             "type": "Input.Text",
-            "label": "{{Properties.Resources.builtin_create_extension_directory_label}}",
+            "label": {{FormatJsonString(Properties.Resources.builtin_create_extension_directory_label)}},
             "isRequired": true,
-            "errorMessage": "{{Properties.Resources.builtin_create_extension_directory_required}}",
+            "errorMessage": {{FormatJsonString(Properties.Resources.builtin_create_extension_directory_required)}},
             "id": "OutputPath",
             "placeholder": "C:\\users\\me\\dev"
         }
@@ -98,7 +99,7 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
     "actions": [
         {
             "type": "Action.Submit",
-            "title": "{{Properties.Resources.builtin_create_extension_submit}}",
+            "title": {{FormatJsonString(Properties.Resources.builtin_create_extension_submit)}},
             "associatedInputs": "auto"
         }
     ]
@@ -192,4 +193,9 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
         // Delete the temp dir
         Directory.Delete(tempDir, true);
     }
+
+    private string FormatJsonString(string str) =>
+
+        // Escape the string for JSON
+        JsonSerializer.Serialize(str, JsonSerializationContext.Default.String);
 }

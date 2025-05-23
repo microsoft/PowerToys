@@ -25,6 +25,7 @@ namespace AppLauncher
         const std::wstring ChromeFilename = L"chrome.exe";
         const std::wstring ChromePwaFilename = L"chrome_proxy.exe";
         const std::wstring PwaCommandLineAddition = L"--profile-directory=Default --app-id=";
+        const std::wstring SteamProtocolPrefix = L"steam:";
     }
 
     Result<SHELLEXECUTEINFO, std::wstring> LaunchApp(const std::wstring& appPath, const std::wstring& commandLineArgs, bool elevated)
@@ -122,8 +123,23 @@ namespace AppLauncher
         // usage example: elevated Terminal
         if (!launched && !app.appUserModelId.empty() && !app.packageFullName.empty())
         {
-            Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
+            Logger::trace(L"Launching {} as {} - {app.packageFullName}", app.name, app.appUserModelId, app.packageFullName);
             auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
+            if (res.isOk())
+            {
+                launched = true;
+            }
+            else
+            {
+                launchErrors.push_back({ std::filesystem::path(app.path).filename(), res.error() });
+            }
+        }
+
+        // protocol launch for steam
+        if (!launched && !app.appUserModelId.empty() && app.appUserModelId.contains(NonLocalizable::SteamProtocolPrefix))
+        {
+            Logger::trace(L"Launching {} as {}", app.name, app.appUserModelId);
+            auto res = LaunchApp(app.appUserModelId, app.commandLineArgs, app.isElevated);
             if (res.isOk())
             {
                 launched = true;

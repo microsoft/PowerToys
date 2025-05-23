@@ -79,10 +79,7 @@
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
-
-      <?if $(var.CIBuild) = "true" ?>
-        <ComponentGroupRef Id="CmdPalComponentGroup" />
-      <?endif?>
+      <ComponentGroupRef Id="CmdPalComponentGroup" />
     </Feature>
 
     <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
