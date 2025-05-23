@@ -54,8 +54,8 @@ HMODULE LoadLibrarySafe(LPCTSTR libraryName, DLL_LOAD_LOCATION location)
 {
     HMODULE hMod = NULL;
 
-    if (NULL == libraryName || location <= DLL_LOAD_LOCATION_MIN || location >= DLL_LOAD_LOCATION_MAX) {
-
+    //enhanced DLL-hijacking protection 
+    if (libraryName == NULL || location != DLL_LOAD_LOCATION_SYSTEM) {
         SetLastError(ERROR_INVALID_PARAMETER);
         return NULL;
     }
@@ -64,10 +64,14 @@ HMODULE LoadLibrarySafe(LPCTSTR libraryName, DLL_LOAD_LOCATION location)
     // qualified path to the system folder but specifying a path causes Ldr to skip SxS file redirection. This can 
     // cause the wrong library to be loaded if the application is using a manifest that defines a specific version 
     // of Microsoft.Windows.Common-Controls when loading comctl32.dll
-    if (DLL_LOAD_LOCATION_SYSTEM == location) {
-
-        DWORD flags = ExtendedFlagsSupported() ? LOAD_LIBRARY_SEARCH_SYSTEM32 : 0;
-        hMod = LoadLibraryEx(libraryName, NULL, flags);
+    //
+    //only load DLL from system32
+    if (ExtendedFlagsSupported()) {
+        hMod = LoadLibraryEx(libraryName, NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+    } else {
+        // block fallback
+        SetLastError(ERROR_NOT_SUPPORTED);
+        hMod = NULL;
     }
 
     return hMod;
