@@ -57,6 +57,7 @@ namespace UITests_FancyZones
             FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
             AppZoneHistory.DeleteFile();
             this.RestartScopeExe();
+            FancyZonesEditorHelper.Files.Restore();
 
             // Set a custom layout with 1 subzones and clear app zone history
             SetupCustomLayouts();
