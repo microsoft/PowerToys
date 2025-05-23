@@ -366,8 +366,9 @@ namespace WorkspacesEditor.ViewModels
 
         private void RemoveShortcut(Project selectedProject)
         {
+            var shortcutFolder = Path.Combine(FolderUtils.DataFolder(), "WorkspacesIcons");
             string shortcutAddress = Path.Combine(FolderUtils.Desktop(), selectedProject.Name + ".lnk");
-            string shortcutIconFilename = Path.Combine(FolderUtils.DataFolder(), selectedProject.Id + ".ico");
+            string shortcutIconFilename = Path.Combine(shortcutFolder, selectedProject.Id + ".ico");
 
             if (File.Exists(shortcutIconFilename))
             {
