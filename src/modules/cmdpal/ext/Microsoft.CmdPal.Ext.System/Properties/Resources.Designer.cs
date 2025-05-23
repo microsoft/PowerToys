@@ -646,6 +646,42 @@ namespace Microsoft.CmdPal.Ext.System {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Restart Windows Explorer.
+        /// </summary>
+        public static string Microsoft_plugin_sys_RestartShell {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RestartShell", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are about to restart Windows Explorer, are you sure?.
+        /// </summary>
+        public static string Microsoft_plugin_sys_RestartShell_confirmation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RestartShell_confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to End and restart the Windows Explorer shell process.
+        /// </summary>
+        public static string Microsoft_plugin_sys_RestartShell_description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RestartShell_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Restart.
+        /// </summary>
+        public static string Microsoft_plugin_sys_RestartShell_name {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_sys_RestartShell_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ip; mac; address.
         /// </summary>
         public static string Microsoft_plugin_sys_Search_NetworkKeywordList {
