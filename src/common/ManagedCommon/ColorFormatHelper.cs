@@ -599,22 +599,23 @@ namespace ManagedCommon
         {
             switch (formatName)
             {
-                case "HEX": return "%Rex%Grx%Blx";
-                case "RGB": return "rgb(%Re, %Gr, %Bl)";
-                case "HSL": return "hsl(%Hu, %Sl%, %Ll%)";
-                case "HSV": return "hsv(%Hu, %Sb%, %Va%)";
-                case "CMYK": return "cmyk(%Cy%, %Ma%, %Ye%, %Bk%)";
-                case "HSB": return "hsb(%Hu, %Sb%, %Br%)";
-                case "HSI": return "hsi(%Hu, %Si%, %In%)";
-                case "HWB": return "hwb(%Hu, %Wh%, %Bn%)";
-                case "NCol": return "%Hn, %Wh%, %Bn%";
-                case "CIEXYZ": return "XYZ(%Xv, %Yv, %Zv)";
+                // Alphabetised to help user sift through them
                 case "CIELAB": return "CIELab(%Lc, %Ca, %Cb)";
-                case "Oklab": return "oklab(%Lo, %Oa, %Ob)";
-                case "Oklch": return "oklch(%Lo, %Oc, %Oh)";
-                case "VEC4": return "(%Reff, %Grff, %Blff, 1f)";
+                case "CIEXYZ": return "XYZ(%Xv, %Yv, %Zv)";
+                case "CMYK": return "cmyk(%Cy%, %Ma%, %Ye%, %Bk%)";
                 case "Decimal": return "%Dv";
                 case "HEX Int": return "0xFF%ReX%GrX%BlX";
+                case "HEX": return "#%Rex%Grx%Blx";
+                case "HSB": return "hsb(%Hu, %Sb%, %Br%)";
+                case "HSI": return "hsi(%Hu, %Si%, %In%)";
+                case "HSL": return "hsl(%Hu %Sl% %Ll%)";
+                case "HSV": return "hsv(%Hu, %Sb%, %Va%)";
+                case "HWB": return "hwb(%Hu %Wh% %Bn%)";
+                case "NCol": return "%Hn, %Wh%, %Bn%";
+                case "Oklab": return "oklab(%Lo %Oa %Ob)";
+                case "OKLCh": return "oklch(%Lo %Oc %Oh)";
+                case "RGB": return "rgb(%Re %Gr %Bl)";
+                case "VEC4": return "(%Reff, %Grff, %Blff, 1f)";
                 default: return string.Empty;
             }
         }
