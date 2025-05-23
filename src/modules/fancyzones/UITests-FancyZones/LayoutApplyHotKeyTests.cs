@@ -219,7 +219,6 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
-            this.RestartScopeExe();
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(Parameters));
@@ -296,6 +295,7 @@ namespace UITests_FancyZones
             Assert.IsNotNull(popup);
             popup.Find<Element>($"{key}").Click(); // assign a free hotkey
 
+            Thread.Sleep(3);
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
@@ -307,6 +307,7 @@ namespace UITests_FancyZones
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num1);
+            Thread.Sleep(3);
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Grid-9");
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid-9 is not visible");
@@ -314,6 +315,7 @@ namespace UITests_FancyZones
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num2);
+            Thread.Sleep(3);
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Canvas custom layout");
             Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
