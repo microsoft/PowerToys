@@ -21,7 +21,7 @@ namespace UITests_FancyZones
         private static readonly int SubZones = 2;
         private static readonly IOTestHelper AppZoneHistory = new FancyZonesEditorFiles().AppZoneHistoryIOHelper;
         private static string powertoysWindowName = "PowerToys Settings"; // set powertoys settings window name
-        private string setcustomLayoutData = string.Empty; // custom layout data for test
+        private string setCustomLayoutData = string.Empty; // custom layout data for test
 
         public OneZoneSwitchTests()
             : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
@@ -226,7 +226,7 @@ namespace UITests_FancyZones
             var customLayouts = new CustomLayouts();
             var customLayoutListWrapper = CustomLayoutsList;
             FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
-            setcustomLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+            setCustomLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
         }
 
         // launch FancyZones settings page
@@ -260,7 +260,7 @@ namespace UITests_FancyZones
 
             // pipeline machine may have an unstable delays, causing the custom layout to be unavailable as we set. then A retry is required.
             // Console.WriteLine($"after launch, Custom layout data: {customLayoutData}");
-            if (customLayoutData == setcustomLayoutData)
+            if (customLayoutData == setCustomLayoutData)
             {
                 this.Session.Attach(PowerToysModule.FancyZone);
                 this.Find<Button>("Maximize").Click();
