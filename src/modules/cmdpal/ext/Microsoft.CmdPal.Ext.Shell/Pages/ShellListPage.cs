@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -227,8 +228,8 @@ internal sealed partial class ShellListPage : DynamicListPage
             var firstSpaceIndex = input.IndexOf(' ');
             if (firstSpaceIndex > 0)
             {
-                executable = input.Substring(0, firstSpaceIndex);
-                arguments = input.Substring(firstSpaceIndex + 1).TrimStart();
+                executable = string.Concat("\"", input.AsSpan(0, firstSpaceIndex), "\"");
+                arguments = input[(firstSpaceIndex + 1)..].TrimStart();
             }
             else
             {

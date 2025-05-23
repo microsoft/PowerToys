@@ -29,7 +29,9 @@ internal sealed partial class PathListItem : ListItem
 
         Title = fileName;
         Subtitle = path;
-        TextToSuggest = path;
+
+        var hasSpace = path.Contains(' ');
+        TextToSuggest = hasSpace ? string.Concat("\"", path, "\"") : path;
         MoreCommands = [
             new CommandContextItem(new CopyTextCommand(path) { Name = "Copy path" }) { } // TODO:LOC
         ];
