@@ -336,7 +336,7 @@ namespace UITests_FancyZones
             Session.KillAllProcessesByName("explorer");
             Session.StartExe("explorer.exe", "C:\\");
 
-            Thread.Sleep(3);
+            Thread.Sleep(10);
             Session.Attach(WindowName, WindowSize.UnSpecified);
             var tabView = Find<Tab>(By.AccessibilityId("TabView"));
             tabView.DoubleClick(); // maximize the window
@@ -586,8 +586,8 @@ namespace UITests_FancyZones
 
             windowingElement.Find<Element>("FancyZones").Click();
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
-            this.Find<Custom>("Editor").Find<TextBlock>(By.AccessibilityId("HeaderPresenter")).Click();
             this.Find<Button>("Maximize").Click(); // maximize the window
+            this.Find<Custom>("Editor").Find<TextBlock>(By.AccessibilityId("HeaderPresenter")).Click();
         }
 
         private void ControlQuickLayoutSwitch(bool flag)
