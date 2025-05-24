@@ -299,7 +299,6 @@ namespace UITests_FancyZones
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
-            Thread.Sleep(3);
             this.AttachFancyZonesEditor();
             var element = this.Find<Element>(layout);
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
@@ -307,7 +306,6 @@ namespace UITests_FancyZones
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num1);
-            Thread.Sleep(3);
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Grid-9");
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid-9 is not visible");
@@ -315,7 +313,6 @@ namespace UITests_FancyZones
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num2);
-            Thread.Sleep(3);
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Canvas custom layout");
             Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
@@ -402,8 +399,9 @@ namespace UITests_FancyZones
 
             int tries = 24;
             Pull(tries, "down");
-            this.Find<Group>("Enable quick layout switch").Click();
-            var checkbox1 = this.Find<CheckBox>("Flash zones when switching layout");
+            var switchGroup = this.Find<Group>("Enable quick layout switch");
+            switchGroup.Click();
+            var checkbox1 = switchGroup.Find<Element>("Flash zones when switching layout");
             if (checkbox1.GetAttribute("Toggle.ToggleState") == "0")
             {
                 checkbox1.Click();
@@ -610,11 +608,12 @@ namespace UITests_FancyZones
 
         private void AttachFancyZonesEditor()
         {
-            Task.Delay(1000).Wait();
+            Task.Delay(4000).Wait();
             this.Find<Button>("Launch layout editor").Click();
 
             Task.Delay(3000).Wait();
             this.Session.Attach(PowerToysModule.FancyZone);
+            Task.Delay(3000).Wait();
         }
 
         private void CloseFancyZonesEditor()
