@@ -94,6 +94,7 @@ internal sealed partial class ShellListPage : DynamicListPage
         }
 
         ParseExecutableAndArgs(searchText, out var exe, out var args);
+        Debug.WriteLine($"Run: searchText={searchText} -> exe,args='{expanded}', '{args}'");
 
         var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
         var pathIsDir = Directory.Exists(exe);
@@ -239,7 +240,8 @@ internal sealed partial class ShellListPage : DynamicListPage
             var firstSpaceIndex = input.IndexOf(' ');
             if (firstSpaceIndex > 0)
             {
-                executable = string.Concat("\"", input.AsSpan(0, firstSpaceIndex), "\"");
+                // executable = string.Concat("\"", input.AsSpan(0, firstSpaceIndex), "\"");
+                executable = input.Substring(0, firstSpaceIndex);
                 arguments = input[(firstSpaceIndex + 1)..].TrimStart();
             }
             else
