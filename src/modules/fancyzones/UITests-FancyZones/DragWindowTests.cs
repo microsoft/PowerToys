@@ -380,7 +380,7 @@ namespace UITests_FancyZones
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Exception] Failed to attach to FancyZones window. Retrying...{ex.ToString()}");
+                Console.WriteLine($"[Exception] Failed to attach to FancyZones window. Retrying...{ex.Message}");
                 this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
                 this.Session.Attach(PowerToysModule.PowerToysSettings);
                 SetupCustomLayouts();
