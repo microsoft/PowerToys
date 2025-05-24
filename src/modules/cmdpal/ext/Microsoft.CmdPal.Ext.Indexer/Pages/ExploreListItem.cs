@@ -46,11 +46,11 @@ internal sealed partial class ExploreListItem : ListItem
 
         MoreCommands = [
             ..context,
-            new CommandContextItem(new OpenWithCommand(indexerItem)),
+            new CommandContextItem(new OpenWithCommand(indexerItem.FullPath)),
             new CommandContextItem(new ShowFileInFolderCommand(indexerItem.FullPath) { Name = Resources.Indexer_Command_ShowInFolder }),
-            new CommandContextItem(new CopyPathCommand(indexerItem)),
-            new CommandContextItem(new OpenInConsoleCommand(indexerItem)),
-            new CommandContextItem(new OpenPropertiesCommand(indexerItem)),
+            new CommandContextItem(new CopyPathCommand(indexerItem.FullPath)),
+            new CommandContextItem(new OpenInConsoleCommand(indexerItem.FullPath)),
+            new CommandContextItem(new OpenPropertiesCommand(indexerItem.FullPath)),
         ];
     }
 }

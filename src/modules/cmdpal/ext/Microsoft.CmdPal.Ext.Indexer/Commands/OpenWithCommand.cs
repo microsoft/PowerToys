@@ -4,7 +4,6 @@
 
 using System.Runtime.InteropServices;
 using ManagedCsWin32;
-using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -14,7 +13,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
 internal sealed partial class OpenWithCommand : InvokableCommand
 {
-    private readonly IndexerItem _item;
+    private readonly string _path;
 
     private static unsafe bool OpenWith(string filename)
     {
@@ -41,16 +40,16 @@ internal sealed partial class OpenWithCommand : InvokableCommand
         }
     }
 
-    internal OpenWithCommand(IndexerItem item)
+    internal OpenWithCommand(string fullPath)
     {
-        this._item = item;
+        this._path = fullPath;
         this.Name = Resources.Indexer_Command_OpenWith;
         this.Icon = new IconInfo("\uE7AC");
     }
 
     public override CommandResult Invoke()
     {
-        OpenWith(_item.FullPath);
+        OpenWith(_path);
 
         return CommandResult.GoHome();
     }

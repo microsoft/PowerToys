@@ -6,7 +6,6 @@ using System;
 using System.Runtime.InteropServices;
 using ManagedCommon;
 using ManagedCsWin32;
-using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -16,7 +15,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
 internal sealed partial class OpenPropertiesCommand : InvokableCommand
 {
-    private readonly IndexerItem _item;
+    private readonly string _path;
 
     private static unsafe bool ShowFileProperties(string filename)
     {
@@ -43,9 +42,9 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
         }
     }
 
-    internal OpenPropertiesCommand(IndexerItem item)
+    internal OpenPropertiesCommand(string fullPath)
     {
-        this._item = item;
+        this._path = fullPath;
         this.Name = Resources.Indexer_Command_OpenProperties;
         this.Icon = new IconInfo("\uE90F");
     }
@@ -54,13 +53,13 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
     {
         try
         {
-            ShowFileProperties(_item.FullPath);
+            ShowFileProperties(_path);
         }
         catch (Exception ex)
         {
             Logger.LogError("Error showing file properties: ", ex);
         }
 
-        return CommandResult.GoHome();
+        return CommandResult.Dismiss();
     }
 }

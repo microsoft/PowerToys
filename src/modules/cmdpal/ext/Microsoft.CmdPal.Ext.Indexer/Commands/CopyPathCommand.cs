@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -10,11 +9,11 @@ namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
 internal sealed partial class CopyPathCommand : InvokableCommand
 {
-    private readonly IndexerItem _item;
+    private readonly string _path;
 
-    internal CopyPathCommand(IndexerItem item)
+    internal CopyPathCommand(string fullPath)
     {
-        this._item = item;
+        this._path = fullPath;
         this.Name = Resources.Indexer_Command_CopyPath;
         this.Icon = new IconInfo("\uE8c8");
     }
@@ -23,7 +22,7 @@ internal sealed partial class CopyPathCommand : InvokableCommand
     {
         try
         {
-            ClipboardHelper.SetText(_item.FullPath);
+            ClipboardHelper.SetText(_path);
         }
         catch
         {

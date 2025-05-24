@@ -6,7 +6,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using ManagedCommon;
-using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -14,11 +13,11 @@ namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
 internal sealed partial class OpenInConsoleCommand : InvokableCommand
 {
-    private readonly IndexerItem _item;
+    private readonly string _path;
 
-    internal OpenInConsoleCommand(IndexerItem item)
+    internal OpenInConsoleCommand(string fullPath)
     {
-        this._item = item;
+        this._path = fullPath;
         this.Name = Resources.Indexer_Command_OpenPathInConsole;
         this.Icon = new IconInfo("\uE756");
     }
@@ -27,7 +26,7 @@ internal sealed partial class OpenInConsoleCommand : InvokableCommand
     {
         using (var process = new Process())
         {
-            process.StartInfo.WorkingDirectory = Path.GetDirectoryName(_item.FullPath);
+            process.StartInfo.WorkingDirectory = Path.GetDirectoryName(_path);
             process.StartInfo.FileName = "cmd.exe";
 
             try
@@ -36,10 +35,10 @@ internal sealed partial class OpenInConsoleCommand : InvokableCommand
             }
             catch (Win32Exception ex)
             {
-                Logger.LogError($"Unable to open {_item.FullPath}", ex);
+                Logger.LogError($"Unable to open '{_path}'", ex);
             }
         }
 
-        return CommandResult.GoHome();
+        return CommandResult.Dismiss();
     }
 }
