@@ -53,8 +53,9 @@ namespace UITests_FancyZones
             // ClearOpenWindows
             ClearOpenWindows();
 
-            // clean app zone history file
-            AppZoneHistory.DeleteFile();
+            // kill all processes related to FancyZones Editor to ensure a clean state
+            Session.KillAllProcessesByName("PowerToys.FancyZonesEditor");
+
             this.RestartScopeExe();
             FancyZonesEditorHelper.Files.Restore();
 
@@ -114,6 +115,8 @@ namespace UITests_FancyZones
 
             Assert.AreEqual(zoneColorWithoutShift, initialColor, $"[{testCaseName}] Zone deactivated failed.");
             dragElement.ReleaseDrag();
+
+            Clean();
         }
 
         /// <summary>
@@ -158,6 +161,8 @@ namespace UITests_FancyZones
             string appZoneHistoryJson = AppZoneHistory.GetData();
             string? zoneNumber = ZoneSwitchHelper.GetZoneIndexSetByAppName(powertoysWindowName, appZoneHistoryJson);
             Assert.IsNull(zoneNumber, $"[{testCaseName}] AppZoneHistory layout was unexpectedly set.");
+
+            Clean();
         }
 
         /// <summary>
@@ -199,6 +204,8 @@ namespace UITests_FancyZones
 
             // check the zone color is activated
             Assert.AreEqual(highlightColor, initialColor, $"[{testCaseName}] Zone activation failed.");
+
+            Clean();
         }
 
         /// <summary>
@@ -238,6 +245,8 @@ namespace UITests_FancyZones
 
             Assert.AreEqual(highlightColor, initialColor, $"[{testCaseName}] Zone activation failed.");
             Assert.AreNotEqual(highlightColor, withShiftColor, $"[{testCaseName}] Zone deactivation failed.");
+
+            Clean();
         }
 
         /// <summary>
@@ -280,6 +289,8 @@ namespace UITests_FancyZones
 
             Session.ReleaseKey(Key.Shift);
             dragElement.ReleaseDrag();
+
+            Clean();
         }
 
         /// <summary>
@@ -296,6 +307,8 @@ namespace UITests_FancyZones
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
             Assert.AreNotEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOn)}]  Window transparency failed.");
+
+            Clean();
         }
 
         /// <summary>
@@ -312,6 +325,14 @@ namespace UITests_FancyZones
         {
             var pixel = GetPixelWhenMakeDraggedWindow();
             Assert.AreEqual(pixel.PixelInWindow, pixel.TransPixel, $"[{nameof(TestMakeDraggedWindowTransparentOff)}]  Window without transparency failed.");
+
+            Clean();
+        }
+
+        private void Clean()
+        {
+            // clean app zone history file
+            AppZoneHistory.DeleteFile();
         }
 
         // Helper method to ensure the desktop has no open windows by clicking the "Show Desktop" button

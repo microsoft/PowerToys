@@ -31,6 +31,9 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
+            // kill all processes related to FancyZones Editor to ensure a clean state
+            Session.KillAllProcessesByName("PowerToys.FancyZonesEditor");
+
             // get PowerToys window Name
             powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
 
