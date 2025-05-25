@@ -336,7 +336,19 @@ namespace UITests_FancyZones
             Session.KillAllProcessesByName("explorer");
             Session.StartExe("explorer.exe", "C:\\");
 
-            Thread.Sleep(10);
+            Thread.Sleep(4);
+            int tries = 10;
+            while (this.IsWindowOpen(WindowName) == false)
+            {
+                tries++;
+                Session.KillAllProcessesByName("explorer");
+                Session.StartExe("explorer.exe", "C:\\");
+                if (tries > 10)
+                {
+                    break;
+                }
+            }
+
             Session.Attach(WindowName, WindowSize.UnSpecified);
             var tabView = Find<Tab>(By.AccessibilityId("TabView"));
             tabView.DoubleClick(); // maximize the window
