@@ -336,20 +336,20 @@ namespace UITests_FancyZones
             Session.KillAllProcessesByName("explorer");
             Session.StartExe("explorer.exe", "C:\\");
 
-            Thread.Sleep(4);
             int tries = 10;
             while (this.IsWindowOpen(WindowName) == false)
             {
                 tries++;
                 Session.KillAllProcessesByName("explorer");
                 Session.StartExe("explorer.exe", "C:\\");
+                Thread.Sleep(3);
                 if (tries > 10)
                 {
                     break;
                 }
             }
 
-            Session.Attach(WindowName, WindowSize.UnSpecified);
+            Session.Attach(WindowName);
             var tabView = Find<Tab>(By.AccessibilityId("TabView"));
             tabView.DoubleClick(); // maximize the window
             tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
@@ -521,8 +521,8 @@ namespace UITests_FancyZones
             this.RestartScopeExe();
             this.OpenFancyZonesPanel();
             this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Canvas custom layout");
-            Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
+            element = this.Find<Element>("Grid custom layout");
+            Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.ExitScopeExe();
 
