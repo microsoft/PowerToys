@@ -409,6 +409,7 @@ namespace UITests_FancyZones
             this.OpenFancyZonesPanel();
             this.ControlQuickLayoutSwitch(true);
 
+            this.TryReaction();
             int tries = 24;
             Pull(tries, "down");
             var switchGroup = this.Find<Group>("Enable quick layout switch");
@@ -520,7 +521,7 @@ namespace UITests_FancyZones
             this.RestartScopeExe();
             this.OpenFancyZonesPanel();
             this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Grid custom layout");
+            element = this.Find<Element>("Canvas custom layout");
             Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.ExitScopeExe();
@@ -604,12 +605,18 @@ namespace UITests_FancyZones
 
         private void ControlQuickLayoutSwitch(bool flag)
         {
+            this.TryReaction();
             int tries = 24;
             Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
             this.Find<ToggleSwitch>("Enable quick layout switch").Toggle(flag);
 
             tries = 24;
             Pull(tries, "up");
+        }
+
+        private void TryReaction()
+        {
+            this.Find<Custom>("Editor").Find<TextBlock>(By.AccessibilityId("HeaderPresenter")).Click();
         }
 
         private void AttachPowertoySetting()
