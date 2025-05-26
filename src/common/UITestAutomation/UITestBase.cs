@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.UITest
 
             if (this.scope == PowerToysModule.PowerToysSettings)
             {
-                if (isInPipeline)
+                if (IsInPipeline)
                 {
                     if (firstInitSetting == true)
                     {
