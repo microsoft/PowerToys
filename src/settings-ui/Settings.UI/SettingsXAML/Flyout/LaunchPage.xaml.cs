@@ -176,7 +176,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
             });
         }
 
-        private void ReportBugBtn_Click(object sender, RoutedEventArgs e)
+        internal void ReportBugBtn_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.StartBugReport();
 
