@@ -484,12 +484,7 @@ namespace Microsoft.PowerToys.UITest
             };
             foreach (var processName in processNamesToClose)
             {
-                var processes = Process.GetProcessesByName(processName);
-                foreach (var process in processes)
-                {
-                    process.Kill();
-                    process.WaitForExit();
-                }
+                Session.KillAllProcessesByName(processName);
             }
         }
 
