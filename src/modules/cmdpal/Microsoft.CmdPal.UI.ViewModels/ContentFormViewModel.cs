@@ -6,6 +6,7 @@ using System.Text.Json;
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Templating;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -28,43 +29,67 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
 
     public AdaptiveCardParseResult? Card { get; private set; }
 
+    private static string Serialize(string? s) =>
+        JsonSerializer.Serialize(s, JsonSerializationContext.Default.String);
+
+    private static bool TryBuildCard(
+        string templateJson,
+        string dataJson,
+        out AdaptiveCardParseResult? card,
+        out Exception? error)
+    {
+        card = null;
+        error = null;
+
+        try
+        {
+            var template = new AdaptiveCardTemplate(templateJson);
+            var cardJson = template.Expand(dataJson);
+            card = AdaptiveCard.FromJsonString(cardJson);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error building card from template: {Message}", ex.Message);
+            error = ex;
+            return false;
+        }
+    }
+
     public override void InitializeProperties()
     {
         var model = _formModel.Unsafe;
-        if (model == null)
+        if (model is null)
         {
             return;
         }
 
-        try
-        {
-            TemplateJson = model.TemplateJson;
-            StateJson = model.StateJson;
-            DataJson = model.DataJson;
+        TemplateJson = model.TemplateJson;
+        StateJson = model.StateJson;
+        DataJson = model.DataJson;
 
-            AdaptiveCardTemplate template = new(TemplateJson);
-            var cardJson = template.Expand(DataJson);
-            Card = AdaptiveCard.FromJsonString(cardJson);
+        if (TryBuildCard(TemplateJson, DataJson, out var builtCard, out var renderingError))
+        {
+            Card = builtCard;
+            UpdateProperty(nameof(Card));
+            return;
         }
-        catch (Exception e)
-        {
-            // If we fail to parse the card JSON, then display _our own card_
-            // with the exception
-            AdaptiveCardTemplate template = new(ErrorCardJson);
-            var serializeString = (string? s) => JsonSerializer.Serialize(s, JsonSerializationContext.Default.String);
 
-            // todo: we could probably stick Card.Errors in there too
-            var dataJson = $$"""
-{
-    "error_message": {{serializeString(e.Message)}},
-    "error_stack": {{serializeString(e.StackTrace)}},
-    "inner_exception": {{serializeString(e.InnerException?.Message)}},
-    "template_json": {{serializeString(TemplateJson)}},
-    "data_json": {{serializeString(DataJson)}}
-}
-""";
-            var cardJson = template.Expand(dataJson);
-            Card = AdaptiveCard.FromJsonString(cardJson);
+        var errorPayload = $$"""
+    {
+        "error_message": {{Serialize(renderingError!.Message)}},
+        "error_stack":   {{Serialize(renderingError.StackTrace)}},
+        "inner_exception": {{Serialize(renderingError.InnerException?.Message)}},
+        "template_json": {{Serialize(TemplateJson)}},
+        "data_json":     {{Serialize(DataJson)}}
+    }
+    """;
+
+        if (TryBuildCard(ErrorCardJson, errorPayload, out var errorCard, out var _))
+        {
+            Card = errorCard;
+            UpdateProperty(nameof(Card));
+            return;
         }
 
         UpdateProperty(nameof(Card));

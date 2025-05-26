@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -34,7 +35,7 @@ internal sealed partial class OpenInTerminalCommand : InvokableCommand
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error launching Windows Terminal: {ex.Message}");
+            Logger.LogError(ex.Message);
         }
 
         return CommandResult.Dismiss();
