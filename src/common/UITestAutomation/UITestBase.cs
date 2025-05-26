@@ -29,9 +29,10 @@ namespace Microsoft.PowerToys.UITest
 
         public required Session Session { get; set; }
 
+        public bool IsInPipeline { get; }
+
         public static MonitorInfoData.ParamsWrapper MonitorInfoData { get; set; } = new MonitorInfoData.ParamsWrapper() { Monitors = new List<MonitorInfoData.MonitorInfoDataWrapper>() };
 
-        private readonly bool isInPipeline;
         private readonly PowerToysModule scope;
         private readonly WindowSize size;
         private SessionHelper? sessionHelper;
@@ -43,9 +44,9 @@ namespace Microsoft.PowerToys.UITest
         // private string? screenshotDirectory;
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
         {
-            this.isInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
+            this.IsInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
             Console.WriteLine($"Running tests on platform: {Environment.GetEnvironmentVariable("platform")}");
-            if (isInPipeline)
+            if (IsInPipeline)
             {
                 NativeMethods.ChangeDisplayResolution(1920, 1080);
                 NativeMethods.GetMonitorInfo();
@@ -64,7 +65,7 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
-            if (isInPipeline)
+            if (IsInPipeline)
             {
                 screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
                 Directory.CreateDirectory(screenshotDirectory);
@@ -107,7 +108,7 @@ namespace Microsoft.PowerToys.UITest
         [TestCleanup]
         public void TestCleanup()
         {
-            if (isInPipeline)
+            if (IsInPipeline)
             {
                 screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
                 Dispose();
@@ -325,6 +326,22 @@ namespace Microsoft.PowerToys.UITest
         protected ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 5000, bool global = false)
         {
             return this.Session.FindAll<Element>(By.Name(name), timeoutMS, global);
+        }
+
+        /// <summary>
+        /// Scrolls the page
+        /// </summary>
+        /// <param name="scrollCount">The number of scroll attempts.</param>
+        /// <param name="direction">The direction to scroll.</param>
+        /// <param name="msPreAction">Pre-action delay in milliseconds.</param>
+        /// <param name="msPostAction">Post-action delay in milliseconds.</param>
+        public void Scroll(int scrollCount = 5, string direction = "Up", int msPreAction = 500, int msPostAction = 500)
+        {
+            MouseActionType mouseAction = direction == "Up" ? MouseActionType.ScrollUp : MouseActionType.ScrollDown;
+            for (int i = 0; i < scrollCount; i++)
+            {
+                Session.PerformMouseAction(mouseAction, msPreAction, msPostAction); // Ensure settings are visible
+            }
         }
 
         /// <summary>

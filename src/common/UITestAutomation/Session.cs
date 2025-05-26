@@ -1,9 +1,10 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -554,6 +555,22 @@ namespace Microsoft.PowerToys.UITest
             return WindowHelper.GetWindowCenter(this.MainWindowHandler);
         }
 
+        /// <summary>
+        /// Gets the main window center coordinates.
+        /// </summary>
+        /// <returns>(int Left, int Top, int Right, int Bottom)</returns>
+        public (int Left, int Top, int Right, int Bottom) GetMainWindowRect()
+        {
+            return WindowHelper.GetWindowRect(this.MainWindowHandler);
+        }
+
+        /// <summary>
+        /// Launches the specified executable with optional arguments and simulates a delay before and after execution.
+        /// </summary>
+        /// <param name="executablePath">The full path to the executable to launch.</param>
+        /// <param name="arguments">Optional command-line arguments to pass to the executable.</param>
+        /// <param name="msPreAction">The number of milliseconds to wait before launching the executable. Default is 0 ms.</param>
+        /// <param name="msPostAction">The number of milliseconds to wait after launching the executable. Default is 2000 ms.</param>
         public void StartExe(string executablePath, string arguments = "", int msPreAction = 0, int msPostAction = 2000)
         {
             PerformAction(
@@ -576,6 +593,11 @@ namespace Microsoft.PowerToys.UITest
             Process.Start(processInfo);
         }
 
+        /// <summary>
+        /// Terminates all running processes that match the specified process name.
+        /// Waits for each process to exit after sending the kill signal.
+        /// </summary>
+        /// <param name="processName">The name of the process to terminate (without extension, e.g., "notepad").</param>
         public void KillAllProcessesByName(string processName)
         {
             foreach (var process in Process.GetProcessesByName(processName))

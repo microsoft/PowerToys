@@ -412,8 +412,26 @@ namespace MouseUtils.UITests
                 selectedItem.Click();
                 var rgbHexEdit = this.Find<TextBox>("RGB hex");
                 Assert.IsNotNull(rgbHexEdit);
+                Task.Delay(500).Wait();
                 rgbHexEdit.SetText(colorValue);
+                int retry = 5;
+                while (retry > 0)
+                {
+                    Task.Delay(500).Wait();
+                    rgbHexEdit.SetText(colorValue);
+                    Task.Delay(500).Wait();
+                    string rgbHex = rgbHexEdit.Text;
+                    bool isValid = rgbHex.StartsWith('#') && rgbHex.Length == 9 && rgbHex.Substring(1) == colorValue;
+                    Task.Delay(500).Wait();
+                    if (isValid)
+                    {
+                        break;
+                    }
 
+                    retry--;
+                }
+
+                Task.Delay(500).Wait();
                 button.Click();
             }
         }
