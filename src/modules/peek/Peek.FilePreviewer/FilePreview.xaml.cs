@@ -149,6 +149,13 @@ namespace Peek.FilePreviewer
             return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        public Visibility IsWarningMessageVisible(string? warningMessage)
+        {
+            var shouldShow = !string.IsNullOrEmpty(warningMessage);
+
+            return shouldShow ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         public Visibility IsUnsupportedPreviewVisible(IUnsupportedFilePreviewer? previewer, PreviewState state)
         {
             var isValidPreview = previewer != null && (MatchPreviewState(state, PreviewState.Loaded) || MatchPreviewState(state, PreviewState.Error));
