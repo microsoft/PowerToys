@@ -344,7 +344,7 @@ namespace UITests_FancyZones
             // Attach FancyZones Editor
             this.AttachPowertoySetting();
             this.Find<Pane>(By.ClassName("InputNonClientPointerSource")).Click();
-            this.OpenFancyZonesPanel();
+            this.OpenFancyZonesPanel(isMax: false);
             this.AttachFancyZonesEditor();
             var element = this.Find<Element>("Grid custom layout");
             Assert.IsTrue(element.Selected, "Grid custom layout is not visible");
@@ -550,7 +550,7 @@ namespace UITests_FancyZones
             Clean();
         }
 
-        private void OpenFancyZonesPanel(bool launchAsAdmin = false)
+        private void OpenFancyZonesPanel(bool launchAsAdmin = false, bool isMax = true)
         {
             var windowingElement = this.Find<NavigationViewItem>("Windowing & Layouts");
 
@@ -563,7 +563,11 @@ namespace UITests_FancyZones
 
             windowingElement.Find<Element>("FancyZones").Click();
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
-            this.Find<Button>("Maximize").Click(); // maximize the window
+            if (isMax == true)
+            {
+                this.Find<Button>("Maximize").Click(); // maximize the window
+            }
+
             this.Find<Custom>("Editor").Find<TextBlock>(By.AccessibilityId("HeaderPresenter")).Click();
         }
 
