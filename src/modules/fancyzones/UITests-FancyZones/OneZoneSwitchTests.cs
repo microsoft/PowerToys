@@ -43,7 +43,7 @@ namespace UITests_FancyZones
             // set a custom layout with 2 subzones
             SetupCustomLayouts();
 
-           // get PowerToys window Name
+            // get PowerToys window Name
             powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
 
             // Launch FancyZones
