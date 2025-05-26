@@ -344,13 +344,12 @@ namespace UITests_FancyZones
             // Attach FancyZones Editor
             this.AttachPowertoySetting();
             this.Find<Pane>(By.ClassName("InputNonClientPointerSource")).Click();
+            this.OpenFancyZonesPanel();
             this.AttachFancyZonesEditor();
             var element = this.Find<Element>("Grid custom layout");
             Assert.IsTrue(element.Selected, "Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
 
-            // Clean
-            Session.KillAllProcessesByName("explorer");
             Clean();
         }
 
