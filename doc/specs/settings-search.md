@@ -34,11 +34,11 @@ internal readonly struct SettingEntry
 ```
 
 
-## 3 · One-shot index build
+## 3 · One-shot index build 
 ```mermaid
 flowchart TD
     A[App start] --> B[Reflect ISettingsPage types]
-    B --> C[Instantiate page<br>(no nav)]
+    B --> C[Instantiate page]
     C --> D[Walk visual tree]
     D --> E{UID?<br>& matches Section/Leaf rules}
     E -- yes --> F[Create SettingEntry<br>& add to builder]
@@ -48,8 +48,6 @@ flowchart TD
     D -->|done| H[Freeze ImmutableArray&lt;SettingEntry&gt;]
     H --> I[static SearchIndex.Index]
 ```
-
-![Build index flow](./build_index.png)
 
 * Runs once per process.
 * Any locale switch requires a full app restart; no incremental rebuild.
@@ -135,8 +133,6 @@ sequenceDiagram
     Page->>FE: fe.StartBringIntoView()
     Note over FE: pulse highlight 1s
 ```
-
-![End-to-end flow](./end-end-flow.png)
 
 ## 5 · Unit tests
 
