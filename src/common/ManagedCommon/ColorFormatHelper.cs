@@ -613,7 +613,7 @@ namespace ManagedCommon
                 case "HWB": return "hwb(%Hu %Wh% %Bn%)";
                 case "NCol": return "%Hn, %Wh%, %Bn%";
                 case "Oklab": return "oklab(%Lo %Oa %Ob)";
-                case "OKLCh": return "oklch(%Lo %Oc %Oh)";
+                case "OkLCh": return "oklch(%Lo %Oc %Oh)";
                 case "RGB": return "rgb(%Re %Gr %Bl)";
                 case "VEC4": return "(%Reff, %Grff, %Blff, 1f)";
                 default: return string.Empty;
