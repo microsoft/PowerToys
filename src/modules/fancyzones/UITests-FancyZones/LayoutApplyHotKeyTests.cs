@@ -21,8 +21,6 @@ namespace UITests_FancyZones
     [TestClass]
     public class LayoutApplyHotKeyTests : UITestBase
     {
-        private static readonly string WindowName = "Windows (C:) - File Explorer"; // set launch explorer window name
-
         public LayoutApplyHotKeyTests()
             : base(PowerToysModule.PowerToysSettings)
         {
