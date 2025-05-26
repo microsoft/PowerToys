@@ -31,6 +31,9 @@ namespace UITests_FancyZones
         [TestInitialize]
         public void TestInitialize()
         {
+            // kill all processes related to FancyZones Editor to ensure a clean state
+            Session.KillAllProcessesByName("PowerToys.FancyZonesEditor");
+
             // get PowerToys window Name
             powertoysWindowName = ZoneSwitchHelper.GetActiveWindowTitle();
 
@@ -38,10 +41,10 @@ namespace UITests_FancyZones
             AppZoneHistory.DeleteFile();
             FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.DeleteFile();
 
+            this.RestartScopeExe();
+
             // set a custom layout with 2 subzones
             SetupCustomLayouts();
-
-            this.RestartScopeExe();
 
             // Launch FancyZones
             LaunchFancyZones();

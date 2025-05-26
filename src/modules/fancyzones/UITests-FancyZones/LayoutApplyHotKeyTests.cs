@@ -405,6 +405,7 @@ namespace Microsoft.FancyZones.UITests
                 checkbox2.Click();
             }
 
+            // this.CloseFancyZonesEditor();
             Clean();
         }
 
@@ -608,7 +609,7 @@ namespace Microsoft.FancyZones.UITests
 
         private void CloseFancyZonesEditor()
         {
-            this.Session.Find<Element>("Close").Click();
+            this.Session.Find<Button>("Close").Click();
         }
 
         private void Clean()
