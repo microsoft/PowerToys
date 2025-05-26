@@ -57,6 +57,7 @@ namespace Microsoft.PowerToys.UITest
 
             if (scope == PowerToysModule.PowerToysSettings)
             {
+                this.ExitExe(runnerProcessInfo.FileName);
                 this.runner = Process.Start(runnerProcessInfo);
             }
 
