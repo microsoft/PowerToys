@@ -399,9 +399,9 @@ namespace UITests_FancyZones
                 // Set the FancyZones layout to a custom layout
                 this.Find<Element>(By.Name("Custom Column")).Click();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"[Exception] Failed to attach to FancyZones window. Retrying...{ex.Message}");
+                // Console.WriteLine($"[Exception] Failed to attach to FancyZones window. Retrying...{ex.Message}");
                 this.Find<Microsoft.PowerToys.UITest.Button>("Close").Click();
                 this.Session.Attach(PowerToysModule.PowerToysSettings);
                 SetupCustomLayouts();
