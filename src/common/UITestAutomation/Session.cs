@@ -480,19 +480,7 @@ namespace Microsoft.PowerToys.UITest
             if (this.Root != null)
             {
                 // search window handler by window title (admin and non-admin titles)
-                int timeCount = 10;
                 var matchingWindows = WindowHelper.ApiHelper.FindDesktopWindowHandler([windowName, WindowHelper.AdministratorPrefix + windowName]);
-                while (timeCount > 0)
-                {
-                    if (matchingWindows.Count > 0 && matchingWindows[0].HWnd != IntPtr.Zero)
-                    {
-                        break;
-                    }
-
-                    Task.Delay(500).Wait();
-                    timeCount--;
-                    matchingWindows = WindowHelper.ApiHelper.FindDesktopWindowHandler([windowName, WindowHelper.AdministratorPrefix + windowName]);
-                }
 
                 if (matchingWindows.Count == 0 || matchingWindows[0].HWnd == IntPtr.Zero)
                 {
