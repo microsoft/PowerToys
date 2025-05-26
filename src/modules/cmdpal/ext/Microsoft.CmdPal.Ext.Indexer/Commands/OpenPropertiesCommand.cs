@@ -20,7 +20,7 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
     {
         var info = new NativeMethods.SHELLEXECUTEINFOW
         {
-            cbSize = Unsafe.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
+            cbSize = (uint)Unsafe.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
             lpVerb = "properties",
             lpFile = filename,
 

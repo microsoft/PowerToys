@@ -28,25 +28,20 @@ public sealed partial class NativeMethods
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct SHELLEXECUTEINFOW
     {
-        public int cbSize;
+        public uint cbSize;
         public uint fMask;
         public IntPtr hwnd;
-        [MarshalAs(UnmanagedType.LPWStr)]
         public string lpVerb;
-        [MarshalAs(UnmanagedType.LPWStr)]
         public string lpFile;
-        [MarshalAs(UnmanagedType.LPWStr)]
         public string lpParameters;
-        [MarshalAs(UnmanagedType.LPWStr)]
         public string lpDirectory;
         public int nShow;
         public IntPtr hInstApp;
         public IntPtr lpIDList;
-        [MarshalAs(UnmanagedType.LPWStr)]
         public string lpClass;
         public IntPtr hkeyClass;
         public uint dwHotKey;
-        public IntPtr hIcon;
+        public IntPtr hIconOrMonitor;
         public IntPtr hProcess;
     }
 
@@ -62,10 +57,6 @@ public sealed partial class NativeMethods
 
         public static void Free(IntPtr? managed)
         {
-            if (managed != null)
-            {
-                Marshal.ReleaseComObject(managed);
-            }
         }
 
         public static nint ConvertToUnmanaged(SHELLEXECUTEINFOW managed)

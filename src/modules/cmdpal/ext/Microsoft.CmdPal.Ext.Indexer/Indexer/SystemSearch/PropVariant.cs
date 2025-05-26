@@ -3,13 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
-using System.Text;
-using System.Threading.Tasks;
 using VARTYPE = System.Runtime.InteropServices.VarEnum;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
@@ -75,49 +70,4 @@ public struct BLOB
     /// <summary>A pointer to the allocated array of bytes.</summary>
     [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "No need")]
     public IntPtr pBlobData;
-}
-
-[CustomMarshaller(typeof(PropVariant), MarshalMode.UnmanagedToManagedOut, typeof(PROPVARIANTOutMarshaller))]
-[CustomMarshaller(typeof(PropVariant), MarshalMode.ManagedToUnmanagedOut, typeof(PROPVARIANTOutMarshaller))]
-public static partial class PROPVARIANTOutMarshaller
-{
-    public static void Free(IntPtr managed)
-    {
-        // Marshal.FreeCoTaskMem(managed);
-    }
-
-    public static unsafe PropVariant ConvertToManaged(IntPtr unmanaged)
-    {
-        // return Marshal.PtrToStructure<PropVariant>(unmanaged);
-        return new PropVariant("test");
-    }
-
-    public static nint ConvertToUnmanaged(PropVariant managed)
-    {
-        var obj = Marshal.GetIUnknownForObject(managed);
-        return obj;
-    }
-}
-
-[CustomMarshaller(typeof(PropVariant), MarshalMode.ManagedToUnmanagedIn, typeof(PROPVARIANTRefMarshaller))]
-[CustomMarshaller(typeof(PropVariant), MarshalMode.UnmanagedToManagedIn, typeof(PROPVARIANTRefMarshaller))]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "No need")]
-public static partial class PROPVARIANTRefMarshaller
-{
-    public static void Free(IntPtr managed)
-    {
-        // Marshal.FreeCoTaskMem(managed);
-    }
-
-    public static PropVariant ConvertToManaged(IntPtr unmanaged)
-    {
-        var obj = Marshal.GetObjectForIUnknown(unmanaged);
-        return (PropVariant)obj;
-    }
-
-    public static nint ConvertToUnmanaged(PropVariant managed)
-    {
-        var obj = Marshal.GetIUnknownForObject(managed);
-        return obj;
-    }
 }

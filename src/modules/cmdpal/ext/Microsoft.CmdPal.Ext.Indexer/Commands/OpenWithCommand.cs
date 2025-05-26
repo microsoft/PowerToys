@@ -18,7 +18,7 @@ internal sealed partial class OpenWithCommand : InvokableCommand
     {
         var info = new NativeMethods.SHELLEXECUTEINFOW
         {
-            cbSize = Unsafe.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
+            cbSize = (uint)Unsafe.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
             lpVerb = "openas",
             lpFile = filename,
 
