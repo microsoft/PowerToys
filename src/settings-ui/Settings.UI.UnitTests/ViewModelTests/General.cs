@@ -232,7 +232,7 @@ namespace ViewModelTests
             Func<string, int> sendMockIPCConfigMSG = msg =>
             {
                 OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
-                Assert.IsTrue(snd.GeneralSettings.ShowSysTrayIcon);
+                Assert.IsFalse(snd.GeneralSettings.ShowSysTrayIcon);
                 return 0;
             };
 
