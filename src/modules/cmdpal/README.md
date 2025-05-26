@@ -39,7 +39,7 @@ Projects of interest are:
 
 
 [Initial SDK Spec]: ./doc/initial-sdk-spec/initial-sdk-spec.md
-[generic samples]: ./Exts/SamplePagesExtension 
+[generic samples]: ./Exts/SamplePagesExtension
 [real samples]: ./Exts/ProcessMonitorExtension
 [real extensions that we've "shipped" already]: https://github.com/zadjii/CmdPalExtensions/blob/main/src/extensions
 
