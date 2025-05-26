@@ -65,11 +65,17 @@ public partial class UWP
         const uint sTGM_READ = 0x00000000;
 
         IStream* stream = null;
+        using var streamHandle = new SafeComHandle((IntPtr)stream);
+
         try
         {
             PInvoke.SHCreateStreamOnFileEx(path, sTGM_READ, noAttribute, false, null, &stream).ThrowOnFailure();
 
-            Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest => new UWPApplication((IAppxManifestApplication*)appInManifest, this)).Where(a =>
+            Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest =>
+            {
+                using var appHandle = new SafeComHandle((IntPtr)appInManifest);
+                return new UWPApplication((IAppxManifestApplication*)appInManifest, this);
+            }).Where(a =>
             {
                 var valid =
                     !string.IsNullOrEmpty(a.UserModelId) &&
@@ -82,10 +88,6 @@ public partial class UWP
         {
             Apps = Array.Empty<UWPApplication>();
             return;
-        }
-        finally
-        {
-            ComFreeHelper.ComObjectRelease(stream);
         }
     }
 

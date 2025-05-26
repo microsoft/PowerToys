@@ -23,13 +23,4 @@ public static class ComFreeHelper
             PInvoke.CoTaskMemFree(ptr);
         }
     }
-
-    public static unsafe void ComObjectRelease<T>(T* comPtr)
-        where T : unmanaged
-    {
-        if (comPtr != null)
-        {
-            ((IUnknown*)comPtr)->Release();
-        }
-    }
 }

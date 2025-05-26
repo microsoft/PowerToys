@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -34,24 +35,19 @@ internal sealed partial class AppCommand : InvokableCommand
             unsafe
             {
                 IApplicationActivationManager* appManager = null;
-                try
-                {
-                    PInvoke.CoCreateInstance(
-                        typeof(ApplicationActivationManager).GUID,
-                        null,
-                        CLSCTX.CLSCTX_INPROC_SERVER,
-                        out appManager);
+                PInvoke.CoCreateInstance(
+                    typeof(ApplicationActivationManager).GUID,
+                    null,
+                    CLSCTX.CLSCTX_INPROC_SERVER,
+                    out appManager);
 
-                    appManager->ActivateApplication(
-                        aumid,
-                        string.Empty,
-                        ACTIVATEOPTIONS.AO_NONE,
-                        out var unusedPid);
-                }
-                finally
-                {
-                    ComFreeHelper.ComObjectRelease(appManager);
-                }
+                using var handle = new SafeComHandle((IntPtr)appManager);
+
+                appManager->ActivateApplication(
+                    aumid,
+                    string.Empty,
+                    ACTIVATEOPTIONS.AO_NONE,
+                    out var unusedPid);
             }
         }).ConfigureAwait(false);
     }
