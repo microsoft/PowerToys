@@ -35,7 +35,7 @@ namespace Peek.FilePreviewer.Previewers
         private Size videoSize;
 
         [ObservableProperty]
-        private string? warningMessage;
+        private string? missingCodecName;
 
         public VideoPreviewer(IFileSystemItem file)
         {
@@ -62,7 +62,7 @@ namespace Peek.FilePreviewer.Previewers
         public async Task LoadPreviewAsync(CancellationToken cancellationToken)
         {
             State = PreviewState.Loading;
-            WarningMessage = null;
+            MissingCodecName = null;
             VideoTask = LoadVideoAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             await VideoTask;
@@ -142,7 +142,7 @@ namespace Peek.FilePreviewer.Previewers
 
                     if (!string.IsNullOrEmpty(missingCodecName))
                     {
-                        WarningMessage = ReadableStringHelper.FormatResourceString("VideoMissingCodec_WarningMessage", missingCodecName);
+                        MissingCodecName = missingCodecName;
                     }
 
                     Preview = MediaSource.CreateFromStorageFile(storageFile);
