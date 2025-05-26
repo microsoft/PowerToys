@@ -57,6 +57,14 @@ namespace KeyboardManagerEditorUI.Styles
             UpdateAllAppsCheckBoxState();
         }
 
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            AllAppsCheckBox.Checked += AllAppsCheckBox_Checked;
+            AllAppsCheckBox.Unchecked += AllAppsCheckBox_Unchecked;
+
+            AppNameTextBox.GotFocus += AppNameTextBox_GotFocus;
+        }
+
         private void InputControl_Unloaded(object sender, RoutedEventArgs e)
         {
             // Reset the control when it is unloaded
@@ -101,6 +109,178 @@ namespace KeyboardManagerEditorUI.Styles
         {
             ShowNotificationTip("Shortcuts can only have up to 4 modifier keys");
         }
+
+        public void CleanupKeyboardHook()
+        {
+            KeyboardHookHelper.Instance.CleanupHook();
+        }
+
+        private void RemappedToggleBtn_Checked(object sender, RoutedEventArgs e)
+        {
+            // Only set NewMode to true if RemappedToggleBtn is checked
+            if (RemappedToggleBtn.IsChecked == true)
+            {
+                InputMode = KeyInputMode.RemappedKeys;
+
+                // Make sure OriginalToggleBtn is unchecked
+                if (OriginalToggleBtn.IsChecked == true)
+                {
+                    OriginalToggleBtn.IsChecked = false;
+                }
+
+                KeyboardHookHelper.Instance.ActivateHook(this);
+            }
+            else
+            {
+                CleanupKeyboardHook();
+            }
+        }
+
+        private void OriginalToggleBtn_Checked(object sender, RoutedEventArgs e)
+        {
+            // Only set NewMode to false if OriginalToggleBtn is checked
+            if (OriginalToggleBtn.IsChecked == true)
+            {
+                InputMode = KeyInputMode.OriginalKeys;
+
+                // Make sure RemappedToggleBtn is unchecked
+                if (RemappedToggleBtn.IsChecked == true)
+                {
+                    RemappedToggleBtn.IsChecked = false;
+                }
+
+                KeyboardHookHelper.Instance.ActivateHook(this);
+            }
+        }
+
+        private void AllAppsCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            if (RemappedToggleBtn != null && RemappedToggleBtn.IsChecked == true)
+            {
+                RemappedToggleBtn.IsChecked = false;
+            }
+
+            if (OriginalToggleBtn != null && OriginalToggleBtn.IsChecked == true)
+            {
+                OriginalToggleBtn.IsChecked = false;
+            }
+
+            CleanupKeyboardHook();
+
+            AppNameTextBox.Visibility = Visibility.Visible;
+        }
+
+        private void AllAppsCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            AppNameTextBox.Visibility = Visibility.Collapsed;
+        }
+
+        private void AppNameTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            // Reset the focus state when the AppNameTextBox is focused
+            if (RemappedToggleBtn != null && RemappedToggleBtn.IsChecked == true)
+            {
+                RemappedToggleBtn.IsChecked = false;
+            }
+
+            if (OriginalToggleBtn != null && OriginalToggleBtn.IsChecked == true)
+            {
+                OriginalToggleBtn.IsChecked = false;
+            }
+
+            CleanupKeyboardHook();
+        }
+
+        public void SetRemappedKeys(List<string> keys)
+        {
+            _remappedKeys.Clear();
+            if (keys != null)
+            {
+                foreach (var key in keys)
+                {
+                    _remappedKeys.Add(key);
+                }
+            }
+
+            UpdateAllAppsCheckBoxState();
+        }
+
+        public void SetOriginalKeys(List<string> keys)
+        {
+            _originalKeys.Clear();
+            if (keys != null)
+            {
+                foreach (var key in keys)
+                {
+                    _originalKeys.Add(key);
+                }
+            }
+        }
+
+        public void SetApp(bool isSpecificApp, string appName)
+        {
+            if (isSpecificApp)
+            {
+                AllAppsCheckBox.IsChecked = true;
+                AppNameTextBox.Text = appName;
+                AppNameTextBox.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                AllAppsCheckBox.IsChecked = false;
+                AppNameTextBox.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        public List<string> GetOriginalKeys()
+        {
+            return _originalKeys.ToList();
+        }
+
+        public List<string> GetRemappedKeys()
+        {
+            return _remappedKeys.ToList();
+        }
+
+        public bool GetIsAppSpecific()
+        {
+            return AllAppsCheckBox.IsChecked ?? false;
+        }
+
+        public string GetAppName()
+        {
+            return AppNameTextBox.Text ?? string.Empty;
+        }
+
+        public void SetUpToggleButtonInitialStatus()
+        {
+            // Ensure OriginalToggleBtn is checked
+            if (OriginalToggleBtn != null && OriginalToggleBtn.IsChecked != true)
+            {
+                OriginalToggleBtn.IsChecked = true;
+            }
+
+            // Make sure RemappedToggleBtn is not checked
+            if (RemappedToggleBtn != null && RemappedToggleBtn.IsChecked == true)
+            {
+                RemappedToggleBtn.IsChecked = false;
+            }
+        }
+
+        public void UpdateAllAppsCheckBoxState()
+        {
+            // Only enable app-specific remapping for shortcuts (multiple keys)
+            bool isShortcut = _originalKeys.Count > 1;
+
+            AllAppsCheckBox.IsEnabled = isShortcut;
+
+            // If it's not a shortcut, ensure the checkbox is unchecked and app textbox is hidden
+            if (!isShortcut)
+            {
+                AllAppsCheckBox.IsChecked = false;
+                AppNameTextBox.Visibility = Visibility.Collapsed;
+            }
+       }
 
         public void ShowNotificationTip(string message)
         {
@@ -163,156 +343,6 @@ namespace KeyboardManagerEditorUI.Styles
             }
         }
 
-        public void CleanupKeyboardHook()
-        {
-            KeyboardHookHelper.Instance.CleanupHook();
-        }
-
-        public void SetRemappedKeys(List<string> keys)
-        {
-            _remappedKeys.Clear();
-            if (keys != null)
-            {
-                foreach (var key in keys)
-                {
-                    _remappedKeys.Add(key);
-                }
-            }
-
-            UpdateAllAppsCheckBoxState();
-        }
-
-        public void SetOriginalKeys(List<string> keys)
-        {
-            _originalKeys.Clear();
-            if (keys != null)
-            {
-                foreach (var key in keys)
-                {
-                    _originalKeys.Add(key);
-                }
-            }
-        }
-
-        public List<string> GetOriginalKeys()
-        {
-            return _originalKeys.ToList();
-        }
-
-        public List<string> GetRemappedKeys()
-        {
-            return _remappedKeys.ToList();
-        }
-
-        public bool GetIsAppSpecific()
-        {
-            return AllAppsCheckBox.IsChecked ?? false;
-        }
-
-        public string GetAppName()
-        {
-            return AppNameTextBox.Text ?? string.Empty;
-        }
-
-        private void RemappedToggleBtn_Checked(object sender, RoutedEventArgs e)
-        {
-            // Only set NewMode to true if RemappedToggleBtn is checked
-            if (RemappedToggleBtn.IsChecked == true)
-            {
-                InputMode = KeyInputMode.RemappedKeys;
-
-                // Make sure OriginalToggleBtn is unchecked
-                if (OriginalToggleBtn.IsChecked == true)
-                {
-                    OriginalToggleBtn.IsChecked = false;
-                }
-
-                KeyboardHookHelper.Instance.ActivateHook(this);
-            }
-            else
-            {
-                CleanupKeyboardHook();
-            }
-        }
-
-        private void OriginalToggleBtn_Checked(object sender, RoutedEventArgs e)
-        {
-            // Only set NewMode to false if OriginalToggleBtn is checked
-            if (OriginalToggleBtn.IsChecked == true)
-            {
-                InputMode = KeyInputMode.OriginalKeys;
-
-                // Make sure RemappedToggleBtn is unchecked
-                if (RemappedToggleBtn.IsChecked == true)
-                {
-                    RemappedToggleBtn.IsChecked = false;
-                }
-
-                KeyboardHookHelper.Instance.ActivateHook(this);
-            }
-        }
-
-        public void SetApp(bool isSpecificApp, string appName)
-        {
-            if (isSpecificApp)
-            {
-                AllAppsCheckBox.IsChecked = true;
-                AppNameTextBox.Text = appName;
-                AppNameTextBox.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                AllAppsCheckBox.IsChecked = false;
-                AppNameTextBox.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        private void AllAppsCheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            if (RemappedToggleBtn != null && RemappedToggleBtn.IsChecked == true)
-            {
-                RemappedToggleBtn.IsChecked = false;
-            }
-
-            if (OriginalToggleBtn != null && OriginalToggleBtn.IsChecked == true)
-            {
-                OriginalToggleBtn.IsChecked = false;
-            }
-
-            CleanupKeyboardHook();
-
-            AppNameTextBox.Visibility = Visibility.Visible;
-        }
-
-        private void AllAppsCheckBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            AppNameTextBox.Visibility = Visibility.Collapsed;
-        }
-
-        private void AppNameTextBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            // Reset the focus state when the AppNameTextBox is focused
-            if (RemappedToggleBtn != null && RemappedToggleBtn.IsChecked == true)
-            {
-                RemappedToggleBtn.IsChecked = false;
-            }
-
-            if (OriginalToggleBtn != null && OriginalToggleBtn.IsChecked == true)
-            {
-                OriginalToggleBtn.IsChecked = false;
-            }
-
-            CleanupKeyboardHook();
-        }
-
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            AllAppsCheckBox.Checked += AllAppsCheckBox_Checked;
-            AllAppsCheckBox.Unchecked += AllAppsCheckBox_Unchecked;
-
-            AppNameTextBox.GotFocus += AppNameTextBox_GotFocus;
-        }
-
         public void ResetToggleButtons()
         {
             // Reset toggle button status without clearing the key displays
@@ -324,57 +354,6 @@ namespace KeyboardManagerEditorUI.Styles
             if (OriginalToggleBtn != null)
             {
                 OriginalToggleBtn.IsChecked = false;
-            }
-        }
-
-        public void SetUpToggleButtonInitialStatus()
-        {
-            // Ensure OriginalToggleBtn is checked
-            if (OriginalToggleBtn != null && OriginalToggleBtn.IsChecked != true)
-            {
-                OriginalToggleBtn.IsChecked = true;
-            }
-
-            // Make sure RemappedToggleBtn is not checked
-            if (RemappedToggleBtn != null && RemappedToggleBtn.IsChecked == true)
-            {
-                RemappedToggleBtn.IsChecked = false;
-            }
-        }
-
-        public void UpdateAllAppsCheckBoxState()
-        {
-            // Only enable app-specific remapping for shortcuts (multiple keys)
-            bool isShortcut = _originalKeys.Count > 1;
-
-            AllAppsCheckBox.IsEnabled = isShortcut;
-
-            // If it's not a shortcut, ensure the checkbox is unchecked and app textbox is hidden
-            if (!isShortcut)
-            {
-                AllAppsCheckBox.IsChecked = false;
-                AppNameTextBox.Visibility = Visibility.Collapsed;
-            }
-       }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    CleanupKeyboardHook();
-                    CloseExistingNotification();
-                    Reset();
-                }
-
-                _disposed = true;
             }
         }
 
@@ -413,6 +392,27 @@ namespace KeyboardManagerEditorUI.Styles
             {
                 this.IsTabStop = false;
                 this.IsTabStop = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    CleanupKeyboardHook();
+                    CloseExistingNotification();
+                    Reset();
+                }
+
+                _disposed = true;
             }
         }
     }
