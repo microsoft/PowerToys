@@ -16,6 +16,8 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 
+using MouseWithoutBorders.Core;
+
 // We are sure we dont have managed resource in KEYBDINPUT, IntPtr just holds a value
 [module: SuppressMessage("Microsoft.Design", "CA1049:TypesThatOwnNativeResourcesShouldBeDisposable", Scope = "type", Target = "MouseWithoutBorders.NativeMethods+KEYBDINPUT", Justification = "Dotnet port with style preservation")]
 
@@ -122,8 +124,15 @@ namespace MouseWithoutBorders.Class
         [DllImport("user32.dll", SetLastError = false)]
         internal static extern IntPtr GetDesktopWindow();
 
+        [LibraryImport("user32.dll")]
+        internal static partial IntPtr GetShellWindow();
+
         [DllImport("user32.dll")]
         internal static extern IntPtr GetWindowDC(IntPtr hWnd);
+
+        [LibraryImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool GetWindowRect(IntPtr hWnd, out RECT rect);
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         internal static extern int DrawText(IntPtr hDC, string lpString, int nCount, ref RECT lpRect, uint uFormat);
@@ -333,11 +342,11 @@ namespace MouseWithoutBorders.Class
 
         [DllImport("ntdll.dll")]
         internal static extern int NtQueryInformationProcess(
-           IntPtr hProcess,
-           int processInformationClass /* 0 */,
-           ref PROCESS_BASIC_INFORMATION processBasicInformation,
-           uint processInformationLength,
-           out uint returnLength);
+            IntPtr hProcess,
+            int processInformationClass /* 0 */,
+            ref PROCESS_BASIC_INFORMATION processBasicInformation,
+            uint processInformationLength,
+            out uint returnLength);
 #endif
 
 #if USE_GetSecurityDescriptorSacl
@@ -632,14 +641,14 @@ namespace MouseWithoutBorders.Class
         {
             internal int LowPart;
             internal int HighPart;
-        }// end struct
+        } // end struct
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct LUID_AND_ATTRIBUTES
         {
             internal LUID Luid;
             internal int Attributes;
-        }// end struct
+        } // end struct
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct TOKEN_PRIVILEGES
@@ -670,23 +679,23 @@ namespace MouseWithoutBorders.Class
         internal const int TOKEN_ADJUST_SESSIONID = 0x0100;
 
         internal const int TOKEN_ALL_ACCESS_P = STANDARD_RIGHTS_REQUIRED |
-                                      TOKEN_ASSIGN_PRIMARY |
-                                      TOKEN_DUPLICATE |
-                                      TOKEN_IMPERSONATE |
-                                      TOKEN_QUERY |
-                                      TOKEN_QUERY_SOURCE |
-                                      TOKEN_ADJUST_PRIVILEGES |
-                                      TOKEN_ADJUST_GROUPS |
-                                      TOKEN_ADJUST_DEFAULT;
+            TOKEN_ASSIGN_PRIMARY |
+            TOKEN_DUPLICATE |
+            TOKEN_IMPERSONATE |
+            TOKEN_QUERY |
+            TOKEN_QUERY_SOURCE |
+            TOKEN_ADJUST_PRIVILEGES |
+            TOKEN_ADJUST_GROUPS |
+            TOKEN_ADJUST_DEFAULT;
 
         internal const int TOKEN_ALL_ACCESS = TOKEN_ALL_ACCESS_P | TOKEN_ADJUST_SESSIONID;
 
         internal const int TOKEN_READ = STANDARD_RIGHTS_READ | TOKEN_QUERY;
 
         internal const int TOKEN_WRITE = STANDARD_RIGHTS_WRITE |
-                                      TOKEN_ADJUST_PRIVILEGES |
-                                      TOKEN_ADJUST_GROUPS |
-                                      TOKEN_ADJUST_DEFAULT;
+            TOKEN_ADJUST_PRIVILEGES |
+            TOKEN_ADJUST_GROUPS |
+            TOKEN_ADJUST_DEFAULT;
 
         internal const int TOKEN_EXECUTE = STANDARD_RIGHTS_EXECUTE;
 
