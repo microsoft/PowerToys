@@ -332,30 +332,16 @@ namespace UITests_FancyZones
             int targetX = screenWidth / 2 / 3;
             int targetY = screenWidth / 2 / 2;
 
-            // assert the AppZoneHistory layout is set
-            Session.KillAllProcessesByName("explorer");
-            Session.StartExe("explorer.exe", "C:\\");
+            LaunchHostFromSetting();
+            this.Session.Attach(PowerToysModule.Hosts, WindowSize.Large_Vertical);
+            var hostsView = Find<Pane>(By.Name("Non Client Input Sink Window"));
+            hostsView.DoubleClick(); // maximize the window
 
-            int tries = 10;
-            while (this.IsWindowOpen(WindowName) == false)
-            {
-                tries++;
-                Session.KillAllProcessesByName("explorer");
-                Session.StartExe("explorer.exe", "C:\\");
-                Thread.Sleep(3);
-                if (tries > 10)
-                {
-                    break;
-                }
-            }
-
-            Session.Attach(WindowName);
-            var tabView = Find<Tab>(By.AccessibilityId("TabView"));
-            tabView.DoubleClick(); // maximize the window
-            tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
+            hostsView.HoldShiftToDrag(Key.Shift, targetX, targetY);
             SendKeys(Key.Num0);
-            tabView.ReleaseAction();
-            tabView.ReleaseKey(Key.Shift);
+            hostsView.ReleaseAction();
+            hostsView.ReleaseKey(Key.Shift);
+            SendKeys(Key.Alt, Key.F4);
 
             // Attach FancyZones Editor
             this.AttachPowertoySetting();
@@ -364,39 +350,6 @@ namespace UITests_FancyZones
             var element = this.Find<Element>("Grid custom layout");
             Assert.IsTrue(element.Selected, "Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
-
-            Session.Attach(WindowName, WindowSize.UnSpecified);
-            tabView = Find<Tab>(By.AccessibilityId("TabView"));
-            tabView.DoubleClick(); // maximize the window
-            tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
-            SendKeys(Key.Num1);
-            tabView.ReleaseAction();
-            tabView.ReleaseKey(Key.Shift);
-
-            // Attach FancyZones Editor
-            this.AttachPowertoySetting();
-            this.Find<Pane>(By.ClassName("InputNonClientPointerSource")).Click();
-            this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Grid-9");
-            Assert.IsTrue(element.Selected, "Grid-9 is not visible");
-            this.CloseFancyZonesEditor();
-
-            Session.Attach(WindowName, WindowSize.UnSpecified);
-            tabView = Find<Tab>(By.AccessibilityId("TabView"));
-            tabView.DoubleClick(); // maximize the window
-            tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
-            SendKeys(Key.Num2);
-            tabView.ReleaseAction();
-            tabView.ReleaseKey(Key.Shift);
-
-            // Attach FancyZones Editor
-            this.AttachPowertoySetting();
-            this.Find<Pane>(By.ClassName("InputNonClientPointerSource")).Click();
-            this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Canvas custom layout");
-            Assert.IsTrue(element.Selected, "Canvas custom layout is not visible");
-            this.CloseFancyZonesEditor();
-            this.AttachPowertoySetting();
 
             // Clean
             Session.KillAllProcessesByName("explorer");
@@ -647,6 +600,28 @@ namespace UITests_FancyZones
             {
                 SendKeys(keyToSend);
             }
+        }
+
+        private void LaunchHostFromSetting(bool showWarning = false, bool launchAsAdmin = false)
+        {
+            // Goto Hosts File Editor setting page
+            if (this.FindAll<NavigationViewItem>("Hosts File Editor").Count == 0)
+            {
+                // Expand Advanced list-group if needed
+                this.Find<NavigationViewItem>("Advanced").Click();
+            }
+
+            this.Find<NavigationViewItem>("Hosts File Editor").Click();
+            Task.Delay(1000).Wait();
+
+            this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
+            this.Find<ToggleSwitch>("Launch as administrator").Toggle(launchAsAdmin);
+            this.Find<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
+
+            // launch Hosts File Editor
+            this.Find<Button>("Launch Hosts File Editor").Click();
+
+            Task.Delay(5000).Wait();
         }
     }
 }
