@@ -50,6 +50,10 @@ public static class AppxPackageHelper
             {
                 result.Add((IntPtr)manifestApp);
             }
+            else if (manifestApp != null)
+            {
+                manifestApp->Release();
+            }
 
             manifestApps->MoveNext(out var hasNext);
             if (hasNext == false)
