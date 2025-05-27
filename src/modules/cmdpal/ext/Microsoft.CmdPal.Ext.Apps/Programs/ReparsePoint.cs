@@ -196,7 +196,7 @@ public static partial class ReparsePoint
         public AppExecutionAliasReparseTagBufferLayoutVersion Version;
     }
 
-    [LibraryImport("kernel32.dll", SetLastError = false)]
+    [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool DeviceIoControl(
         IntPtr hDevice,
@@ -208,7 +208,7 @@ public static partial class ReparsePoint
         out int pBytesReturned,
         IntPtr lpOverlapped);
 
-    [LibraryImport("kernel32.dll", SetLastError = false, StringMarshalling = StringMarshalling.Utf8)]
+    [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf8)]
     [return: MarshalAs(UnmanagedType.SysInt)]
     internal static partial IntPtr CreateFile(
         string lpFileName,
