@@ -13,7 +13,7 @@ The official API documentation can be found [on this docs site](https://learn.mi
 
 We've also got samples, so that you can see how the APIs in-action. 
 
-* We've got [generic samples] in the repo
+* We've got [generic samples] in the repo 
 * We've got [real samples] in the repo too
 * And we've even got [real extensions that we've "shipped" already]
 
