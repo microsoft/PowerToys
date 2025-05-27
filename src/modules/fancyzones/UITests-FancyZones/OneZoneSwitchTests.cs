@@ -21,7 +21,6 @@ namespace UITests_FancyZones
         private static readonly int SubZones = 2;
         private static readonly IOTestHelper AppZoneHistory = new FancyZonesEditorFiles().AppZoneHistoryIOHelper;
         private static string powertoysWindowName = "PowerToys Settings"; // set powertoys settings window name
-        private string setCustomLayoutData = string.Empty; // custom layout data for test
 
         public OneZoneSwitchTests()
             : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
@@ -229,7 +228,6 @@ namespace UITests_FancyZones
             var customLayouts = new CustomLayouts();
             var customLayoutListWrapper = CustomLayoutsList;
             FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
-            setCustomLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
         }
 
         // launch FancyZones settings page
@@ -259,14 +257,12 @@ namespace UITests_FancyZones
             Task.Delay(500).Wait(); // Wait for the setting to be applied
             this.Scroll(9, "Up"); // Pull the setting page down to make sure the setting is visible
             this.Find<Button>("Launch layout editor").Click(false, 500, 5000);
-            string customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
+            this.Session.Attach(PowerToysModule.FancyZone);
 
             // pipeline machine may have an unstable delays, causing the custom layout to be unavailable as we set. then A retry is required.
             // Console.WriteLine($"after launch, Custom layout data: {customLayoutData}");
             try
             {
-                this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
-
                 // Set the FancyZones layout to a custom layout
                 this.Find<Element>(By.Name("Custom Column")).Click();
             }
@@ -278,7 +274,6 @@ namespace UITests_FancyZones
                 SetupCustomLayouts();
                 this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 5000, 5000);
                 this.Session.Attach(PowerToysModule.FancyZone);
-                this.Find<Microsoft.PowerToys.UITest.Button>("Maximize").Click();
 
                 // customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
                 // Console.WriteLine($"after retry, Custom layout data: {customLayoutData}");
@@ -287,8 +282,9 @@ namespace UITests_FancyZones
                 this.Find<Element>(By.Name("Custom Column")).Click();
             }
 
-            this.Find<Button>("Close").Click();
-            this.Session.Attach(PowerToysModule.PowerToysSettings);
+            // Close layout editor window
+            SendKeys(Key.Alt, Key.F4);
+            this.Session.Attach(powertoysWindowName);
         }
 
         private void LaunchFromSetting(bool showWarning = false, bool launchAsAdmin = false)
