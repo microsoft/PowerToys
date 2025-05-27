@@ -40,7 +40,7 @@ public static class AppxPackageHelper
             IAppxManifestApplication* manifestApp;
             manifestApps->GetCurrent(&manifestApp);
 
-            var hr = manifestApp->GetStringValue("AppListEntry", out var appListEntryPtr).ThrowOnFailure();
+            var hr = manifestApp->GetStringValue("AppListEntry", out var appListEntryPtr);
             var appListEntry = ComFreeHelper.GetStringAndFree(hr, appListEntryPtr);
 
             if (appListEntry != "none")
