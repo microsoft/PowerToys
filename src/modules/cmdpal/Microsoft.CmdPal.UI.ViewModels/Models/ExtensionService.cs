@@ -11,7 +11,7 @@ using Windows.Foundation.Collections;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
-public class ExtensionService : IExtensionService, IDisposable
+public partial class ExtensionService : IExtensionService, IDisposable
 {
     public event TypedEventHandler<IExtensionService, IEnumerable<IExtensionWrapper>>? OnExtensionAdded;
 
@@ -131,6 +131,7 @@ public class ExtensionService : IExtensionService, IDisposable
             try
             {
                 _installedExtensions.RemoveAll(i => removedExtensions.Contains(i));
+                _enabledExtensions.RemoveAll(i => removedExtensions.Contains(i));
 
                 OnExtensionRemoved?.Invoke(this, removedExtensions);
             }

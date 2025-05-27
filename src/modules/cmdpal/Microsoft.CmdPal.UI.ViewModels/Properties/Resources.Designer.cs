@@ -178,7 +178,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extension name is required, without spaces.
+        ///   Looks up a localized string similar to Extension name is required and must be a valid C# identifier (start with a letter or underscore, followed by letters, numbers, or underscores).
         /// </summary>
         public static string builtin_create_extension_name_required {
             get {
@@ -300,6 +300,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string builtin_creating_extension_message {
             get {
                 return ResourceManager.GetString("builtin_creating_extension_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disabled.
+        /// </summary>
+        public static string builtin_disabled_extension {
+            get {
+                return ResourceManager.GetString("builtin_disabled_extension", resourceCulture);
             }
         }
         

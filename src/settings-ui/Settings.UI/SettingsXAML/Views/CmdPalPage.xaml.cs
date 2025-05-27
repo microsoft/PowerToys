@@ -2,6 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Diagnostics;
+using System.IO;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -19,7 +23,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new CmdPalViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
-                ShellPage.SendDefaultIPCMessage);
+                ShellPage.SendDefaultIPCMessage,
+                DispatcherQueue);
             DataContext = ViewModel;
             InitializeComponent();
         }
@@ -27,6 +32,42 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void RefreshEnabledState()
         {
             ViewModel.RefreshEnabledState();
+        }
+
+        private void LaunchApp(string appPath, string args)
+        {
+            try
+            {
+                string dir = Path.GetDirectoryName(appPath);
+
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = appPath,
+                    Arguments = args,
+                    WorkingDirectory = dir,
+                    UseShellExecute = true,
+                    Verb = "open",
+                    CreateNoWindow = false,
+                };
+
+                Process process = Process.Start(processStartInfo);
+                if (process == null)
+                {
+                    Logger.LogError($"Failed to launch CmdPal settings page.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to launch CmdPal settings: {ex.Message}");
+            }
+        }
+
+        private void CmdPalSettingsDeeplink_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            // Launch CmdPal settings window as normal user using explorer
+            string launchPath = "explorer.exe";
+            string launchArgs = "x-cmdpal://settings";
+            LaunchApp(launchPath, launchArgs);
         }
     }
 }

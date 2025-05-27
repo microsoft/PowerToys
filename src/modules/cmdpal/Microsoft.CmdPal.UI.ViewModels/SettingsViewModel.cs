@@ -3,22 +3,37 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsViewModel
+public partial class SettingsViewModel : INotifyPropertyChanged
 {
     private readonly SettingsModel _settings;
     private readonly IServiceProvider _serviceProvider;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public HotkeySettings? Hotkey
     {
         get => _settings.Hotkey;
         set
         {
-            _settings.Hotkey = value;
+            _settings.Hotkey = value ?? SettingsModel.DefaultActivationShortcut;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
+            Save();
+        }
+    }
+
+    public bool UseLowLevelGlobalHotkey
+    {
+        get => _settings.UseLowLevelGlobalHotkey;
+        set
+        {
+            _settings.UseLowLevelGlobalHotkey = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
             Save();
         }
     }
@@ -83,6 +98,26 @@ public partial class SettingsViewModel
         }
     }
 
+    public bool ShowSystemTrayIcon
+    {
+        get => _settings.ShowSystemTrayIcon;
+        set
+        {
+            _settings.ShowSystemTrayIcon = value;
+            Save();
+        }
+    }
+
+    public bool IgnoreShortcutWhenFullscreen
+    {
+        get => _settings.IgnoreShortcutWhenFullscreen;
+        set
+        {
+            _settings.IgnoreShortcutWhenFullscreen = value;
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)
@@ -95,18 +130,7 @@ public partial class SettingsViewModel
 
         foreach (var item in activeProviders)
         {
-            if (!allProviderSettings.TryGetValue(item.ProviderId, out var value))
-            {
-                allProviderSettings[item.ProviderId] = new ProviderSettings(item);
-            }
-            else
-            {
-                value.Connect(item);
-            }
-
-            var providerSettings = allProviderSettings.TryGetValue(item.ProviderId, out var value2) ?
-                value2 :
-                new ProviderSettings(item);
+            var providerSettings = settings.GetProviderSettings(item);
 
             var settingsModel = new ProviderSettingsViewModel(item, providerSettings, _serviceProvider);
             CommandProviders.Add(settingsModel);

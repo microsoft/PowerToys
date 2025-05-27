@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -31,13 +33,14 @@
     <ProjectReference Include="..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
 
-    <ProjectReference Include="..\Exts\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj" />
+    <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj" />
 
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
 
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Assets\CreateExtension.svg" />
     <None Remove="Assets\template.zip" />
   </ItemGroup>
 
@@ -48,11 +51,33 @@
       <AutoGen>True</AutoGen>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Assets\CreateExtension.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Properties\Resources.resx">
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\CreateExtension.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Just mark it as AOT compatible. Do not publish with AOT now. We need fully test before we really publish it as AOT enabled-->
+  <!--<PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishSingleFile>true</PublishSingleFile>
+    --><!-- <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling> --><!--
+    <PublishAot>true</PublishAot>
+	<EnableMsixTooling>true</EnableMsixTooling>
+  </PropertyGroup>-->
 
 </Project>

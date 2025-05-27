@@ -29,6 +29,7 @@
     <DisplayName>ms-resource:AppNameDev</DisplayName>
     <PublisherDisplayName>A Lone Developer</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
+    <desktop6:RegistryWriteVirtualization>disabled</desktop6:RegistryWriteVirtualization>
   </Properties>
 
   <Dependencies>
@@ -65,9 +66,16 @@
         <uap5:Extension Category="windows.startupTask">
           <uap5:StartupTask
             TaskId="CmdPalStartup"
-            Enabled="true"
+            Enabled="false"
             DisplayName="ms-resource:StartupTaskNameDev" />
         </uap5:Extension>
+
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="x-cmdpal">
+            <uap:Logo>Assets\StoreLogo.png</uap:Logo>
+            <uap:DisplayName>Command Palette Dev URI scheme</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
 
       </Extensions>
 

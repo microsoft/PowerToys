@@ -6,6 +6,8 @@ using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -20,9 +22,9 @@ public sealed class CommandProviderWrapper
 
     private readonly TaskScheduler _taskScheduler;
 
-    public ICommandItem[] TopLevelItems { get; private set; } = [];
+    public TopLevelViewModel[] TopLevelItems { get; private set; } = [];
 
-    public IFallbackCommandItem[] FallbackItems { get; private set; } = [];
+    public TopLevelViewModel[] FallbackItems { get; private set; } = [];
 
     public string DisplayName { get; private set; } = string.Empty;
 
@@ -38,7 +40,13 @@ public sealed class CommandProviderWrapper
 
     public CommandSettingsViewModel? Settings { get; private set; }
 
-    public string ProviderId => $"{Extension?.PackageFamilyName ?? string.Empty}/{Id}";
+    public string ProviderId
+    {
+        get
+        {
+            return string.IsNullOrEmpty(Extension?.ExtensionUniqueId) ? Id : Extension.ExtensionUniqueId;
+        }
+    }
 
     public CommandProviderWrapper(ICommandProvider provider, TaskScheduler mainThread)
     {
@@ -58,8 +66,10 @@ public sealed class CommandProviderWrapper
         DisplayName = provider.DisplayName;
         Icon = new(provider.Icon);
         Icon.InitializeProperties();
+
+        // Note: explicitly not InitializeProperties()ing the settings here. If
+        // we do that, then we'd regress GH #38321
         Settings = new(provider.Settings, this, _taskScheduler);
-        Settings.InitializeProperties();
 
         Logger.LogDebug($"Initialized command provider {ProviderId}");
     }
@@ -105,9 +115,21 @@ public sealed class CommandProviderWrapper
         isValid = true;
     }
 
-    public async Task LoadTopLevelCommands()
+    private ProviderSettings GetProviderSettings(SettingsModel settings)
+    {
+        return settings.GetProviderSettings(this);
+    }
+
+    public async Task LoadTopLevelCommands(IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
     {
         if (!isValid)
+        {
+            return;
+        }
+
+        var settings = serviceProvider.GetService<SettingsModel>()!;
+
+        if (!GetProviderSettings(settings).IsEnabled)
         {
             return;
         }
@@ -119,7 +141,7 @@ public sealed class CommandProviderWrapper
         {
             var model = _commandProvider.Unsafe!;
 
-            var t = new Task<ICommandItem[]>(model.TopLevelCommands);
+            Task<ICommandItem[]> t = new(model.TopLevelCommands);
             t.Start();
             commands = await t.ConfigureAwait(false);
 
@@ -131,8 +153,12 @@ public sealed class CommandProviderWrapper
             Icon = new(model.Icon);
             Icon.InitializeProperties();
 
+            // Note: explicitly not InitializeProperties()ing the settings here. If
+            // we do that, then we'd regress GH #38321
             Settings = new(model.Settings, this, _taskScheduler);
-            Settings.InitializeProperties();
+
+            // We do need to explicitly initialize commands though
+            InitializeCommands(commands, fallbacks, serviceProvider, pageContext);
 
             Logger.LogDebug($"Loaded commands from {DisplayName} ({ProviderId})");
         }
@@ -142,32 +168,35 @@ public sealed class CommandProviderWrapper
             Logger.LogError($"Extension was {Extension!.PackageFamilyName}");
             Logger.LogError(e.ToString());
         }
+    }
 
+    private void InitializeCommands(ICommandItem[] commands, IFallbackCommandItem[] fallbacks, IServiceProvider serviceProvider, WeakReference<IPageContext> pageContext)
+    {
+        var settings = serviceProvider.GetService<SettingsModel>()!;
+
+        Func<ICommandItem?, bool, TopLevelViewModel> makeAndAdd = (ICommandItem? i, bool fallback) =>
+        {
+            CommandItemViewModel commandItemViewModel = new(new(i), pageContext);
+            TopLevelViewModel topLevelViewModel = new(commandItemViewModel, fallback, ExtensionHost, ProviderId, settings, serviceProvider);
+
+            topLevelViewModel.ItemViewModel.SlowInitializeProperties();
+
+            return topLevelViewModel;
+        };
         if (commands != null)
         {
-            TopLevelItems = commands;
+            TopLevelItems = commands
+                .Select(c => makeAndAdd(c, false))
+                .ToArray();
         }
 
         if (fallbacks != null)
         {
-            FallbackItems = fallbacks;
+            FallbackItems = fallbacks
+                .Select(c => makeAndAdd(c, true))
+                .ToArray();
         }
     }
-
-    /* This is a View/ExtensionHost piece
-     * public void AllowSetForeground(bool allow)
-    {
-        if (!IsExtension)
-        {
-            return;
-        }
-
-        var iextn = extensionWrapper?.GetExtensionObject();
-        unsafe
-        {
-            PInvoke.CoAllowSetForegroundWindow(iextn);
-        }
-    }*/
 
     public override bool Equals(object? obj) => obj is CommandProviderWrapper wrapper && isValid == wrapper.isValid;
 
