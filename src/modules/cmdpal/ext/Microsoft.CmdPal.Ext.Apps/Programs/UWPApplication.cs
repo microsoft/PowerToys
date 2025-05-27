@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -25,6 +25,10 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 [Serializable]
 public class UWPApplication : IProgram
 {
+    private static readonly IFileSystem FileSystem = new FileSystem();
+    private static readonly IPath Path = FileSystem.Path;
+    private static readonly IFile File = FileSystem.File;
+
     public string AppListEntry { get; set; } = string.Empty;
 
     public string UniqueIdentifier { get; set; }
