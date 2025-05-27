@@ -29,7 +29,7 @@ public sealed partial class NativeMethods
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct SHELLEXECUTEINFOW
     {
-        public int cbSize;
+        public uint cbSize;
         public uint fMask;
         public IntPtr hwnd;
 
@@ -37,7 +37,7 @@ public sealed partial class NativeMethods
         public IntPtr lpFile;
         public IntPtr lpParameters;
         public IntPtr lpDirectory;
-        public int nShow;
+        public uint nShow;
         public IntPtr hInstApp;
         public IntPtr lpIDList;
         public IntPtr lpClass;
