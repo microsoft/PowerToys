@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.IO;
+using System.IO.Abstractions;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
@@ -16,13 +16,21 @@ public interface IFileVersionInfoWrapper
 
 public class FileVersionInfoWrapper : IFileVersionInfoWrapper
 {
+    private readonly IFile _file;
+
     public FileVersionInfoWrapper()
+        : this(new FileSystem().File)
     {
+    }
+
+    public FileVersionInfoWrapper(IFile file)
+    {
+        _file = file;
     }
 
     public FileVersionInfo? GetVersionInfo(string path)
     {
-        if (File.Exists(path))
+        if (_file.Exists(path))
         {
             return FileVersionInfo.GetVersionInfo(path);
         }

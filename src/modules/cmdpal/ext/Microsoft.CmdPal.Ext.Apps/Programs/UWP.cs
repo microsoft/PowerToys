@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
@@ -19,6 +19,8 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 [Serializable]
 public partial class UWP
 {
+    private static readonly IPath Path = new FileSystem().Path;
+
     private static readonly Dictionary<string, PackageVersion> _versionFromNamespace = new()
     {
         { "http://schemas.microsoft.com/appx/manifest/foundation/windows10", PackageVersion.Windows10 },
