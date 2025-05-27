@@ -58,9 +58,6 @@ namespace Hosts.UITests
 
             this.Find<Button>("Launch Hosts File Editor").Click();
 
-            // wait for 500 ms to make sure Hosts File Editor is launched
-            Task.Delay(500).Wait();
-
             this.Session.Attach(PowerToysModule.Hosts, WindowSize.Small_Vertical);
 
             // Should show warning dialog
