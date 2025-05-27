@@ -86,7 +86,7 @@ internal static class Event
                 isFullScreen = foregroundHeight == screenHeight && foregroundWidth == screenWidth;
             }
 
-            if (isFullScreen && switchByMouseEnabled && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == Common.WM_MOUSEMOVE)
+            if (!isFullScreen && switchByMouseEnabled && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == Common.WM_MOUSEMOVE)
             {
                 Point p = MachineStuff.MoveToMyNeighbourIfNeeded(e.X, e.Y, MachineStuff.desMachineID);
 
