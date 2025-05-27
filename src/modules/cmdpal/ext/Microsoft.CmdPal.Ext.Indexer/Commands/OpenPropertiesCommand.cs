@@ -4,12 +4,17 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Native;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
+using static Microsoft.CmdPal.Ext.Indexer.Native.NativeMethods;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Commands;
 
@@ -19,17 +24,27 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
 
     private static unsafe bool ShowFileProperties(string filename)
     {
-        var info = new NativeMethods.SHELLEXECUTEINFOW
+        var propertiesPtr = Marshal.StringToHGlobalUni("properties");
+        var filenamePtr = Marshal.StringToHGlobalUni(filename);
+
+        try
         {
-            cbSize = Unsafe.SizeOf<NativeMethods.SHELLEXECUTEINFOW>(),
-            lpVerb = "properties",
-            lpFile = filename,
+            var info = new SHELLEXECUTEINFOW
+            {
+                cbSize = (uint)Unsafe.SizeOf<SHELLEXECUTEINFOW>(),
+                lpVerb = propertiesPtr,
+                lpFile = filenamePtr,
+                nShow = (int)SHOW_WINDOW_CMD.SW_SHOW,
+                fMask = NativeHelpers.SEEMASKINVOKEIDLIST,
+            };
 
-            nShow = (int)NativeMethods.SHOW_WINDOW_CMD.SW_SHOW,
-            fMask = NativeHelpers.SEEMASKINVOKEIDLIST,
-        };
-
-        return NativeMethods.ShellExecuteEx(ref info);
+            return ShellExecuteEx(ref info);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(filenamePtr);
+            Marshal.FreeHGlobal(propertiesPtr);
+        }
     }
 
     internal OpenPropertiesCommand(IndexerItem item)
