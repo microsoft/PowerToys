@@ -480,10 +480,28 @@ namespace Microsoft.PowerToys.UITest
             if (this.Root != null)
             {
                 // search window handler by window title (admin and non-admin titles)
-                var matchingWindows = WindowHelper.ApiHelper.FindDesktopWindowHandler([windowName, WindowHelper.AdministratorPrefix + windowName]);
-                if (matchingWindows.Count == 0 || matchingWindows[0].HWnd == IntPtr.Zero)
+                var timeout = TimeSpan.FromMinutes(2);
+                var retryInterval = TimeSpan.FromSeconds(5);
+                DateTime startTime = DateTime.Now;
+
+                List<(IntPtr HWnd, string Title)>? matchingWindows = null;
+
+                while (DateTime.Now - startTime < timeout)
                 {
-                    Assert.Fail($"Failed to attach. Window '{windowName}' not found");
+                    matchingWindows = WindowHelper.ApiHelper.FindDesktopWindowHandler(
+                        new[] { windowName, WindowHelper.AdministratorPrefix + windowName });
+
+                    if (matchingWindows.Count > 0 && matchingWindows[0].HWnd != IntPtr.Zero)
+                    {
+                        break;
+                    }
+
+                    Thread.Sleep(retryInterval);
+                }
+
+                if (matchingWindows == null || matchingWindows.Count == 0 || matchingWindows[0].HWnd == IntPtr.Zero)
+                {
+                    Assert.Fail($"Failed to attach. Window '{windowName}' not found after {timeout.TotalSeconds} seconds.");
                 }
 
                 // pick one from matching windows
