@@ -21,9 +21,9 @@ public sealed partial class NativeMethods
         Guid riid,
         out IntPtr rReturnedComObject);
 
-    [LibraryImport("shell32.dll")]
+    [LibraryImport("SHELL32.dll", EntryPoint = "ShellExecuteExW", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    public static partial bool ShellExecuteEx([MarshalUsing(typeof(SHELLEXECUTEINFOWMarshaller))]ref SHELLEXECUTEINFOW lpExecInfo);
+    public static partial bool ShellExecuteEx(ref SHELLEXECUTEINFOW lpExecInfo);
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct SHELLEXECUTEINFOW
@@ -31,39 +31,19 @@ public sealed partial class NativeMethods
         public uint cbSize;
         public uint fMask;
         public IntPtr hwnd;
-        public string lpVerb;
-        public string lpFile;
-        public string lpParameters;
-        public string lpDirectory;
+
+        public IntPtr lpVerb;
+        public IntPtr lpFile;
+        public IntPtr lpParameters;
+        public IntPtr lpDirectory;
         public int nShow;
         public IntPtr hInstApp;
         public IntPtr lpIDList;
-        public string lpClass;
+        public IntPtr lpClass;
         public IntPtr hkeyClass;
         public uint dwHotKey;
         public IntPtr hIconOrMonitor;
         public IntPtr hProcess;
-    }
-
-    [CustomMarshaller(typeof(SHELLEXECUTEINFOW), MarshalMode.ManagedToUnmanagedRef, typeof(SHELLEXECUTEINFOWMarshaller))]
-    [CustomMarshaller(typeof(SHELLEXECUTEINFOW), MarshalMode.UnmanagedToManagedRef, typeof(SHELLEXECUTEINFOWMarshaller))]
-    public static partial class SHELLEXECUTEINFOWMarshaller
-    {
-        public static SHELLEXECUTEINFOW ConvertToManaged(IntPtr unmanaged)
-        {
-            var obj = Marshal.GetObjectForIUnknown(unmanaged);
-            return (SHELLEXECUTEINFOW)obj;
-        }
-
-        public static void Free(IntPtr? managed)
-        {
-        }
-
-        public static nint ConvertToUnmanaged(SHELLEXECUTEINFOW managed)
-        {
-            var obj = Marshal.GetIUnknownForObject(managed);
-            return obj;
-        }
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1069:Enums values should not be duplicated", Justification = "No we don't need to fix it")]
