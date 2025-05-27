@@ -55,31 +55,23 @@ public class ShellLinkHelper : IShellLinkHelper
 
         var hwnd = HWND.Null;
         const uint SLR_NO_UI = 0x1;
-        link->Resolve(hwnd, SLR_NO_UI);
+        var buffer = stackalloc char[MAX_PATH];
 
-        PWSTR pBuffer = null;
-        link->GetPath(pBuffer, MAX_PATH, null, 0x1);
+        var hr = link->GetPath((PWSTR)buffer, MAX_PATH, null, SLR_NO_UI);
 
-        target = pBuffer.ToString();
+        target = hr.Succeeded ? new string(buffer) : string.Empty;
 
         // To set the app description
         if (!string.IsNullOrEmpty(target))
         {
-            PWSTR pszName = null;
-            try
-            {
-                var desHr = link->GetDescription(pszName, MAX_PATH).ThrowOnFailure();
-                Description = ComFreeHelper.GetStringAndFree(desHr, pszName);
-            }
-            catch (Exception)
-            {
-                    // Log.Exception($"Failed to fetch description for {target}, {e.Message}", e, GetType());
-                Description = string.Empty;
-            }
+            var descBuffer = stackalloc char[MAX_PATH];
+            var desHr = link->GetDescription(descBuffer, MAX_PATH);
+            Description = desHr.Succeeded ? new string(descBuffer) : string.Empty;
 
-            PWSTR pszArgs = null;
-            var argHr = link->GetArguments(pszArgs, MAX_PATH);
-            Arguments = ComFreeHelper.GetStringAndFree(argHr, pszArgs);
+            var argsBuffer = stackalloc char[MAX_PATH];
+            var argHr = link->GetArguments(argsBuffer, MAX_PATH);
+
+            Arguments = argHr.Succeeded ? new string(argsBuffer) : string.Empty;
 
             // Set variable to true if the program takes in any arguments
             if (Arguments.Length != 0)
