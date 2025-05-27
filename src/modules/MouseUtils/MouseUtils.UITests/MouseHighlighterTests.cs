@@ -245,7 +245,7 @@ namespace MouseUtils.UITests
             }
 
             expectedColor = "#" + expectedColor;
-
+            Task.Delay(100).Wait();
             var location = Session.GetMousePosition();
             int radius = int.Parse(settings.Radius, CultureInfo.InvariantCulture);
             var colorLeftClick = GetPixelColorString(location.Item1, location.Item2);

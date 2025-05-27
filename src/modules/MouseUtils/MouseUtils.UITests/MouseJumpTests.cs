@@ -223,6 +223,18 @@ namespace MouseUtils.UITests
                 Task.Delay(2000).Wait();
             }
 
+            // Goto Hosts File Editor setting page
+            if (this.FindAll<NavigationViewItem>("Mouse utilities").Count == 0)
+            {
+                RestartScopeExe();
+                Session.SetMainWindowSize(WindowSize.Large);
+                Task.Delay(1000).Wait();
+
+                // Expand Advanced list-group if needed
+                this.Find<NavigationViewItem>("Input / Output").ClickCenter();
+                Task.Delay(2000).Wait();
+            }
+
             // Click on the Mouse utilities
             // Task.Delay(2000).Wait();
             if (firstTime)
