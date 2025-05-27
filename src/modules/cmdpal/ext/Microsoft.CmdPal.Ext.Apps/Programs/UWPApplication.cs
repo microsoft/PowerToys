@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml;
@@ -22,6 +22,10 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 [Serializable]
 public class UWPApplication : IProgram
 {
+    private static readonly IFileSystem FileSystem = new FileSystem();
+    private static readonly IPath Path = FileSystem.Path;
+    private static readonly IFile File = FileSystem.File;
+
     public string AppListEntry { get; set; } = string.Empty;
 
     public string UniqueIdentifier { get; set; }
@@ -95,41 +99,34 @@ public class UWPApplication : IProgram
 
     internal unsafe UWPApplication(IAppxManifestApplication* manifestApp, UWP package)
     {
-        try
-        {
-            ArgumentNullException.ThrowIfNull(manifestApp);
+        ArgumentNullException.ThrowIfNull(manifestApp);
 
-            var hr = manifestApp->GetAppUserModelId(out var tmpUserModelIdPtr);
-            UserModelId = ComFreeHelper.GetStringAndFree(hr, tmpUserModelIdPtr);
+        var hr = manifestApp->GetAppUserModelId(out var tmpUserModelIdPtr);
+        UserModelId = ComFreeHelper.GetStringAndFree(hr, tmpUserModelIdPtr);
 
-            manifestApp->GetAppUserModelId(out var tmpUniqueIdentifierPtr);
-            UniqueIdentifier = ComFreeHelper.GetStringAndFree(hr, tmpUniqueIdentifierPtr);
+        manifestApp->GetAppUserModelId(out var tmpUniqueIdentifierPtr);
+        UniqueIdentifier = ComFreeHelper.GetStringAndFree(hr, tmpUniqueIdentifierPtr);
 
-            manifestApp->GetStringValue("DisplayName", out var tmpDisplayNamePtr);
-            DisplayName = ComFreeHelper.GetStringAndFree(hr, tmpDisplayNamePtr);
+        manifestApp->GetStringValue("DisplayName", out var tmpDisplayNamePtr);
+        DisplayName = ComFreeHelper.GetStringAndFree(hr, tmpDisplayNamePtr);
 
-            manifestApp->GetStringValue("Description", out var tmpDescriptionPtr);
-            Description = ComFreeHelper.GetStringAndFree(hr, tmpDescriptionPtr);
+        manifestApp->GetStringValue("Description", out var tmpDescriptionPtr);
+        Description = ComFreeHelper.GetStringAndFree(hr, tmpDescriptionPtr);
 
-            manifestApp->GetStringValue("BackgroundColor", out var tmpBackgroundColorPtr);
-            BackgroundColor = ComFreeHelper.GetStringAndFree(hr, tmpBackgroundColorPtr);
+        manifestApp->GetStringValue("BackgroundColor", out var tmpBackgroundColorPtr);
+        BackgroundColor = ComFreeHelper.GetStringAndFree(hr, tmpBackgroundColorPtr);
 
-            manifestApp->GetStringValue("EntryPoint", out var tmpEntryPointPtr);
-            EntryPoint = ComFreeHelper.GetStringAndFree(hr, tmpEntryPointPtr);
+        manifestApp->GetStringValue("EntryPoint", out var tmpEntryPointPtr);
+        EntryPoint = ComFreeHelper.GetStringAndFree(hr, tmpEntryPointPtr);
 
-            Package = package ?? throw new ArgumentNullException(nameof(package));
+        Package = package ?? throw new ArgumentNullException(nameof(package));
 
-            DisplayName = ResourceFromPri(package.FullName, DisplayName);
-            Description = ResourceFromPri(package.FullName, Description);
-            logoUri = LogoUriFromManifest(manifestApp);
+        DisplayName = ResourceFromPri(package.FullName, DisplayName);
+        Description = ResourceFromPri(package.FullName, Description);
+        logoUri = LogoUriFromManifest(manifestApp);
 
-            Enabled = true;
-            CanRunElevated = IfApplicationCanRunElevated();
-        }
-        finally
-        {
-            ComFreeHelper.ComObjectRelease(manifestApp);
-        }
+        Enabled = true;
+        CanRunElevated = IfApplicationCanRunElevated();
     }
 
     private bool IfApplicationCanRunElevated()

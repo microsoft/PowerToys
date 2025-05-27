@@ -8,6 +8,7 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using System.Security;
@@ -26,6 +27,11 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 public class Win32Program : IProgram
 {
     public static readonly Win32Program InvalidProgram = new Win32Program { Valid = false, Enabled = false };
+
+    private static readonly IFileSystem FileSystem = new FileSystem();
+    private static readonly IPath Path = FileSystem.Path;
+    private static readonly IFile File = FileSystem.File;
+    private static readonly IDirectory Directory = FileSystem.Directory;
 
     public string Name { get; set; } = string.Empty;
 
@@ -73,6 +79,8 @@ public class Win32Program : IProgram
 
     // Wrappers for File Operations
     public static IFileVersionInfoWrapper FileVersionInfoWrapper { get; set; } = new FileVersionInfoWrapper();
+
+    public static IFile FileWrapper { get; set; } = new FileSystem().File;
 
     private const string ShortcutExtension = "lnk";
     private const string ApplicationReferenceExtension = "appref-ms";
@@ -247,7 +255,7 @@ public class Win32Program : IProgram
         try
         {
             // We don't want to read the whole file if we don't need to
-            var lines = File.ReadLines(path);
+            var lines = FileWrapper.ReadLines(path);
             var iconPath = string.Empty;
             var urlPath = string.Empty;
             var validApp = false;

@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
@@ -19,6 +19,8 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 [Serializable]
 public partial class UWP
 {
+    private static readonly IPath Path = new FileSystem().Path;
+
     private static readonly Dictionary<string, PackageVersion> _versionFromNamespace = new()
     {
         { "http://schemas.microsoft.com/appx/manifest/foundation/windows10", PackageVersion.Windows10 },
@@ -65,11 +67,17 @@ public partial class UWP
         const uint sTGM_READ = 0x00000000;
 
         IStream* stream = null;
+        using var streamHandle = new SafeComHandle((IntPtr)stream);
+
         try
         {
             PInvoke.SHCreateStreamOnFileEx(path, sTGM_READ, noAttribute, false, null, &stream).ThrowOnFailure();
 
-            Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest => new UWPApplication((IAppxManifestApplication*)appInManifest, this)).Where(a =>
+            Apps = AppxPackageHelper.GetAppsFromManifest(stream).Select(appInManifest =>
+            {
+                using var appHandle = new SafeComHandle((IntPtr)appInManifest);
+                return new UWPApplication((IAppxManifestApplication*)appInManifest, this);
+            }).Where(a =>
             {
                 var valid =
                     !string.IsNullOrEmpty(a.UserModelId) &&
@@ -82,10 +90,6 @@ public partial class UWP
         {
             Apps = Array.Empty<UWPApplication>();
             return;
-        }
-        finally
-        {
-            ComFreeHelper.ComObjectRelease(stream);
         }
     }
 
