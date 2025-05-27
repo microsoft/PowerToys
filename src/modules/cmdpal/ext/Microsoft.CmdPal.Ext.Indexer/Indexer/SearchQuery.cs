@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
 using Microsoft.CmdPal.Ext.Indexer.Native;
+using static Microsoft.CmdPal.Ext.Indexer.Native.NativeHelpers;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
@@ -142,7 +143,7 @@ internal sealed partial class SearchQuery : IDisposable
     {
         try
         {
-            var riid = NativeMethods.PropertyStoreGUID;
+            var riid = CsWin32GUID.PropertyStore;
 
             getRow.GetRowFromHROW(null, rowHandle, ref riid, out var propertyStore);
 

@@ -10,8 +10,6 @@ namespace Microsoft.CmdPal.Ext.Indexer.Native;
 
 public sealed partial class NativeMethods
 {
-    public static readonly Guid PropertyStoreGUID = new Guid("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99");
-
     [LibraryImport("ole32.dll")]
     [return: MarshalAs(UnmanagedType.U4)]
     public static partial uint CoCreateInstance(

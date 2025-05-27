@@ -29,5 +29,6 @@ public sealed partial class NativeHelpers
         public static readonly Guid CLSIDSearchManager = new Guid("7D096C5F-AC08-4F1F-BEB7-5C22C517CE39");
         public static readonly Guid IIDISearchManager = new Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF69");
         public static readonly Guid CLSIDCollatorDataSource = new Guid("9E175B8B-F52A-11D8-B9A5-505054503030");
+        public static readonly Guid PropertyStore = new Guid("886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99");
     }
 }
