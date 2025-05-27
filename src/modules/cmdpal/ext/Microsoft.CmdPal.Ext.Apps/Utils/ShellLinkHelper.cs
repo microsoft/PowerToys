@@ -29,71 +29,62 @@ public class ShellLinkHelper : IShellLinkHelper
         const int MAX_PATH = 260;
         IShellLinkW* link = null;
 
-        try
+        PInvoke.CoCreateInstance(typeof(ShellLink).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out link).ThrowOnFailure();
+        using var linkHandle = new SafeComHandle((IntPtr)link);
+
+        const int STGMREAD = 0;
+
+        IPersistFile* persistFile = null;
+        Guid iid = typeof(IPersistFile).GUID;
+        ((IUnknown*)link)->QueryInterface(&iid, (void**)&persistFile);
+        if (persistFile != null)
         {
-            PInvoke.CoCreateInstance(typeof(ShellLink).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out link).ThrowOnFailure();
-
-            const int STGMREAD = 0;
-
-            IPersistFile* persistFile = null;
-            Guid iid = typeof(IPersistFile).GUID;
-            ((IUnknown*)link)->QueryInterface(&iid, (void**)&persistFile);
-            if (persistFile != null)
+            using var persistFileHandle = new SafeComHandle((IntPtr)persistFile);
+            try
             {
-                try
-                {
-                    persistFile->Load(path, STGMREAD);
-                }
-                catch (System.IO.FileNotFoundException)
-                {
-                    // Log.Exception($"Failed to load {path}, {e.Message}", e, GetType());
-                    return string.Empty;
-                }
-                finally
-                {
-                    persistFile->Release();
-                }
+                persistFile->Load(path, STGMREAD);
             }
-
-            var hwnd = HWND.Null;
-            const uint SLR_NO_UI = 0x1;
-            link->Resolve(hwnd, SLR_NO_UI);
-
-            PWSTR pBuffer = null;
-            link->GetPath(pBuffer, MAX_PATH, null, 0x1);
-
-            target = pBuffer.ToString();
-
-            // To set the app description
-            if (!string.IsNullOrEmpty(target))
+            catch (System.IO.FileNotFoundException)
             {
-                PWSTR pszName = null;
-                try
-                {
-                    link->GetDescription(pszName, MAX_PATH).ThrowOnFailure();
-                    Description = pszName.ToString();
-                }
-                catch (Exception)
-                {
-                    // Log.Exception($"Failed to fetch description for {target}, {e.Message}", e, GetType());
-                    Description = string.Empty;
-                }
-
-                PWSTR pszArgs = null;
-                link->GetArguments(pszArgs, MAX_PATH);
-
-                Arguments = pszArgs.ToString();
-
-                // Set variable to true if the program takes in any arguments
-                if (Arguments.Length != 0)
-                {
-                    HasArguments = true;
-                }
+                // Log.Exception($"Failed to load {path}, {e.Message}", e, GetType());
+                return string.Empty;
             }
         }
-        finally
+
+        var hwnd = HWND.Null;
+        const uint SLR_NO_UI = 0x1;
+        link->Resolve(hwnd, SLR_NO_UI);
+
+        PWSTR pBuffer = null;
+        var hr = link->GetPath(pBuffer, MAX_PATH, null, 0x1);
+
+        target = ComFreeHelper.GetStringAndFree(hr, pBuffer);
+
+        // To set the app description
+        if (!string.IsNullOrEmpty(target))
         {
-            link->Release();
+            PWSTR pszName = null;
+            try
+            {
+                var desHr = link->GetDescription(pszName, MAX_PATH).ThrowOnFailure();
+                Description = Description = ComFreeHelper.GetStringAndFree(desHr, pszName);
+            }
+            catch (Exception)
+            {
+                // Log.Exception($"Failed to fetch description for {target}, {e.Message}", e, GetType());
+                Description = string.Empty;
+            }
+
+            PWSTR pszArgs = null;
+            var argHr = link->GetArguments(pszArgs, MAX_PATH);
+
+            Arguments = ComFreeHelper.GetStringAndFree(argHr, pszArgs);
+
+            // Set variable to true if the program takes in any arguments
+            if (Arguments.Length != 0)
+            {
+                HasArguments = true;
+            }
         }
 
         return target;

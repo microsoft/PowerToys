@@ -38,6 +38,7 @@ public class ShellLocalization
         try
         {
             var retCode = PInvoke.SHCreateItemFromParsingName(path, null, typeof(IShellItem).GUID, out shellItemPtrVoid).ThrowOnFailure();
+            using var shellItemHandle = new SafeComHandle((IntPtr)shellItemPtrVoid);
             IShellItem* shellItemPtr = (IShellItem*)shellItemPtrVoid;
 
             var hr = shellItemPtr->GetDisplayName(SIGDN.SIGDN_NORMALDISPLAY, out var filenamePtr);
@@ -55,10 +56,6 @@ public class ShellLocalization
         catch (Exception)
         {
             return string.Empty;
-        }
-        finally
-        {
-            ComFreeHelper.ComObjectRelease((IShellItem*)shellItemPtrVoid);
         }
     }
 

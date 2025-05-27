@@ -40,7 +40,7 @@ internal sealed partial class AppCommand : InvokableCommand
                 try
                 {
                     PInvoke.CoCreateInstance(typeof(ApplicationActivationManager).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out appManager);
-
+                    using var handle = new SafeComHandle((IntPtr)appManager);
                     appManager->ActivateApplication(
                         aumid,
                         string.Empty,
@@ -50,10 +50,6 @@ internal sealed partial class AppCommand : InvokableCommand
                 catch (System.Exception ex)
                 {
                     Logger.LogError(ex.Message);
-                }
-                finally
-                {
-                    ComFreeHelper.ComObjectRelease(appManager);
                 }
             }
         }).ConfigureAwait(false);
