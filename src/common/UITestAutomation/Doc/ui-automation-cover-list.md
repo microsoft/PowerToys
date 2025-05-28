@@ -608,7 +608,7 @@ Mouse Jump:
     - [x] 39. Press the activation shortcut and verify the screens preview appears.
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump2")
-    - [x] 40. Change activation shortcut and verify that new shorctut triggers Mouse Jump.
+    - [x] 40. Change activation shortcut and verify that new shortcut triggers Mouse Jump.
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump3")
     - [x] 41. Click around the screen preview and ensure that mouse cursor jumped to clicked location.
@@ -649,7 +649,7 @@ Mouse Jump:
    - [ ] 9. Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
    - [ ] 10. While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
    - [ ] 11. Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
- * In a multi-monitor setup with different dpis on each monitor:
+ * In a multi-monitor setup with different DPIs on each monitor:
    - [ ] 12. Verify that the utilities work well on each monitor, with continuous mode on and off.
    - [ ] 13. Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
    - [ ] 14. Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
@@ -686,7 +686,7 @@ Mouse Jump:
  * With Text Extractor enabled and activated:
    - [ ] 6. Try to select text and verify it is copied to the clipboard.
    - [ ] 7. Try to select a different OCR language by right-clicking and verify the change is applied.
- * In a multi-monitor setup with different dpis on each monitor:
+ * In a multi-monitor setup with different DPIs on each monitor:
    - [ ] 8. Verify text is correctly captured on all monitors.
  * Test the different settings and verify they are applied:
    - [ ] 9. Activation shortcut
@@ -917,7 +917,7 @@ Mouse Jump:
   NOTES:
     When using Advanced Paste, make sure that window focused while starting/using Advanced paste is text editor or has text input field focused (e.g. Word).
  * Paste As Plain Text
-   - [ ] 1. Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.).
+   - [ ] 1. Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etc.).
    - [ ] 2. Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
    - [ ] 3. Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
    - [ ] 4. Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
@@ -960,7 +960,7 @@ Mouse Jump:
    - [ ] 1. Launch the Editor by clicking the button on the settings page.
    - [ ] 2. Launch the Editor from quick access.
    - [ ] 3. Launch the Editor by the Activation shortcut.
-   - [ ] 4. Disable the module and and verify it won't launch by the shortcut.
+   - [ ] 4. Disable the module and verify it won't launch by the shortcut.
 
 * Snapshot tool: try with elevated and non-elevated PT
    * Open non-packaged apps, e.g., VisualStudio, VisualStudioCode.
