@@ -1547,6 +1547,7 @@ smartphone
 smileys
 SMTO
 SNAPPROCESS
+snk
 snwprintf
 softline
 SOURCECLIENTAREAONLY

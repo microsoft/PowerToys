@@ -2,7 +2,6 @@
 
 #include "KeyboardListener.g.h"
 #include <mutex>
-#include <thread>
 #include <spdlog/stopwatch.h>
 
 namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
@@ -45,7 +44,6 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 
     private:
-        void BeginShowToolbar(std::chrono::milliseconds delay, LetterKey key, TriggerKey trigger);
         bool OnKeyDown(KBDLLHOOKSTRUCT info) noexcept;
         bool OnKeyUp(KBDLLHOOKSTRUCT info) noexcept;
         bool IsSuppressedByGameMode();
@@ -53,14 +51,9 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
         static inline KeyboardListener* s_instance;
         HHOOK s_llKeyboardHook = nullptr;
-        std::atomic<bool> m_toolbarVisible;
-        bool m_activationKeyHold;
-        bool m_bothKeysPressed = false;
-        std::unique_ptr<std::thread> toolbarThread;
-        std::mutex toolbarMutex;
-        std::condition_variable toolbarCV;
+        bool m_toolbarVisible;
         PowerAccentSettings m_settings;
-        std::function<void(LetterKey, TriggerKey)> m_showToolbarCb;
+        std::function<void(LetterKey)> m_showToolbarCb;
         std::function<void(InputType)> m_hideToolbarCb;
         std::function<void(TriggerKey, bool)> m_nextCharCb;
         std::function<bool(LetterKey)> m_isLanguageLetterCb;

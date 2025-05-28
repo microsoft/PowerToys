@@ -5,8 +5,6 @@
 using System;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Microsoft.Plugin.Program.UnitTests")]
-
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class MatchOption
