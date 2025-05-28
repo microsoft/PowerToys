@@ -4,7 +4,6 @@
 
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using CommunityToolkit.Common;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -109,13 +108,11 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
                     // TODO GH #239 switch back when using the new MD text block
                     // _ = _queue.EnqueueAsync(() =>
                     _ = Task.Factory.StartNew(
-                        async () =>
+                        () =>
                         {
                             // bool f = await viewModel.InitializeCommand.ExecutionTask.;
                             // var result = viewModel.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
                             // var result = viewModel.InitializeCommand.ExecutionTask.GetResultOrDefault<bool?>()!;
-                            var result = await viewModel.InitializeAsync();
-
                             CurrentPage = viewModel; // result ? viewModel : null;
                             ////LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
                         },
