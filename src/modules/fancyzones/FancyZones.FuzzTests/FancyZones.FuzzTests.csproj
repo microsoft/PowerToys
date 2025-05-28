@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-		<LangVersion>latest</LangVersion>
-		<ImplicitUsings>enable</ImplicitUsings>
-	</PropertyGroup>
+	<!-- Look at Directory.Build.props in root for common stuff as well -->
+	<Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="..\..\..\Common.Dotnet.FuzzTest.props" />
 	
 	<PropertyGroup>
 		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\FancyZones.FuzzTests\</OutputPath>
