@@ -65,6 +65,7 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
+            CloseOtherApplications();
             if (IsInPipeline)
             {
                 screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
@@ -98,8 +99,6 @@ namespace Microsoft.PowerToys.UITest
                     this.Find("DEBUG").Find<Button>("Close").Click();
                 }
             }
-
-            CloseOtherApplications();
         }
 
         /// <summary>
