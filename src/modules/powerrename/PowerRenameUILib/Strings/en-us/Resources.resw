@@ -412,7 +412,7 @@
     <value>Random string features</value>
   </data>
   <data name="TextBlock_FileTime.Text" xml:space="preserve">
-    <value>Time to replace</value>
+    <value>Time used for replacement</value>
   </data>
   <data name="FileTimeParts_CreationTime.Content" xml:space="preserve">
     <value>Creation Time</value>
