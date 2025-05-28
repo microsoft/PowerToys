@@ -16,19 +16,24 @@
         <converters:StringToInfoBarSeverityConverter x:Key="StringToInfoBarSeverityConverter" />
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="General" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PT.png">
+    <controls:SettingsPageControl x:Uid="General"
+ AutomationProperties.AutomationId="General" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PT.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
-                <controls:SettingsGroup x:Uid="General_VersionAndUpdate" Margin="0,-32,0,0">
+                <controls:SettingsGroup x:Uid="General_VersionAndUpdate"
+ AutomationProperties.AutomationId="General_VersionAndUpdate" Margin="0,-32,0,0">
                     <tkcontrols:SettingsExpander Header="{x:Bind ViewModel.PowerToysVersion, Mode=OneWay}" HeaderIcon="{ui:FontIcon Glyph=&#xE895;}">
                         <tkcontrols:SettingsExpander.Description>
                             <StackPanel Orientation="Vertical">
                                 <TextBlock Style="{StaticResource SecondaryTextStyle}">
-                                    <Run x:Uid="General_VersionLastChecked" />
+                                    <Run x:Uid="General_VersionLastChecked"
+ AutomationProperties.AutomationId="General_VersionLastChecked" />
                                     <Run Text="{x:Bind ViewModel.UpdateCheckedDate, Mode=OneWay}" />
                                 </TextBlock>
                                 <HyperlinkButton
                                     x:Uid="ReleaseNotes"
+
+                                    AutomationProperties.AutomationId="ReleaseNotes"
                                     Margin="0,2,0,0"
                                     FontWeight="SemiBold"
                                     NavigateUri="https://github.com/microsoft/PowerToys/releases/" />
@@ -43,6 +48,8 @@
                                 <ProgressRing Width="24" Height="24" />
                                 <TextBlock
                                     x:Uid="General_CheckingForUpdates"
+
+                                    AutomationProperties.AutomationId="General_CheckingForUpdates"
                                     VerticalAlignment="Center"
                                     FontWeight="SemiBold"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -50,6 +57,8 @@
 
                             <Button
                                 x:Uid="GeneralPage_CheckForUpdates"
+
+                                AutomationProperties.AutomationId="GeneralPage_CheckForUpdates"
                                 HorizontalAlignment="Right"
                                 Command="{Binding CheckForUpdatesEventHandler}"
                                 IsEnabled="{Binding IsDownloadAllowed}"
@@ -58,6 +67,8 @@
                         <tkcontrols:SettingsExpander.ItemsHeader>
                             <InfoBar
                                 x:Uid="GPO_SomeSettingsAreManaged"
+
+                                AutomationProperties.AutomationId="GPO_SomeSettingsAreManaged"
                                 BorderThickness="0"
                                 CornerRadius="0"
                                 IsClosable="False"
@@ -74,13 +85,16 @@
                                 ContentAlignment="Left"
                                 IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsAutoDownloadUpdatesCardEnabled}"
                                 Visibility="{x:Bind ViewModel.IsAdmin, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_AutoDownloadAndInstallUpdates" IsChecked="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
+                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_AutoDownloadAndInstallUpdates"
+ AutomationProperties.AutomationId="GeneralPage_AutoDownloadAndInstallUpdates" IsChecked="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowNewUpdatesToastNotificationCardEnabled}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowNewUpdatesToast" IsChecked="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
+                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowNewUpdatesToast"
+ AutomationProperties.AutomationId="GeneralPage_ShowNewUpdatesToast" IsChecked="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowWhatsNewAfterUpdatesCardEnabled}">
-                                <CheckBox x:Uid="GeneralPage_ShowWhatsNewAfterUpdates" IsChecked="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
+                                <CheckBox x:Uid="GeneralPage_ShowWhatsNewAfterUpdates"
+ AutomationProperties.AutomationId="GeneralPage_ShowWhatsNewAfterUpdates" IsChecked="{Binding Mode=TwoWay, Path=ShowWhatsNewAfterUpdates}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -88,6 +102,8 @@
                     <StackPanel Orientation="Vertical">
                         <InfoBar
                             x:Uid="General_UpToDate"
+
+                            AutomationProperties.AutomationId="General_UpToDate"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.IsNewVersionCheckedAndUpToDate, Mode=OneWay}"
                             IsTabStop="{x:Bind ViewModel.IsNewVersionCheckedAndUpToDate, Mode=OneWay}"
@@ -96,6 +112,8 @@
                         <!--  Network error while checking for new version  -->
                         <InfoBar
                             x:Uid="General_CantCheck"
+
+                            AutomationProperties.AutomationId="General_CantCheck"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.IsNoNetwork, Mode=OneWay}"
                             IsTabStop="{x:Bind ViewModel.IsNoNetwork, Mode=OneWay}"
@@ -104,6 +122,8 @@
                         <!--  New version available  -->
                         <InfoBar
                             x:Uid="General_NewVersionAvailable"
+
+                            AutomationProperties.AutomationId="General_NewVersionAvailable"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
                             IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
@@ -114,6 +134,8 @@
                                 <StackPanel Spacing="16">
                                     <Button
                                         x:Uid="General_DownloadAndInstall"
+
+                                        AutomationProperties.AutomationId="General_DownloadAndInstall"
                                         Margin="0,0,0,16"
                                         Command="{Binding UpdateNowButtonEventHandler}"
                                         IsEnabled="{Binding IsDownloadAllowed}"
@@ -128,6 +150,8 @@
                                         <ProgressRing Width="24" Height="24" />
                                         <TextBlock
                                             x:Uid="General_Downloading"
+
+                                            AutomationProperties.AutomationId="General_Downloading"
                                             FontWeight="SemiBold"
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     </StackPanel>
@@ -136,6 +160,8 @@
                             <InfoBar.ActionButton>
                                 <HyperlinkButton
                                     x:Uid="SeeWhatsNew"
+
+                                    AutomationProperties.AutomationId="SeeWhatsNew"
                                     HorizontalAlignment="Right"
                                     NavigateUri="{Binding PowerToysNewAvailableVersionLink, Mode=OneWay}"
                                     Style="{StaticResource TextButtonStyle}" />
@@ -146,6 +172,8 @@
                         <!--  Ready to install  -->
                         <InfoBar
                             x:Uid="General_NewVersionReadyToInstall"
+
+                            AutomationProperties.AutomationId="General_NewVersionReadyToInstall"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
                             IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
@@ -154,6 +182,8 @@
                             <InfoBar.Content>
                                 <Button
                                     x:Uid="General_InstallNow"
+
+                                    AutomationProperties.AutomationId="General_InstallNow"
                                     Margin="0,0,0,16"
                                     Command="{Binding UpdateNowButtonEventHandler}"
                                     IsEnabled="{Binding IsDownloadAllowed}" />
@@ -161,6 +191,8 @@
                             <InfoBar.ActionButton>
                                 <HyperlinkButton
                                     x:Uid="SeeWhatsNew"
+
+                                    AutomationProperties.AutomationId="SeeWhatsNew"
                                     HorizontalAlignment="Right"
                                     NavigateUri="{Binding PowerToysNewAvailableVersionLink, Mode=OneWay}"
                                     Style="{StaticResource TextButtonStyle}" />
@@ -170,6 +202,8 @@
                         <!--  Install failed  -->
                         <InfoBar
                             x:Uid="General_FailedToDownloadTheNewVersion"
+
+                            AutomationProperties.AutomationId="General_FailedToDownloadTheNewVersion"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}"
                             IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ErrorDownloading}"
@@ -179,6 +213,8 @@
                                 <StackPanel Spacing="16">
                                     <Button
                                         x:Uid="General_TryAgainToDownloadAndInstall"
+
+                                        AutomationProperties.AutomationId="General_TryAgainToDownloadAndInstall"
                                         Command="{Binding UpdateNowButtonEventHandler}"
                                         IsEnabled="{Binding IsDownloadAllowed}"
                                         Visibility="{Binding Mode=OneWay, Path=IsNewVersionDownloading, Converter={StaticResource BoolNegationConverter}}" />
@@ -192,6 +228,8 @@
                                         <ProgressRing Width="24" Height="24" />
                                         <TextBlock
                                             x:Uid="General_Downloading"
+
+                                            AutomationProperties.AutomationId="General_Downloading"
                                             FontWeight="SemiBold"
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     </StackPanel>
@@ -200,6 +238,8 @@
                             <InfoBar.ActionButton>
                                 <HyperlinkButton
                                     x:Uid="SeeWhatsNew"
+
+                                    AutomationProperties.AutomationId="SeeWhatsNew"
                                     HorizontalAlignment="Right"
                                     NavigateUri="{Binding PowerToysNewAvailableVersionLink, Mode=OneWay}"
                                     Style="{StaticResource TextButtonStyle}" />
@@ -208,32 +248,42 @@
                     </StackPanel>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="Admin_Mode">
+                <controls:SettingsGroup x:Uid="Admin_Mode"
+ AutomationProperties.AutomationId="Admin_Mode">
                     <tkcontrols:SettingsExpander
                         x:Uid="Admin_Mode_Running_As"
+
+                        AutomationProperties.AutomationId="Admin_Mode_Running_As"
                         Header="{x:Bind ViewModel.RunningAsText, Mode=OneWay}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                         IsExpanded="True">
                         <tkcontrols:SettingsExpander.Description>
-                            <HyperlinkButton x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link" NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp" />
+                            <HyperlinkButton x:Uid="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link"
+ AutomationProperties.AutomationId="GeneralPage_ToggleSwitch_AlwaysRunElevated_Link" NavigateUri="https://aka.ms/powertoysDetectedElevatedHelp" />
                         </tkcontrols:SettingsExpander.Description>
                         <Button
                             x:Uid="GeneralPage_RestartAsAdmin_Button"
+
+                            AutomationProperties.AutomationId="GeneralPage_RestartAsAdmin_Button"
                             Command="{Binding RestartElevatedButtonEventHandler}"
                             IsEnabled="{Binding IsAdminButtonEnabled}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsElevated, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralSettings_AlwaysRunAsAdminText" IsChecked="{x:Bind ViewModel.RunElevated, Mode=TwoWay}" />
+                                <controls:CheckBoxWithDescriptionControl x:Uid="GeneralSettings_AlwaysRunAsAdminText"
+ AutomationProperties.AutomationId="GeneralSettings_AlwaysRunAsAdminText" IsChecked="{x:Bind ViewModel.RunElevated, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="GeneralPage_WarningsElevatedApps" IsChecked="{Binding Mode=TwoWay, Path=EnableWarningsElevatedApps}" />
+                                <CheckBox x:Uid="GeneralPage_WarningsElevatedApps"
+ AutomationProperties.AutomationId="GeneralPage_WarningsElevatedApps" IsChecked="{Binding Mode=TwoWay, Path=EnableWarningsElevatedApps}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="True">
-                    <tkcontrols:SettingsCard x:Uid="LanguageHeader" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
+                <controls:SettingsGroup x:Uid="Appearance_Behavior"
+ AutomationProperties.AutomationId="Appearance_Behavior" IsEnabled="True">
+                    <tkcontrols:SettingsCard x:Uid="LanguageHeader"
+ AutomationProperties.AutomationId="LanguageHeader" HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}">
                         <ComboBox
                             x:Name="Languages_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -243,31 +293,43 @@
                     </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="LanguageRestartInfo"
+
+                        AutomationProperties.AutomationId="LanguageRestartInfo"
                         IsClosable="False"
                         IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.LanguageChanged}"
                         IsTabStop="True"
                         Severity="Informational">
                         <InfoBar.ActionButton>
-                            <Button x:Uid="LanguageRestartInfoButton" Click="Click_LanguageRestart" />
+                            <Button x:Uid="LanguageRestartInfoButton"
+ AutomationProperties.AutomationId="LanguageRestartInfoButton" Click="Click_LanguageRestart" />
                         </InfoBar.ActionButton>
                     </InfoBar>
 
-                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader"
+ AutomationProperties.AutomationId="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
                         <tkcontrols:SettingsCard.Description>
-                            <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
+                            <HyperlinkButton x:Uid="Windows_Color_Settings"
+ AutomationProperties.AutomationId="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
                         </tkcontrols:SettingsCard.Description>
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Radio_Theme_Dark" />
-                            <ComboBoxItem x:Uid="Radio_Theme_Light" />
-                            <ComboBoxItem x:Uid="Radio_Theme_Default" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Dark"
+ AutomationProperties.AutomationId="Radio_Theme_Dark" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Light"
+ AutomationProperties.AutomationId="Radio_Theme_Light" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Default"
+ AutomationProperties.AutomationId="Radio_Theme_Default" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="GeneralPage_RunAtStartUp" IsEnabled="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="GeneralPage_RunAtStartUp"
+ AutomationProperties.AutomationId="GeneralPage_RunAtStartUp" IsEnabled="{x:Bind ViewModel.IsRunAtStartupGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                        <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.Startup, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_SettingIsManaged"
+
+                        AutomationProperties.AutomationId="GPO_SettingIsManaged"
                         BorderThickness="0"
                         CornerRadius="0"
                         IsClosable="False"
@@ -280,14 +342,19 @@
                     </InfoBar>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
-                    <tkcontrols:SettingsExpander x:Uid="General_SettingsBackupAndRestore" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
+                <controls:SettingsGroup x:Uid="General_SettingsBackupAndRestoreTitle"
+ AutomationProperties.AutomationId="General_SettingsBackupAndRestoreTitle" Visibility="Visible">
+                    <tkcontrols:SettingsExpander x:Uid="General_SettingsBackupAndRestore"
+ AutomationProperties.AutomationId="General_SettingsBackupAndRestore" HeaderIcon="{ui:FontIcon Glyph=&#xE777;}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup" Command="{Binding BackupConfigsEventHandler}" />
-                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore" Command="{Binding RestoreConfigsEventHandler}" />
+                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonBackup"
+ AutomationProperties.AutomationId="General_SettingsBackupAndRestore_ButtonBackup" Command="{Binding BackupConfigsEventHandler}" />
+                            <Button x:Uid="General_SettingsBackupAndRestore_ButtonRestore"
+ AutomationProperties.AutomationId="General_SettingsBackupAndRestore_ButtonRestore" Command="{Binding RestoreConfigsEventHandler}" />
                         </StackPanel>
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="General_SettingsBackupAndRestoreLocationText">
+                            <tkcontrols:SettingsCard x:Uid="General_SettingsBackupAndRestoreLocationText"
+ AutomationProperties.AutomationId="General_SettingsBackupAndRestoreLocationText">
                                 <Grid ColumnSpacing="8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -308,13 +375,16 @@
                                     </TextBlock>
                                     <Button
                                         x:Uid="General_SettingsBackupAndRestore_ButtonSelectFolder"
+
+                                        AutomationProperties.AutomationId="General_SettingsBackupAndRestore_ButtonSelectFolder"
                                         Grid.Column="1"
                                         Command="{Binding SelectSettingBackupDirEventHandler}"
                                         Content="&#xe8da;"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}">
                                         <ToolTipService.ToolTip>
                                             <ToolTip>
-                                                <TextBlock x:Uid="General_SettingsBackupAndRestore_ButtonSelectLocation" />
+                                                <TextBlock x:Uid="General_SettingsBackupAndRestore_ButtonSelectLocation"
+ AutomationProperties.AutomationId="General_SettingsBackupAndRestore_ButtonSelectLocation" />
                                             </ToolTip>
                                         </ToolTipService.ToolTip>
                                     </Button>
@@ -322,6 +392,8 @@
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 x:Uid="General_SettingsBackupAndRestoreStatusInfo"
+
+                                AutomationProperties.AutomationId="General_SettingsBackupAndRestoreStatusInfo"
                                 HorizontalContentAlignment="Left"
                                 ContentAlignment="Vertical">
                                 <Grid
@@ -338,18 +410,21 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
-                                    <TextBlock x:Uid="General_SettingsBackupInfo_StatusHeader" />
+                                    <TextBlock x:Uid="General_SettingsBackupInfo_StatusHeader"
+ AutomationProperties.AutomationId="General_SettingsBackupInfo_StatusHeader" />
                                     <TextBlock
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         TextWrapping="WrapWholeWords">
                                         <Run Text="{x:Bind ViewModel.CurrentSettingMatchText, Mode=OneWay}" />
                                         <Hyperlink Click="UpdateBackupAndRestoreStatusText" TextDecorations="Underline">
-                                            <Run x:Uid="General_SettingsBackupAndRestore_LinkRefresh" />
+                                            <Run x:Uid="General_SettingsBackupAndRestore_LinkRefresh"
+ AutomationProperties.AutomationId="General_SettingsBackupAndRestore_LinkRefresh" />
                                         </Hyperlink>
                                     </TextBlock>
 
-                                    <TextBlock x:Uid="General_SettingsBackupInfo_FileNameHeader" Grid.Row="1" />
+                                    <TextBlock x:Uid="General_SettingsBackupInfo_FileNameHeader"
+ AutomationProperties.AutomationId="General_SettingsBackupInfo_FileNameHeader" Grid.Row="1" />
                                     <TextBlock
                                         Grid.Row="1"
                                         Grid.Column="1"
@@ -357,14 +432,16 @@
                                         Text="{x:Bind ViewModel.LastSettingsBackupFileName, Mode=OneWay}"
                                         TextWrapping="WrapWholeWords" />
 
-                                    <TextBlock x:Uid="General_SettingsBackupInfo_SourceHeader" Grid.Row="2" />
+                                    <TextBlock x:Uid="General_SettingsBackupInfo_SourceHeader"
+ AutomationProperties.AutomationId="General_SettingsBackupInfo_SourceHeader" Grid.Row="2" />
                                     <TextBlock
                                         Grid.Row="2"
                                         Grid.Column="1"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Text="{x:Bind ViewModel.LastSettingsBackupSource, Mode=OneWay}"
                                         TextWrapping="WrapWholeWords" />
-                                    <TextBlock x:Uid="General_SettingsBackupInfo_DateHeader" Grid.Row="3" />
+                                    <TextBlock x:Uid="General_SettingsBackupInfo_DateHeader"
+ AutomationProperties.AutomationId="General_SettingsBackupInfo_DateHeader" Grid.Row="3" />
                                     <TextBlock
                                         Grid.Row="3"
                                         Grid.Column="1"
@@ -378,20 +455,27 @@
                 </controls:SettingsGroup>
                 <InfoBar
                     x:Uid="General_SettingsBackupMessageResults"
+
+                    AutomationProperties.AutomationId="General_SettingsBackupMessageResults"
                     Title="{x:Bind ViewModel.SettingsBackupMessage, Mode=OneWay}"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.SettingsBackupRestoreMessageVisible, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.SettingsBackupRestoreMessageVisible, Mode=OneWay}"
                     Severity="{x:Bind ViewModel.BackupRestoreMessageSeverity, Converter={StaticResource StringToInfoBarSeverityConverter}}" />
-                <controls:SettingsGroup x:Uid="General_Experimentation" Visibility="Visible">
-                    <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableExperimentation" IsEnabled="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                <controls:SettingsGroup x:Uid="General_Experimentation"
+ AutomationProperties.AutomationId="General_Experimentation" Visibility="Visible">
+                    <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableExperimentation"
+ AutomationProperties.AutomationId="GeneralPage_EnableExperimentation" IsEnabled="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <tkcontrols:SettingsCard.HeaderIcon>
                             <PathIcon Data="M1859 1758q14 23 21 47t7 51q0 40-15 75t-41 61-61 41-75 15H354q-40 0-75-15t-61-41-41-61-15-75q0-27 6-51t21-47l569-992q10-14 10-34V128H640V0h768v128h-128v604q0 19 10 35l569 991zM896 732q0 53-27 99l-331 577h972l-331-577q-27-46-27-99V128H896v604zm799 1188q26 0 44-19t19-45q0-10-2-17t-8-16l-164-287H464l-165 287q-9 15-9 33 0 26 18 45t46 19h1341z" />
                         </tkcontrols:SettingsCard.HeaderIcon>
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableExperimentation, Mode=TwoWay}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableExperimentation, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_SettingIsManaged"
+
+                        AutomationProperties.AutomationId="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsExperimentationGpoDisallowed, Mode=OneWay}"
@@ -401,20 +485,28 @@
                         </InfoBar.IconSource>
                     </InfoBar>
                 </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="General_DiagnosticsAndFeedback" Visibility="Visible">
+                <controls:SettingsGroup x:Uid="General_DiagnosticsAndFeedback"
+ AutomationProperties.AutomationId="General_DiagnosticsAndFeedback" Visibility="Visible">
                     <StackPanel>
                         <HyperlinkButton
                             x:Uid="GeneralPage_DiagnosticsAndFeedback_Link"
+
+                            AutomationProperties.AutomationId="GeneralPage_DiagnosticsAndFeedback_Link"
                             Margin="-8,0,0,0"
                             NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
                         <tkcontrols:SettingsCard
                             x:Uid="GeneralPage_EnableDataDiagnostics"
+
+                            AutomationProperties.AutomationId="GeneralPage_EnableDataDiagnostics"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}"
                             IsEnabled="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}" />
+                            <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <InfoBar
                             x:Uid="GPO_SettingIsManaged"
+
+                            AutomationProperties.AutomationId="GPO_SettingIsManaged"
                             IsClosable="False"
                             IsOpen="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
                             IsTabStop="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay}"
@@ -425,15 +517,21 @@
                         </InfoBar>
                         <tkcontrols:SettingsExpander
                             x:Uid="GeneralPage_ViewDiagnosticData"
+
+                            AutomationProperties.AutomationId="GeneralPage_ViewDiagnosticData"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                             IsEnabled="{x:Bind ViewModel.IsDataDiagnosticsGPOManaged, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                             IsExpanded="True">
                             <tkcontrols:SettingsExpander.Items>
-                                <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableViewDiagnosticData" IsEnabled="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}">
-                                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableViewDataDiagnostics, Mode=TwoWay}" />
+                                <tkcontrols:SettingsCard x:Uid="GeneralPage_EnableViewDiagnosticData"
+ AutomationProperties.AutomationId="GeneralPage_EnableViewDiagnosticData" IsEnabled="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}">
+                                    <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableViewDataDiagnostics, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard
                                     x:Uid="GeneralPage_ViewDiagnosticDataViewer"
+
+                                    AutomationProperties.AutomationId="GeneralPage_ViewDiagnosticDataViewer"
                                     ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                                     Click="ViewDiagnosticData_Click"
                                     IsClickEnabled="True" />
@@ -441,12 +539,15 @@
                         </tkcontrols:SettingsExpander>
                         <InfoBar
                             x:Uid="GeneralPage_ViewDiagnosticDataViewerInfo"
+
+                            AutomationProperties.AutomationId="GeneralPage_ViewDiagnosticDataViewerInfo"
                             IsClosable="False"
                             IsOpen="{x:Bind Mode=OneWay, Path=ViewModel.ViewDiagnosticDataViewerChanged}"
                             IsTabStop="{x:Bind Mode=OneWay, Path=ViewModel.ViewDiagnosticDataViewerChanged}"
                             Severity="Informational">
                             <InfoBar.ActionButton>
-                                <Button x:Uid="GeneralPage_ViewDiagnosticDataViewerInfoButton" Click="Click_ViewDiagnosticDataViewerRestart" />
+                                <Button x:Uid="GeneralPage_ViewDiagnosticDataViewerInfoButton"
+ AutomationProperties.AutomationId="GeneralPage_ViewDiagnosticDataViewerInfoButton" Click="Click_ViewDiagnosticDataViewerRestart" />
                             </InfoBar.ActionButton>
                         </InfoBar>
 
@@ -456,14 +557,20 @@
 
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="GeneralPage_Documentation" Link="https://aka.ms/PowerToysOverview" />
-            <controls:PageLink x:Uid="General_Repository" Link="https://aka.ms/powertoys" />
-            <controls:PageLink x:Uid="GeneralPage_ReportAbug" Link="{x:Bind ViewModel.ReportBugLink, Mode=OneWay}" />
-            <controls:PageLink x:Uid="GeneralPage_RequestAFeature_URL" Link="https://aka.ms/powerToysRequestFeature" />
+            <controls:PageLink x:Uid="GeneralPage_Documentation"
+ AutomationProperties.AutomationId="GeneralPage_Documentation" Link="https://aka.ms/PowerToysOverview" />
+            <controls:PageLink x:Uid="General_Repository"
+ AutomationProperties.AutomationId="General_Repository" Link="https://aka.ms/powertoys" />
+            <controls:PageLink x:Uid="GeneralPage_ReportAbug"
+ AutomationProperties.AutomationId="GeneralPage_ReportAbug" Link="{x:Bind ViewModel.ReportBugLink, Mode=OneWay}" />
+            <controls:PageLink x:Uid="GeneralPage_RequestAFeature_URL"
+ AutomationProperties.AutomationId="GeneralPage_RequestAFeature_URL" Link="https://aka.ms/powerToysRequestFeature" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink x:Uid="GeneralPage_PrivacyStatement_URL" Link="http://go.microsoft.com/fwlink/?LinkId=521839" />
-            <controls:PageLink x:Uid="OpenSource_Notice" Link="https://github.com/microsoft/PowerToys/blob/main/NOTICE.md" />
+            <controls:PageLink x:Uid="GeneralPage_PrivacyStatement_URL"
+ AutomationProperties.AutomationId="GeneralPage_PrivacyStatement_URL" Link="http://go.microsoft.com/fwlink/?LinkId=521839" />
+            <controls:PageLink x:Uid="OpenSource_Notice"
+ AutomationProperties.AutomationId="OpenSource_Notice" Link="https://github.com/microsoft/PowerToys/blob/main/NOTICE.md" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

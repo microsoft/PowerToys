@@ -1,4 +1,4 @@
-<Page
+﻿<Page
     x:Class="Microsoft.PowerToys.Settings.UI.Views.FileLocksmithPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,11 +10,14 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="FileLocksmith" ModuleImageSource="ms-appx:///Assets/Settings/Modules/FileLocksmith.png">
+    <controls:SettingsPageControl x:Uid="FileLocksmith"
+ AutomationProperties.AutomationId="FileLocksmith" ModuleImageSource="ms-appx:///Assets/Settings/Modules/FileLocksmith.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="FileLocksmith_Enable_FileLocksmith"
+
+                    AutomationProperties.AutomationId="FileLocksmith_Enable_FileLocksmith"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileLocksmith.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsFileLocksmithEnabled, Mode=TwoWay}" />
@@ -22,6 +25,8 @@
 
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -31,15 +36,21 @@
                     </InfoBar.IconSource>
                 </InfoBar>
 
-                <controls:SettingsGroup x:Uid="FileLocksmith_ShellIntegration" IsEnabled="{x:Bind ViewModel.IsFileLocksmithEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="FileLocksmith_Toggle_ContextMenu">
+                <controls:SettingsGroup x:Uid="FileLocksmith_ShellIntegration"
+ AutomationProperties.AutomationId="FileLocksmith_ShellIntegration" IsEnabled="{x:Bind ViewModel.IsFileLocksmithEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="FileLocksmith_Toggle_ContextMenu"
+ AutomationProperties.AutomationId="FileLocksmith_Toggle_ContextMenu">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.EnabledOnContextExtendedMenu, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
-                            <ComboBoxItem x:Uid="FileLocksmith_Toggle_StandardContextMenu" />
-                            <ComboBoxItem x:Uid="FileLocksmith_Toggle_ExtendedContextMenu" />
+                            <ComboBoxItem x:Uid="FileLocksmith_Toggle_StandardContextMenu"
+ AutomationProperties.AutomationId="FileLocksmith_Toggle_StandardContextMenu" />
+                            <ComboBoxItem x:Uid="FileLocksmith_Toggle_ExtendedContextMenu"
+ AutomationProperties.AutomationId="FileLocksmith_Toggle_ExtendedContextMenu" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="ExtendedContextMenuInfo"
+
+                        AutomationProperties.AutomationId="ExtendedContextMenuInfo"
                         IsClosable="False"
                         IsOpen="True"
                         IsTabStop="True"
@@ -48,7 +59,8 @@
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_FileLocksmith" Link="https://aka.ms/PowerToysOverview_FileLocksmith" />
+            <controls:PageLink x:Uid="LearnMore_FileLocksmith"
+ AutomationProperties.AutomationId="LearnMore_FileLocksmith" Link="https://aka.ms/PowerToysOverview_FileLocksmith" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

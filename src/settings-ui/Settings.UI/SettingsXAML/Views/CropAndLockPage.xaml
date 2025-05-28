@@ -12,18 +12,25 @@
 
     <controls:SettingsPageControl
         x:Uid="CropAndLock"
+
+        AutomationProperties.AutomationId="CropAndLock"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/CropAndLock.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="CropAndLock_EnableToggleControl_HeaderText"
+
+                    AutomationProperties.AutomationId="CropAndLock_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CropAndLock.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -32,15 +39,18 @@
                         <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                     </InfoBar.IconSource>
                 </InfoBar>
-                <controls:SettingsGroup x:Uid="CropAndLock_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="CropAndLock_Activation_GroupSettings"
+ AutomationProperties.AutomationId="CropAndLock_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <tkcontrols:SettingsCard x:Uid="CropAndLock_ThumbnailActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="CropAndLock_ThumbnailActivation_Shortcut"
+ AutomationProperties.AutomationId="CropAndLock_ThumbnailActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ThumbnailActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="CropAndLock_ReparentActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="CropAndLock_ReparentActivation_Shortcut"
+ AutomationProperties.AutomationId="CropAndLock_ReparentActivation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
@@ -51,7 +61,8 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_CropAndLock" Link="https://aka.ms/PowerToysOverview_CropAndLock" />
+            <controls:PageLink x:Uid="LearnMore_CropAndLock"
+ AutomationProperties.AutomationId="LearnMore_CropAndLock" Link="https://aka.ms/PowerToysOverview_CropAndLock" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink Link="https://github.com/robmikh" Text="Robert Mikhayelyan" />

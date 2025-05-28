@@ -712,6 +712,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerRename.FuzzingTest", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Search", "src\common\Common.Search\Common.Search.csproj", "{38F187B2-6638-5A40-072F-DBE5E54070A0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Settings.UI.XamlIndexBuilder", "src\settings-ui\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj", "{DA0744BC-E822-680E-9CEB-D0FBA903A8EE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -2606,7 +2608,14 @@ Global
 		{38F187B2-6638-5A40-072F-DBE5E54070A0}.Release|ARM64.Build.0 = Release|ARM64
 		{38F187B2-6638-5A40-072F-DBE5E54070A0}.Release|x64.ActiveCfg = Release|x64
 		{38F187B2-6638-5A40-072F-DBE5E54070A0}.Release|x64.Build.0 = Release|x64
-
+		{DA0744BC-E822-680E-9CEB-D0FBA903A8EE}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{DA0744BC-E822-680E-9CEB-D0FBA903A8EE}.Debug|ARM64.Build.0 = Debug|ARM64
+		{DA0744BC-E822-680E-9CEB-D0FBA903A8EE}.Debug|x64.ActiveCfg = Debug|x64
+		{DA0744BC-E822-680E-9CEB-D0FBA903A8EE}.Debug|x64.Build.0 = Debug|x64
+		{DA0744BC-E822-680E-9CEB-D0FBA903A8EE}.Release|ARM64.ActiveCfg = Release|ARM64
+		{DA0744BC-E822-680E-9CEB-D0FBA903A8EE}.Release|ARM64.Build.0 = Release|ARM64
+		{DA0744BC-E822-680E-9CEB-D0FBA903A8EE}.Release|x64.ActiveCfg = Release|x64
+		{DA0744BC-E822-680E-9CEB-D0FBA903A8EE}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2881,6 +2890,7 @@ Global
 		{5F63C743-F6CE-4DBA-A200-2B3F8A14E8C2} = {3846508C-77EB-4034-A702-F8BB263C4F79}
 		{2694E2FB-DCD5-4BFF-A418-B6C3C7CE3B8E} = {89E20BCE-EB9C-46C8-8B50-E01A82E6FDC3}
 		{38F187B2-6638-5A40-072F-DBE5E54070A0} = {1AFB6476-670D-4E80-A464-657E01DFF482}
+		{DA0744BC-E822-680E-9CEB-D0FBA903A8EE} = {C3081D9A-1586-441A-B5F4-ED815B3719C1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C3A2F9D1-7930-4EF4-A6FC-7EE0A99821D0}

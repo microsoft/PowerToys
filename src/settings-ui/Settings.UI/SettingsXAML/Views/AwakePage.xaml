@@ -19,18 +19,24 @@
 
     <controls:SettingsPageControl
         x:Uid="Awake"
+
+        AutomationProperties.AutomationId="Awake"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/Awake.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="Awake_EnableSettingsCard"
+
+                    AutomationProperties.AutomationId="Awake_EnableSettingsCard"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -40,27 +46,37 @@
                     </InfoBar.IconSource>
                 </InfoBar>
 
-                <controls:SettingsGroup x:Uid="Awake_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="Awake_BehaviorSettingsGroup"
+ AutomationProperties.AutomationId="Awake_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
-                    <tkcontrols:SettingsCard x:Uid="Awake_ModeSettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
+                    <tkcontrols:SettingsCard x:Uid="Awake_ModeSettingsCard"
+ AutomationProperties.AutomationId="Awake_ModeSettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Mode, Mode=TwoWay, Converter={StaticResource AwakeModeToIntConverter}}">
-                            <ComboBoxItem x:Uid="Awake_NoKeepAwakeSelector" />
-                            <ComboBoxItem x:Uid="Awake_IndefiniteKeepAwakeSelector" />
-                            <ComboBoxItem x:Uid="Awake_TemporaryKeepAwakeSelector" />
-                            <ComboBoxItem x:Uid="Awake_ExpirableKeepAwakeSelector" />
+                            <ComboBoxItem x:Uid="Awake_NoKeepAwakeSelector"
+ AutomationProperties.AutomationId="Awake_NoKeepAwakeSelector" />
+                            <ComboBoxItem x:Uid="Awake_IndefiniteKeepAwakeSelector"
+ AutomationProperties.AutomationId="Awake_IndefiniteKeepAwakeSelector" />
+                            <ComboBoxItem x:Uid="Awake_TemporaryKeepAwakeSelector"
+ AutomationProperties.AutomationId="Awake_TemporaryKeepAwakeSelector" />
+                            <ComboBoxItem x:Uid="Awake_ExpirableKeepAwakeSelector"
+ AutomationProperties.AutomationId="Awake_ExpirableKeepAwakeSelector" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsExpander
                         x:Uid="Awake_ExpirationSettingsExpander"
+
+                        AutomationProperties.AutomationId="Awake_ExpirationSettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEC92;}"
                         IsExpanded="True"
                         Visibility="{x:Bind ViewModel.IsExpirationConfigurationEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="Awake_ExpirationSettingsExpander_Date">
+                            <tkcontrols:SettingsCard x:Uid="Awake_ExpirationSettingsExpander_Date"
+ AutomationProperties.AutomationId="Awake_ExpirationSettingsExpander_Date">
                                 <DatePicker Date="{x:Bind ViewModel.ExpirationDateTime, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="Awake_ExpirationSettingsExpander_Time">
+                            <tkcontrols:SettingsCard x:Uid="Awake_ExpirationSettingsExpander_Time"
+ AutomationProperties.AutomationId="Awake_ExpirationSettingsExpander_Time">
                                 <TimePicker ClockIdentifier="24HourClock" Time="{x:Bind ViewModel.ExpirationTime, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -68,12 +84,16 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="Awake_IntervalSettingsCard"
+
+                        AutomationProperties.AutomationId="Awake_IntervalSettingsCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         Visibility="{x:Bind ViewModel.IsTimeConfigurationEnabled, Mode=OneWay}">
 
                         <StackPanel MinWidth="{StaticResource SettingActionControlMinWidth}" Orientation="Horizontal">
                             <NumberBox
                                 x:Uid="Awake_IntervalHoursInput"
+
+                                AutomationProperties.AutomationId="Awake_IntervalHoursInput"
                                 Width="96"
                                 HorizontalAlignment="Left"
                                 LargeChange="5"
@@ -83,6 +103,8 @@
                                 Value="{x:Bind ViewModel.IntervalHours, Mode=TwoWay}" />
                             <NumberBox
                                 x:Uid="Awake_IntervalMinutesInput"
+
+                                AutomationProperties.AutomationId="Awake_IntervalMinutesInput"
                                 Width="96"
                                 Margin="8,0,0,0"
                                 HorizontalAlignment="Left"
@@ -97,6 +119,8 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="Awake_DisplaySettingsCard"
+
+                        AutomationProperties.AutomationId="Awake_DisplaySettingsCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
                         IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
@@ -106,10 +130,12 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_Awake" Link="https://aka.ms/PowerToysOverview_Awake" />
+            <controls:PageLink x:Uid="LearnMore_Awake"
+ AutomationProperties.AutomationId="LearnMore_Awake" Link="https://aka.ms/PowerToysOverview_Awake" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink x:Uid="SecondaryLink_Awake" Link="https://awake.den.dev" />
+            <controls:PageLink x:Uid="SecondaryLink_Awake"
+ AutomationProperties.AutomationId="SecondaryLink_Awake" Link="https://awake.den.dev" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 </Page>

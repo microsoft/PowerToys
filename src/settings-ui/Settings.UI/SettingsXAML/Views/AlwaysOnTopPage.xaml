@@ -12,18 +12,25 @@
 
     <controls:SettingsPageControl
         x:Uid="AlwaysOnTop"
+
+        AutomationProperties.AutomationId="AlwaysOnTop"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/AlwaysOnTop.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
+
+                    AutomationProperties.AutomationId="AlwaysOnTop_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -32,48 +39,63 @@
                         <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                     </InfoBar.IconSource>
                 </InfoBar>
-                <controls:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="AlwaysOnTop_Activation_GroupSettings"
+ AutomationProperties.AutomationId="AlwaysOnTop_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
 
                     <tkcontrols:SettingsExpander
                         x:Uid="AlwaysOnTop_ActivationShortcut"
+
+                        AutomationProperties.AutomationId="AlwaysOnTop_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="AlwaysOnTop_GameMode" IsChecked="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
+                                <CheckBox x:Uid="AlwaysOnTop_GameMode"
+ AutomationProperties.AutomationId="AlwaysOnTop_GameMode" IsChecked="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="AlwaysOnTop_Behavior_GroupSettings"
+ AutomationProperties.AutomationId="AlwaysOnTop_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="AlwaysOnTop_FrameEnabled"
+
+                        AutomationProperties.AutomationId="AlwaysOnTop_FrameEnabled"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsExpanded="True">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.FrameEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.FrameEnabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameColor_Mode" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameColor_Mode"
+ AutomationProperties.AutomationId="AlwaysOnTop_FrameColor_Mode" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.FrameAccentColor, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
-                                    <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Custom_Color" />
-                                    <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Windows_Default" />
+                                    <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Custom_Color"
+ AutomationProperties.AutomationId="AlwaysOnTop_Radio_Custom_Color" />
+                                    <ComboBoxItem x:Uid="AlwaysOnTop_Radio_Windows_Default"
+ AutomationProperties.AutomationId="AlwaysOnTop_Radio_Windows_Default" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 x:Uid="AlwaysOnTop_FrameColor"
+
+                                AutomationProperties.AutomationId="AlwaysOnTop_FrameColor"
                                 IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}"
                                 Visibility="{x:Bind ViewModel.FrameAccentColor, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FrameColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameOpacity" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameOpacity"
+ AutomationProperties.AutomationId="AlwaysOnTop_FrameOpacity" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="0"
                                     Value="{x:Bind ViewModel.FrameOpacity, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameThickness" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameThickness"
+ AutomationProperties.AutomationId="AlwaysOnTop_FrameThickness" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="5"
@@ -83,32 +105,41 @@
                                     Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.Windows11, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                <CheckBox x:Uid="AlwaysOnTop_RoundCorners" IsChecked="{x:Bind ViewModel.RoundCornersEnabled, Mode=TwoWay}" />
+                                <CheckBox x:Uid="AlwaysOnTop_RoundCorners"
+ AutomationProperties.AutomationId="AlwaysOnTop_RoundCorners" IsChecked="{x:Bind ViewModel.RoundCornersEnabled, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
                     <tkcontrols:SettingsExpander
                         x:Uid="AlwaysOnTop_SoundTitle"
+
+                        AutomationProperties.AutomationId="AlwaysOnTop_SoundTitle"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}"
                         IsExpanded="True">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="AlwaysOnTop_Sound" IsChecked="{x:Bind ViewModel.SoundEnabled, Mode=TwoWay}" />
+                                <CheckBox x:Uid="AlwaysOnTop_Sound"
+ AutomationProperties.AutomationId="AlwaysOnTop_Sound" IsChecked="{x:Bind ViewModel.SoundEnabled, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="ExcludedApps"
+ AutomationProperties.AutomationId="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="AlwaysOnTop_ExcludedApps"
+
+                        AutomationProperties.AutomationId="AlwaysOnTop_ExcludedApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsExpanded="True">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="AlwaysOnTop_ExcludedApps_TextBoxControl"
+
+                                    AutomationProperties.AutomationId="AlwaysOnTop_ExcludedApps_TextBoxControl"
                                     MinWidth="240"
                                     MinHeight="160"
                                     AcceptsReturn="True"
@@ -125,7 +156,8 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_AlwaysOnTop" Link="https://aka.ms/PowerToysOverview_AlwaysOnTop" />
+            <controls:PageLink x:Uid="LearnMore_AlwaysOnTop"
+ AutomationProperties.AutomationId="LearnMore_AlwaysOnTop" Link="https://aka.ms/PowerToysOverview_AlwaysOnTop" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

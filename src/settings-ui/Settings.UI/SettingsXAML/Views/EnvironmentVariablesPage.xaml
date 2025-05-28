@@ -9,17 +9,23 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="EnvironmentVariables" ModuleImageSource="ms-appx:///Assets/Settings/Modules/EnvironmentVariables.png">
+    <controls:SettingsPageControl x:Uid="EnvironmentVariables"
+ AutomationProperties.AutomationId="EnvironmentVariables" ModuleImageSource="ms-appx:///Assets/Settings/Modules/EnvironmentVariables.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="EnvironmentVariables_EnableToggleControl_HeaderText"
+
+                    AutomationProperties.AutomationId="EnvironmentVariables_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/EnvironmentVariables.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -28,25 +34,32 @@
                         <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                     </InfoBar.IconSource>
                 </InfoBar>
-                <controls:SettingsGroup x:Uid="EnvironmentVariables_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="EnvironmentVariables_Activation_GroupSettings"
+ AutomationProperties.AutomationId="EnvironmentVariables_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="EnvironmentVariables_LaunchButtonControl"
+
+                        AutomationProperties.AutomationId="EnvironmentVariables_LaunchButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
                     <tkcontrols:SettingsCard
                         x:Uid="EnvironmentVariables_Toggle_LaunchAdministrator"
+
+                        AutomationProperties.AutomationId="EnvironmentVariables_Toggle_LaunchAdministrator"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                         IsEnabled="{x:Bind ViewModel.LaunchAdministratorEnabled, Mode=OneWay}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.LaunchAdministrator, Mode=TwoWay}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.LaunchAdministrator, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_EnvironmentVariables" Link="https://aka.ms/PowerToysOverview_EnvironmentVariables" />
+            <controls:PageLink x:Uid="LearnMore_EnvironmentVariables"
+ AutomationProperties.AutomationId="LearnMore_EnvironmentVariables" Link="https://aka.ms/PowerToysOverview_EnvironmentVariables" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

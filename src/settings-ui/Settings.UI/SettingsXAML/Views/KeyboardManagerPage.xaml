@@ -36,6 +36,8 @@
             <StackPanel
                 Name="KeyboardManager_RemappedKeysListItem"
                 x:Uid="KeyboardManager_RemappedKeysListItem"
+
+                AutomationProperties.AutomationId="KeyboardManager_RemappedKeysListItem"
                 Orientation="Horizontal"
                 Height="56">
 
@@ -45,28 +47,37 @@
             <StackPanel
                 Name="KeyboardManager_RemappedShortcutsListItem"
                 x:Uid="KeyboardManager_RemappedShortcutsListItem"
+
+                AutomationProperties.AutomationId="KeyboardManager_RemappedShortcutsListItem"
                 Orientation="Horizontal"
                 Height="56">
 
         </DataTemplate>-->
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="KeyboardManager" ModuleImageSource="ms-appx:///Assets/Settings/Modules/KBM.png">
+    <controls:SettingsPageControl x:Uid="KeyboardManager"
+ AutomationProperties.AutomationId="KeyboardManager" ModuleImageSource="ms-appx:///Assets/Settings/Modules/KBM.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="KeyboardManager_EnableToggle"
+
+                    AutomationProperties.AutomationId="KeyboardManager_EnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Enabled, Mode=TwoWay}" />
+                    <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.Enabled, Mode=TwoWay}" />
                     <tkcontrols:SettingsCard.Description>
                         <HyperlinkButton NavigateUri="https://aka.ms/powerToysCannotRemapKeys">
-                            <TextBlock x:Uid="KBM_KeysCannotBeRemapped" FontWeight="SemiBold" />
+                            <TextBlock x:Uid="KBM_KeysCannotBeRemapped"
+ AutomationProperties.AutomationId="KBM_KeysCannotBeRemapped" FontWeight="SemiBold" />
                         </HyperlinkButton>
                     </tkcontrols:SettingsCard.Description>
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -76,9 +87,12 @@
                     </InfoBar.IconSource>
                 </InfoBar>
 
-                <controls:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="KeyboardManager_Keys"
+ AutomationProperties.AutomationId="KeyboardManager_Keys" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="KeyboardManager_RemapKeyboardButton"
+
+                        AutomationProperties.AutomationId="KeyboardManager_RemapKeyboardButton"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{Binding Path=RemapKeyboardCommand}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE92E;}"
@@ -87,6 +101,8 @@
                     <ListView
                         x:Name="RemapKeysList"
                         x:Uid="RemapKeysList"
+
+                        AutomationProperties.AutomationId="RemapKeysList"
                         IsSwipeEnabled="False"
                         ItemsSource="{x:Bind Path=ViewModel.RemapKeys, Mode=OneWay}"
                         SelectionMode="None"
@@ -107,12 +123,16 @@
                                         </ItemsControl>
                                         <controls:IsEnabledTextBlock
                                             x:Uid="To"
+
+                                            AutomationProperties.AutomationId="To"
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
                                             Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
                                         <ItemsControl
                                             Name="KeyboardManager_RemappedTo"
                                             x:Uid="KeyboardManager_RemappedTo"
+
+                                            AutomationProperties.AutomationId="KeyboardManager_RemappedTo"
                                             IsTabStop="False"
                                             ItemTemplate="{StaticResource RemappedKeyTemplate}"
                                             ItemsSource="{x:Bind GetMappedNewRemapKeys(50)}">
@@ -129,9 +149,12 @@
                     </ListView>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="KeyboardManager_Shortcuts" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="KeyboardManager_Shortcuts"
+ AutomationProperties.AutomationId="KeyboardManager_Shortcuts" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="KeyboardManager_RemapShortcutsButton"
+
+                        AutomationProperties.AutomationId="KeyboardManager_RemapShortcutsButton"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{Binding Path=EditShortcutCommand}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE713;}"
@@ -140,6 +163,8 @@
                     <ListView
                         x:Name="RemapShortcutsList"
                         x:Uid="RemapShortcutsList"
+
+                        AutomationProperties.AutomationId="RemapShortcutsList"
                         IsSwipeEnabled="False"
                         ItemsSource="{x:Bind Path=ViewModel.RemapShortcuts, Mode=OneWay}"
                         SelectionMode="None"
@@ -181,6 +206,8 @@
 
                                             <controls:IsEnabledTextBlock
                                                 x:Uid="To"
+
+                                                AutomationProperties.AutomationId="To"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
@@ -188,6 +215,8 @@
 
                                             <controls:IsEnabledTextBlock
                                                 x:Uid="Starts"
+
+                                                AutomationProperties.AutomationId="Starts"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
@@ -197,6 +226,8 @@
                                             <ItemsControl
                                                 Name="KeyboardManager_RemappedTo"
                                                 x:Uid="KeyboardManager_RemappedTo"
+
+                                                AutomationProperties.AutomationId="KeyboardManager_RemappedTo"
                                                 IsTabStop="False"
                                                 ItemTemplate="{StaticResource RemappedKeyTemplate}"
                                                 ItemsSource="{x:Bind GetMappedNewRemapKeys(50)}">
@@ -227,7 +258,8 @@
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_KBM" Link="https://aka.ms/PowerToysOverview_KeyboardManager" />
+            <controls:PageLink x:Uid="LearnMore_KBM"
+ AutomationProperties.AutomationId="LearnMore_KBM" Link="https://aka.ms/PowerToysOverview_KeyboardManager" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

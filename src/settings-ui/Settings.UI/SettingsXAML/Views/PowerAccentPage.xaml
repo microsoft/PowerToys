@@ -22,19 +22,26 @@
 
     <controls:SettingsPageControl
         x:Uid="QuickAccent"
+
+        AutomationProperties.AutomationId="QuickAccent"
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/QuickAccent.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="QuickAccent_EnableQuickAccent"
+
+                    AutomationProperties.AutomationId="QuickAccent_EnableQuickAccent"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/QuickAccent.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
 
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -44,19 +51,26 @@
                     </InfoBar.IconSource>
                 </InfoBar>
 
-                <controls:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="QuickAccent_Activation_GroupSettings"
+ AutomationProperties.AutomationId="QuickAccent_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="QuickAccent_Activation_Shortcut"
+
+                        AutomationProperties.AutomationId="QuickAccent_Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationKey, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows" />
-                            <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space" />
-                            <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Either" />
+                            <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows"
+ AutomationProperties.AutomationId="QuickAccent_Activation_Key_Arrows" />
+                            <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space"
+ AutomationProperties.AutomationId="QuickAccent_Activation_Key_Space" />
+                            <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Either"
+ AutomationProperties.AutomationId="QuickAccent_Activation_Key_Either" />
                         </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="QuickAccent_Prevent_Activation_On_Game_Mode" IsChecked="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
+                                <CheckBox x:Uid="QuickAccent_Prevent_Activation_On_Game_Mode"
+ AutomationProperties.AutomationId="QuickAccent_Prevent_Activation_On_Game_Mode" IsChecked="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -65,14 +79,20 @@
                 <controls:SettingsGroup
                     x:Name="QuickAccent_Language"
                     x:Uid="QuickAccent_Language"
+
+                    AutomationProperties.AutomationId="QuickAccent_Language"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="QuickAccent_SelectedLanguage"
+
+                        AutomationProperties.AutomationId="QuickAccent_SelectedLanguage"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}"
                         IsExpanded="False">
                         <CheckBox
                             x:Name="QuickAccent_SelectedLanguage_All"
                             x:Uid="QuickAccent_SelectedLanguage_All"
+
+                            AutomationProperties.AutomationId="QuickAccent_SelectedLanguage_All"
                             Checked="QuickAccent_SelectedLanguage_SelectAll"
                             IsThreeState="True"
                             Unchecked="QuickAccent_SelectedLanguage_UnselectAll" />
@@ -156,33 +176,52 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="QuickAccent_ToolbarPosition" HeaderIcon="{ui:FontIcon Glyph=&#xEC12;}">
+                <controls:SettingsGroup x:Uid="QuickAccent_Toolbar"
+ AutomationProperties.AutomationId="QuickAccent_Toolbar" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_ToolbarPosition"
+ AutomationProperties.AutomationId="QuickAccent_ToolbarPosition" HeaderIcon="{ui:FontIcon Glyph=&#xEC12;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ToolbarPositionIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopCenter" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomCenter" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Left" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Right" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopRightCorner" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopLeftCorner" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomRightCorner" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomLeftCorner" />
-                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Center" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopCenter"
+ AutomationProperties.AutomationId="QuickAccent_ToolbarPosition_TopCenter" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomCenter"
+ AutomationProperties.AutomationId="QuickAccent_ToolbarPosition_BottomCenter" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Left"
+ AutomationProperties.AutomationId="QuickAccent_ToolbarPosition_Left" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Right"
+ AutomationProperties.AutomationId="QuickAccent_ToolbarPosition_Right" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopRightCorner"
+ AutomationProperties.AutomationId="QuickAccent_ToolbarPosition_TopRightCorner" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_TopLeftCorner"
+ AutomationProperties.AutomationId="QuickAccent_ToolbarPosition_TopLeftCorner" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomRightCorner"
+ AutomationProperties.AutomationId="QuickAccent_ToolbarPosition_BottomRightCorner" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_BottomLeftCorner"
+ AutomationProperties.AutomationId="QuickAccent_ToolbarPosition_BottomLeftCorner" />
+                            <ComboBoxItem x:Uid="QuickAccent_ToolbarPosition_Center"
+ AutomationProperties.AutomationId="QuickAccent_ToolbarPosition_Center" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="QuickAccent_Description_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
-                        <ToggleSwitch x:Uid="QuickAccent_UnicodeDescription_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowUnicodeDescription, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_Description_Indicator"
+ AutomationProperties.AutomationId="QuickAccent_Description_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE946;}">
+                        <ToggleSwitch x:Uid="QuickAccent_UnicodeDescription_ToggleSwitch"
+ AutomationProperties.AutomationId="QuickAccent_UnicodeDescription_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowUnicodeDescription, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="QuickAccent_SortByUsageFrequency_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}">
-                        <ToggleSwitch x:Uid="QuickAccent_SortByUsageFrequency_ToggleSwitch" IsOn="{x:Bind ViewModel.SortByUsageFrequency, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_SortByUsageFrequency_Indicator"
+ AutomationProperties.AutomationId="QuickAccent_SortByUsageFrequency_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}">
+                        <ToggleSwitch x:Uid="QuickAccent_SortByUsageFrequency_ToggleSwitch"
+ AutomationProperties.AutomationId="QuickAccent_SortByUsageFrequency_ToggleSwitch" IsOn="{x:Bind ViewModel.SortByUsageFrequency, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="QuickAccent_StartSelectionFromTheLeft_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE974;}">
-                        <ToggleSwitch x:Uid="QuickAccent_StartSelectionFromTheLeft_ToggleSwitch" IsOn="{x:Bind ViewModel.StartSelectionFromTheLeft, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_StartSelectionFromTheLeft_Indicator"
+ AutomationProperties.AutomationId="QuickAccent_StartSelectionFromTheLeft_Indicator" HeaderIcon="{ui:FontIcon Glyph=&#xE974;}">
+                        <ToggleSwitch x:Uid="QuickAccent_StartSelectionFromTheLeft_ToggleSwitch"
+ AutomationProperties.AutomationId="QuickAccent_StartSelectionFromTheLeft_ToggleSwitch" IsOn="{x:Bind ViewModel.StartSelectionFromTheLeft, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="QuickAccent_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="QuickAccent_InputTimeMs" HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
+                <controls:SettingsGroup x:Uid="QuickAccent_Behavior"
+ AutomationProperties.AutomationId="QuickAccent_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_InputTimeMs"
+ AutomationProperties.AutomationId="QuickAccent_InputTimeMs" HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             LargeChange="100"
@@ -192,11 +231,14 @@
                             Value="{x:Bind ViewModel.InputTimeMs, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsExpander x:Uid="QuickAccent_ExcludedApps" HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}">
+                    <tkcontrols:SettingsExpander x:Uid="QuickAccent_ExcludedApps"
+ AutomationProperties.AutomationId="QuickAccent_ExcludedApps" HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="QuickAccent_ExcludedApps_TextBoxControl"
+
+                                    AutomationProperties.AutomationId="QuickAccent_ExcludedApps_TextBoxControl"
                                     MinWidth="240"
                                     MinHeight="160"
                                     AcceptsReturn="True"
@@ -213,7 +255,8 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_QuickAccent" Link="https://aka.ms/PowerToysOverview_QuickAccent" />
+            <controls:PageLink x:Uid="LearnMore_QuickAccent"
+ AutomationProperties.AutomationId="LearnMore_QuickAccent" Link="https://aka.ms/PowerToysOverview_QuickAccent" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink Link="https://github.com/damienleroy/PowerAccent" Text="Damien Leroy's PowerAccent" />

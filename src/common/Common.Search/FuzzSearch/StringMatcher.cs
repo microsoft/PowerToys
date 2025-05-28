@@ -8,27 +8,11 @@ namespace Common.Search.FuzzSearch;
 
 public class StringMatcher
 {
-    private readonly MatchOption _defaultMatchOption = new MatchOption();
-
-    public SearchPrecisionScore UserSettingSearchPrecision { get; set; }
-
     public StringMatcher()
     {
     }
 
-    public static StringMatcher Instance { get; set; }
-
     private static readonly char[] Separator = [' '];
-
-    public static MatchResult FuzzySearch(string query, string stringToCompare)
-    {
-        return Instance.FuzzyMatch(query, stringToCompare);
-    }
-
-    public MatchResult FuzzyMatch(string query, string stringToCompare)
-    {
-        return FuzzyMatch(query, stringToCompare, _defaultMatchOption);
-    }
 
     /// <summary>
     /// Current method:
@@ -41,14 +25,18 @@ public class StringMatcher
     /// 6. Move onto the next substring's characters until all substrings are checked.
     /// 7. Consider success and move onto scoring if every char or substring without whitespaces matched
     /// </summary>
-    public MatchResult FuzzyMatch(string query, string stringToCompare, MatchOption opt)
+    public static MatchResult FuzzyMatch(string query, string stringToCompare, MatchOption opt = null)
     {
+        opt = opt ?? new MatchOption();
+
         if (string.IsNullOrEmpty(stringToCompare))
         {
-            return new MatchResult(false, UserSettingSearchPrecision);
+            return new MatchResult(false, SearchPrecisionScore.Regular);
         }
 
-        var bestResult = new MatchResult(false, UserSettingSearchPrecision);
+        SearchPrecisionScore score = SearchPrecisionScore.Regular;
+
+        var bestResult = new MatchResult(false, score);
 
         for (int startIndex = 0; startIndex < stringToCompare.Length; startIndex++)
         {
@@ -62,11 +50,11 @@ public class StringMatcher
         return bestResult;
     }
 
-    private MatchResult FuzzyMatch(string query, string stringToCompare, MatchOption opt, int startIndex)
+    private static MatchResult FuzzyMatch(string query, string stringToCompare, MatchOption opt, int startIndex)
     {
         if (string.IsNullOrEmpty(stringToCompare) || string.IsNullOrEmpty(query))
         {
-            return new MatchResult(false, UserSettingSearchPrecision);
+            return new MatchResult(false, SearchPrecisionScore.Regular);
         }
 
         ArgumentNullException.ThrowIfNull(opt);
@@ -181,10 +169,10 @@ public class StringMatcher
             var nearestSpaceIndex = CalculateClosestSpaceIndex(spaceIndices, firstMatchIndex);
             var score = CalculateSearchScore(query, stringToCompare, firstMatchIndex - nearestSpaceIndex - 1, lastMatchIndex - firstMatchIndex, allSubstringsContainedInCompareString);
 
-            return new MatchResult(true, UserSettingSearchPrecision, indexList, score);
+            return new MatchResult(true, SearchPrecisionScore.Regular, indexList, score);
         }
 
-        return new MatchResult(false, UserSettingSearchPrecision);
+        return new MatchResult(false, SearchPrecisionScore.Regular);
     }
 
     // To get the index of the closest space which precedes the first matching index

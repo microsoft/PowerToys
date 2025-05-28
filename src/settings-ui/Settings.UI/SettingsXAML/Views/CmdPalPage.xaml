@@ -10,24 +10,31 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="CmdPal" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdPal.png">
+    <controls:SettingsPageControl x:Uid="CmdPal"
+ AutomationProperties.AutomationId="CmdPal" ModuleImageSource="ms-appx:///Assets/Settings/Modules/CmdPal.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="CmdPal_Enable_CmdPal"
+
+                    AutomationProperties.AutomationId="CmdPal_Enable_CmdPal"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     Severity="Informational" />
 
-                <controls:SettingsGroup x:Uid="CmdPal_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="CmdPal_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                <controls:SettingsGroup x:Uid="CmdPal_Activation_GroupSettings"
+ AutomationProperties.AutomationId="CmdPal_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="CmdPal_ActivationShortcut"
+ AutomationProperties.AutomationId="CmdPal_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=OneWay}"
@@ -36,6 +43,8 @@
                             <HyperlinkButton
                                 x:Name="CmdPalSettingsDeeplink"
                                 x:Uid="CmdPal_DeeplinkContent"
+
+                                AutomationProperties.AutomationId="CmdPal_DeeplinkContent"
                                 Click="CmdPalSettingsDeeplink_Click" />
                         </tkcontrols:SettingsCard.Description>
                     </tkcontrols:SettingsCard>
@@ -44,7 +53,8 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_CmdPal" Link="https://aka.ms/PowerToysOverview_CmdPal" />
+            <controls:PageLink x:Uid="LearnMore_CmdPal"
+ AutomationProperties.AutomationId="LearnMore_CmdPal" Link="https://aka.ms/PowerToysOverview_CmdPal" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

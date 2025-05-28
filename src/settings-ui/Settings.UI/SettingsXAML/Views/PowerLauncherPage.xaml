@@ -305,12 +305,15 @@
         </DataTemplate>
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="PowerLauncher" ModuleImageSource="ms-appx:///Assets/Settings/Modules/Run.png">
+    <controls:SettingsPageControl x:Uid="PowerLauncher"
+ AutomationProperties.AutomationId="PowerLauncher" ModuleImageSource="ms-appx:///Assets/Settings/Modules/Run.png">
         <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <InfoBar
                     x:Uid="Run_CheckOutCmdPal"
+
+                    AutomationProperties.AutomationId="Run_CheckOutCmdPal"
                     Background="Transparent"
                     BorderBrush="Transparent"
                     IsClosable="False"
@@ -318,17 +321,23 @@
                     IsTabStop="True"
                     Severity="Informational">
                     <InfoBar.ActionButton>
-                        <HyperlinkButton x:Uid="Run_NavigateCmdPalSettings" Click="NavigateCmdPalSettings_Click" />
+                        <HyperlinkButton x:Uid="Run_NavigateCmdPalSettings"
+ AutomationProperties.AutomationId="Run_NavigateCmdPalSettings" Click="NavigateCmdPalSettings_Click" />
                     </InfoBar.ActionButton>
                 </InfoBar>
                 <tkcontrols:SettingsCard
                     x:Uid="PowerLauncher_EnablePowerLauncher"
+
+                    AutomationProperties.AutomationId="PowerLauncher_EnablePowerLauncher"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToysRun.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
+                    <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -338,18 +347,23 @@
                     </InfoBar.IconSource>
                 </InfoBar>
 
-                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="Shortcut"
+ AutomationProperties.AutomationId="Shortcut" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="Activation_Shortcut"
+
+                        AutomationProperties.AutomationId="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenPowerLauncher, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind ViewModel.UseCentralizedKeyboardHook, Mode=TwoWay}" />
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_UseCentralizedKeyboardHook"
+ AutomationProperties.AutomationId="PowerLauncher_UseCentralizedKeyboardHook" IsChecked="{x:Bind ViewModel.UseCentralizedKeyboardHook, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind ViewModel.IgnoreHotkeysInFullScreen, Mode=TwoWay}" />
+                                <CheckBox x:Uid="PowerLauncher_IgnoreHotkeysInFullScreen"
+ AutomationProperties.AutomationId="PowerLauncher_IgnoreHotkeysInFullScreen" IsChecked="{x:Bind ViewModel.IgnoreHotkeysInFullScreen, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -357,12 +371,14 @@
 
 
                 <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
+ AutomationProperties.AutomationId="PowerLauncher_OpenFileLocation"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.OpenFileLocation, Mode=TwoWay}"
                                           IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_CopyPathLocation"
+ AutomationProperties.AutomationId="PowerLauncher_CopyPathLocation"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.CopyPathLocation, Mode=TwoWay}"
@@ -370,6 +386,7 @@
                                           IsEnabled="False"
                                         />
             <Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenConsole"
+ AutomationProperties.AutomationId="PowerLauncher_OpenConsole"
                                           HorizontalAlignment="Left"
                                           Margin="{StaticResource SmallTopMargin}"
                                           HotkeySettings="{Binding Path=ViewModel.OpenConsole, Mode=TwoWay}"
@@ -378,25 +395,31 @@
                                         />-->
 
                 <!--<CheckBox x:Uid="PowerLauncher_OverrideWinRKey"
+ AutomationProperties.AutomationId="PowerLauncher_OverrideWinRKey"
                       Margin="{StaticResource SmallTopMargin}"
                       IsChecked="False"
                       IsEnabled="False"
                       />-->
 
                 <!--<CheckBox x:Uid="PowerLauncher_OverrideWinSKey"
+ AutomationProperties.AutomationId="PowerLauncher_OverrideWinSKey"
                       Margin="{StaticResource SmallTopMargin}"
                       IsChecked="{x:Bind ViewModel.OverrideWinSKey, Mode=TwoWay}"
                       IsEnabled="False"
                       />-->
 
-                <controls:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="PowerLauncher_SearchResults"
+ AutomationProperties.AutomationId="PowerLauncher_SearchResults" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="PowerLauncher_SearchQueryResultsWithDelay"
+
+                        AutomationProperties.AutomationId="PowerLauncher_SearchQueryResultsWithDelay"
                         HeaderIcon="{ui:FontIcon Glyph=&#xec48;}"
                         IsExpanded="True">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_FastSearchInputDelayMs" IsEnabled="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_FastSearchInputDelayMs"
+ AutomationProperties.AutomationId="PowerLauncher_FastSearchInputDelayMs" IsEnabled="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
@@ -406,7 +429,8 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.SearchInputDelayFast, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_SlowSearchInputDelayMs" IsEnabled="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_SlowSearchInputDelayMs"
+ AutomationProperties.AutomationId="PowerLauncher_SlowSearchInputDelayMs" IsEnabled="{x:Bind ViewModel.SearchQueryResultsWithDelay, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
@@ -421,6 +445,8 @@
 
                     <tkcontrols:SettingsExpander
                         x:Uid="PowerLauncher_MaximumNumberOfResults"
+
+                        AutomationProperties.AutomationId="PowerLauncher_MaximumNumberOfResults"
                         HeaderIcon="{ui:FontIcon Glyph=&#xec8f;}"
                         IsExpanded="True">
                         <NumberBox
@@ -430,18 +456,22 @@
                             Value="{x:Bind ViewModel.MaximumNumberOfResults, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind ViewModel.ClearInputOnLaunch, Mode=TwoWay}" />
+                                <CheckBox x:Uid="PowerLauncher_ClearInputOnLaunch"
+ AutomationProperties.AutomationId="PowerLauncher_ClearInputOnLaunch" IsChecked="{x:Bind ViewModel.ClearInputOnLaunch, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
                     <tkcontrols:SettingsExpander
                         x:Uid="PowerLauncher_SearchQueryTuningEnabled"
+
+                        AutomationProperties.AutomationId="PowerLauncher_SearchQueryTuningEnabled"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8CB;}"
                         IsExpanded="True">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_SearchClickedItemWeight" IsEnabled="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_SearchClickedItemWeight"
+ AutomationProperties.AutomationId="PowerLauncher_SearchClickedItemWeight" IsEnabled="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="50"
@@ -452,25 +482,33 @@
                                     Value="{x:Bind ViewModel.SearchClickedItemWeight, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.SearchQueryTuningEnabled, Mode=OneWay}">
-                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind ViewModel.SearchWaitForSlowResults, Mode=TwoWay}" />
+                                <controls:CheckBoxWithDescriptionControl x:Uid="PowerLauncher_WaitForSlowResults"
+ AutomationProperties.AutomationId="PowerLauncher_WaitForSlowResults" IsChecked="{x:Bind ViewModel.SearchWaitForSlowResults, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_TabSelectsContextButtons" HeaderIcon="{ui:FontIcon Glyph=&#xE7FD;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.TabSelectsContextButtons, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_TabSelectsContextButtons"
+ AutomationProperties.AutomationId="PowerLauncher_TabSelectsContextButtons" HeaderIcon="{ui:FontIcon Glyph=&#xE7FD;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.TabSelectsContextButtons, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_UsePinyin" HeaderIcon="{ui:FontIcon Glyph=&#xE98A;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_UsePinyin"
+ AutomationProperties.AutomationId="PowerLauncher_UsePinyin" HeaderIcon="{ui:FontIcon Glyph=&#xE98A;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_GenerateThumbnailsFromFiles"
+ AutomationProperties.AutomationId="PowerLauncher_GenerateThumbnailsFromFiles" HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
+ AutomationProperties.AutomationId="PowerLauncher_SearchResultPreference"
                       MinWidth="320"
                       Margin="{StaticResource SmallTopMargin}"
                       ItemsSource="{Binding searchResultPreferencesOptions}"
@@ -481,6 +519,7 @@
                       />
 
             <ComboBox x:Uid="PowerLauncher_SearchTypePreference"
+ AutomationProperties.AutomationId="PowerLauncher_SearchTypePreference"
                       MinWidth="320"
                       Margin="{StaticResource SmallTopMargin}"
                       ItemsSource="{Binding searchTypePreferencesOptions}"
@@ -490,35 +529,50 @@
                       IsEnabled="False"
                       />-->
 
-                <controls:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
+                <controls:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings"
+ AutomationProperties.AutomationId="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="Run_PositionHeader"
+ AutomationProperties.AutomationId="Run_PositionHeader" HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.MonitorPositionIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Run_Radio_Position_Cursor" />
-                            <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor" />
-                            <ComboBoxItem x:Uid="Run_Radio_Position_Focus" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_Cursor"
+ AutomationProperties.AutomationId="Run_Radio_Position_Cursor" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_Primary_Monitor"
+ AutomationProperties.AutomationId="Run_Radio_Position_Primary_Monitor" />
+                            <ComboBoxItem x:Uid="Run_Radio_Position_Focus"
+ AutomationProperties.AutomationId="Run_Radio_Position_Focus" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader"
+ AutomationProperties.AutomationId="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
                         <tkcontrols:SettingsCard.Description>
-                            <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
+                            <HyperlinkButton x:Uid="Windows_Color_Settings"
+ AutomationProperties.AutomationId="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
                         </tkcontrols:SettingsCard.Description>
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Radio_Theme_Dark" />
-                            <ComboBoxItem x:Uid="Radio_Theme_Light" />
-                            <ComboBoxItem x:Uid="Radio_Theme_Default" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Dark"
+ AutomationProperties.AutomationId="Radio_Theme_Dark" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Light"
+ AutomationProperties.AutomationId="Radio_Theme_Light" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Default"
+ AutomationProperties.AutomationId="Radio_Theme_Default" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_ShowPluginKeywords" HeaderIcon="{ui:FontIcon Glyph=&#xE8FD;}">
+                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_ShowPluginKeywords"
+ AutomationProperties.AutomationId="PowerLauncher_ShowPluginKeywords" HeaderIcon="{ui:FontIcon Glyph=&#xE8FD;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ShowPluginsOverviewIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="ShowPluginsOverview_All" />
-                            <ComboBoxItem x:Uid="ShowPluginsOverview_NonGlobal" />
-                            <ComboBoxItem x:Uid="ShowPluginsOverview_None" />
+                            <ComboBoxItem x:Uid="ShowPluginsOverview_All"
+ AutomationProperties.AutomationId="ShowPluginsOverview_All" />
+                            <ComboBoxItem x:Uid="ShowPluginsOverview_NonGlobal"
+ AutomationProperties.AutomationId="ShowPluginsOverview_NonGlobal" />
+                            <ComboBoxItem x:Uid="ShowPluginsOverview_None"
+ AutomationProperties.AutomationId="ShowPluginsOverview_None" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_TitleFontSize" HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
+                    <tkcontrols:SettingsCard x:Uid="PowerLauncher_TitleFontSize"
+ AutomationProperties.AutomationId="PowerLauncher_TitleFontSize" HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <TextBlock
                                 VerticalAlignment="Center"
@@ -528,6 +582,8 @@
                                 Text="A" />
                             <Slider
                                 x:Uid="PowerLauncher_TextFontSizeSlider"
+
+                                AutomationProperties.AutomationId="PowerLauncher_TextFontSizeSlider"
                                 LargeChange="2"
                                 Maximum="24"
                                 Minimum="12"
@@ -546,28 +602,37 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="PowerLauncher_Plugins"
+ AutomationProperties.AutomationId="PowerLauncher_Plugins" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
 
                     <InfoBar
                         x:Uid="Run_ConflictingKeywordInfo"
+
+                        AutomationProperties.AutomationId="Run_ConflictingKeywordInfo"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}"
                         Severity="Informational">
                         <InfoBar.ActionButton>
-                            <HyperlinkButton x:Uid="Run_ConflictingKeywordInfo_Link" NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun#direct-activation-commands" />
+                            <HyperlinkButton x:Uid="Run_ConflictingKeywordInfo_Link"
+ AutomationProperties.AutomationId="Run_ConflictingKeywordInfo_Link" NavigateUri="https://aka.ms/PowerToysOverview_PowerToysRun#direct-activation-commands" />
                         </InfoBar.ActionButton>
                     </InfoBar>
 
-                    <tkcontrols:SettingsCard x:Uid="Run_PluginUse" HeaderIcon="{ui:FontIcon Glyph=&#xEA86;}">
+                    <tkcontrols:SettingsCard x:Uid="Run_PluginUse"
+ AutomationProperties.AutomationId="Run_PluginUse" HeaderIcon="{ui:FontIcon Glyph=&#xEA86;}">
                         <tkcontrols:SettingsCard.Description>
                             <StackPanel>
-                                <TextBlock x:Uid="Run_PluginUseDescription" />
-                                <HyperlinkButton x:Uid="Run_PluginUseFindMorePlugins" NavigateUri="https://aka.ms/powerToysRunPlugins" />
+                                <TextBlock x:Uid="Run_PluginUseDescription"
+ AutomationProperties.AutomationId="Run_PluginUseDescription" />
+                                <HyperlinkButton x:Uid="Run_PluginUseFindMorePlugins"
+ AutomationProperties.AutomationId="Run_PluginUseFindMorePlugins" NavigateUri="https://aka.ms/powerToysRunPlugins" />
                             </StackPanel>
                         </tkcontrols:SettingsCard.Description>
                         <AutoSuggestBox
                             x:Uid="PowerLauncher_SearchList"
+
+                            AutomationProperties.AutomationId="PowerLauncher_SearchList"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             QueryIcon="Find"
                             Text="{x:Bind ViewModel.SearchText, Mode=TwoWay}">
@@ -582,6 +647,8 @@
 
                     <InfoBar
                         x:Uid="GPO_SomeRunPluginsAreManaged"
+
+                        AutomationProperties.AutomationId="GPO_SomeRunPluginsAreManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.ShowPluginsAreGpoManagedInfo, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.ShowPluginsAreGpoManagedInfo, Mode=OneWay}"
@@ -592,6 +659,8 @@
                     </InfoBar>
                     <InfoBar
                         x:Uid="Run_AllPluginsDisabled"
+
+                        AutomationProperties.AutomationId="Run_AllPluginsDisabled"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.ShowAllPluginsDisabledWarning, Mode=OneWay}"
@@ -605,6 +674,8 @@
                             IsActive="True" />
                         <TextBlock
                             x:Uid="Run_PluginsLoading"
+
+                            AutomationProperties.AutomationId="Run_PluginsLoading"
                             VerticalAlignment="Center"
                             Style="{ThemeResource SecondaryTextStyle}" />
                     </StackPanel>
@@ -644,12 +715,15 @@
 
                                             <ToggleSwitch
                                                 x:Uid="PowerLauncher_EnablePluginToggle"
+
+                                                AutomationProperties.AutomationId="PowerLauncher_EnablePluginToggle"
                                                 IsEnabled="{x:Bind Path=EnabledGpoRuleIsConfigured, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}"
                                                 IsOn="{x:Bind Path=Disabled, Converter={StaticResource BoolNegationConverter}, Mode=TwoWay}" />
 
                                         </StackPanel>
                                         <tkcontrols:SettingsExpander.Items>
-                                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_ActionKeyword" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
+                                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_ActionKeyword"
+ AutomationProperties.AutomationId="PowerLauncher_ActionKeyword" IsEnabled="{x:Bind Enabled, Mode=OneWay}">
                                                 <TextBox MinWidth="{StaticResource SettingActionControlMinWidth}" Text="{x:Bind ActionKeyword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                             </tkcontrols:SettingsCard>
                                             <tkcontrols:SettingsCard
@@ -660,6 +734,8 @@
                                                 Visibility="{x:Bind ShowNotAccessibleWarning, Converter={StaticResource BoolToVisibilityConverter}}">
                                                 <InfoBar
                                                     x:Uid="Run_NotAccessibleWarning"
+
+                                                    AutomationProperties.AutomationId="Run_NotAccessibleWarning"
                                                     Margin="3,0,0,0"
                                                     Background="Transparent"
                                                     BorderBrush="Transparent"
@@ -674,15 +750,19 @@
                                                     AutomationProperties.Name="{Binding ElementName=IncludeInGlobalResultTitle, Path=Text}"
                                                     IsChecked="{x:Bind IsGlobal, Mode=TwoWay}">
                                                     <StackPanel Orientation="Vertical">
-                                                        <TextBlock x:Name="IncludeInGlobalResultTitle" x:Uid="PowerLauncher_IncludeInGlobalResultTitle" />
+                                                        <TextBlock x:Name="IncludeInGlobalResultTitle" x:Uid="PowerLauncher_IncludeInGlobalResultTitle"
+ AutomationProperties.AutomationId="PowerLauncher_IncludeInGlobalResultTitle" />
                                                         <controls:IsEnabledTextBlock
                                                             x:Uid="PowerLauncher_IncludeInGlobalResultDescription"
+
+                                                            AutomationProperties.AutomationId="PowerLauncher_IncludeInGlobalResultDescription"
                                                             FontSize="{StaticResource SecondaryTextFontSize}"
                                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                     </StackPanel>
                                                 </CheckBox>
                                             </tkcontrols:SettingsCard>
-                                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_PluginWeightBoost" IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
+                                            <tkcontrols:SettingsCard x:Uid="PowerLauncher_PluginWeightBoost"
+ AutomationProperties.AutomationId="PowerLauncher_PluginWeightBoost" IsEnabled="{x:Bind IsGlobalAndEnabled, Mode=OneWay}">
                                                 <NumberBox
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     LargeChange="50"
@@ -718,7 +798,8 @@
                                                     Orientation="Horizontal"
                                                     Spacing="4">
                                                     <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
-                                                        <Run x:Uid="PowerLauncher_PluginVersion" />
+                                                        <Run x:Uid="PowerLauncher_PluginVersion"
+ AutomationProperties.AutomationId="PowerLauncher_PluginVersion" />
                                                         <Run FontWeight="SemiBold" Text="{x:Bind Version}" />
                                                     </TextBlock>
                                                     <TextBlock
@@ -728,7 +809,8 @@
                                                         Style="{ThemeResource SecondaryTextStyle}"
                                                         Text="|" />
                                                     <TextBlock Opacity="{x:Bind DisabledOpacity}" Style="{ThemeResource SecondaryTextStyle}">
-                                                        <Run x:Uid="PowerLauncher_AuthoredBy" />
+                                                        <Run x:Uid="PowerLauncher_AuthoredBy"
+ AutomationProperties.AutomationId="PowerLauncher_AuthoredBy" />
                                                         <Run FontWeight="SemiBold" Text="{x:Bind Author}" />
                                                     </TextBlock>
                                                     <TextBlock
@@ -747,6 +829,8 @@
                                                         Visibility="{x:Bind HasValidWebsiteUri, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                                         <TextBlock
                                                             x:Uid="PowerLauncher_PluginWebsite"
+
+                                                            AutomationProperties.AutomationId="PowerLauncher_PluginWebsite"
                                                             FontWeight="SemiBold"
                                                             Style="{ThemeResource SecondaryLinkTextStyle}" />
                                                     </HyperlinkButton>
@@ -763,8 +847,10 @@
 
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_Run" Link="https://aka.ms/PowerToysOverview_PowerToysRun" />
-            <controls:PageLink x:Uid="Run_FindMorePlugins" Link="https://aka.ms/powerToysRunPlugins" />
+            <controls:PageLink x:Uid="LearnMore_Run"
+ AutomationProperties.AutomationId="LearnMore_Run" Link="https://aka.ms/PowerToysOverview_PowerToysRun" />
+            <controls:PageLink x:Uid="Run_FindMorePlugins"
+ AutomationProperties.AutomationId="Run_FindMorePlugins" Link="https://aka.ms/powerToysRunPlugins" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink Link="https://github.com/Wox-launcher/Wox/" Text="Wox" />

@@ -19,7 +19,8 @@
         <tkconverters:BoolToVisibilityConverter x:Key="BoolToVis" />
     </Page.Resources>
 
-    <controls:SettingsPageControl x:Uid="ColorPicker" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ColorPicker.png">
+    <controls:SettingsPageControl x:Uid="ColorPicker"
+ AutomationProperties.AutomationId="ColorPicker" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ColorPicker.png">
         <controls:SettingsPageControl.ModuleContent>
 
             <StackPanel
@@ -28,12 +29,17 @@
                 Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="ColorPicker_EnableColorPicker"
+
+                    AutomationProperties.AutomationId="ColorPicker_EnableColorPicker"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ColorPicker.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -43,23 +49,31 @@
                     </InfoBar.IconSource>
                 </InfoBar>
 
-                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                <controls:SettingsGroup x:Uid="Shortcut"
+ AutomationProperties.AutomationId="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="Activation_Shortcut"
+ AutomationProperties.AutomationId="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">
+                    <tkcontrols:SettingsCard x:Uid="ColorPicker_ActivationAction"
+ AutomationProperties.AutomationId="ColorPicker_ActivationAction" HeaderIcon="{ui:FontIcon Glyph=&#xEC4E;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.ActivationBehavior, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="EditorFirst" />
-                            <ComboBoxItem x:Uid="ColorPickerFirst" />
-                            <ComboBoxItem x:Uid="ColorPickerOnly" />
+                            <ComboBoxItem x:Uid="EditorFirst"
+ AutomationProperties.AutomationId="EditorFirst" />
+                            <ComboBoxItem x:Uid="ColorPickerFirst"
+ AutomationProperties.AutomationId="ColorPickerFirst" />
+                            <ComboBoxItem x:Uid="ColorPickerOnly"
+ AutomationProperties.AutomationId="ColorPickerOnly" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="ColorFormats" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ColorPicker_CopiedColorRepresentation" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
+                <controls:SettingsGroup x:Uid="ColorFormats"
+ AutomationProperties.AutomationId="ColorFormats" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="ColorPicker_CopiedColorRepresentation"
+ AutomationProperties.AutomationId="ColorPicker_CopiedColorRepresentation" HeaderIcon="{ui:FontIcon Glyph=&#xF0E3;}">
                         <ComboBox
                             x:Name="ColorPicker_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -71,27 +85,35 @@
                             SelectedValuePath="Key" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ColorPicker_ShowColorName">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding ShowColorName, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="ColorPicker_ShowColorName"
+ AutomationProperties.AutomationId="ColorPicker_ShowColorName">
+                        <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{Binding ShowColorName, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <!--
                 Disabling this until we have a safer way to reset cursor as
                 we can hit a state where the cursor doesn't reset
 
                 <CheckBox x:Uid="ColorPicker_ChangeCursor"
+ AutomationProperties.AutomationId="ColorPicker_ChangeCursor"
                         IsChecked="{Binding ChangeCursor, Mode=TwoWay}"
                         Margin="{StaticResource SmallTopMargin}"
                         IsEnabled="{Binding IsEnabled}"/>
                     -->
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="ColorPicker_Editor" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="ColorPicker_Editor"
+ AutomationProperties.AutomationId="ColorPicker_Editor" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Name="ColorFormatsSetting"
                         x:Uid="ColorPicker_ColorFormats"
+
+                        AutomationProperties.AutomationId="ColorPicker_ColorFormats"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE762;}">
                         <Button
                             x:Uid="ColorPickerAddNewFormat"
+
+                            AutomationProperties.AutomationId="ColorPickerAddNewFormat"
                             HorizontalAlignment="Right"
                             Click="NewFormatClick"
                             Style="{StaticResource AccentButtonStyle}" />
@@ -120,6 +142,8 @@
                                     <StackPanel Orientation="Horizontal" Spacing="4">
                                         <ToggleSwitch
                                             x:Uid="Enable_ColorFormat"
+
+                                            AutomationProperties.AutomationId="Enable_ColorFormat"
                                             AutomationProperties.HelpText="{x:Bind Name}"
                                             IsOn="{x:Bind IsShown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                             OffContent=""
@@ -127,6 +151,8 @@
 
                                         <Button
                                             x:Uid="More_Options_Button"
+
+                                            AutomationProperties.AutomationId="More_Options_Button"
                                             Grid.Column="1"
                                             VerticalAlignment="Center"
                                             Content="&#xE712;"
@@ -136,24 +162,31 @@
                                                 <MenuFlyout>
                                                     <MenuFlyoutItem
                                                         x:Uid="MoveUp"
+
+                                                        AutomationProperties.AutomationId="MoveUp"
                                                         Click="ReorderButtonUp_Click"
                                                         Icon="{ui:FontIcon Glyph=&#xE74A;}"
                                                         IsEnabled="{x:Bind CanMoveUp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                     <MenuFlyoutItem
                                                         x:Uid="MoveDown"
+
+                                                        AutomationProperties.AutomationId="MoveDown"
                                                         Click="ReorderButtonDown_Click"
                                                         Icon="{ui:FontIcon Glyph=&#xE74B;}"
                                                         IsEnabled="{x:Bind CanMoveDown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                     <MenuFlyoutSeparator />
                                                     <MenuFlyoutItem
                                                         x:Uid="RemoveItem"
+
+                                                        AutomationProperties.AutomationId="RemoveItem"
                                                         Click="RemoveButton_Click"
                                                         Icon="{ui:FontIcon Glyph=&#xE74D;}"
                                                         IsEnabled="{x:Bind CanBeDeleted, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                 </MenuFlyout>
                                             </Button.Flyout>
                                             <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="More_Options_ButtonTooltip" />
+                                                <TextBlock x:Uid="More_Options_ButtonTooltip"
+ AutomationProperties.AutomationId="More_Options_ButtonTooltip" />
                                             </ToolTipService.ToolTip>
                                         </Button>
                                     </StackPanel>
@@ -165,6 +198,8 @@
                 <ContentDialog
                     x:Name="ColorFormatDialog"
                     x:Uid="ColorFormatDialog"
+
+                    AutomationProperties.AutomationId="ColorFormatDialog"
                     Closed="ColorFormatDialog_Closed"
                     IsPrimaryButtonEnabled="{Binding IsValid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
@@ -183,7 +218,8 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_ColorPicker" Link="https://aka.ms/PowerToysOverview_ColorPicker" />
+            <controls:PageLink x:Uid="LearnMore_ColorPicker"
+ AutomationProperties.AutomationId="LearnMore_ColorPicker" Link="https://aka.ms/PowerToysOverview_ColorPicker" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink Link="https://github.com/martinchrzan/ColorPicker/" Text="Martin Chrzan's Color Picker" />

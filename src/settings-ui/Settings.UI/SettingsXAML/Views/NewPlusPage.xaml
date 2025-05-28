@@ -11,7 +11,8 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="NewPlus" ModuleImageSource="ms-appx:///Assets/Settings/Modules/NewPlus.png">
+    <controls:SettingsPageControl x:Uid="NewPlus"
+ AutomationProperties.AutomationId="NewPlus" ModuleImageSource="ms-appx:///Assets/Settings/Modules/NewPlus.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
@@ -19,12 +20,17 @@
                 Spacing="2">
                 <tkcontrols:SettingsCard
                     x:Uid="NewPlus_Enable_Toggle"
+
+                    AutomationProperties.AutomationId="NewPlus_Enable_Toggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -34,22 +40,28 @@
                     </InfoBar.IconSource>
                 </InfoBar>
 
-                <controls:SettingsGroup x:Uid="NewPlus_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="NewPlus_Templates"
+ AutomationProperties.AutomationId="NewPlus_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="NewPlus_Templates_Location"
+
+                        AutomationProperties.AutomationId="NewPlus_Templates_Location"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.OpenCurrentNewTemplateFolder}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF12B;}"
                         IsClickEnabled="True">
                         <Button
                             x:Uid="NewPlus_Templates_Location_Change"
+
+                            AutomationProperties.AutomationId="NewPlus_Templates_Location_Change"
                             Command="{x:Bind ViewModel.PickAnotherNewTemplateFolder}"
                             Style="{ThemeResource AccentButtonStyle}" />
 
                         <tkcontrols:SettingsCard.Description>
                             <StackPanel>
                                 <TextBlock Text="{x:Bind ViewModel.TemplateLocation, Mode=OneWay}" />
-                                <HyperlinkButton x:Uid="NewPlus_Templates_Location_Learn_More" NavigateUri="https://aka.ms/PowerToysOverview_NewPlus_TemplatesLocation" />
+                                <HyperlinkButton x:Uid="NewPlus_Templates_Location_Learn_More"
+ AutomationProperties.AutomationId="NewPlus_Templates_Location_Learn_More" NavigateUri="https://aka.ms/PowerToysOverview_NewPlus_TemplatesLocation" />
                             </StackPanel>
                         </tkcontrols:SettingsCard.Description>
 
@@ -57,6 +69,8 @@
 
                     <InfoBar
                         x:Uid="NewPlus_TemplatesNotBackupAndRestoreWarning"
+
+                        AutomationProperties.AutomationId="NewPlus_TemplatesNotBackupAndRestoreWarning"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
@@ -64,12 +78,17 @@
 
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle" IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
-                        <ToggleSwitch x:Uid="HideFileExtensionToggle" IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
+                <controls:SettingsGroup x:Uid="NewPlus_Display_Options"
+ AutomationProperties.AutomationId="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle"
+ AutomationProperties.AutomationId="NewPlus_Hide_File_Extension_Toggle" IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
+                        <ToggleSwitch x:Uid="HideFileExtensionToggle"
+ AutomationProperties.AutomationId="HideFileExtensionToggle" IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_SettingIsManaged"
+
+                        AutomationProperties.AutomationId="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}"
@@ -78,20 +97,28 @@
                             <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                         </InfoBar.IconSource>
                     </InfoBar>
-                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
-                        <ToggleSwitch x:Uid="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle"
+ AutomationProperties.AutomationId="NewPlus_Hide_Starting_Digits_Toggle">
+                        <ToggleSwitch x:Uid="HideStartingDigitsToggle"
+ AutomationProperties.AutomationId="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
                         <tkcontrols:SettingsCard.Description>
-                            <TextBlock x:Uid="NewPlus_Hide_Starting_Digits_Description" />
+                            <TextBlock x:Uid="NewPlus_Hide_Starting_Digits_Description"
+ AutomationProperties.AutomationId="NewPlus_Hide_Starting_Digits_Description" />
                         </tkcontrols:SettingsCard.Description>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="NewPlus_behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="NewPlus_Behaviour_Replace_Variables_Toggle" IsEnabled="{x:Bind ViewModel.IsReplaceVariablesSettingsCardEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="NewPlus_behavior"
+ AutomationProperties.AutomationId="NewPlus_behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Behaviour_Replace_Variables_Toggle"
+ AutomationProperties.AutomationId="NewPlus_Behaviour_Replace_Variables_Toggle" IsEnabled="{x:Bind ViewModel.IsReplaceVariablesSettingsCardEnabled, Mode=OneWay}">
                         <StackPanel Orientation="Horizontal" Spacing="4">
-                            <ToggleSwitch x:Uid="ReplaceVariablesToggle" IsOn="{x:Bind ViewModel.ReplaceVariables, Mode=TwoWay}" />
+                            <ToggleSwitch x:Uid="ReplaceVariablesToggle"
+ AutomationProperties.AutomationId="ReplaceVariablesToggle" IsOn="{x:Bind ViewModel.ReplaceVariables, Mode=TwoWay}" />
                             <Button
                                 x:Uid="FileCreationButton"
+
+                                AutomationProperties.AutomationId="FileCreationButton"
                                 Width="28"
                                 Height="40"
                                 Margin="0,0,-4,0"
@@ -126,7 +153,8 @@
                                                 Grid.Row="0"
                                                 Grid.Column="1"
                                                 Margin="0,0,0,5"
-                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Year_YYYY_Variable_Description" /></TextBlock>
+                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Year_YYYY_Variable_Description"
+ AutomationProperties.AutomationId="NewPlus_Year_YYYY_Variable_Description" /></TextBlock>
 
                                             <TextBlock
                                                 Grid.Row="1"
@@ -136,7 +164,8 @@
                                                 Grid.Row="1"
                                                 Grid.Column="1"
                                                 Margin="0,0,0,5"
-                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Month_MM_Variable_Description" /></TextBlock>
+                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Month_MM_Variable_Description"
+ AutomationProperties.AutomationId="NewPlus_Month_MM_Variable_Description" /></TextBlock>
 
                                             <TextBlock
                                                 Grid.Row="2"
@@ -146,7 +175,8 @@
                                                 Grid.Row="2"
                                                 Grid.Column="1"
                                                 Margin="0,0,0,5"
-                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Day_DD_Variable_Description" /></TextBlock>
+                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Day_DD_Variable_Description"
+ AutomationProperties.AutomationId="NewPlus_Day_DD_Variable_Description" /></TextBlock>
 
                                             <TextBlock
                                                 Grid.Row="3"
@@ -156,7 +186,8 @@
                                                 Grid.Row="3"
                                                 Grid.Column="1"
                                                 Margin="0,0,0,5"
-                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Hour_hh_Variable_Description" /></TextBlock>
+                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Hour_hh_Variable_Description"
+ AutomationProperties.AutomationId="NewPlus_Hour_hh_Variable_Description" /></TextBlock>
 
                                             <TextBlock
                                                 Grid.Row="4"
@@ -166,7 +197,8 @@
                                                 Grid.Row="4"
                                                 Grid.Column="1"
                                                 Margin="0,0,0,5"
-                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Minute_mm_Variable_Description" /></TextBlock>
+                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Minute_mm_Variable_Description"
+ AutomationProperties.AutomationId="NewPlus_Minute_mm_Variable_Description" /></TextBlock>
 
                                             <TextBlock
                                                 Grid.Row="5"
@@ -176,7 +208,8 @@
                                                 Grid.Row="5"
                                                 Grid.Column="1"
                                                 Margin="0,0,0,0"
-                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Second_ss_Variable_Description" /></TextBlock>
+                                                TextWrapping="Wrap"><Run x:Uid="NewPlus_Second_ss_Variable_Description"
+ AutomationProperties.AutomationId="NewPlus_Second_ss_Variable_Description" /></TextBlock>
                                         </Grid>
                                     </Flyout>
                                 </Button.Flyout>
@@ -184,12 +217,15 @@
                         </StackPanel>
                         <tkcontrols:SettingsCard.Description>
                             <StackPanel>
-                                <HyperlinkButton x:Uid="NewPlus_Behaviour_Replace_Variables_Learn_More" NavigateUri="https://aka.ms/PowerToysOverview_NewPlus" />
+                                <HyperlinkButton x:Uid="NewPlus_Behaviour_Replace_Variables_Learn_More"
+ AutomationProperties.AutomationId="NewPlus_Behaviour_Replace_Variables_Learn_More" NavigateUri="https://aka.ms/PowerToysOverview_NewPlus" />
                             </StackPanel>
                         </tkcontrols:SettingsCard.Description>
                     </tkcontrols:SettingsCard>
                     <InfoBar
                         x:Uid="GPO_SettingIsManaged"
+
+                        AutomationProperties.AutomationId="GPO_SettingIsManaged"
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.IsReplaceVariablesSettingGPOConfigured, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsReplaceVariablesSettingGPOConfigured, Mode=OneWay}"
@@ -199,7 +235,8 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="NewPlus_Learn_More" Link="https://aka.ms/PowerToysOverview_NewPlus" />
+            <controls:PageLink x:Uid="NewPlus_Learn_More"
+ AutomationProperties.AutomationId="NewPlus_Learn_More" Link="https://aka.ms/PowerToysOverview_NewPlus" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink Link="https://www.linkedin.com/in/christian-gaardmark/" Text="Christian Gaardmark" />

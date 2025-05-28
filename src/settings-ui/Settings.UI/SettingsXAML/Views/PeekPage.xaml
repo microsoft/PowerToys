@@ -10,17 +10,22 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="Peek" ModuleImageSource="ms-appx:///Assets/Settings/Modules/Peek.png">
+    <controls:SettingsPageControl x:Uid="Peek"
+ AutomationProperties.AutomationId="Peek" ModuleImageSource="ms-appx:///Assets/Settings/Modules/Peek.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="Peek_EnablePeek"
+
+                    AutomationProperties.AutomationId="Peek_EnablePeek"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -30,39 +35,55 @@
                     </InfoBar.IconSource>
                 </InfoBar>
 
-                <controls:SettingsGroup x:Uid="Peek_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                <controls:SettingsGroup x:Uid="Peek_Activation_GroupSettings"
+ AutomationProperties.AutomationId="Peek_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="Activation_Shortcut"
+ AutomationProperties.AutomationId="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="Peek_BehaviorHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="Peek_AlwaysRunNotElevated" HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AlwaysRunNotElevated, Mode=TwoWay}" />
+                <controls:SettingsGroup x:Uid="Peek_BehaviorHeader"
+ AutomationProperties.AutomationId="Peek_BehaviorHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="Peek_AlwaysRunNotElevated"
+ AutomationProperties.AutomationId="Peek_AlwaysRunNotElevated" HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.AlwaysRunNotElevated, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="Peek_CloseAfterLosingFocus" HeaderIcon="{ui:FontIcon Glyph=&#xED1A;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="Peek_CloseAfterLosingFocus"
+ AutomationProperties.AutomationId="Peek_CloseAfterLosingFocus" HeaderIcon="{ui:FontIcon Glyph=&#xED1A;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="Peek_ConfirmFileDelete" HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ConfirmFileDelete, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="Peek_ConfirmFileDelete"
+ AutomationProperties.AutomationId="Peek_ConfirmFileDelete" HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.ConfirmFileDelete, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="Peek_Preview_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="Peek_Preview_GroupSettings"
+ AutomationProperties.AutomationId="Peek_Preview_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="Peek_SourceCode_Header"
+
+                        AutomationProperties.AutomationId="Peek_SourceCode_Header"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE99A;}"
                         IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                                <CheckBox x:Uid="Peek_SourceCode_WrapText" IsChecked="{x:Bind ViewModel.SourceCodeWrapText, Mode=TwoWay}" />
+                                <CheckBox x:Uid="Peek_SourceCode_WrapText"
+ AutomationProperties.AutomationId="Peek_SourceCode_WrapText" IsChecked="{x:Bind ViewModel.SourceCodeWrapText, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                                 <controls:CheckBoxWithDescriptionControl
                                     x:Uid="Peek_SourceCode_TryFormat"
+
+                                    AutomationProperties.AutomationId="Peek_SourceCode_TryFormat"
                                     IsChecked="{x:Bind ViewModel.SourceCodeTryFormat, Mode=TwoWay}"
                                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="Peek_SourceCode_FontSize" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="Peek_SourceCode_FontSize"
+ AutomationProperties.AutomationId="Peek_SourceCode_FontSize" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
@@ -71,10 +92,12 @@
                                     Value="{x:Bind ViewModel.SourceCodeFontSize, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                                <CheckBox x:Uid="Peek_SourceCode_StickyScroll" IsChecked="{x:Bind ViewModel.SourceCodeStickyScroll, Mode=TwoWay}" />
+                                <CheckBox x:Uid="Peek_SourceCode_StickyScroll"
+ AutomationProperties.AutomationId="Peek_SourceCode_StickyScroll" IsChecked="{x:Bind ViewModel.SourceCodeStickyScroll, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                                <CheckBox x:Uid="Peek_SourceCode_Minimap" IsChecked="{x:Bind ViewModel.SourceCodeMinimap, Mode=TwoWay}" />
+                                <CheckBox x:Uid="Peek_SourceCode_Minimap"
+ AutomationProperties.AutomationId="Peek_SourceCode_Minimap" IsChecked="{x:Bind ViewModel.SourceCodeMinimap, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -83,7 +106,8 @@
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_Peek" Link="https://aka.ms/PowerToysOverview_Peek" />
+            <controls:PageLink x:Uid="LearnMore_Peek"
+ AutomationProperties.AutomationId="LearnMore_Peek" Link="https://aka.ms/PowerToysOverview_Peek" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

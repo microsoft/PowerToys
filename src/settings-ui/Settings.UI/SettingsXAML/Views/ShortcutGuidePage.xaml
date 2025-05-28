@@ -10,17 +10,23 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="ShortcutGuide" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ShortcutGuide.png">
+    <controls:SettingsPageControl x:Uid="ShortcutGuide"
+ AutomationProperties.AutomationId="ShortcutGuide" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ShortcutGuide.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="ShortcutGuide_Enable"
+
+                    AutomationProperties.AutomationId="ShortcutGuide_Enable"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch x:Uid="ToggleSwitch"
+ AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
+
+                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -29,16 +35,22 @@
                         <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                     </InfoBar.IconSource>
                 </InfoBar>
-                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ShortcutGuide_ActivationMethod">
+                <controls:SettingsGroup x:Uid="Shortcut"
+ AutomationProperties.AutomationId="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="ShortcutGuide_ActivationMethod"
+ AutomationProperties.AutomationId="ShortcutGuide_ActivationMethod">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
-                            <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut" />
-                            <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey" />
+                            <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut"
+ AutomationProperties.AutomationId="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut" />
+                            <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey"
+ AutomationProperties.AutomationId="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard
                         x:Uid="Activation_Shortcut"
+
+                        AutomationProperties.AutomationId="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         Visibility="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}" />
@@ -46,6 +58,8 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="ShortcutGuide_PressTimeForGlobalWindowsShortcuts"
+
+                        AutomationProperties.AutomationId="ShortcutGuide_PressTimeForGlobalWindowsShortcuts"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         Visibility="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <NumberBox
@@ -59,6 +73,8 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="ShortcutGuide_PressTimeForTaskbarIconShortcuts"
+
+                        AutomationProperties.AutomationId="ShortcutGuide_PressTimeForTaskbarIconShortcuts"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         Visibility="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <NumberBox
@@ -72,6 +88,8 @@
 
                     <InfoBar
                         x:Uid="ShortcutGuide_PressWinKeyWarning"
+
+                        AutomationProperties.AutomationId="ShortcutGuide_PressWinKeyWarning"
                         IsClosable="False"
                         IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         IsOpen="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay}"
@@ -79,19 +97,26 @@
                         Severity="Warning" />
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                <controls:SettingsGroup x:Uid="Appearance_Behavior"
+ AutomationProperties.AutomationId="Appearance_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader"
+ AutomationProperties.AutomationId="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
                         <tkcontrols:SettingsCard.Description>
-                            <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
+                            <HyperlinkButton x:Uid="Windows_Color_Settings"
+ AutomationProperties.AutomationId="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
                         </tkcontrols:SettingsCard.Description>
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Radio_Theme_Dark" />
-                            <ComboBoxItem x:Uid="Radio_Theme_Light" />
-                            <ComboBoxItem x:Uid="Radio_Theme_Default" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Dark"
+ AutomationProperties.AutomationId="Radio_Theme_Dark" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Light"
+ AutomationProperties.AutomationId="Radio_Theme_Light" />
+                            <ComboBoxItem x:Uid="Radio_Theme_Default"
+ AutomationProperties.AutomationId="Radio_Theme_Default" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ShortcutGuide_OverlayOpacity">
+                    <tkcontrols:SettingsCard x:Uid="ShortcutGuide_OverlayOpacity"
+ AutomationProperties.AutomationId="ShortcutGuide_OverlayOpacity">
                         <Slider
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="100"
@@ -100,15 +125,20 @@
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="ExcludedApps"
+ AutomationProperties.AutomationId="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="ShortcutGuide_DisabledApps"
+
+                        AutomationProperties.AutomationId="ShortcutGuide_DisabledApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsExpanded="True">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
                                 <TextBox
                                     x:Uid="ShortcutGuide_DisabledApps_TextBoxControl"
+
+                                    AutomationProperties.AutomationId="ShortcutGuide_DisabledApps_TextBoxControl"
                                     MinWidth="240"
                                     MinHeight="160"
                                     AcceptsReturn="True"
@@ -124,7 +154,8 @@
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_ShortcutGuide" Link="https://aka.ms/PowerToysOverview_ShortcutGuide" />
+            <controls:PageLink x:Uid="LearnMore_ShortcutGuide"
+ AutomationProperties.AutomationId="LearnMore_ShortcutGuide" Link="https://aka.ms/PowerToysOverview_ShortcutGuide" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </Page>

@@ -119,7 +119,8 @@
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="ModuleItemKBMTemplate" x:DataType="viewmodels:DashboardModuleKBMItem">
-            <Button x:Uid="DashboardKBMShowMappingsButton" HorizontalAlignment="Stretch">
+            <Button x:Uid="DashboardKBMShowMappingsButton"
+ AutomationProperties.AutomationId="DashboardKBMShowMappingsButton" HorizontalAlignment="Stretch">
                 <Button.Flyout>
                     <Flyout
                         x:Name="DetailsFlyout"
@@ -164,6 +165,8 @@
                                             </Border>
                                             <controls:IsEnabledTextBlock
                                                 x:Uid="To"
+
+                                                AutomationProperties.AutomationId="To"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
@@ -229,12 +232,16 @@
                                             </Border>
                                             <controls:IsEnabledTextBlock
                                                 x:Uid="To"
+
+                                                AutomationProperties.AutomationId="To"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
                                                 Visibility="{x:Bind Path=IsOpenUriOrIsRunProgram, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
                                             <controls:IsEnabledTextBlock
                                                 x:Uid="Starts"
+
+                                                AutomationProperties.AutomationId="Starts"
                                                 Margin="8,0,8,0"
                                                 VerticalAlignment="Center"
                                                 Style="{StaticResource SecondaryIsEnabledTextBlockStyle}"
@@ -289,11 +296,15 @@
         </Grid.RowDefinitions>
         <TextBlock
             x:Uid="DashboardTitle"
+
+            AutomationProperties.AutomationId="DashboardTitle"
             VerticalAlignment="Center"
             Style="{StaticResource TitleTextBlockStyle}" />
 
         <InfoBar
             x:Uid="UpdateAvailable"
+
+            AutomationProperties.AutomationId="UpdateAvailable"
             Margin="0,0,16,0"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
@@ -302,7 +313,8 @@
             IsOpen="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"
             Severity="Informational">
             <InfoBar.ActionButton>
-                <Button x:Uid="LearnMore" Click="SWVersionButtonClicked" />
+                <Button x:Uid="LearnMore"
+ AutomationProperties.AutomationId="LearnMore" Click="SWVersionButtonClicked" />
             </InfoBar.ActionButton>
         </InfoBar>
 
@@ -310,6 +322,8 @@
             <StackPanel Padding="0,0,16,16" Orientation="Vertical">
                 <TextBlock
                     x:Uid="EnabledModules"
+
+                    AutomationProperties.AutomationId="EnabledModules"
                     Margin="0,0,0,12"
                     Style="{StaticResource SubtitleTextBlockStyle}" />
                 <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
@@ -378,11 +392,14 @@
                                             Glyph="&#xE72E;"
                                             Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
                                             <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
+                                                <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip"
+ AutomationProperties.AutomationId="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
                                             </ToolTipService.ToolTip>
                                         </FontIcon>
                                         <ToggleSwitch
                                             x:Uid="Enable_Module"
+
+                                            AutomationProperties.AutomationId="Enable_Module"
                                             Grid.Column="3"
                                             Margin="0,-2,0,0"
                                             HorizontalAlignment="Right"
@@ -415,6 +432,8 @@
 
                 <TextBlock
                     x:Uid="DisabledModules"
+
+                    AutomationProperties.AutomationId="DisabledModules"
                     Margin="0,24,0,12"
                     Style="{StaticResource SubtitleTextBlockStyle}" />
 
@@ -478,11 +497,14 @@
                                             Glyph="&#xE72E;"
                                             Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
                                             <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
+                                                <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip"
+ AutomationProperties.AutomationId="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
                                             </ToolTipService.ToolTip>
                                         </FontIcon>
                                         <ToggleSwitch
                                             x:Uid="Enable_Module"
+
+                                            AutomationProperties.AutomationId="Enable_Module"
                                             Grid.Column="3"
                                             Margin="0,-2,0,0"
                                             HorizontalAlignment="Right"

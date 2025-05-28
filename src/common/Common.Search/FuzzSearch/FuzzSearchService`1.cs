@@ -22,7 +22,7 @@ public class FuzzSearchService<T> : ISearchService<T>
             .Select(item =>
             {
                 var text = selector(item);
-                var match = StringMatcher.FuzzySearch(query, text);
+                var match = StringMatcher.FuzzyMatch(query, text);
                 return new { Item = item, Match = match };
             })
             .Where(x => x.Match.Success)
