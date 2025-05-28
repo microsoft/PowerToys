@@ -55,6 +55,7 @@ namespace UITests_FancyZones
             // kill all processes related to FancyZones Editor to ensure a clean state
             Session.KillAllProcessesByName("PowerToys.FancyZonesEditor");
 
+            AppZoneHistory.DeleteFile();
             this.RestartScopeExe();
             FancyZonesEditorHelper.Files.Restore();
 
