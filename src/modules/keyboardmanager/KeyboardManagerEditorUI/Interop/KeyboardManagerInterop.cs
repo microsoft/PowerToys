@@ -15,6 +15,7 @@ namespace KeyboardManagerEditorUI.Interop
     {
         private const string DllName = "Powertoys.KeyboardManagerEditorLibraryWrapper.dll";
 
+        // Configuration Management
         [DllImport(DllName)]
         internal static extern IntPtr CreateMappingConfiguration();
 
@@ -29,6 +30,7 @@ namespace KeyboardManagerEditorUI.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool SaveMappingSettings(IntPtr config);
 
+        // Get Mapping Functions
         [DllImport(DllName)]
         internal static extern int GetSingleKeyRemapCount(IntPtr config);
 
@@ -57,6 +59,7 @@ namespace KeyboardManagerEditorUI.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool GetShortcutRemapByType(IntPtr config, int operationType, int index, ref ShortcutMapping mapping);
 
+        // Add Mapping Functions
         [DllImport(DllName)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AddSingleKeyRemap(IntPtr config, int originalKey, int targetKey);
@@ -78,26 +81,7 @@ namespace KeyboardManagerEditorUI.Interop
             [MarshalAs(UnmanagedType.LPWStr)] string targetApp,
             int operationType = 0);
 
-        [DllImport(DllName)]
-        internal static extern int GetKeyCodeFromName([MarshalAs(UnmanagedType.LPWStr)] string keyName);
-
-        [DllImport(DllName, CharSet = CharSet.Unicode)]
-        internal static extern void GetKeyDisplayName(int keyCode, [Out] StringBuilder keyName, int maxLength);
-
-        [DllImport(DllName)]
-        internal static extern void FreeString(IntPtr str);
-
-        [DllImport(DllName)]
-        internal static extern int GetKeyType(int keyCode);
-
-        [DllImport(DllName)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool IsShortcutIllegal([MarshalAs(UnmanagedType.LPWStr)] string shortcutKeys);
-
-        [DllImport(DllName)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool AreShortcutsEqual([MarshalAs(UnmanagedType.LPWStr)] string lShort, [MarshalAs(UnmanagedType.LPWStr)] string rShortcut);
-
+        // Delete Mapping Functions
         [DllImport(DllName)]
         internal static extern bool DeleteSingleKeyRemap(IntPtr mappingConfiguration, int originalKey);
 
@@ -107,6 +91,29 @@ namespace KeyboardManagerEditorUI.Interop
 
         [DllImport(DllName)]
         internal static extern bool DeleteShortcutRemap(IntPtr mappingConfiguration, [MarshalAs(UnmanagedType.LPWStr)] string originalKeys, [MarshalAs(UnmanagedType.LPWStr)] string targetApp);
+
+        // Key Utility Functions
+        [DllImport(DllName)]
+        internal static extern int GetKeyCodeFromName([MarshalAs(UnmanagedType.LPWStr)] string keyName);
+
+        [DllImport(DllName, CharSet = CharSet.Unicode)]
+        internal static extern void GetKeyDisplayName(int keyCode, [Out] StringBuilder keyName, int maxLength);
+
+        [DllImport(DllName)]
+        internal static extern int GetKeyType(int keyCode);
+
+        // Validation Functions
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool IsShortcutIllegal([MarshalAs(UnmanagedType.LPWStr)] string shortcutKeys);
+
+        [DllImport(DllName)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool AreShortcutsEqual([MarshalAs(UnmanagedType.LPWStr)] string lShort, [MarshalAs(UnmanagedType.LPWStr)] string rShortcut);
+
+        // String Management Functions
+        [DllImport(DllName)]
+        internal static extern void FreeString(IntPtr str);
 
         public static string GetStringAndFree(IntPtr handle)
         {
