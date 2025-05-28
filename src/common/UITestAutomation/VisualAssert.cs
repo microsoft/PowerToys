@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.UITest
         /// <summary>
         /// Asserts current visual state of the element is equal with base line image.
         /// To use this VisualAssert, you need to set Window Theme to Light-Mode to avoid Theme color difference in baseline image.
-        /// Such limiation could be removed either Auto-generate baseline image for both Light & Dark mode
+        /// Such limitation could be removed either Auto-generate baseline image for both Light & Dark mode
         /// </summary>
         /// <param name="testContext">TestContext object</param>
         /// <param name="element">Element object</param>
@@ -68,7 +68,7 @@ namespace Microsoft.PowerToys.UITest
                 || !Path.GetFileNameWithoutExtension(baselineImageResourceName).EndsWith(scenarioSubname))
             {
                 testContext?.AddResultFile(tempTestImagePath);
-                Assert.Fail($"Baseline image for scenario {scenarioSubname} can not be found, test image saved in file://{tempTestImagePath.Replace('\\', '/')}");
+                Assert.Fail($"Baseline image for scenario {scenarioSubname} can't be found, test image saved in file://{tempTestImagePath.Replace('\\', '/')}");
             }
 
             var tempBaselineImagePath = GetTempFilePath(scenarioSubname, "baseline", Path.GetExtension(baselineImageResourceName));

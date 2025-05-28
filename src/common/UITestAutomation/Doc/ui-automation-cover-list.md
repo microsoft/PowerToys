@@ -22,10 +22,10 @@
    * Brief check if all modules are working
 
  * PER-USER and PER-MACHINE TESTS:
-   * Install **previous version** on a clean machine and update with new per-machine version. Ensure that it is installed in Program files and that registry entries are under **HKLM**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
+   * Install **previous version** on a clean machine and update with new per-machine version. Ensure that it is installed in Program files and that registry entries are under **HKLM**/Software/Classes/PowerToys. Go through different modules and ensure that they are working correctly.
    * Try installing per-user version over already installed per-machine version and ensure that proper error message is shown.
-   * Remove PowerToys and install per-user version. Ensure that it is installed in <APPDATA>/Local/PowerToys and that registry entries are under **HKCU**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
-   * Create a new user and install per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
+   * Remove PowerToys and install per-user version. Ensure that it is installed in <APPDATA>/Local/PowerToys and that registry entries are under **HKCU**/Software/Classes/PowerToys. Go through different modules and ensure that they are working correctly.
+   * Create a new user and install per-user version there as well. Go through different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
 
 ## Functional tests
 
@@ -191,7 +191,7 @@
         - TestMethod("FancyZones.Settings.TestShowZonesWhenShiftAndMouseOff")
 - [X] 5. `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
         - TestMethod("FancyZones.Settings.TestShowZonesWhenShiftAndMouseOn")
-- [ ] 6. `Show zones on all monitor whilw dragging a window` - turn on,off, verify behavior.
+- [ ] 6. `Show zones on all monitor while dragging a window` - turn on,off, verify behavior.
 - [ ] 7. Create a canvas layout with overlapping zones, check zone activation behavior with all `When multiple zones overlap` options
 - [X] 8. `Make dragged window transparent` - turn on, off, verify behavior
         - TestMethod("FancyZones.Settings.TestMakeDraggedWindowTransparentOn")
@@ -242,7 +242,7 @@ Enable `Move newly created windows to their last known zone`.
 Enable `Move newly created windows to the current active monitor`.
 - [ ] 17. Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
 - [ ] 18. Open a window that was snapped on the current virtual desktop and current monitor, verify it's opened in its zone.
-- [ ] 19. Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
+- [ ] 19. Open a window that was snapped on the current virtual desktop and another monitor, verify it's opened on the active monitor.
 - [ ] 20. Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
 
 ### Switch between windows in the current zone
@@ -608,7 +608,7 @@ Mouse Jump:
     - [x] 39. Press the activation shortcut and verify the screens preview appears.
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump2")
-    - [x] 40. Change activation shortcut and verify that new shorctut triggers Mouse Jump.
+    - [x] 40. Change activation shortcut and verify that new shortcut triggers Mouse Jump.
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump")
           - TestMethod("MouseUtils.MouseJump.EnableMouseJump3")
     - [x] 41. Click around the screen preview and ensure that mouse cursor jumped to clicked location.
@@ -639,7 +639,7 @@ Mouse Jump:
  * Enable Screen Ruler. Then:
    - [ ] 1. Press the activation shortcut and verify the toolbar appears.
    - [ ] 2. Press the activation shortcut again and verify the toolbar disappears.
-   - [ ] 3. Disable Screen Ruler and verify that the activation shortuct no longer activates the utility.
+   - [ ] 3. Disable Screen Ruler and verify that the activation shortcut no longer activates the utility.
    - [ ] 4. Enable Screen Ruler and press the activation shortcut and verify the toolbar appears.
    - [ ] 5. Select the close button in the toolbar and verify it closes the utility.
  * With Screen Ruler enabled and activated:
@@ -649,14 +649,14 @@ Mouse Jump:
    - [ ] 9. Use the Vertical Spacing utility to measure something and verify that left-click copies the measurement to the clipboard. Verify that right-click dismisses the utility.
    - [ ] 10. While using a Spacing utility, verify that using the mouse scroll wheel will adjust pixel color tolerance while measuring.
    - [ ] 11. Open mspaint and draw 1px-thick straight line, also click with a pencil to draw a single pixel. In any Spacing mode, verify that one of line's dimension is 1, and pixel's dimensions are 1x1.
- * In a multi-monitor setup with different dpis on each monitor:
+ * In a multi-monitor setup with different DPIs on each monitor:
    - [ ] 12. Verify that the utilities work well on each monitor, with continuous mode on and off.
    - [ ] 13. Without any window opened and a solid color as your background, verify the horizontal spacing matches the monitor's pixel width.
    - [ ] 14. Move your mouse back and forth around the edge of two monitors really quickly in each mode - verify nothing is broken.
    
  * Test the different settings and verify they are applied:
    - [ ] 15. Activation shortcut
-   - [ ] 16. Continous mode
+   - [ ] 16. Continuous mode
    - [ ] 17. Per color channel edge detection
    - [ ] 18. Pixel tolerance for edge detection
    - [ ] 19. Draw feet on cross
@@ -682,11 +682,11 @@ Mouse Jump:
    - [ ] 2. Press Escape and verify the overlay disappears.
    - [ ] 3. Press the activation shortcut and verify the overlay appears.
    - [ ] 4. Right-click and select Cancel. Verify the overlay disappears.
-   - [ ] 5. Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
+   - [ ] 5. Disable Text Extractor and verify that the activation shortcut no longer activates the utility.
  * With Text Extractor enabled and activated:
    - [ ] 6. Try to select text and verify it is copied to the clipboard.
    - [ ] 7. Try to select a different OCR language by right-clicking and verify the change is applied.
- * In a multi-monitor setup with different dpis on each monitor:
+ * In a multi-monitor setup with different DPIs on each monitor:
    - [ ] 8. Verify text is correctly captured on all monitors.
  * Test the different settings and verify they are applied:
    - [ ] 9. Activation shortcut
@@ -708,8 +708,8 @@ Mouse Jump:
    - [ ] 7. Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
  * Test the different settings and verify they are applied:
    - [x] 8. Launch as Administrator.
-      - TestMethod("Hosts.Basic.ErrorMessgeShowupIfNotRunAsAdmin")
-      - TestMethod("Hosts.Basic.NoErrorMessgeShowupIfRunAsAdmin")
+      - TestMethod("Hosts.Basic.ErrorMessageShowupIfNotRunAsAdmin")
+      - TestMethod("Hosts.Basic.NoErrorMessageShowupIfRunAsAdmin")
    - [x] 9. Show a warning at startup.
       - TestMethod("Hosts.Settings.ShowWarningDialogIfRunAsAdmin")
    - [ ] 10. Additional lines position.
@@ -751,13 +751,13 @@ Mouse Jump:
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
    - [ ] 14. Verify the module is not enabled. (Markdown files won't appear in the preview pane)
    - [ ] 15. Open settings and verify the module is not enabled and you can't enable it.
- * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
+ * Remember to reset all you Settings to Not Configured after the tests, both in Computer and User Configurations.
 
 ## Registry Preview
  * Open Registry Editor, add new registry key with 1 string value and 1 binary value in e.g. HKLM/Software/Classes/PowerToysTest. Right click new registry key->export and export it to file.
  * Launch Registry Preview by right-clicking exported .reg file->'Preview'. Then:
    - [ ] 1. Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
-   - [ ] 2. Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
+   - [ ] 2. Edit file externally (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
    - [ ] 3. Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
    - [ ] 4. Try opening different registry file by pressing Open file button.
    - [ ] 5. Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
@@ -872,7 +872,7 @@ Mouse Jump:
    - [ ] 6. Add new profile with no variables and name it "Test_profile_1" (referenced below by name)
    - [ ] 7. Edit "Test_profile_1": Add one new variable to profile e.g. name: "profile_1_variable_1" value: "profile_1_value_1"
    - [ ] 8. Add new profile "Test_profile_2": From "Add profile dialog" add two new variables (profile_2_variable_1:profile_2_value_1 and profile_2_variable_2:profile_2_value_2). Set profile to enabled and click Save. Open OS Environment variables window and confirm that all variables from the profile are applied correctly. Also, confirm that "Applied variables" list contains all variables from the profile.
-   - [ ] 9. Apply "Test_profile_1" while "Test_profile_2" is still aplpied. Open OS Environment variables window and confirm that all variables from Test_profile_2 are unapplied and that all variables from Test_profile_1 are applied. Also, confirm that state of "Applied variables" list is updated correctly.
+   - [ ] 9. Apply "Test_profile_1" while "Test_profile_2" is still applied. Open OS Environment variables window and confirm that all variables from Test_profile_2 are unapplied and that all variables from Test_profile_1 are applied. Also, confirm that state of "Applied variables" list is updated correctly.
    - [ ] 10. Unapply applied profile. Open OS Environment variables window and confirm that all variables from the profile are unapplied correctly. Also, confirm that "Applied variables" list does not contain variables from the profile.
 
  * Overriding existing variable
@@ -894,10 +894,10 @@ Mouse Jump:
 
 ## Command Not Found
  * Go to Command Not Found module settings
- - [ ] 1. If you have PowerShell 7.4 installed, confirm that Install PowerShell 7.4 button is not visible and PowerShell 7.4 is shown as detected. If you don't have PowerShell 7.4, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
- - [ ] 2. If you have Microsoft.WinGet.Client installed, confirm that Install Microsoft.WinGet.Client button is not visible and Microsoft.WinGet.Client is shown as detected. If you don't have Microsoft.WinGet.Client, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box bellow and confirm there are no errors.
- - [ ] 3. Install the Command Not Found module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is added there. Start new PowerShell 7.4 session and execute "powertoys" (or "atom"). Confirm that suggestion is given to install powertoys (or atom) winget package. (If suggestion is not given, try running the same command few more times, it might take some time for the first time to load the module). Check Installation logs text box bellow and confirm there are no errors.
- - [ ] 4. Uninstall the module. Check Installation logs text box bellow and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed. Start new PowerShell 7.4 session and confirm no errors are shown on start.
+ - [ ] 1. If you have PowerShell 7.4 installed, confirm that Install PowerShell 7.4 button is not visible and PowerShell 7.4 is shown as detected. If you don't have PowerShell 7.4, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box below and confirm there are no errors.
+ - [ ] 2. If you have Microsoft.WinGet.Client installed, confirm that Install Microsoft.WinGet.Client button is not visible and Microsoft.WinGet.Client is shown as detected. If you don't have Microsoft.WinGet.Client, Install it by clicking the button and confirm that it's properly installed. Check Installation logs text box below and confirm there are no errors.
+ - [ ] 3. Install the Command Not Found module. Check Installation logs text box below and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is added there. Start new PowerShell 7.4 session and execute "powertoys" (or "atom"). Confirm that suggestion is given to install powertoys (or atom) winget package. (If suggestion is not given, try running the same command few more times, it might take some time for the first time to load the module). Check Installation logs text box below and confirm there are no errors.
+ - [ ] 4. Uninstall the module. Check Installation logs text box below and confirm there are no errors. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed. Start new PowerShell 7.4 session and confirm no errors are shown on start.
  - [ ] 5. Install module again. Uninstall PowerToys. Check PowerShell 7 $PROFILE file and confirm Import-Module command is removed after installer is done.
 
 ## DSC
@@ -917,7 +917,7 @@ Mouse Jump:
   NOTES:
     When using Advanced Paste, make sure that window focused while starting/using Advanced paste is text editor or has text input field focused (e.g. Word).
  * Paste As Plain Text
-   - [ ] 1. Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.).
+   - [ ] 1. Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etc.).
    - [ ] 2. Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
    - [ ] 3. Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
    - [ ] 4. Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
@@ -929,22 +929,22 @@ Mouse Jump:
    - [ ] 9. Open Settings and set Paste as Markdown directly hotkey
    - [ ] 10. Copy some text (e.g. some HTML text - convertible to Markdown)
    - [ ] 11. Paste the text using set hotkey and confirm that pasted text is converted to markdown
-   - [ ] 12. Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
+   - [ ] 12. Copy some text (same as in the previous step or different. If nothing is copied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
    - [ ] 13. Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
-   - [ ] 14. Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
+   - [ ] 14. Copy some text (same as in the previous step or different. If nothing is copied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
    - [ ] 15. Open Advanced Paste window using hotkey, press Ctrl + 2 and confirm that pasted text is converted to markdown
  * Paste As JSON
    - [ ] 16. Open Settings and set Paste as JSON directly hotkey
    - [ ] 17. Copy some XML or CSV text (or any other text, it will be converted to simple JSON object)
    - [ ] 18. Paste the text using set hotkey and confirm that pasted text is converted to JSON
-   - [ ] 19. Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
+   - [ ] 19. Copy some text (same as in the previous step or different. If nothing is copied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
    - [ ] 20. Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
-   - [ ] 21. Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
+   - [ ] 21. Copy some text (same as in the previous step or different. If nothing is copied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
    - [ ] 22. Open Advanced Paste window using hotkey, press Ctrl + 3 and confirm that pasted text is converted to markdown
  * Paste as custom format using AI
    - [ ] 23. Open Settings, navigate to Enable Paste with AI and set OpenAI key.
    - [ ] 24. Copy some text to clipboard. Any text.
-   - [ ] 25. Open Advanced Paste window using hotkey, and confirm that Custom intput text box is now enabled. Write "Insert smiley after every word" and press Enter. Observe that result preview shows coppied text with smileys between words. Press Enter to paste the result and observe that it is pasted.
+   - [ ] 25. Open Advanced Paste window using hotkey, and confirm that Custom input text box is now enabled. Write "Insert smiley after every word" and press Enter. Observe that result preview shows copied text with smileys between words. Press Enter to paste the result and observe that it is pasted.
    - [ ] 26. Open Advanced Paste window using hotkey. Input some query (any, feel free to play around) and press Enter. When result is shown, click regenerate button, to see if new result is generated. Select one of the results and paste. Observe that correct result is pasted.
    - [ ] 27. Create few custom actions. Set up hotkey for custom actions and confirm they work. Enable/disable custom actions and confirm that the change is reflected in Advanced Paste UI - custom action is not listed. Try different ctrl + <num> in-app shortcuts for custom actions. Try moving custom actions up/down and confirm that the change is reflected in Advanced Paste UI.
    - [ ] 28. Open Settings and disable Custom format preview. Open Advanced Paste window with hotkey, enter some query and press enter. Observe that result is now pasted right away, without showing the preview first.
@@ -960,7 +960,7 @@ Mouse Jump:
    - [ ] 1. Launch the Editor by clicking the button on the settings page.
    - [ ] 2. Launch the Editor from quick access.
    - [ ] 3. Launch the Editor by the Activation shortcut.
-   - [ ] 4. Disable the module and and verify it won't launch by the shortcut.
+   - [ ] 4. Disable the module and verify it won't launch by the shortcut.
 
 * Snapshot tool: try with elevated and non-elevated PT
    * Open non-packaged apps, e.g., VisualStudio, VisualStudioCode.
