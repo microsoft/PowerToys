@@ -66,27 +66,16 @@ internal static class Event
         try
         {
             Common.PaintCount = 0;
-            bool switchByMouseEnabled = IsSwitchingByMouseEnabled();
 
-            var shellHandle = NativeMethods.GetShellWindow();
-            var desktopHandle = NativeMethods.GetShellWindow();
-            var foregroundHandle = NativeMethods.GetForegroundWindow();
-            var isFullScreen = !foregroundHandle.Equals(shellHandle) && !foregroundHandle.Equals(desktopHandle);
-            if (isFullScreen)
+            // Check if easy mouse setting is enabled.
+            bool isEasySwitchAllowed = IsSwitchingByMouseEnabled();
+
+            if (isEasySwitchAllowed && DisableEasyMouseWhenForegroundWindowIsFullscreen())
             {
-                var screenBounds = MachineStuff.PrimaryScreenBounds;
-                NativeMethods.GetWindowRect(foregroundHandle, out NativeMethods.RECT foregroundBounds);
-
-                var foregroundHeight = foregroundBounds.Bottom - foregroundBounds.Top;
-                var foregroundWidth = foregroundBounds.Right - foregroundBounds.Left;
-
-                var screenHeight = screenBounds.Bottom - screenBounds.Top;
-                var screenWidth = screenBounds.Right - screenBounds.Left;
-
-                isFullScreen = foregroundHeight == screenHeight && foregroundWidth == screenWidth;
+                isEasySwitchAllowed = !Common.IsForegroundWindowFullscreen();
             }
 
-            if (!isFullScreen && switchByMouseEnabled && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == Common.WM_MOUSEMOVE)
+            if (isEasySwitchAllowed && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == Common.WM_MOUSEMOVE)
             {
                 Point p = MachineStuff.MoveToMyNeighbourIfNeeded(e.X, e.Y, MachineStuff.desMachineID);
 
@@ -161,6 +150,11 @@ internal static class Event
         {
             Logger.Log(ex);
         }
+    }
+
+    private static bool DisableEasyMouseWhenForegroundWindowIsFullscreen()
+    {
+        return Setting.Values.DisableEasyMouseWhenForegroundWindowIsFullscreen;
     }
 
     internal static bool IsSwitchingByMouseEnabled()

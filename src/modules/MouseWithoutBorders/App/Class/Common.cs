@@ -1560,5 +1560,27 @@ namespace MouseWithoutBorders
                 }
             }
         }
+
+        internal static bool IsForegroundWindowFullscreen()
+        {
+            var shellHandle = NativeMethods.GetShellWindow();
+            var desktopHandle = NativeMethods.GetShellWindow();
+            var foregroundHandle = NativeMethods.GetForegroundWindow();
+            if (foregroundHandle.Equals(shellHandle) || foregroundHandle.Equals(desktopHandle))
+            {
+                return false;
+            }
+
+            var screenBounds = MachineStuff.PrimaryScreenBounds;
+            NativeMethods.GetWindowRect(foregroundHandle, out NativeMethods.RECT foregroundBounds);
+
+            var foregroundHeight = foregroundBounds.Bottom - foregroundBounds.Top;
+            var foregroundWidth = foregroundBounds.Right - foregroundBounds.Left;
+
+            var primaryScreenHeight = screenBounds.Bottom - screenBounds.Top;
+            var primaryScreenWidth = screenBounds.Right - screenBounds.Left;
+
+            return foregroundHeight == primaryScreenHeight && foregroundWidth == primaryScreenWidth;
+        }
     }
 }
