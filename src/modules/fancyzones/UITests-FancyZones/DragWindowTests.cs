@@ -34,7 +34,6 @@ namespace UITests_FancyZones
         private static int screenMarginLeft;
         private static int screenMarginRight;
         private static int screenMarginBottom;
-        private static string setCustomLayoutData = string.Empty; // set custom layout data
 
         // set 1/4 margin
         private static int quarterX;
@@ -56,6 +55,7 @@ namespace UITests_FancyZones
             // kill all processes related to FancyZones Editor to ensure a clean state
             Session.KillAllProcessesByName("PowerToys.FancyZonesEditor");
 
+            AppZoneHistory.DeleteFile();
             this.RestartScopeExe();
             FancyZonesEditorHelper.Files.Restore();
 
@@ -367,7 +367,6 @@ namespace UITests_FancyZones
             }
 
             FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.WriteData(customLayouts.Serialize(customLayoutListWrapper));
-            setCustomLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
         }
 
         // launch FancyZones settings page
@@ -387,7 +386,6 @@ namespace UITests_FancyZones
             ZoneBehaviourSettings(TestContext.TestName);
 
             this.Find<Microsoft.PowerToys.UITest.Button>("Launch layout editor").Click(false, 500, 10000);
-            string customLayoutData = FancyZonesEditorHelper.Files.CustomLayoutsIOHelper.GetData();
             this.Session.Attach(PowerToysModule.FancyZone);
 
             // pipeline machine may have an unstable delays, causing the custom layout to be unavailable as we set. then A retry is required.
