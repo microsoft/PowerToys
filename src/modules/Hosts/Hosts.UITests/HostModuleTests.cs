@@ -125,7 +125,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.ErrorMessgeShowupIfNotRunAsAdmin")]
+        [TestMethod("Hosts.Basic.ErrorMessageShowupIfNotRunAsAdmin")]
         [TestCategory("Hosts File Editor #8")]
         public void TestErrorMessageWithNonAdminPermission()
         {
@@ -151,7 +151,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.NoErrorMessgeShowupIfRunAsAdmin")]
+        [TestMethod("Hosts.Basic.NoErrorMessageShowupIfRunAsAdmin")]
         [TestCategory("Hosts File Editor #8")]
         public void TestNoErrorMessageWithNonAdminPermission()
         {
