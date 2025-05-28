@@ -9,6 +9,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
+// The MouseUtils module relies on simulating system-level input events (such as mouse movement or key presses) to test visual or behavioral responses.
+// The UI Test framework provides built-in methods for simulating mouse movement and clicks, which work for MouseUtils reliably on high-performance dev boxes.
+// However, on low-performance environments such as CI/CD pipelines or virtual machines, these simulated input events are not always correctly recognized by the operating system.
+// IOUtils class is added specifically for MouseUtils tests.
+// For any test scenario that involves simulating continuous mouse movement (e.g., detecting crosshair changes while moving the cursor),
+// input simulation methods in IOUtils class should be used.
 namespace MouseUtils.UITests
 {
     public class IOUtil

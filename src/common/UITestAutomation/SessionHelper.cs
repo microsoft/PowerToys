@@ -73,8 +73,7 @@ namespace Microsoft.PowerToys.UITest
         public SessionHelper Init()
         {
             // Exit setting exe to fix CommandPalette error, remove after fixing the issue
-            this.ExitExe(this.locationPath + ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings));
-
+            // this.ExitExe(this.locationPath + ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings));
             this.ExitExe(this.locationPath + this.sessionPath);
             this.StartExe(this.locationPath + this.sessionPath);
 
