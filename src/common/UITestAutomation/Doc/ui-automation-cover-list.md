@@ -682,7 +682,7 @@ Mouse Jump:
    - [ ] 2. Press Escape and verify the overlay disappears.
    - [ ] 3. Press the activation shortcut and verify the overlay appears.
    - [ ] 4. Right-click and select Cancel. Verify the overlay disappears.
-   - [ ] 5. Disable Text Extractor and verify that the activation shortuct no longer activates the utility.
+   - [ ] 5. Disable Text Extractor and verify that the activation shortcut no longer activates the utility.
  * With Text Extractor enabled and activated:
    - [ ] 6. Try to select text and verify it is copied to the clipboard.
    - [ ] 7. Try to select a different OCR language by right-clicking and verify the change is applied.

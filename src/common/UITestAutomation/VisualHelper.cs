@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.UITest
         #pragma warning restore SA1307
 
         [DllImport("uxtheme.dll", EntryPoint = "#120")]
-        private static extern IntPtr GetUserColorPreference(ref IMMERSIVE_COLOR_PREFERENCE pcpPreference, bool fForceReload);
+        private static extern IntPtr GetUserColorPreference(ref IMMERSIVE_COLOR_PREFERENCE colorPreference, bool fForceReload);
 
         /// <summary>
         /// Gets the system accent color.

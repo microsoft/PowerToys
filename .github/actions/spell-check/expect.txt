@@ -356,6 +356,7 @@ DFX
 DIALOGEX
 digicert
 dimm
+DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
 diskmgmt
@@ -399,6 +400,7 @@ DVASPECTINFO
 DVD
 dvr
 DVTARGETDEVICE
+dwflags
 dwl
 dwm
 dwmapi
@@ -486,6 +488,7 @@ FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
 fff
+FFFF
 FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
@@ -604,6 +607,7 @@ helptext
 HGFE
 hglobal
 hhk
+HHmmssfff
 hhx
 Hiber
 Hiberboot
@@ -750,6 +754,7 @@ isocpp
 iss
 issecret
 ISSEPARATOR
+istep
 ith
 ITHUMBNAIL
 IUI
