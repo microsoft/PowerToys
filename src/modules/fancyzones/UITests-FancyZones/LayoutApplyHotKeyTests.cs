@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Automation;
 using FancyZonesEditor.Models;
@@ -15,13 +16,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
-namespace Microsoft.FancyZones.UITests
+namespace UITests_FancyZones
 {
     [TestClass]
     public class LayoutApplyHotKeyTests : UITestBase
     {
-        private static readonly string WindowName = "Windows (C:) - File Explorer"; // set launch explorer window name
-
         public LayoutApplyHotKeyTests()
             : base(PowerToysModule.PowerToysSettings)
         {
@@ -218,7 +217,6 @@ namespace Microsoft.FancyZones.UITests
         [TestInitialize]
         public void TestInitialize()
         {
-            this.RestartScopeExe();
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             FancyZonesEditorHelper.Files.ParamsIOHelper.WriteData(editorParameters.Serialize(Parameters));
@@ -283,14 +281,31 @@ namespace Microsoft.FancyZones.UITests
             this.OpenFancyZonesPanel();
             this.ControlQuickLayoutSwitch(true);
 
-            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
+            // Set Hotkey
             this.AttachFancyZonesEditor();
-            var element = this.Find<Element>("Grid custom layout");
+            var layout = "Grid custom layout";
+            Session.Find<Element>(layout).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            const string key = "0";
+            var hotkeyComboBox = Session.Find<Element>(By.AccessibilityId(AccessibilityId.HotkeyComboBox));
+            Assert.IsNotNull(hotkeyComboBox);
+            hotkeyComboBox.Click();
+            var popup = Session.Find<Element>(By.ClassName(ClassName.Popup));
+            Assert.IsNotNull(popup);
+            popup.Find<Element>($"{key}").Click(); // assign a free hotkey
+
+            Task.Delay(3000).Wait();
+            this.CloseFancyZonesEditor();
+            this.AttachPowertoySetting();
+            SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num0);
+            Task.Delay(3000).Wait();
+            this.AttachFancyZonesEditor();
+            var element = this.Find<Element>(layout);
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num1);
+            Task.Delay(3000).Wait();
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Grid-9");
             Assert.IsTrue(element.Selected, $"{element.Selected} Grid-9 is not visible");
@@ -298,6 +313,7 @@ namespace Microsoft.FancyZones.UITests
             this.AttachPowertoySetting();
 
             SendKeys(Key.Win, Key.Ctrl, Key.Alt, Key.Num2);
+            Task.Delay(3000).Wait();
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Canvas custom layout");
             Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
@@ -317,58 +333,26 @@ namespace Microsoft.FancyZones.UITests
             int targetX = screenWidth / 2 / 3;
             int targetY = screenWidth / 2 / 2;
 
-            // assert the AppZoneHistory layout is set
-            Session.KillAllProcessesByName("explorer");
-            Session.StartExe("explorer.exe", "C:\\");
+            LaunchHostFromSetting();
+            this.Session.Attach(PowerToysModule.Hosts, WindowSize.Large_Vertical);
+            var hostsView = Find<Pane>(By.Name("Non Client Input Sink Window"));
+            hostsView.DoubleClick(); // maximize the window
 
-            Session.Attach(WindowName, WindowSize.UnSpecified);
-            var tabView = Find<Tab>(By.AccessibilityId("TabView"));
-            tabView.DoubleClick(); // maximize the window
-            tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
+            hostsView.HoldShiftToDrag(Key.Shift, targetX, targetY);
             SendKeys(Key.Num0);
-            tabView.ReleaseAction();
-            tabView.ReleaseKey(Key.Shift);
+            hostsView.ReleaseAction();
+            hostsView.ReleaseKey(Key.Shift);
+            SendKeys(Key.Alt, Key.F4);
 
             // Attach FancyZones Editor
             this.AttachPowertoySetting();
+            this.Find<Pane>(By.ClassName("InputNonClientPointerSource")).Click();
+            this.OpenFancyZonesPanel(isMax: false);
             this.AttachFancyZonesEditor();
             var element = this.Find<Element>("Grid custom layout");
             Assert.IsTrue(element.Selected, "Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
 
-            Session.Attach(WindowName, WindowSize.UnSpecified);
-            tabView = Find<Tab>(By.AccessibilityId("TabView"));
-            tabView.DoubleClick(); // maximize the window
-            tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
-            SendKeys(Key.Num1);
-            tabView.ReleaseAction();
-            tabView.ReleaseKey(Key.Shift);
-
-            // Attach FancyZones Editor
-            this.AttachPowertoySetting();
-            this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Grid-9");
-            Assert.IsTrue(element.Selected, "Grid-9 is not visible");
-            this.CloseFancyZonesEditor();
-
-            Session.Attach(WindowName, WindowSize.UnSpecified);
-            tabView = Find<Tab>(By.AccessibilityId("TabView"));
-            tabView.DoubleClick(); // maximize the window
-            tabView.HoldShiftToDrag(Key.Shift, targetX, targetY);
-            SendKeys(Key.Num2);
-            tabView.ReleaseAction();
-            tabView.ReleaseKey(Key.Shift);
-
-            // Attach FancyZones Editor
-            this.AttachPowertoySetting();
-            this.AttachFancyZonesEditor();
-            element = this.Find<Element>("Canvas custom layout");
-            Assert.IsTrue(element.Selected, "Canvas custom layout is not visible");
-            this.CloseFancyZonesEditor();
-            this.AttachPowertoySetting();
-
-            // Clean
-            Session.KillAllProcessesByName("explorer");
             Clean();
         }
 
@@ -379,10 +363,12 @@ namespace Microsoft.FancyZones.UITests
             this.OpenFancyZonesPanel();
             this.ControlQuickLayoutSwitch(true);
 
+            this.TryReaction();
             int tries = 24;
             Pull(tries, "down");
-            this.Find<Group>("Enable quick layout switch").Click();
-            var checkbox1 = this.Find<CheckBox>("Flash zones when switching layout");
+            var switchGroup = this.Find<Group>("Enable quick layout switch");
+            switchGroup.Click();
+            var checkbox1 = switchGroup.Find<Element>("Flash zones when switching layout");
             if (checkbox1.GetAttribute("Toggle.ToggleState") == "0")
             {
                 checkbox1.Click();
@@ -497,7 +483,7 @@ namespace Microsoft.FancyZones.UITests
             this.OpenFancyZonesPanel();
             this.AttachFancyZonesEditor();
             element = this.Find<Element>("Grid custom layout");
-            Assert.IsTrue(element.Selected, $"{element.Selected} Canvas custom layout is not visible");
+            Assert.IsTrue(element.Selected, $"{element.Selected} Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
             this.ExitScopeExe();
 
@@ -551,6 +537,8 @@ namespace Microsoft.FancyZones.UITests
             UITestBase.NativeMethods.ChangeDisplayResolution(width, height);
             this.AttachPowertoySetting();
             this.AttachFancyZonesEditor();
+            var maxButton = this.Find<Button>("Maximize");
+            maxButton.Click(); // maximize the window
             var resolution = this.Session.Find<Element>(By.AccessibilityId("Monitors")).Find<Element>("Monitor 1").Find<Element>(By.AccessibilityId("ResolutionText"));
             if (resolution.Text != "640 × 480")
             {
@@ -565,7 +553,7 @@ namespace Microsoft.FancyZones.UITests
             Clean();
         }
 
-        private void OpenFancyZonesPanel(bool launchAsAdmin = false)
+        private void OpenFancyZonesPanel(bool launchAsAdmin = false, bool isMax = true)
         {
             var windowingElement = this.Find<NavigationViewItem>("Windowing & Layouts");
 
@@ -578,18 +566,28 @@ namespace Microsoft.FancyZones.UITests
 
             windowingElement.Find<Element>("FancyZones").Click();
             this.Find<ToggleSwitch>("Enable FancyZones").Toggle(true);
+            if (isMax == true)
+            {
+                this.Find<Button>("Maximize").Click(); // maximize the window
+            }
+
             this.Find<Custom>("Editor").Find<TextBlock>(By.AccessibilityId("HeaderPresenter")).Click();
-            this.Session.SetMainWindowSize(WindowSize.Large_Vertical);
         }
 
         private void ControlQuickLayoutSwitch(bool flag)
         {
+            this.TryReaction();
             int tries = 24;
             Pull(tries, "down"); // Pull the setting page up to make sure the setting is visible
             this.Find<ToggleSwitch>("Enable quick layout switch").Toggle(flag);
 
             tries = 24;
             Pull(tries, "up");
+        }
+
+        private void TryReaction()
+        {
+            this.Find<Custom>("Editor").Find<TextBlock>(By.AccessibilityId("HeaderPresenter")).Click();
         }
 
         private void AttachPowertoySetting()
@@ -600,11 +598,12 @@ namespace Microsoft.FancyZones.UITests
 
         private void AttachFancyZonesEditor()
         {
-            Task.Delay(500).Wait();
+            Task.Delay(4000).Wait();
             this.Find<Button>("Launch layout editor").Click();
 
             Task.Delay(3000).Wait();
             this.Session.Attach(PowerToysModule.FancyZone);
+            Task.Delay(3000).Wait();
         }
 
         private void CloseFancyZonesEditor()
@@ -627,6 +626,28 @@ namespace Microsoft.FancyZones.UITests
             {
                 SendKeys(keyToSend);
             }
+        }
+
+        private void LaunchHostFromSetting(bool showWarning = false, bool launchAsAdmin = false)
+        {
+            // Goto Hosts File Editor setting page
+            if (this.FindAll<NavigationViewItem>("Hosts File Editor").Count == 0)
+            {
+                // Expand Advanced list-group if needed
+                this.Find<NavigationViewItem>("Advanced").Click();
+            }
+
+            this.Find<NavigationViewItem>("Hosts File Editor").Click();
+            Task.Delay(1000).Wait();
+
+            this.Find<ToggleSwitch>("Enable Hosts File Editor").Toggle(true);
+            this.Find<ToggleSwitch>("Launch as administrator").Toggle(launchAsAdmin);
+            this.Find<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
+
+            // launch Hosts File Editor
+            this.Find<Button>("Launch Hosts File Editor").Click();
+
+            Task.Delay(5000).Wait();
         }
     }
 }

@@ -532,6 +532,7 @@ namespace Microsoft.PowerToys.UITest
                 Assert.IsNotNull(this.Root, $"Failed to attach to the window '{windowName}'. Root driver is null");
             }
 
+            Task.Delay(3000).Wait();
             return this;
         }
 

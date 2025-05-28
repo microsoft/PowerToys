@@ -38,6 +38,7 @@ namespace Microsoft.PowerToys.UITest
         private SessionHelper? sessionHelper;
         private System.Threading.Timer? screenshotTimer;
         private string? screenshotDirectory;
+        private static bool firstInitSetting = true;
 
         // private System.Threading.Timer? screenshotTimer;
         // private string? screenshotDirectory;
@@ -64,6 +65,7 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
+            CloseOtherApplications();
             if (IsInPipeline)
             {
                 screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
@@ -81,6 +83,15 @@ namespace Microsoft.PowerToys.UITest
 
             if (this.scope == PowerToysModule.PowerToysSettings)
             {
+                if (IsInPipeline)
+                {
+                    if (firstInitSetting == true)
+                    {
+                        firstInitSetting = false;
+                        this.RestartScopeExe();
+                    }
+                }
+
                 // close Debug warning dialog if any
                 // Such debug warning dialog seems only appear in PowerToys Settings
                 if (this.FindAll("DEBUG").Count > 0)
@@ -459,6 +470,21 @@ namespace Microsoft.PowerToys.UITest
         {
             this.sessionHelper!.ExitScopeExe();
             return;
+        }
+
+        private void CloseOtherApplications()
+        {
+            // Close other applications
+            var processNamesToClose = new List<string>
+            {
+                "PowerToys",
+                "PowerToys.Settings",
+                "PowerToys.FancyZonesEditor",
+            };
+            foreach (var processName in processNamesToClose)
+            {
+                Session.KillAllProcessesByName(processName);
+            }
         }
 
         public class NativeMethods
