@@ -84,6 +84,16 @@
                         <ToggleSwitch IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <TextBlock x:Uid="AppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ListBackgroundOpacity_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF12F;}">
+                        <Slider
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            Maximum="100"
+                            Minimum="0"
+                            Value="{x:Bind viewModel.ListBackgroundOpacity, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  Example 'About' section  -->
                     <TextBlock x:Uid="AboutSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 

@@ -118,6 +118,17 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public int ListBackgroundOpacity
+    {
+        get => _settings.ListBackgroundOpacity;
+        set
+        {
+            _settings.ListBackgroundOpacity = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ListBackgroundOpacity)));
+            Save();
+        }
+    }
+
     public ObservableCollection<ProviderSettingsViewModel> CommandProviders { get; } = [];
 
     public SettingsViewModel(SettingsModel settings, IServiceProvider serviceProvider, TaskScheduler scheduler)

@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using System.ComponentModel;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -20,8 +21,12 @@ public sealed partial class ListPage : Page,
     IRecipient<NavigateNextCommand>,
     IRecipient<NavigatePreviousCommand>,
     IRecipient<ActivateSelectedListItemMessage>,
-    IRecipient<ActivateSecondaryCommandMessage>
+    IRecipient<ActivateSecondaryCommandMessage>,
+    INotifyPropertyChanged
 {
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private SettingsModel? _settings;
     private ListViewModel? ViewModel
     {
         get => (ListViewModel?)GetValue(ViewModelProperty);
@@ -37,6 +42,19 @@ public sealed partial class ListPage : Page,
         this.InitializeComponent();
         this.NavigationCacheMode = NavigationCacheMode.Disabled;
         this.ItemsList.Loaded += ItemsList_Loaded;
+        
+        _settings = App.Current.Services.GetService<SettingsModel>()!;
+        _settings.SettingsChanged += Settings_SettingsChanged;
+    }
+
+    public int ListBackgroundOpacity
+    {
+        get => _settings?.ListBackgroundOpacity ?? 100;
+    }
+
+    private void Settings_SettingsChanged(SettingsModel sender, object? args)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ListBackgroundOpacity)));
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -78,6 +96,11 @@ public sealed partial class ListPage : Page,
             ViewModel.ItemsUpdated -= Page_ItemsUpdated;
         }
 
+        if (_settings != null)
+        {
+            _settings.SettingsChanged -= Settings_SettingsChanged;
+        }
+
         if (e.NavigationMode != NavigationMode.New)
         {
             ViewModel?.SafeCleanup();
@@ -96,8 +119,7 @@ public sealed partial class ListPage : Page,
     {
         if (e.ClickedItem is ListItemViewModel item)
         {
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
-            if (settings.SingleClickActivates)
+            if (_settings!.SingleClickActivates)
             {
                 ViewModel?.InvokeItemCommand.Execute(item);
             }
@@ -113,8 +135,7 @@ public sealed partial class ListPage : Page,
     {
         if (ItemsList.SelectedItem is ListItemViewModel vm)
         {
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
-            if (!settings.SingleClickActivates)
+            if (!_settings!.SingleClickActivates)
             {
                 ViewModel?.InvokeItemCommand.Execute(vm);
             }

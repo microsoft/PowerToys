@@ -40,6 +40,23 @@
                         </tkcontrols:SettingsCard.Description>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="CmdPal_Appearance_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="CmdPal_ListBackgroundOpacity" HeaderIcon="{ui:FontIcon Glyph=&#xF12F;}">
+                        <Slider
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            Maximum="100"
+                            Minimum="0"
+                            Value="{x:Bind Path=ViewModel.ListBackgroundOpacity, Mode=OneWay}"
+                            IsEnabled="False" />
+                        <tkcontrols:SettingsCard.Description>
+                            <HyperlinkButton
+                                x:Name="CmdPalAppearanceSettingsDeeplink"
+                                x:Uid="CmdPal_AppearanceDeeplinkContent"
+                                Click="CmdPalSettingsDeeplink_Click" />
+                        </tkcontrols:SettingsCard.Description>
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 

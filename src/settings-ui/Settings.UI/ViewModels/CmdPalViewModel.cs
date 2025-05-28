@@ -26,6 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _isEnabled;
         private HotkeySettings _hotkey;
+        private int _listBackgroundOpacity;
         private IFileSystemWatcher _watcher;
         private DispatcherQueue _uiDispatcherQueue;
         private CmdPalProperties _cmdPalProperties;
@@ -57,15 +58,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 #endif
 
             _hotkey = _cmdPalProperties.Hotkey;
+            _listBackgroundOpacity = _cmdPalProperties.ListBackgroundOpacity;
 
             _watcher = Helper.GetFileWatcher(settingsPath, () =>
             {
                 _cmdPalProperties.InitializeHotkey();
                 _hotkey = _cmdPalProperties.Hotkey;
+                _listBackgroundOpacity = _cmdPalProperties.ListBackgroundOpacity;
 
                 _uiDispatcherQueue.TryEnqueue(() =>
                 {
                     OnPropertyChanged(nameof(Hotkey));
+                    OnPropertyChanged(nameof(ListBackgroundOpacity));
                 });
             });
 
@@ -117,6 +121,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public HotkeySettings Hotkey
         {
             get => _hotkey;
+
+            private set
+            {
+            }
+        }
+
+        public int ListBackgroundOpacity
+        {
+            get => _listBackgroundOpacity;
 
             private set
             {

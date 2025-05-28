@@ -229,6 +229,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>About</value>
     <comment>A section header for information about the app</comment>
   </data>
+  <data name="AppearanceSettingsHeader.Text" xml:space="preserve">
+    <value>Appearance</value>
+    <comment>A section header for appearance-related settings</comment>
+  </data>
+  <data name="Settings_GeneralPage_ListBackgroundOpacity_SettingsCard.Header" xml:space="preserve">
+    <value>List background opacity</value>
+    <comment>Header for a setting that controls the opacity of the results list background</comment>
+  </data>
+  <data name="Settings_GeneralPage_ListBackgroundOpacity_SettingsCard.Description" xml:space="preserve">
+    <value>Make the results list background more or less transparent</value>
+    <comment>Description for the list background opacity setting</comment>
+  </data>
   <data name="ExtensionAboutHeader.Text" xml:space="preserve">
     <value>About</value>
     <comment>A section header for information about the app</comment>

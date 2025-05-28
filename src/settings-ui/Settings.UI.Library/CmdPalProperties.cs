@@ -12,10 +12,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         // Default shortcut - Win + Alt + Space
         public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, false, true, false, 32);
+        
+        public const int DefaultListBackgroundOpacity = 100;
 
 #pragma warning disable SA1401 // Fields should be private
 #pragma warning disable CA1051 // Do not declare visible instance fields
         public HotkeySettings Hotkey;
+        public int ListBackgroundOpacity;
 #pragma warning restore CA1051 // Do not declare visible instance fields
 #pragma warning restore SA1401 // Fields should be private
 
@@ -45,12 +48,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     Hotkey = JsonSerializer.Deserialize<HotkeySettings>(hotkeyElement.GetRawText());
                 }
+                
+                if (doc.RootElement.TryGetProperty(nameof(ListBackgroundOpacity), out JsonElement opacityElement))
+                {
+                    ListBackgroundOpacity = opacityElement.GetInt32();
+                }
             }
             catch (Exception)
             {
             }
 
             Hotkey ??= DefaultHotkeyValue;
+            if (ListBackgroundOpacity < 0 || ListBackgroundOpacity > 100)
+            {
+                ListBackgroundOpacity = DefaultListBackgroundOpacity;
+            }
         }
     }
 }

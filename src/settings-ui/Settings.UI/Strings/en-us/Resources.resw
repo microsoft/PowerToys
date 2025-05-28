@@ -5005,6 +5005,18 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="CmdPal_DeeplinkContent.Content" xml:space="preserve">
     <value>Open Command Palette settings to customize the activation shortcut</value>
   </data>
+  <data name="CmdPal_Appearance_GroupSettings.Header" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="CmdPal_ListBackgroundOpacity.Header" xml:space="preserve">
+    <value>List background opacity</value>
+  </data>
+  <data name="CmdPal_ListBackgroundOpacity.Description" xml:space="preserve">
+    <value>Control the transparency of the results list background</value>
+  </data>
+  <data name="CmdPal_AppearanceDeeplinkContent.Content" xml:space="preserve">
+    <value>Open Command Palette settings to customize appearance settings</value>
+  </data>
   <data name="Help_chromaCIE" xml:space="preserve">
     <value>chroma (CIE LCh)</value>
   </data>

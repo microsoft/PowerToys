@@ -50,6 +50,8 @@ public partial class SettingsModel : ObservableObject
 
     public MonitorBehavior SummonOn { get; set; } = MonitorBehavior.ToMouse;
 
+    public int ListBackgroundOpacity { get; set; } = 100;
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 

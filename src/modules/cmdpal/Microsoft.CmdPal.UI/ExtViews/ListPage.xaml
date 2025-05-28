@@ -6,6 +6,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:cpconverters="using:Microsoft.CmdPal.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI"
@@ -26,6 +27,8 @@
             x:Key="StringVisibilityConverter"
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
+
+        <cpconverters:PercentageToOpacityConverter x:Key="PercentageToOpacityConverter" />
 
         <DataTemplate x:Key="TagTemplate" x:DataType="viewmodels:TagViewModel">
             <cpcontrols:Tag
@@ -119,6 +122,9 @@
                     ItemTemplate="{StaticResource ListItemViewModelTemplate}"
                     ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
                     SelectionChanged="ItemsList_SelectionChanged">
+                    <ListView.Background>
+                        <SolidColorBrush Color="{ThemeResource SystemChromeMediumLowColor}" Opacity="{x:Bind ListBackgroundOpacity, Mode=OneWay, Converter={StaticResource PercentageToOpacityConverter}}" />
+                    </ListView.Background>
                     <ListView.ItemContainerTransitions>
                         <TransitionCollection />
                     </ListView.ItemContainerTransitions>
