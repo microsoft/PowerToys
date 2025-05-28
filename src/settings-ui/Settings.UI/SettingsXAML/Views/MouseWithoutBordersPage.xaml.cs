@@ -31,52 +31,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private readonly IFileSystemWatcher watcher;
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            base.OnNavigatedTo(e);
-            string targetSection = e.Parameter as string;
-
-            // Navigate to the appropriate section based on the targetSection parameter
-            if (!string.IsNullOrEmpty(targetSection))
-            {
-                FrameworkElement targetElement = targetSection.ToLowerInvariant() switch
-                {
-                    "activation" => ActivationSettingsGroup,
-                    "key" or "keys" or "security" => KeySettingsGroup,
-                    "devices" or "layout" or "devicelayout" => DeviceLayoutSettingsGroup,
-                    "service" => ServiceSettingsGroup,
-                    "behavior" or "settings" => BehaviorSettingsGroup,
-                    "shortcuts" or "keyboard" => KeyboardShortcutsGroup,
-                    "advanced" => AdvancedSettingsGroup,
-                    "troubleshooting" or "firewall" => TroubleshootingGroup,
-                    "connect" => MouseWithoutBorders_ConnectSettings,
-                    _ => TroubleshootingGroup, // Default fallback
-                };
-
-                // Use DispatcherQueue to delay the scroll operation until after the UI is fully loaded
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-                {
-                    targetElement?.StartBringIntoView(new Microsoft.UI.Xaml.BringIntoViewOptions
-                    {
-                        VerticalOffset = -20,
-                        AnimationDesired = true,
-                    });
-                });
-            }
-            else
-            {
-                // Default behavior when no specific section is specified
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-                {
-                    TroubleshootingGroup.StartBringIntoView(new Microsoft.UI.Xaml.BringIntoViewOptions
-                    {
-                        VerticalOffset = -20,
-                        AnimationDesired = true,
-                    });
-                });
-            }
-        }
-
         public MouseWithoutBordersPage()
         {
             var settingsUtils = new SettingsUtils();

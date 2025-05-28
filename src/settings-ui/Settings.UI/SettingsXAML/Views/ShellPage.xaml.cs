@@ -471,34 +471,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
             {
                 var query = sender.Text;
-                if (string.IsNullOrWhiteSpace(query))
-                {
-                    // Show module suggestions when empty
-                    var sortedItems = ViewModel.NavItems
-                        .Select(item => item.Content?.ToString())
-                        .Where(content => !string.IsNullOrEmpty(content))
-                        .OrderBy(content => content);
-                    sender.ItemsSource = sortedItems;
-                    _currentSearchResults.Clear();
-                }
-                else
-                {
-                    // Use the new search index for detailed search
-                    _currentSearchResults = SearchIndexService.Search(query, 10);
-                    var suggestions = _currentSearchResults
-                        .Select(hit => $"{hit.Caption} ({hit.Module})")
-                        .ToList();
 
-                    // Also include module-level matches for fallback
-                    var moduleMatches = _searchService.GetSuggestions(query.ToLower(CultureInfo.InvariantCulture))
-                        .Select(item => item.Content?.ToString() ?? string.Empty)
-                        .Where(content => !string.IsNullOrEmpty(content))
-                        .Take(5);
+                _currentSearchResults = SearchIndexService.Search(query, 10);
 
-                    suggestions.AddRange(moduleMatches);
+                var suggestions = _currentSearchResults
+                    .Select(hit => $"{hit.Caption} ({hit.Module})")
+                    .ToList();
 
-                    sender.ItemsSource = suggestions.Distinct().Take(15);
-                }
+                sender.ItemsSource = suggestions.Distinct().Take(15);
             }
         }
 
@@ -509,12 +489,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            var sortedItems = ViewModel.NavItems
-                .Select(item => item.Content)
-                .OrderBy(content => content);
+            // var sortedItems = ViewModel.NavItems
+            //    .Select(item => item.Content)
+            //    .OrderBy(content => content);
 
-            SearchBox.ItemsSource = sortedItems;
-            SearchBox.IsSuggestionListOpen = true;
+            // SearchBox.ItemsSource = sortedItems;
+            // SearchBox.IsSuggestionListOpen = true;
         }
 
         private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
@@ -557,7 +537,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void NavigateToItem(NavigationViewItem item)
+        private void NavigateToItem(NavigationViewItem item, string automationId = null)
         {
             var pageType = item.GetValue(NavHelper.NavigateToProperty) as Type;
 
@@ -576,7 +556,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (pageType != null)
             {
-                NavigationService.Navigate(pageType);
+                NavigationService.Navigate(pageType, automationId);
             }
         }
     }

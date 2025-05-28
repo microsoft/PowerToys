@@ -30,7 +30,6 @@
 		<ApplicationDefinition Include="SettingsXAML\App.xaml" />
 	</ItemGroup>
 
-
 	<!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
 	<PropertyGroup>
 		<CsWinRTIncludes>PowerToys.GPOWrapper;PowerToys.ZoomItSettingsInterop</CsWinRTIncludes>
@@ -50,6 +49,10 @@
 
 	<ItemGroup>
 		<EmbeddedResource Include="Images\MouseJump-Desktop.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Assets\search.index.json" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -112,7 +115,7 @@
 		<IndexerPublishDir>$(MSBuildProjectDirectory)\obj\$(Platform)\$(Configuration)\XamlIndexBuilder\</IndexerPublishDir>
 		<IndexerExeFile>$(IndexerPublishDir)XamlIndexBuilder.exe</IndexerExeFile>
 		<XamlViewsDir>$(MSBuildProjectDirectory)\SettingsXAML\Views</XamlViewsDir>
-		<GeneratedJsonFile>$(MSBuildProjectDirectory)\obj\$(Platform)\$(Configuration)\XamlIndexBuilder\search.index.json</GeneratedJsonFile>
+		<GeneratedJsonFile>$(ProjectDir)Assets\search.index.json</GeneratedJsonFile>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -158,28 +161,15 @@
 		</Page>
 	</ItemGroup>
 
-	<Target Name="GenerateXamlSearchIndex" AfterTargets="Build" Inputs="@(Page->'%(FullPath)')" Outputs="$(GeneratedJsonFile)">
-		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj"
-				 Targets="Publish"
-           Properties="Configuration=$(Configuration);
-                       RuntimeIdentifier=win-x64;
-                       SelfContained=true;
-                       PublishSingleFile=true;
-                       PublishDir=$(IndexerPublishDir)">
+	<Target Name="GenerateXamlSearchIndex" BeforeTargets="PrepareResourceNames" Inputs="@(Page->'%(FullPath)')" Outputs="$(GeneratedJsonFile)">
+		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Publish" Properties="Configuration=$(Configuration);&#xD;&#xA;                       RuntimeIdentifier=win-x64;&#xD;&#xA;                       SelfContained=true;&#xD;&#xA;                       PublishSingleFile=true;&#xD;&#xA;                       PublishDir=$(IndexerPublishDir)">
 			<Output TaskParameter="TargetOutputs" ItemName="IndexerPublishOutputs" />
 		</MSBuild>
-		<Message Importance="high" Text="Indexer publish path: $(IndexerPublishDir)" />
 
 		<MakeDir Directories="$(IndexerPublishDir)" />
 		<MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedJsonFile)'))" />
-
-		<Message Importance="high" Text="Indexer exe: $(IndexerExeFile)" />
-		<Message Importance="high" Text="Views dir : $(XamlViewsDir)" />
-		<Message Importance="high" Text="JSON file : $(GeneratedJsonFile)" />
-
+		<MakeDir Directories="$(ProjectDir)Assets" />
+		
 		<Exec Command="$(IndexerExeFile) &quot;$(XamlViewsDir)&quot; &quot;$(GeneratedJsonFile)&quot;" />
-
-		<Copy SourceFiles="$(GeneratedJsonFile)" DestinationFolder="$(OutputPath)" />
-		<Message Importance="high" Text="Copied search index to: $(OutputPath)" />
 	</Target>
 </Project>

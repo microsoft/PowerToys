@@ -90,7 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         private static ImmutableArray<SettingEntry> _index = ImmutableArray<SettingEntry>.Empty;
         private static bool _isIndexBuilt;
         private static bool _isIndexBuilding;
-        private const string PrebuiltIndexResourceName = "Microsoft.PowerToys.Settings.UI.Services.searchable_elements.json";
+        private const string PrebuiltIndexResourceName = "Microsoft.PowerToys.Settings.UI.Assets.search.index.json";
 
         public static ImmutableArray<SettingEntry> Index
         {
@@ -116,7 +116,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
         public static void BuildIndex()
         {
-            // Quick double-check to avoid spinning up multiple workers.
             lock (_lockObject)
             {
                 if (_isIndexBuilt || _isIndexBuilding)
@@ -127,12 +126,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 _isIndexBuilding = true;
             }
 
-            // Build on a background thread so we don't block the caller.
-            Task.Run(BuildIndexInternal);
-        }
-
-        private static void BuildIndexInternal()
-        {
             try
             {
                 var builder = ImmutableArray.CreateBuilder<SettingEntry>();
@@ -166,28 +159,26 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
             try
             {
-                using (Stream stream = assembly.GetManifestResourceStream(PrebuiltIndexResourceName))
+                using Stream stream = assembly.GetManifestResourceStream(PrebuiltIndexResourceName);
+                if (stream == null)
                 {
-                    if (stream == null)
+                    Debug.WriteLine($"[SearchIndexService] ERROR: Embedded resource '{PrebuiltIndexResourceName}' not found. Ensure it's correctly embedded and the name matches.");
+                    return;
+                }
+
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    string json = reader.ReadToEnd();
+                    if (string.IsNullOrWhiteSpace(json))
                     {
-                        Debug.WriteLine($"[SearchIndexService] ERROR: Embedded resource '{PrebuiltIndexResourceName}' not found. Ensure it's correctly embedded and the name matches.");
+                        Debug.WriteLine("[SearchIndexService] ERROR: Embedded resource was empty.");
                         return;
                     }
 
-                    using (StreamReader reader = new StreamReader(stream))
-                    {
-                        string json = reader.ReadToEnd();
-                        if (string.IsNullOrWhiteSpace(json))
-                        {
-                            Debug.WriteLine("[SearchIndexService] ERROR: Embedded resource was empty.");
-                            return;
-                        }
-
 #pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-                        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 #pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-                        metadataList = JsonSerializer.Deserialize<List<SearchableElementMetadata>>(json, options);
-                    }
+                    metadataList = JsonSerializer.Deserialize<List<SearchableElementMetadata>>(json, options);
                 }
             }
             catch (Exception ex)
@@ -208,7 +199,6 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             {
                 string moduleName = GetModuleNameFromTypeName(metadata.PageName);
                 string localizedText = GetLocalizedText(resourceLoader, metadata.AutomationId, metadata.ControlType);
-                string localizedDescription = GetLocalizedText(resourceLoader, metadata.AutomationId, metadata.ControlType, suffix: "Description");
 
                 if (string.IsNullOrEmpty(localizedText))
                 {
@@ -248,7 +238,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                     localizedText,
                     metadata.PageName,
                     metadata.AutomationId,
-                    localizedDescription,
+                    string.Empty,
                     currentSectionCaption,
                     nestingLevel));
 
@@ -258,21 +248,26 @@ namespace Microsoft.PowerToys.Settings.UI.Services
             Debug.WriteLine($"[SearchIndexService] Finished loading index. Total entries: {builder.Count}");
         }
 
-        private static string GetLocalizedText(ResourceLoader resourceLoader, string automationId, string controlType, string suffix = "Value")
+        private static string GetLocalizedText(ResourceLoader resourceLoader, string automationId, string controlType)
         {
-            string primaryKey = $"{automationId}/{suffix}";
-            string localizedText = GetString(resourceLoader, primaryKey);
+            string localizedText = string.Empty;
 
-            if (string.IsNullOrEmpty(localizedText) && suffix == "Value")
+            if (controlType == "SettingsPageControl")
             {
-                if (controlType == "SettingsCard" || controlType == "SettingsExpander")
-                {
-                    localizedText = GetString(resourceLoader, $"{automationId}/Header");
-                }
-                else if (controlType == "Button" || controlType == "CheckBox" || controlType == "RadioButton" || controlType == "ToggleButton" || controlType == "ToggleSwitch")
-                {
-                    localizedText = GetString(resourceLoader, $"{automationId}/Content");
-                }
+                localizedText = GetString(resourceLoader, $"{automationId}/ModuleTitle");
+            }
+            else if (controlType == "Button" || controlType == "CheckBox" || controlType == "RadioButton" || controlType == "ToggleButton" || controlType == "ToggleSwitch")
+            {
+                localizedText = GetString(resourceLoader, $"{automationId}/Content");
+            }
+            else if (controlType == "SettingsGroup" || controlType == "SettingsExpander" || controlType == "SettingsCard")
+            {
+                localizedText = GetString(resourceLoader, $"{automationId}/Header");
+            }
+
+            if (localizedText.Length == 0)
+            {
+                Debug.WriteLine("[SearchIndexService] WARNING: No localization found for AutomationId: '{automationId}'");
             }
 
             return localizedText;
