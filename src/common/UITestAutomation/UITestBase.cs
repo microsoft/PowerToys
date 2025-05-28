@@ -83,15 +83,6 @@ namespace Microsoft.PowerToys.UITest
 
             if (this.scope == PowerToysModule.PowerToysSettings)
             {
-                if (IsInPipeline)
-                {
-                    if (firstInitSetting == true)
-                    {
-                        firstInitSetting = false;
-                        this.RestartScopeExe();
-                    }
-                }
-
                 // close Debug warning dialog if any
                 // Such debug warning dialog seems only appear in PowerToys Settings
                 if (this.FindAll("DEBUG").Count > 0)
