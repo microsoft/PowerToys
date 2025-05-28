@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class AlwaysOnTopPage : Page, IRefreshablePage
+    public sealed partial class AlwaysOnTopPage : NavigatablePage, IRefreshablePage
     {
         private AlwaysOnTopViewModel ViewModel { get; set; }
 

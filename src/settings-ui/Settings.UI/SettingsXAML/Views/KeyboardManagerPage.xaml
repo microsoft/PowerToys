@@ -1,5 +1,6 @@
-﻿<Page
+﻿<local:NavigatablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.KeyboardManagerPage"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Lib="using:Microsoft.PowerToys.Settings.UI.Library"
@@ -12,7 +13,7 @@
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <Page.Resources>
+    <local:NavigatablePage.Resources>
         <tkconverters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
         <tkconverters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
@@ -53,7 +54,7 @@
                 Height="56">
 
         </DataTemplate>-->
-    </Page.Resources>
+    </local:NavigatablePage.Resources>
 
     <controls:SettingsPageControl x:Uid="KeyboardManager"
  AutomationProperties.AutomationId="KeyboardManager" ModuleImageSource="ms-appx:///Assets/Settings/Modules/KBM.png">
@@ -262,4 +263,4 @@
  AutomationProperties.AutomationId="LearnMore_KBM" Link="https://aka.ms/PowerToysOverview_KeyboardManager" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
-</Page>
+</local:NavigatablePage>

@@ -13,7 +13,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class CmdPalPage : Page, IRefreshablePage
+    public sealed partial class CmdPalPage : NavigatablePage, IRefreshablePage
     {
         private CmdPalViewModel ViewModel { get; set; }
 

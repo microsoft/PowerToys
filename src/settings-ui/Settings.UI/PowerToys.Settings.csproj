@@ -162,7 +162,7 @@
 	</ItemGroup>
 
 	<Target Name="GenerateXamlSearchIndex" BeforeTargets="PrepareResourceNames" Inputs="@(Page->'%(FullPath)')" Outputs="$(GeneratedJsonFile)">
-		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Publish" Properties="Configuration=$(Configuration);&#xD;&#xA;                       RuntimeIdentifier=win-x64;&#xD;&#xA;                       SelfContained=true;&#xD;&#xA;                       PublishSingleFile=true;&#xD;&#xA;                       PublishDir=$(IndexerPublishDir)">
+		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Publish" Properties="Configuration=$(Configuration);&#xD;&#xA;                       SelfContained=true;&#xD;&#xA;                       PublishSingleFile=true;&#xD;&#xA;                       PublishDir=$(IndexerPublishDir)">
 			<Output TaskParameter="TargetOutputs" ItemName="IndexerPublishOutputs" />
 		</MSBuild>
 

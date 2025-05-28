@@ -40,10 +40,16 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
             try
             {
                 var searchableElements = new List<SearchableElementMetadata>();
-                var xamlFiles = Directory.GetFiles(xamlDirectory, "*Page.xaml", SearchOption.AllDirectories);
+                var xamlFiles = Directory.GetFiles(xamlDirectory, "*.xaml", SearchOption.AllDirectories);
 
                 foreach (var xamlFile in xamlFiles)
                 {
+                    if (xamlFile.Equals("ShellPage.xaml", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Skip ShellPage.xaml as it contains many elements not relevant for search
+                        continue;
+                    }
+
                     Debug.WriteLine($"Processing: {Path.GetFileName(xamlFile)}");
                     var elements = ExtractSearchableElements(xamlFile);
                     searchableElements.AddRange(elements);

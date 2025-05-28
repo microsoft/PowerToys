@@ -1,5 +1,6 @@
-﻿<Page
+﻿<local:NavigatablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.MouseWithoutBordersPage"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
@@ -10,13 +11,13 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
-    <Page.Resources>
+    <local:NavigatablePage.Resources>
         <converters:BoolToVisibilityConverter x:Key="negativeBoolToVisibilityConverter" />
         <converters:BoolToObjectConverter
             x:Key="OneRowMatrixBoolToNumberOfRowsConverter"
             FalseValue="2"
             TrueValue="4" />
-    </Page.Resources>
+    </local:NavigatablePage.Resources>
     <controls:SettingsPageControl x:Uid="MouseWithoutBorders"
  AutomationProperties.AutomationId="MouseWithoutBorders" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseWithoutBorders.png">
         <controls:SettingsPageControl.ModuleContent>
@@ -520,4 +521,4 @@
             <controls:PageLink Link="https://github.com/microsoft/PowerToys/blob/main/COMMUNITY.md#mouse-without-borders-original-contributors" Text="Truong Do (Đỗ Đức Trường) and other original contributors" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
-</Page>
+</local:NavigatablePage>

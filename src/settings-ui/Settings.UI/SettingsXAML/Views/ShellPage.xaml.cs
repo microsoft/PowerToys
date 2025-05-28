@@ -508,7 +508,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // First try to find a match in our detailed search results
             var selectedText = args.ChosenSuggestion?.ToString() ?? queryText;
             var searchHit = _currentSearchResults.FirstOrDefault(hit =>
-                selectedText.Contains(hit.Caption, StringComparison.OrdinalIgnoreCase));
+                selectedText.Equals($"{hit.Caption} ({hit.Module})", StringComparison.OrdinalIgnoreCase));
 
             if (searchHit.PageType != null)
             {
@@ -519,21 +519,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (matchedNavItem != null)
                 {
-                    NavigateToItem(matchedNavItem);
+                    NavigateToItem(matchedNavItem, searchHit.Uid);
                     return;
                 }
-            }
-
-            // Fallback to module-level search
-            var matchedItem = ViewModel.NavItems
-                .FirstOrDefault(item =>
-                    item.Content?.ToString()?
-                        .Equals(queryText, StringComparison.OrdinalIgnoreCase) == true ||
-                    selectedText.Contains(item.Content?.ToString() ?? string.Empty, StringComparison.OrdinalIgnoreCase));
-
-            if (matchedItem != null)
-            {
-                NavigateToItem(matchedItem);
             }
         }
 

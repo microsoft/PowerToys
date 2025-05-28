@@ -1,5 +1,160 @@
 [
   {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_Additional_Actions_GroupSettings",
+    "controlType": "SettingsGroup"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_BehaviorSettingsGroup",
+    "controlType": "SettingsGroup"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_Clipboard_History_Enabled_SettingsCard",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_CloseAfterLosingFocus",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_Direct_Access_Hotkeys_GroupSettings",
+    "controlType": "SettingsGroup"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_DisableAIButton",
+    "controlType": "Button"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_EnableAdvancedAI",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_EnableAIButton",
+    "controlType": "Button"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_EnableAIDialog_ConfigureOpenAIKey",
+    "controlType": "TextBlock"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_EnableAISettingsCard",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_EnableAISettingsCardDescription",
+    "controlType": "TextBlock"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_EnableAISettingsGroup",
+    "controlType": "SettingsGroup"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_EnableToggleControl_HeaderText",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPaste_ShowCustomPreviewSettingsCard",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPasteUI_Actions",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPasteUI_AddCustomActionButton",
+    "controlType": "Button"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "AdvancedPasteUI_Shortcut",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "Enable_CustomAction",
+    "controlType": "ToggleSwitch"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "ImageToText",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "More_Options_Button",
+    "controlType": "Button"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "PasteAsFile",
+    "controlType": "SettingsExpander"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "PasteAsHtmlFile",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "PasteAsJson_Shortcut",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "PasteAsMarkdown_Shortcut",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "PasteAsPlainText_Shortcut",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "PasteAsPngFile",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "PasteAsTxtFile",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "ToggleSwitch",
+    "controlType": "ToggleSwitch"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "Transcode",
+    "controlType": "SettingsExpander"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "TranscodeToMp3",
+    "controlType": "SettingsCard"
+  },
+  {
+    "pageName": "AdvancedPastePage",
+    "automationId": "TranscodeToMp4",
+    "controlType": "SettingsCard"
+  },
+  {
     "pageName": "AlwaysOnTopPage",
     "automationId": "AlwaysOnTop_Activation_GroupSettings",
     "controlType": "SettingsGroup"

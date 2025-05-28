@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PowerRenamePage : Page, IRefreshablePage
+    public sealed partial class PowerRenamePage : NavigatablePage, IRefreshablePage
     {
         private PowerRenameViewModel ViewModel { get; set; }
 
