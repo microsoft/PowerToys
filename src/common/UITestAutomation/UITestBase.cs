@@ -38,10 +38,7 @@ namespace Microsoft.PowerToys.UITest
         private SessionHelper? sessionHelper;
         private System.Threading.Timer? screenshotTimer;
         private string? screenshotDirectory;
-        private static bool firstInitSetting = true;
 
-        // private System.Threading.Timer? screenshotTimer;
-        // private string? screenshotDirectory;
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
         {
             this.IsInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
