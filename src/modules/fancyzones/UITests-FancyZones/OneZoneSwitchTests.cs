@@ -58,7 +58,7 @@ namespace UITests_FancyZones
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("FancyZones.Settings.TestSwitchWindow")]
+        [TestMethod]
         [TestCategory("FancyZones #Switch between windows in the current zone #1")]
         public void TestSwitchWindow()
         {

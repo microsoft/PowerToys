@@ -248,7 +248,7 @@ Enable `Move newly created windows to the current active monitor`.
 ### Switch between windows in the current zone
 Enable `Switch between windows in the current zone` (default shortcut is `Win + PgUp/PgDown`)
 - [X] 1. Snap several windows to one zone, verify switching works.
-        - TestMethod("FancyZones.Settings.TestSwitchWindow")
+        - TestMethod("TestSwitchWindow")
 - [X] 2. Snap several windows to one zone, switch virtual desktop, return back, verify window switching works.
         - TestMethod("FancyZones.Settings.TestSwitchAfterDesktopChange")
 - [X] 3. Disable `Switch between windows in the current zone`, verify switching doesn't work.
