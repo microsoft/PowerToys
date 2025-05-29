@@ -56,7 +56,7 @@ Mouse Pointer Crosshairs:
 Mouse Jump:
   * Enable Mouse Jump. Then:
     - [x] Press the activation shortcut and verify the screens preview appears.
-    - [x] Change activation shortcut and verify that new shorctut triggers Mouse Jump.
+    - [x] Change activation shortcut and verify that new shortcut triggers Mouse Jump.
     - [x] Click around the screen preview and ensure that mouse cursor jumped to clicked location.
     - [ ] Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
     - [ ] Change scaling of screens and confirm that Mouse Jump still works correctly.

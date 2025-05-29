@@ -22,8 +22,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
         }
 
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext testContext)
+        [TestInitialize]
+        public void TestInitialize()
         {
             FancyZonesEditorHelper.Files.Restore();
 
@@ -163,12 +163,8 @@ namespace Microsoft.FancyZonesEditor.UITests
                 AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
             };
             FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
-        }
 
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            FancyZonesEditorHelper.Files.Restore();
+            this.RestartScopeExe();
         }
 
         [TestMethod]

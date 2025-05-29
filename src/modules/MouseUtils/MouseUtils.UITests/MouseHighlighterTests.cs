@@ -245,16 +245,17 @@ namespace MouseUtils.UITests
             }
 
             expectedColor = "#" + expectedColor;
-
+            Task.Delay(100).Wait();
             var location = Session.GetMousePosition();
             int radius = int.Parse(settings.Radius, CultureInfo.InvariantCulture);
-            var colorLeftClick = GetPixelColorString(location.Item1, location.Item2);
+            var colorLeftClick = this.GetPixelColorString(location.Item1, location.Item2);
             Assert.AreEqual(expectedColor, colorLeftClick);
 
-            var colorLeftClick2 = GetPixelColorString(location.Item1 + radius - 1, location.Item2);
+            var colorLeftClick2 = this.GetPixelColorString(location.Item1 + radius - 1, location.Item2);
+
             Assert.AreEqual(expectedColor, colorLeftClick2);
 
-            var colorBackground = GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
+            var colorBackground = this.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
             Assert.AreNotEqual(expectedColor, colorBackground);
 
             // Drag the mouse
@@ -268,14 +269,14 @@ namespace MouseUtils.UITests
             Task.Delay(2000).Wait();
 
             location = Session.GetMousePosition();
-            colorLeftClick = GetPixelColorString(location.Item1, location.Item2);
+            colorLeftClick = this.GetPixelColorString(location.Item1, location.Item2);
             Assert.AreEqual(expectedColor, colorLeftClick);
 
-            colorLeftClick2 = GetPixelColorString(location.Item1 + radius - 1, location.Item2);
+            colorLeftClick2 = this.GetPixelColorString(location.Item1 + radius - 1, location.Item2);
 
             Assert.AreEqual(expectedColor, colorLeftClick2);
 
-            colorBackground = GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
+            colorBackground = this.GetPixelColorString(location.Item1 + radius + 50, location.Item2 + radius + 50);
             Assert.AreNotEqual(expectedColor, colorBackground);
 
             if (action == "leftClick")
@@ -289,7 +290,7 @@ namespace MouseUtils.UITests
 
             int duration = int.Parse(settings.FadeDuration, CultureInfo.InvariantCulture);
             Task.Delay(duration + 100).Wait();
-            colorLeftClick = GetPixelColorString(location.Item1, location.Item2);
+            colorLeftClick = this.GetPixelColorString(location.Item1, location.Item2);
             Assert.AreNotEqual("#" + settings.PrimaryButtonHighlightColor, colorLeftClick);
         }
 

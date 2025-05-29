@@ -39,8 +39,6 @@ namespace Microsoft.PowerToys.UITest
         private System.Threading.Timer? screenshotTimer;
         private string? screenshotDirectory;
 
-        // private System.Threading.Timer? screenshotTimer;
-        // private string? screenshotDirectory;
         public UITestBase(PowerToysModule scope = PowerToysModule.PowerToysSettings, WindowSize size = WindowSize.UnSpecified)
         {
             this.IsInPipeline = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"));
@@ -64,6 +62,7 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
+            CloseOtherApplications();
             if (IsInPipeline)
             {
                 screenshotDirectory = Path.Combine(this.TestContext.TestResultsDirectory ?? string.Empty, "UITestScreenshots_" + Guid.NewGuid().ToString());
@@ -459,6 +458,25 @@ namespace Microsoft.PowerToys.UITest
         {
             this.sessionHelper!.ExitScopeExe();
             return;
+        }
+
+        private void CloseOtherApplications()
+        {
+            // Close other applications
+            var processNamesToClose = new List<string>
+            {
+                "PowerToys",
+                "PowerToys.Settings",
+                "PowerToys.FancyZonesEditor",
+            };
+            foreach (var processName in processNamesToClose)
+            {
+                foreach (var process in Process.GetProcessesByName(processName))
+                {
+                    process.Kill();
+                    process.WaitForExit();
+                }
+            }
         }
 
         public class NativeMethods
