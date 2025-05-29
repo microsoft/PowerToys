@@ -79,27 +79,32 @@ internal static class ClipboardHelper
         // TODO(stefan): For some reason Flush() fails from time to time when directly activated via hotkey.
         // Calling inside a loop makes it work.
         // Exception is: The operation is not permitted because the calling application is not the owner of the data on the clipboard.
-        const int maxAttempts = 5;
-        for (var i = 1; i <= maxAttempts; i++)
+        ClipboardThreadQueue.EnqueueTask(() =>
         {
-            try
+            const int maxAttempts = 5;
+
+            for (var i = 1; i <= maxAttempts; i++)
             {
-                ClipboardThreadQueue.EnqueueTask(Clipboard.Flush);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                if (i == maxAttempts)
+                try
                 {
-                    ExtensionHost.LogMessage(new LogMessage()
+                    Task.Run(Clipboard.Flush).Wait();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if (i == maxAttempts)
                     {
-                        Message = $"{nameof(Clipboard)}.{nameof(Flush)}() failed: {ex}",
-                    });
+                        ExtensionHost.LogMessage(new LogMessage()
+                        {
+                            Message = $"{nameof(Clipboard)}.{nameof(Flush)}() failed: {ex}",
+                        });
+                    }
                 }
             }
-        }
+        });
 
-        return false;
+        // We cannot get the real result of the Flush() call here, as it is executed in a different thread.
+        return true;
     }
 
     private static async Task<bool> FlushAsync() => await Task.Run(Flush);
