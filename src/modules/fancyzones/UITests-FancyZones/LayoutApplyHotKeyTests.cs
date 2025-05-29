@@ -321,7 +321,7 @@ namespace UITests_FancyZones
             this.AttachPowertoySetting();
         }
 
-        [TestMethod("FancyZones.Settings.TestDragShiftHotKey")]
+        [TestMethod]
         [TestCategory("FancyZones #2")]
         public void TestDragShiftHotKey()
         {
