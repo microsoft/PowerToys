@@ -1,0 +1,11 @@
+parameters:
+  - name: directory
+    type: string
+    default: $(Build.SourcesDirectory)
+
+steps:
+  - pwsh: |-
+      nuget install Microsoft.Windows.Terminal.Versioning -ConfigFile "$(Build.SourcesDirectory)\.pipelines\release-nuget.config" -OutputDirectory _versioning
+      $VersionRoot = (Get-Item _versioning\Microsoft.Windows.*).FullName
+      & "$VersionRoot\build\Setup.ps1" -ProjectDirectory "${{ parameters.directory }}" -Verbose
+    displayName: Set up versioning for ${{ parameters.directory }} via M.W.T.V

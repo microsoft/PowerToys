@@ -45,6 +45,9 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     public async Task<bool> LoadBuiltinsAsync()
     {
+        var s = new Stopwatch();
+        s.Start();
+
         _builtInCommands.Clear();
 
         // Load built-In commands first. These are all in-proc, and
@@ -63,6 +66,10 @@ public partial class TopLevelCommandManager : ObservableObject,
                 }
             }
         }
+
+        s.Stop();
+
+        Logger.LogDebug($"Loading built-ins took {s.ElapsedMilliseconds}ms");
 
         return true;
     }

@@ -4,6 +4,7 @@
 
 using System;
 using System.ServiceProcess;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.WindowsServices;
 
@@ -35,10 +36,11 @@ public class ServiceResult
 
             return result;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // try to log the exception in the future
             // retrieve properties from serviceController will throw exception. Such as PlatformNotSupportedException.
+            Logger.LogError($"Failed to create ServiceController: {ex.GetType().Name} - {ex.Message}");
         }
 
         return null;

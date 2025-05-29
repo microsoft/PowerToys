@@ -40,7 +40,7 @@ public partial class SettingsModel : ObservableObject
 
     public bool ShowSystemTrayIcon { get; set; } = true;
 
-    public bool IgnoreShortcutWhenFullscreen { get; set; } = true;
+    public bool IgnoreShortcutWhenFullscreen { get; set; }
 
     public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
 

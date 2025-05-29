@@ -9,6 +9,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
@@ -422,6 +423,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // A custom title bar is required for full window theme and Mica support.
                 // https://docs.microsoft.com/windows/apps/develop/title-bar?tabs=winui3#full-customization
                 u.ExtendsContentIntoTitleBar = true;
+                u.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
                 WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(u));
                 u.SetTitleBar(AppTitleBar);
                 var loader = ResourceLoaderInstance.ResourceLoader;
@@ -456,6 +458,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void PaneToggleBtn_Click(object sender, RoutedEventArgs e)
         {
             navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
+        }
+
+        private void ExitPTItem_Tapped(object sender, RoutedEventArgs e)
+        {
+            const string ptTrayIconWindowClass = "PToyTrayIconWindow"; // Defined in runner/tray_icon.h
+            const nuint ID_EXIT_MENU_COMMAND = 40001;                  // Generated resource from runner/runner.base.rc
+
+            // Exit the XAML application
+            Application.Current.Exit();
+
+            // Invoke the exit command from the tray icon
+            IntPtr hWnd = NativeMethods.FindWindow(ptTrayIconWindowClass, ptTrayIconWindowClass);
+            NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_EXIT_MENU_COMMAND, 0);
         }
     }
 }
