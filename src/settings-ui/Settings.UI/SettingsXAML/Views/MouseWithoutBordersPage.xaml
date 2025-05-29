@@ -268,7 +268,8 @@
                         <ToggleSwitch x:Uid="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowClipboardAndNetworkStatusMessages, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+
+                <controls:SettingsGroup x:Uid="MouseWithoutBorders_EasyMouseSettings_Group" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_EasyMouseOption" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.EasyMouseOptionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Disabled" />
@@ -277,7 +278,38 @@
                             <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Shift" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
+                        IsEnabled="{x:Bind ViewModel.EasyMouseEnabled, Mode=OneWay}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
+                        <ToggleSwitch x:Uid="MouseMouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ToggleSwitch"
+                                      IsOn="{x:Bind ViewModel.DisableEasyMouseWhenForegroundWindowIsFullscreen, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
 
+                    <tkcontrols:SettingsExpander
+                        x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
+                        IsEnabled="{x:Bind ViewModel.EasyMouseEnabledAndDisableOnFullscreen, Mode=OneWay}"
+                        IsExpanded="False">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ExcludedApps"
+                                HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                                <TextBox
+                                    x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_TextBoxControl"
+                                    MinWidth="240"
+                                    MinHeight="160"
+                                    AcceptsReturn="True"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    Text="{x:Bind ViewModel.EasyMouseFullscreenSwitchBlockExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"

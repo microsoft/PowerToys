@@ -887,6 +887,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string EasyMouseFullscreenSwitchBlockExcludedApps
+        {
+            get
+            {
+                return Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value.Replace("\r\n", "\r");
+            }
+
+            set
+            {
+                var newValue = value.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n");
+
+                if (Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value == newValue)
+                {
+                    return;
+                }
+
+                Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value = newValue;
+                NotifyPropertyChanged();
+            }
+        }
+
         public bool CardForName2IpSettingIsEnabled => _disableUserDefinedIpMappingRulesIsGPOConfigured == false;
 
         public bool ShowPolicyConfiguredInfoForName2IPSetting => _disableUserDefinedIpMappingRulesIsGPOConfigured && IsEnabled;
@@ -985,6 +1006,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Settings.Properties.EasyMouse.Value = value;
                     NotifyPropertyChanged(nameof(EasyMouseOptionIndex));
                 }
+            }
+        }
+
+        public bool EasyMouseEnabled => (EasyMouseOption)EasyMouseOptionIndex != EasyMouseOption.Disable;
+
+        public bool EasyMouseEnabledAndDisableOnFullscreen => EasyMouseEnabled && DisableEasyMouseWhenForegroundWindowIsFullscreen;
+
+        public bool DisableEasyMouseWhenForegroundWindowIsFullscreen
+        {
+            get
+            {
+                return Settings.Properties.DisableEasyMouseWhenForegroundWindowIsFullscreen;
+            }
+
+            set
+            {
+                if (Settings.Properties.DisableEasyMouseWhenForegroundWindowIsFullscreen == value)
+                {
+                    return;
+                }
+
+                Settings.Properties.DisableEasyMouseWhenForegroundWindowIsFullscreen = value;
+                NotifyPropertyChanged();
             }
         }
 

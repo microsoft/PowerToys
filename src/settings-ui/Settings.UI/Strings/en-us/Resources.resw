@@ -398,6 +398,9 @@
   <data name="MouseWithoutBorders_AdvancedSettings_Group.Header" xml:space="preserve">
     <value>Advanced Settings</value>
   </data>
+  <data name="MouseWithoutBorders_EasyMouseSettings_Group.Header" xml:space="preserve">
+    <value>Easy Mouse Settings</value>
+  </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
     <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
   </data>
@@ -418,6 +421,22 @@
   <data name="MouseWithoutBorders_EasyMouseOption_Shift.Content" xml:space="preserve">
     <value>Shift</value>
     <comment>This is the Shift keyboard key</comment>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Header" xml:space="preserve">
+    <value>Disable easy mouse when an application is in fullscreen mode.</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Description" xml:space="preserve">
+    <value>Prevent easy mouse from moving to another machine if an application is running in fullscreen mode.</value>
+  </data>
+   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: chrome.exe</value>
+    <comment>Allow easy mouse when chrome is in fullscreen mode.</comment>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Header" xml:space="preserve">
+    <value>Ignored fullscreen applications</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Description" xml:space="preserve">
+    <value>Allow easy mouse to move between screens even if one of these applications is running in fullscreen.</value>
   </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
     <value>Shortcut to lock all machines.</value>
