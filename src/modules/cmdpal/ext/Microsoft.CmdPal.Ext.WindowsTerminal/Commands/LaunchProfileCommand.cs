@@ -3,12 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.Win32;
+using Windows.Win32.System.Com;
+using Windows.Win32.UI.Shell;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal.Commands;
 
@@ -30,29 +31,18 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
         this.Icon = new IconInfo(iconPath);
     }
 
-    private void Launch(string id, string profile)
+    private unsafe void Launch(string id, string profile)
     {
-        ComWrappers cw = new StrategyBasedComWrappers();
-
-        var hr = NativeHelpers.CoCreateInstance(NativeHelpers.ApplicationActivationManagerCLSID, IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, NativeHelpers.ApplicationActivationManagerIID, out var appManagerPtr);
-        if (hr != 0)
-        {
-            throw new ArgumentException($"Failed to create ApplicationActivationManagerCLSID instance. HR: 0x{hr:X}");
-        }
-
-        var appManager = (IApplicationActivationManager)cw.GetOrCreateObjectForComInstance(
-            appManagerPtr, CreateObjectFlags.None);
-
-        if (appManager == null)
-        {
-            throw new ArgumentException("Failed to get IApplicationActivationManager interface");
-        }
-
-        const ActivateOptions noFlags = ActivateOptions.None;
-        var queryArguments = TerminalHelper.GetArguments(profile, _openNewTab, _openQuake);
         try
         {
-            appManager.ActivateApplication(id, queryArguments, noFlags, out var unusedPid);
+            IApplicationActivationManager* appManager = null;
+
+            PInvoke.CoCreateInstance(typeof(ApplicationActivationManager).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out appManager).ThrowOnFailure();
+            using var handle = new SafeComHandle((IntPtr)appManager);
+
+            var queryArguments = TerminalHelper.GetArguments(profile, _openNewTab, _openQuake);
+
+            appManager->ActivateApplication(id, string.Empty, ACTIVATEOPTIONS.AO_NONE, out var unusedPid).ThrowOnFailure();
         }
 #pragma warning disable IDE0059, CS0168
         catch (Exception ex)
