@@ -125,6 +125,8 @@ namespace Microsoft.PowerToys.UITest
         /// Click the UI element.
         /// </summary>
         /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
+        /// <param name="msPreAction">Delay in milliseconds before performing the click action. Default is 500 ms.</param>
+        /// <param name="msPostAction">Delay in milliseconds after performing the click action. Default is 500 ms.</param>
         public virtual void Click(bool rightClick = false, int msPreAction = 500, int msPostAction = 500)
         {
             PerformAction(
@@ -364,7 +366,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="path">the full path</param>
         internal void SaveToPngFile(string path)
         {
-            Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method SaveToFile with parameter: path = {path}");
+            Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method SaveToPngFile with parameter: path = {path}");
             this.windowsElement.GetScreenshot().SaveAsFile(path);
         }
     }

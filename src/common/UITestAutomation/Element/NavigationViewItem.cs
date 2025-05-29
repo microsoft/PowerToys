@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Click the ListItem element.
+        /// Click the center of the ListItem element.
         /// </summary>
         /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
         /// <param name="msPreAction">Pre action delay in milliseconds. Default value is 500</param>
