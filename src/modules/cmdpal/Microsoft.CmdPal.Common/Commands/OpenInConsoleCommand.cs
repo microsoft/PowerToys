@@ -6,20 +6,22 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using ManagedCommon;
-using Microsoft.CmdPal.Ext.Indexer.Properties;
+using Microsoft.CmdPal.Common.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
-namespace Microsoft.CmdPal.Ext.Indexer.Commands;
+namespace Microsoft.CmdPal.Common.Commands;
 
-internal sealed partial class OpenInConsoleCommand : InvokableCommand
+public partial class OpenInConsoleCommand : InvokableCommand
 {
+    internal static IconInfo OpenInConsoleIcon { get; } = new("\uE756");
+
     private readonly string _path;
 
-    internal OpenInConsoleCommand(string fullPath)
+    public OpenInConsoleCommand(string fullPath)
     {
         this._path = fullPath;
         this.Name = Resources.Indexer_Command_OpenPathInConsole;
-        this.Icon = new IconInfo("\uE756");
+        this.Icon = OpenInConsoleIcon;
     }
 
     public override CommandResult Invoke()

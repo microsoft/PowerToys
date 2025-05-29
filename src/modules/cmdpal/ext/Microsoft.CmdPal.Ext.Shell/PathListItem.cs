@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -46,17 +47,15 @@ internal sealed partial class PathListItem : ListItem
         }
 
         TextToSuggest = suggestion;
-        MoreCommands = [
-            new CommandContextItem(new CopyTextCommand(path) { Name = Properties.Resources.copy_path_command_name }) { }
-        ];
 
-        // MoreCommands = [
-        //    new CommandContextItem(new OpenWithCommand(indexerItem)),
-        //    new CommandContextItem(new ShowFileInFolderCommand(indexerItem.FullPath) { Name = Resources.Indexer_Command_ShowInFolder }),
-        //    new CommandContextItem(new CopyPathCommand(indexerItem)),
-        //    new CommandContextItem(new OpenInConsoleCommand(indexerItem)),
-        //    new CommandContextItem(new OpenPropertiesCommand(indexerItem)),
-        // ];
+        MoreCommands = [
+           new CommandContextItem(new OpenWithCommand(path)),
+            new CommandContextItem(new ShowFileInFolderCommand(path)),
+            new CommandContextItem(new CopyPathCommand(path) { Name = Properties.Resources.copy_path_command_name }),
+            new CommandContextItem(new OpenInConsoleCommand(path)),
+            new CommandContextItem(new OpenPropertiesCommand(path)),
+         ];
+
         _icon = new Lazy<IconInfo>(() =>
         {
             var iconStream = ThumbnailHelper.GetThumbnail(path).Result;

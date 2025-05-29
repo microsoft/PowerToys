@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.CmdPal.Ext.Indexer.Commands;
+using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Pages;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -63,6 +63,7 @@ internal sealed partial class IndexerListItem : ListItem
         var attr = File.GetAttributes(fullPath);
         var isDir = (attr & FileAttributes.Directory) == FileAttributes.Directory;
 
+        var openCommand = new OpenFileCommand(fullPath) { Name = Resources.Indexer_Command_OpenFile };
         if (isDir)
         {
             var directoryPage = new DirectoryPage(fullPath);
@@ -70,24 +71,24 @@ internal sealed partial class IndexerListItem : ListItem
             {
                 // AsDefault: browse dir first, then open in explorer
                 commands.Add(new CommandContextItem(directoryPage));
-                commands.Add(new CommandContextItem(new OpenFileCommand(fullPath)));
+                commands.Add(new CommandContextItem(openCommand));
             }
             else if (browseByDefault == IncludeBrowseCommand.Include)
             {
                 // AsDefault: open in explorer first, then browse
-                commands.Add(new CommandContextItem(new OpenFileCommand(fullPath)));
+                commands.Add(new CommandContextItem(openCommand));
                 commands.Add(new CommandContextItem(directoryPage));
             }
             else if (browseByDefault == IncludeBrowseCommand.Exclude)
             {
                 // AsDefault: Just open in explorer
-                commands.Add(new CommandContextItem(new OpenFileCommand(fullPath)));
+                commands.Add(new CommandContextItem(openCommand));
             }
         }
 
         commands.Add(new CommandContextItem(new OpenWithCommand(fullPath)));
         commands.Add(new CommandContextItem(new ShowFileInFolderCommand(fullPath) { Name = Resources.Indexer_Command_ShowInFolder }));
-        commands.Add(new CommandContextItem(new CopyPathCommand(fullPath)));
+        commands.Add(new CommandContextItem(new CopyPathCommand(fullPath) { Name = Resources.Indexer_Command_CopyPath }));
         commands.Add(new CommandContextItem(new OpenInConsoleCommand(fullPath)));
         commands.Add(new CommandContextItem(new OpenPropertiesCommand(fullPath)));
 

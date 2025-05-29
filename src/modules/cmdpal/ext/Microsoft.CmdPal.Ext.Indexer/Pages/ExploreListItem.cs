@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using Microsoft.CmdPal.Ext.Indexer.Commands;
+using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -41,7 +41,7 @@ internal sealed partial class ExploreListItem : ListItem
         }
         else
         {
-            Command = new OpenFileCommand(indexerItem);
+            Command = new OpenFileCommand(indexerItem.FullPath);
         }
 
         MoreCommands = [
