@@ -152,7 +152,7 @@
   </data>
   <data name="ClipboardHistoryImage" xml:space="preserve">
     <value>Image data</value>
-    <comment>Label used to represent an image in the clipboard history that cannot be displayed as a preview</comment>
+    <comment>Label used to represent an image in the clipboard history</comment>
   </data>
   <data name="ClipboardHistoryItemMoreOptionsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More options</value>
