@@ -30,6 +30,8 @@ internal static class ClipboardHelper
         (StandardDataFormats.Bitmap, ClipboardFormat.Image),
     ];
 
+    private static readonly ClipboardThreadQueue ClipboardThreadQueue = new ClipboardThreadQueue();
+
     internal static async Task<ClipboardFormat> GetAvailableClipboardFormatsAsync(DataPackageView clipboardData)
     {
         var availableClipboardFormats = DataFormats.Aggregate(
@@ -58,9 +60,12 @@ internal static class ClipboardHelper
             try
             {
                 // Clipboard.SetContentWithOptions(output, null);
-                Clipboard.SetContent(output);
-                Flush();
-                ExtensionHost.LogMessage(new LogMessage() { Message = "Copied text to clipboard" });
+                ClipboardThreadQueue.EnqueueTask(() =>
+                {
+                    Clipboard.SetContent(output);
+                    Flush();
+                    ExtensionHost.LogMessage(new LogMessage() { Message = "Copied text to clipboard" });
+                });
             }
             catch (COMException ex)
             {
@@ -79,7 +84,7 @@ internal static class ClipboardHelper
         {
             try
             {
-                Task.Run(Clipboard.Flush).Wait();
+                ClipboardThreadQueue.EnqueueTask(Clipboard.Flush);
                 return true;
             }
             catch (Exception ex)
@@ -105,7 +110,7 @@ internal static class ClipboardHelper
 
         DataPackage output = new();
         output.SetStorageItems([storageFile]);
-        Clipboard.SetContent(output);
+        ClipboardThreadQueue.EnqueueTask(() => Clipboard.SetContent(output));
 
         await FlushAsync();
     }
@@ -118,7 +123,7 @@ internal static class ClipboardHelper
         {
             DataPackage output = new();
             output.SetBitmap(image);
-            Clipboard.SetContentWithOptions(output, null);
+            ClipboardThreadQueue.EnqueueTask(() => Clipboard.SetContentWithOptions(output, null));
 
             Flush();
         }
