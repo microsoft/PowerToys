@@ -5,12 +5,13 @@
 
 #include <comdef.h>
 #include <taskschd.h>
+#include <common/logger/logger.h>
 
 // Helper macros from wix.
-// TODO: use "s" and "..." parameters to report errors from these functions.
 #define ExitOnFailure(x, s, ...) \
     if (FAILED(x))               \
     {                            \
+        Logger::error(s, ##__VA_ARGS__); \
         goto LExit;              \
     }
 #define ExitWithLastError(x, s, ...)       \
@@ -21,6 +22,7 @@
         {                                  \
             x = E_FAIL;                    \
         }                                  \
+        Logger::error(s, ##__VA_ARGS__);   \
         goto LExit;                        \
     }
 #define ExitFunction() \
