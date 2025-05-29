@@ -39,7 +39,7 @@ internal sealed partial class AppCommand : InvokableCommand
                 IApplicationActivationManager* appManager = null;
                 try
                 {
-                    PInvoke.CoCreateInstance(typeof(ApplicationActivationManager).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out appManager);
+                    PInvoke.CoCreateInstance(typeof(ApplicationActivationManager).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out appManager).ThrowOnFailure();
                     using var handle = new SafeComHandle((IntPtr)appManager);
                     appManager->ActivateApplication(
                         aumid,
