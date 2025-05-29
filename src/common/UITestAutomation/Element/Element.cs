@@ -364,7 +364,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="path">the full path</param>
         internal void SaveToPngFile(string path)
         {
-            Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method SaveToFile with parameter: path = {path}");
+            Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method SaveToPngFile with parameter: path = {path}");
             this.windowsElement.GetScreenshot().SaveAsFile(path);
         }
     }
