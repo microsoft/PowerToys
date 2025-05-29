@@ -349,8 +349,26 @@ namespace UITests_FancyZones
             this.Find<Pane>(By.ClassName("InputNonClientPointerSource")).Click();
             this.OpenFancyZonesPanel(isMax: false);
             this.AttachFancyZonesEditor();
-            var element = this.Find<Element>("Grid custom layout");
-            Assert.IsTrue(element.Selected, "Grid custom layout is not visible");
+            var elements = this.FindAll<Element>("Grid custom layout");
+            if (elements.Count == 0)
+            {
+                this.Session.Attach(PowerToysModule.Hosts, WindowSize.Large_Vertical);
+                hostsView = Find<Pane>(By.Name("Non Client Input Sink Window"));
+                hostsView.DoubleClick(); // maximize the window
+
+                hostsView.HoldShiftToDrag(Key.Shift, targetX, targetY);
+                SendKeys(Key.Num0);
+                hostsView.ReleaseAction();
+                hostsView.ReleaseKey(Key.Shift);
+                SendKeys(Key.Alt, Key.F4);
+                this.AttachPowertoySetting();
+                this.Find<Pane>(By.ClassName("InputNonClientPointerSource")).Click();
+                this.OpenFancyZonesPanel(isMax: false);
+                this.AttachFancyZonesEditor();
+                elements = this.FindAll<Element>("Grid custom layout");
+            }
+
+            Assert.IsTrue(elements[0].Selected, "Grid custom layout is not visible");
             this.CloseFancyZonesEditor();
 
             Clean();
