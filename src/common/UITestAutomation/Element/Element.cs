@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using ABI.Windows.Foundation;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
@@ -25,7 +26,19 @@ namespace Microsoft.PowerToys.UITest
     {
         private WindowsElement? windowsElement;
 
+        protected internal WindowsElement? WindowsElement
+        {
+            get => windowsElement;
+            set => windowsElement = value;
+        }
+
         private WindowsDriver<WindowsElement>? driver;
+
+        protected internal WindowsDriver<WindowsElement>? Driver
+        {
+            get => driver;
+            set => driver = value;
+        }
 
         protected string? TargetControlType { get; set; }
 
@@ -112,9 +125,12 @@ namespace Microsoft.PowerToys.UITest
         /// Click the UI element.
         /// </summary>
         /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
-        public virtual void Click(bool rightClick = false)
+        /// <param name="msPreAction">Delay in milliseconds before performing the click action. Default is 500 ms.</param>
+        /// <param name="msPostAction">Delay in milliseconds after performing the click action. Default is 500 ms.</param>
+        public virtual void Click(bool rightClick = false, int msPreAction = 500, int msPostAction = 500)
         {
-            PerformAction((actions, windowElement) =>
+            PerformAction(
+                (actions, windowElement) =>
             {
                 actions.MoveToElement(windowElement);
 
@@ -131,7 +147,9 @@ namespace Microsoft.PowerToys.UITest
                 }
 
                 actions.Build().Perform();
-            });
+            },
+                msPreAction,
+                msPostAction);
         }
 
         /// <summary>
@@ -152,51 +170,20 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Drag element move offset.
+        /// Release action
         /// </summary>
-        /// <param name="offsetX">The offsetX to move.</param>
-        /// <param name="offsetY">The offsetY to move.</param>
-        public void Drag(int offsetX, int offsetY)
+        public void ReleaseAction()
         {
-            PerformAction((actions, windowElement) =>
-            {
-                actions.MoveToElement(windowElement).MoveByOffset(10, 10).ClickAndHold(windowElement).MoveByOffset(offsetX, offsetY).Release();
-                actions.Build().Perform();
-            });
+            var releaseAction = new Actions(driver);
+            releaseAction.Release().Perform();
         }
 
         /// <summary>
-        /// Drag element move to other element.
+        /// Release key
         /// </summary>
-        /// <param name="element">Move to this element.</param>
-        public void Drag(Element element)
+        public void ReleaseKey(Key key)
         {
-            PerformAction((actions, windowElement) =>
-            {
-                actions.MoveToElement(windowElement).ClickAndHold();
-                Assert.IsNotNull(element.windowsElement, "element is null");
-                int dx = (element.windowsElement.Rect.X - windowElement.Rect.X) / 10;
-                int dy = (element.windowsElement.Rect.Y - windowElement.Rect.Y) / 10;
-                for (int i = 0; i < 10; i++)
-                {
-                    actions.MoveByOffset(dx, dy);
-                }
-
-                actions.Release();
-                actions.Build().Perform();
-            });
-        }
-
-        /// <summary>
-        /// Send Key of the element.
-        /// </summary>
-        /// <param name="key">The Key to Send.</param>
-        public void SendKeys(string key)
-        {
-            PerformAction((actions, windowElement) =>
-            {
-                windowElement.SendKeys(key);
-            });
+            KeyboardHelper.ReleaseKey(key);
         }
 
         /// <summary>
@@ -218,7 +205,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to use for finding the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>The found element.</returns>
-        public T Find<T>(By by, int timeoutMS = 3000)
+        public T Find<T>(By by, int timeoutMS = 5000)
             where T : Element, new()
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method Find<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
@@ -226,7 +213,7 @@ namespace Microsoft.PowerToys.UITest
             // leverage findAll to filter out mismatched elements
             var collection = this.FindAll<T>(by, timeoutMS);
 
-            Assert.IsTrue(collection.Count > 0, $"Element not found using selector: {by}");
+            Assert.IsTrue(collection.Count > 0, $"UI-Element({typeof(T).Name}) not found using selector: {by}");
 
             return collection[0];
         }
@@ -239,7 +226,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name for finding the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>The found element.</returns>
-        public T Find<T>(string name, int timeoutMS = 3000)
+        public T Find<T>(string name, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.Find<T>(By.Name(name), timeoutMS);
@@ -252,7 +239,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to use for finding the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>The found element.</returns>
-        public Element Find(By by, int timeoutMS = 3000)
+        public Element Find(By by, int timeoutMS = 5000)
         {
             return this.Find<Element>(by, timeoutMS);
         }
@@ -264,7 +251,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name for finding the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>The found element.</returns>
-        public Element Find(string name, int timeoutMS = 3000)
+        public Element Find(string name, int timeoutMS = 5000)
         {
             return this.Find<Element>(By.Name(name), timeoutMS);
         }
@@ -276,7 +263,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to use for finding the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 3000)
+        public ReadOnlyCollection<T> FindAll<T>(By by, int timeoutMS = 5000)
             where T : Element, new()
         {
             Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method FindAll<{typeof(T).Name}> with parameters: by = {by}, timeoutMS = {timeoutMS}");
@@ -308,7 +295,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name for finding the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 3000)
+        public ReadOnlyCollection<T> FindAll<T>(string name, int timeoutMS = 5000)
             where T : Element, new()
         {
             return this.FindAll<T>(By.Name(name), timeoutMS);
@@ -321,7 +308,7 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="by">The selector to use for finding the elements.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 3000)
+        public ReadOnlyCollection<Element> FindAll(By by, int timeoutMS = 5000)
         {
             return this.FindAll<Element>(by, timeoutMS);
         }
@@ -333,9 +320,21 @@ namespace Microsoft.PowerToys.UITest
         /// <param name="name">The name for finding the element.</param>
         /// <param name="timeoutMS">The timeout in milliseconds.</param>
         /// <returns>A read-only collection of the found elements.</returns>
-        public ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 3000)
+        public ReadOnlyCollection<Element> FindAll(string name, int timeoutMS = 5000)
         {
             return this.FindAll<Element>(By.Name(name), timeoutMS);
+        }
+
+        /// <summary>
+        /// Send Key of the element.
+        /// </summary>
+        /// <param name="key">The Key to Send.</param>
+        protected void SendKeys(string key)
+        {
+            PerformAction((actions, windowElement) =>
+            {
+                windowElement.SendKeys(key);
+            });
         }
 
         /// <summary>
@@ -359,6 +358,16 @@ namespace Microsoft.PowerToys.UITest
             {
                 Task.Delay(msPostAction).Wait();
             }
+        }
+
+        /// <summary>
+        /// Save UI Element to a PNG file.
+        /// </summary>
+        /// <param name="path">the full path</param>
+        internal void SaveToPngFile(string path)
+        {
+            Assert.IsNotNull(this.windowsElement, $"WindowsElement is null in method SaveToPngFile with parameter: path = {path}");
+            this.windowsElement.GetScreenshot().SaveAsFile(path);
         }
     }
 }

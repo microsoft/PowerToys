@@ -13,7 +13,7 @@ namespace Hosts.UITests
     public class HostModuleTests : UITestBase
     {
         public HostModuleTests()
-            : base(PowerToysModule.Hosts)
+            : base(PowerToysModule.Hosts, WindowSize.Small_Vertical)
         {
         }
 
@@ -31,14 +31,17 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("Hosts.Basic.EmptyViewShouldWork")]
+        [TestCategory("Hosts File Editor #4")]
         public void TestEmptyView()
         {
             this.CloseWarningDialog();
             this.RemoveAllEntries();
 
             // 'Add an entry' button (only show-up when list is empty) should be visible
-            Assert.IsTrue(this.FindAll<HyperlinkButton>("Add an entry").Count == 1, "'Add an entry' button should be visible in the empty view");
+            Assert.IsTrue(this.HasOne<HyperlinkButton>("Add an entry"), "'Add an entry' button should be visible in the empty view");
+
+            VisualAssert.AreEqual(this.TestContext, this.Find("Entries"), "EmptyView");
 
             // Click 'Add an entry' from empty-view for adding Host override rule
             this.Find<HyperlinkButton>("Add an entry").Click();
@@ -46,8 +49,10 @@ namespace Hosts.UITests
             this.AddEntry("192.168.0.1", "localhost", false, false);
 
             // Should have one row now and not more empty view
-            Assert.IsTrue(this.FindAll<Button>("Delete").Count == 1, "Should have one row now");
-            Assert.IsTrue(this.FindAll<HyperlinkButton>("Add an entry").Count == 0, "'Add an entry' button should be invisible if not empty view");
+            Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
+            Assert.IsFalse(this.Has<HyperlinkButton>("Add an entry"), "'Add an entry' button should be invisible if not empty view");
+
+            VisualAssert.AreEqual(this.TestContext, this.Find("Entries"), "NonEmptyView");
         }
 
         /// <summary>
@@ -58,17 +63,20 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("Hosts.Basic.AddEntryButtonShouldWork")]
+        [TestCategory("Hosts File Editor #4")]
         public void TestAddingEntry()
         {
             this.CloseWarningDialog();
             this.RemoveAllEntries();
 
-            Assert.IsTrue(this.FindAll<Button>("Delete").Count == 0, "Should have no row after removing all");
+            Assert.IsFalse(this.Has<Button>("Delete"), "Should have no row after removing all");
 
             this.AddEntry("192.168.0.1", "localhost", true);
 
-            Assert.IsTrue(this.FindAll<Button>("Delete").Count == 1, "Should have one row now");
+            Assert.IsTrue(this.Has<Button>("Delete"), "Should have one row now");
+
+            VisualAssert.AreEqual(this.TestContext, this.Find("Entries"));
         }
 
         /// <summary>
@@ -82,7 +90,8 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("Hosts.Basic.CanNotAddMoreThenNighHosts")]
+        [TestCategory("Hosts File Editor #5")]
         public void TestTooManyHosts()
         {
             this.CloseWarningDialog();
@@ -116,18 +125,48 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("Hosts.Basic.ErrorMessageShowupIfNotRunAsAdmin")]
+        [TestCategory("Hosts File Editor #8")]
         public void TestErrorMessageWithNonAdminPermission()
         {
-            this.CloseWarningDialog();
-            this.RemoveAllEntries();
+            if (this.Session.IsElevated == false)
+            {
+                this.CloseWarningDialog();
+                this.RemoveAllEntries();
 
-            // Add new URL override and a warning tip should be shown
-            this.AddEntry("192.168.0.1", "localhost", true);
+                // Add new URL override and a warning tip should be shown
+                this.AddEntry("192.168.0.1", "localhost", true);
 
-            Assert.IsTrue(
-                this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count == 1,
-                "Should display host-file saving error if not run as administrator");
+                Assert.IsTrue(
+                    this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count == 1,
+                    "Should display host-file saving error if not run as administrator");
+            }
+        }
+
+        /// <summary>
+        /// Test No Error-message in the Hosts-File-Editor
+        /// <list type="bullet">
+        /// <item>
+        /// <description>Validating error message should be shown if not run as admin.</description>
+        /// </item>
+        /// </list>
+        /// </summary>
+        [TestMethod("Hosts.Basic.NoErrorMessageShowupIfRunAsAdmin")]
+        [TestCategory("Hosts File Editor #8")]
+        public void TestNoErrorMessageWithNonAdminPermission()
+        {
+            if (this.Session.IsElevated == true)
+            {
+                this.CloseWarningDialog();
+                this.RemoveAllEntries();
+
+                // Add new URL override and a warning tip should be shown
+                this.AddEntry("192.168.0.1", "localhost", true);
+
+                Assert.IsFalse(
+                    this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count > 0,
+                    "Should display host-file saving error if not run as administrator");
+            }
         }
 
         /// <summary>
@@ -144,7 +183,8 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("Hosts.Basic.FiltersControlShouldWork")]
+        [TestCategory("Hosts File Editor #6")]
         public void TestFilterControl()
         {
             this.CloseWarningDialog();
@@ -212,7 +252,7 @@ namespace Hosts.UITests
 
             // Close-filter-panel
             this.Find<Button>("Filters").Click();
-            Assert.IsFalse(this.FindAll<Button>("Clear filters").Count == 1, "Filter panel should be closed afer click Filter Button");
+            Assert.IsFalse(this.FindAll<Button>("Clear filters").Count == 1, "Filter panel should be closed after clicking Filter Button");
         }
 
         private void AddEntry(string ip, string host, bool active = true, bool clickAddEntryButton = true)
@@ -243,25 +283,25 @@ namespace Hosts.UITests
         private void CloseWarningDialog()
         {
             // Find 'Accept' button which come in 'Warning' dialog
-            if (this.FindAll("Warning").Count > 0 &&
-                this.FindAll<Button>("Accept").Count > 0)
+            if (this.FindAll("Warning", 1000).Count > 0 &&
+                this.FindAll<Button>("Accept", 1000).Count > 0)
             {
                 // Hide Warning dialog if any
-                this.Find<Button>("Accept").Click();
+                this.Find<Button>("Accept", 1000).Click();
             }
         }
 
         private void RemoveAllEntries()
         {
             // Delete all existing host-override rules
-            foreach (var deleteBtn in this.FindAll<Button>("Delete"))
+            foreach (var deleteBtn in this.FindAll<Button>("Delete", 1000))
             {
                 deleteBtn.Click();
-                this.Find<Button>("Yes").Click();
+                this.Find<Button>("Yes", 1000).Click();
             }
 
             // Should have no row left, and no more delete button
-            Assert.IsTrue(this.FindAll<Button>("Delete").Count == 0);
+            Assert.IsTrue(this.FindAll<Button>("Delete", 1000).Count == 0);
         }
     }
 }
