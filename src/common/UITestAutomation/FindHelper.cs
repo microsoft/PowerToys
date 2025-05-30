@@ -38,13 +38,19 @@ namespace Microsoft.PowerToys.UITest
 
             while (DateTime.Now - startTime < timeout)
             {
-                var items = findElementsFunc();
-                if (items.Count > 0)
+                try
                 {
-                    return new ReadOnlyCollection<TW>((IList<TW>)items);
-                }
+                    var items = findElementsFunc();
+                    if (items.Count > 0)
+                    {
+                        return new ReadOnlyCollection<TW>((IList<TW>)items);
+                    }
 
-                Task.Delay(retryIntervalMS).Wait();
+                    Task.Delay(retryIntervalMS).Wait();
+                }
+                catch (Exception)
+                {
+                }
             }
 
             return new ReadOnlyCollection<TW>(new List<TW>());
