@@ -30,6 +30,8 @@ internal static class ClipboardHelper
         (StandardDataFormats.Bitmap, ClipboardFormat.Image),
     ];
 
+    private static readonly ClipboardThreadQueue ClipboardThreadQueue = new ClipboardThreadQueue();
+
     internal static async Task<ClipboardFormat> GetAvailableClipboardFormatsAsync(DataPackageView clipboardData)
     {
         var availableClipboardFormats = DataFormats.Aggregate(
@@ -58,9 +60,12 @@ internal static class ClipboardHelper
             try
             {
                 // Clipboard.SetContentWithOptions(output, null);
-                Clipboard.SetContent(output);
-                Flush();
-                ExtensionHost.LogMessage(new LogMessage() { Message = "Copied text to clipboard" });
+                ClipboardThreadQueue.EnqueueTask(() =>
+                {
+                    Clipboard.SetContent(output);
+                    Flush();
+                    ExtensionHost.LogMessage(new LogMessage() { Message = "Copied text to clipboard" });
+                });
             }
             catch (COMException ex)
             {
@@ -74,27 +79,32 @@ internal static class ClipboardHelper
         // TODO(stefan): For some reason Flush() fails from time to time when directly activated via hotkey.
         // Calling inside a loop makes it work.
         // Exception is: The operation is not permitted because the calling application is not the owner of the data on the clipboard.
-        const int maxAttempts = 5;
-        for (var i = 1; i <= maxAttempts; i++)
+        ClipboardThreadQueue.EnqueueTask(() =>
         {
-            try
+            const int maxAttempts = 5;
+
+            for (var i = 1; i <= maxAttempts; i++)
             {
-                Task.Run(Clipboard.Flush).Wait();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                if (i == maxAttempts)
+                try
                 {
-                    ExtensionHost.LogMessage(new LogMessage()
+                    Task.Run(Clipboard.Flush).Wait();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if (i == maxAttempts)
                     {
-                        Message = $"{nameof(Clipboard)}.{nameof(Flush)}() failed: {ex}",
-                    });
+                        ExtensionHost.LogMessage(new LogMessage()
+                        {
+                            Message = $"{nameof(Clipboard)}.{nameof(Flush)}() failed: {ex}",
+                        });
+                    }
                 }
             }
-        }
+        });
 
-        return false;
+        // We cannot get the real result of the Flush() call here, as it is executed in a different thread.
+        return true;
     }
 
     private static async Task<bool> FlushAsync() => await Task.Run(Flush);
@@ -105,7 +115,7 @@ internal static class ClipboardHelper
 
         DataPackage output = new();
         output.SetStorageItems([storageFile]);
-        Clipboard.SetContent(output);
+        ClipboardThreadQueue.EnqueueTask(() => Clipboard.SetContent(output));
 
         await FlushAsync();
     }
@@ -118,7 +128,7 @@ internal static class ClipboardHelper
         {
             DataPackage output = new();
             output.SetBitmap(image);
-            Clipboard.SetContentWithOptions(output, null);
+            ClipboardThreadQueue.EnqueueTask(() => Clipboard.SetContentWithOptions(output, null));
 
             Flush();
         }
