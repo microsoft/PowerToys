@@ -976,6 +976,7 @@ msstore
 mst
 msvcp
 msvsmon
+MT
 MTND
 MULTIPLEUSE
 multizone
