@@ -206,6 +206,11 @@
       <!-- Clean Video Conference Mute registry keys that might be around from previous installations. We've deprecated this utility since then. -->
       <Custom Action="CleanVideoConferenceRegistry" Before="InstallFinalize">NOT Installed</Custom>
 
+      <!-- User may have disabled the built-in New context menu via New+ --> 
+      <Custom Action="RestoreBuiltInNewContextMenu" Before="RemoveFiles">
+         Installed AND (REMOVE="ALL")
+      </Custom>
+       
     </InstallExecuteSequence>
 
     <CustomAction Id="SetLaunchPowerToysParam"
@@ -462,6 +467,14 @@
                   DllEntry="InstallCmdPalPackageCA"
                   />
 
+    <CustomAction Id="RestoreBuiltInNewContextMenu"
+                  Return="ignore"
+                  Impersonate="yes"
+                  Execute="deferred"
+                  BinaryKey="PTCustomActions"
+                  DllEntry="RestoreBuiltInNewContextMenuCA"
+                  />     
+     
     <!-- Close 'PowerToys.exe' before uninstall-->
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown" />
     <Property Id="MSIFASTINSTALL" Value="DisableShutdown" />

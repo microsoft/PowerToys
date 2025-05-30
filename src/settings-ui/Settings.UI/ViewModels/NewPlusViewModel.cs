@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Security.Principal;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,7 +18,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
-
+using Microsoft.Win32;
 using static Microsoft.PowerToys.Settings.UI.Helpers.ShellGetFolder;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -31,6 +32,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private NewPlusSettings Settings { get; set; }
 
         private const string ModuleName = NewPlusSettings.ModuleName;
+        private const string BuiltInNewRegistryPath = @"HKEY_CLASSES_ROOT\Directory\Background\shellex\ContextMenuHandlers\New";
+        private const string NewDisabledValuePrefix = "0_";
+        private const string BuiltNewCOMGuid = "{D969A300-E7FF-11d0-A93B-00A0C90F2719}";
 
         public NewPlusViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
@@ -50,6 +54,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _replaceVariables = Settings.Properties.ReplaceVariables.Value;
             InitializeEnabledValue();
             InitializeGpoValues();
+
+            WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            WindowsPrincipal principal = new WindowsPrincipal(identity);
+            _isElevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
+            _disableBuiltInNew = !IsBuiltInNewEnabled();
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
@@ -164,6 +173,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsReplaceVariablesSettingGPOConfigured => _isNewPlusEnabled && _replaceVariablesIsGPOConfigured;
 
+        public bool IsDisableBuiltInNewSettingsCardEnabled => _isNewPlusEnabled && _isElevated;
+
         public bool HideStartingDigits
         {
             get => _hideStartingDigits;
@@ -206,9 +217,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool HideBuiltInNew
+        {
+            get
+            {
+                return _disableBuiltInNew;
+            }
+
+            set
+            {
+                if (_disableBuiltInNew != value)
+                {
+                    if (_disableBuiltInNew)
+                    {
+                        EnableBuiltInNew();
+                    }
+                    else
+                    {
+                        DisableBuiltInNew();
+                    }
+
+                    _disableBuiltInNew = value;
+                    OnPropertyChanged(nameof(DisableBuiltInNew));
+
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+        }
+
+        public bool IsNotElevated
+        {
+            get => !_isElevated;
         }
 
         public ButtonClickCommand OpenCurrentNewTemplateFolder => new ButtonClickCommand(OpenNewTemplateFolder);
@@ -271,12 +315,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _hideFileExtension;
         private bool _hideStartingDigits;
         private bool _replaceVariables;
+        private bool _disableBuiltInNew;
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private GpoRuleConfigured _hideFileExtensionGpoRuleConfiguration;
         private bool _hideFileExtensionIsGPOConfigured;
         private bool _replaceVariablesIsGPOConfigured;
+
+        private bool _isElevated;
 
         public void RefreshEnabledState()
         {
@@ -316,6 +363,70 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
             return await Task.FromResult(GetFolderDialogWithFlags(hwnd, FolderDialogFlags._BIF_NEWDIALOGSTYLE));
+        }
+
+        private bool IsBuiltInNewEnabled()
+        {
+            try
+            {
+                string builtInNewHandlerValue = Registry.GetValue(BuiltInNewRegistryPath, string.Empty, null) as string;
+
+                return IsValidRegistryCOMFormatGuid(builtInNewHandlerValue);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to determine built-in New enablement status.", ex);
+            }
+
+            return false;
+        }
+
+        private static bool IsValidRegistryCOMFormatGuid(string input)
+        {
+            return Guid.TryParseExact(input, "B", out _);
+        }
+
+        private void DisableBuiltInNew()
+        {
+            try
+            {
+                string builtInNewHandlerValue = Registry.GetValue(BuiltInNewRegistryPath, string.Empty, null) as string;
+
+                if (builtInNewHandlerValue.StartsWith(NewDisabledValuePrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Already disabled
+                    return;
+                }
+
+                Debug.Assert(builtInNewHandlerValue == BuiltNewCOMGuid, "Unexpected GUID encountered while disabling built-in New");
+                string newDisabledValue = NewDisabledValuePrefix + builtInNewHandlerValue;
+                Registry.SetValue(BuiltInNewRegistryPath, string.Empty, newDisabledValue);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to disable built-in New in the registry.", ex);
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void EnableBuiltInNew()
+        {
+            try
+            {
+                string builtInNewHandlerValue = Registry.GetValue(BuiltInNewRegistryPath, string.Empty, null) as string;
+
+                if (builtInNewHandlerValue.StartsWith(NewDisabledValuePrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    string newEnabledValue = builtInNewHandlerValue.Substring(NewDisabledValuePrefix.Length);
+                    Debug.Assert(newEnabledValue == BuiltNewCOMGuid, "Unexpected GUID encountered while reenabling built-in New");
+                    Registry.SetValue(BuiltInNewRegistryPath, string.Empty, newEnabledValue);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to enable built-in New in the registry.", ex);
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

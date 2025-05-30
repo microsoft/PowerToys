@@ -28,3 +28,4 @@ EXPORTS
 	UninstallCommandNotFoundModuleCA
 	UpgradeCommandNotFoundModuleCA
 	UnsetAdvancedPasteAPIKeyCA
+	RestoreBuiltInNewContextMenuCA

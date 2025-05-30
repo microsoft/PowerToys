@@ -84,6 +84,15 @@
                             <TextBlock x:Uid="NewPlus_Hide_Starting_Digits_Description" />
                         </tkcontrols:SettingsCard.Description>
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_BuiltIn_New_Toggle" IsEnabled="{x:Bind ViewModel.IsDisableBuiltInNewSettingsCardEnabled, Mode=OneWay}">
+                        <ToggleSwitch x:Uid="DisableBuiltInNewToggle" IsOn="{x:Bind ViewModel.HideBuiltInNew, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="Elevation_Required"
+                        IsClosable="True"
+                        IsOpen="{x:Bind ViewModel.IsNotElevated, Mode=OneWay}"
+                        Severity="Informational" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="NewPlus_behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
