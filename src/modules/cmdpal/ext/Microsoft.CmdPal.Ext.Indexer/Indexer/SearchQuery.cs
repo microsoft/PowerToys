@@ -316,16 +316,15 @@ internal sealed partial class SearchQuery : IDisposable
                 return null;
             }
 
-            var firstPropSetPtr = new IntPtr(prgPropSetsPtr.ToInt64());
-            var propSet = *(DBPROPSET*)firstPropSetPtr;
+            var firstPropSetPtr = (DBPROPSET*)prgPropSetsPtr.ToInt64();
+            var propSet = *firstPropSetPtr;
             if (propSet.cProperties == 0 || propSet.rgProperties == IntPtr.Zero)
             {
                 return null;
             }
 
-            var propPtr = new IntPtr(propSet.rgProperties.ToInt64());
-            var prop = *(DBPROP*)propPtr;
-            return prop;
+            var propPtr = (DBPROP*)propSet.rgProperties.ToInt64());
+            return *propPtr;
         }
         catch (Exception ex)
         {
