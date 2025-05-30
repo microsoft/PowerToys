@@ -896,7 +896,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 var excludedApps = Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value;
 
                 // We are using a GenericProperty<List<string>> to store the list of excluded app,
-                return excludedApps[0] == string.Empty ? string.Empty : string.Join('\r', excludedApps);
+                return excludedApps.Count == 0 ? string.Empty : string.Join('\r', excludedApps);
             }
 
             set
@@ -906,7 +906,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value = value == string.Empty ? [string.Empty] : [..value.Split('\r')];
+                Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value = value == string.Empty ? [] : [..value.Split('\r')];
                 NotifyPropertyChanged();
             }
         }

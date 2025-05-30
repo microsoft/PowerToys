@@ -97,7 +97,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         // Apps that are to be excluded when using DisableEasyMouseWhenForegroundWindowIsFullscreen
         // meaning that it is possible to switch screen when these apps are running in fullscreen.
-        [JsonPropertyName("EasyMouseFullscreenExcludedApps")]
         [CmdConfigureIgnore]
         public GenericProperty<List<string>> EasyMouseFullscreenSwitchBlockExcludedApps { get; set; }
 
@@ -183,7 +182,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             UseService = false;
 
             DisableEasyMouseWhenForegroundWindowIsFullscreen = true;
-            EasyMouseFullscreenSwitchBlockExcludedApps = new GenericProperty<List<string>>([string.Empty]);
+            EasyMouseFullscreenSwitchBlockExcludedApps = new GenericProperty<List<string>>([]);
 
             HotKeySwitchMachine = new IntProperty(0x70); // VK.F1
             ToggleEasyMouseShortcut = DefaultHotKeyToggleEasyMouse;
