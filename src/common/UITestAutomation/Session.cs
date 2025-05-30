@@ -496,7 +496,7 @@ namespace Microsoft.PowerToys.UITest
                         break;
                     }
 
-                    Thread.Sleep(retryInterval);
+                    Task.Delay(retryInterval).Wait();
                 }
 
                 if (matchingWindows == null || matchingWindows.Count == 0 || matchingWindows[0].HWnd == IntPtr.Zero)

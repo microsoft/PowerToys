@@ -20,19 +20,6 @@ namespace Microsoft.PowerToys.UITest
         public static ReadOnlyCollection<T>? FindAll<T, TW>(Func<IReadOnlyCollection<TW>> findElementsFunc, WindowsDriver<WindowsElement>? driver, int timeoutMS)
             where T : Element, new()
         {
-            var items = findElementsFunc();
-            var res = items.Select(item =>
-            {
-                var element = item as WindowsElement;
-                return NewElement<T>(element, driver, timeoutMS);
-            }).Where(item => item.IsMatchingTarget()).ToList();
-
-            return new ReadOnlyCollection<T>(res);
-        }
-
-        public static ReadOnlyCollection<T>? FindAll<T, TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, WindowsDriver<WindowsElement>? driver, int timeoutMS)
-            where T : Element, new()
-        {
             var items = FindElementsWithRetry(findElementsFunc, timeoutMS);
             var res = items.Select(item =>
             {
@@ -43,21 +30,21 @@ namespace Microsoft.PowerToys.UITest
             return new ReadOnlyCollection<T>(res);
         }
 
-        private static ReadOnlyCollection<TW> FindElementsWithRetry<TW>(Func<ReadOnlyCollection<TW>> findElementsFunc, int timeoutMS = 120000)
+        private static ReadOnlyCollection<TW> FindElementsWithRetry<TW>(Func<IReadOnlyCollection<TW>> findElementsFunc, int timeoutMS)
         {
-            int retryIntervalMS = 500;
-            int elapsedTime = 0;
+            var timeout = TimeSpan.FromMilliseconds(timeoutMS);
+            var retryIntervalMS = TimeSpan.FromMilliseconds(500);
+            DateTime startTime = DateTime.Now;
 
-            while (elapsedTime < timeoutMS)
+            while (DateTime.Now - startTime < timeout)
             {
                 var items = findElementsFunc();
                 if (items.Count > 0)
                 {
-                    return items;
+                    return new ReadOnlyCollection<TW>((IList<TW>)items);
                 }
 
                 Task.Delay(retryIntervalMS).Wait();
-                elapsedTime += retryIntervalMS;
             }
 
             return new ReadOnlyCollection<TW>(new List<TW>());

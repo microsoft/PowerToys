@@ -283,25 +283,25 @@ namespace Hosts.UITests
         private void CloseWarningDialog()
         {
             // Find 'Accept' button which come in 'Warning' dialog
-            if (this.FindAll("Warning").Count > 0 &&
-                this.FindAll<Button>("Accept").Count > 0)
+            if (this.FindAll("Warning", 1000).Count > 0 &&
+                this.FindAll<Button>("Accept", 1000).Count > 0)
             {
                 // Hide Warning dialog if any
-                this.Find<Button>("Accept").Click();
+                this.Find<Button>("Accept", 1000).Click();
             }
         }
 
         private void RemoveAllEntries()
         {
             // Delete all existing host-override rules
-            foreach (var deleteBtn in this.FindAll<Button>("Delete"))
+            foreach (var deleteBtn in this.FindAll<Button>("Delete", 1000))
             {
                 deleteBtn.Click();
-                this.Find<Button>("Yes").Click();
+                this.Find<Button>("Yes", 1000).Click();
             }
 
             // Should have no row left, and no more delete button
-            Assert.IsTrue(this.FindAll<Button>("Delete").Count == 0);
+            Assert.IsTrue(this.FindAll<Button>("Delete", 1000).Count == 0);
         }
     }
 }
