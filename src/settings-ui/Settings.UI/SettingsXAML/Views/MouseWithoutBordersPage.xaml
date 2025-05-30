@@ -302,6 +302,7 @@
                                     ScrollViewer.IsVerticalRailEnabled="True"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
                                     ScrollViewer.VerticalScrollMode="Enabled"
+                                    IsSpellCheckEnabled="False"
                                     Text="{x:Bind ViewModel.EasyMouseFullscreenSwitchBlockExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </tkcontrols:SettingsCard>

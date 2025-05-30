@@ -889,21 +889,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string EasyMouseFullscreenSwitchBlockExcludedApps
         {
+            // Convert the list of excluded apps retrieved from the settings
+            // to a single string that can be displayed in the bound textbox
             get
             {
-                return Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value.Replace("\r\n", "\r");
+                var excludedApps = Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value;
+
+                // We are using a GenericProperty<List<string>> to store the list of excluded app,
+                return excludedApps[0] == string.Empty ? string.Empty : string.Join('\r', excludedApps);
             }
 
             set
             {
-                var newValue = value.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n");
-
-                if (Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value == newValue)
+                if (EasyMouseFullscreenSwitchBlockExcludedApps == value)
                 {
                     return;
                 }
 
-                Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value = newValue;
+                Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value = value == string.Empty ? [string.Empty] : [..value.Split('\r')];
                 NotifyPropertyChanged();
             }
         }
@@ -1011,7 +1014,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool EasyMouseEnabled => (EasyMouseOption)EasyMouseOptionIndex != EasyMouseOption.Disable;
 
-        public bool EasyMouseEnabledAndDisableOnFullscreen => EasyMouseEnabled && DisableEasyMouseWhenForegroundWindowIsFullscreen;
+        public bool EasyMouseEnabledAndDisableOnFullscreen =>
+            EasyMouseEnabled && DisableEasyMouseWhenForegroundWindowIsFullscreen;
 
         public bool DisableEasyMouseWhenForegroundWindowIsFullscreen
         {
