@@ -6,14 +6,14 @@ labels:
 body:
 - type: textarea
   attributes: 
-    label: Description of the new feature / enhancement
+    label: Description of the new feature/enhancement
     placeholder: What is the expected behavior of the proposed feature?
   validations:
     required: true
 - type: textarea
   attributes:
     label: Scenario when this would be used?
-    placeholder: What is the scenario this would be used? Why is this important to your workflow as a power user?
+    placeholder: What is the scenario this would be used in? Why is this important to your workflow as a power user?
   validations:
     required: true
 - type: textarea
