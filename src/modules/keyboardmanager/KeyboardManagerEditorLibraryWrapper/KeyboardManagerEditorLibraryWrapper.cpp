@@ -685,20 +685,6 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
     }
 }
 
-// Test function to call the remapping helper function
-bool CheckIfRemappingsAreValid()
-{
-    RemapBuffer remapBuffer;
-
-    // Mock valid key to key remappings
-    remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring() });
-    remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x42, (DWORD)0x43 }), std::wstring() });
-
-    auto result = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer);
-
-    return result == ShortcutErrorType::NoError;
-}
-
 // Get the list of keyboard keys in Editor
 int GetKeyboardKeysList(bool isShortcut, KeyNamePair* keyList, int maxCount)
 {

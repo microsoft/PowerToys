@@ -77,5 +77,4 @@ extern "C"
     __declspec(dllexport) bool DeleteSingleKeyToTextRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp);
 }
-extern "C" __declspec(dllexport) bool CheckIfRemappingsAreValid();
 extern "C" __declspec(dllexport) int GetKeyboardKeysList(bool isShortcut, KeyNamePair* keyList, int maxCount);
