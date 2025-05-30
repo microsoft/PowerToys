@@ -30,7 +30,7 @@ internal sealed partial class OpenWithCommand : InvokableCommand
         {
             var info = new SHELLEXECUTEINFOW
             {
-                cbSize = (uint)Unsafe.SizeOf<SHELLEXECUTEINFOW>(),
+                cbSize = (uint)sizeof(SHELLEXECUTEINFOW),
                 lpVerb = verbPtr,
                 lpFile = filenamePtr,
                 nShow = (int)SHOW_WINDOW_CMD.SW_SHOWNORMAL,
