@@ -14,7 +14,7 @@ namespace Microsoft.CmdPal.Ext.Shell;
 
 internal sealed partial class FallbackExecuteItem : FallbackCommandItem
 {
-    public bool FoundExecutable;
+    public bool FoundExecutable { get; private set; }
 
     public FallbackExecuteItem(SettingsManager settings)
         : base(new NoOpCommand(), Resources.shell_command_display_title)
