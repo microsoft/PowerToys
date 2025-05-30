@@ -20,13 +20,17 @@ public partial class ClipboardThreadQueue : IDisposable
     {
         _thread = new Thread(() =>
         {
-            NativeMethods.CoInitialize(IntPtr.Zero);
+            var hr = NativeMethods.CoInitialize(IntPtr.Zero);
+            if (hr != 0)
+            {
+                ExtensionHost.LogMessage($"CoInitialize failed with HRESULT: {hr}");
+            }
 
             while (true)
             {
                 _taskAvailable.WaitOne();
 
-                if (!cancellationToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
                     break;
                 }
@@ -44,11 +48,7 @@ public partial class ClipboardThreadQueue : IDisposable
                 }
             }
 
-            var hr = NativeMethods.CoUninitialize();
-            if (hr != 0)
-            {
-                ExtensionHost.LogMessage($"CoUninitialize failed with HRESULT: {hr}");
-            }
+            NativeMethods.CoUninitialize();
         });
 
         _thread.SetApartmentState(ApartmentState.STA);

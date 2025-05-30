@@ -100,8 +100,8 @@ public static partial class NativeMethods
     internal static extern bool GetCursorPos(out PointInter lpPoint);
 
     [LibraryImport("ole32.dll")]
-    internal static partial void CoInitialize(IntPtr pvReserved);
+    internal static partial int CoInitialize(IntPtr pvReserved);
 
     [LibraryImport("ole32.dll")]
-    internal static partial int CoUninitialize();
+    internal static partial void CoUninitialize();
 }
