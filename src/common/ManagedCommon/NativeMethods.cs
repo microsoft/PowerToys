@@ -112,5 +112,31 @@ namespace ManagedCommon
             public int cyTopHeight;
             public int cyBottomHeight;
         }
+
+        /// <summary>
+        /// Safely calls DwmExtendFrameIntoClientArea to handle potential COMExceptions
+        /// that can occur after resuming from sleep state.
+        /// </summary>
+        /// <param name="hWnd">Window handle</param>
+        /// <param name="pMarInset">Margins</param>
+        /// <returns>IntPtr.Zero on success, error code otherwise</returns>
+        internal static IntPtr SafeDwmExtendFrameIntoClientArea(IntPtr hWnd, ref MARGINS pMarInset)
+        {
+            try
+            {
+                return DwmExtendFrameIntoClientArea(hWnd, ref pMarInset);
+            }
+            catch (COMException ex) when (ex.HResult == unchecked((int)0xD0000701))
+            {
+                // Return a default value when this specific DWM error occurs (typically after sleep/resume)
+                // This is a non-critical styling error and can be safely ignored
+                return new IntPtr(-1); // Indicator for this specific error
+            }
+            catch (Exception)
+            {
+                // For other exceptions, rethrow to be handled by caller
+                throw;
+            }
+        }
     }
 }
