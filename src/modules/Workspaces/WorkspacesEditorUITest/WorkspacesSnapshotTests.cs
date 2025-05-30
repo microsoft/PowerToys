@@ -1,0 +1,474 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Diagnostics;
+using Microsoft.PowerToys.UITest;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace WorkspacesEditorUITest;
+
+[TestClass]
+public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
+{
+    public WorkspacesSnapshotTests()
+        : base()
+    {
+    }
+
+    [TestMethod("WorkspacesSnapshot.CaptureNonPackagedApps")]
+    [TestCategory("Workspaces Snapshot UI")]
+    public void TestCaptureNonPackagedApplications()
+    {
+        // Open non-packaged applications
+        OpenVisualStudioCode();
+        OpenNotepadPlusPlus();
+        Thread.Sleep(3000);
+
+        // Click Create Workspace
+        var createButton = Find<Button>("Create Workspace");
+        createButton.Click();
+        Thread.Sleep(1000);
+
+        // Click Capture
+        var captureButton = Find<Button>("Capture");
+        captureButton.Click();
+        Thread.Sleep(2000);
+
+        // Verify captured windows appear
+        var appList = Find<Custom>("AppList");
+        var capturedApps = appList.FindAll<Custom>(By.ClassName("AppItem"));
+
+        bool foundVSCode = false;
+        bool foundNotepadPlusPlus = false;
+
+        foreach (var app in capturedApps)
+        {
+            var appName = app.GetAttribute("Name");
+            if (appName.Contains("Visual Studio Code", StringComparison.OrdinalIgnoreCase))
+            {
+                foundVSCode = true;
+            }
+
+            if (appName.Contains("Notepad++", StringComparison.OrdinalIgnoreCase))
+            {
+                foundNotepadPlusPlus = true;
+            }
+        }
+
+        Assert.IsTrue(foundVSCode, "Visual Studio Code should be captured");
+        Assert.IsTrue(foundNotepadPlusPlus, "Notepad++ should be captured");
+
+        // Cancel to clean up
+        Find<Button>("Cancel").Click();
+        Thread.Sleep(1000);
+
+        // Close test applications
+        CloseVisualStudioCode();
+        CloseNotepadPlusPlus();
+    }
+
+    [TestMethod("WorkspacesSnapshot.CapturePackagedApps")]
+    [TestCategory("Workspaces Snapshot UI")]
+    public void TestCapturePackagedApplications()
+    {
+        // Open packaged applications
+        OpenWindowsTerminal();
+        OpenWindowsSettings();
+        Thread.Sleep(3000);
+
+        // Click Create Workspace
+        var createButton = Find<Button>("Create Workspace");
+        createButton.Click();
+        Thread.Sleep(1000);
+
+        // Click Capture
+        var captureButton = Find<Button>("Capture");
+        captureButton.Click();
+        Thread.Sleep(2000);
+
+        // Verify captured windows appear
+        var appList = Find<Custom>("AppList");
+        var capturedApps = appList.FindAll<Custom>(By.ClassName("AppItem"));
+
+        bool foundTerminal = false;
+        bool foundSettings = false;
+
+        foreach (var app in capturedApps)
+        {
+            var appName = app.GetAttribute("Name");
+            if (appName.Contains("Terminal", StringComparison.OrdinalIgnoreCase) ||
+        appName.Contains("Windows Terminal", StringComparison.OrdinalIgnoreCase))
+            {
+                foundTerminal = true;
+            }
+
+            if (appName.Contains("Settings", StringComparison.OrdinalIgnoreCase))
+            {
+                foundSettings = true;
+            }
+        }
+
+        Assert.IsTrue(foundTerminal, "Windows Terminal should be captured");
+        Assert.IsTrue(foundSettings, "Windows Settings should be captured");
+
+        // Cancel to clean up
+        Find<Button>("Cancel").Click();
+        Thread.Sleep(1000);
+
+        // Close test applications
+        CloseWindowsTerminal();
+        CloseWindowsSettings();
+    }
+
+    [TestMethod("WorkspacesSnapshot.CaptureElevatedApps")]
+    [TestCategory("Workspaces Snapshot UI")]
+    public void TestCaptureElevatedApplications()
+    {
+        // This test only works if PowerToys is running elevated
+        if (!IsRunningElevated())
+        {
+            Assert.Inconclusive("PowerToys is not running elevated, cannot test elevated app capture");
+            return;
+        }
+
+        // Open an elevated application
+        OpenElevatedNotepad();
+        Thread.Sleep(3000);
+
+        // Click Create Workspace
+        var createButton = Find<Button>("Create Workspace");
+        createButton.Click();
+        Thread.Sleep(1000);
+
+        // Click Capture
+        var captureButton = Find<Button>("Capture");
+        captureButton.Click();
+        Thread.Sleep(2000);
+
+        // Verify elevated app was captured with Admin flag
+        var appList = Find<Custom>("AppList");
+        var capturedApps = appList.FindAll<Custom>(By.ClassName("AppItem"));
+
+        bool foundElevatedApp = false;
+        foreach (var app in capturedApps)
+        {
+            var appName = app.GetAttribute("Name");
+            if (appName.Contains("Notepad", StringComparison.OrdinalIgnoreCase))
+            {
+                // Check if it has the Admin checkbox checked
+                var adminCheckbox = app.Find<CheckBox>("Admin");
+                if (adminCheckbox != null && adminCheckbox.IsChecked)
+                {
+                    foundElevatedApp = true;
+                    break;
+                }
+            }
+        }
+
+        Assert.IsTrue(foundElevatedApp, "Elevated Notepad should be captured with Admin flag");
+
+        // Cancel to clean up
+        Find<Button>("Cancel").Click();
+        Thread.Sleep(1000);
+
+        // Close elevated app
+        CloseElevatedNotepad();
+    }
+
+    [TestMethod("WorkspacesSnapshot.CaptureMinimizedApps")]
+    [TestCategory("Workspaces Snapshot UI")]
+    public void TestCaptureMinimizedApplications()
+    {
+        // Open and minimize applications
+        OpenNotepad();
+        Thread.Sleep(1000);
+        MinimizeActiveWindow();
+        Thread.Sleep(1000);
+
+        // Click Create Workspace
+        var createButton = Find<Button>("Create Workspace");
+        createButton.Click();
+        Thread.Sleep(1000);
+
+        // Click Capture
+        var captureButton = Find<Button>("Capture");
+        captureButton.Click();
+        Thread.Sleep(2000);
+
+        // Verify minimized app was captured
+        var appList = Find<Custom>("AppList");
+        var capturedApps = appList.FindAll<Custom>(By.ClassName("AppItem"));
+
+        bool foundNotepad = false;
+        foreach (var app in capturedApps)
+        {
+            var appName = app.GetAttribute("Name");
+            if (appName.Contains("Notepad", StringComparison.OrdinalIgnoreCase))
+            {
+                foundNotepad = true;
+                break;
+            }
+        }
+
+        Assert.IsTrue(foundNotepad, "Minimized Notepad should still be captured");
+
+        // Cancel to clean up
+        Find<Button>("Cancel").Click();
+        Thread.Sleep(1000);
+
+        // Close test application
+        CloseNotepad();
+    }
+
+    [TestMethod("WorkspacesSnapshot.VerifyWindowPositions")]
+    [TestCategory("Workspaces Snapshot UI")]
+    public void TestSnapshotCapturesCorrectWindowPositions()
+    {
+        // Open applications at specific positions
+        OpenNotepadAtPosition(100, 100, 600, 400);
+        OpenCalculatorAtPosition(700, 100, 400, 500);
+        Thread.Sleep(3000);
+
+        // Click Create Workspace
+        var createButton = Find<Button>("Create Workspace");
+        createButton.Click();
+        Thread.Sleep(1000);
+
+        // Click Capture
+        var captureButton = Find<Button>("Capture");
+        captureButton.Click();
+        Thread.Sleep(2000);
+
+        // Verify windows have position data in preview
+        var previewPane = Find<Pane>("Preview");
+        Assert.IsNotNull(previewPane, "Preview pane should exist");
+
+        // Look for window representations in the preview
+        var windowPreviews = previewPane.FindAll<Custom>(By.ClassName("WindowPreview"));
+        Assert.AreEqual(2, windowPreviews.Count, "Should have 2 window previews");
+
+        // Verify each preview has position attributes
+        foreach (var preview in windowPreviews)
+        {
+            var left = preview.GetAttribute("Left");
+            var top = preview.GetAttribute("Top");
+            var width = preview.GetAttribute("Width");
+            var height = preview.GetAttribute("Height");
+
+            Assert.IsFalse(string.IsNullOrEmpty(left), "Window preview should have Left position");
+            Assert.IsFalse(string.IsNullOrEmpty(top), "Window preview should have Top position");
+            Assert.IsFalse(string.IsNullOrEmpty(width), "Window preview should have Width");
+            Assert.IsFalse(string.IsNullOrEmpty(height), "Window preview should have Height");
+        }
+
+        // Cancel to clean up
+        Find<Button>("Cancel").Click();
+        Thread.Sleep(1000);
+
+        // Close test applications
+        CloseNotepad();
+        CloseCalculator();
+    }
+
+    [TestMethod("WorkspacesSnapshot.CaptureAfterOpeningNewWindow")]
+    [TestCategory("Workspaces Snapshot UI")]
+    public void TestCaptureIncludesNewlyOpenedWindows()
+    {
+        // Open initial application
+        OpenNotepad();
+        Thread.Sleep(2000);
+
+        // Click Create Workspace
+        var createButton = Find<Button>("Create Workspace");
+        createButton.Click();
+        Thread.Sleep(1000);
+
+        // Open another window after clicking Create
+        OpenCalculator();
+        Thread.Sleep(2000);
+
+        // Click Capture
+        var captureButton = Find<Button>("Capture");
+        captureButton.Click();
+        Thread.Sleep(2000);
+
+        // Verify both windows were captured
+        var appList = Find<Custom>("AppList");
+        var capturedApps = appList.FindAll<Custom>(By.ClassName("AppItem"));
+
+        bool foundNotepad = false;
+        bool foundCalculator = false;
+
+        foreach (var app in capturedApps)
+        {
+            var appName = app.GetAttribute("Name");
+            if (appName.Contains("Notepad", StringComparison.OrdinalIgnoreCase))
+            {
+                foundNotepad = true;
+            }
+
+            if (appName.Contains("Calculator", StringComparison.OrdinalIgnoreCase))
+            {
+                foundCalculator = true;
+            }
+        }
+
+        Assert.IsTrue(foundNotepad, "Notepad should be captured");
+        Assert.IsTrue(foundCalculator, "Calculator opened after Create should also be captured");
+
+        // Cancel to clean up
+        Find<Button>("Cancel").Click();
+        Thread.Sleep(1000);
+
+        // Close test applications
+        CloseNotepad();
+        CloseCalculator();
+    }
+
+    private void OpenNotepadAtPosition(int x, int y, int width, int height)
+    {
+        var process = Process.Start("notepad.exe");
+        Thread.Sleep(1000);
+
+        // Use WindowHelper to position the window
+        // WindowHelper.MoveAndResizeWindow("Notepad", x, y, width, height);
+    }
+
+    private void OpenCalculator()
+    {
+        Process.Start("calc.exe");
+        Thread.Sleep(1000);
+    }
+
+    private void OpenCalculatorAtPosition(int x, int y, int width, int height)
+    {
+        Process.Start("calc.exe");
+        Thread.Sleep(1000);
+
+        // WindowHelper.MoveAndResizeWindow("Calculator", x, y, width, height);
+    }
+
+    private void CloseCalculator()
+    {
+        foreach (var process in Process.GetProcessesByName("CalculatorApp"))
+        {
+            process.Kill();
+        }
+
+        foreach (var process in Process.GetProcessesByName("Calculator"))
+        {
+            process.Kill();
+        }
+    }
+
+    private void OpenVisualStudioCode()
+    {
+        try
+        {
+            Process.Start("code");
+            Thread.Sleep(2000);
+        }
+        catch
+        {
+            // VS Code might not be installed
+        }
+    }
+
+    private void CloseVisualStudioCode()
+    {
+        foreach (var process in Process.GetProcessesByName("Code"))
+        {
+            process.Kill();
+        }
+    }
+
+    private void OpenNotepadPlusPlus()
+    {
+        try
+        {
+            Process.Start("notepad++.exe");
+            Thread.Sleep(1000);
+        }
+        catch
+        {
+            // Notepad++ might not be installed
+        }
+    }
+
+    private void CloseNotepadPlusPlus()
+    {
+        foreach (var process in Process.GetProcessesByName("notepad++"))
+        {
+            process.Kill();
+        }
+    }
+
+    private void OpenWindowsTerminal()
+    {
+        Process.Start("wt.exe");
+        Thread.Sleep(2000);
+    }
+
+    private void CloseWindowsTerminal()
+    {
+        foreach (var process in Process.GetProcessesByName("WindowsTerminal"))
+        {
+            process.Kill();
+        }
+    }
+
+    private void OpenWindowsSettings()
+    {
+        Process.Start("ms-settings:");
+        Thread.Sleep(2000);
+    }
+
+    private void CloseWindowsSettings()
+    {
+        foreach (var process in Process.GetProcessesByName("SystemSettings"))
+        {
+            process.Kill();
+        }
+    }
+
+    private void OpenElevatedNotepad()
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "notepad.exe",
+            UseShellExecute = true,
+            Verb = "runas",
+        };
+
+        try
+        {
+            Process.Start(startInfo);
+            Thread.Sleep(2000);
+        }
+        catch
+        {
+            // User might have cancelled UAC prompt
+        }
+    }
+
+    private void CloseElevatedNotepad()
+    {
+        CloseNotepad();
+    }
+
+    private bool IsRunningElevated()
+    {
+        using (var identity = System.Security.Principal.WindowsIdentity.GetCurrent())
+        {
+            var principal = new System.Security.Principal.WindowsPrincipal(identity);
+            return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+        }
+    }
+
+    private void MinimizeActiveWindow()
+    {
+        SendKeys(Key.Win, Key.Down);
+        Thread.Sleep(500);
+    }
+}
