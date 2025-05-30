@@ -14,6 +14,7 @@ public partial class ClipboardThreadQueue : IDisposable
     private readonly Thread _thread;
     private readonly ConcurrentQueue<Action> _taskQueue = new ConcurrentQueue<Action>();
     private readonly AutoResetEvent _taskAvailable = new AutoResetEvent(false);
+    private readonly CancellationTokenSource cancellationToken = new CancellationTokenSource();
 
     public ClipboardThreadQueue()
     {
@@ -24,6 +25,12 @@ public partial class ClipboardThreadQueue : IDisposable
             while (true)
             {
                 _taskAvailable.WaitOne();
+
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 while (_taskQueue.TryDequeue(out var task))
                 {
                     try
@@ -35,6 +42,12 @@ public partial class ClipboardThreadQueue : IDisposable
                         ExtensionHost.LogMessage($"Error executing task in ClipboardThreadQueue: {ex.Message}");
                     }
                 }
+            }
+
+            var hr = NativeMethods.CoUninitialize();
+            if (hr != 0)
+            {
+                ExtensionHost.LogMessage($"CoUninitialize failed with HRESULT: {hr}");
             }
         });
 
@@ -51,6 +64,10 @@ public partial class ClipboardThreadQueue : IDisposable
 
     public void Dispose()
     {
+        cancellationToken.Cancel();
+        _taskAvailable.Set();
+        _thread.Join(); // Wait for the thread to finish processing tasks
+
         _taskAvailable.Dispose();
         GC.SuppressFinalize(this);
     }

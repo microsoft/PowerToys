@@ -103,5 +103,5 @@ public static partial class NativeMethods
     internal static partial void CoInitialize(IntPtr pvReserved);
 
     [LibraryImport("ole32.dll")]
-    internal static partial void CoUninitialize();
+    internal static partial int CoUninitialize();
 }
