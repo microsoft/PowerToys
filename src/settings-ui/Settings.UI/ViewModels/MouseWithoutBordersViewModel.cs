@@ -895,7 +895,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var excludedApps = Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value;
 
-                // We are using a GenericProperty<List<string>> to store the list of excluded app,
                 return excludedApps.Count == 0 ? string.Empty : string.Join('\r', excludedApps);
             }
 

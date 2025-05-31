@@ -433,6 +433,25 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        internal HashSet<string> EasyMouseFullscreenSwitchBlockExcludedApps
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value;
+                }
+            }
+
+            set
+            {
+                lock (_loadingSettingsLock)
+                {
+                    _properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value = value;
+                }
+            }
+        }
+
         internal string Enc(string st, bool dec, DataProtectionScope protectionScope)
         {
             if (st == null || st.Length < 1)

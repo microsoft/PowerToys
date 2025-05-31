@@ -68,18 +68,15 @@ internal static class Event
             Common.PaintCount = 0;
 
             // Check if easy mouse setting is enabled.
-            bool isEasySwitchAllowed = IsSwitchingByMouseEnabled();
+            bool isEasyMouseEnabled = IsSwitchingByMouseEnabled();
 
-            if (isEasySwitchAllowed && DisableEasyMouseWhenForegroundWindowIsFullscreen())
-            {
-                isEasySwitchAllowed = !Common.IsForegroundWindowFullscreen();
-            }
-
-            if (isEasySwitchAllowed && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == Common.WM_MOUSEMOVE)
+            if (isEasyMouseEnabled && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == Common.WM_MOUSEMOVE)
             {
                 Point p = MachineStuff.MoveToMyNeighbourIfNeeded(e.X, e.Y, MachineStuff.desMachineID);
 
-                if (!p.IsEmpty)
+                // Check if easy mouse switches are disabled when an application is running in fullscreen mode,
+                // if they are, check that there is no application running in fullscreen mode before switching.
+                if (!p.IsEmpty && (!DisableEasyMouseWhenForegroundWindowIsFullscreen() || !Common.IsEasyMouseBlockedByFullscreenWindow()))
                 {
                     Common.HasSwitchedMachineSinceLastCopy = true;
 

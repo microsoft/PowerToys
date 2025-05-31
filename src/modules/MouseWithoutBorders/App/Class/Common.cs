@@ -1561,12 +1561,48 @@ namespace MouseWithoutBorders
             }
         }
 
-        internal static bool IsForegroundWindowFullscreen()
+        private static bool IsWindowExcludedFromEasyMouseFullscreenCheck(IntPtr foregroundWindowHandle)
+        {
+            if (NativeMethods.GetWindowThreadProcessId(foregroundWindowHandle, out var processId) == 0)
+            {
+                return false;
+            }
+
+            var processHandle = NativeMethods.OpenProcess(0x1000, false, processId);
+            if (processHandle == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            uint maxPath = 260;
+            var nameBuffer = new char[maxPath];
+            if (!NativeMethods.QueryFullProcessImageName(processHandle, 0, nameBuffer, ref maxPath))
+            {
+                NativeMethods.CloseHandle(processHandle);
+                return false;
+            }
+
+            NativeMethods.CloseHandle(processHandle);
+
+            var name = new string(nameBuffer, 0, (int)maxPath);
+
+            var excludedApps = Setting.Values.EasyMouseFullscreenSwitchBlockExcludedApps;
+            return excludedApps.Contains(Path.GetFileNameWithoutExtension(name)) || excludedApps.Contains(Path.GetFileName(name));
+        }
+
+        internal static bool IsEasyMouseBlockedByFullscreenWindow()
         {
             var shellHandle = NativeMethods.GetShellWindow();
             var desktopHandle = NativeMethods.GetShellWindow();
             var foregroundHandle = NativeMethods.GetForegroundWindow();
+
+            // If the foreground window is either the desktop or the Windows shell, we are not in fullscreen mode.
             if (foregroundHandle.Equals(shellHandle) || foregroundHandle.Equals(desktopHandle))
+            {
+                return false;
+            }
+
+            if (IsWindowExcludedFromEasyMouseFullscreenCheck(foregroundHandle))
             {
                 return false;
             }
