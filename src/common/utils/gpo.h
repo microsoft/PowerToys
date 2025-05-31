@@ -65,6 +65,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerQOIThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_NEWPLUS = L"ConfigureEnabledUtilityNewPlus";
     const std::wstring POLICY_CONFIGURE_ENABLED_WORKSPACES = L"ConfigureEnabledUtilityWorkspaces";
+    const std::wstring POLICY_CONFIGURE_ENABLED_FILE_EXPLORER_PREVIEW = L"ConfigureEnabledUtilityFileExplorerPreview";
 
     // The registry value names for PowerToys installer and update policies.
     const std::wstring POLICY_DISABLE_PER_USER_INSTALLATION = L"PerUserInstallationDisabled";
@@ -305,47 +306,47 @@ namespace powertoys_gpo
 
     inline gpo_rule_configured_t getConfiguredSvgPreviewEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_SVG_PREVIEW);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_SVG_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredMarkdownPreviewEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MARKDOWN_PREVIEW);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_MARKDOWN_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredMonacoPreviewEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MONACO_PREVIEW);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_MONACO_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredPdfPreviewEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_PDF_PREVIEW);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_PDF_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredGcodePreviewEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_GCODE_PREVIEW);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_GCODE_PREVIEW);
     }
 
     inline gpo_rule_configured_t getConfiguredSvgThumbnailsEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_SVG_THUMBNAILS);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_SVG_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredPdfThumbnailsEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_PDF_THUMBNAILS);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_PDF_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredGcodeThumbnailsEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredStlThumbnailsEnabledValue()
     {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_STL_THUMBNAILS);
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_STL_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredHostsFileEditorEnabledValue()
@@ -557,6 +558,10 @@ namespace powertoys_gpo
         return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS);
     }
 
+    inline gpo_rule_configured_t getConfiguredFileExplorerPreviewEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_FILE_EXPLORER_PREVIEW);
+    }
     inline gpo_rule_configured_t getConfiguredMwbClipboardSharingEnabledValue()
     {
         return getConfiguredValue(POLICY_MWB_CLIPBOARD_SHARING_ENABLED);

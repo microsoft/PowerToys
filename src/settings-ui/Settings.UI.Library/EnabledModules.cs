@@ -57,7 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private bool fileExplorerPreview = true;
 
-        [JsonPropertyName("File Explorer Preview")]
+        [JsonPropertyName("File Explorer")]
         public bool PowerPreview
         {
             get => fileExplorerPreview;
