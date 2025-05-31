@@ -117,8 +117,8 @@ public partial class PowerAccent : IDisposable
         if (_settingService.SortByUsageFrequency)
         {
             characters = characters.OrderByDescending(character => _usageInfo.GetUsageFrequency(character))
-                .ThenByDescending(character => _usageInfo.GetLastUsageTimestamp(character)).
-                ToArray<string>();
+                .ThenByDescending(character => _usageInfo.GetLastUsageTimestamp(character))
+                .ToArray<string>();
         }
         else if (!_usageInfo.Empty())
         {
@@ -335,6 +335,14 @@ public partial class PowerAccent : IDisposable
     public Position GetToolbarPosition()
     {
         return _settingService.Position;
+    }
+
+    public void SaveUsageInfo()
+    {
+        if (_settingService.SortByUsageFrequency)
+        {
+            _usageInfo.Save();
+        }
     }
 
     public void Dispose()
