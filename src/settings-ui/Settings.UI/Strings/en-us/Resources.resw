@@ -5039,4 +5039,25 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="Help_hueOklch" xml:space="preserve">
     <value>hue (Oklch)</value>
   </data>
+  <data name="ExitPT_NavViewItem.Content" xml:space="preserve">
+    <value>Exit PowerToys</value>
+  </data>
+  <data name="General_System.Header" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="GeneralPage_ReportBugPackage.Header" xml:space="preserve">
+    <value>Generate bug report package</value>
+  </data>
+  <data name="GeneralPage_ReportBugPackage.Description" xml:space="preserve">
+    <value>Create zip folder with logs on the Desktop</value>
+  </data>
+  <data name="GeneralPageReportBugPackage.Content" xml:space="preserve">
+    <value>Generate package</value>
+  </data>
+  <data name="AppTitleBarShutDown_Tooltip.Text" xml:space="preserve">
+    <value>Shut down</value>
+  </data>
+  <data name="BugReportUnderConstruction" xml:space="preserve">
+    <value>Bug report package is being created</value>
+  </data>
 </root>
