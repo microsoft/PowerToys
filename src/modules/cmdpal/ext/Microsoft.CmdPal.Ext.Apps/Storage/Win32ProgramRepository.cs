@@ -9,12 +9,13 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Win32Program = Microsoft.CmdPal.Ext.Apps.Programs.Win32Program;
 
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
 
-internal sealed class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository
+internal sealed partial class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository
 {
     private static readonly IFileSystem FileSystem = new FileSystem();
     private static readonly IPath Path = FileSystem.Path;
@@ -132,8 +133,9 @@ internal sealed class Win32ProgramRepository : ListRepository<Programs.Win32Prog
                 oldApp = Win32Program.GetAppFromPath(oldPath);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex.Message);
         }
 
         // To remove the old app which has been renamed and to add the new application.
@@ -192,8 +194,9 @@ internal sealed class Win32ProgramRepository : ListRepository<Programs.Win32Prog
                 app = Programs.Win32Program.GetAppFromPath(path);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.LogError(ex.Message);
         }
 
         if (app != null)

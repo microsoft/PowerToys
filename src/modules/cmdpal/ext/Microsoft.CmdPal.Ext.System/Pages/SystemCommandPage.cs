@@ -10,12 +10,12 @@ namespace Microsoft.CmdPal.Ext.System.Pages;
 
 public sealed partial class SystemCommandPage : ListPage
 {
-    private SettingsManager _settingsManager;
+    private readonly SettingsManager _settingsManager;
 
     public SystemCommandPage(SettingsManager settingsManager)
     {
-        Title = Resources.Microsoft_plugin_ext_system_page_name;
-        Name = Resources.Microsoft_plugin_ext_system_page_name;
+        Title = Resources.Microsoft_plugin_ext_system_page_title;
+        Name = Resources.Microsoft_plugin_command_name_open;
         Icon = IconHelpers.FromRelativePath("Assets\\SystemCommand.svg");
         _settingsManager = settingsManager;
         ShowDetails = true;

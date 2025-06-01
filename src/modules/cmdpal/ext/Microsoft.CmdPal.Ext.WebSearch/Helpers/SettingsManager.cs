@@ -80,7 +80,7 @@ public class SettingsManager : JsonSettingsManager
             if (File.Exists(_historyPath))
             {
                 var existingContent = File.ReadAllText(_historyPath);
-                historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(existingContent) ?? [];
+                historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(existingContent, WebSearchJsonSerializationContext.Default.ListHistoryItem) ?? [];
             }
             else
             {
@@ -101,7 +101,7 @@ public class SettingsManager : JsonSettingsManager
             }
 
             // Serialize the updated list back to JSON and save it
-            var historyJson = JsonSerializer.Serialize(historyItems);
+            var historyJson = JsonSerializer.Serialize(historyItems, WebSearchJsonSerializationContext.Default.ListHistoryItem);
             File.WriteAllText(_historyPath, historyJson);
         }
         catch (Exception ex)
@@ -121,7 +121,7 @@ public class SettingsManager : JsonSettingsManager
 
             // Read and deserialize JSON into a list of HistoryItem objects
             var fileContent = File.ReadAllText(_historyPath);
-            var historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(fileContent) ?? [];
+            var historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(fileContent, WebSearchJsonSerializationContext.Default.ListHistoryItem) ?? [];
 
             // Convert each HistoryItem to a ListItem
             var listItems = new List<ListItem>();
@@ -198,7 +198,7 @@ public class SettingsManager : JsonSettingsManager
                 if (File.Exists(_historyPath))
                 {
                     var existingContent = File.ReadAllText(_historyPath);
-                    var historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(existingContent) ?? [];
+                    var historyItems = JsonSerializer.Deserialize<List<HistoryItem>>(existingContent, WebSearchJsonSerializationContext.Default.ListHistoryItem) ?? [];
 
                     // Check if trimming is needed
                     if (historyItems.Count > maxHistoryItems)
@@ -207,7 +207,7 @@ public class SettingsManager : JsonSettingsManager
                         historyItems = historyItems.Skip(historyItems.Count - maxHistoryItems).ToList();
 
                         // Save the trimmed history back to the file
-                        var trimmedHistoryJson = JsonSerializer.Serialize(historyItems);
+                        var trimmedHistoryJson = JsonSerializer.Serialize(historyItems, WebSearchJsonSerializationContext.Default.ListHistoryItem);
                         File.WriteAllText(_historyPath, trimmedHistoryJson);
                     }
                 }

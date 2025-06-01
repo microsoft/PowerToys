@@ -15,6 +15,12 @@
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+    <SignAssembly>true</SignAssembly>
+    <DelaySign>true</DelaySign>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)..\..\..\..\..\.pipelines\272MSSharedLibSN2048.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
   <PropertyGroup>
     <CsWinRTIncludes>Microsoft.CommandPalette.Extensions</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
@@ -51,6 +57,6 @@
     <PublishAot>True</PublishAot>
 
     <!-- Suppress DynamicallyAccessedMemberTypes.PublicParameterlessConstructor in fallback code path of Windows SDK projection -->
-    <WarningsNotAsErrors>IL2081</WarningsNotAsErrors>
+    <WarningsNotAsErrors>IL2081;$(WarningsNotAsErrors)</WarningsNotAsErrors>
   </PropertyGroup>
 </Project>

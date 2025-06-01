@@ -12,7 +12,7 @@ using Microsoft.CmdPal.Ext.Apps.Utils;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-public sealed class AppCache : IDisposable
+public sealed partial class AppCache : IDisposable
 {
     private Win32ProgramFileSystemWatchers _win32ProgramRepositoryHelper;
 

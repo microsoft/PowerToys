@@ -75,11 +75,11 @@ public class SettingsManager : JsonSettingsManager
         Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
         _firstDayOfWeekChoices);
 
-    private readonly ToggleSetting _onlyDateTimeNowGlobal = new(
-        Namespaced(nameof(OnlyDateTimeNowGlobal)),
-        Resources.Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal,
-        Resources.Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description,
-        true); // TODO -- double check default value
+    private readonly ToggleSetting _enableFallbackItems = new(
+        Namespaced(nameof(EnableFallbackItems)),
+        Resources.Microsoft_plugin_timedate_SettingEnableFallbackItems,
+        Resources.Microsoft_plugin_timedate_SettingEnableFallbackItems_Description,
+        true);
 
     private readonly ToggleSetting _timeWithSeconds = new(
         Namespaced(nameof(TimeWithSecond)),
@@ -92,12 +92,6 @@ public class SettingsManager : JsonSettingsManager
         Resources.Microsoft_plugin_timedate_SettingDateWithWeekday,
         Resources.Microsoft_plugin_timedate_SettingDateWithWeekday_Description,
         false); // TODO -- double check default value
-
-    private readonly ToggleSetting _hideNumberMessageOnGlobalQuery = new(
-        Namespaced(nameof(HideNumberMessageOnGlobalQuery)),
-        Resources.Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery,
-        Resources.Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery,
-        true); // TODO -- double check default value
 
     private readonly TextSetting _customFormats = new(
         Namespaced(nameof(CustomFormats)),
@@ -145,13 +139,11 @@ public class SettingsManager : JsonSettingsManager
         }
     }
 
-    public bool OnlyDateTimeNowGlobal => _onlyDateTimeNowGlobal.Value;
+    public bool EnableFallbackItems => _enableFallbackItems.Value;
 
     public bool TimeWithSecond => _timeWithSeconds.Value;
 
     public bool DateWithWeekday => _dateWithWeekday.Value;
-
-    public bool HideNumberMessageOnGlobalQuery => _hideNumberMessageOnGlobalQuery.Value;
 
     public List<string> CustomFormats => _customFormats.Value.Split(TEXTBOXNEWLINE).ToList();
 
@@ -168,10 +160,7 @@ public class SettingsManager : JsonSettingsManager
     {
         FilePath = SettingsJsonPath();
 
-        /* The following two settings make no sense with current CmdPal behavior.
-        Settings.Add(_onlyDateTimeNowGlobal);
-        Settings.Add(_hideNumberMessageOnGlobalQuery); */
-
+        Settings.Add(_enableFallbackItems);
         Settings.Add(_timeWithSeconds);
         Settings.Add(_dateWithWeekday);
         Settings.Add(_firstWeekOfYear);

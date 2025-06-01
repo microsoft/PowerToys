@@ -14,7 +14,7 @@ public partial class SystemCommandExtensionProvider : CommandProvider
     private readonly ICommandItem[] _commands;
     private static readonly SettingsManager _settingsManager = new();
     public static readonly SystemCommandPage Page = new(_settingsManager);
-    private readonly FallbackSystemCommandItem _fallbackFileItem = new(_settingsManager);
+    private readonly FallbackSystemCommandItem _fallbackSystemItem = new(_settingsManager);
 
     public SystemCommandExtensionProvider()
     {
@@ -23,7 +23,7 @@ public partial class SystemCommandExtensionProvider : CommandProvider
         _commands = [
             new CommandItem(Page)
             {
-                Title = Resources.Microsoft_plugin_ext_system_page_name,
+                Title = Resources.Microsoft_plugin_ext_system_page_title,
                 Icon = Page.Icon,
                 MoreCommands = [new CommandContextItem(_settingsManager.Settings.SettingsPage)],
             },
@@ -38,5 +38,5 @@ public partial class SystemCommandExtensionProvider : CommandProvider
         return _commands;
     }
 
-    public override IFallbackCommandItem[] FallbackCommands() => [_fallbackFileItem];
+    public override IFallbackCommandItem[] FallbackCommands() => [_fallbackSystemItem];
 }

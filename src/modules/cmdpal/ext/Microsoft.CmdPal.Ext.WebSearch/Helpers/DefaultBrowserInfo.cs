@@ -5,6 +5,7 @@
 using System;
 using System.Text;
 using System.Threading;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Helpers;
 
@@ -170,6 +171,7 @@ public static class DefaultBrowserInfo
                 if (!_errorLogged)
                 {
                     // Log.Exception("Exception when retrieving browser path/name. Path and Name are set to use Microsoft Edge.", e, typeof(DefaultBrowserInfo));
+                    Logger.LogError("Exception when retrieving browser path/name. Path and Name are set to use Microsoft Edge.");
                     _errorLogged = true;
                 }
             }

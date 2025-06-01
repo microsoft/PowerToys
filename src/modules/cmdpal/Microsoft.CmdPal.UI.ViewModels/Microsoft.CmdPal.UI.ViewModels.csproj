@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -66,5 +68,16 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <!-- Just mark it as AOT compatible. Do not publish with AOT now. We need fully test before we really publish it as AOT enabled-->
+  <!--<PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishSingleFile>true</PublishSingleFile>
+    --><!-- <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling> --><!--
+    <PublishAot>true</PublishAot>
+	<EnableMsixTooling>true</EnableMsixTooling>
+  </PropertyGroup>-->
 
 </Project>

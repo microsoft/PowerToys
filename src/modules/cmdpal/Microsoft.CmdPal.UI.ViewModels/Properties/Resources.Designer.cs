@@ -178,7 +178,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extension name is required, without spaces.
+        ///   Looks up a localized string similar to Extension name is required and must be a valid C# identifier (start with a letter or underscore, followed by letters, numbers, or underscores).
         /// </summary>
         public static string builtin_create_extension_name_required {
             get {

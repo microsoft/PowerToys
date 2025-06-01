@@ -167,7 +167,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
                     Commands.ForEach(contextItem =>
                     {
-                        contextItem.InitializeProperties();
+                        contextItem.SlowInitializeProperties();
                     });
                 }
                 else

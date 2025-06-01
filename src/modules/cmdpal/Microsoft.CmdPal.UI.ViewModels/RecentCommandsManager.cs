@@ -10,7 +10,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class RecentCommandsManager : ObservableObject
 {
     [JsonInclude]
-    private List<HistoryItem> History { get; set; } = [];
+    internal List<HistoryItem> History { get; set; } = [];
 
     public RecentCommandsManager()
     {

@@ -34,7 +34,7 @@ internal sealed partial class AddBookmarkForm : FormContent
             "style": "text",
             "id": "name",
             "label": "{{Resources.bookmarks_form_name_label}}",
-            "value": {{JsonSerializer.Serialize(name)}},
+            "value": {{JsonSerializer.Serialize(name, BookmarkSerializationContext.Default.String)}},
             "isRequired": true,
             "errorMessage": "{{Resources.bookmarks_form_name_required}}"
         },
@@ -42,7 +42,7 @@ internal sealed partial class AddBookmarkForm : FormContent
             "type": "Input.Text",
             "style": "text",
             "id": "bookmark",
-            "value": {{JsonSerializer.Serialize(url)}},
+            "value": {{JsonSerializer.Serialize(url, BookmarkSerializationContext.Default.String)}},
             "label": "{{Resources.bookmarks_form_bookmark_label}}",
             "isRequired": true,
             "errorMessage": "{{Resources.bookmarks_form_bookmark_required}}"

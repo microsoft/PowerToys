@@ -25,7 +25,7 @@ steps:
   fetchDepth: 1 # Don't need a deep checkout for loc files!
   persistCredentials: true
 
-- task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@3
+- task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@5
   displayName: 'Touchdown Build - 37400, PRODEXT'
   inputs:
     teamId: 37400

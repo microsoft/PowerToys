@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "AppUtils.h"
+#include "SteamHelper.h"
 
 #include <atlbase.h>
 #include <propvarutil.h>
@@ -34,6 +35,8 @@ namespace Utils
 
             constexpr const wchar_t* EdgeFilename = L"msedge.exe";
             constexpr const wchar_t* ChromeFilename = L"chrome.exe";
+
+            constexpr const wchar_t* SteamUrlProtocol = L"steam:";
         }
 
         AppList IterateAppsFolder()
@@ -138,6 +141,34 @@ namespace Utils
                                 else if (prop == NonLocalizable::PackageInstallPathProp || prop == NonLocalizable::InstallPathProp)
                                 {
                                     data.installPath = propVariantString.m_pData;
+
+                                    if (!data.installPath.empty())
+                                    {
+                                        const bool isSteamProtocol = data.installPath.rfind(NonLocalizable::SteamUrlProtocol, 0) == 0;
+
+                                        if (isSteamProtocol)
+                                        {
+                                            Logger::info(L"Found steam game: protocol path: {}", data.installPath);
+                                            data.protocolPath = data.installPath;
+
+                                            try
+                                            {
+                                                auto gameId = Steam::GetGameIdFromUrlProtocolPath(data.installPath);
+                                                auto gameFolder = Steam::GetSteamGameInfoFromAcfFile(gameId);
+
+                                                if (gameFolder)
+                                                {
+                                                    data.installPath = gameFolder->gameInstallationPath;
+                                                    Logger::info(L"Found steam game: physical path: {}", data.installPath);
+                                                }
+                                            }
+                                            catch (std::exception ex)
+                                            {
+                                                Logger::error(L"Failed to get installPath for game {}", data.installPath);
+                                                Logger::error("Error: {}", ex.what());
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -396,6 +427,11 @@ namespace Utils
         bool AppData::IsChrome() const
         {
             return installPath.ends_with(NonLocalizable::ChromeFilename);
+        }
+
+        bool AppData::IsSteamGame() const
+        {
+            return protocolPath.rfind(NonLocalizable::SteamUrlProtocol, 0) == 0;
         }
     }
 }

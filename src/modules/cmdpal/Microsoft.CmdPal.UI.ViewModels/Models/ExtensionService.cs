@@ -11,7 +11,7 @@ using Windows.Foundation.Collections;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
-public class ExtensionService : IExtensionService, IDisposable
+public partial class ExtensionService : IExtensionService, IDisposable
 {
     public event TypedEventHandler<IExtensionService, IEnumerable<IExtensionWrapper>>? OnExtensionAdded;
 

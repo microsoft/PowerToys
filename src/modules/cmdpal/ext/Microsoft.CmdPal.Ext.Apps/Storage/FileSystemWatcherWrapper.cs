@@ -8,7 +8,7 @@ using System.IO;
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
 
 // File System Watcher Wrapper class which implements the IFileSystemWatcherWrapper interface
-public sealed class FileSystemWatcherWrapper : FileSystemWatcher, IFileSystemWatcherWrapper
+public sealed partial class FileSystemWatcherWrapper : FileSystemWatcher, IFileSystemWatcherWrapper
 {
     public FileSystemWatcherWrapper()
     {

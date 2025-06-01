@@ -4,7 +4,6 @@
 
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using CommunityToolkit.Common;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -111,8 +110,9 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
                     _ = Task.Factory.StartNew(
                         () =>
                         {
-                            var result = (bool)viewModel.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
-
+                            // bool f = await viewModel.InitializeCommand.ExecutionTask.;
+                            // var result = viewModel.InitializeCommand.ExecutionTask.GetResultOrDefault()!;
+                            // var result = viewModel.InitializeCommand.ExecutionTask.GetResultOrDefault<bool?>()!;
                             CurrentPage = viewModel; // result ? viewModel : null;
                             ////LoadedState = result ? ViewModelLoadedState.Loaded : ViewModelLoadedState.Error;
                         },

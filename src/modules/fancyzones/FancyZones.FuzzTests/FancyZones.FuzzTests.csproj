@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+	<!-- Look at Directory.Build.props in root for common stuff as well -->
+	<Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="..\..\..\Common.Dotnet.FuzzTest.props" />
+	
+	<PropertyGroup>
+		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\FancyZones.FuzzTests\</OutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Include="..\editor\FancyZonesEditor\Utils\ParsingResult.cs" Link="ParsingResult.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Data\CustomLayouts.cs" Link="CustomLayouts.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Data\EditorData`1.cs" Link="EditorData`1.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Data\LayoutDefaultSettings.cs" Link="LayoutDefaultSettings.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Utils\DashCaseNamingPolicy.cs" Link="DashCaseNamingPolicy.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Utils\IOUtils.cs" Link="IOUtils.cs" />
+		<Compile Include="..\FancyZonesEditorCommon\Utils\StringUtils.cs" Link="StringUtils.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MSTest" />
+		<PackageReference Include="System.IO.Abstractions" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="OneFuzzConfig.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	
+</Project>

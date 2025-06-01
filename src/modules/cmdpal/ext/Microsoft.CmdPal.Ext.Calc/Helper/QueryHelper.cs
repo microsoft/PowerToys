@@ -23,6 +23,9 @@ public static partial class QueryHelper
         CultureInfo inputCulture = settings.InputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
         CultureInfo outputCulture = settings.OutputUseEnglishFormat ? new CultureInfo("en-us") : CultureInfo.CurrentCulture;
 
+        // In case the user pastes a query with a leading =
+        query = query.TrimStart('=');
+
         // Happens if the user has only typed the action key so far
         if (string.IsNullOrEmpty(query))
         {
@@ -31,6 +34,11 @@ public static partial class QueryHelper
 
         NumberTranslator translator = NumberTranslator.Create(inputCulture, new CultureInfo("en-US"));
         var input = translator.Translate(query.Normalize(NormalizationForm.FormKC));
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return ErrorHandler.OnError(isFallbackSearch, query, Properties.Resources.calculator_expression_empty);
+        }
 
         if (!CalculateHelper.InputValid(input))
         {

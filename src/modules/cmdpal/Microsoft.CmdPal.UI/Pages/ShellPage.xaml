@@ -356,9 +356,8 @@
 
                         <cpcontrols:IconBox
                             x:Name="HeroImageBorder"
-                            MinWidth="64"
-                            MinHeight="64"
-                            MaxHeight="96"
+                            Width="64"
+                            Margin="16,8,16,16"
                             HorizontalAlignment="Center"
                             AutomationProperties.AccessibilityView="Raw"
                             SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
@@ -368,8 +367,10 @@
                         <TextBlock
                             Grid.Row="1"
                             HorizontalAlignment="Center"
-                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            FontSize="18"
+                            FontWeight="SemiBold"
                             Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
+                            TextAlignment="Center"
                             TextWrapping="WrapWholeWords"
                             Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 

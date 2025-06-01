@@ -36,6 +36,7 @@ internal sealed class ContextMenuHelper
             contextMenu.Add(new CommandContextItem(new KillProcessCommand(windowData))
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.Delete, 0),
+                IsCritical = true,
             });
         }
 

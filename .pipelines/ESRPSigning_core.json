@@ -220,6 +220,7 @@
                 "WinUI3Apps\\PowerToys.Settings.exe",
 
                 "PowerToys.CmdPalModuleInterface.dll",
+                "CmdPalKeyboardService.dll",
                 "*Microsoft.CmdPal.UI_*.msix"
             ],
             "SigningInfo": {
@@ -330,6 +331,8 @@
                 "TestableIO.System.IO.Abstractions.Wrappers.dll",
                 "WinUI3Apps\\TestableIO.System.IO.Abstractions.Wrappers.dll",
                 "WinUI3Apps\\OpenAI.dll",
+                "Testably.Abstractions.FileSystem.Interface.dll",
+                "WinUI3Apps\\Testably.Abstractions.FileSystem.Interface.dll",
                 "ColorCode.Core.dll", 
                 "ColorCode.UWP.dll",
                 "UnitsNet.dll",

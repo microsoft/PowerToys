@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CommandPalette.Extensions;
@@ -97,8 +98,7 @@ public partial class BookmarksCommandProvider : CommandProvider
         }
         catch (Exception ex)
         {
-            // debug log error
-            Debug.WriteLine($"Error loading commands: {ex.Message}");
+            Logger.LogError(ex.Message);
         }
 
         if (_bookmarks == null)

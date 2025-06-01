@@ -13,12 +13,13 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
 {
     public CreatedExtensionForm(string name, string displayName, string path)
     {
+        var serializeString = (string? s) => JsonSerializer.Serialize(s, JsonSerializationContext.Default.String);
         TemplateJson = CardTemplate;
         DataJson = $$"""
 {
-    "name": {{JsonSerializer.Serialize(name)}},
-    "directory": {{JsonSerializer.Serialize(path)}},
-    "displayName": {{JsonSerializer.Serialize(displayName)}}
+    "name": {{serializeString(name)}},
+    "directory": {{serializeString(path)}},
+    "displayName": {{serializeString(displayName)}}
 }
 """;
         _name = name;
@@ -28,13 +29,13 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
 
     public override ICommandResult SubmitForm(string inputs, string data)
     {
-        JsonObject? dataInput = JsonNode.Parse(data)?.AsObject();
+        var dataInput = JsonNode.Parse(data)?.AsObject();
         if (dataInput == null)
         {
             return CommandResult.KeepOpen();
         }
 
-        string verb = dataInput["x"]?.AsValue()?.ToString() ?? string.Empty;
+        var verb = dataInput["x"]?.AsValue()?.ToString() ?? string.Empty;
         return verb switch
         {
             "sln" => OpenSolution(),
@@ -47,7 +48,7 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
     private ICommandResult OpenSolution()
     {
         string[] parts = [_path, _name, $"{_name}.sln"];
-        string pathToSolution = Path.Combine(parts);
+        var pathToSolution = Path.Combine(parts);
         ShellHelpers.OpenInShell(pathToSolution);
         return CommandResult.Hide();
     }
@@ -55,7 +56,7 @@ internal sealed partial class CreatedExtensionForm : NewExtensionFormBase
     private ICommandResult OpenDirectory()
     {
         string[] parts = [_path, _name];
-        string pathToDir = Path.Combine(parts);
+        var pathToDir = Path.Combine(parts);
         ShellHelpers.OpenInShell(pathToDir);
         return CommandResult.Hide();
     }

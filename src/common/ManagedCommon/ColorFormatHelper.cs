@@ -142,6 +142,40 @@ namespace ManagedCommon
         }
 
         /// <summary>
+        /// Convert a given <see cref="Color"/> to a Oklab color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>The perceptual lightness [0..1] and two chromaticities [-0.5..0.5]</returns>
+        public static (double Lightness, double ChromaticityA, double ChromaticityB) ConvertToOklabColor(Color color)
+        {
+            var linear = ConvertSRGBToLinearRGB(color.R / 255d, color.G / 255d, color.B / 255d);
+            var oklab = GetOklabColorFromLinearRGB(linear.R, linear.G, linear.B);
+            return oklab;
+        }
+
+        /// <summary>
+        /// Convert a given <see cref="Color"/> to a Oklch color
+        /// </summary>
+        /// <param name="color">The <see cref="Color"/> to convert</param>
+        /// <returns>The perceptual lightness [0..1], the chroma [0..0.5], and the hue angle [0°..360°]</returns>
+        public static (double Lightness, double Chroma, double Hue) ConvertToOklchColor(Color color)
+        {
+            var oklab = ConvertToOklabColor(color);
+            var oklch = GetOklchColorFromOklab(oklab.Lightness, oklab.ChromaticityA, oklab.ChromaticityB);
+
+            return oklch;
+        }
+
+        public static (double R, double G, double B) ConvertSRGBToLinearRGB(double r, double g, double b)
+        {
+            // inverse companding, gamma correction must be undone
+            double rLinear = (r > 0.04045) ? Math.Pow((r + 0.055) / 1.055, 2.4) : (r / 12.92);
+            double gLinear = (g > 0.04045) ? Math.Pow((g + 0.055) / 1.055, 2.4) : (g / 12.92);
+            double bLinear = (b > 0.04045) ? Math.Pow((b + 0.055) / 1.055, 2.4) : (b / 12.92);
+            return (rLinear, gLinear, bLinear);
+        }
+
+        /// <summary>
         /// Convert a given <see cref="Color"/> to a CIE XYZ color (XYZ)
         /// The constants of the formula matches this Wikipedia page, but at a higher precision:
         /// https://en.wikipedia.org/wiki/SRGB#The_reverse_transformation_(sRGB_to_CIE_XYZ)
@@ -156,10 +190,7 @@ namespace ManagedCommon
             double g = color.G / 255d;
             double b = color.B / 255d;
 
-            // inverse companding, gamma correction must be undone
-            double rLinear = (r > 0.04045) ? Math.Pow((r + 0.055) / 1.055, 2.4) : (r / 12.92);
-            double gLinear = (g > 0.04045) ? Math.Pow((g + 0.055) / 1.055, 2.4) : (g / 12.92);
-            double bLinear = (b > 0.04045) ? Math.Pow((b + 0.055) / 1.055, 2.4) : (b / 12.92);
+            (double rLinear, double gLinear, double bLinear) = ConvertSRGBToLinearRGB(r, g, b);
 
             return (
                 (rLinear * 0.41239079926595948) + (gLinear * 0.35758433938387796) + (bLinear * 0.18048078840183429),
@@ -208,6 +239,63 @@ namespace ManagedCommon
             double b = 200 * (fy - fz);
 
             return (l, a, b);
+        }
+
+        /// <summary>
+        /// Convert a linear RGB color <see cref="double"/> to an Oklab color.
+        /// The constants of this formula come from https://github.com/Evercoder/culori/blob/2bedb8f0507116e75f844a705d0b45cf279b15d0/src/oklab/convertLrgbToOklab.js
+        /// and the implementation is based on https://bottosson.github.io/posts/oklab/
+        /// </summary>
+        /// <param name="r">Linear R value</param>
+        /// <param name="g">Linear G value</param>
+        /// <param name="b">Linear B value</param>
+        /// <returns>The perceptual lightness [0..1] and two chromaticities [-0.5..0.5]</returns>
+        private static (double Lightness, double ChromaticityA, double ChromaticityB)
+            GetOklabColorFromLinearRGB(double r, double g, double b)
+        {
+            double l = (0.41222147079999993 * r) + (0.5363325363 * g) + (0.0514459929 * b);
+            double m = (0.2119034981999999 * r) + (0.6806995450999999 * g) + (0.1073969566 * b);
+            double s = (0.08830246189999998 * r) + (0.2817188376 * g) + (0.6299787005000002 * b);
+
+            double l_ = Math.Cbrt(l);
+            double m_ = Math.Cbrt(m);
+            double s_ = Math.Cbrt(s);
+
+            return (
+                (0.2104542553 * l_) + (0.793617785 * m_) - (0.0040720468 * s_),
+                (1.9779984951 * l_) - (2.428592205 * m_) + (0.4505937099 * s_),
+                (0.0259040371 * l_) + (0.7827717662 * m_) - (0.808675766 * s_)
+            );
+        }
+
+        /// <summary>
+        /// Convert an Oklab color <see cref="double"/> from Cartesian form to its polar form Oklch
+        /// https://bottosson.github.io/posts/oklab/#the-oklab-color-space
+        /// </summary>
+        /// <param name="lightness">The <see cref="lightness"/></param>
+        /// <param name="chromaticity_a">The <see cref="chromaticity_a"/></param>
+        /// <param name="chromaticity_b">The <see cref="chromaticity_b"/></param>
+        /// <returns>The perceptual lightness [0..1], the chroma [0..0.5], and the hue angle [0°..360°]</returns>
+        private static (double Lightness, double Chroma, double Hue)
+            GetOklchColorFromOklab(double lightness, double chromaticity_a, double chromaticity_b)
+        {
+            return GetLCHColorFromLAB(lightness, chromaticity_a, chromaticity_b);
+        }
+
+        /// <summary>
+        /// Convert a color in Cartesian form (Lab) to its polar form (LCh)
+        /// </summary>
+        /// <param name="lightness">The <see cref="lightness"/></param>
+        /// <param name="chromaticity_a">The <see cref="chromaticity_a"/></param>
+        /// <param name="chromaticity_b">The <see cref="chromaticity_b"/></param>
+        /// <returns>The lightness, chroma, and hue angle</returns>
+        private static (double Lightness, double Chroma, double Hue)
+            GetLCHColorFromLAB(double lightness, double chromaticity_a, double chromaticity_b)
+        {
+            // Lab to LCh transformation
+            double chroma = Math.Sqrt(Math.Pow(chromaticity_a, 2) + Math.Pow(chromaticity_b, 2));
+            double hue = Math.Round(chroma, 3) == 0 ? 0.0 : ((Math.Atan2(chromaticity_b, chromaticity_a) * 180d / Math.PI) + 360d) % 360d;
+            return (lightness, chroma, hue);
         }
 
         /// <summary>
@@ -276,12 +364,17 @@ namespace ManagedCommon
             { "Br", 'p' },   // brightness       percent
             { "In", 'p' },   // intensity        percent
             { "Ll", 'p' },   // lightness (HSL)  percent
-            { "Lc", 'p' },   // lightness(CIELAB)percent
             { "Va", 'p' },   // value            percent
             { "Wh", 'p' },   // whiteness        percent
             { "Bn", 'p' },   // blackness        percent
-            { "Ca", 'p' },   // chromaticityA    percent
-            { "Cb", 'p' },   // chromaticityB    percent
+            { "Lc", 'p' },   // lightness (CIE)         percent
+            { "Ca", 'p' },   // chromaticityA (CIELAB)  percent
+            { "Cb", 'p' },   // chromaticityB (CIELAB)  percent
+            { "Lo", 'p' },   // lightness (Oklab/Oklch) percent
+            { "Oa", 'p' },   // chromaticityA (Oklab)   percent
+            { "Ob", 'p' },   // chromaticityB (Oklab)   percent
+            { "Oc", 'p' },   // chroma (Oklch)          percent
+            { "Oh", 'p' },   // hue angle (Oklch)       percent
             { "Xv", 'i' },   // X value          int
             { "Yv", 'i' },   // Y value          int
             { "Zv", 'i' },   // Z value          int
@@ -424,6 +517,10 @@ namespace ManagedCommon
                     var (lightnessC, _, _) = ConvertToCIELABColor(color);
                     lightnessC = Math.Round(lightnessC, 2);
                     return lightnessC.ToString(CultureInfo.InvariantCulture);
+                case "Lo":
+                    var (lightnessO, _, _) = ConvertToOklabColor(color);
+                    lightnessO = Math.Round(lightnessO, 2);
+                    return lightnessO.ToString(CultureInfo.InvariantCulture);
                 case "Wh":
                     var (_, whiteness, _) = ConvertToHWBColor(color);
                     whiteness = Math.Round(whiteness * 100);
@@ -440,6 +537,22 @@ namespace ManagedCommon
                     var (_, _, chromaticityB) = ConvertToCIELABColor(color);
                     chromaticityB = Math.Round(chromaticityB, 2);
                     return chromaticityB.ToString(CultureInfo.InvariantCulture);
+                case "Oa":
+                    var (_, chromaticityAOklab, _) = ConvertToOklabColor(color);
+                    chromaticityAOklab = Math.Round(chromaticityAOklab, 2);
+                    return chromaticityAOklab.ToString(CultureInfo.InvariantCulture);
+                case "Ob":
+                    var (_, _, chromaticityBOklab) = ConvertToOklabColor(color);
+                    chromaticityBOklab = Math.Round(chromaticityBOklab, 2);
+                    return chromaticityBOklab.ToString(CultureInfo.InvariantCulture);
+                case "Oc":
+                    var (_, chromaOklch, _) = ConvertToOklchColor(color);
+                    chromaOklch = Math.Round(chromaOklch, 2);
+                    return chromaOklch.ToString(CultureInfo.InvariantCulture);
+                case "Oh":
+                    var (_, _, hueOklch) = ConvertToOklchColor(color);
+                    hueOklch = Math.Round(hueOklch, 2);
+                    return hueOklch.ToString(CultureInfo.InvariantCulture);
                 case "Xv":
                     var (x, _, _) = ConvertToCIEXYZColor(color);
                     x = Math.Round(x * 100, 4);
@@ -495,8 +608,10 @@ namespace ManagedCommon
                 case "HSI": return "hsi(%Hu, %Si%, %In%)";
                 case "HWB": return "hwb(%Hu, %Wh%, %Bn%)";
                 case "NCol": return "%Hn, %Wh%, %Bn%";
-                case "CIELAB": return "CIELab(%Lc, %Ca, %Cb)";
                 case "CIEXYZ": return "XYZ(%Xv, %Yv, %Zv)";
+                case "CIELAB": return "CIELab(%Lc, %Ca, %Cb)";
+                case "Oklab": return "oklab(%Lo, %Oa, %Ob)";
+                case "Oklch": return "oklch(%Lo, %Oc, %Oh)";
                 case "VEC4": return "(%Reff, %Grff, %Blff, 1f)";
                 case "Decimal": return "%Dv";
                 case "HEX Int": return "0xFF%ReX%GrX%BlX";

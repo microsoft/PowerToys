@@ -1,0 +1,17 @@
+variables:
+  # If we are building a branch called "stable*", hide the NuGet suffix.
+  # If we don't do that, XES will set the suffix to "stable".
+  # main is special, however. XES ignores main. Since we never produce actual
+  # shipping builds from main, we want to force it to have a beta label.
+  #
+  # In effect:
+  # BRANCH / BRANDING | Version                    |
+  # ------------------|----------------------------|
+  # stable            | 0.2.250512001              |
+  # main              | 0.2.250512001-experimental |
+  # all others        | 0.2.250512001-branch       |
+  ${{ if startsWith(variables['Build.SourceBranchName'], 'stable') }}:
+    NoNuGetPackBetaVersion: true
+  ${{ elseif eq(variables['Build.SourceBranchName'], 'main') }}:
+    NuGetPackBetaVersion: experimental
+

@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using ManagedCommon;
 using Windows.Foundation.Metadata;
 using Package = Windows.ApplicationModel.Package;
 

@@ -187,8 +187,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
                     WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
 
-                    WeakReferenceMessenger.Default.Send<UpdateItemKeybindingsMessage>(new(null));
-
                     var isMainPage = command is MainListPage;
 
                     // Construct our ViewModel of the appropriate type and pass it the UI Thread context.
@@ -420,16 +418,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         _ = DispatcherQueue.TryEnqueue(() =>
         {
-            // Also hide our details pane about here, if we had one
-            HideDetails();
-
-            if (_settingsWindow == null)
-            {
-                _settingsWindow = new SettingsWindow();
-            }
-
-            _settingsWindow.Activate();
+            OpenSettings();
         });
+    }
+
+    public void OpenSettings()
+    {
+        if (_settingsWindow == null)
+        {
+            _settingsWindow = new SettingsWindow();
+        }
+
+        _settingsWindow.Activate();
     }
 
     public void Receive(ShowDetailsMessage message)

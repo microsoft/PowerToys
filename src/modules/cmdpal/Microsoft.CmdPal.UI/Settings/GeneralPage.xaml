@@ -48,6 +48,9 @@
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_IgnoreShortcutWhenFullscreen_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
+                        <ToggleSwitch IsOn="{x:Bind viewModel.IgnoreShortcutWhenFullscreen, Mode=TwoWay}" />
+                    </controls:SettingsCard>
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_GoHome_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE80F;}">
                         <ToggleSwitch IsOn="{x:Bind viewModel.HotkeyGoesHome, Mode=TwoWay}" />
                     </controls:SettingsCard>

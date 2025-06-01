@@ -16,7 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="KeyboardListener.idl" />
@@ -27,10 +26,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="PropertySheet.props" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="CmdPalKeyboardService.rc">
-      <Filter>Resources</Filter>
-    </ResourceCompile>
   </ItemGroup>
 </Project>
