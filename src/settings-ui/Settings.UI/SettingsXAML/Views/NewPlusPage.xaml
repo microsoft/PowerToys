@@ -91,7 +91,7 @@
                     <InfoBar
                         x:Uid="Elevation_Required"
                         IsClosable="True"
-                        IsOpen="{x:Bind ViewModel.IsNotElevated, Mode=OneWay}"
+                        IsOpen="{x:Bind ViewModel.IsEnabledAndNotElevated, Mode=OneWay}"
                         Severity="Informational" />
                 </controls:SettingsGroup>
 

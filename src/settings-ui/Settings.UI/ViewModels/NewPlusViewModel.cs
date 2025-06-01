@@ -55,9 +55,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             InitializeEnabledValue();
             InitializeGpoValues();
 
-            WindowsIdentity identity = WindowsIdentity.GetCurrent();
-            WindowsPrincipal principal = new WindowsPrincipal(identity);
-            _isElevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
             _disableBuiltInNew = !IsBuiltInNewEnabled();
 
             // set the callback functions value to handle outgoing IPC message.
@@ -105,6 +102,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(IsHideFileExtSettingGPOConfigured));
                     OnPropertyChanged(nameof(IsReplaceVariablesSettingGPOConfigured));
                     OnPropertyChanged(nameof(IsReplaceVariablesSettingsCardEnabled));
+                    OnPropertyChanged(nameof(IsDisableBuiltInNewSettingsCardEnabled));
+                    OnPropertyChanged(nameof(IsEnabledAndNotElevated));
 
                     OutGoingGeneralSettings outgoingMessage = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoingMessage.ToString());
@@ -117,6 +116,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
                 }
             }
+        }
+
+        private bool IsElevated()
+        {
+            WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            WindowsPrincipal principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
 
         public bool IsWin10OrLower
@@ -173,7 +179,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsReplaceVariablesSettingGPOConfigured => _isNewPlusEnabled && _replaceVariablesIsGPOConfigured;
 
-        public bool IsDisableBuiltInNewSettingsCardEnabled => _isNewPlusEnabled && _isElevated;
+        public bool IsDisableBuiltInNewSettingsCardEnabled => _isNewPlusEnabled && IsElevated();
 
         public bool HideStartingDigits
         {
@@ -250,9 +256,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _enabledStateIsGPOConfigured;
         }
 
-        public bool IsNotElevated
+        public bool IsEnabledAndNotElevated
         {
-            get => !_isElevated;
+            get => _isNewPlusEnabled && !IsElevated();
         }
 
         public ButtonClickCommand OpenCurrentNewTemplateFolder => new ButtonClickCommand(OpenNewTemplateFolder);
@@ -322,8 +328,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _hideFileExtensionGpoRuleConfiguration;
         private bool _hideFileExtensionIsGPOConfigured;
         private bool _replaceVariablesIsGPOConfigured;
-
-        private bool _isElevated;
 
         public void RefreshEnabledState()
         {

@@ -4452,7 +4452,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Template filename starting digits settings toggle</comment>
   </data>
   <data name="NewPlus_Hide_BuiltIn_New_Toggle.Header" xml:space="preserve">
-    <value>Hide Windows' built-in New context menu</value>
+    <value>Hide the built-in New context menu</value>
     <comment>Localize New in accordance with Windows New</comment>
   </data>
   <data name="NewPlus_behavior.Header" xml:space="preserve">
