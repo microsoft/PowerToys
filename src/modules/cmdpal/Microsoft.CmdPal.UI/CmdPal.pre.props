@@ -8,6 +8,8 @@
 
   <PropertyGroup>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
+    <!-- Reset this because the Versioning task might have overwritten it before it knew about OutDir -->
+    <AppxPackageDir>$(OutputPath)\AppPackages\</AppxPackageDir>
   </PropertyGroup>
 
 </Project>

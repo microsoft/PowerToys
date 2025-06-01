@@ -319,7 +319,7 @@ public static class ReparsePoint
 
         public static AppExecutionAliasMetadata FromPersistedRepresentationIntPtr(IntPtr reparseDataBufferPtr, AppExecutionAliasReparseTagBufferLayoutVersion version)
         {
-            var dataOffset = Marshal.SizeOf(typeof(AppExecutionAliasReparseTagHeader));
+            var dataOffset = Marshal.SizeOf<AppExecutionAliasReparseTagHeader>();
             var dataBufferPtr = reparseDataBufferPtr + dataOffset;
 
             string? packageFullName = null;

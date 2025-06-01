@@ -360,4 +360,7 @@
   <data name="ContextMenu_DataPreview.Text" xml:space="preserve">
     <value>Extended data preview</value>
   </data>
+  <data name="NewButton.Label" xml:space="preserve">
+    <value>New</value>
+  </data>
 </root>

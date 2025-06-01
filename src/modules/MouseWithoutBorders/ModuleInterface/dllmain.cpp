@@ -13,6 +13,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/processApi.h>
 #include <common/utils/elevation.h>
+#include <common/utils/logger_helper.h>
 
 HINSTANCE g_hInst_MouseWithoutBorders = 0;
 
@@ -409,9 +410,12 @@ public:
     {
         app_name = L"MouseWithoutBorders";
         app_key = app_name;
-        std::filesystem::path logFilePath(PTSettingsHelper::get_module_save_folder_location(app_key));
-        logFilePath.append(LogSettings::mouseWithoutBordersLogPath);
-        Logger::init(LogSettings::mouseWithoutBordersLoggerName, logFilePath.wstring(), PTSettingsHelper::get_log_settings_file_location());
+
+        LoggerHelpers::init_logger(app_key, L"ModuleInterface", LogSettings::mouseWithoutBordersLoggerName);
+
+        std::filesystem::path oldLogPath(PTSettingsHelper::get_module_save_folder_location(app_key));
+        oldLogPath.append("LogsModuleInterface");
+        LoggerHelpers::delete_old_log_folder(oldLogPath);
 
         try
         {
@@ -567,7 +571,7 @@ public:
         executable_args.append(L"\" & echo \"Adding an inbound firewall rule for PowerToys.MouseWithoutBorders.exe\"");
         executable_args.append(L" & netsh advfirewall firewall add rule name=\"PowerToys.MouseWithoutBorders\" dir=in action=allow program=\"");
         executable_args.append(executable_path);
-        executable_args.append(L"\" enable=yes remoteip=LocalSubnet profile=any protocol=tcp & pause\"");
+        executable_args.append(L"\" enable=yes remoteip=any profile=any protocol=tcp & pause\"");
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
