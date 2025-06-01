@@ -1155,65 +1155,61 @@ UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
 
 UINT __stdcall RestoreBuiltInNewContextMenuCA(MSIHANDLE hInstall)
 {
-	HRESULT hr = S_OK;
-	UINT er = ERROR_SUCCESS;
+    // Must be run as administrator to open and modify the registry.
 
-	hr = WcaInitialize(hInstall, "RestoreBuiltInNewContextMenuCA");
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
 
-	try
-	{
-		const std::wstring builtInNewRegistryPath = LR"(Directory\Background\shellex\ContextMenuHandlers\New)";
-		const std::wstring newDisabledValuePrefix = L"0_";
+    hr = WcaInitialize(hInstall, "RestoreBuiltInNewContextMenuCA");
 
-		HKEY newRegistryPath;
-		const LONG openStatus = RegOpenKeyExW(HKEY_CLASSES_ROOT, builtInNewRegistryPath.c_str(), 0, KEY_READ | KEY_WRITE, &newRegistryPath);
+    try
+    {
+        const std::wstring builtInNewRegistryPath = LR"(Directory\Background\shellex\ContextMenuHandlers\New)";
+        const std::wstring newDisabledValuePrefix = L"0_";
 
-		if (openStatus != ERROR_SUCCESS)
-		{
-			throw std::runtime_error("Failed to open New context menu registry key.");
-		}
+        auto regDeleter = [](HKEY* regKeyHandle) { if (regKeyHandle && *regKeyHandle) RegCloseKey(*regKeyHandle); delete regKeyHandle; };
+        std::unique_ptr<HKEY, decltype(regDeleter)> regKeyHandle(new HKEY(nullptr), regDeleter);
 
-		wchar_t buffer[256];
-		DWORD bufferSize = sizeof(buffer);
-		const LONG queryStatus = RegQueryValueExW(newRegistryPath, nullptr, nullptr, nullptr, reinterpret_cast<LPBYTE>(buffer), &bufferSize);
+        const LONG openStatus = RegOpenKeyExW(HKEY_CLASSES_ROOT, builtInNewRegistryPath.c_str(), 0, KEY_READ | KEY_WRITE, regKeyHandle.get());
+        if (openStatus != ERROR_SUCCESS)
+        {
+            throw std::runtime_error("Failed to open New context menu registry key.");
+        }
 
-		if (queryStatus != ERROR_SUCCESS)
-		{
-			RegCloseKey(newRegistryPath);
-			throw std::runtime_error("Failed to read New context menu registry key.");
-		}
+        wchar_t buffer[256];
+        DWORD bufferSize = sizeof(buffer);
+        const LONG queryStatus = RegQueryValueExW(*regKeyHandle, nullptr, nullptr, nullptr, reinterpret_cast<LPBYTE>(buffer), &bufferSize);
+        if (queryStatus != ERROR_SUCCESS)
+        {
+            throw std::runtime_error("Failed to read New context menu registry key.");
+        }
 
-		const std::wstring builtInNewHandlerValue(buffer);
-		const bool startsWithPrefix = builtInNewHandlerValue.find(newDisabledValuePrefix) == 0;
+        const std::wstring builtInNewHandlerValue(buffer);
+        const bool startsWithPrefix = builtInNewHandlerValue.find(newDisabledValuePrefix) == 0;
 
-		if (!startsWithPrefix)
-		{
-			RegCloseKey(newRegistryPath);
-			return ERROR_SUCCESS;
-		}
+        if (!startsWithPrefix)
+        {
+            return ERROR_SUCCESS;
+        }
 
-		std::wstring newEnabledValue = builtInNewHandlerValue.substr(newDisabledValuePrefix.length());
-		LONG setStatus = RegSetValueExW(newRegistryPath, nullptr, 0, REG_SZ, reinterpret_cast<const BYTE*>(newEnabledValue.c_str()), static_cast<DWORD>((newEnabledValue.length() + 1)) * sizeof(wchar_t));
+        const std::wstring builtInNewEnabledValue = builtInNewHandlerValue.substr(newDisabledValuePrefix.length());
+        const LONG setStatus = RegSetValueExW(*regKeyHandle, nullptr, 0, REG_SZ, reinterpret_cast<const BYTE*>(builtInNewEnabledValue.c_str()), static_cast<DWORD>((builtInNewEnabledValue.length() + 1)) * sizeof(wchar_t));
+        if (setStatus != ERROR_SUCCESS)
+        {
+            throw std::runtime_error("Failed to update/restore the New context menu shell extension in the registry.");
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::string errorMessage{ "Exception thrown while trying to restore built-in New: " };
+        errorMessage += e.what();
+        Logger::error(errorMessage);
 
-		if (setStatus != ERROR_SUCCESS)
-		{
-			RegCloseKey(newRegistryPath);
-			throw std::runtime_error("Failed to update/restore the New context menu shell extension in the registry.");
-		}
+        er = ERROR_INSTALL_FAILURE;
+    }
 
-		RegCloseKey(newRegistryPath);
-	}
-	catch (std::exception& e)
-	{
-		std::string errorMessage{ "Exception thrown while trying to restore built-in New: " };
-		errorMessage += e.what();
-		Logger::error(errorMessage);
-
-		er = ERROR_INSTALL_FAILURE;
-	}
-
-	er = er == ERROR_SUCCESS ? (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE) : er;
-	return WcaFinalize(er);
+    er = er == ERROR_SUCCESS ? (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE) : er;
+    return WcaFinalize(er);
 }
 
 UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
