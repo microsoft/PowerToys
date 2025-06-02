@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2024/04/resource/manifest.json",
-    "type": "Microsoft.DSC.Hackathon/Powertoys.RegistryPreviewSettings",
+    "type": "Microsoft.PowerToys/RegistryPreviewSettings",
     "version": "1.0.0",
     "get": {
         "executable": "runner-cli",

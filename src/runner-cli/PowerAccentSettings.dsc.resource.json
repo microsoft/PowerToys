@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/PowerShell/DSC/main/schemas/2024/04/resource/manifest.json",
-    "type": "Microsoft.DSC.Hackathon/Powertoys.PowerAccentSettings",
+    "type": "Microsoft.PowerToys/PowerAccentSettings",
     "version": "1.0.0",
     "get": {
         "executable": "runner-cli",

@@ -10,12 +10,12 @@
 
   <Identity
     Name="d5366922-b1a6-4135-84b5-c74dea4c23fd"
-    Publisher="CN=amelbawa"
+    Publisher="CN=Microsoft Corporation"
     Version="1.0.0.0" />
 
   <Properties>
     <DisplayName>runner-cli-package</DisplayName>
-    <PublisherDisplayName>>Microsoft Corporation</PublisherDisplayName>
+    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 

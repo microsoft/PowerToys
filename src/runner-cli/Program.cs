@@ -13,7 +13,6 @@ namespace RunnerCLI;
 
 public class Program
 {
-    private const string _powerToys = "PowerToys";
     private static SettingsUtils _settingsUtils = new();
     private static Option<string> moduleOption = new("--module", $"The module name: {DescriptiveModuleNames}")
     {
@@ -28,7 +27,7 @@ public class Program
         {
             var value = result.GetValueOrDefault<string>() ?? string.Empty;
             var validValues = GetSettingsConfigTypes().Keys.ToList();
-            if (!validValues.Contains(value) && value != _powerToys)
+            if (!validValues.Contains(value))
             {
                 result.ErrorMessage = $"Invalid module name. Valid values are: {DescriptiveModuleNames}";
             }
@@ -93,25 +92,7 @@ public class Program
 
     private static string GetSettings(string moduleName)
     {
-        if (moduleName == _powerToys)
-        {
-            var allSettings = new Dictionary<string, object>();
-            foreach (var moduleType in GetSettingsConfigTypes().Values)
-            {
-                try
-                {
-                    var settings = GetSettings(moduleType);
-                    allSettings.Add(moduleType.Name, settings);
-                }
-                catch
-                {
-                    allSettings.Add(moduleType.Name, new JsonObject());
-                }
-            }
-
-            return JsonSerializer.Serialize(allSettings);
-        }
-        else if (GetSettingsConfigTypes().TryGetValue(moduleName, out var moduleType))
+        if (GetSettingsConfigTypes().TryGetValue(moduleName, out var moduleType))
         {
             return ((ISettingsConfig)GetSettings(moduleType)).ToJsonString();
         }
@@ -123,24 +104,7 @@ public class Program
 
     private static void SaveSettings(string moduleName, string settings)
     {
-        if (moduleName == _powerToys)
-        {
-            var allSettings = JsonSerializer.Deserialize<Dictionary<string, JsonNode>>(settings);
-            if (allSettings == null)
-            {
-                throw new ArgumentException("Invalid JSON format.");
-            }
-
-            var settingsConfigTypes = GetSettingsConfigTypes();
-            foreach (var module in allSettings)
-            {
-                if (settingsConfigTypes.TryGetValue(module.Key, out var moduleType))
-                {
-                    SaveSettings(moduleType, module.Value.ToJsonString());
-                }
-            }
-        }
-        else if (GetSettingsConfigTypes().TryGetValue(moduleName, out var moduleType))
+        if (GetSettingsConfigTypes().TryGetValue(moduleName, out var moduleType))
         {
             SaveSettings(moduleType, settings);
         }
