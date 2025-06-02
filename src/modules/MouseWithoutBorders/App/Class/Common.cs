@@ -1630,8 +1630,8 @@ namespace MouseWithoutBorders
         /// <returns>A boolean that tells us if the switch isn't blocked by any other settings</returns>
         internal static bool IsEasyMouseSwitchAllowed()
         {
-            // Never block a switch if the destination machine is the controller.
-            if (MachineID == MachineStuff.newDesMachineIdEx)
+            // Never prevent a switch if we are not moving out of the host machine.
+            if (DesMachineID != MachineID)
             {
                 return true;
             }
