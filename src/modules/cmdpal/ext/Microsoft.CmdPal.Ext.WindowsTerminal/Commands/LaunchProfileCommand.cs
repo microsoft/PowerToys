@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
@@ -33,16 +35,27 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
 
     private unsafe void Launch(string id, string profile)
     {
+        ComWrappers cw = new StrategyBasedComWrappers();
+
+        var hr = NativeHelpers.CoCreateInstance(
+                NativeHelpers.ApplicationActivationManagerCLSID,
+                IntPtr.Zero,
+                (uint)CLSCTX.CLSCTX_INPROC_SERVER,
+                typeof(IApplicationActivationManager).GUID,
+                out var appManagerPtr);
+
+        if (hr != 0)
+        {
+            throw new ArgumentException($"Failed to create ApplicationActivationManagerCLSID instance. HR: 0x{hr:X}");
+        }
+
+        var appManager = (IApplicationActivationManager)cw.GetOrCreateObjectForComInstance(
+                appManagerPtr, CreateObjectFlags.None);
+
+        var queryArguments = TerminalHelper.GetArguments(profile, _openNewTab, _openQuake);
         try
         {
-            IApplicationActivationManager* appManager = null;
-
-            PInvoke.CoCreateInstance(typeof(ApplicationActivationManager).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out appManager).ThrowOnFailure();
-            using var handle = new SafeComHandle((IntPtr)appManager);
-
-            var queryArguments = TerminalHelper.GetArguments(profile, _openNewTab, _openQuake);
-
-            appManager->ActivateApplication(id, string.Empty, ACTIVATEOPTIONS.AO_NONE, out var unusedPid).ThrowOnFailure();
+            appManager.ActivateApplication(id, queryArguments, (int)ACTIVATEOPTIONS.AO_NONE, out var unusedPid);
         }
 #pragma warning disable IDE0059, CS0168
         catch (Exception ex)

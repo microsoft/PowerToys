@@ -1,3 +1,2 @@
-CoCreateInstance
-IApplicationActivationManager
-ApplicationActivationManager
+CLSCTX
+ACTIVATEOPTIONS
