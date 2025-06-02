@@ -1631,13 +1631,13 @@ namespace MouseWithoutBorders
         internal static bool IsEasyMouseSwitchAllowed()
         {
             // Never prevent a switch if we are not moving out of the host machine.
-            if (DesMachineID != MachineID)
+            if (!DisableEasyMouseWhenForegroundWindowIsFullscreenSetting() || DesMachineID != MachineID)
             {
                 return true;
             }
 
-            // If EasyMouse switches are disabled when in fullscreen mode, check for fullscreen windows.
-            return !DisableEasyMouseWhenForegroundWindowIsFullscreenSetting() || !Common.IsEasyMouseBlockedByFullscreenWindow();
+            // Check if the switch is blocked by a full-screen window running in the foreground
+            return !IsEasyMouseBlockedByFullscreenWindow();
         }
     }
 }
