@@ -1561,6 +1561,11 @@ namespace MouseWithoutBorders
             }
         }
 
+        private static bool DisableEasyMouseWhenForegroundWindowIsFullscreenSetting()
+        {
+            return Setting.Values.DisableEasyMouseWhenForegroundWindowIsFullscreen;
+        }
+
         private static bool IsWindowExcludedFromEasyMouseFullscreenCheck(IntPtr foregroundWindowHandle)
         {
             if (NativeMethods.GetWindowThreadProcessId(foregroundWindowHandle, out var processId) == 0)
@@ -1617,6 +1622,22 @@ namespace MouseWithoutBorders
             var primaryScreenWidth = screenBounds.Right - screenBounds.Left;
 
             return foregroundHeight == primaryScreenHeight && foregroundWidth == primaryScreenWidth;
+        }
+
+        /// <summary>
+        /// Check if a machine switch triggered by EasyMouse would be allowed to proceed due to other settings.
+        /// </summary>
+        /// <returns>A boolean that tells us if the switch isn't blocked by any other settings</returns>
+        internal static bool IsEasyMouseSwitchAllowed()
+        {
+            // Never block a switch if the destination machine is the controller.
+            if (MachineID == MachineStuff.newDesMachineIdEx)
+            {
+                return true;
+            }
+
+            // If EasyMouse switches are disabled when in fullscreen mode, check for fullscreen windows.
+            return !DisableEasyMouseWhenForegroundWindowIsFullscreenSetting() || !Common.IsEasyMouseBlockedByFullscreenWindow();
         }
     }
 }

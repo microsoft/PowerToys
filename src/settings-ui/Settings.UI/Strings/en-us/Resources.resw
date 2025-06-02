@@ -428,6 +428,9 @@
   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Description" xml:space="preserve">
     <value>Prevent easy mouse from moving to another machine if an application is running in fullscreen mode.</value>
   </data>
+  <data name="MouseWithoutBorders_CanOnlyStopEasyMouseIfMovingFromHostMachine.Title" xml:space="preserve">
+    <value>As of right now, enabling disabling Easy Mouse when an application is in fullscreen on the host computer will only work on the host computer, it will not work when moving out of remote machines.</value>
+  </data>
    <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: chrome.exe</value>
     <comment>Allow easy mouse when chrome is in fullscreen mode.</comment>

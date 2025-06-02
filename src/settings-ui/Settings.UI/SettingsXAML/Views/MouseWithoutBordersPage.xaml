@@ -285,6 +285,12 @@
                                       IsOn="{x:Bind ViewModel.DisableEasyMouseWhenForegroundWindowIsFullscreen, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
+                    <InfoBar
+                        x:Uid="MouseWithoutBorders_CanOnlyStopEasyMouseIfMovingFromHostMachine"
+                        IsOpen="True"
+                        IsClosable="False"
+                        Severity="Informational" />
+
                     <tkcontrols:SettingsExpander
                         x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"

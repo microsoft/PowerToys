@@ -54,22 +54,6 @@ internal static class Event
         set;
     }
 
-    /// <summary>
-    /// Check if a machine switch triggered by EasyMouse would be allowed to proceed due to other settings.
-    /// </summary>
-    /// <returns>A boolean that tells us if the switch isn't blocked by any other settings</returns>
-    private static bool IsEasyMouseSwitchAllowed()
-    {
-        // Never block a switch if the destination machine is the controller.
-        if (Common.MachineID == MachineStuff.newDesMachineIdEx)
-        {
-            return true;
-        }
-
-        // If EasyMouse switches are disabled when in fullscreen mode, check for fullscreen windows.
-        return !DisableEasyMouseWhenForegroundWindowIsFullscreenSetting() || !Common.IsEasyMouseBlockedByFullscreenWindow();
-    }
-
     private static Point actualLastPos;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case names
     internal static int myLastX;
@@ -92,7 +76,7 @@ internal static class Event
 
                 // Check if easy mouse switches are disabled when an application is running in fullscreen mode,
                 // if they are, check that there is no application running in fullscreen mode before switching.
-                if (!p.IsEmpty && IsEasyMouseSwitchAllowed())
+                if (!p.IsEmpty && Common.IsEasyMouseSwitchAllowed())
                 {
                     Common.HasSwitchedMachineSinceLastCopy = true;
 
@@ -163,11 +147,6 @@ internal static class Event
         {
             Logger.Log(ex);
         }
-    }
-
-    private static bool DisableEasyMouseWhenForegroundWindowIsFullscreenSetting()
-    {
-        return Setting.Values.DisableEasyMouseWhenForegroundWindowIsFullscreen;
     }
 
     internal static bool IsSwitchingByMouseEnabled()
