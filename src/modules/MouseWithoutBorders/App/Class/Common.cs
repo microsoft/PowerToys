@@ -1567,7 +1567,7 @@ namespace MouseWithoutBorders
             return Setting.Values.DisableEasyMouseWhenForegroundWindowIsFullscreen;
         }
 
-        private static bool IsWindowExcludedFromEasyMouseFullscreenCheck(IntPtr foregroundWindowHandle)
+        private static bool IsAppIgnoredByEasyMouseFullscreenCheck(IntPtr foregroundWindowHandle)
         {
             if (NativeMethods.GetWindowThreadProcessId(foregroundWindowHandle, out var processId) == 0)
             {
@@ -1583,7 +1583,7 @@ namespace MouseWithoutBorders
             uint maxPath = 260;
             var nameBuffer = new char[maxPath];
             if (!NativeMethods.QueryFullProcessImageName(
-                    processHandle, NativeMethods.QUERY_FULL_PROCESS_NAME_DWFLAGS.DEFAULT, nameBuffer, ref maxPath))
+                    processHandle, NativeMethods.QUERY_FULL_PROCESS_NAME_FLAGS.DEFAULT, nameBuffer, ref maxPath))
             {
                 NativeMethods.CloseHandle(processHandle);
                 return false;
@@ -1609,30 +1609,25 @@ namespace MouseWithoutBorders
                 return false;
             }
 
-            if (IsWindowExcludedFromEasyMouseFullscreenCheck(foregroundHandle))
+            NativeMethods.SHQueryUserNotificationState(out var userNotificationState);
+            switch (userNotificationState)
             {
-                return false;
+                // An application running in full screen mode, check if the foreground window is
+                // listed as ignored in the settings.
+                case NativeMethods.USER_NOTIFICATION_STATE.BUSY:
+                case NativeMethods.USER_NOTIFICATION_STATE.RUNNING_D3D_FULL_SCREEN:
+                case NativeMethods.USER_NOTIFICATION_STATE.PRESENTATION_MODE:
+                    return !IsAppIgnoredByEasyMouseFullscreenCheck(foregroundHandle);
+
+                // No full screen app running.
+                case NativeMethods.USER_NOTIFICATION_STATE.NOT_PRESENT:
+                case NativeMethods.USER_NOTIFICATION_STATE.ACCEPTS_NOTIFICATIONS:
+                case NativeMethods.USER_NOTIFICATION_STATE.QUIET_TIME:
+                // Cannot determine
+                case NativeMethods.USER_NOTIFICATION_STATE.APP:
+                default:
+                    return false;
             }
-
-            var monitorHandle = NativeMethods.MonitorFromWindow(
-                foregroundHandle, NativeMethods.MONITOR_FROM_WINDOW_DWFLAGS.DEFAULT_TO_PRIMARY);
-
-            NativeMethods.MonitorInfoEx monitorInfo = default;
-            monitorInfo.cbSize = Marshal.SizeOf(monitorInfo);
-            NativeMethods.GetMonitorInfo(monitorHandle, ref monitorInfo);
-
-            var screenBounds = monitorInfo.rcMonitor;
-            NativeMethods.GetWindowRect(foregroundHandle, out NativeMethods.RECT foregroundBounds);
-
-            var foregroundHeight = foregroundBounds.Bottom - foregroundBounds.Top;
-            var foregroundWidth = foregroundBounds.Right - foregroundBounds.Left;
-
-            var hostScreenHeight = screenBounds.Bottom - screenBounds.Top;
-            var hostScreenWidth = screenBounds.Right - screenBounds.Left;
-
-            Logger.LogDebug($"[DOT-TB]: foreground size : h {foregroundHeight}, w {foregroundWidth} host size : h {hostScreenHeight} w {hostScreenWidth}");
-
-            return foregroundHeight >= hostScreenHeight && foregroundWidth >= hostScreenWidth;
         }
 
         /// <summary>

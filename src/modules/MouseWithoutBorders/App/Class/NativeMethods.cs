@@ -308,8 +308,8 @@ namespace MouseWithoutBorders.Class
         internal static partial bool QueryFullProcessImageName(
             IntPtr hProcess, QUERY_FULL_PROCESS_NAME_FLAGS dwFlags, [Out] char[] lpExeName, ref uint lpdwSize);
 
-        [LibraryImport("user32.dll", SetLastError = true)]
-        internal static partial IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR_FROM_WINDOW_FLAGS dwFlags);
+        [LibraryImport("shell32.dll", SetLastError = true)]
+        internal static partial int SHQueryUserNotificationState(out USER_NOTIFICATION_STATE state);
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct POINT
@@ -971,6 +971,17 @@ namespace MouseWithoutBorders.Class
         {
             DEFAULT = 0x00000000,
             PROCESS_NAME_NATIVE = 0x00000001,
+        }
+
+        internal enum USER_NOTIFICATION_STATE
+        {
+            NOT_PRESENT = 1,
+            BUSY = 2,
+            RUNNING_D3D_FULL_SCREEN = 3,
+            PRESENTATION_MODE = 4,
+            ACCEPTS_NOTIFICATIONS = 5,
+            QUIET_TIME = 6,
+            APP = 7,
         }
 
         [DllImport("secur32.dll", CharSet = CharSet.Unicode)]
