@@ -1571,6 +1571,7 @@ namespace MouseWithoutBorders
         {
             if (NativeMethods.GetWindowThreadProcessId(foregroundWindowHandle, out var processId) == 0)
             {
+                Logger.LogDebug($"GetWindowThreadProcessId failed with error : {Marshal.GetLastWin32Error()}");
                 return false;
             }
 
@@ -1585,6 +1586,7 @@ namespace MouseWithoutBorders
             if (!NativeMethods.QueryFullProcessImageName(
                     processHandle, NativeMethods.QUERY_FULL_PROCESS_NAME_FLAGS.DEFAULT, nameBuffer, ref maxPath))
             {
+                Logger.LogDebug($"QueryFullProcessImageName failed with error : {Marshal.GetLastWin32Error()}");
                 NativeMethods.CloseHandle(processHandle);
                 return false;
             }
@@ -1609,7 +1611,12 @@ namespace MouseWithoutBorders
                 return false;
             }
 
-            NativeMethods.SHQueryUserNotificationState(out var userNotificationState);
+            if (NativeMethods.SHQueryUserNotificationState(out var userNotificationState) == 0)
+            {
+                Logger.LogDebug($"SHQueryUserNotificationState failed with error : {Marshal.GetLastWin32Error()}");
+                return false;
+            }
+
             switch (userNotificationState)
             {
                 // An application running in full screen mode, check if the foreground window is
