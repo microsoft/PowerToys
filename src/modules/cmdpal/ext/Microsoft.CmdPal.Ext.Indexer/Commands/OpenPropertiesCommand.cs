@@ -31,7 +31,7 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
         {
             var info = new SHELLEXECUTEINFOW
             {
-                cbSize = (uint)Unsafe.SizeOf<SHELLEXECUTEINFOW>(),
+                cbSize = (uint)sizeof(SHELLEXECUTEINFOW),
                 lpVerb = propertiesPtr,
                 lpFile = filenamePtr,
                 nShow = (int)SHOW_WINDOW_CMD.SW_SHOW,
