@@ -13,6 +13,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -1581,7 +1582,8 @@ namespace MouseWithoutBorders
 
             uint maxPath = 260;
             var nameBuffer = new char[maxPath];
-            if (!NativeMethods.QueryFullProcessImageName(processHandle, 0, nameBuffer, ref maxPath))
+            if (!NativeMethods.QueryFullProcessImageName(
+                    processHandle, NativeMethods.QUERY_FULL_PROCESS_NAME_DWFLAGS.DEFAULT, nameBuffer, ref maxPath))
             {
                 NativeMethods.CloseHandle(processHandle);
                 return false;
@@ -1598,7 +1600,7 @@ namespace MouseWithoutBorders
         internal static bool IsEasyMouseBlockedByFullscreenWindow()
         {
             var shellHandle = NativeMethods.GetShellWindow();
-            var desktopHandle = NativeMethods.GetShellWindow();
+            var desktopHandle = NativeMethods.GetDesktopWindow();
             var foregroundHandle = NativeMethods.GetForegroundWindow();
 
             // If the foreground window is either the desktop or the Windows shell, we are not in fullscreen mode.
@@ -1612,16 +1614,25 @@ namespace MouseWithoutBorders
                 return false;
             }
 
-            var screenBounds = MachineStuff.PrimaryScreenBounds;
+            var monitorHandle = NativeMethods.MonitorFromWindow(
+                foregroundHandle, NativeMethods.MONITOR_FROM_WINDOW_DWFLAGS.DEFAULT_TO_PRIMARY);
+
+            NativeMethods.MonitorInfoEx monitorInfo = default;
+            monitorInfo.cbSize = Marshal.SizeOf(monitorInfo);
+            NativeMethods.GetMonitorInfo(monitorHandle, ref monitorInfo);
+
+            var screenBounds = monitorInfo.rcMonitor;
             NativeMethods.GetWindowRect(foregroundHandle, out NativeMethods.RECT foregroundBounds);
 
             var foregroundHeight = foregroundBounds.Bottom - foregroundBounds.Top;
             var foregroundWidth = foregroundBounds.Right - foregroundBounds.Left;
 
-            var primaryScreenHeight = screenBounds.Bottom - screenBounds.Top;
-            var primaryScreenWidth = screenBounds.Right - screenBounds.Left;
+            var hostScreenHeight = screenBounds.Bottom - screenBounds.Top;
+            var hostScreenWidth = screenBounds.Right - screenBounds.Left;
 
-            return foregroundHeight == primaryScreenHeight && foregroundWidth == primaryScreenWidth;
+            Logger.LogDebug($"[DOT-TB]: foreground size : h {foregroundHeight}, w {foregroundWidth} host size : h {hostScreenHeight} w {hostScreenWidth}");
+
+            return foregroundHeight >= hostScreenHeight && foregroundWidth >= hostScreenWidth;
         }
 
         /// <summary>

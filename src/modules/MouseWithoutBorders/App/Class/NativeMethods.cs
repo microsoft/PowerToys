@@ -300,9 +300,16 @@ namespace MouseWithoutBorders.Class
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
-        [LibraryImport("kernel32.dll", EntryPoint = "QueryFullProcessImageNameW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+        [LibraryImport("kernel32.dll",
+            EntryPoint = "QueryFullProcessImageNameW",
+            SetLastError = true,
+            StringMarshalling = StringMarshalling.Utf16)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        internal static partial bool QueryFullProcessImageName(IntPtr hProcess, uint dwFlags, [Out] char[] lpExeName, ref uint lpdwSize);
+        internal static partial bool QueryFullProcessImageName(
+            IntPtr hProcess, QUERY_FULL_PROCESS_NAME_DWFLAGS dwFlags, [Out] char[] lpExeName, ref uint lpdwSize);
+
+        [LibraryImport("user32.dll", SetLastError = true)]
+        internal static partial IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR_FROM_WINDOW_DWFLAGS dwFlags);
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct POINT
@@ -951,6 +958,19 @@ namespace MouseWithoutBorders.Class
             NameCanonicalEx = 9,
             NameServicePrincipal = 10,
             NameDnsDomain = 12,
+        }
+
+        internal enum MONITOR_FROM_WINDOW_DWFLAGS : uint
+        {
+            DEFAULT_TO_NULL = 0x00000000,
+            DEFAULT_TO_PRIMARY = 0x00000001,
+            DEFAULT_TO_NEAREST = 0x00000002,
+        }
+
+        internal enum QUERY_FULL_PROCESS_NAME_DWFLAGS : uint
+        {
+            DEFAULT = 0x00000000,
+            PROCESS_NAME_NATIVE = 0x00000001,
         }
 
         [DllImport("secur32.dll", CharSet = CharSet.Unicode)]
