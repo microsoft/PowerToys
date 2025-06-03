@@ -71,3 +71,4 @@ Below are community created plugins that target a website or software.  They are
 | [Firefox Bookmark](https://github.com/8LWXpg/PowerToysRun-FirefoxBookmark) | [8LWXpg](https://github.com/8LWXpg) | Open bookmarks in Firefox based browser |
 | [Linear](https://github.com/vednig/powertoys-linear) | [vednig](https://github.com/vednig) | Create Linear Issues directly from Powertoys Run |
 | [SpeedTest](https://github.com/ruslanlap/PowerToysRun-SpeedTest) | [ruslanlap](https://github.com/ruslanlap) | One-command internet speed tests with real-time results, modern UI, and shareable links. |
+| [VideoDownloader](https://github.com/ruslanlap/PowerToysRun-VideoDownloader) | [ruslanlap](https://github.com/ruslanlap) | Download videos from YouTube and 1000+ other sites directly from your keyboard. Features: one-click downloads, multiple formats (MP4/MP3), smart URL detection, custom download folder. | 
