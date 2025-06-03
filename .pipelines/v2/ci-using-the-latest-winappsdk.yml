@@ -37,6 +37,10 @@ parameters:
   - name: useExperimentalVersion
     type: boolean
     default: false
+  - name: useUnstableWinAppSDK
+    type: boolean
+    displayName: "Use Unstable WinAppSDK Package (even if build failed)"
+    default: false
 
 extends:
   template: templates/pipeline-ci-build.yml
@@ -48,3 +52,4 @@ extends:
     useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
     winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
     useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+    useUnstableWinAppSDK: ${{ parameters.useUnstableWinAppSDK }}

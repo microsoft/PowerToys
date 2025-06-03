@@ -5,6 +5,9 @@ parameters:
   - name: useExperimentalVersion
     type: boolean
     default: false
+  - name: useUnstableWinAppSDK
+    type: boolean
+    default: false
 
 steps:
 - task: NuGetAuthenticate@1
@@ -28,6 +31,8 @@ steps:
     buildType: 'specific'
     project: '55e8140e-57ac-4e5f-8f9c-c7c15b51929d'
     definition: '104083'
+    allowPartiallySucceededBuilds: ${{ parameters.useUnstableWinAppSDK }}
+    allowFailedBuilds: ${{ parameters.useUnstableWinAppSDK }}
     buildVersionToDownload: 'latestFromBranch'
     branchName: 'refs/heads/release/${{ parameters.versionNumber }}-stable'
     artifactName: 'WindowsAppSDK_Nuget_And_MSIX'

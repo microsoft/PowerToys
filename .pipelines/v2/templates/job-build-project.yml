@@ -68,6 +68,9 @@ parameters:
   - name: useExperimentalVersion
     type: boolean
     default: false
+  - name: useUnstableWinAppSDK
+    type: boolean
+    default: false
   - name: csProjectsToPublish
     type: object
     default:
@@ -204,6 +207,7 @@ jobs:
       parameters:
         versionNumber: ${{ parameters.winAppSDKVersionNumber }}
         useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
+        useUnstableWinAppSDK: ${{ parameters.useUnstableWinAppSDK }}
   
   - ${{ if eq(parameters.useLatestWinAppSDK, false)}}:
     - template: .\steps-restore-nuget.yml

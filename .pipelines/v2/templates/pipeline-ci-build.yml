@@ -34,6 +34,9 @@ parameters:
   - name: useExperimentalVersion
     type: boolean
     default: false
+  - name: useUnstableWinAppSDK
+    type: boolean
+    default: false
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
@@ -58,6 +61,7 @@ stages:
             runTests: ${{ parameters.runTests }}
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWinAppSDK: ${{ parameters.useLatestWinAppSDK }}
+            useUnstableWinAppSDK: ${{ parameters.useUnstableWinAppSDK }}
             ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
               winAppSDKVersionNumber: ${{ parameters.winAppSDKVersionNumber }}
               useExperimentalVersion: ${{ parameters.useExperimentalVersion }}
