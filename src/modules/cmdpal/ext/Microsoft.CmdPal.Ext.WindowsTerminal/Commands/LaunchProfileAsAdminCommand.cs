@@ -84,6 +84,7 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
         try
         {
             appManager.ActivateApplication(id, queryArguments, noFlags, out var unusedPid);
+            Marshal.FreeCoTaskMem(appManagerPtr);
         }
 #pragma warning disable IDE0059, CS0168
         catch (Exception ex)
