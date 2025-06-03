@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -16,78 +17,48 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
     {
     }
 
-    [TestMethod("WorkspacesSnapshot.CaptureNonPackagedApps")]
+    [TestMethod("WorkspacesSnapshot.CancelCapture")]
     [TestCategory("Workspaces Snapshot UI")]
-    public void TestCaptureNonPackagedApplications()
+    public void TestCaptureCancel()
     {
-        // Open non-packaged applications
-        OpenVisualStudioCode();
-        OpenNotepadPlusPlus();
-        Thread.Sleep(3000);
+        AttachWorkspacesEditor();
 
-        // Click Create Workspace
         var createButton = Find<Button>("Create Workspace");
         createButton.Click();
-        Thread.Sleep(1000);
 
-        // Click Capture
-        var captureButton = Find<Button>("Capture");
-        captureButton.Click();
-        Thread.Sleep(2000);
+        Task.Delay(1000).Wait();
 
-        // Verify captured windows appear
-        var appList = Find<Custom>("AppList");
-        var capturedApps = appList.FindAll<Custom>(By.ClassName("AppItem"));
+        AttachSnapshotWindow();
 
-        bool foundVSCode = false;
-        bool foundNotepadPlusPlus = false;
+        var cancelButton = Find<Button>("Cancel");
 
-        foreach (var app in capturedApps)
-        {
-            var appName = app.GetAttribute("Name");
-            if (appName.Contains("Visual Studio Code", StringComparison.OrdinalIgnoreCase))
-            {
-                foundVSCode = true;
-            }
+        Assert.IsNotNull(cancelButton, "Capture button should exist");
 
-            if (appName.Contains("Notepad++", StringComparison.OrdinalIgnoreCase))
-            {
-                foundNotepadPlusPlus = true;
-            }
-        }
+        cancelButton.Click();
 
-        Assert.IsTrue(foundVSCode, "Visual Studio Code should be captured");
-        Assert.IsTrue(foundNotepadPlusPlus, "Notepad++ should be captured");
-
-        // Cancel to clean up
-        Find<Button>("Cancel").Click();
-        Thread.Sleep(1000);
-
-        // Close test applications
-        CloseVisualStudioCode();
-        CloseNotepadPlusPlus();
+        AttachWorkspacesEditor();
     }
 
     [TestMethod("WorkspacesSnapshot.CapturePackagedApps")]
     [TestCategory("Workspaces Snapshot UI")]
     public void TestCapturePackagedApplications()
     {
-        // Open packaged applications
-        OpenWindowsTerminal();
+        OpenCalculator();
         OpenWindowsSettings();
-        Thread.Sleep(3000);
+        Task.Delay(500).Wait();
 
-        // Click Create Workspace
+        AttachWorkspacesEditor();
         var createButton = Find<Button>("Create Workspace");
         createButton.Click();
-        Thread.Sleep(1000);
+        Task.Delay(500).Wait();
 
-        // Click Capture
+        AttachSnapshotWindow();
         var captureButton = Find<Button>("Capture");
         captureButton.Click();
-        Thread.Sleep(2000);
+        Task.Delay(500).Wait();
 
         // Verify captured windows appear
+        AttachWorkspacesEditor();
         var appList = Find<Custom>("AppList");
         var capturedApps = appList.FindAll<Custom>(By.ClassName("AppItem"));
 
@@ -335,73 +306,12 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
         // WindowHelper.MoveAndResizeWindow("Notepad", x, y, width, height);
     }
 
-    private void OpenCalculator()
-    {
-        Process.Start("calc.exe");
-        Thread.Sleep(1000);
-    }
-
     private void OpenCalculatorAtPosition(int x, int y, int width, int height)
     {
         Process.Start("calc.exe");
         Thread.Sleep(1000);
 
         // WindowHelper.MoveAndResizeWindow("Calculator", x, y, width, height);
-    }
-
-    private void CloseCalculator()
-    {
-        foreach (var process in Process.GetProcessesByName("CalculatorApp"))
-        {
-            process.Kill();
-        }
-
-        foreach (var process in Process.GetProcessesByName("Calculator"))
-        {
-            process.Kill();
-        }
-    }
-
-    private void OpenVisualStudioCode()
-    {
-        try
-        {
-            Process.Start("code");
-            Thread.Sleep(2000);
-        }
-        catch
-        {
-            // VS Code might not be installed
-        }
-    }
-
-    private void CloseVisualStudioCode()
-    {
-        foreach (var process in Process.GetProcessesByName("Code"))
-        {
-            process.Kill();
-        }
-    }
-
-    private void OpenNotepadPlusPlus()
-    {
-        try
-        {
-            Process.Start("notepad++.exe");
-            Thread.Sleep(1000);
-        }
-        catch
-        {
-            // Notepad++ might not be installed
-        }
-    }
-
-    private void CloseNotepadPlusPlus()
-    {
-        foreach (var process in Process.GetProcessesByName("notepad++"))
-        {
-            process.Kill();
-        }
     }
 
     private void OpenWindowsTerminal()
@@ -413,20 +323,6 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
     private void CloseWindowsTerminal()
     {
         foreach (var process in Process.GetProcessesByName("WindowsTerminal"))
-        {
-            process.Kill();
-        }
-    }
-
-    private void OpenWindowsSettings()
-    {
-        Process.Start("ms-settings:");
-        Thread.Sleep(2000);
-    }
-
-    private void CloseWindowsSettings()
-    {
-        foreach (var process in Process.GetProcessesByName("SystemSettings"))
         {
             process.Kill();
         }

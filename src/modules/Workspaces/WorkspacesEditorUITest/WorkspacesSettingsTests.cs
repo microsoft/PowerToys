@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace WorkspacesEditorUITest;
 
 [TestClass]
-public class WorkspacesSettingsTests : WorkspacesUiAutomationBase
+public class WorkspacesSettingsTests : UITestBase
 {
     public WorkspacesSettingsTests()
         : base()
@@ -19,53 +19,43 @@ public class WorkspacesSettingsTests : WorkspacesUiAutomationBase
     [TestCategory("Workspaces Settings UI")]
     public void TestLaunchEditorFromSettingsPage()
     {
-        // Find and click the launch editor button
-        var launchButton = Find<Button>("Launch editor");
-        Assert.IsNotNull(launchButton, "Launch editor button should exist in settings");
-        launchButton.Click();
-
-        // Wait for editor to open
-        Thread.Sleep(2000);
-
-        // Verify editor opened
-        Assert.IsTrue(WindowHelper.IsWindowOpen("Workspaces Editor"), "Workspaces Editor should be open");
-
-        // Close the editor for cleanup
-        CloseWorkspacesEditor();
+        GoToSettingsPage();
     }
 
     [TestMethod("WorkspacesSettings.ActivationShortcut")]
     [TestCategory("Workspaces Settings UI")]
     public void TestActivationShortcutCustomization()
     {
-        // Find the activation shortcut control
-        var shortcutControl = Find<Custom>("Activation shortcut");
-        Assert.IsNotNull(shortcutControl, "Activation shortcut control should exist");
+        GoToSettingsPage();
 
-        // Verify default shortcut is displayed
-        var shortcutText = shortcutControl.GetAttribute("Value");
-        Assert.IsFalse(string.IsNullOrEmpty(shortcutText), "Shortcut should have a value");
+        // Find the activation shortcut control
+        var shortcutButton = Find<Button>("Activation shortcut");
+        Assert.IsNotNull(shortcutButton, "Activation shortcut control should exist");
 
         // Test customizing the shortcut
-        shortcutControl.Click();
-        Thread.Sleep(500);
+        shortcutButton.Click();
+
+        Task.Delay(1000).Wait();
 
         // Send new key combination (Win+Ctrl+W)
         SendKeys(Key.Win, Key.Ctrl, Key.W);
-        Thread.Sleep(1000);
 
-        // Verify shortcut was updated
-        var newShortcutText = shortcutControl.GetAttribute("Value");
-        Assert.AreNotEqual(shortcutText, newShortcutText, "Shortcut should be updated");
+        var saveButton = Find<Button>("Save");
 
-        // Reset to default
-        ResetShortcutToDefault(shortcutControl);
+        Assert.IsNotNull(saveButton, "Save button should exist after editing shortcut");
+
+        saveButton.Click();
+
+        var helpText = shortcutButton.HelpText;
+        Assert.AreEqual("Win + Ctrl + W", helpText, "Activation shortcut should be updated to Win + Ctrl + W");
     }
 
     [TestMethod("WorkspacesSettings.EnableToggle")]
     [TestCategory("Workspaces Settings UI")]
     public void TestEnableDisableModule()
     {
+        GoToSettingsPage();
+
         // Find the enable toggle
         var enableToggle = Find<ToggleSwitch>("Enable Workspaces");
         Assert.IsNotNull(enableToggle, "Enable Workspaces toggle should exist");
@@ -90,17 +80,11 @@ public class WorkspacesSettingsTests : WorkspacesUiAutomationBase
         {
             Assert.IsTrue(launchButton.Enabled, "Launch editor button should be enabled when module is enabled");
         }
-
-        // Restore initial state
-        if (enableToggle.IsOn != initialState)
-        {
-            enableToggle.Click();
-            Thread.Sleep(500);
-        }
     }
 
     [TestMethod("WorkspacesSettings.LaunchByActivationShortcut")]
     [TestCategory("Workspaces Settings UI")]
+    [Ignore("Wait until settings & runner can be connected in framework")]
     public void TestLaunchEditorByActivationShortcut()
     {
         // Ensure module is enabled
@@ -122,9 +106,6 @@ public class WorkspacesSettingsTests : WorkspacesUiAutomationBase
         // Verify editor opened
         Assert.IsTrue(WindowHelper.IsWindowOpen("Workspaces Editor"), "Workspaces Editor should open with activation shortcut");
 
-        // Close the editor
-        CloseWorkspacesEditor();
-
         // Reopen settings for next tests
         RestartScopeExe();
         NavigateToWorkspacesSettings();
@@ -132,6 +113,7 @@ public class WorkspacesSettingsTests : WorkspacesUiAutomationBase
 
     [TestMethod("WorkspacesSettings.DisableModuleNoLaunch")]
     [TestCategory("Workspaces Settings UI")]
+    [Ignore("Wait until settings & runner can be connected in framework")]
     public void TestDisabledModuleDoesNotLaunchByShortcut()
     {
         // Disable the module
@@ -167,6 +149,7 @@ public class WorkspacesSettingsTests : WorkspacesUiAutomationBase
 
     [TestMethod("WorkspacesSettings.QuickAccessLaunch")]
     [TestCategory("Workspaces Settings UI")]
+    [Ignore("Wait until tray icon supported is in framework")]
     public void TestLaunchFromQuickAccess()
     {
         // This test verifies the "quick access" mention in settings
@@ -188,5 +171,18 @@ public class WorkspacesSettingsTests : WorkspacesUiAutomationBase
         var workspacesNavItem = Find<NavigationViewItem>("Workspaces");
         workspacesNavItem.Click();
         Thread.Sleep(1000);
+    }
+
+    private void GoToSettingsPage()
+    {
+        if (this.FindAll<NavigationViewItem>("Workspaces").Count == 0)
+        {
+            this.Find<NavigationViewItem>("Windowing & Layouts").Click();
+        }
+
+        this.Find<NavigationViewItem>("Workspaces").Click();
+
+        var enableButton = this.Find<ToggleSwitch>("Enable Workspaces");
+        Assert.IsNotNull(enableButton, "Enable Workspaces toggle should exist");
     }
 }

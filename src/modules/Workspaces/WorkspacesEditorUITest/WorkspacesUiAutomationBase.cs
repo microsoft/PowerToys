@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.PowerToys.UITest;
 
@@ -162,6 +163,61 @@ namespace WorkspacesEditorUITest
                 {
                     // ignore
                 }
+            }
+        }
+
+        private void AttachPowertoySetting()
+        {
+            Task.Delay(200).Wait();
+            this.Session.Attach(PowerToysModule.PowerToysSettings);
+        }
+
+        protected void AttachWorkspacesEditor()
+        {
+            Task.Delay(200).Wait();
+            this.Session.Attach(PowerToysModule.Workspaces);
+        }
+
+        protected void AttachSnapshotWindow()
+        {
+            Task.Delay(200).Wait();
+            this.Session.Attach("Snapshot Creator");
+        }
+
+        protected void OpenCalculator()
+        {
+            Process.Start("calc.exe");
+            Task.Delay(1000).Wait();
+        }
+
+        protected void CloseCalculator()
+        {
+            foreach (var process in Process.GetProcessesByName("CalculatorApp"))
+            {
+                process.Kill();
+            }
+
+            foreach (var process in Process.GetProcessesByName("Calculator"))
+            {
+                process.Kill();
+            }
+        }
+
+        protected void OpenWindowsSettings()
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "ms-settings:",
+                UseShellExecute = true,
+            });
+            Task.Delay(500).Wait();
+        }
+
+        protected void CloseWindowsSettings()
+        {
+            foreach (var process in Process.GetProcessesByName("SystemSettings"))
+            {
+                process.Kill();
             }
         }
     }
