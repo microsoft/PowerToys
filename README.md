@@ -254,7 +254,7 @@ For [v0.92][github-next-release-work], we'll work on the items below:
  - New UI Automation tests
  - Working on installer upgrades
  - Upgrading Keyboard Manager's editor UI
- - Stability/bug fixes
+ - Stability, bug fixes
 
 ## PowerToys Community
 
