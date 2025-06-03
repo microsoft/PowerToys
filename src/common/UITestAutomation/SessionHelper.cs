@@ -175,7 +175,8 @@ namespace Microsoft.PowerToys.UITest
                     if (DateTime.Now - startTime > timeout)
                     {
                         reStartWinAppCount++;
-                        this.StartWindowsAppDriverApp();
+
+                        // this.StartWindowsAppDriverApp();
                         startTime = DateTime.Now;
                     }
 
