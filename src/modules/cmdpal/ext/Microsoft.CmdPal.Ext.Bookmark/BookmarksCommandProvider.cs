@@ -4,12 +4,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
-using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -96,9 +93,8 @@ public partial class BookmarksCommandProvider : CommandProvider
                 _bookmarks = Bookmarks.ReadFromFile(jsonFile);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Logger.LogError(ex.Message);
         }
 
         if (_bookmarks == null)
@@ -122,9 +118,6 @@ public partial class BookmarksCommandProvider : CommandProvider
         {
             if (urlCommand.Type == "folder")
             {
-                contextMenu.Add(
-                    new CommandContextItem(new DirectoryPage(urlCommand.Url)));
-
                 contextMenu.Add(
                     new CommandContextItem(new OpenInTerminalCommand(urlCommand.Url)));
             }

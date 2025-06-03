@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
@@ -100,9 +99,8 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
                 // throw new UriFormatException("The provided URL is not valid.");
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Logger.LogError(ex.Message);
         }
 
         return CommandResult.GoHome();

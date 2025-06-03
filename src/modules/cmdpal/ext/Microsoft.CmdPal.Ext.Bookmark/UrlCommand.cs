@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using ManagedCommon;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 
@@ -43,9 +42,8 @@ public partial class UrlCommand : InvokableCommand
                 // throw new UriFormatException("The provided URL is not valid.");
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            Logger.LogError(ex.Message);
         }
 
         return CommandResult.Dismiss();
@@ -88,9 +86,8 @@ public partial class UrlCommand : InvokableCommand
                         return faviconUrl;
                     }
                 }
-                catch (UriFormatException ex)
+                catch (UriFormatException)
                 {
-                    Logger.LogError(ex.Message);
                 }
 
                 return "🔗";
