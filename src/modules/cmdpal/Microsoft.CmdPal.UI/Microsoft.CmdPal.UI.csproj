@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\CmdPalVersion.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
   <Import Project="CmdPal.pre.props" />
   <Import Project="CmdPal.Branding.props" />
 
@@ -92,7 +93,6 @@
     <!-- LOAD BEARING: GeneratePathProperty=true on BOTH the AC dependencies. Don't forget the AdaptiveCardsWorkaround below -->
     <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
     <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" />
-    <PackageReference Include="AdaptiveCards.Templating" />
     <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
 

@@ -136,6 +136,8 @@ public partial class ListHelpers
     }
 }
 
+#pragma warning disable CA1051
+
 public struct ScoredListItem
 {
     public int Score;
@@ -147,3 +149,4 @@ public struct Scored<T>
     public int Score;
     public T Item;
 }
+#pragma warning restore CA1051
