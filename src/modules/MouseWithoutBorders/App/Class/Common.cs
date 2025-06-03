@@ -1611,7 +1611,7 @@ namespace MouseWithoutBorders
                 return false;
             }
 
-            if (NativeMethods.SHQueryUserNotificationState(out var userNotificationState) == 0)
+            if (NativeMethods.SHQueryUserNotificationState(out var userNotificationState) != 0)
             {
                 Logger.LogDebug($"SHQueryUserNotificationState failed with error : {Marshal.GetLastWin32Error()}");
                 return false;
