@@ -24,7 +24,17 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup>
+<PropertyGroup>
+	<SelfContained>true</SelfContained>
+	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	<PublishTrimmed>true</PublishTrimmed>
+	<PublishSingleFile>false</PublishSingleFile>
+	<DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+	<PublishAot>true</PublishAot>
+	<EnableMsixTooling>true</EnableMsixTooling>
+</PropertyGroup>
+
+	<PropertyGroup>
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
   </PropertyGroup>
 

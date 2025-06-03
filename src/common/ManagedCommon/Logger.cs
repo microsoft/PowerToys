@@ -30,7 +30,7 @@ namespace ManagedCommon
          * You need to find another way to remove Assembly.Location usage.
          */
 #pragma warning disable IL3000 // Avoid accessing Assembly file path when publishing as a single file
-        private static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location).ProductVersion;
+        private static readonly string Version = "2.0.0";
 #pragma warning restore IL3000 // Avoid accessing Assembly file path when publishing as a single file
 
         /// <summary>
