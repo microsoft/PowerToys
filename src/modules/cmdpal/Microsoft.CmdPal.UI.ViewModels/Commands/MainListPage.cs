@@ -204,19 +204,19 @@ public partial class MainListPage : DynamicListPage,
         // * otherwise full weight match
         var nameMatch = isWhiteSpace ?
             (title.Contains(query) ? 1 : 0) :
-            StringMatcher.FuzzySearch(query, title).Score;
+            FuzzyStringMatcher.ScoreFuzzy(query, title);
 
         // Subtitle:
         // * whitespace query: 1/2 point
         // * otherwise ~half weight match. Minus a bit, because subtitles tend to be longer
         var descriptionMatch = isWhiteSpace ?
             (topLevelOrAppItem.Subtitle.Contains(query) ? .5 : 0) :
-            (StringMatcher.FuzzySearch(query, topLevelOrAppItem.Subtitle).Score - 4) / 2.0;
+            (FuzzyStringMatcher.ScoreFuzzy(query, topLevelOrAppItem.Subtitle) - 4) / 2.0;
 
         // Extension title: despite not being visible, give the extension name itself some weight
         // * whitespace query: 0 points
         // * otherwise more weight than a subtitle, but not much
-        var extensionTitleMatch = isWhiteSpace ? 0 : StringMatcher.FuzzySearch(query, extensionDisplayName).Score / 1.5;
+        var extensionTitleMatch = isWhiteSpace ? 0 : FuzzyStringMatcher.ScoreFuzzy(query, extensionDisplayName) / 1.5;
 
         var scores = new[]
         {
