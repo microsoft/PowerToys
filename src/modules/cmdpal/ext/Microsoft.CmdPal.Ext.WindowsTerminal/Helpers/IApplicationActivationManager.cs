@@ -21,12 +21,11 @@ public enum ActivateOptions
 // ApplicationActivationManager
 [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 [Guid("2e941141-7f97-4756-ba1d-9decde894a3d")]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 public partial interface IApplicationActivationManager
 {
-    IntPtr ActivateApplication(string appUserModelId, string arguments, ActivateOptions options, out uint processId);
+    void ActivateApplication(string appUserModelId, string arguments, ActivateOptions options, out uint processId);
 
-    IntPtr ActivateForFile(string appUserModelId, IntPtr /*IShellItemArray* */ itemArray, string verb, out uint processId);
+    void ActivateForFile(string appUserModelId, IntPtr /*IShellItemArray* */ itemArray, string verb, out uint processId);
 
-    IntPtr ActivateForProtocol(string appUserModelId, IntPtr /* IShellItemArray* */itemArray, out uint processId);
+    void ActivateForProtocol(string appUserModelId, IntPtr /* IShellItemArray* */itemArray, out uint processId);
 }

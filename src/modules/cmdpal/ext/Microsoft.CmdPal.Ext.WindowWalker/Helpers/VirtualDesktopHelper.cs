@@ -49,6 +49,10 @@ public class VirtualDesktopHelper
     /// </summary>
     private readonly List<Guid> _availableDesktops = [];
 
+#pragma warning disable SA1306 // Field names should begin with lower-case letter
+    private readonly uint CLSCTXINPROCALL = 0x17;
+#pragma warning restore SA1306 // Field names should begin with lower-case letter
+
     /// <summary>
     /// Id of the current visible Desktop.
     /// </summary>
@@ -56,9 +60,9 @@ public class VirtualDesktopHelper
 
     private static readonly CompositeFormat VirtualDesktopHelperDesktop = System.Text.CompositeFormat.Parse(Properties.Resources.VirtualDesktopHelper_Desktop);
 
-    private readonly Guid iVirtualDesktopManagerCLSID = new("aa509086-5ca9-4c25-8f95-589d3c07b48a");
+    private Guid iVirtualDesktopManagerCLSID = new("aa509086-5ca9-4c25-8f95-589d3c07b48a");
 
-    private readonly Guid iVirtualDesktopManagerIID = new("a5cd92ff-29be-454c-8d04-d82879fb3f1b");
+    private Guid iVirtualDesktopManagerIID = new("a5cd92ff-29be-454c-8d04-d82879fb3f1b");
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VirtualDesktopHelper"/> class.
@@ -67,11 +71,10 @@ public class VirtualDesktopHelper
     public VirtualDesktopHelper(bool desktopListUpdate = false)
     {
         var cw = new StrategyBasedComWrappers();
-        const uint CLSCTX_INPROC_CALL = 0x17;
 
         try
         {
-            var hr = NativeMethods.CoCreateInstance(this.iVirtualDesktopManagerCLSID, nint.Zero, CLSCTX_INPROC_CALL, iVirtualDesktopManagerIID, out var virtualDesktopManagerPtr);
+            var hr = NativeMethods.CoCreateInstance(ref this.iVirtualDesktopManagerCLSID, nint.Zero, CLSCTXINPROCALL, ref iVirtualDesktopManagerIID, out var virtualDesktopManagerPtr);
             if (hr != 0)
             {
                 throw new ArgumentException($"Failed to create IVirtualDesktopManager instance. HR: 0x{hr:X}");
@@ -423,7 +426,7 @@ public class VirtualDesktopHelper
     /// <param name="hWindow">Handle of the top level window.</param>
     /// <param name="desktopId">Guid of the target desktop.</param>
     /// <returns><see langword="True"/> on success and <see langword="false"/> on failure.</returns>
-    public bool MoveWindowToDesktop(IntPtr hWindow, in Guid desktopId)
+    public bool MoveWindowToDesktop(IntPtr hWindow, ref Guid desktopId)
     {
         if (_virtualDesktopManager == null)
         {
@@ -431,7 +434,7 @@ public class VirtualDesktopHelper
             return false;
         }
 
-        var hr = _virtualDesktopManager.MoveWindowToDesktop(hWindow, desktopId);
+        var hr = _virtualDesktopManager.MoveWindowToDesktop(hWindow, ref desktopId);
         if (hr != (int)HRESULT.S_OK)
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = "VirtualDesktopHelper.MoveWindowToDesktop() failed: An exception was thrown when moving the window ({hWindow}) to another desktop ({desktopId})." });
@@ -469,7 +472,7 @@ public class VirtualDesktopHelper
         }
 
         Guid newDesktop = _availableDesktops[windowDesktopNumber - 1];
-        return MoveWindowToDesktop(hWindow, newDesktop);
+        return MoveWindowToDesktop(hWindow, ref newDesktop);
     }
 
     /// <summary>
@@ -500,7 +503,7 @@ public class VirtualDesktopHelper
         }
 
         Guid newDesktop = _availableDesktops[windowDesktopNumber + 1];
-        return MoveWindowToDesktop(hWindow, newDesktop);
+        return MoveWindowToDesktop(hWindow, ref newDesktop);
     }
 
     /// <summary>

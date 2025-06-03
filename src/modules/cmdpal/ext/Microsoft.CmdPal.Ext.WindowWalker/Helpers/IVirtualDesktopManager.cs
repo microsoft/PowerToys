@@ -24,5 +24,5 @@ public partial interface IVirtualDesktopManager
     int GetWindowDesktopId(IntPtr hTopLevelWindow, out Guid desktop);
 
     [PreserveSig]
-    int MoveWindowToDesktop(IntPtr hTopLevelWindow, Guid desktop);
+    int MoveWindowToDesktop(IntPtr hTopLevelWindow, ref Guid desktop);
 }
