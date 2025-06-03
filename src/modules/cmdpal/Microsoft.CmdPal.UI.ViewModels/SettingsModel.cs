@@ -202,4 +202,5 @@ public enum MonitorBehavior
     ToPrimary = 1,
     ToFocusedWindow = 2,
     InPlace = 3,
+    ToLast = 4,
 }
