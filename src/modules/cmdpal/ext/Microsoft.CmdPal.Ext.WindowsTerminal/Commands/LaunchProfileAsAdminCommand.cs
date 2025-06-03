@@ -64,7 +64,12 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
     {
         ComWrappers cw = new StrategyBasedComWrappers();
 
-        NativeHelpers.CoCreateInstance(ref NativeHelpers.ApplicationActivationManagerCLSID, IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref NativeHelpers.ApplicationActivationManagerIID, out var appManagerPtr);
+        var hr = NativeHelpers.CoCreateInstance(ref NativeHelpers.ApplicationActivationManagerCLSID, IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref NativeHelpers.ApplicationActivationManagerIID, out var appManagerPtr);
+
+        if (hr != 0)
+        {
+            throw new ArgumentException($"Failed to create IApplicationActivationManager instance. HR: 0x{hr:X}");
+        }
 
         var appManager = (IApplicationActivationManager)cw.GetOrCreateObjectForComInstance(
             appManagerPtr, CreateObjectFlags.None);

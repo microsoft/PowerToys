@@ -16,7 +16,7 @@ public sealed partial class NativeHelpers
     public const uint CLSCTXINPROCALL = 0x17;
 
     [LibraryImport("ole32.dll")]
-    public static partial void CoCreateInstance(
+    public static partial uint CoCreateInstance(
         ref Guid rclsid,
         IntPtr pUnkOuter,
         uint dwClsContext,
