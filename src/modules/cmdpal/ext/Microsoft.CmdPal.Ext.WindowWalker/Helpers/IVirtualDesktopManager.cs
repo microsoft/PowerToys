@@ -13,7 +13,6 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 /// Code used from <see href="https://learn.microsoft.com/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10"./>
 /// </summary>
 [GeneratedComInterface]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [Guid("a5cd92ff-29be-454c-8d04-d82879fb3f1b")]
 public partial interface IVirtualDesktopManager
 {
