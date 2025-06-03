@@ -4,6 +4,7 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
@@ -18,7 +19,6 @@ public partial class ContextMenuStackViewModel : ObservableObject
     private readonly IContextMenuContext _context;
     private string _lastSearchText = string.Empty;
 
-    // private Dictionary<KeyChord, CommandContextItemViewModel>? _contextKeybindings;
     public ContextMenuStackViewModel(IContextMenuContext context)
     {
         _context = context;
@@ -78,5 +78,22 @@ public partial class ContextMenuStackViewModel : ObservableObject
         }
 
         return null;
+    }
+
+    // InvokeItemCommand is what this will be in Xaml due to source generator
+    // this comes in when an item in the list is tapped
+    // [RelayCommand]
+    public ContextKeybindingResult InvokeItem(CommandContextItemViewModel item) =>
+        PerformCommand(item);
+
+    private ContextKeybindingResult PerformCommand(CommandItemViewModel? command)
+    {
+        if (command == null)
+        {
+            return ContextKeybindingResult.Unhandled;
+        }
+
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
+        return ContextKeybindingResult.Hide;
     }
 }
