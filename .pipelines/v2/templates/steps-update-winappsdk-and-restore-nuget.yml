@@ -26,13 +26,21 @@ steps:
   displayName: 'Display WinAppSDK Version Found'
 
 - task: PowerShell@2
+  displayName: 'Set Prerelease Flag'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $prereleaseFlag = if ('${{ parameters.useExperimentalVersion }}' -eq 'true') { '-Prerelease' } else { '' }
+      Write-Host "##vso[task.setvariable variable=PrereleaseFlag]$prereleaseFlag"
+
+- task: PowerShell@2
   displayName: 'Query Available WinAppSDK Packages'
   inputs:
     targetType: 'inline'
     script: |
       Write-Host "Querying available Microsoft.WindowsAppSDK packages..."
-      $prereleaseFlag = if ('${{ parameters.useExperimentalVersion }}' -eq 'true') { '-Prerelease' } else { '' }
-      $command = "nuget list Microsoft.WindowsAppSDK -Source `"https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json`" $prereleaseFlag"
+      $command = "nuget list Microsoft.WindowsAppSDK -Source `"https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json`"
+      $prereleaseFlag"
       Write-Host "Command: $command"
       Invoke-Expression $command
 
@@ -46,7 +54,7 @@ steps:
       -Source "https://microsoft.pkgs.visualstudio.com/ProjectReunion/_packaging/Project.Reunion.nuget.internal/nuget/v3/index.json"
       -Version "$(WinAppSDKVersion)"
       -OutputDirectory "$(Build.SourcesDirectory)\localpackages\direct"
-      ${{ eq(parameters.useExperimentalVersion, true) and '-Prerelease' or '' }}
+      $(PrereleaseFlag)
 
 - script: |
     echo "Listing packages from direct download:"
