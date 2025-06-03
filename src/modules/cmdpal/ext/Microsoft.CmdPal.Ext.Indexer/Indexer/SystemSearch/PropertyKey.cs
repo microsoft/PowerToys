@@ -15,15 +15,13 @@ namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 [StructLayout(LayoutKind.Sequential)]
 public struct PropertyKey
 {
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "No, please do not change the name")]
-    public Guid fmtid;
+    public Guid FmtID;
 
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "No, please do not change the name")]
-    public uint pid;
+    public uint PID;
 
     public PropertyKey(Guid fmtid, uint pid)
     {
-        this.fmtid = fmtid;
-        this.pid = pid;
+        this.FmtID = fmtid;
+        this.PID = pid;
     }
 }

@@ -27,7 +27,8 @@ internal static class DataSourceManager
 
     private static bool InitializeDataSource()
     {
-        var hr = NativeMethods.CoCreateInstance(NativeHelpers.CsWin32GUID.CLSIDCollatorDataSource, IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, typeof(IDBInitialize).GUID, out var dataSourceObjPtr);
+        var riid = typeof(IDBInitialize).GUID;
+        var hr = NativeMethods.CoCreateInstance(ref NativeHelpers.CsWin32GUID.CLSIDCollatorDataSource, IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref riid, out var dataSourceObjPtr);
         if (hr != 0)
         {
             Logger.LogError("CoCreateInstance failed: " + hr);

@@ -30,7 +30,7 @@ internal sealed partial class QueryStringBuilder
         {
             ComWrappers cw = new StrategyBasedComWrappers();
 
-            var hr = NativeMethods.CoCreateInstance(NativeHelpers.CsWin32GUID.CLSIDSearchManager, IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, NativeHelpers.CsWin32GUID.IIDISearchManager, out var searchManagerPtr);
+            var hr = NativeMethods.CoCreateInstance(ref NativeHelpers.CsWin32GUID.CLSIDSearchManager, IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref NativeHelpers.CsWin32GUID.IIDISearchManager, out var searchManagerPtr);
             if (hr != 0)
             {
                 throw new ArgumentException($"Failed to create SearchManager instance. HR: 0x{hr:X}");

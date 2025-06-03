@@ -9,26 +9,23 @@ using VARTYPE = System.Runtime.InteropServices.VarEnum;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
 [StructLayout(LayoutKind.Explicit, Pack = 8)]
 public struct PropVariant
 {
     /// <summary>Value type tag.</summary>
     [FieldOffset(0)]
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "No, please do not change the name")]
     public ushort vt;
 
     [FieldOffset(2)]
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "No, please do not change the name")]
     public ushort wReserved1;
 
     /// <summary>Reserved for future use.</summary>
     [FieldOffset(4)]
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "No, please do not change the name")]
     public ushort wReserved2;
 
     /// <summary>Reserved for future use.</summary>
     [FieldOffset(6)]
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "No, please do not change the name")]
     public ushort wReserved3;
 
     /// <summary>The decimal value when VT_DECIMAL.</summary>
@@ -64,10 +61,10 @@ public struct PropVariant
 public struct BLOB
 {
     /// <summary>The count of bytes</summary>
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "No need")]
     public uint cbSize;
 
     /// <summary>A pointer to the allocated array of bytes.</summary>
-    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:Accessible fields should begin with upper-case letter", Justification = "No need")]
     public IntPtr pBlobData;
 }
+
+#pragma warning restore SA1307 // Accessible fields should begin with upper-case letter

@@ -11,7 +11,6 @@ using System.Runtime.InteropServices.Marshalling;
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
 [Guid("886d8eeb-8cf2-4446-8d02-cdba1dbdcf99")]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 public partial interface IPropertyStore
 {

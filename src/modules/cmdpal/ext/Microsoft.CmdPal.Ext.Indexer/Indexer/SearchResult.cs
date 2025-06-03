@@ -88,7 +88,6 @@ internal sealed class SearchResult
             // convert to string
             var str = Marshal.PtrToStringUni(pwszVal);
 
-            // Marshal.FreeCoTaskMem(pwszVal);
             return str;
         }
 

@@ -219,7 +219,6 @@ internal sealed partial class SearchQuery : IDisposable
 
             currentRowset.ReleaseRows(rowCountReturned, rowHandles, IntPtr.Zero, null, null);
 
-            // TODO: confirm
             Marshal.FreeCoTaskMem(prghRows);
             prghRows = IntPtr.Zero;
 
@@ -234,7 +233,6 @@ internal sealed partial class SearchQuery : IDisposable
         {
             if (prghRows != IntPtr.Zero)
             {
-                // TODO: confirm
                 Marshal.FreeCoTaskMem(prghRows);
             }
         }

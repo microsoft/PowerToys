@@ -9,7 +9,6 @@ using System.Runtime.InteropServices.Marshalling;
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
 
 [Guid("0c733a7c-2a1c-11ce-ade5-00aa0044773d")]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [GeneratedComInterface]
 public partial interface IRowset
 {
