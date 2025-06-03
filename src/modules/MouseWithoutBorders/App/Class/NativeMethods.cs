@@ -306,10 +306,10 @@ namespace MouseWithoutBorders.Class
             StringMarshalling = StringMarshalling.Utf16)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool QueryFullProcessImageName(
-            IntPtr hProcess, QUERY_FULL_PROCESS_NAME_DWFLAGS dwFlags, [Out] char[] lpExeName, ref uint lpdwSize);
+            IntPtr hProcess, QUERY_FULL_PROCESS_NAME_FLAGS dwFlags, [Out] char[] lpExeName, ref uint lpdwSize);
 
         [LibraryImport("user32.dll", SetLastError = true)]
-        internal static partial IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR_FROM_WINDOW_DWFLAGS dwFlags);
+        internal static partial IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR_FROM_WINDOW_FLAGS dwFlags);
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct POINT
@@ -960,14 +960,14 @@ namespace MouseWithoutBorders.Class
             NameDnsDomain = 12,
         }
 
-        internal enum MONITOR_FROM_WINDOW_DWFLAGS : uint
+        internal enum MONITOR_FROM_WINDOW_FLAGS : uint
         {
             DEFAULT_TO_NULL = 0x00000000,
             DEFAULT_TO_PRIMARY = 0x00000001,
             DEFAULT_TO_NEAREST = 0x00000002,
         }
 
-        internal enum QUERY_FULL_PROCESS_NAME_DWFLAGS : uint
+        internal enum QUERY_FULL_PROCESS_NAME_FLAGS : uint
         {
             DEFAULT = 0x00000000,
             PROCESS_NAME_NATIVE = 0x00000001,
