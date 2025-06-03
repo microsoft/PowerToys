@@ -39,7 +39,7 @@ parameters:
     default: false
   - name: useUnstableWinAppSDK
     type: boolean
-    displayName: "Use Unstable WinAppSDK Package (even if build failed)"
+    displayName: "Allow using unstable WinAppSDK package (even if build failed)"
     default: false
 
 extends:
