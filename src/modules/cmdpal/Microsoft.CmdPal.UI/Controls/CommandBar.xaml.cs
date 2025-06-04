@@ -129,7 +129,6 @@ public sealed partial class CommandBar : UserControl,
     private void Flyout_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
     {
         ViewModel?.ClearContextStack();
-        WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
         WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
     }
 

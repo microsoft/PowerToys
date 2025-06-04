@@ -198,7 +198,7 @@
                         <cpcontrols:ContextMenu 
                             x:Name="ContextMenu"
                             x:Uid="ContextMenu" 
-                            ViewModel="{x:Bind ViewModel.ContextMenu}"/>
+                            ViewModel="{x:Bind ViewModel.ContextMenu, Mode=OneWay}"/>
                     
                     </Flyout>
                 </Button.Flyout>
