@@ -8,13 +8,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KeyboardManagerEditorUI.Interop
+namespace KeyboardManagerEditorUI.Helpers
 {
-    public enum ShortcutOperationType
+    public class TextMapping
     {
-        RemapShortcut = 0,
-        RunProgram = 1,
-        OpenUri = 2,
-        RemapText = 3,
+        public List<string> Keys { get; set; } = new List<string>();
+
+        public string Text { get; set; } = string.Empty;
+
+        public bool IsAllApps { get; set; } = true;
+
+        public string AppName { get; set; } = "All Apps";
     }
 }

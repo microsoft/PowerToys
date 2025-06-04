@@ -31,6 +31,7 @@
     <None Remove="Styles\CommonStyle.xaml" />
     <None Remove="Styles\InputControl.xaml" />
     <None Remove="Styles\KeyVisual.xaml" />
+    <None Remove="Styles\TextPageInputControl.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,6 +57,11 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Styles\TextPageInputControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\CommonStyle.xaml">

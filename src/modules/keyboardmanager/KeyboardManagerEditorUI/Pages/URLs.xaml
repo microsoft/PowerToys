@@ -63,7 +63,12 @@
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Text="URL" />
-
+                <Rectangle
+                    Grid.ColumnSpan="4"
+                    Height="1"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Bottom"
+                    Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                 <ListView
                     Grid.Row="1"
                     Grid.ColumnSpan="4"

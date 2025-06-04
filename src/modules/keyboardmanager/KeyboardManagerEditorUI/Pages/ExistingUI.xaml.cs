@@ -45,9 +45,6 @@ namespace KeyboardManagerEditorUI.Pages
         [DllImport("PowerToys.KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int GetKeyboardKeysList(bool isShortcut, [Out] KeyNamePair[] keyList, int maxCount);
 
-        [DllImport("PowerToys.KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool CheckIfRemappingsAreValid();
-
         public List<KeyboardKey> KeysList { get; private set; } = new List<KeyboardKey>();
 
         public ExistingUI()
@@ -78,14 +75,6 @@ namespace KeyboardManagerEditorUI.Pages
                     KeyCode = keyNamePairs[i].KeyCode,
                     KeyName = keyNamePairs[i].KeyName,
                 });
-            }
-        }
-
-        private void KeyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count > 0 && e.AddedItems[0] is KeyboardKey key)
-            {
-                Console.WriteLine($"selected key: {key.KeyName} (code: {key.KeyCode})");
             }
         }
 

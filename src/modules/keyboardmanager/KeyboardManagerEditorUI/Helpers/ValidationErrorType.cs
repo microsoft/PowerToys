@@ -20,5 +20,6 @@ namespace KeyboardManagerEditorUI.Helpers
         IllegalShortcut,
         DuplicateMapping,
         SelfMapping,
+        EmptyTargetText,
     }
 }

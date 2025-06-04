@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
+using KeyboardManagerEditorUI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -29,12 +30,34 @@ namespace KeyboardManagerEditorUI
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(titleBar);
 
+            this.Activated += MainWindow_Activated;
+            this.Closed += MainWindow_Closed;
+
             // Set the default page
             RootView.SelectedItem = RootView.MenuItems[0];
         }
 
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
+        {
+            if (args.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                // Release the keyboard hook when the window is deactivated
+                KeyboardHookHelper.Instance.CleanupHook();
+            }
+        }
+
+        private void MainWindow_Closed(object sender, WindowEventArgs args)
+        {
+            KeyboardHookHelper.Instance.Dispose();
+            this.Activated -= MainWindow_Activated;
+            this.Closed -= MainWindow_Closed;
+        }
+
         private void RootView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
+            // Cleanup the keyboard hook when the selected page changes
+            KeyboardHookHelper.Instance.CleanupHook();
+
             if (args.SelectedItem is NavigationViewItem selectedItem)
             {
                 switch ((string)selectedItem.Tag)

@@ -515,12 +515,26 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
     bool AddShortcutRemap(void* config,
                           const wchar_t* originalKeys,
                           const wchar_t* targetKeys,
-                          const wchar_t* targetApp)
+                          const wchar_t* targetApp,
+                          int operationType = 0)
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
         Shortcut originalShortcut(originalKeys);
-        Shortcut targetShortcut(targetKeys);
+
+        KeyShortcutTextUnion targetShortcut;
+
+        switch (operationType)
+        {
+        case 3:
+            targetShortcut = std::wstring(targetKeys);
+            break;
+        
+        default:
+            targetShortcut = Shortcut(targetKeys);
+            std::get<Shortcut>(targetShortcut).operationType = static_cast<Shortcut::OperationType>(operationType);
+            break;
+        }
 
         std::wstring app(targetApp ? targetApp : L"");
 
@@ -609,6 +623,18 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         return false;
     }
 
+    bool DeleteSingleKeyToTextRemap(void* config, int originalKey)
+    {
+        auto mappingConfig = static_cast<MappingConfiguration*>(config);
+        auto it = mappingConfig->singleKeyToTextReMap.find(originalKey);
+        if (it != mappingConfig->singleKeyToTextReMap.end())
+        {
+            mappingConfig->singleKeyToTextReMap.erase(it);
+            return true;
+        }
+        return false;
+    }
+
     // Function to delete a shortcut remapping
     bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp)
     {
@@ -657,20 +683,6 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
 
         return false;
     }
-}
-
-// Test function to call the remapping helper function
-bool CheckIfRemappingsAreValid()
-{
-    RemapBuffer remapBuffer;
-
-    // Mock valid key to key remappings
-    remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x41, (DWORD)0x42 }), std::wstring() });
-    remapBuffer.push_back(RemapBufferRow{ RemapBufferItem({ (DWORD)0x42, (DWORD)0x43 }), std::wstring() });
-
-    auto result = LoadingAndSavingRemappingHelper::CheckIfRemappingsAreValid(remapBuffer);
-
-    return result == ShortcutErrorType::NoError;
 }
 
 // Get the list of keyboard keys in Editor
