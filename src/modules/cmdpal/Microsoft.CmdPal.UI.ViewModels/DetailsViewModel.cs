@@ -49,6 +49,7 @@ public partial class DetailsViewModel(IDetails _details, WeakReference<IPageCont
                 {
                     IDetailsSeparator => new DetailsSeparatorViewModel(element, this.PageContext),
                     IDetailsLink => new DetailsLinkViewModel(element, this.PageContext),
+                    IDetailsCommand => new DetailsCommandViewModel(element, this.PageContext),
                     IDetailsTags => new DetailsTagsViewModel(element, this.PageContext),
                     _ => null,
                 };
