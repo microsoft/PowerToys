@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Win32;
@@ -37,19 +38,32 @@ public static class AppxPackageHelper
                 break;
             }
 
-            IAppxManifestApplication* manifestApp;
-            manifestApps->GetCurrent(&manifestApp);
+            IAppxManifestApplication* manifestApp = null;
 
-            var hr = manifestApp->GetStringValue("AppListEntry", out var appListEntryPtr);
-            var appListEntry = ComFreeHelper.GetStringAndFree(hr, appListEntryPtr);
-
-            if (appListEntry != "none")
+            try
             {
-                result.Add((IntPtr)manifestApp);
+                manifestApps->GetCurrent(&manifestApp).ThrowOnFailure();
+
+                var hr = manifestApp->GetStringValue("AppListEntry", out var appListEntryPtr);
+                var appListEntry = ComFreeHelper.GetStringAndFree(hr, appListEntryPtr);
+
+                if (appListEntry != "none")
+                {
+                    result.Add((IntPtr)manifestApp);
+                }
+                else if (manifestApp != null)
+                {
+                    manifestApp->Release();
+                }
             }
-            else if (manifestApp != null)
+            catch (Exception ex)
             {
-                manifestApp->Release();
+                if (manifestApp != null)
+                {
+                    manifestApp->Release();
+                }
+
+                Logger.LogError($"Failed to get current application from manifest: {ex.Message}");
             }
 
             manifestApps->MoveNext(out var hasNext);
