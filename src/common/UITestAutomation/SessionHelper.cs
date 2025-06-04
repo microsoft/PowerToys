@@ -56,7 +56,7 @@ namespace Microsoft.PowerToys.UITest
 
             var desktopCapabilities = new AppiumOptions();
             desktopCapabilities.AddAdditionalCapability("app", "Root");
-            this.Root = this.NewWindowsDriver(desktopCapabilities);
+            this.Root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
         }
 
         /// <summary>
@@ -154,7 +154,6 @@ namespace Microsoft.PowerToys.UITest
             var timeout = TimeSpan.FromMinutes(2);
             var retryInterval = TimeSpan.FromSeconds(5);
             DateTime startTime = DateTime.Now;
-            int reStartWinAppCount = 0;
 
             while (true)
             {
@@ -165,17 +164,9 @@ namespace Microsoft.PowerToys.UITest
                 }
                 catch (Exception)
                 {
-                    if (reStartWinAppCount > 0)
-                    {
-                        throw;
-                    }
-
                     if (DateTime.Now - startTime > timeout)
                     {
-                        reStartWinAppCount++;
-
-                        // this.StartWindowsAppDriverApp();
-                        startTime = DateTime.Now;
+                        throw;
                     }
 
                     Task.Delay(retryInterval).Wait();
