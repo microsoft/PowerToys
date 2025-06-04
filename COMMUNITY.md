@@ -184,7 +184,6 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 
 ## PowerToys core team
 
-- [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Lead
 - [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
 - [@nguyen-dows](https://github.com/nguyen-dows) - Christopher Nguyen - Product Manager
 - [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
@@ -204,6 +203,9 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
 - [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
 - [@vanzue](https://github.com/vanzue) - Kai Tao - Dev
+- [@chatasweetie](https://github.com/chatasweetie) - Jessica Earley-Cha - Dev
+- [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
+- [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Overhead
 
 ## Former PowerToys core team members
 
