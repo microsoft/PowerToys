@@ -69,31 +69,26 @@
         </DataTemplate>
 
         <DataTemplate x:Key="ModuleItemButtonTemplate" x:DataType="viewmodels:DashboardModuleButtonItem">
-            <Button
-                HorizontalAlignment="Stretch"
+            <HyperlinkButton
                 Click="{x:Bind ButtonClickHandler, Mode=OneWay}"
-                Content="{x:Bind ButtonTitle}" />
+                Content="{x:Bind ButtonTitle}"
+                FontSize="12" />
         </DataTemplate>
 
         <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
-            <Grid ColumnSpacing="12">
+            <Grid ColumnSpacing="8">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Border
-                    Padding="8,4"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource ControlCornerRadius}">
+                <Border>
                     <ItemsControl
                         AutomationProperties.AccessibilityView="Raw"
                         IsTabStop="False"
                         ItemsSource="{x:Bind Shortcut, Mode=TwoWay}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="12" />
+                                <StackPanel Orientation="Horizontal" Spacing="4" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
@@ -102,13 +97,14 @@
                                     VerticalAlignment="Center"
                                     AutomationProperties.AccessibilityView="Raw"
                                     Content="{Binding}"
+                                    FontWeight="SemiBold"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     IsTabStop="False"
                                     VisualType="TextOnly" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </Border>
-
                 <TextBlock
                     Grid.Column="1"
                     VerticalAlignment="Center"
@@ -281,6 +277,14 @@
                 </Button.Flyout>
             </Button>
         </DataTemplate>
+
+        <Style
+            x:Key="CustomFlyoutPresenterStyle"
+            BasedOn="{StaticResource DefaultFlyoutPresenterStyle}"
+            TargetType="FlyoutPresenter">
+            <Setter Property="MinWidth" Value="486" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
     </Page.Resources>
     <Grid Margin="16,0,0,0" RowSpacing="24">
         <Grid.RowDefinitions>
@@ -289,10 +293,15 @@
         </Grid.RowDefinitions>
         <TextBlock
             x:Uid="DashboardTitle"
+            MaxWidth="1000"
+            Margin="24,0,0,0"
             VerticalAlignment="Center"
             Style="{StaticResource TitleTextBlockStyle}" />
 
-        <InfoBar
+
+
+
+        <!--<InfoBar
             x:Uid="UpdateAvailable"
             Margin="0,0,16,0"
             HorizontalAlignment="Right"
@@ -302,204 +311,373 @@
             IsOpen="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"
             Severity="Informational">
             <InfoBar.ActionButton>
-                <Button x:Uid="LearnMore" Click="SWVersionButtonClicked" />
+                <Button x:Uid="LearnMore"  />
             </InfoBar.ActionButton>
-        </InfoBar>
+        </InfoBar>-->
 
-        <ScrollViewer x:Name="MainScrollViewer" Grid.Row="1">
-            <StackPanel Padding="0,0,16,16" Orientation="Vertical">
-                <TextBlock
-                    x:Uid="EnabledModules"
-                    Margin="0,0,0,12"
-                    Style="{StaticResource SubtitleTextBlockStyle}" />
-                <ItemsRepeater x:Name="DashboardView" ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
-                    <ItemsRepeater.Layout>
-                        <tkcontrols:StaggeredLayout
-                            ColumnSpacing="8"
-                            DesiredColumnWidth="378"
-                            RowSpacing="8" />
-                    </ItemsRepeater.Layout>
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:DashboardListItem">
-                            <Button
-                                Padding="0"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Stretch"
-                                AutomationProperties.Name="{x:Bind Label}"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Click="DashboardListItemClick"
-                                CornerRadius="{StaticResource OverlayCornerRadius}"
-                                Tag="{x:Bind Tag, Mode=OneWay}">
-                                <Grid
-                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="{StaticResource OverlayCornerRadius}"
-                                    RowSpacing="0">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition />
-                                        <RowDefinition />
-                                    </Grid.RowDefinitions>
-                                    <Grid Margin="16,8,16,0" ColumnSpacing="12">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Image
-                                            Grid.Column="0"
-                                            Width="20"
-                                            Margin="0,0,0,0">
-                                            <Image.Source>
-                                                <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
-                                            </Image.Source>
-                                        </Image>
-                                        <StackPanel
-                                            Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            Orientation="Horizontal">
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                FontWeight="SemiBold"
-                                                Text="{x:Bind Label, Mode=OneWay}"
-                                                TextTrimming="CharacterEllipsis" />
-                                            <InfoBadge
-                                                Margin="4,0,0,0"
-                                                Style="{StaticResource NewInfoBadge}"
-                                                Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
-                                        </StackPanel>
-                                        <FontIcon
-                                            Grid.Column="2"
-                                            Width="20"
-                                            Margin="0,0,-12,0"
-                                            FontSize="16"
-                                            Glyph="&#xE72E;"
-                                            Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
-                                            <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
-                                            </ToolTipService.ToolTip>
-                                        </FontIcon>
-                                        <ToggleSwitch
-                                            x:Uid="Enable_Module"
-                                            Grid.Column="3"
-                                            Margin="0,-2,0,0"
-                                            HorizontalAlignment="Right"
-                                            AutomationProperties.HelpText="{x:Bind Label}"
-                                            IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
-                                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
-                                            OffContent=""
-                                            OnContent=""
-                                            Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
-                                    </Grid>
+        <ScrollViewer
+            x:Name="MainScrollViewer"
+            Grid.Row="1"
+            HorizontalAlignment="Stretch">
+            <Grid>
+                <Grid
+                    MaxWidth="1000"
+                    Padding="12,0"
+                    RowSpacing="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-                                    <ItemsControl
-                                        Grid.Row="1"
-                                        Margin="16,8,16,16"
-                                        IsTabStop="False"
-                                        ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
-                                        ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}"
-                                        Visibility="{x:Bind IsEnabled, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <StackPanel Spacing="4" />
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                    </ItemsControl>
-                                </Grid>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Border
+                                Width="156"
+                                Height="86"
+                                CornerRadius="8">
+                                <Border.Background>
+                                    <ImageBrush ImageSource="/Assets/Settings/Modules/CmdPalHero.png" />
+                                </Border.Background>
+                            </Border>
+
+                            <Button Grid.Column="1" Style="{StaticResource SubtleButtonStyle}">
+                                <StackPanel Grid.Column="1" Orientation="Vertical">
+                                    <TextBlock FontWeight="SemiBold" Text="Command Palette is here!" />
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="Learn what's new in 0.90" />
+                                </StackPanel>
                             </Button>
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
+                        </Grid>
 
-                <TextBlock
-                    x:Uid="DisabledModules"
-                    Margin="0,24,0,12"
-                    Style="{StaticResource SubtitleTextBlockStyle}" />
+                        <Button Grid.Column="1" Style="{StaticResource SubtleButtonStyle}">
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon
+                                    FontSize="20"
+                                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                    Glyph="&#xE814;" />
+                                <StackPanel Grid.Column="1" Orientation="Vertical">
+                                    <TextBlock FontWeight="SemiBold" Text="2 shortcut conflicts" />
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="Shortcuts conflict with system" />
+                                </StackPanel>
+                            </Grid>
+                            <Button.Flyout>
+                                <Flyout FlyoutPresenterStyle="{StaticResource CustomFlyoutPresenterStyle}" Placement="Bottom">
+                                    <Grid
+                                        MaxWidth="420"
+                                        Padding="0,16,0,16"
+                                        RowSpacing="8">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
 
-                <ItemsRepeater ItemsSource="{x:Bind ViewModel.DisabledModules, Mode=OneWay}">
-                    <ItemsRepeater.Layout>
-                        <tkcontrols:StaggeredLayout
-                            ColumnSpacing="8"
-                            DesiredColumnWidth="378"
-                            RowSpacing="8" />
-                    </ItemsRepeater.Layout>
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:DashboardListItem">
-                            <Button
-                                Padding="0"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Stretch"
-                                AutomationProperties.Name="{x:Bind Label}"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Click="DashboardListItemClick"
-                                CornerRadius="{StaticResource OverlayCornerRadius}"
-                                Tag="{x:Bind Tag, Mode=OneWay}">
-                                <Grid
-                                    Padding="16,12"
-                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="{StaticResource OverlayCornerRadius}"
-                                    RowSpacing="12">
-                                    <Grid ColumnSpacing="12">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Image Grid.Column="0" Width="20">
-                                            <Image.Source>
-                                                <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
-                                            </Image.Source>
-                                        </Image>
+                                        <TextBlock
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="2 activation shortcuts conflict with system or other modules, update to avoid unexpected behavior."
+                                            TextWrapping="Wrap" />
                                         <StackPanel
-                                            Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            Orientation="Horizontal">
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                FontWeight="SemiBold"
-                                                Text="{x:Bind Label, Mode=OneWay}"
-                                                TextTrimming="CharacterEllipsis" />
-                                            <InfoBadge
-                                                Margin="4,0,0,0"
-                                                Style="{StaticResource NewInfoBadge}"
-                                                Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                            Grid.Row="1"
+                                            Orientation="Vertical"
+                                            Spacing="8">
+                                            <tkcontrols:SettingsCard
+                                                Margin="0,12,0,0"
+                                                Description="Conflicts with Microsoft Copilot 365"
+                                                Header="PowerToys Run"
+                                                IsClickEnabled="True">
+                                                <tkcontrols:SettingsCard.HeaderIcon>
+                                                    <ImageIcon Source="/Assets/Settings/Icons/PowerToysRun.png" />
+                                                </tkcontrols:SettingsCard.HeaderIcon>
+                                                <tkcontrols:SettingsCard.Resources>
+                                                    <x:Double x:Key="SettingsCardWrapThreshold">286</x:Double>
+                                                </tkcontrols:SettingsCard.Resources>
+                                                <StackPanel
+                                                    Padding="12,8"
+                                                    Background="{ThemeResource SystemFillColorCriticalBrush}"
+                                                    CornerRadius="4"
+                                                    Orientation="Horizontal"
+                                                    Spacing="8">
+                                                    <controls:KeyVisual
+                                                        Content="Alt"
+                                                        Foreground="White"
+                                                        VisualType="TextOnly" />
+                                                    <controls:KeyVisual
+                                                        Content="Space"
+                                                        Foreground="White"
+                                                        VisualType="TextOnly" />
+                                                </StackPanel>
+                                            </tkcontrols:SettingsCard>
+                                            <tkcontrols:SettingsCard
+                                                Description="Conflicts with Snipping Tool"
+                                                Header="ColorPicker"
+                                                IsClickEnabled="True">
+                                                <tkcontrols:SettingsCard.HeaderIcon>
+                                                    <ImageIcon Source="/Assets/Settings/Icons/ColorPicker.png" />
+                                                </tkcontrols:SettingsCard.HeaderIcon>
+                                                <tkcontrols:SettingsCard.Resources>
+                                                    <x:Double x:Key="SettingsCardWrapThreshold">286</x:Double>
+                                                </tkcontrols:SettingsCard.Resources>
+                                                <StackPanel
+                                                    Padding="12,8"
+                                                    Background="{ThemeResource SystemFillColorCriticalBrush}"
+                                                    CornerRadius="4"
+                                                    Orientation="Horizontal"
+                                                    Spacing="8">
+                                                    <controls:KeyVisual
+                                                        Content="Win"
+                                                        Foreground="White"
+                                                        VisualType="TextOnly" />
+                                                    <controls:KeyVisual
+                                                        Content="Shift"
+                                                        Foreground="White"
+                                                        VisualType="TextOnly" />
+                                                    <controls:KeyVisual
+                                                        Content="C"
+                                                        Foreground="White"
+                                                        VisualType="TextOnly" />
+                                                </StackPanel>
+                                            </tkcontrols:SettingsCard>
                                         </StackPanel>
-                                        <FontIcon
-                                            Grid.Column="2"
-                                            Width="20"
-                                            Margin="0,0,-12,0"
-                                            FontSize="16"
-                                            Glyph="&#xE72E;"
-                                            Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
-                                            <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
-                                            </ToolTipService.ToolTip>
-                                        </FontIcon>
-                                        <ToggleSwitch
-                                            x:Uid="Enable_Module"
-                                            Grid.Column="3"
-                                            Margin="0,-2,0,0"
-                                            HorizontalAlignment="Right"
-                                            AutomationProperties.HelpText="{x:Bind Label}"
-                                            IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}"
-                                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
-                                            OffContent=""
-                                            OnContent=""
-                                            Style="{StaticResource RightAlignedCompactToggleSwitchStyle}" />
                                     </Grid>
-                                </Grid>
-                            </Button>
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-            </StackPanel>
+                                </Flyout>
+                            </Button.Flyout>
+                        </Button>
+
+                        <Button
+                            Grid.Column="2"
+                            Click="SWVersionButtonClicked"
+                            Style="{StaticResource SubtleButtonStyle}">
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon
+                                    FontSize="20"
+                                    Foreground="{ThemeResource AccentTextFillColorTertiaryBrush}"
+                                    Glyph="&#xE895;" />
+                                <StackPanel Grid.Column="1" Orientation="Vertical">
+                                    <TextBlock FontWeight="SemiBold" Text="Update available" />
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="Learn more about 0.92" />
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+                    </Grid>
+
+                    <Grid
+                        x:Name="EnabledCard"
+                        Grid.Row="1"
+                        Margin="0,8,0,0"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource OverlayCornerRadius}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            Margin="20,16,0,8"
+                            FontWeight="SemiBold"
+                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            Text="Active modules" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Margin="20,0,0,16"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="These modules are currently enabled on your system" />
+                        <ItemsRepeater
+                            x:Name="DashboardView"
+                            Grid.Row="2"
+                            ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Vertical" Spacing="0" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="viewmodels:DashboardListItem">
+                                    <tkcontrols:SettingsCard
+                                        Background="Transparent"
+                                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                                        BorderThickness="0,1,0,0"
+                                        Click="DashboardListItemClick"
+                                        CornerRadius="0"
+                                        Header="{x:Bind Label, Mode=OneWay}"
+                                        IsClickEnabled="True">
+                                        <tkcontrols:SettingsCard.HeaderIcon>
+                                            <ImageIcon>
+                                                <ImageIcon.Source>
+                                                    <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
+                                                </ImageIcon.Source>
+                                            </ImageIcon>
+                                        </tkcontrols:SettingsCard.HeaderIcon>
+                                        <ToggleSwitch IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}" IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                                        <tkcontrols:SettingsCard.Description>
+                                            <ItemsControl
+                                                IsTabStop="False"
+                                                ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
+                                                ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}"
+                                                Visibility="{x:Bind IsEnabled, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="0" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                        </tkcontrols:SettingsCard.Description>
+                                    </tkcontrols:SettingsCard>
+
+                                    <!--<StackPanel
+                                       Grid.Column="1"
+                                       VerticalAlignment="Center"
+                                       Orientation="Horizontal">
+                                       <TextBlock
+                                           VerticalAlignment="Center"
+                                           FontWeight="SemiBold"
+                                           Text=""
+                                           TextTrimming="CharacterEllipsis" />
+                                       <InfoBadge
+                                           Margin="4,0,0,0"
+                                           Style="{StaticResource NewInfoBadge}"
+                                           Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                                   </StackPanel>-->
+                                    <!--<FontIcon
+                                       Grid.Column="2"
+                                       Width="20"
+                                       Margin="0,0,-12,0"
+                                       FontSize="16"
+                                       Glyph="&#xE72E;"
+                                       Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
+                                       <ToolTipService.ToolTip>
+                                           <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
+                                       </ToolTipService.ToolTip>
+                                   </FontIcon>-->
+
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </Grid>
+                    <Grid
+                        x:Name="DisabledCard"
+                        Grid.Row="2"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource OverlayCornerRadius}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            Margin="20,16,0,8"
+                            FontWeight="SemiBold"
+                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            Text="Disabled modules" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Margin="20,0,0,16"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="These modules are currently turned off" />
+                        <ItemsRepeater Grid.Row="2" ItemsSource="{x:Bind ViewModel.DisabledModules, Mode=OneWay}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Vertical" Spacing="0" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="viewmodels:DashboardListItem">
+                                    <tkcontrols:SettingsCard
+                                        Background="Transparent"
+                                        BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                                        BorderThickness="0,1,0,0"
+                                        Click="DashboardListItemClick"
+                                        CornerRadius="0"
+                                        Header="{x:Bind Label, Mode=OneWay}"
+                                        IsClickEnabled="True">
+                                        <tkcontrols:SettingsCard.HeaderIcon>
+                                            <ImageIcon>
+                                                <ImageIcon.Source>
+                                                    <BitmapImage UriSource="{x:Bind Icon, Mode=OneWay}" />
+                                                </ImageIcon.Source>
+                                            </ImageIcon>
+                                        </tkcontrols:SettingsCard.HeaderIcon>
+                                        <ToggleSwitch IsEnabled="{x:Bind IsLocked, Converter={StaticResource BoolNegationConverter}, ConverterParameter=True, Mode=OneWay}" IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+
+                                    <!--<StackPanel
+                         Grid.Column="1"
+                         VerticalAlignment="Center"
+                         Orientation="Horizontal">
+                         <TextBlock
+                             VerticalAlignment="Center"
+                             FontWeight="SemiBold"
+                             Text=""
+                             TextTrimming="CharacterEllipsis" />
+                         <InfoBadge
+                             Margin="4,0,0,0"
+                             Style="{StaticResource NewInfoBadge}"
+                             Visibility="{x:Bind IsNew, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
+                     </StackPanel>-->
+                                    <!--<FontIcon
+                         Grid.Column="2"
+                         Width="20"
+                         Margin="0,0,-12,0"
+                         FontSize="16"
+                         Glyph="&#xE72E;"
+                         Visibility="{x:Bind IsLocked, Converter={StaticResource BoolToInvertedVisibilityConverter}, ConverterParameter=True, Mode=OneWay}">
+                         <ToolTipService.ToolTip>
+                             <TextBlock x:Uid="GPO_SettingIsManaged_ToolTip" TextWrapping="WrapWholeWords" />
+                         </ToolTipService.ToolTip>
+                     </FontIcon>-->
+
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </Grid>
+                </Grid>
+            </Grid>
 
         </ScrollViewer>
+
+        <!--<VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState>
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="860" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <VisualState>
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="DisabledCard.(Grid.Row)" Value="2" />
+                        <Setter Target="DisabledCard.(Grid.Column)" Value="0" />
+                        <Setter Target="DisabledCard.(Grid.ColumnSpan)" Value="2" />
+                        <Setter Target="EnabledCard.(Grid.ColumnSpan)" Value="2" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>-->
     </Grid>
 </Page>
