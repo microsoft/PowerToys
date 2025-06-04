@@ -71,10 +71,11 @@ public class VirtualDesktopHelper
     public VirtualDesktopHelper(bool desktopListUpdate = false)
     {
         var cw = new StrategyBasedComWrappers();
+        var virtualDesktopManagerPtr = IntPtr.Zero;
 
         try
         {
-            var hr = NativeMethods.CoCreateInstance(ref this.iVirtualDesktopManagerCLSID, nint.Zero, CLSCTXINPROCALL, ref iVirtualDesktopManagerIID, out var virtualDesktopManagerPtr);
+            var hr = NativeMethods.CoCreateInstance(ref this.iVirtualDesktopManagerCLSID, nint.Zero, CLSCTXINPROCALL, ref iVirtualDesktopManagerIID, out virtualDesktopManagerPtr);
             if (hr != 0)
             {
                 throw new ArgumentException($"Failed to create IVirtualDesktopManager instance. HR: 0x{hr:X}");
