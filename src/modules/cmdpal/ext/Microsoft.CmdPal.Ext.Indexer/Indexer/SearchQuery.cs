@@ -321,7 +321,7 @@ internal sealed partial class SearchQuery : IDisposable
                 return null;
             }
 
-            var propPtr = (DBPROP*)propSet.rgProperties.ToInt64());
+            var propPtr = (DBPROP*)propSet.rgProperties.ToInt64();
             return *propPtr;
         }
         catch (Exception ex)
