@@ -13,7 +13,7 @@ public sealed partial class NativeMethods
     [LibraryImport("ole32.dll")]
     [return: MarshalAs(UnmanagedType.U4)]
     public static partial uint CoCreateInstance(
-        Guid rclsid,
+        ref Guid rclsid,
         IntPtr pUnkOuter,
         uint dwClsContext,
         ref Guid riid,

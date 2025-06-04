@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
@@ -28,7 +29,7 @@ internal static class DataSourceManager
     private static bool InitializeDataSource()
     {
         var riid = typeof(IDBInitialize).GUID;
-        var hr = NativeMethods.CoCreateInstance(NativeHelpers.CsWin32GUID.CLSIDCollatorDataSource, IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref riid, out var dataSourceObjPtr);
+        var hr = NativeMethods.CoCreateInstance(ref Unsafe.AsRef(in NativeHelpers.CsWin32GUID.CLSIDCollatorDataSource), IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref riid, out var dataSourceObjPtr);
         if (hr != 0)
         {
             Logger.LogError("CoCreateInstance failed: " + hr);
