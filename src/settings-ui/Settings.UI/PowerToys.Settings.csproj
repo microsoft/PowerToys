@@ -23,6 +23,7 @@
     <None Remove="Assets\Settings\Modules\APDialog.dark.png" />
     <None Remove="Assets\Settings\Modules\APDialog.light.png" />
     <None Remove="Assets\Settings\Modules\CmdPalHero.png" />
+    <None Remove="SettingsXAML\Views\SearchPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Page Remove="SettingsXAML\App.xaml" />
@@ -133,6 +134,9 @@
     <None Update="Assets\Settings\Scripts\DisableModule.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="SettingsXAML\Views\SearchPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

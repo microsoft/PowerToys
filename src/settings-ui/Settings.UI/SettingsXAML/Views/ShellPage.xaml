@@ -93,6 +93,7 @@
         <NavigationView
             x:Name="navigationView"
             Grid.Row="1"
+            Margin="12,0,0,0"
             Canvas.ZIndex="0"
             CompactModeThresholdWidth="1007"
             DisplayModeChanged="NavigationView_DisplayModeChanged"
@@ -110,6 +111,13 @@
                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
             </NavigationView.Resources>
+            <NavigationView.PaneHeader>
+                <AutoSuggestBox
+                    Margin="0,0,0,12"
+                    PlaceholderText="Search settings"
+                    QueryIcon="Find"
+                    QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
+            </NavigationView.PaneHeader>
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Uid="Shell_Dashboard"

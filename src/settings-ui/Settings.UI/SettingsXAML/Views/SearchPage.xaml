@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.PowerToys.Settings.UI.SettingsXAML.Views.SearchPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.SettingsXAML.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+            <ResourceDictionary.ThemeDictionaries>
+                <!--  ControlFillColorQuarternaryBrush does not exist (yet) in WinUI, only in Windows Visual Library (Figma)  -->
+                <ResourceDictionary x:Key="Default">
+                    <StaticResource x:Key="TokenItemBackground" ResourceKey="ControlFillColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundPressed" ResourceKey="ControlFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundSelected" ResourceKey="AccentFillColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundPointerOverSelected" ResourceKey="AccentFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundPressedSelected" ResourceKey="AccentFillColorTertiaryBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushSelected" ResourceKey="AccentFillColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushPointerOverSelected" ResourceKey="AccentFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushPressedSelected" ResourceKey="AccentFillColorTertiaryBrush" />
+                    <StaticResource x:Key="TokenItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundSelected" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundPointerOverSelected" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundPressedSelected" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+                    <Thickness x:Key="TokenItemBorderThickness">1</Thickness>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <StaticResource x:Key="TokenItemBackground" ResourceKey="ControlFillColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundPressed" ResourceKey="ControlFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundSelected" ResourceKey="AccentFillColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundPointerOverSelected" ResourceKey="AccentFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundPressedSelected" ResourceKey="AccentFillColorTertiaryBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushSelected" ResourceKey="AccentFillColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushPointerOverSelected" ResourceKey="AccentFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushPressedSelected" ResourceKey="AccentFillColorTertiaryBrush" />
+                    <StaticResource x:Key="TokenItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundSelected" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundPointerOverSelected" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundPressedSelected" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+                    <Thickness x:Key="TokenItemBorderThickness">1</Thickness>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <StaticResource x:Key="TokenItemBackground" ResourceKey="ControlFillColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundPressed" ResourceKey="ControlFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundSelected" ResourceKey="AccentFillColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundPointerOverSelected" ResourceKey="AccentFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemBackgroundPressedSelected" ResourceKey="AccentFillColorTertiaryBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushPointerOver" ResourceKey="ControlStrokeColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushPressed" ResourceKey="ControlStrokeColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushSelected" ResourceKey="AccentFillColorDefaultBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushPointerOverSelected" ResourceKey="AccentFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemBorderBrushPressedSelected" ResourceKey="AccentFillColorTertiaryBrush" />
+                    <StaticResource x:Key="TokenItemForeground" ResourceKey="TextFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundSelected" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundPointerOverSelected" ResourceKey="TextOnAccentFillColorPrimaryBrush" />
+                    <StaticResource x:Key="TokenItemForegroundPressedSelected" ResourceKey="TextOnAccentFillColorSecondaryBrush" />
+                    <Thickness x:Key="TokenItemBorderThickness">1</Thickness>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+            <Style x:Key="TokenViewSelectorBarStyle" TargetType="SelectorBar">
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Top" />
+                <Setter Property="IsTabStop" Value="False" />
+                <Setter Property="TabNavigation" Value="Once" />
+                <Setter Property="Padding" Value="{ThemeResource SelectorBarPadding}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="SelectorBar">
+                            <Grid
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                ColumnDefinitions="Auto"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                RowDefinitions="Auto">
+                                <Grid.ChildrenTransitions>
+                                    <TransitionCollection>
+                                        <RepositionThemeTransition />
+                                    </TransitionCollection>
+                                </Grid.ChildrenTransitions>
+
+                                <ItemsView
+                                    x:Name="PART_ItemsView"
+                                    MaxWidth="{TemplateBinding MaxWidth}"
+                                    MaxHeight="{TemplateBinding MaxHeight}"
+                                    Padding="{TemplateBinding Padding}"
+                                    ItemsSource="{TemplateBinding Items}"
+                                    TabNavigation="{TemplateBinding TabNavigation}">
+                                    <ItemsView.Layout>
+                                        <StackLayout Orientation="Horizontal" Spacing="8" />
+                                    </ItemsView.Layout>
+                                </ItemsView>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="TokenViewSelectorBarItemStyle" TargetType="SelectorBarItem">
+                <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
+                <Setter Property="Background" Value="{ThemeResource TokenItemBackground}" />
+                <Setter Property="Foreground" Value="{ThemeResource TokenItemForeground}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource TokenItemBorderBrush}" />
+                <Setter Property="BorderThickness" Value="{ThemeResource TokenItemBorderThickness}" />
+                <Setter Property="Padding" Value="23,5,23,6" />
+                <Setter Property="CornerRadius" Value="16" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="FocusVisualMargin" Value="{ThemeResource SelectorBarItemFocusVisualMargin}" />
+                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+                <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="SelectorBarItem">
+                            <Grid
+                                x:Name="PART_ContainerRoot"
+                                Background="{TemplateBinding Background}"
+                                BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.BackgroundTransition>
+                                    <BrushTransition Duration="0:0:0.083" />
+                                </Grid.BackgroundTransition>
+                                <!--  Placeholder for Child UIElement  -->
+
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Margin="{TemplateBinding Padding}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    Orientation="Horizontal"
+                                    Spacing="{ThemeResource SelectorBarItemSpacing}">
+                                    <ContentPresenter
+                                        x:Name="PART_IconVisual"
+                                        Margin="{ThemeResource SelectorBarItemIconVisualMargin}"
+                                        Content="{TemplateBinding Icon}"
+                                        Foreground="{TemplateBinding Foreground}"
+                                        RenderTransformOrigin="0.5,0.5">
+                                        <ContentPresenter.RenderTransform>
+                                            <ScaleTransform x:Name="IconTransform" ScaleX="{ThemeResource SelectorBarItemIconScale}" ScaleY="{ThemeResource SelectorBarItemIconScale}" />
+                                        </ContentPresenter.RenderTransform>
+                                    </ContentPresenter>
+                                    <TextBlock
+                                        x:Name="PART_TextVisual"
+                                        Margin="{ThemeResource SelectorBarItemTextVisualMargin}"
+                                        FontFamily="{TemplateBinding FontFamily}"
+                                        FontSize="{TemplateBinding FontSize}"
+                                        FontWeight="{TemplateBinding FontWeight}"
+                                        Foreground="{TemplateBinding Foreground}"
+                                        Text="{TemplateBinding Text}"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CombinedStates">
+                                        <VisualState x:Name="UnselectedNormal" />
+                                        <VisualState x:Name="UnselectedPointerOver">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_TextVisual" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemForegroundPointerOver}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_IconVisual" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemForegroundPointerOver}" />
+                                                </ObjectAnimationUsingKeyFrames>
+
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemBackgroundPointerOver}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemBorderBrushPointerOver}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="UnselectedPressed">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_TextVisual" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemForegroundPressed}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_IconVisual" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemForegroundPressed}" />
+                                                </ObjectAnimationUsingKeyFrames>
+
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemBackgroundPressed}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemBorderBrushPressed}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="SelectedNormal">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_TextVisual" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemForegroundSelected}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_IconVisual" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemForegroundSelected}" />
+                                                </ObjectAnimationUsingKeyFrames>
+
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemBackgroundSelected}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemBorderBrushSelected}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="SelectedPointerOver">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_TextVisual" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemForegroundPointerOverSelected}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_IconVisual" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemForegroundPointerOverSelected}" />
+                                                </ObjectAnimationUsingKeyFrames>
+
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemBackgroundPointerOverSelected}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemBorderBrushPointerOverSelected}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="SelectedPressed">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_TextVisual" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemForegroundPressedSelected}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_IconVisual" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemForegroundPressedSelected}" />
+                                                </ObjectAnimationUsingKeyFrames>
+
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemBackgroundPressedSelected}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="BorderBrush">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TokenItemBorderBrushPressedSelected}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                    <VisualStateGroup x:Name="DisabledStates">
+                                        <VisualState x:Name="Enabled" />
+                                        <VisualState x:Name="Disabled" />
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid
+        MaxWidth="1000"
+        Margin="16,0,0,0"
+        RowSpacing="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock
+            MaxWidth="1000"
+            VerticalAlignment="Center"
+            Style="{StaticResource TitleTextBlockStyle}">
+            <Run Text="Results for:" />
+            <Run x:Name="SearchTxt" />
+        </TextBlock>
+
+
+        <SelectorBar
+            x:Name="FilterBar"
+            Grid.Row="1"
+            Margin="0,0,0,0"
+            Loaded="FilterBar_Loaded"
+            Style="{StaticResource TokenViewSelectorBarStyle}">
+            <SelectorBarItem
+                IsSelected="True"
+                Style="{StaticResource TokenViewSelectorBarItemStyle}"
+                Text="All" />
+            <SelectorBarItem Style="{StaticResource TokenViewSelectorBarItemStyle}" Text="Command Palette">
+                <SelectorBarItem.Icon>
+                    <BitmapIcon
+                        Width="16"
+                        ShowAsMonochrome="False"
+                        UriSource="/Assets/Settings/Icons/CmdPal.png" />
+                </SelectorBarItem.Icon>
+            </SelectorBarItem>
+            <SelectorBarItem Style="{StaticResource TokenViewSelectorBarItemStyle}" Text="PowerToys Run">
+                <BitmapIcon
+                    Width="16"
+                    ShowAsMonochrome="False"
+                    UriSource="/Assets/Settings/Icons/PowerToysRun.png" />
+            </SelectorBarItem>
+        </SelectorBar>
+        <ScrollViewer
+            x:Name="MainScrollViewer"
+            Grid.Row="2"
+            Margin="0,12,0,0"
+            HorizontalAlignment="Stretch">
+            <Grid>
+                <StackPanel MaxWidth="1000" Spacing="4">
+                    <StackPanel
+                        Margin="0,0,0,8"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Image Width="20" Source="/Assets/Settings/Icons/CmdPal.png" />
+                        <TextBlock FontWeight="SemiBold" Text="Command Palette" />
+                    </StackPanel>
+                    <controls:SettingsCard
+                        Description="If multiple monitors are in use, Command Palette can be launched on a desired monitor"
+                        Header="Preferred monitor position"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
+                        <ComboBox SelectedIndex="0">
+                            <ComboBoxItem>Monitor with mouse cursor</ComboBoxItem>
+                            <ComboBoxItem>Primary monitor</ComboBoxItem>
+                            <ComboBoxItem>Monitor with focused window</ComboBoxItem>
+                            <ComboBoxItem>Don't move</ComboBoxItem>
+                        </ComboBox>
+                    </controls:SettingsCard>
+                    <StackPanel
+                        Margin="0,32,0,8"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Image Width="20" Source="/Assets/Settings/Icons/PowerToysRun.png" />
+                        <TextBlock FontWeight="SemiBold" Text="PowerToys Run" />
+                    </StackPanel>
+                    <controls:SettingsCard
+                        Description="If multiple monitors are in use, PowerToys Run can be launched on a desired monitor"
+                        Header="Preferred monitor position"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xe78b;}">
+                        <ComboBox SelectedIndex="0">
+                            <ComboBoxItem>Monitor with mouse cursor</ComboBoxItem>
+                            <ComboBoxItem>Primary monitor</ComboBoxItem>
+                            <ComboBoxItem>Monitor with focused window</ComboBoxItem>
+                        </ComboBox>
+                    </controls:SettingsCard>
+                    <controls:SettingsCard
+                        Description="Pressing tab will first select through the available context buttons of the current selection before moving into the next result"
+                        Header="Tab through context buttons"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7FD;}">
+                        <ToggleSwitch IsOn="True" />
+                    </controls:SettingsCard>
+                </StackPanel>
+            </Grid>
+
+        </ScrollViewer>
+    </Grid>
+</Page>
