@@ -200,6 +200,8 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
 - [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
 - [@vanzue](https://github.com/vanzue) - Kai Tao - Dev
+- [@zadjii](https://github.com/zadjii) - Mike Griese - Dev
+- [@khmyznikov](https://github.com/khmyznikov) - Gleb Khmyznikov - Dev
 - [@chatasweetie](https://github.com/chatasweetie) - Jessica Earley-Cha - Dev
 - [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
 - [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Overhead
