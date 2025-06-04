@@ -133,24 +133,20 @@ internal sealed partial class SampleListPageWithDetails : ListPage
                         new DetailsElement()
                         {
                             Key = "Commands",
-                            Data = new DetailsCommand()
+                            Data = new DetailsCommands()
                             {
-                                Command = new ToastCommand("Hey! You clicked it!", MessageState.Success)
-                                {
-                                    Name = "Do something amazing",
-                                    Icon = new("\uE945"),
-                                },
-                            },
-                        },
-                        new DetailsElement()
-                        {
-                            Data = new DetailsCommand()
-                            {
-                                Command = new ToastCommand("I warned you!", MessageState.Error)
-                                {
-                                    Name = "Don't click me",
-                                    Icon = new("\uEA39"),
-                                },
+                                Commands = [
+                                    new ToastCommand("Hey! You clicked it!", MessageState.Success)
+                                    {
+                                        Name = "Do something amazing",
+                                        Icon = new("\uE945"),
+                                    },
+                                    new ToastCommand("I warned you!", MessageState.Error)
+                                    {
+                                        Name = "Don't click me",
+                                        Icon = new("\uEA39"),
+                                    },
+                               ],
                             },
                         },
                     ],

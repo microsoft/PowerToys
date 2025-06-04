@@ -29,7 +29,7 @@ public partial class DetailsDataTemplateSelector : DataTemplateSelector
             {
                 DetailsSeparatorViewModel => SeparatorTemplate,
                 DetailsLinkViewModel => LinkTemplate,
-                DetailsCommandViewModel => CommandTemplate,
+                DetailsCommandsViewModel => CommandTemplate,
                 DetailsTagsViewModel => TagTemplate,
                 _ => null,
             };

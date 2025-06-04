@@ -7,18 +7,16 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class DetailsCommandViewModel(
+public partial class DetailsCommandsViewModel(
     IDetailsElement _detailsElement,
     WeakReference<IPageContext> context) : DetailsElementViewModel(_detailsElement, context)
 {
-    private readonly ExtensionObject<IDetailsCommand> _dataModel =
-        new(_detailsElement.Data as IDetailsCommand);
+    public List<CommandViewModel> Commands { get; private set; } = [];
 
-    public string Text { get; private set; } = string.Empty;
+    public bool HasCommands => Commands.Count > 0;
 
-    public IconInfoViewModel Icon { get; private set; } = new(null);
-
-    public ICommand? Command { get; private set; }
+    private readonly ExtensionObject<IDetailsCommands> _dataModel =
+        new(_detailsElement.Data as IDetailsCommands);
 
     public override void InitializeProperties()
     {
@@ -29,12 +27,16 @@ public partial class DetailsCommandViewModel(
             return;
         }
 
-        Text = model.Command.Name ?? string.Empty;
-        Icon = new(model.Command.Icon);
-        Command = model.Command;
-
-        UpdateProperty(nameof(Text));
-        UpdateProperty(nameof(Icon));
-        UpdateProperty(nameof(Command));
+        Commands = model
+            .Commands?
+            .Select(c =>
+            {
+                var vm = new CommandViewModel(c, PageContext);
+                vm.InitializeProperties();
+                return vm;
+            })
+            .ToList() ?? [];
+        UpdateProperty(nameof(HasCommands));
+        UpdateProperty(nameof(Commands));
     }
 }
