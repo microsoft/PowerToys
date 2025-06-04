@@ -95,15 +95,15 @@
     <StackPanel>
 
         <ListView
-        x:Name="CommandsDropdown"
-        MinWidth="248"
-        Margin="-16,-12,-16,-12"
-        IsItemClickEnabled="True"
-        ItemClick="CommandsDropdown_ItemClick"
-        ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
-        ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
-        KeyDown="CommandsDropdown_KeyDown"
-        SelectionMode="Single">
+            x:Name="CommandsDropdown"
+            MinWidth="248"
+            Margin="-16,-12,-16,-12"
+            IsItemClickEnabled="True"
+            ItemClick="CommandsDropdown_ItemClick"
+            ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
+            ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+            KeyDown="CommandsDropdown_KeyDown"
+            SelectionMode="Single">
             <ListView.ItemContainerStyle>
                 <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                     <Setter Property="MinHeight" Value="0" />
@@ -116,12 +116,12 @@
         </ListView>
 
         <TextBox
-        x:Name="ContextFilterBox"
-        x:Uid="ContextFilterBox"
-        Margin="-12,12,-12,-12"
-        KeyDown="ContextFilterBox_KeyDown"
-        PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
-        TextChanged="ContextFilterBox_TextChanged" />
+            x:Name="ContextFilterBox"
+            x:Uid="ContextFilterBox"
+            Margin="-12,12,-12,-12"
+            KeyDown="ContextFilterBox_KeyDown"
+            PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
+            TextChanged="ContextFilterBox_TextChanged" />
 
     </StackPanel>
 

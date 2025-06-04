@@ -191,15 +191,13 @@
                 ToolTipService.ToolTip="Ctrl+K"
                 Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
                 <Button.Flyout>
-                    <Flyout
-                        Closing="Flyout_Closing"
-                        Placement="TopEdgeAlignedRight">
+                    <Flyout Closing="Flyout_Closing" Placement="TopEdgeAlignedRight">
 
-                        <cpcontrols:ContextMenu 
+                        <cpcontrols:ContextMenu
                             x:Name="ContextMenu"
-                            x:Uid="ContextMenu" 
-                            ViewModel="{x:Bind ViewModel.ContextMenu, Mode=OneWay}"/>
-                    
+                            x:Uid="ContextMenu"
+                            ViewModel="{x:Bind ViewModel.ContextMenu, Mode=OneWay}" />
+
                     </Flyout>
                 </Button.Flyout>
             </Button>
