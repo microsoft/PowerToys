@@ -204,6 +204,7 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@khmyznikov](https://github.com/khmyznikov) - Gleb Khmyznikov - Dev
 - [@chatasweetie](https://github.com/chatasweetie) - Jessica Earley-Cha - Dev
 - [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
+- [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee) - Jaylyn Barbee - Dev
 - [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Overhead
 
 ## Former PowerToys core team members
