@@ -22,7 +22,7 @@ namespace UITests_FancyZones
     public class LayoutApplyHotKeyTests : UITestBase
     {
         public LayoutApplyHotKeyTests()
-            : base(PowerToysModule.PowerToysSettings)
+            : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
         {
         }
 
