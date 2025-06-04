@@ -477,6 +477,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void AutoSuggestBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             NavigationService.Navigate(typeof(SearchPage), args.QueryText);
+            sender.Text = string.Empty; // Clear the search box after submitting the query
         }
     }
 }
