@@ -3,17 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
-using Windows.Win32;
-using Windows.Win32.System.Com;
-using Windows.Win32.System.Search;
+using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
+using Microsoft.CmdPal.Ext.Indexer.Native;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
 internal static class DataSourceManager
 {
-    private static readonly Guid CLSIDCollatorDataSource = new("9E175B8B-F52A-11D8-B9A5-505054503030");
-
     private static IDBInitialize _dataSource;
 
     public static IDBInitialize GetDataSource()
@@ -28,20 +28,29 @@ internal static class DataSourceManager
 
     private static bool InitializeDataSource()
     {
-        var hr = PInvoke.CoCreateInstance(CLSIDCollatorDataSource, null, CLSCTX.CLSCTX_INPROC_SERVER, typeof(IDBInitialize).GUID, out var dataSourceObj);
+        var riid = typeof(IDBInitialize).GUID;
+        var hr = NativeMethods.CoCreateInstance(ref Unsafe.AsRef(in NativeHelpers.CsWin32GUID.CLSIDCollatorDataSource), IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref riid, out var dataSourceObjPtr);
         if (hr != 0)
         {
             Logger.LogError("CoCreateInstance failed: " + hr);
             return false;
         }
 
-        if (dataSourceObj == null)
+        if (dataSourceObjPtr == IntPtr.Zero)
+        {
+            Logger.LogError("CoCreateInstance failed: dataSourceObjPtr is null");
+            return false;
+        }
+
+        var comWrappers = new StrategyBasedComWrappers();
+        _dataSource = (IDBInitialize)comWrappers.GetOrCreateObjectForComInstance(dataSourceObjPtr, CreateObjectFlags.None);
+
+        if (_dataSource == null)
         {
             Logger.LogError("CoCreateInstance failed: dataSourceObj is null");
             return false;
         }
 
-        _dataSource = (IDBInitialize)dataSourceObj;
         _dataSource.Initialize();
 
         return true;
