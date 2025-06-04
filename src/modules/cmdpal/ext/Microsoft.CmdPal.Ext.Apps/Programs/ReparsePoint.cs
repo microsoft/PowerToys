@@ -208,9 +208,8 @@ public static partial class ReparsePoint
         out int pBytesReturned,
         IntPtr lpOverlapped);
 
-    [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf8)]
-    [return: MarshalAs(UnmanagedType.SysInt)]
-    internal static partial IntPtr CreateFile(
+    [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    internal static partial int CreateFile(
         string lpFileName,
         FileAccessType dwDesiredAccess,
         FileShareType dwShareMode,

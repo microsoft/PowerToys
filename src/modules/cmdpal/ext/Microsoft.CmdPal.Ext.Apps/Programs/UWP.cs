@@ -87,9 +87,10 @@ public partial class UWP
                 return valid;
             }).ToList();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             Apps = Array.Empty<UWPApplication>();
+            Logger.LogError($"Failed to initialize UWP app info for {Name} ({FullName}): {ex.Message}");
             return;
         }
     }
