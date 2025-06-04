@@ -22,7 +22,7 @@ namespace UITests_FancyZones
     public class LayoutApplyHotKeyTests : UITestBase
     {
         public LayoutApplyHotKeyTests()
-            : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
+            : base(PowerToysModule.PowerToysSettings, WindowSize.Large)
         {
         }
 
@@ -573,7 +573,7 @@ namespace UITests_FancyZones
             Clean();
         }
 
-        private void OpenFancyZonesPanel(bool launchAsAdmin = false, bool isMax = true)
+        private void OpenFancyZonesPanel(bool launchAsAdmin = false, bool isMax = false)
         {
             var windowingElement = this.Find<NavigationViewItem>("Windowing & Layouts");
 
