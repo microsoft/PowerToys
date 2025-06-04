@@ -46,4 +46,9 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+	<AdditionalFiles Include="NativeMethods.txt" />
+	<AdditionalFiles Include="NativeMethods.json" />
+  </ItemGroup>
+
 </Project>
