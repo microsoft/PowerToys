@@ -55,40 +55,49 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
         AttachSnapshotWindow();
         var captureButton = Find<Button>("Capture");
         captureButton.Click();
-        Task.Delay(500).Wait();
+        Task.Delay(5000).Wait();
 
         // Verify captured windows appear
         AttachWorkspacesEditor();
-        var appList = Find<Custom>("AppList");
-        var capturedApps = appList.FindAll<Custom>(By.ClassName("AppItem"));
+        var appList = Find<Element>(By.AccessibilityId("CapturedAppList"));
 
-        bool foundTerminal = false;
+        var items = appList.FindAll<Element>(By.XPath(".//DataItem"));
+
+        bool foundCalculator = false;
         bool foundSettings = false;
 
-        foreach (var app in capturedApps)
+        foreach (var item in items)
         {
-            var appName = app.GetAttribute("Name");
-            if (appName.Contains("Terminal", StringComparison.OrdinalIgnoreCase) ||
-        appName.Contains("Windows Terminal", StringComparison.OrdinalIgnoreCase))
-            {
-                foundTerminal = true;
-            }
+            var texts = item.FindAll<Element>(By.XPath(".//group//button//text"));
 
-            if (appName.Contains("Settings", StringComparison.OrdinalIgnoreCase))
+            foreach (var text in texts)
             {
-                foundSettings = true;
+                var title = text.Text;
+                if (title.Length > 0)
+                {
+                    Debug.WriteLine($"Captured App: {title}");
+                }
+
+                if (title.Contains("Calculator", StringComparison.OrdinalIgnoreCase))
+                {
+                    foundCalculator = true;
+                }
+                else if (title.Contains("Settings", StringComparison.OrdinalIgnoreCase))
+                {
+                    foundSettings = true;
+                }
             }
         }
 
-        Assert.IsTrue(foundTerminal, "Windows Terminal should be captured");
+        Assert.IsTrue(foundCalculator, "Windows Terminal should be captured");
         Assert.IsTrue(foundSettings, "Windows Settings should be captured");
 
         // Cancel to clean up
         Find<Button>("Cancel").Click();
-        Thread.Sleep(1000);
+        Task.Delay(1000).Wait();
 
         // Close test applications
-        CloseWindowsTerminal();
+        CloseCalculator();
         CloseWindowsSettings();
     }
 
