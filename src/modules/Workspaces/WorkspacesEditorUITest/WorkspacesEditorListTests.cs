@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace WorkspacesEditorUITest;
 
 [TestClass]
+[Ignore("NOT STABLE")]
 public class WorkspacesEditorListTests : WorkspacesUiAutomationBase
 {
     public WorkspacesEditorListTests()

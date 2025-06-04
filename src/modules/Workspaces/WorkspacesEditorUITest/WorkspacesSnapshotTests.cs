@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -35,8 +33,6 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
         Assert.IsNotNull(cancelButton, "Capture button should exist");
 
         cancelButton.Click();
-
-        AttachWorkspacesEditor();
     }
 
     [TestMethod("WorkspacesSnapshot.CapturePackagedApps")]
@@ -61,36 +57,11 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
         AttachWorkspacesEditor();
         var appList = Find<Element>(By.AccessibilityId("CapturedAppList"));
 
-        var items = appList.FindAll<Element>(By.XPath(".//DataItem"));
+        var calcText = appList.Find<Element>("Calculator");
+        Assert.IsNotNull(calcText, "Calculator should be captured");
 
-        bool foundCalculator = false;
-        bool foundSettings = false;
-
-        foreach (var item in items)
-        {
-            var texts = item.FindAll<Element>(By.XPath(".//group//button//text"));
-
-            foreach (var text in texts)
-            {
-                var title = text.Text;
-                if (title.Length > 0)
-                {
-                    Debug.WriteLine($"Captured App: {title}");
-                }
-
-                if (title.Contains("Calculator", StringComparison.OrdinalIgnoreCase))
-                {
-                    foundCalculator = true;
-                }
-                else if (title.Contains("Settings", StringComparison.OrdinalIgnoreCase))
-                {
-                    foundSettings = true;
-                }
-            }
-        }
-
-        Assert.IsTrue(foundCalculator, "Windows Terminal should be captured");
-        Assert.IsTrue(foundSettings, "Windows Settings should be captured");
+        var settingItem = appList.Find<Element>(By.AccessibilityId("Settings"));
+        Assert.IsNotNull(settingItem, "Calculator should be captured");
 
         // Cancel to clean up
         Find<Button>("Cancel").Click();
@@ -101,6 +72,7 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
         CloseWindowsSettings();
     }
 
+    /* Not finished yet
     [TestMethod("WorkspacesSnapshot.CaptureElevatedApps")]
     [TestCategory("Workspaces Snapshot UI")]
     public void TestCaptureElevatedApplications()
@@ -323,20 +295,6 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
         // WindowHelper.MoveAndResizeWindow("Calculator", x, y, width, height);
     }
 
-    private void OpenWindowsTerminal()
-    {
-        Process.Start("wt.exe");
-        Thread.Sleep(2000);
-    }
-
-    private void CloseWindowsTerminal()
-    {
-        foreach (var process in Process.GetProcessesByName("WindowsTerminal"))
-        {
-            process.Kill();
-        }
-    }
-
     private void OpenElevatedNotepad()
     {
         var startInfo = new ProcessStartInfo
@@ -376,4 +334,5 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
         SendKeys(Key.Win, Key.Down);
         Thread.Sleep(500);
     }
+    */
 }

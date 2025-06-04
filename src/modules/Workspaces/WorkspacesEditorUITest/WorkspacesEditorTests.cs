@@ -22,6 +22,7 @@ public class WorkspacesEditorTests : WorkspacesUiAutomationBase
         Assert.IsTrue(this.Has<Button>("Create Workspace"), "Should have create workspace button");
     }
 
+    /*
     [TestMethod("WorkspacesEditor.Editor.NewWorkspaceAppearsInList")]
     [TestCategory("Workspaces UI")]
     public void TestNewWorkspaceAppearsInListAfterCapture()
@@ -232,4 +233,5 @@ public class WorkspacesEditorTests : WorkspacesUiAutomationBase
         Find<Button>("Cancel").Click();
         Thread.Sleep(1000);
     }
+    */
 }

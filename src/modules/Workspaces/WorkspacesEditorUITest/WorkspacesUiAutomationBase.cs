@@ -5,6 +5,8 @@
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.PowerToys.UITest;
+using OpenQA.Selenium.Interactions;
+using Windows.Media.Playback;
 
 namespace WorkspacesEditorUITest
 {
@@ -19,30 +21,60 @@ namespace WorkspacesEditorUITest
         {
             // Open notepad for capture
             OpenNotepad();
-            Thread.Sleep(2000);
+            Task.Delay(1000).Wait();
 
             // Create workspace
+            AttachWorkspacesEditor();
             var createButton = Find<Button>("Create Workspace");
             createButton.Click();
-            Thread.Sleep(1000);
+            Task.Delay(500).Wait();
 
             // Capture
+            AttachSnapshotWindow();
             var captureButton = Find<Button>("Capture");
             captureButton.Click();
-            Thread.Sleep(2000);
+            Task.Delay(5000).Wait();
 
             // Set name
-            var nameTextBox = Find<TextBox>("WorkspaceName");
-            nameTextBox.SetText(string.Empty);
+            var nameTextBox = Find<TextBox>("EditNameTextBox");
             nameTextBox.SetText(name);
-            Thread.Sleep(500);
 
             // Save
-            Find<Button>("Save").Click();
-            Thread.Sleep(1000);
+            Find<Button>("Save Workspace").Click();
 
             // Close notepad
             CloseNotepad();
+        }
+
+        // DO NOT USE UNTIL FRAMEWORK AVAILABLE, CAN'T FIND BUTTON FOR SECOND LOOP
+        protected void ClearWorkspaces()
+        {
+            while (true)
+            {
+                try
+                {
+                    var root = Find<Element>(By.AccessibilityId("WorkspacesItemsControl"));
+                    var buttons = root.FindAll<Button>(By.AccessibilityId("MoreButton"));
+
+                    Debug.WriteLine($"Found {buttons.Count} button");
+
+                    var button = buttons[^1];
+
+                    button.Click();
+
+                    Task.Delay(500).Wait();
+
+                    var remove = Find<Button>(By.Name("Remove"));
+                    remove.Click();
+
+                    Task.Delay(500).Wait();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    break;
+                }
+            }
         }
 
         protected void CreateWorkspaceWithApps()
@@ -146,7 +178,7 @@ namespace WorkspacesEditorUITest
         protected void OpenNotepad()
         {
             var process = System.Diagnostics.Process.Start("notepad.exe");
-            Thread.Sleep(1000);
+            Task.Delay(1000).Wait();
         }
 
         protected void CloseNotepad()
