@@ -64,7 +64,13 @@ public sealed partial class ShellCommand : InvokableCommand
         // For example: "python test.py" or "pwsh test.ps1"
         // So, we can split the command and get the first part as the command name.
         var splittedBookmarkValue = bookmarkValue.Split(" ");
-        if (splittedBookmarkValue.Length <= 1)
+        if (splittedBookmarkValue.Length == 0)
+        {
+            ExtensionHost.LogMessage($"Failed to open {bookmarkValue} in shell. Empty bookmark value.");
+            return CommandResult.ShowToast(new ToastArgs() { Message = Resources.bookmarks_command_invoke_failed_message });
+        }
+
+        if (splittedBookmarkValue.Length == 1)
         {
             // directly call. Because it maybe a command with no args. eg: haproxy.exe or cmd.exe
             if (!OpenInShellHelper.OpenInShell(splittedBookmarkValue[0], null, null, OpenInShellHelper.ShellRunAsType.None, false, out var errMsg))
@@ -72,6 +78,8 @@ public sealed partial class ShellCommand : InvokableCommand
                 ExtensionHost.LogMessage($"Failed to open {bookmarkValue} in shell. Ex: {errMsg}");
                 return CommandResult.ShowToast(new ToastArgs() { Message = Resources.bookmarks_command_invoke_failed_message });
             }
+
+            return CommandResult.Dismiss();
         }
 
         // args = without the first part and join with space
