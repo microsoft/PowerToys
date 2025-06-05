@@ -1523,7 +1523,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Picker behavior</value>
   </data>
   <data name="ColorPicker_CopiedColorRepresentation.Description" xml:space="preserve">
-    <value>This format will be copied to your clipboard</value>
+    <value>Format will be copied to your clipboard</value>
   </data>
   <data name="KBM_KeysCannotBeRemapped.Text" xml:space="preserve">
     <value>Learn more about remapping limitations</value>
@@ -1715,7 +1715,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Show color name</value>
   </data>
   <data name="ColorPicker_ShowColorName.Description" xml:space="preserve">
-    <value>This will show the name of the color when picking a color</value>
+    <value>Displays the color name while picking a color</value>
   </data>
   <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
     <value>Large</value>
@@ -3783,7 +3783,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Diagnostics &amp; feedback</value>
   </data>
   <data name="GeneralPage_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
-    <value>Learn more about the information we log &amp; how it gets used</value>
+    <value>Learn more about the logged information and how it's used</value>
   </data>
   <data name="GeneralPage_EnableDataDiagnostics.Header" xml:space="preserve">
     <value>Diagnostic data</value>
@@ -3798,13 +3798,13 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Enable viewing</value>
   </data>
   <data name="GeneralPage_EnableViewDiagnosticData.Description" xml:space="preserve">
-    <value>Uses up to 1GB (or more) of hard drive space on your PC</value>
+    <value>May use up to 1 GB or more of disk space on your PC</value>
   </data>
   <data name="GeneralPage_ViewDiagnosticDataViewer.Header" xml:space="preserve">
     <value>Diagnostic data viewer</value>
   </data>
   <data name="GeneralPage_ViewDiagnosticDataViewer.Description" xml:space="preserve">
-    <value>Generate .xml files containing readable diagnostic data. Folder may include .xml and .etl files</value>
+    <value>Generates diagnostic data in .xml format; folder may include .etl files as well</value>
   </data>
   <data name="Shell_AdvancedPaste.Content" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -4838,10 +4838,10 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Application language</value>
   </data>
   <data name="LanguageHeader.Description" xml:space="preserve">
-    <value>PowerToys will use OS language by default.</value>
+    <value>PowerToys matches your Windows language by default</value>
   </data>
   <data name="LanguageRestartInfo.Title" xml:space="preserve">
-    <value>Restart PowerToys for language change to take effect.</value>
+    <value>Restart PowerToys to apply language changes</value>
   </data>
   <data name="LanguageRestartInfoButton.Content" xml:space="preserve">
     <value>Restart</value>
@@ -5036,7 +5036,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Generate bug report package</value>
   </data>
   <data name="GeneralPage_ReportBugPackage.Description" xml:space="preserve">
-    <value>Create zip folder with logs on the Desktop</value>
+    <value>Log files will be zipped to your Desktop</value>
   </data>
   <data name="GeneralPageReportBugPackage.Content" xml:space="preserve">
     <value>Generate package</value>
