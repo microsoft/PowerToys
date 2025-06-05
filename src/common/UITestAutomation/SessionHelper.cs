@@ -9,7 +9,6 @@ using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
-using static Microsoft.PowerToys.UITest.WindowHelper;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -79,7 +78,6 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void Cleanup()
         {
-            this.Root.Quit();
             ExitScopeExe();
             try
             {
@@ -168,12 +166,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void ExitScopeExe()
         {
-            if (this.Driver != null)
-            {
-                // If the driver is already initialized, quit it before starting a new one
-                this.Driver.Quit();
-                this.Driver = null;
-            }
+            ExitExe(sessionPath);
         }
 
         /// <summary>
