@@ -53,6 +53,11 @@ internal static class DataSourceManager
 
         _dataSource.Initialize();
 
+        if (dataSourceObjPtr != IntPtr.Zero)
+        {
+            Marshal.Release(dataSourceObjPtr);
+        }
+
         return true;
     }
 }

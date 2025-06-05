@@ -30,8 +30,9 @@ internal sealed partial class QueryStringBuilder
         if (queryHelper == null)
         {
             ComWrappers cw = new StrategyBasedComWrappers();
+            var searchManagerPtr = IntPtr.Zero;
 
-            var hr = NativeMethods.CoCreateInstance(ref Unsafe.AsRef(in NativeHelpers.CsWin32GUID.CLSIDSearchManager), IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref Unsafe.AsRef(in NativeHelpers.CsWin32GUID.IIDISearchManager), out var searchManagerPtr);
+            var hr = NativeMethods.CoCreateInstance(ref Unsafe.AsRef(in NativeHelpers.CsWin32GUID.CLSIDSearchManager), IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref Unsafe.AsRef(in NativeHelpers.CsWin32GUID.IIDISearchManager), out searchManagerPtr);
             if (hr != 0)
             {
                 throw new ArgumentException($"Failed to create SearchManager instance. HR: 0x{hr:X}");
@@ -49,6 +50,11 @@ internal sealed partial class QueryStringBuilder
             if (catalogManager == null)
             {
                 throw new ArgumentException($"Failed to get catalog manager for {SystemIndex}");
+            }
+
+            if (searchManagerPtr != IntPtr.Zero)
+            {
+                Marshal.Release(searchManagerPtr);
             }
 
             queryHelper = catalogManager.GetQueryHelper();
