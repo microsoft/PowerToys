@@ -118,10 +118,12 @@ jobs:
           **\*UITest*.dll
           !**\obj\**
           !**\ref\**
+          !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
       ${{ else }}:
         testAssemblyVer2: |
           **\UITests-FancyZonesEditor.dll
           !**\obj\**
           !**\ref\**
+          !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
     env:
       platform: '$(TestPlatform)'
