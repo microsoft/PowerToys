@@ -79,11 +79,6 @@ namespace Microsoft.PowerToys.UITest
         public void Cleanup()
         {
             this.Root.Quit();
-            if (this.Driver != null)
-            {
-                this.Driver.Quit();
-            }
-
             ExitScopeExe();
             try
             {
@@ -134,14 +129,7 @@ namespace Microsoft.PowerToys.UITest
         {
             var opts = new AppiumOptions();
             opts.AddAdditionalCapability("app", appPath);
-            if (this.Driver != null)
-            {
-                // If the driver is already initialized, quit it before starting a new one
-                this.Driver.Quit();
-                this.Driver = null;
-            }
-
-            this.Driver = this.NewWindowsDriver(opts);
+            this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
         }
 
         /// <summary>
@@ -179,7 +167,12 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void ExitScopeExe()
         {
-            ExitExe(sessionPath);
+            if (this.Driver != null)
+            {
+                // If the driver is already initialized, quit it before starting a new one
+                this.Driver.Quit();
+                this.Driver = null;
+            }
         }
 
         /// <summary>
@@ -187,7 +180,7 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public void RestartScopeExe()
         {
-            ExitExe(sessionPath);
+            ExitScopeExe();
             StartExe(locationPath + sessionPath);
         }
 
