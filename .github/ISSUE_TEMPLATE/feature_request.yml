@@ -6,7 +6,7 @@ labels:
 body:
 - type: textarea
   attributes: 
-    label: Description of the new feature/enhancement
+    label: Description of the new feature / enhancement
     placeholder: What is the expected behavior of the proposed feature?
   validations:
     required: true
