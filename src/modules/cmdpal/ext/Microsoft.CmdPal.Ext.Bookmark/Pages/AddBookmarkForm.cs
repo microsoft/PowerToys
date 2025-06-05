@@ -74,13 +74,11 @@ internal sealed partial class AddBookmarkForm : FormContent
         // get the name and url out of the values
         var formName = formInput["name"] ?? string.Empty;
         var formBookmark = formInput["bookmark"] ?? string.Empty;
-        var bookmarkTypeString = formInput["bookmarkType"]?.ToString() ?? string.Empty;
 
-        var parsedBookmarkType = BookmarkTypeHelper.GetBookmarkTypeFromValue(formBookmark.ToString());
         var updated = _bookmark ?? new BookmarkData();
         updated.Name = formName.ToString();
         updated.Bookmark = formBookmark.ToString();
-        updated.Type = parsedBookmarkType;
+        updated.Type = BookmarkTypeHelper.GetBookmarkTypeFromValue(formBookmark.ToString());
 
         AddedCommand?.Invoke(this, updated);
         return CommandResult.GoHome();
