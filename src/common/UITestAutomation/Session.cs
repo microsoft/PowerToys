@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 using static Microsoft.PowerToys.UITest.WindowHelper;
 
 namespace Microsoft.PowerToys.UITest
@@ -22,11 +23,16 @@ namespace Microsoft.PowerToys.UITest
     {
         public WindowsDriver<WindowsElement> Root { get; set; }
 
-        private WindowsDriver<WindowsElement> WindowsDriver { get; set; }
+        private WindowsDriver<WindowsElement> WindowsDriver
+        {
+            get { return sessionHelper.GetDriver(); }
+        }
 
         private List<IntPtr> windowHandlers = new List<IntPtr>();
 
         private Window? MainWindow { get; set; }
+
+        private SessionHelper sessionHelper;
 
         /// <summary>
         /// Gets Main Window Handler
@@ -46,17 +52,17 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public bool? IsElevated { get; private set; }
 
-        public Session(WindowsDriver<WindowsElement> root, WindowsDriver<WindowsElement> windowsDriver, PowerToysModule scope, WindowSize size)
+        public Session(SessionHelper pSessionHelper)
         {
             this.MainWindowHandler = IntPtr.Zero;
-            this.Root = root;
-            this.WindowsDriver = windowsDriver;
-            this.InitScope = scope;
+            this.Root = pSessionHelper.GetRoot();
+            this.InitScope = pSessionHelper.Scope;
+            this.sessionHelper = pSessionHelper;
 
-            if (size != WindowSize.UnSpecified)
+            if (pSessionHelper.Size != WindowSize.UnSpecified)
             {
                 // Attach to the scope & reset MainWindowHandler
-                this.Attach(scope, size);
+                this.Attach(pSessionHelper.Scope, pSessionHelper.Size);
             }
         }
 
@@ -476,63 +482,11 @@ namespace Microsoft.PowerToys.UITest
         {
             this.IsElevated = null;
             this.MainWindowHandler = IntPtr.Zero;
-
-            if (this.Root != null)
-            {
-                // search window handler by window title (admin and non-admin titles)
-                var timeout = TimeSpan.FromMinutes(2);
-                var retryInterval = TimeSpan.FromSeconds(5);
-                DateTime startTime = DateTime.Now;
-
-                List<(IntPtr HWnd, string Title)>? matchingWindows = null;
-
-                while (DateTime.Now - startTime < timeout)
-                {
-                    matchingWindows = WindowHelper.ApiHelper.FindDesktopWindowHandler(
-                        new[] { windowName, WindowHelper.AdministratorPrefix + windowName });
-
-                    if (matchingWindows.Count > 0 && matchingWindows[0].HWnd != IntPtr.Zero)
-                    {
-                        break;
-                    }
-
-                    Task.Delay(retryInterval).Wait();
-                }
-
-                if (matchingWindows == null || matchingWindows.Count == 0 || matchingWindows[0].HWnd == IntPtr.Zero)
-                {
-                    Assert.Fail($"Failed to attach. Window '{windowName}' not found after {timeout.TotalSeconds} seconds.");
-                }
-
-                // pick one from matching windows
-                this.MainWindowHandler = matchingWindows[0].HWnd;
-                this.IsElevated = matchingWindows[0].Title.StartsWith(WindowHelper.AdministratorPrefix);
-
-                ApiHelper.SetForegroundWindow(this.MainWindowHandler);
-
-                var hexWindowHandle = this.MainWindowHandler.ToInt64().ToString("x");
-
-                var appCapabilities = new AppiumOptions();
-                appCapabilities.AddAdditionalCapability("appTopLevelWindow", hexWindowHandle);
-                appCapabilities.AddAdditionalCapability("deviceName", "WindowsPC");
-                this.WindowsDriver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
-
-                this.windowHandlers.Add(this.MainWindowHandler);
-
-                if (size != WindowSize.UnSpecified)
-                {
-                    WindowHelper.SetWindowSize(this.MainWindowHandler, size);
-                }
-
-                // Set MainWindow
-                MainWindow = Find<Window>(matchingWindows[0].Title);
-            }
-            else
-            {
-                Assert.IsNotNull(this.Root, $"Failed to attach to the window '{windowName}'. Root driver is null");
-            }
-
-            Task.Delay(3000).Wait();
+            var windowHandleInfo = sessionHelper.Attach(windowName, size);
+            this.MainWindow = this.Find<Window>(windowHandleInfo.MainWindowTitle);
+            this.MainWindowHandler = windowHandleInfo.MainWindowHandler;
+            this.IsElevated = windowHandleInfo.IsElevated;
+            this.windowHandlers.Add(this.MainWindowHandler);
             return this;
         }
 
@@ -567,35 +521,6 @@ namespace Microsoft.PowerToys.UITest
         public (int Left, int Top, int Right, int Bottom) GetMainWindowRect()
         {
             return WindowHelper.GetWindowRect(this.MainWindowHandler);
-        }
-
-        /// <summary>
-        /// Launches the specified executable with optional arguments and simulates a delay before and after execution.
-        /// </summary>
-        /// <param name="executablePath">The full path to the executable to launch.</param>
-        /// <param name="arguments">Optional command-line arguments to pass to the executable.</param>
-        /// <param name="msPreAction">The number of milliseconds to wait before launching the executable. Default is 0 ms.</param>
-        /// <param name="msPostAction">The number of milliseconds to wait after launching the executable. Default is 2000 ms.</param>
-        public void StartExe(string executablePath, string arguments = "", int msPreAction = 0, int msPostAction = 2000)
-        {
-            PerformAction(
-                () =>
-            {
-                StartExeInternal(executablePath, arguments);
-            },
-                msPreAction,
-                msPostAction);
-        }
-
-        private void StartExeInternal(string executablePath, string arguments = "")
-        {
-            var processInfo = new ProcessStartInfo
-            {
-                FileName = executablePath,
-                Arguments = arguments,
-                UseShellExecute = true,
-            };
-            Process.Start(processInfo);
         }
 
         /// <summary>

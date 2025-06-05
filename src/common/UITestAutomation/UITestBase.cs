@@ -75,8 +75,8 @@ namespace Microsoft.PowerToys.UITest
                 System.Windows.Forms.SendKeys.SendWait("{ESC}");
             }
 
-            this.sessionHelper = new SessionHelper(scope).Init();
-            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
+            this.sessionHelper = new SessionHelper(scope, size).Init();
+            this.Session = new Session(this.sessionHelper);
 
             if (this.scope == PowerToysModule.PowerToysSettings)
             {
@@ -447,7 +447,7 @@ namespace Microsoft.PowerToys.UITest
         public void RestartScopeExe()
         {
             this.sessionHelper!.RestartScopeExe();
-            this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), this.scope, this.size);
+            this.Session = new Session(sessionHelper);
             return;
         }
 

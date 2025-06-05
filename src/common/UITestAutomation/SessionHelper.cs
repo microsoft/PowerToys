@@ -9,13 +9,14 @@ using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
+using static Microsoft.PowerToys.UITest.WindowHelper;
 
 namespace Microsoft.PowerToys.UITest
 {
     /// <summary>
     /// Nested class for test initialization.
     /// </summary>
-    internal class SessionHelper
+    public class SessionHelper
     {
         // Default session path is PowerToys settings dashboard
         private readonly string sessionPath = ModuleConfigData.Instance.GetModulePath(PowerToysModule.PowerToysSettings);
@@ -31,12 +32,15 @@ namespace Microsoft.PowerToys.UITest
         private Process? appDriver;
         private Process? runner;
 
-        private PowerToysModule scope;
+        public PowerToysModule Scope { get; private set; }
+
+        public WindowSize Size { get; private set; }
 
         [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
-        public SessionHelper(PowerToysModule scope)
+        public SessionHelper(PowerToysModule scope, WindowSize size)
         {
-            this.scope = scope;
+            this.Scope = scope;
+            this.Size = size;
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
             this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
@@ -84,7 +88,7 @@ namespace Microsoft.PowerToys.UITest
             {
                 appDriver?.Kill();
                 appDriver?.WaitForExit(); // Optional: Wait for the process to exit
-                if (this.scope == PowerToysModule.PowerToysSettings)
+                if (this.Scope == PowerToysModule.PowerToysSettings)
                 {
                     runner?.Kill();
                     runner?.WaitForExit(); // Optional: Wait for the process to exit
@@ -163,7 +167,23 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Exit now exe.
+        /// Start scope exe.
+        /// </summary>
+        public void StartScopeExe()
+        {
+            var processInfo = new ProcessStartInfo
+            {
+                FileName = this.locationPath + this.sessionPath,
+                Arguments = string.Empty,
+                UseShellExecute = true,
+            };
+            Process.Start(processInfo);
+            string windowName = ModuleConfigData.Instance.GetModuleWindowName(this.Scope);
+            var windowHandleInfo = this.Attach(windowName, this.Size);
+        }
+
+        /// <summary>
+        /// Exit scope exe.
         /// </summary>
         public void ExitScopeExe()
         {
@@ -181,7 +201,7 @@ namespace Microsoft.PowerToys.UITest
         public void RestartScopeExe()
         {
             ExitScopeExe();
-            StartExe(locationPath + sessionPath);
+            StartScopeExe();
         }
 
         public WindowsDriver<WindowsElement> GetRoot() => this.Root;
@@ -203,5 +223,78 @@ namespace Microsoft.PowerToys.UITest
             this.ExitExe(winAppDriverProcessInfo.FileName);
             this.appDriver = Process.Start(winAppDriverProcessInfo);
         }
+
+        /// <summary>
+        /// Attaches to an existing exe by string window name.
+        /// The session should be attached when a new app is started.
+        /// </summary>
+        /// <param name="windowName">The window name to attach to.</param>
+        /// <param name="size">The window size to set. Default is no change to window size</param>
+        public WindowHandleInfo Attach(string windowName, WindowSize size = WindowSize.UnSpecified)
+        {
+            WindowHandleInfo res = new WindowHandleInfo { };
+            if (this.Root != null)
+            {
+                // search window handler by window title (admin and non-admin titles)
+                var timeout = TimeSpan.FromMinutes(2);
+                var retryInterval = TimeSpan.FromSeconds(5);
+                DateTime startTime = DateTime.Now;
+
+                List<(IntPtr HWnd, string Title)>? matchingWindows = null;
+
+                while (DateTime.Now - startTime < timeout)
+                {
+                    matchingWindows = WindowHelper.ApiHelper.FindDesktopWindowHandler(
+                    new[] { windowName, WindowHelper.AdministratorPrefix + windowName });
+
+                    if (matchingWindows.Count > 0 && matchingWindows[0].HWnd != IntPtr.Zero)
+                    {
+                        break;
+                    }
+
+                    Task.Delay(retryInterval).Wait();
+                }
+
+                if (matchingWindows == null || matchingWindows.Count == 0 || matchingWindows[0].HWnd == IntPtr.Zero)
+                {
+                    Assert.Fail($"Failed to attach. Window '{windowName}' not found after {timeout.TotalSeconds} seconds.");
+                }
+
+                // pick one from matching windows
+                res.MainWindowHandler = matchingWindows[0].HWnd;
+                res.MainWindowTitle = matchingWindows[0].Title;
+                res.IsElevated = matchingWindows[0].Title.StartsWith(WindowHelper.AdministratorPrefix);
+
+                ApiHelper.SetForegroundWindow(res.MainWindowHandler);
+
+                var hexWindowHandle = res.MainWindowHandler.ToInt64().ToString("x");
+
+                var appCapabilities = new AppiumOptions();
+                appCapabilities.AddAdditionalCapability("appTopLevelWindow", hexWindowHandle);
+                appCapabilities.AddAdditionalCapability("deviceName", "WindowsPC");
+                this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
+
+                if (size != WindowSize.UnSpecified)
+                {
+                    WindowHelper.SetWindowSize(res.MainWindowHandler, size);
+                }
+            }
+            else
+            {
+                Assert.IsNotNull(this.Root, $"Failed to attach to the window '{windowName}'. Root driver is null");
+            }
+
+            Task.Delay(3000).Wait();
+            return res;
+        }
+    }
+
+    public struct WindowHandleInfo
+    {
+        public IntPtr MainWindowHandler { get; set; }
+
+        public string MainWindowTitle { get; set; }
+
+        public bool IsElevated { get; set; }
     }
 }
