@@ -70,4 +70,21 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
             FoundExecutable = false;
         }
     }
+
+    internal static bool SuppressFileFallbackIf(string query)
+    {
+        var searchText = query.Trim();
+        var expanded = Environment.ExpandEnvironmentVariables(searchText);
+        searchText = expanded;
+        if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
+        {
+            return false;
+        }
+
+        ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
+        var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
+        var pathIsDir = Directory.Exists(exe);
+
+        return exeExists || pathIsDir;
+    }
 }

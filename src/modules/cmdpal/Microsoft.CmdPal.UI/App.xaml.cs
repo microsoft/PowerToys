@@ -94,10 +94,12 @@ public partial class App : Application
 
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
+        var files = new IndexerCommandsProvider();
+        files.SuppressFallbackWhen(ShellCommandsProvider.SuppressFileFallbackIf);
         services.AddSingleton<ICommandProvider>(allApps);
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
-        services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
+        services.AddSingleton<ICommandProvider>(files);
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
 
         // TODO GH #527 re-enable the clipboard commands
