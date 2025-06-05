@@ -14,6 +14,7 @@ AColumn
 acrt
 ACTIVATEAPP
 activationaction
+ACTIVATEOPTIONS
 ACVS
 adaptivecards
 ADate
@@ -327,6 +328,7 @@ DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
 DEFPUSHBUTTON
+DEFT
 deinitialization
 DELA
 DELETEDKEYIMAGE
@@ -347,6 +349,7 @@ devmgmt
 DEVMODE
 DEVMODEW
 devpal
+DFX
 DIALOGEX
 digicert
 dimm
@@ -1533,6 +1536,7 @@ SMALLICON
 smartphone
 SMTO
 SNAPPROCESS
+snk
 snwprintf
 softline
 SOURCECLIENTAREAONLY
@@ -1585,6 +1589,7 @@ steamapps
 STGC
 STGM
 STGMEDIUM
+STGMREAD
 STICKYKEYS
 sticpl
 storelogo
@@ -1689,6 +1694,7 @@ TLayout
 tlb
 tlbimp
 tlc
+TGM
 TNP
 Toolhelp
 toolkitconverters
@@ -1992,3 +1998,15 @@ culori
 Evercoder
 LCh
 CIELCh
+CLSCTXINPROCALL
+IIDI
+irow
+lcid
+OTHERUNZOOM
+OTHERZOOM
+PARENTCLOSING
+PARENTOPENING
+ppwsz
+rguid
+SCROLLCHILDREN
+VARTYPE

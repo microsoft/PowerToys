@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks.Command;
 using Microsoft.CmdPal.Ext.Bookmarks.Models;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
@@ -99,7 +100,7 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
         }
         catch (Exception ex)
         {
-            ExtensionHost.LogMessage($"Invoke bookmark failed. ex.message: {ex.Message}");
+            Logger.LogError(ex.Message);
         }
 
         return CommandResult.GoHome();
