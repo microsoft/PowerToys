@@ -129,7 +129,7 @@ namespace Microsoft.PowerToys.UITest
         {
             var opts = new AppiumOptions();
             opts.AddAdditionalCapability("app", appPath);
-            this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), opts);
+            this.Driver = NewWindowsDriver(opts);
         }
 
         /// <summary>
