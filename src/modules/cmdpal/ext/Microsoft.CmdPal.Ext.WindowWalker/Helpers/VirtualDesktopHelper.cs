@@ -71,10 +71,11 @@ public class VirtualDesktopHelper
     public VirtualDesktopHelper(bool desktopListUpdate = false)
     {
         var cw = new StrategyBasedComWrappers();
+        var virtualDesktopManagerPtr = IntPtr.Zero;
 
         try
         {
-            var hr = NativeMethods.CoCreateInstance(ref this.iVirtualDesktopManagerCLSID, nint.Zero, CLSCTXINPROCALL, ref iVirtualDesktopManagerIID, out var virtualDesktopManagerPtr);
+            var hr = NativeMethods.CoCreateInstance(ref this.iVirtualDesktopManagerCLSID, nint.Zero, CLSCTXINPROCALL, ref iVirtualDesktopManagerIID, out virtualDesktopManagerPtr);
             if (hr != 0)
             {
                 throw new ArgumentException($"Failed to create IVirtualDesktopManager instance. HR: 0x{hr:X}");
@@ -86,6 +87,13 @@ public class VirtualDesktopHelper
         {
             ExtensionHost.LogMessage(new LogMessage() { Message = $"Initialization of <VirtualDesktopHelper> failed: An exception was thrown when creating the instance of COM interface <IVirtualDesktopManager>. {ex} " });
             return;
+        }
+        finally
+        {
+            if (virtualDesktopManagerPtr != IntPtr.Zero)
+            {
+                Marshal.Release(virtualDesktopManagerPtr);
+            }
         }
 
         _isWindowsEleven = OSVersionHelper.IsWindows11();
