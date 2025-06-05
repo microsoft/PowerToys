@@ -88,6 +88,13 @@ public class VirtualDesktopHelper
             ExtensionHost.LogMessage(new LogMessage() { Message = $"Initialization of <VirtualDesktopHelper> failed: An exception was thrown when creating the instance of COM interface <IVirtualDesktopManager>. {ex} " });
             return;
         }
+        finally
+        {
+            if (virtualDesktopManagerPtr != IntPtr.Zero)
+            {
+                Marshal.Release(virtualDesktopManagerPtr);
+            }
+        }
 
         _isWindowsEleven = OSVersionHelper.IsWindows11();
         _desktopListAutoUpdate = desktopListUpdate;
