@@ -32,15 +32,12 @@ namespace Microsoft.PowerToys.UITest
         private Process? appDriver;
         private Process? runner;
 
-        public PowerToysModule Scope { get; private set; }
-
-        public WindowSize Size { get; private set; }
+        private PowerToysModule scope;
 
         [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
-        public SessionHelper(PowerToysModule scope, WindowSize size)
+        public SessionHelper(PowerToysModule scope)
         {
-            this.Scope = scope;
-            this.Size = size;
+            this.scope = scope;
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
             this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
@@ -88,7 +85,7 @@ namespace Microsoft.PowerToys.UITest
             {
                 appDriver?.Kill();
                 appDriver?.WaitForExit(); // Optional: Wait for the process to exit
-                if (this.Scope == PowerToysModule.PowerToysSettings)
+                if (this.scope == PowerToysModule.PowerToysSettings)
                 {
                     runner?.Kill();
                     runner?.WaitForExit(); // Optional: Wait for the process to exit
@@ -167,23 +164,7 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Start scope exe.
-        /// </summary>
-        public void StartScopeExe()
-        {
-            var processInfo = new ProcessStartInfo
-            {
-                FileName = this.locationPath + this.sessionPath,
-                Arguments = string.Empty,
-                UseShellExecute = true,
-            };
-            Process.Start(processInfo);
-            string windowName = ModuleConfigData.Instance.GetModuleWindowName(this.Scope);
-            var windowHandleInfo = this.Attach(windowName, this.Size);
-        }
-
-        /// <summary>
-        /// Exit scope exe.
+        /// Exit now exe.
         /// </summary>
         public void ExitScopeExe()
         {
@@ -201,7 +182,7 @@ namespace Microsoft.PowerToys.UITest
         public void RestartScopeExe()
         {
             ExitScopeExe();
-            StartScopeExe();
+            StartExe(locationPath + sessionPath);
         }
 
         public WindowsDriver<WindowsElement> GetRoot() => this.Root;
@@ -223,78 +204,5 @@ namespace Microsoft.PowerToys.UITest
             this.ExitExe(winAppDriverProcessInfo.FileName);
             this.appDriver = Process.Start(winAppDriverProcessInfo);
         }
-
-        /// <summary>
-        /// Attaches to an existing exe by string window name.
-        /// The session should be attached when a new app is started.
-        /// </summary>
-        /// <param name="windowName">The window name to attach to.</param>
-        /// <param name="size">The window size to set. Default is no change to window size</param>
-        public WindowHandleInfo Attach(string windowName, WindowSize size = WindowSize.UnSpecified)
-        {
-            WindowHandleInfo res = new WindowHandleInfo { };
-            if (this.Root != null)
-            {
-                // search window handler by window title (admin and non-admin titles)
-                var timeout = TimeSpan.FromMinutes(2);
-                var retryInterval = TimeSpan.FromSeconds(5);
-                DateTime startTime = DateTime.Now;
-
-                List<(IntPtr HWnd, string Title)>? matchingWindows = null;
-
-                while (DateTime.Now - startTime < timeout)
-                {
-                    matchingWindows = WindowHelper.ApiHelper.FindDesktopWindowHandler(
-                    new[] { windowName, WindowHelper.AdministratorPrefix + windowName });
-
-                    if (matchingWindows.Count > 0 && matchingWindows[0].HWnd != IntPtr.Zero)
-                    {
-                        break;
-                    }
-
-                    Task.Delay(retryInterval).Wait();
-                }
-
-                if (matchingWindows == null || matchingWindows.Count == 0 || matchingWindows[0].HWnd == IntPtr.Zero)
-                {
-                    Assert.Fail($"Failed to attach. Window '{windowName}' not found after {timeout.TotalSeconds} seconds.");
-                }
-
-                // pick one from matching windows
-                res.MainWindowHandler = matchingWindows[0].HWnd;
-                res.MainWindowTitle = matchingWindows[0].Title;
-                res.IsElevated = matchingWindows[0].Title.StartsWith(WindowHelper.AdministratorPrefix);
-
-                ApiHelper.SetForegroundWindow(res.MainWindowHandler);
-
-                var hexWindowHandle = res.MainWindowHandler.ToInt64().ToString("x");
-
-                var appCapabilities = new AppiumOptions();
-                appCapabilities.AddAdditionalCapability("appTopLevelWindow", hexWindowHandle);
-                appCapabilities.AddAdditionalCapability("deviceName", "WindowsPC");
-                this.Driver = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), appCapabilities);
-
-                if (size != WindowSize.UnSpecified)
-                {
-                    WindowHelper.SetWindowSize(res.MainWindowHandler, size);
-                }
-            }
-            else
-            {
-                Assert.IsNotNull(this.Root, $"Failed to attach to the window '{windowName}'. Root driver is null");
-            }
-
-            Task.Delay(3000).Wait();
-            return res;
-        }
-    }
-
-    public struct WindowHandleInfo
-    {
-        public IntPtr MainWindowHandler { get; set; }
-
-        public string MainWindowTitle { get; set; }
-
-        public bool IsElevated { get; set; }
     }
 }
