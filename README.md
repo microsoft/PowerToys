@@ -79,7 +79,7 @@ There is a collection of [third-party plugins](./doc/thirdPartyRunPlugins.md) cr
 
 ## Contributing
 
-This project welcomes contributions of all types. Besides coding features and bug fixes - other ways to assist include spec writing, design, documentation, and finding bugs. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
+This project welcomes contributions of all types. Besides coding features / bug fixes - other ways to assist include spec writing, design, documentation, and finding bugs. We are excited to work with the power user community to build a set of tools for helping you get the most out of Windows.
 
 We ask that **before you start work on a feature that you would like to contribute**, please read our [Contributor's Guide](CONTRIBUTING.md). We would be happy to work with you to figure out the best approach, provide guidance and mentorship throughout feature development, and help avoid any wasted or duplicate effort.
 
