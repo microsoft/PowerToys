@@ -23,7 +23,6 @@ internal sealed partial class AddBookmarkForm : FormContent
         _bookmark = bookmark;
         var name = _bookmark?.Name ?? string.Empty;
         var url = _bookmark?.Bookmark ?? string.Empty;
-        var bookmarkType = _bookmark?.Type.ToString() ?? BookmarkType.Web.ToString();
 
         TemplateJson = $$"""
 {
