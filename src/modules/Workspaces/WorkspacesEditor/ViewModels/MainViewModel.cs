@@ -193,26 +193,28 @@ namespace WorkspacesEditor.ViewModels
             ApplyShortcut(editedProject);
         }
 
+        private string GetDesktopShortcutAddress(Project project) => Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
+
+        private string GetShortcutStoreAddress(Project project)
+        {
+            var dataFolder = FolderUtils.DataFolder();
+            Directory.CreateDirectory(dataFolder);
+            var shortcutStoreFolder = Path.Combine(dataFolder, "WorkspacesIcons");
+            Directory.CreateDirectory(shortcutStoreFolder);
+            return Path.Combine(shortcutStoreFolder, project.Id + ".ico");
+        }
+
         private void ApplyShortcut(Project project)
         {
-            string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            string shortcutAddress = Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
-            string shortcutIconFilename = Path.Combine(FolderUtils.Temp(), project.Id + ".ico");
-
             if (!project.IsShortcutNeeded)
             {
-                if (File.Exists(shortcutIconFilename))
-                {
-                    File.Delete(shortcutIconFilename);
-                }
-
-                if (File.Exists(shortcutAddress))
-                {
-                    File.Delete(shortcutAddress);
-                }
-
+                RemoveShortcut(project);
                 return;
             }
+
+            var basePath = AppDomain.CurrentDomain.BaseDirectory;
+            var shortcutAddress = GetDesktopShortcutAddress(project);
+            var shortcutIconFilename = GetShortcutStoreAddress(project);
 
             Bitmap icon = WorkspacesIcon.DrawIcon(WorkspacesIcon.IconTextFromProjectName(project.Name), App.ThemeManager.GetCurrentTheme());
             WorkspacesIcon.SaveIcon(icon, shortcutIconFilename);
@@ -360,8 +362,8 @@ namespace WorkspacesEditor.ViewModels
 
         private void RemoveShortcut(Project selectedProject)
         {
-            string shortcutAddress = Path.Combine(FolderUtils.Desktop(), selectedProject.Name + ".lnk");
-            string shortcutIconFilename = Path.Combine(FolderUtils.Temp(), selectedProject.Id + ".ico");
+            string shortcutAddress = GetDesktopShortcutAddress(selectedProject);
+            string shortcutIconFilename = GetShortcutStoreAddress(selectedProject);
 
             if (File.Exists(shortcutIconFilename))
             {
