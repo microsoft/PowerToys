@@ -3,11 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
-using AdaptiveCards.ObjectModel.WinUI3;
-using AdaptiveCards.Templating;
-using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Windows.Data.Json;
@@ -34,7 +29,7 @@ public partial class ContentFormViewModel(IFormContent _form, WeakReference<IPag
     {
     }
 
-    public void HandleSubmit(IAdaptiveActionElement action, JsonObject inputs)
+    public void HandleSubmit()
     {
     }
 }

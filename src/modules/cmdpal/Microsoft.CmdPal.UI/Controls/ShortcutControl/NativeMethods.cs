@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers;
 
-public static class NativeMethods
+public static partial class NativeMethods
 {
     private const int WS_POPUP = 1 << 31; // 0x80000000
     internal const int GWL_STYLE = -16;
@@ -27,7 +27,7 @@ public static class NativeMethods
     internal static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
 
     [LibraryImport("user32.dll")]
-    public static partial uint SendInput(uint nInputs, NativeKeyboardHelper.INPUT[] pInputs, int cbSize);
+    internal static partial uint SendInput(uint nInputs, NativeKeyboardHelper.INPUT[] pInputs, int cbSize);
 
     [LibraryImport("user32.dll")]
     internal static partial short GetAsyncKeyState(int vKey);
