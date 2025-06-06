@@ -83,8 +83,6 @@ namespace Microsoft.PowerToys.UITest
             ExitScopeExe();
             try
             {
-                appDriver?.Kill();
-                appDriver?.WaitForExit(); // Optional: Wait for the process to exit
                 if (this.scope == PowerToysModule.PowerToysSettings)
                 {
                     runner?.Kill();
