@@ -171,7 +171,7 @@
             Style="{StaticResource CaptionTextBlockStyle}"
             Text="{x:Bind CurrentPageViewModel.Title, Mode=OneWay}"
             TextTrimming="CharacterEllipsis"
-            TextWrapping="Wrap"
+            TextWrapping="NoWrap"
             Visibility="{x:Bind CurrentPageViewModel.IsNested, Mode=OneWay}" />
         <StackPanel
             Grid.Column="2"

@@ -68,7 +68,8 @@
                         Content="{x:Bind Text, Mode=OneWay}"
                         FontSize="12"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
-                        Visibility="{x:Bind IsLink, Mode=OneWay}" />
+                        Visibility="{x:Bind IsLink, Mode=OneWay}"
+                        TextWrapping="Wrap" />
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="viewModels:DetailsSeparatorViewModel">
