@@ -121,6 +121,9 @@ public class ShellListPageHelpers
     internal static bool FileExistInPath(string filename, out string fullPath)
     {
         fullPath = string.Empty;
+
+        // var expanded = Environment.ExpandEnvironmentVariables(filename);
+        // Debug.WriteLine($"Run: filename={filename} -> expanded={expanded}");
         if (File.Exists(filename))
         {
             fullPath = Path.GetFullPath(filename);

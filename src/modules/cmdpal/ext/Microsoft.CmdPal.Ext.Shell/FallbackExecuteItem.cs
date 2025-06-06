@@ -54,7 +54,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
         }
         else if (pathIsDir)
         {
-            var pathItem = new PathListItem(exe);
+            var pathItem = new PathListItem(exe, query);
             Title = pathItem.Title;
             Subtitle = pathItem.Subtitle;
             Icon = pathItem.Icon;

@@ -16,7 +16,7 @@ internal sealed partial class PathListItem : ListItem
 
     public override IIconInfo? Icon { get => _icon.Value; set => base.Icon = value; }
 
-    public PathListItem(string path)
+    public PathListItem(string path, string originalDir)
         : base(new OpenUrlCommand(path))
     {
         var fileName = Path.GetFileName(path);
@@ -31,7 +31,10 @@ internal sealed partial class PathListItem : ListItem
         Subtitle = path;
 
         var hasSpace = path.Contains(' ');
-        TextToSuggest = hasSpace ? string.Concat("\"", path, "\"") : path;
+
+        // var originalDir = Path.GetDirectoryName(originalSearch) ?? path;
+        var originalPath = Path.Combine(originalDir, fileName);
+        TextToSuggest = hasSpace ? string.Concat("\"", originalPath, "\"") : originalPath;
         MoreCommands = [
             new CommandContextItem(new CopyTextCommand(path) { Name = "Copy path" }) { } // TODO:LOC
         ];

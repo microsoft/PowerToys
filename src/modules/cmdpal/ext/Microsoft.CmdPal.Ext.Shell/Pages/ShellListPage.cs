@@ -74,7 +74,8 @@ internal sealed partial class ShellListPage : DynamicListPage
 
         var expanded = Environment.ExpandEnvironmentVariables(searchText);
         Debug.WriteLine($"Run: searchText={searchText} -> expanded={expanded}");
-        searchText = expanded;
+
+        // searchText = expanded;
 
         // _historyItems = _helper.Query(searchText);
         // _historyItems.ForEach(i =>
@@ -93,11 +94,11 @@ internal sealed partial class ShellListPage : DynamicListPage
             return;
         }
 
-        ParseExecutableAndArgs(searchText, out var exe, out var args);
-        Debug.WriteLine($"Run: searchText={searchText} -> exe,args='{expanded}', '{args}'");
+        ParseExecutableAndArgs(expanded, out var exe, out var args);
+        Debug.WriteLine($"Run: expanded={expanded} -> exe,args='{exe}', '{args}'");
 
         var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
-        var pathIsDir = Directory.Exists(exe);
+        var pathIsDir = Directory.Exists(expanded);
         Debug.WriteLine($"Run: exeExists={exeExists}, pathIsDir={pathIsDir}");
 
         _pathItems.Clear();
@@ -107,7 +108,7 @@ internal sealed partial class ShellListPage : DynamicListPage
         if (string.IsNullOrEmpty(args)
             && (!exeExists || pathIsDir))
         {
-            CreatePathItems(exe);
+            CreatePathItems(expanded, searchText);
         }
 
         if (exeExists)
@@ -122,9 +123,9 @@ internal sealed partial class ShellListPage : DynamicListPage
         RaiseItemsChanged();
     }
 
-    private static ListItem PathToListItem(string path)
+    private static ListItem PathToListItem(string path, string originalPath)
     {
-        return new PathListItem(path);
+        return new PathListItem(path, originalPath);
     }
 
     public override IListItem[] GetItems()
@@ -143,7 +144,7 @@ internal sealed partial class ShellListPage : DynamicListPage
         // var command = new AnonymousCommand(() => { ShellHelpers.OpenInShell(exe, args); }) { Result = CommandResult.Dismiss() };
         var exeItem = new RunExeItem(exe, args, fullExePath);
 
-        var pathItem = PathToListItem(fullExePath);
+        var pathItem = PathToListItem(fullExePath, exe);
         exeItem.MoreCommands = [
             .. exeItem.MoreCommands,
 
@@ -162,13 +163,20 @@ internal sealed partial class ShellListPage : DynamicListPage
         _exeItems.Add(exeItem);
     }
 
-    private void CreatePathItems(string searchPath)
+    private void CreatePathItems(string searchPath, string originalPath)
     {
         var directoryPath = string.Empty;
         var searchPattern = string.Empty;
 
+        // Easiest case: text is literally already a full directory
+        if (Directory.Exists(searchPath))
+        {
+            directoryPath = searchPath;
+            searchPattern = $"*";
+        }
+
         // Check if the search text is a valid path
-        if (Path.IsPathRooted(searchPath) && Path.GetDirectoryName(searchPath) is string directoryName)
+        else if (Path.IsPathRooted(searchPath) && Path.GetDirectoryName(searchPath) is string directoryName)
         {
             directoryPath = directoryName;
             searchPattern = $"{Path.GetFileName(searchPath)}*";
@@ -192,14 +200,29 @@ internal sealed partial class ShellListPage : DynamicListPage
         var dirExists = Directory.Exists(directoryPath);
         Debug.WriteLine($"Run: dirExists({directoryPath})={dirExists}");
 
+        // searchPath is fully expanded, and originalPath is not. We might get:
+        // * original: X%Y%Z\partial
+        // * search: XfooZ\partial
+        // and we want the result `XfooZ\partialOne` to use the suggestion `X%Y%Z\partialOne`
+        //
+        // To do this:
+        // * Get the directoryPath
+        // * trim that out of the beginning of searchPath -> searchPathTrailer
+        // * everything left from searchPath? remove searchPathTrailer from the end of originalPath
+        // that gets us the expanded original dir
+
         // Check if the directory exists
         if (dirExists)
         {
             // Get all the files in the directory that start with the search text
             var files = Directory.GetFileSystemEntries(directoryPath, searchPattern);
 
+            var searchPathTrailer = searchPath.Remove(0, directoryPath.Length);
+            var originalBeginning = originalPath.Remove(originalPath.Length - searchPathTrailer.Length);
+            Debug.WriteLine($"  '{searchPath}'\n->'{searchPathTrailer.PadLeft(directoryPath.Length)}'\n->'{originalBeginning}'");
+
             // Create a list of commands for each file
-            var commands = files.Select(PathToListItem).ToList();
+            var commands = files.Select(f => PathToListItem(f, originalBeginning)).ToList();
 
             // Add the commands to the list
             _pathItems = commands;
