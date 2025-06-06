@@ -138,9 +138,9 @@ namespace Microsoft.PowerToys.UITest
         private WindowsDriver<WindowsElement> NewWindowsDriver(AppiumOptions info)
         {
             // Create driver with retry
-            var timeout = TimeSpan.FromMinutes(2);
-            var retryInterval = TimeSpan.FromSeconds(5);
+            TimeSpan timeout = TimeSpan.FromMinutes(2);
             DateTime startTime = DateTime.Now;
+            int retryCount = 0;
 
             while (true)
             {
@@ -157,9 +157,14 @@ namespace Microsoft.PowerToys.UITest
                         throw;
                     }
 
+                    TimeSpan retryInterval = retryCount < 2
+                     ? TimeSpan.FromSeconds(5)
+                     : TimeSpan.FromSeconds(20);
+
                     Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Exception occurred: {ex.Message}, Retrying after {retryInterval.TotalSeconds} seconds...");
 
                     Task.Delay(retryInterval).Wait();
+                    retryCount++;
                 }
             }
         }
