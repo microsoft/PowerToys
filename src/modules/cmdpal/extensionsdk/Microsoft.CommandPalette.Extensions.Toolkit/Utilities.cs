@@ -37,7 +37,7 @@ public class Utilities
         var FOLDERID_LocalAppData = new Guid("F1B32785-6FBA-4FCF-9D55-7B8E7F157091");
         var hr = PInvoke.SHGetKnownFolderPath(
             FOLDERID_LocalAppData,
-            (uint)KNOWN_FOLDER_FLAG.KF_FLAG_FORCE_APP_DATA_REDIRECTION,
+            KNOWN_FOLDER_FLAG.KF_FLAG_FORCE_APP_DATA_REDIRECTION,
             null,
             out var localAppDataFolder);
 

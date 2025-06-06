@@ -57,7 +57,11 @@ public sealed partial class MainWindow : WindowEx,
         InitializeComponent();
 
         _hwnd = new HWND(WinRT.Interop.WindowNative.GetWindowHandle(this).ToInt32());
-        CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
+
+        unsafe
+        {
+            CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
+        }
 
         _keyboardListener = new KeyboardListener();
         _keyboardListener.Start();
