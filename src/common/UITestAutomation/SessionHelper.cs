@@ -24,11 +24,11 @@ namespace Microsoft.PowerToys.UITest
 
         private string? locationPath;
 
-        private WindowsDriver<WindowsElement> Root { get; set; }
+        private static WindowsDriver<WindowsElement>? root;
 
         private WindowsDriver<WindowsElement>? Driver { get; set; }
 
-        private Process? appDriver;
+        private static Process? appDriver;
         private Process? runner;
 
         private PowerToysModule scope;
@@ -40,7 +40,13 @@ namespace Microsoft.PowerToys.UITest
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
             this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-            this.StartWindowsAppDriverApp();
+            if (SessionHelper.root == null || SessionHelper.appDriver?.SessionId == null)
+            {
+                this.StartWindowsAppDriverApp();
+                var desktopCapabilities = new AppiumOptions();
+                desktopCapabilities.AddAdditionalCapability("app", "Root");
+                SessionHelper.root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
+            }
 
             var runnerProcessInfo = new ProcessStartInfo
             {
@@ -53,10 +59,6 @@ namespace Microsoft.PowerToys.UITest
                 this.ExitExe(runnerProcessInfo.FileName);
                 this.runner = Process.Start(runnerProcessInfo);
             }
-
-            var desktopCapabilities = new AppiumOptions();
-            desktopCapabilities.AddAdditionalCapability("app", "Root");
-            this.Root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
         }
 
         /// <summary>
@@ -178,7 +180,10 @@ namespace Microsoft.PowerToys.UITest
             StartExe(locationPath + sessionPath);
         }
 
-        public WindowsDriver<WindowsElement> GetRoot() => this.Root;
+        public WindowsDriver<WindowsElement> GetRoot()
+        {
+            return SessionHelper.root!;
+        }
 
         public WindowsDriver<WindowsElement> GetDriver()
         {
@@ -195,7 +200,7 @@ namespace Microsoft.PowerToys.UITest
             };
 
             this.ExitExe(winAppDriverProcessInfo.FileName);
-            this.appDriver = Process.Start(winAppDriverProcessInfo);
+            SessionHelper.appDriver = Process.Start(winAppDriverProcessInfo);
         }
     }
 }
