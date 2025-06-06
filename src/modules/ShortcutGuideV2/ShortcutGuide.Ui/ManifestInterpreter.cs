@@ -31,7 +31,7 @@ namespace ShortcutGuide
 
         public static string GetPathOfIntepretations()
         {
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "Windows", "KeyboardShortcuts");
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WinGet", "KeyboardShortcuts");
         }
 
         public static IndexFile GetIndexYamlFile()
