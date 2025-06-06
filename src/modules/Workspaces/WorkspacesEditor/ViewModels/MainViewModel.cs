@@ -195,7 +195,7 @@ namespace WorkspacesEditor.ViewModels
 
         private string GetDesktopShortcutAddress(Project project) => Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
 
-        private string GetShotcutStoreAddress(Project project)
+        private string GetShortcutStoreAddress(Project project)
         {
             var dataFolder = FolderUtils.DataFolder();
             Directory.CreateDirectory(dataFolder);
@@ -214,7 +214,7 @@ namespace WorkspacesEditor.ViewModels
 
             var basePath = AppDomain.CurrentDomain.BaseDirectory;
             var shortcutAddress = GetDesktopShortcutAddress(project);
-            var shortcutIconFilename = GetShotcutStoreAddress(project);
+            var shortcutIconFilename = GetShortcutStoreAddress(project);
 
             Bitmap icon = WorkspacesIcon.DrawIcon(WorkspacesIcon.IconTextFromProjectName(project.Name), App.ThemeManager.GetCurrentTheme());
             WorkspacesIcon.SaveIcon(icon, shortcutIconFilename);
@@ -363,7 +363,7 @@ namespace WorkspacesEditor.ViewModels
         private void RemoveShortcut(Project selectedProject)
         {
             string shortcutAddress = GetDesktopShortcutAddress(selectedProject);
-            string shortcutIconFilename = GetShotcutStoreAddress(selectedProject);
+            string shortcutIconFilename = GetShortcutStoreAddress(selectedProject);
 
             if (File.Exists(shortcutIconFilename))
             {
