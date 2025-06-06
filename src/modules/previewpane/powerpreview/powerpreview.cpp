@@ -165,25 +165,41 @@ void PowerPreviewModule::enable()
     }
 
     m_enabled = true;
+
+    try
+    {
+        PowerToysSettings::PowerToyValues settings =
+            PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_key());
+
+        apply_settings(settings);
+    }
+    catch (std::exception const& e)
+    {
+        Trace::InitSetErrorLoadingFile(e.what());
+    }
 }
 
 // Disable active preview handlers.
 void PowerPreviewModule::disable()
 {
-    for (auto& fileExplorerModule : m_fileExplorerModules)
-    {
-        if (!fileExplorerModule.registryChanges.unApply())
-        {
-            Logger::error(L"Couldn't disable file explorer module {} during module disable() call", fileExplorerModule.settingName);
-        }
-    }
-
     if (m_enabled)
     {
         Trace::EnabledPowerPreview(false);
     }
 
     m_enabled = false;
+
+    try
+    {
+        PowerToysSettings::PowerToyValues settings =
+            PowerToysSettings::PowerToyValues::load_from_settings_file(PowerPreviewModule::get_key());
+
+        apply_settings(settings);
+    }
+    catch (std::exception const& e)
+    {
+        Trace::InitSetErrorLoadingFile(e.what());
+    }
 }
 
 // Returns if the powertoys is enabled
@@ -217,6 +233,20 @@ void PowerPreviewModule::apply_settings(const PowerToysSettings::PowerToyValues&
 {
     bool notifyShell = false;
 
+    // check gpo for Power Preview module
+    const auto enabled_gpo_rule = powertoys_gpo::getConfiguredFileExplorerPreviewEnabledValue();
+    const auto enabled_gpo_is_configured = enabled_gpo_rule == powertoys_gpo::gpo_rule_configured_enabled || enabled_gpo_rule == powertoys_gpo::gpo_rule_configured_disabled;
+    const auto is_enabled = enabled_gpo_is_configured ? enabled_gpo_rule == powertoys_gpo::gpo_rule_configured_enabled : m_enabled;
+
+    if (enabled_gpo_rule == powertoys_gpo::gpo_rule_configured_unavailable)
+    {
+        Logger::warn(L"Couldn't read the gpo rule for Power Preview");
+    }
+    if (enabled_gpo_rule == powertoys_gpo::gpo_rule_configured_wrong_value)
+    {
+        Logger::warn(L"gpo rule for Power Preview is set to an unknown value");
+    }
+
     for (auto& fileExplorerModule : m_fileExplorerModules)
     {
         const auto toggle = settings.get_bool_value(fileExplorerModule.settingName);
@@ -248,6 +278,9 @@ void PowerPreviewModule::apply_settings(const PowerToysSettings::PowerToyValues&
             // gpo rule overrides settings state
             module_new_state = gpo_rule == powertoys_gpo::gpo_rule_configured_enabled;
         }
+
+        //Don't start previewer if the File Explorer module is disabled
+        module_new_state = module_new_state && is_enabled;
 
         // Skip if no need to update
         if (module_new_state == fileExplorerModule.registryChanges.isApplied())
