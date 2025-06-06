@@ -3,11 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Microsoft.CmdPal.Ext.Indexer.Native;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Com;
 using WinRT;
+using WinRT.Interop;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Data;
 
@@ -26,7 +29,7 @@ internal static class ActionRuntimeFactory
             Guid classId = Guid.Parse(ActionRuntimeClsidStr);
             Guid iid = IActionRuntimeIID;
 
-            HRESULT hresult = PInvoke.CoCreateInstance(&classId, null, CLSCTX.CLSCTX_LOCAL_SERVER, &iid, (void**)&abiPtr);
+            var hresult = NativeMethods.CoCreateInstance(ref Unsafe.AsRef(in classId), IntPtr.Zero, NativeHelpers.CLSCTXLOCALSERVER, ref iid, out abiPtr);
             Marshal.ThrowExceptionForHR((int)hresult);
 
             return MarshalInterface<global::Windows.AI.Actions.ActionRuntime>.FromAbi(abiPtr);
