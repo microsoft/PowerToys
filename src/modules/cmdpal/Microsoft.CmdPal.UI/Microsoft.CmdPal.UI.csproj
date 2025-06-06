@@ -23,6 +23,16 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
+    <PropertyGroup>
+	    <SelfContained>true</SelfContained>
+	    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+	    <PublishTrimmed>true</PublishTrimmed>
+	    <PublishSingleFile>false</PublishSingleFile>
+	    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+	    <PublishAot>true</PublishAot>
+	    <EnableMsixTooling>true</EnableMsixTooling>
+    </PropertyGroup>	
+
   <PropertyGroup>
     <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
   </PropertyGroup>
@@ -90,9 +100,6 @@
     <PackageReference Include="System.Text.Json" />
 
     <!-- LOAD BEARING: GeneratePathProperty=true on BOTH the AC dependencies. Don't forget the AdaptiveCardsWorkaround below -->
-    <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
-    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" />
-    <PackageReference Include="AdaptiveCards.Templating" />
     <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
 

@@ -26,11 +26,11 @@ public static class NativeMethods
     [DllImport("user32.dll")]
     internal static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
 
-    [DllImport("user32.dll")]
-    internal static extern uint SendInput(uint nInputs, NativeKeyboardHelper.INPUT[] pInputs, int cbSize);
+    [LibraryImport("user32.dll")]
+    public static partial uint SendInput(uint nInputs, NativeKeyboardHelper.INPUT[] pInputs, int cbSize);
 
-    [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
-    internal static extern short GetAsyncKeyState(int vKey);
+    [LibraryImport("user32.dll")]
+    internal static partial short GetAsyncKeyState(int vKey);
 
     [DllImport("user32.dll", SetLastError = true)]
     internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
