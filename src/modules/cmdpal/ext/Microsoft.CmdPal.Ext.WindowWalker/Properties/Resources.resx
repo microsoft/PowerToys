@@ -173,16 +173,16 @@
     <value>Close window</value>
   </data>
   <data name="windowwalker_Kill" xml:space="preserve">
-    <value>Kill process</value>
+    <value>End task</value>
   </data>
   <data name="windowwalker_KillMessage" xml:space="preserve">
-    <value>Your are going to kill the following process:</value>
+    <value>You are going to kill the following process:</value>
   </data>
   <data name="windowwalker_KillMessageQuestion" xml:space="preserve">
     <value>Continue?</value>
   </data>
   <data name="windowwalker_KillMessageTitle" xml:space="preserve">
-    <value>Kill process confirmation</value>
+    <value>End task confirmation</value>
   </data>
   <data name="windowwalker_KillMessageUwp" xml:space="preserve">
     <value>Because this is an app process, all instances of the app will be killed. Continue?</value>

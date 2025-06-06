@@ -98,7 +98,8 @@ internal sealed partial class SampleListPage : ListPage
                             new CommandContextItem(
                                 new ToastCommand("Nested B invoked") { Name = "Do it", Icon = new IconInfo("B") })
                             {
-                                Title = "Nested B...",
+                                Title = "Nested B (Critical)...",
+                                IsCritical = true,
                                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, vkey: VirtualKey.B),
                                 MoreCommands = [
                                     new CommandContextItem(

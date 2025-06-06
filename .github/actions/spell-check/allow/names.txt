@@ -210,6 +210,8 @@ firefox
 fudan
 gpt
 Inkscape
+keybind
+keybound
 Markdig
 modernwpf
 Moq

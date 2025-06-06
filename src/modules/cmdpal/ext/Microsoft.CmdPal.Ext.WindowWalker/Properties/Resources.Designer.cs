@@ -133,7 +133,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Kill process.
+        ///   Looks up a localized string similar to End task.
         /// </summary>
         public static string windowwalker_Kill {
             get {
@@ -142,7 +142,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your are going to kill the following process:.
+        ///   Looks up a localized string similar to You are going to kill the following process:.
         /// </summary>
         public static string windowwalker_KillMessage {
             get {
@@ -160,7 +160,7 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Kill process confirmation.
+        ///   Looks up a localized string similar to End task confirmation.
         /// </summary>
         public static string windowwalker_KillMessageTitle {
             get {
