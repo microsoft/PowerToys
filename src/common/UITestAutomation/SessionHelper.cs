@@ -149,12 +149,15 @@ namespace Microsoft.PowerToys.UITest
                     var res = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), info);
                     return res;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     if (DateTime.Now - startTime > timeout)
                     {
+                        Console.WriteLine("Timeout reached. Throwing exception.");
                         throw;
                     }
+
+                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Exception occurred: {ex.Message}, Retrying after {retryInterval.TotalSeconds} seconds...");
 
                     Task.Delay(retryInterval).Wait();
                 }
