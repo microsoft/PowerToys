@@ -5,7 +5,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Flyout;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -17,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// General Settings Page.
     /// </summary>
-    public sealed partial class GeneralPage : Page
+    public sealed partial class GeneralPage : Page, IRefreshablePage
     {
         private static DateTime OkToHideBackupAndRestoreMessageTime { get; set; }
 
@@ -83,6 +85,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             DataContext = ViewModel;
 
+            ViewModel.InitializeReportBugLink();
+
             doRefreshBackupRestoreStatus(100);
         }
 
@@ -95,6 +99,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             catch (Exception ex)
             {
                 Logger.LogError("Error while trying to open the system color settings", ex);
+            }
+        }
+
+        private void OpenDiagnosticsAndFeedbackSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Helpers.StartProcessHelper.Start(Helpers.StartProcessHelper.DiagnosticsAndFeedback);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error while trying to open the system Diagnostics & Feedback settings", ex);
             }
         }
 
@@ -134,6 +150,40 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void Click_LanguageRestart(object sender, RoutedEventArgs e)
         {
             ViewModel.Restart();
+        }
+
+        private void Click_ViewDiagnosticDataViewerRestart(object sender, RoutedEventArgs e)
+        {
+            ViewModel.Restart();
+        }
+
+        public void RefreshEnabledState()
+        {
+            ViewModel.RefreshSettingsOnExternalChange();
+        }
+
+        private async void ViewDiagnosticData_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(ViewModel.ViewDiagnosticData);
+        }
+
+        private void ExitPTItem_Tapped(object sender, RoutedEventArgs e)
+        {
+            const string ptTrayIconWindowClass = "PToyTrayIconWindow"; // Defined in runner/tray_icon.h
+            const nuint ID_EXIT_MENU_COMMAND = 40001;                  // Generated resource from runner/runner.base.rc
+
+            // Exit the XAML application
+            Application.Current.Exit();
+
+            // Invoke the exit command from the tray icon
+            IntPtr hWnd = NativeMethods.FindWindow(ptTrayIconWindowClass, ptTrayIconWindowClass);
+            NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_EXIT_MENU_COMMAND, 0);
+        }
+
+        private void BugReportToolClicked(object sender, RoutedEventArgs e)
+        {
+            var launchPage = new LaunchPage();
+            launchPage.ReportBugBtn_Click(sender, e);
         }
     }
 }

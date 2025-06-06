@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -14,7 +15,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class AllAppsViewModel : Observable
+    public partial class AllAppsViewModel : Observable
     {
         public ObservableCollection<FlyoutMenuItem> FlyoutMenuItems { get; set; }
 
@@ -33,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             FlyoutMenuItems = new ObservableCollection<FlyoutMenuItem>();
 
-            foreach (ModuleType moduleType in Enum.GetValues(typeof(ModuleType)))
+            foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
                 AddFlyoutMenuItem(moduleType);
             }

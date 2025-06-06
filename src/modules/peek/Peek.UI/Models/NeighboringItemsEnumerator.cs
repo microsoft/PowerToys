@@ -10,7 +10,7 @@ using Peek.Common.Models;
 
 namespace Peek.UI.Models
 {
-    public class NeighboringItemsEnumerator : IEnumerator<IFileSystemItem>
+    public partial class NeighboringItemsEnumerator : IEnumerator<IFileSystemItem>
     {
         public IFileSystemItem Current => Items[CurrentIndex];
 

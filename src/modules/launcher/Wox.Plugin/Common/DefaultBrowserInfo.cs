@@ -4,6 +4,7 @@
 
 using System;
 using System.Text;
+using System.Threading;
 
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
@@ -15,7 +16,7 @@ namespace Wox.Plugin.Common
     /// </summary>
     public static class DefaultBrowserInfo
     {
-        private static readonly object _updateLock = new object();
+        private static readonly Lock _updateLock = new Lock();
 
         /// <summary>Gets the path to the MS Edge browser executable.</summary>
         public static string MSEdgePath => System.IO.Path.Combine(

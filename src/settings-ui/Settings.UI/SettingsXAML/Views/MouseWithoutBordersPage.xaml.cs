@@ -6,6 +6,7 @@ using System;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -15,6 +16,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using WinRT;
+
 using static Microsoft.PowerToys.Settings.UI.ViewModels.MouseWithoutBordersViewModel;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
@@ -50,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void OnConfigFileUpdate()
         {
             // Note: FileSystemWatcher raise notification multiple times for single update operation.
-            // Todo: Handle duplicate events either by somehow suppress them or re-read the configuration everytime since we will be updating the UI only if something is changed.
+            // Todo: Handle duplicate events either by somehow suppress them or re-read the configuration every time since we will be updating the UI only if something is changed.
             this.DispatcherQueue.TryEnqueue(() =>
             {
                 if (ViewModel.LoadUpdatedSettings())

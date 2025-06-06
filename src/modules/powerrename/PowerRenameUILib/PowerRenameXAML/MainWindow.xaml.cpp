@@ -12,6 +12,8 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/process_path.h>
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 #include <atlstr.h>
 #include <exception>
 #include <string>
@@ -104,6 +106,8 @@ namespace winrt::PowerRenameUI::implementation
     MainWindow::MainWindow() :
         m_allSelected{ true }, m_managerEvents{ this }
     {
+        Trace::RegisterProvider();
+
         auto windowNative{ this->try_as<::IWindowNative>() };
         winrt::check_bool(windowNative);
         windowNative->get_WindowHandle(&m_window);
@@ -166,12 +170,17 @@ namespace winrt::PowerRenameUI::implementation
         auto factory = winrt::get_activation_factory<ResourceManager, IResourceManagerFactory>();
         ResourceManager manager = factory.CreateInstance(L"PowerToys.PowerRename.pri");
 
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"^", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_StartOfString").ValueAsString()));
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"$", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_EndOfString").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L".", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchAny").ValueAsString()));
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"+", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_OneOrMore").ValueAsString()));
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"?", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_ZeroOrOne").ValueAsString()));
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"*", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_ZeroOrMore").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\d", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchDigit").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\D", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchNonDigit").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\w", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchWordChar").ValueAsString()));
+        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\s", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchWS").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\S", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchNonWS").ValueAsString()));
-        m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\S+", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchOneOrMoreWS").ValueAsString()));
         m_searchRegExShortcuts.Append(winrt::make<PatternSnippet>(L"\\b", manager.MainResourceMap().GetValue(L"Resources/RegExCheatSheet_MatchWordBoundary").ValueAsString()));
 
         m_dateTimeShortcuts = winrt::single_threaded_observable_vector<PowerRenameUI::PatternSnippet>();
@@ -186,8 +195,15 @@ namespace winrt::PowerRenameUI::implementation
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$DDD", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_DayNameAbbr").ValueAsString()));
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$DD", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_DayDigitLZero").ValueAsString()));
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$D", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_DayDigit").ValueAsString()));
-        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$hh", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_HoursLZero").ValueAsString()));
-        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$h", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_Hours").ValueAsString()));
+        
+        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$HH", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_Hours12LZero").ValueAsString()));
+        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$H", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_Hours12").ValueAsString()));
+        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$TT", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_AMPMUpperCase").ValueAsString()));
+        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$tt", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_AMPMLowerCase").ValueAsString()));
+        
+        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$hh", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_Hours24LZero").ValueAsString()));
+        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$h", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_Hours24").ValueAsString()));
+        
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$mm", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_MinutesLZero").ValueAsString()));
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$m", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_Minutes").ValueAsString()));
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$ss", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_SecondsLZero").ValueAsString()));
@@ -210,6 +226,8 @@ namespace winrt::PowerRenameUI::implementation
         m_RandomizerShortcuts.Append(winrt::make<PatternSnippet>(L"${ruuidv4}", manager.MainResourceMap().GetValue(L"Resources/RandomizerCheatSheet_Uuid").ValueAsString()));
 
         InitializeComponent();
+
+        m_etwTrace.UpdateState(true);
 
         listView_ExplorerItems().ApplyTemplate();
 #ifdef ENABLE_RECYCLING_VIRTUALIZATION_MODE
@@ -313,6 +331,11 @@ namespace winrt::PowerRenameUI::implementation
         {
             LastRunSettingsInstance().UpdateLastWindowSize(m_updatedWindowSize->first, m_updatedWindowSize->second);
         }
+
+        m_etwTrace.Flush();
+        m_etwTrace.UpdateState(false);
+
+        Trace::UnregisterProvider();
     }
 
     void MainWindow::InvalidateItemListViewState()
@@ -768,6 +791,32 @@ namespace winrt::PowerRenameUI::implementation
         // ButtonSettings
         button_settings().Click([&](auto const&, auto const&) {
             OpenSettingsApp();
+        });
+
+        // ComboBox RenameParts
+        comboBox_fileTimeParts().SelectionChanged([&](auto const&, auto const&) {
+            int selectedIndex = comboBox_fileTimeParts().SelectedIndex();
+            if (selectedIndex == 0)
+            { 
+                // default behaviour. Date Created
+                UpdateFlag(CreationTime, UpdateFlagCommand::Set);
+                UpdateFlag(ModificationTime, UpdateFlagCommand::Reset);
+                UpdateFlag(AccessTime, UpdateFlagCommand::Reset);
+            }
+            else if (selectedIndex == 1)
+            {
+                // Date Modified
+                UpdateFlag(ModificationTime, UpdateFlagCommand::Set);
+                UpdateFlag(CreationTime, UpdateFlagCommand::Reset);
+                UpdateFlag(AccessTime, UpdateFlagCommand::Reset);
+            }
+            else if (selectedIndex == 2)
+            {
+                // Accessed
+                UpdateFlag(AccessTime, UpdateFlagCommand::Set);
+                UpdateFlag(CreationTime, UpdateFlagCommand::Reset);
+                UpdateFlag(ModificationTime, UpdateFlagCommand::Reset);
+            }
         });
     }
 

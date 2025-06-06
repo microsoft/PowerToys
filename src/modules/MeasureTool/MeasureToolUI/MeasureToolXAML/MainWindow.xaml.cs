@@ -64,6 +64,7 @@ namespace MeasureToolUI
             _ = SetWindowLong(hwnd, GWL_STYLE, windowStyle);
 
             _coreLogic = core;
+            _coreLogic.InitResources();
             Closed += MainWindow_Closed;
             DisplayArea displayArea = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Nearest);
             float dpiScale = _coreLogic.GetDPIScaleForWindow((int)hwnd);

@@ -6,7 +6,7 @@
 
 std::vector<EnumOptions> parseEnumOptions(const std::wstring& replaceWith)
 {
-    static const std::wregex enumStartRegex(LR"(start=(\d+))");
+    static const std::wregex enumStartRegex(LR"(start=(-?\d+))");
     static const std::wregex enumIncrementRegex(LR"(increment=(-?\d+))");
     static const std::wregex enumPaddingRegex(LR"(padding=(\d+))");
 

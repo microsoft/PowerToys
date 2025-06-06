@@ -20,21 +20,21 @@ namespace WorkspacesEditor.Utils
 {
     public class DrawHelper
     {
-        private static Font font = new("Tahoma", 24);
-        private static double scale = 0.1;
+        private static readonly Font Font = new("Tahoma", 24);
+        private static readonly double Scale = 0.1;
         private static double gapWidth;
         private static double gapHeight;
 
         public static BitmapImage DrawPreview(Project project, Rectangle bounds, Theme currentTheme)
         {
-            List<double> horizontalGaps = new List<double>();
-            List<double> verticalGaps = new List<double>();
+            List<double> horizontalGaps = [];
+            List<double> verticalGaps = [];
             gapWidth = bounds.Width * 0.01;
             gapHeight = bounds.Height * 0.01;
 
             int Scaled(double value)
             {
-                return (int)(value * scale);
+                return (int)(value * Scale);
             }
 
             int TransformX(double posX)
@@ -54,7 +54,13 @@ namespace WorkspacesEditor.Utils
                 if (app.Maximized)
                 {
                     Project project = app.Parent;
-                    var monitor = project.Monitors.Where(x => x.MonitorNumber == app.MonitorNumber).FirstOrDefault();
+                    MonitorSetup monitor = project.GetMonitorForApp(app);
+                    if (monitor == null)
+                    {
+                        // unrealistic case, there are no monitors at all in the workspace, use original rect
+                        return new Rectangle(TransformX(app.ScaledPosition.X), TransformY(app.ScaledPosition.Y), Scaled(app.ScaledPosition.Width), Scaled(app.ScaledPosition.Height));
+                    }
+
                     return new Rectangle(TransformX(monitor.MonitorDpiAwareBounds.Left), TransformY(monitor.MonitorDpiAwareBounds.Top), Scaled(monitor.MonitorDpiAwareBounds.Width), Scaled(monitor.MonitorDpiAwareBounds.Height));
                 }
                 else
@@ -63,22 +69,23 @@ namespace WorkspacesEditor.Utils
                 }
             }
 
-            Dictionary<string, int> repeatCounter = new Dictionary<string, int>();
+            Dictionary<string, int> repeatCounter = [];
 
-            var appsIncluded = project.Applications.Where(x => x.IsIncluded);
+            IEnumerable<Application> appsIncluded = project.Applications.Where(x => x.IsIncluded);
 
             foreach (Application app in appsIncluded)
             {
-                if (repeatCounter.TryGetValue(app.AppPath, out int value))
+                string appIdentifier = app.AppPath + app.PwaAppId;
+                if (repeatCounter.TryGetValue(appIdentifier, out int value))
                 {
-                    repeatCounter[app.AppPath] = ++value;
+                    repeatCounter[appIdentifier] = ++value;
                 }
                 else
                 {
-                    repeatCounter.Add(app.AppPath, 1);
+                    repeatCounter.Add(appIdentifier, 1);
                 }
 
-                app.RepeatIndex = repeatCounter[app.AppPath];
+                app.RepeatIndex = repeatCounter[appIdentifier];
             }
 
             foreach (Application app in project.Applications.Where(x => !x.IsIncluded))
@@ -107,7 +114,7 @@ namespace WorkspacesEditor.Utils
                 }
             }
 
-            Bitmap previewBitmap = new Bitmap(Scaled(bounds.Width + (verticalGaps.Count * gapWidth)), Scaled((bounds.Height * 1.2) + (horizontalGaps.Count * gapHeight)));
+            Bitmap previewBitmap = new(Scaled(bounds.Width + (verticalGaps.Count * gapWidth)), Scaled((bounds.Height * 1.2) + (horizontalGaps.Count * gapHeight)));
             double desiredIconSize = Scaled(Math.Min(bounds.Width, bounds.Height)) * 0.25;
             using (Graphics g = Graphics.FromImage(previewBitmap))
             {
@@ -125,7 +132,7 @@ namespace WorkspacesEditor.Utils
                     g.FillRectangle(monitorBrush, new Rectangle(TransformX(monitor.MonitorDpiAwareBounds.Left), TransformY(monitor.MonitorDpiAwareBounds.Top), Scaled(monitor.MonitorDpiAwareBounds.Width), Scaled(monitor.MonitorDpiAwareBounds.Height)));
                 }
 
-                var appsToDraw = appsIncluded.Where(x => !x.Minimized);
+                IEnumerable<Application> appsToDraw = appsIncluded.Where(x => !x.Minimized);
 
                 // draw the highlighted app at the end to have its icon in the foreground for the case there are overlapping icons
                 foreach (Application app in appsToDraw.Where(x => !x.IsHighlighted))
@@ -141,24 +148,23 @@ namespace WorkspacesEditor.Utils
                 }
 
                 // draw the minimized windows
-                Rectangle rectMinimized = new Rectangle(0, Scaled((bounds.Height * 1.02) + (horizontalGaps.Count * gapHeight)), Scaled(bounds.Width + (verticalGaps.Count * gapWidth)), Scaled(bounds.Height * 0.18));
+                Rectangle rectMinimized = new(0, Scaled((bounds.Height * 1.02) + (horizontalGaps.Count * gapHeight)), Scaled(bounds.Width + (verticalGaps.Count * gapWidth)), Scaled(bounds.Height * 0.18));
                 DrawWindow(g, brush, brushForHighlight, rectMinimized, appsIncluded.Where(x => x.Minimized), currentTheme);
             }
 
-            using (var memory = new MemoryStream())
-            {
-                previewBitmap.Save(memory, ImageFormat.Png);
-                memory.Position = 0;
+            using MemoryStream memory = new();
+            WorkspacesCsharpLibrary.DrawHelper.SaveBitmap(previewBitmap, memory);
 
-                var bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-                bitmapImage.Freeze();
+            memory.Position = 0;
 
-                return bitmapImage;
-            }
+            BitmapImage bitmapImage = new();
+            bitmapImage.BeginInit();
+            bitmapImage.StreamSource = memory;
+            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+            bitmapImage.EndInit();
+            bitmapImage.Freeze();
+
+            return bitmapImage;
         }
 
         public static void DrawWindow(Graphics graphics, Brush brush, Rectangle bounds, Application app, double desiredIconSize, Theme currentTheme)
@@ -188,7 +194,7 @@ namespace WorkspacesEditor.Utils
             }
 
             double iconSize = Math.Min(Math.Min(bounds.Width - 4, bounds.Height - 4), desiredIconSize);
-            Rectangle iconBounds = new Rectangle((int)(bounds.Left + (bounds.Width / 2) - (iconSize / 2)), (int)(bounds.Top + (bounds.Height / 2) - (iconSize / 2)), (int)iconSize, (int)iconSize);
+            Rectangle iconBounds = new((int)(bounds.Left + (bounds.Width / 2) - (iconSize / 2)), (int)(bounds.Top + (bounds.Height / 2) - (iconSize / 2)), (int)iconSize, (int)iconSize);
 
             try
             {
@@ -197,13 +203,13 @@ namespace WorkspacesEditor.Utils
                 {
                     string indexString = app.RepeatIndex.ToString(CultureInfo.InvariantCulture);
                     int indexSize = (int)(iconBounds.Width * 0.5);
-                    Rectangle indexBounds = new Rectangle(iconBounds.Right - indexSize, iconBounds.Bottom - indexSize, indexSize, indexSize);
+                    Rectangle indexBounds = new(iconBounds.Right - indexSize, iconBounds.Bottom - indexSize, indexSize, indexSize);
 
-                    var textSize = graphics.MeasureString(indexString, font);
-                    var state = graphics.Save();
+                    SizeF textSize = graphics.MeasureString(indexString, Font);
+                    GraphicsState state = graphics.Save();
                     graphics.TranslateTransform(indexBounds.Left, indexBounds.Top);
                     graphics.ScaleTransform(indexBounds.Width / textSize.Width, indexBounds.Height / textSize.Height);
-                    graphics.DrawString(indexString, font, Brushes.Black, PointF.Empty);
+                    graphics.DrawString(indexString, Font, Brushes.Black, PointF.Empty);
                     graphics.Restore(state);
                 }
             }
@@ -249,7 +255,7 @@ namespace WorkspacesEditor.Utils
             for (int iconCounter = 0; iconCounter < appsCount; iconCounter++)
             {
                 Application app = apps.ElementAt(iconCounter);
-                Rectangle iconBounds = new Rectangle((int)(bounds.Left + (bounds.Width / 2) - (iconSize * ((appsCount / 2) - iconCounter))), (int)(bounds.Top + (bounds.Height / 2) - (iconSize / 2)), (int)iconSize, (int)iconSize);
+                Rectangle iconBounds = new((int)(bounds.Left + (bounds.Width / 2) - (iconSize * ((appsCount / 2) - iconCounter))), (int)(bounds.Top + (bounds.Height / 2) - (iconSize / 2)), (int)iconSize, (int)iconSize);
 
                 try
                 {
@@ -258,13 +264,13 @@ namespace WorkspacesEditor.Utils
                     {
                         string indexString = app.RepeatIndex.ToString(CultureInfo.InvariantCulture);
                         int indexSize = (int)(iconBounds.Width * 0.5);
-                        Rectangle indexBounds = new Rectangle(iconBounds.Right - indexSize, iconBounds.Bottom - indexSize, indexSize, indexSize);
+                        Rectangle indexBounds = new(iconBounds.Right - indexSize, iconBounds.Bottom - indexSize, indexSize, indexSize);
 
-                        var textSize = graphics.MeasureString(indexString, font);
-                        var state = graphics.Save();
+                        SizeF textSize = graphics.MeasureString(indexString, Font);
+                        GraphicsState state = graphics.Save();
                         graphics.TranslateTransform(indexBounds.Left, indexBounds.Top);
                         graphics.ScaleTransform(indexBounds.Width / textSize.Width, indexBounds.Height / textSize.Height);
-                        graphics.DrawString(indexString, font, Brushes.Black, PointF.Empty);
+                        graphics.DrawString(indexString, Font, Brushes.Black, PointF.Empty);
                         graphics.Restore(state);
                     }
                 }
@@ -283,14 +289,14 @@ namespace WorkspacesEditor.Utils
                 return null;
             }
 
-            Bitmap previewBitmap = new Bitmap(32 * appsCount, 24);
+            Bitmap previewBitmap = new(32 * appsCount, 24);
             using (Graphics graphics = Graphics.FromImage(previewBitmap))
             {
                 graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
                 graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 int appIndex = 0;
-                foreach (var app in project.Applications)
+                foreach (Application app in project.Applications)
                 {
                     try
                     {
@@ -305,20 +311,20 @@ namespace WorkspacesEditor.Utils
                 }
             }
 
-            using (var memory = new MemoryStream())
-            {
-                previewBitmap.Save(memory, ImageFormat.Png);
-                memory.Position = 0;
+            using MemoryStream memory = new();
 
-                var bitmapImage = new BitmapImage();
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = memory;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-                bitmapImage.Freeze();
+            WorkspacesCsharpLibrary.DrawHelper.SaveBitmap(previewBitmap, memory);
 
-                return bitmapImage;
-            }
+            memory.Position = 0;
+
+            BitmapImage bitmapImage = new();
+            bitmapImage.BeginInit();
+            bitmapImage.StreamSource = memory;
+            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+            bitmapImage.EndInit();
+            bitmapImage.Freeze();
+
+            return bitmapImage;
         }
 
         private static GraphicsPath RoundedRect(Rectangle bounds)
@@ -327,9 +333,9 @@ namespace WorkspacesEditor.Utils
             int radius = (int)(minorSize / 8);
 
             int diameter = radius * 2;
-            Size size = new Size(diameter, diameter);
-            Rectangle arc = new Rectangle(bounds.Location, size);
-            GraphicsPath path = new GraphicsPath();
+            Size size = new(diameter, diameter);
+            Rectangle arc = new(bounds.Location, size);
+            GraphicsPath path = new();
 
             if (radius == 0)
             {

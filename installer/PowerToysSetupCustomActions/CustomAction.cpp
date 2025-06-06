@@ -10,6 +10,9 @@
 #include "../../src/common/utils/modulesRegistry.h"
 #include "../../src/common/updating/installer.h"
 #include "../../src/common/version/version.h"
+#include "../../src/common/Telemetry/EtwTrace/EtwTrace.h"
+#include "../../src/common/utils/package.h"
+#include "../../src/common/utils/clean_video_conference.h"
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
@@ -27,18 +30,64 @@ HINSTANCE DLL_HANDLE = nullptr;
 
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
-    "Microsoft.PowerToysInstaller",
-    // {e1d8165d-5cb6-5c74-3b51-bdfbfe4f7a3b}
-    (0xe1d8165d, 0x5cb6, 0x5c74, 0x3b, 0x51, 0xbd, 0xfb, 0xfe, 0x4f, 0x7a, 0x3b),
+    "Microsoft.PowerToys",
+    // {38e8889b-9731-53f5-e901-e8a7c1753074}
+    (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
 const DWORD USERNAME_DOMAIN_LEN = DNLEN + UNLEN + 2; // Domain Name + '\' + User Name + '\0'
-const DWORD USERNAME_LEN = UNLEN + 1; // User Name + '\0'
+const DWORD USERNAME_LEN = UNLEN + 1;                // User Name + '\0'
 
-static const wchar_t* POWERTOYS_EXE_COMPONENT = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
-static const wchar_t* POWERTOYS_UPGRADE_CODE = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
+static const wchar_t *POWERTOYS_EXE_COMPONENT = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
+static const wchar_t *POWERTOYS_UPGRADE_CODE = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
 
-HRESULT getInstallFolder(MSIHANDLE hInstall, std::wstring& installationDir)
+constexpr inline const wchar_t *DataDiagnosticsRegKey = L"Software\\Classes\\PowerToys";
+constexpr inline const wchar_t *DataDiagnosticsRegValueName = L"AllowDataDiagnostics";
+
+#define TraceLoggingWriteWrapper(provider, eventName, ...)   \
+    if (isDataDiagnosticEnabled())                           \
+    {                                                        \
+        trace.UpdateState(true);                             \
+        TraceLoggingWrite(provider, eventName, __VA_ARGS__); \
+        trace.Flush();                                       \
+        trace.UpdateState(false);                            \
+    }
+
+static Shared::Trace::ETWTrace trace{L"PowerToys_Installer"};
+
+inline bool isDataDiagnosticEnabled()
+{
+    HKEY key{};
+    if (RegOpenKeyExW(HKEY_CURRENT_USER,
+                      DataDiagnosticsRegKey,
+                      0,
+                      KEY_READ,
+                      &key) != ERROR_SUCCESS)
+    {
+        return false;
+    }
+
+    DWORD isDataDiagnosticsEnabled = 0;
+    DWORD size = sizeof(isDataDiagnosticsEnabled);
+
+    if (RegGetValueW(
+            HKEY_CURRENT_USER,
+            DataDiagnosticsRegKey,
+            DataDiagnosticsRegValueName,
+            RRF_RT_REG_DWORD,
+            nullptr,
+            &isDataDiagnosticsEnabled,
+            &size) != ERROR_SUCCESS)
+    {
+        RegCloseKey(key);
+        return false;
+    }
+    RegCloseKey(key);
+
+    return isDataDiagnosticsEnabled == 1;
+}
+
+HRESULT getInstallFolder(MSIHANDLE hInstall, std::wstring &installationDir)
 {
     DWORD len = 0;
     wchar_t _[1];
@@ -67,13 +116,13 @@ BOOL IsLocalSystem()
 
     // open process token
     if (!OpenProcessToken(GetCurrentProcess(),
-        TOKEN_QUERY,
-        &hToken))
+                          TOKEN_QUERY,
+                          &hToken))
         return FALSE;
 
     // retrieve user SID
     if (!GetTokenInformation(hToken, TokenUser, pTokenUser,
-        sizeof(bTokenUser), &cbTokenUser))
+                             sizeof(bTokenUser), &cbTokenUser))
     {
         CloseHandle(hToken);
         return FALSE;
@@ -83,7 +132,7 @@ BOOL IsLocalSystem()
 
     // allocate LocalSystem well-known SID
     if (!AllocateAndInitializeSid(&siaNT, 1, SECURITY_LOCAL_SYSTEM_RID,
-        0, 0, 0, 0, 0, 0, 0, &pSystemSid))
+                                  0, 0, 0, 0, 0, 0, 0, &pSystemSid))
         return FALSE;
 
     // compare the user SID from the token with the LocalSystem SID
@@ -145,7 +194,7 @@ static std::filesystem::path GetUserPowerShellModulesPath()
 
     if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &myDocumentsBlockPtr)))
     {
-        const std::wstring myDocuments{ myDocumentsBlockPtr };
+        const std::wstring myDocuments{myDocumentsBlockPtr};
         CoTaskMemFree(myDocumentsBlockPtr);
         return std::filesystem::path(myDocuments) / "PowerShell" / "Modules";
     }
@@ -178,10 +227,12 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
 
     BOOL isSystemUser = IsLocalSystem();
 
-    if (isSystemUser) {
+    if (isSystemUser)
+    {
 
-        auto action = [&commandLine](HANDLE userToken) {
-            STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO),  .wShowWindow = SW_SHOWNORMAL };
+        auto action = [&commandLine](HANDLE userToken)
+        {
+            STARTUPINFO startupInfo{.cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL};
             PROCESS_INFORMATION processInformation;
 
             PVOID lpEnvironment = NULL;
@@ -220,7 +271,7 @@ UINT __stdcall LaunchPowerToysCA(MSIHANDLE hInstall)
     }
     else
     {
-        STARTUPINFO startupInfo{ .cb = sizeof(STARTUPINFO),  .wShowWindow = SW_SHOWNORMAL };
+        STARTUPINFO startupInfo{.cb = sizeof(STARTUPINFO), .wShowWindow = SW_SHOWNORMAL};
 
         PROCESS_INFORMATION processInformation;
 
@@ -264,7 +315,7 @@ UINT __stdcall CheckGPOCA(MSIHANDLE hInstall)
     LPWSTR currentScope = nullptr;
     hr = WcaGetProperty(L"InstallScope", &currentScope);
 
-    if (std::wstring{ currentScope } == L"perUser")
+    if (std::wstring{currentScope} == L"perUser")
     {
         if (powertoys_gpo::getDisablePerUserInstallationValue() == powertoys_gpo::gpo_rule_configured_enabled)
         {
@@ -280,6 +331,19 @@ LExit:
     return WcaFinalize(er);
 }
 
+// We've deprecated Video Conference Mute. This Custom Action cleans up any stray registry entry for the driver dll.
+UINT __stdcall CleanVideoConferenceRegistryCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "CleanVideoConferenceRegistry");
+    ExitOnFailure(hr, "Failed to initialize");
+    clean_video_conference();
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
 UINT __stdcall ApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;
@@ -292,7 +356,7 @@ UINT __stdcall ApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
     hr = getInstallFolder(hInstall, installationFolder);
     ExitOnFailure(hr, "Failed to get installFolder.");
 
-    for (const auto& changeSet : getAllOnByDefaultModulesChangeSets(installationFolder))
+    for (const auto &changeSet : getAllOnByDefaultModulesChangeSets(installationFolder))
     {
         if (!changeSet.apply())
         {
@@ -320,7 +384,7 @@ UINT __stdcall UnApplyModulesRegistryChangeSetsCA(MSIHANDLE hInstall)
     ExitOnFailure(hr, "Failed to initialize");
     hr = getInstallFolder(hInstall, installationFolder);
     ExitOnFailure(hr, "Failed to get installFolder.");
-    for (const auto& changeSet : getAllModulesChangeSets(installationFolder))
+    for (const auto &changeSet : getAllModulesChangeSets(installationFolder))
     {
         changeSet.unApply();
     }
@@ -334,8 +398,8 @@ LExit:
     return WcaFinalize(er);
 }
 
-const wchar_t* DSC_CONFIGURE_PSD1_NAME = L"Microsoft.PowerToys.Configure.psd1";
-const wchar_t* DSC_CONFIGURE_PSM1_NAME = L"Microsoft.PowerToys.Configure.psm1";
+const wchar_t *DSC_CONFIGURE_PSD1_NAME = L"Microsoft.PowerToys.Configure.psd1";
+const wchar_t *DSC_CONFIGURE_PSM1_NAME = L"Microsoft.PowerToys.Configure.psm1";
 
 UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
 {
@@ -367,7 +431,7 @@ UINT __stdcall InstallDSCModuleCA(MSIHANDLE hInstall)
             ExitOnFailure(hr, "Unable to create Powershell modules folder");
         }
 
-        for (const auto* filename : { DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME })
+        for (const auto *filename : {DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME})
         {
             fs::copy_file(fs::path(installationFolder) / "DSCModules" / filename, modulesPath / filename, fs::copy_options::overwrite_existing, errorCode);
 
@@ -415,7 +479,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
 
         std::error_code errorCode;
 
-        for (const auto* filename : { DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME })
+        for (const auto *filename : {DSC_CONFIGURE_PSD1_NAME, DSC_CONFIGURE_PSM1_NAME})
         {
             fs::remove(versionedModulePath / filename, errorCode);
 
@@ -426,7 +490,7 @@ UINT __stdcall UninstallDSCModuleCA(MSIHANDLE hInstall)
             }
         }
 
-        for (const auto* modulePath : { &versionedModulePath, &powerToysModulePath })
+        for (const auto *modulePath : {&versionedModulePath, &powerToysModulePath})
         {
             fs::remove(*modulePath, errorCode);
 
@@ -473,7 +537,7 @@ UINT __stdcall InstallEmbeddedMSIXCA(MSIHANDLE hInstall)
         using namespace winrt::Windows::Management::Deployment;
         using namespace winrt::Windows::Foundation;
 
-        Uri msix_uri{ msix_path.wstring() };
+        Uri msix_uri{msix_path.wstring()};
         PackageManager pm;
         auto result = pm.AddPackageAsync(msix_uri, nullptr, DeploymentOptions::None).get();
         if (!result)
@@ -507,7 +571,7 @@ UINT __stdcall UninstallEmbeddedMSIXCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "UninstallEmbeddedMSIXCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    for (const auto& p : pm.FindPackagesForUser({}, package_name, publisher))
+    for (const auto &p : pm.FindPackagesForUser({}, package_name, publisher))
     {
         auto result = pm.RemovePackageAsync(p.Id().FullName()).get();
         if (result)
@@ -621,7 +685,6 @@ UINT __stdcall UninstallCommandNotFoundModuleCA(MSIHANDLE hInstall)
     command += "-NoProfile -NonInteractive -NoLogo -WindowStyle Hidden -ExecutionPolicy Unrestricted -File \"" + winrt::to_string(installationFolder) + "\\WinUI3Apps\\Assets\\Settings\\Scripts\\DisableModule.ps1" + "\"";
 #endif
 
-
     system(command.c_str());
 
 LExit:
@@ -676,10 +739,10 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
 
-    ITaskService* pService = nullptr;
-    ITaskFolder* pTaskFolder = nullptr;
-    IRegisteredTaskCollection* pTaskCollection = nullptr;
-    ITaskFolder* pRootFolder = nullptr;
+    ITaskService *pService = nullptr;
+    ITaskFolder *pTaskFolder = nullptr;
+    IRegisteredTaskCollection *pTaskCollection = nullptr;
+    ITaskFolder *pRootFolder = nullptr;
     LONG numTasks = 0;
 
     hr = WcaInitialize(hInstall, "RemoveScheduledTasksCA");
@@ -692,10 +755,10 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     // ------------------------------------------------------
     // Create an instance of the Task Service.
     hr = CoCreateInstance(CLSID_TaskScheduler,
-        nullptr,
-        CLSCTX_INPROC_SERVER,
-        IID_ITaskService,
-        reinterpret_cast<void**>(&pService));
+                          nullptr,
+                          CLSCTX_INPROC_SERVER,
+                          IID_ITaskService,
+                          reinterpret_cast<void **>(&pService));
     ExitOnFailure(hr, "Failed to create an instance of ITaskService: %x", hr);
 
     // Connect to the task service.
@@ -723,7 +786,7 @@ UINT __stdcall RemoveScheduledTasksCA(MSIHANDLE hInstall)
     {
         // Delete all the tasks found.
         // If some tasks can't be deleted, the folder won't be deleted later and the user will still be notified.
-        IRegisteredTask* pRegisteredTask = nullptr;
+        IRegisteredTask *pRegisteredTask = nullptr;
         hr = pTaskCollection->get_Item(_variant_t(i + 1), &pRegisteredTask);
         if (SUCCEEDED(hr))
         {
@@ -793,7 +856,7 @@ UINT __stdcall TelemetryLogInstallSuccessCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogInstallSuccessCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "Install_Success",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -814,7 +877,7 @@ UINT __stdcall TelemetryLogInstallCancelCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogInstallCancelCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "Install_Cancel",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -835,7 +898,7 @@ UINT __stdcall TelemetryLogInstallFailCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogInstallFailCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "Install_Fail",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -856,7 +919,7 @@ UINT __stdcall TelemetryLogUninstallSuccessCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogUninstallSuccessCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "UnInstall_Success",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -877,7 +940,7 @@ UINT __stdcall TelemetryLogUninstallCancelCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogUninstallCancelCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "UnInstall_Cancel",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -898,7 +961,7 @@ UINT __stdcall TelemetryLogUninstallFailCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogUninstallFailCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "UnInstall_Fail",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -919,7 +982,7 @@ UINT __stdcall TelemetryLogRepairCancelCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogRepairCancelCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "Repair_Cancel",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -940,7 +1003,7 @@ UINT __stdcall TelemetryLogRepairFailCA(MSIHANDLE hInstall)
     hr = WcaInitialize(hInstall, "TelemetryLogRepairFailCA");
     ExitOnFailure(hr, "Failed to initialize");
 
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "Repair_Fail",
         TraceLoggingWideString(get_product_version().c_str(), "Version"),
@@ -965,7 +1028,7 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
 
     try
     {
-        if (auto install_path = GetMsiPackageInstalledPath(std::wstring{ currentScope } == L"perUser"))
+        if (auto install_path = GetMsiPackageInstalledPath(std::wstring{currentScope} == L"perUser"))
         {
             MsiSetPropertyW(hInstall, L"PREVIOUSINSTALLFOLDER", install_path->data());
         }
@@ -977,163 +1040,81 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
     return WcaFinalize(er);
 }
 
-UINT __stdcall CertifyVirtualCameraDriverCA(MSIHANDLE hInstall)
+UINT __stdcall InstallCmdPalPackageCA(MSIHANDLE hInstall)
 {
-#ifdef CIBuild // On pipeline we are using microsoft certification
-    WcaInitialize(hInstall, "CertifyVirtualCameraDriverCA");
-    return WcaFinalize(ERROR_SUCCESS);
-#else
+    using namespace winrt::Windows::Foundation;
+    using namespace winrt::Windows::Management::Deployment;
+
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
-    LPWSTR certificatePath = nullptr;
-    HCERTSTORE hCertStore = nullptr;
-    HANDLE hfile = nullptr;
-    DWORD size = INVALID_FILE_SIZE;
-    char* pFileContent = nullptr;
+    std::wstring installationFolder;
 
-    hr = WcaInitialize(hInstall, "CertifyVirtualCameraDriverCA");
-    ExitOnFailure(hr, "Failed to initialize", hr);
+    hr = WcaInitialize(hInstall, "InstallCmdPalPackage");
+    hr = getInstallFolder(hInstall, installationFolder);
 
-    hr = WcaGetProperty(L"CustomActionData", &certificatePath);
-    ExitOnFailure(hr, "Failed to get install property", hr);
-
-    hCertStore = CertOpenStore(CERT_STORE_PROV_SYSTEM, 0, 0, CERT_SYSTEM_STORE_LOCAL_MACHINE, L"AuthRoot");
-    if (!hCertStore)
+    try
     {
-        hr = GetLastError();
-        ExitOnFailure(hr, "Cannot put principal run level: %x", hr);
+        auto msix = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\CmdPal\\", false);
+        auto dependencies = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\CmdPal\\Dependencies\\", true);
+
+        if (!msix.empty())
+        {
+            auto msixPath = msix[0];
+
+            if (!package::RegisterPackage(msixPath, dependencies))
+            {
+                Logger::error(L"Failed to install CmdPal package");
+                er = ERROR_INSTALL_FAILURE;
+            }
+        }
+    }
+    catch (std::exception &e)
+    {
+        std::string errorMessage{"Exception thrown while trying to install CmdPal package: "};
+        errorMessage += e.what();
+        Logger::error(errorMessage);
+
+        er = ERROR_INSTALL_FAILURE;
     }
 
-    hfile = CreateFile(certificatePath, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-    if (hfile == INVALID_HANDLE_VALUE)
-    {
-        hr = GetLastError();
-        ExitOnFailure(hr, "Certificate file open failed", hr);
-    }
-
-    size = GetFileSize(hfile, nullptr);
-    if (size == INVALID_FILE_SIZE)
-    {
-        hr = GetLastError();
-        ExitOnFailure(hr, "Certificate file size not valid", hr);
-    }
-
-    pFileContent = static_cast<char*>(malloc(size));
-
-    DWORD sizeread;
-    if (!ReadFile(hfile, pFileContent, size, &sizeread, nullptr))
-    {
-        hr = GetLastError();
-        ExitOnFailure(hr, "Certificate file read failed", hr);
-    }
-
-    if (!CertAddEncodedCertificateToStore(hCertStore,
-        X509_ASN_ENCODING,
-        reinterpret_cast<const BYTE*>(pFileContent),
-        size,
-        CERT_STORE_ADD_ALWAYS,
-        nullptr))
-    {
-        hr = GetLastError();
-        ExitOnFailure(hr, "Adding certificate failed", hr);
-    }
-
-    free(pFileContent);
-
-LExit:
-    ReleaseStr(certificatePath);
-    if (hCertStore)
-    {
-        CertCloseStore(hCertStore, 0);
-    }
-    if (hfile)
-    {
-        CloseHandle(hfile);
-    }
-
-    if (!SUCCEEDED(hr))
-    {
-        PMSIHANDLE hRecord = MsiCreateRecord(0);
-        MsiRecordSetString(hRecord, 0, TEXT("Failed to add certificate to store"));
-        MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
-    }
-
-    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
-    return WcaFinalize(er);
-#endif
-}
-
-UINT __stdcall InstallVirtualCameraDriverCA(MSIHANDLE hInstall)
-{
-    HRESULT hr = S_OK;
-    UINT er = ERROR_SUCCESS;
-    LPWSTR driverPath = nullptr;
-
-    hr = WcaInitialize(hInstall, "InstallVirtualCameraDriverCA");
-    ExitOnFailure(hr, "Failed to initialize");
-
-    hr = WcaGetProperty(L"CustomActionData", &driverPath);
-    ExitOnFailure(hr, "Failed to get install property");
-
-    BOOL requiresReboot;
-    DiInstallDriverW(GetConsoleWindow(), driverPath, DIIRFLAG_FORCE_INF, &requiresReboot);
-
-    hr = GetLastError();
-    ExitOnFailure(hr, "Failed to install driver");
-
-LExit:
-
-    if (!SUCCEEDED(hr))
-    {
-        PMSIHANDLE hRecord = MsiCreateRecord(0);
-        MsiRecordSetString(hRecord, 0, TEXT("Failed to install virtual camera driver"));
-        MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
-    }
-
-    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    er = er == ERROR_SUCCESS ? (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE) : er;
     return WcaFinalize(er);
 }
 
-UINT __stdcall UninstallVirtualCameraDriverCA(MSIHANDLE hInstall)
+UINT __stdcall UnRegisterCmdPalPackageCA(MSIHANDLE hInstall)
 {
+    using namespace winrt::Windows::Foundation;
+    using namespace winrt::Windows::Management::Deployment;
+
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
-    LPWSTR driverPath = nullptr;
 
-    hr = WcaInitialize(hInstall, "UninstallVirtualCameraDriverCA");
-    ExitOnFailure(hr, "Failed to initialize");
+    hr = WcaInitialize(hInstall, "UnRegisterCmdPalPackageCA");
 
-    hr = WcaGetProperty(L"CustomActionData", &driverPath);
-    ExitOnFailure(hr, "Failed to get uninstall property");
-
-    BOOL requiresReboot;
-    DiUninstallDriverW(GetConsoleWindow(), driverPath, 0, &requiresReboot);
-
-    switch (GetLastError())
+    try
     {
-    case ERROR_ACCESS_DENIED:
-    case ERROR_FILE_NOT_FOUND:
-    case ERROR_INVALID_FLAGS:
-    case ERROR_IN_WOW64:
-    {
-        hr = GetLastError();
-        ExitOnFailure(hr, "Failed to uninstall driver");
-        break;
+        // Packages to unregister
+        std::wstring packageToRemoveDisplayName {L"Microsoft.CommandPalette"};
+
+        if (!package::UnRegisterPackage(packageToRemoveDisplayName))
+        {
+            Logger::error(L"Failed to unregister package: " + packageToRemoveDisplayName);
+            er = ERROR_INSTALL_FAILURE;
+        }
     }
-    }
-
-LExit:
-
-    if (!SUCCEEDED(hr))
+    catch (std::exception &e)
     {
-        PMSIHANDLE hRecord = MsiCreateRecord(0);
-        MsiRecordSetString(hRecord, 0, TEXT("Failed to uninstall virtual camera driver"));
-        MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_WARNING + MB_OK), hRecord);
+        std::string errorMessage{"Exception thrown while trying to unregister the CmdPal package: "};
+        errorMessage += e.what();
+        Logger::error(errorMessage);
+
+        er = ERROR_INSTALL_FAILURE;
     }
 
-    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    er = er == ERROR_SUCCESS ? (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE) : er;
     return WcaFinalize(er);
 }
+
 
 UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
 {
@@ -1148,54 +1129,20 @@ UINT __stdcall UnRegisterContextMenuPackagesCA(MSIHANDLE hInstall)
     try
     {
         // Packages to unregister
-        const std::vector<std::wstring> packagesToRemoveDisplayName{ { L"PowerRenameContextMenu" }, { L"ImageResizerContextMenu" }, { L"FileLocksmithContextMenu" }, { L"NewPlusContextMenu" } };
+        const std::vector<std::wstring> packagesToRemoveDisplayName{{L"PowerRenameContextMenu"}, {L"ImageResizerContextMenu"}, {L"FileLocksmithContextMenu"}, {L"NewPlusContextMenu"}};
 
-        PackageManager packageManager;
-
-        for (auto const& package : packageManager.FindPackages())
+        for (auto const &package : packagesToRemoveDisplayName)
         {
-            const auto& packageFullName = std::wstring{ package.Id().FullName() };
-
-            for (const auto& packageToRemove : packagesToRemoveDisplayName)
+            if (!package::UnRegisterPackage(package))
             {
-                if (packageFullName.contains(packageToRemove))
-                {
-                    auto deploymentOperation{ packageManager.RemovePackageAsync(packageFullName) };
-                    deploymentOperation.get();
-
-                    // Check the status of the operation
-                    if (deploymentOperation.Status() == AsyncStatus::Error)
-                    {
-                        auto deploymentResult{ deploymentOperation.GetResults() };
-                        auto errorCode = deploymentOperation.ErrorCode();
-                        auto errorText = deploymentResult.ErrorText();
-
-                        Logger::error(L"Unregister {} package failed. ErrorCode: {}, ErrorText: {}", packageFullName, std::to_wstring(errorCode), errorText);
-
-                        er = ERROR_INSTALL_FAILURE;
-                    }
-                    else if (deploymentOperation.Status() == AsyncStatus::Canceled)
-                    {
-                        Logger::error(L"Unregister {} package canceled.", packageFullName);
-
-                        er = ERROR_INSTALL_FAILURE;
-                    }
-                    else if (deploymentOperation.Status() == AsyncStatus::Completed)
-                    {
-                        Logger::info(L"Unregister {} package completed.", packageFullName);
-                    }
-                    else
-                    {
-                        Logger::debug(L"Unregister {} package started.", packageFullName);
-                    }
-                }
-
+                Logger::error(L"Failed to unregister package: " + package);
+                er = ERROR_INSTALL_FAILURE;
             }
         }
     }
-    catch (std::exception& e)
+    catch (std::exception &e)
     {
-        std::string errorMessage{ "Exception thrown while trying to unregister sparse packages: " };
+        std::string errorMessage{"Exception thrown while trying to unregister sparse packages: "};
         errorMessage += e.what();
         Logger::error(errorMessage);
 
@@ -1223,7 +1170,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
     }
     processes.resize(bytes / sizeof(processes[0]));
 
-    std::array<std::wstring_view, 37> processesToTerminate = {
+    std::array<std::wstring_view, 39> processesToTerminate = {
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.AdvancedPaste.exe",
@@ -1260,6 +1207,8 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.WorkspacesLauncherUI.exe",
         L"PowerToys.WorkspacesEditor.exe",
         L"PowerToys.WorkspacesWindowArranger.exe",
+        L"Microsoft.CmdPal.UI.exe",
+        L"PowerToys.ZoomIt.exe",
         L"PowerToys.exe",
     };
 
@@ -1271,7 +1220,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         }
         wchar_t processName[MAX_PATH] = L"<unknown>";
 
-        HANDLE hProcess{ OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_TERMINATE, FALSE, procID) };
+        HANDLE hProcess{OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_TERMINATE, FALSE, procID)};
         if (!hProcess)
         {
             continue;
@@ -1291,8 +1240,9 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
             if (processName == processToTerminate)
             {
                 const DWORD timeout = 500;
-                auto windowEnumerator = [](HWND hwnd, LPARAM procIDPtr) -> BOOL {
-                    auto targetProcID = *reinterpret_cast<const DWORD*>(procIDPtr);
+                auto windowEnumerator = [](HWND hwnd, LPARAM procIDPtr) -> BOOL
+                {
+                    auto targetProcID = *reinterpret_cast<const DWORD *>(procIDPtr);
                     DWORD windowProcID = 0;
                     GetWindowThreadProcessId(hwnd, &windowProcID);
                     if (windowProcID == targetProcID)
@@ -1318,15 +1268,15 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
 void initSystemLogger()
 {
     static std::once_flag initLoggerFlag;
-    std::call_once(initLoggerFlag, []() {
-        WCHAR temp_path[MAX_PATH];
-        auto ret = GetTempPath(MAX_PATH, temp_path);
+    std::call_once(initLoggerFlag, []()
+                   {
+            WCHAR temp_path[MAX_PATH];
+            auto ret = GetTempPath(MAX_PATH, temp_path);
 
-        if (ret)
-        {
-            Logger::init("PowerToysMSI", std::wstring{ temp_path } + L"\\PowerToysMSIInstaller", L"");
-        }
-        });
+            if (ret)
+            {
+                Logger::init("PowerToysMSI", std::wstring{ temp_path } + L"\\PowerToysMSIInstaller", L"");
+            } });
 }
 
 // DllMain - Initialize and cleanup WiX custom action utils.

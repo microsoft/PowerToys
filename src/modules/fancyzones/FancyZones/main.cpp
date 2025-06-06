@@ -12,6 +12,8 @@
 #include <common/hooks/LowlevelKeyboardEvent.h>
 #include <common/utils/resources.h>
 
+#include <common/Telemetry/EtwTrace/EtwTrace.h>
+
 #include <FancyZonesLib/FancyZones.h>
 #include <FancyZonesLib/FancyZonesWinHookEventIDs.h>
 #include <FancyZonesLib/ModuleConstants.h>
@@ -25,6 +27,9 @@ const std::wstring instanceMutexName = L"Local\\PowerToys_FancyZones_InstanceMut
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR lpCmdLine, _In_ int nCmdShow)
 {
+    Shared::Trace::ETWTrace trace{};
+    trace.UpdateState(true);
+
     winrt::init_apartment();
     LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::fancyZonesLoggerName);
 
@@ -82,6 +87,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     run_message_loop();
 
     Trace::UnregisterProvider();
-    
+
+    trace.Flush();
+
     return 0;
 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+
 using Microsoft.PowerToys.Settings.UI.Services;
 using Windows.ApplicationModel.Activation;
 

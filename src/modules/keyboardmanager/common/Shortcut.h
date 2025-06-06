@@ -4,7 +4,6 @@
 #include <compare>
 #include <tuple>
 #include <variant>
-
 namespace KeyboardManagerInput
 {
     class InputInterface;
@@ -26,6 +25,9 @@ private:
     std::vector<int32_t> Shortcut::ConvertToNumbers(std::vector<std::wstring>& keys);
 
 public:
+
+    bool exactMatch = false;
+
     enum ElevationLevel
     {
         NonElevated = 0,
@@ -82,10 +84,10 @@ public:
     // Constructor to initialize Shortcut from single key
     Shortcut(const DWORD key);
 
-    // Constructor to initialize Shortcut from it's virtual key code string representation.
+    // Constructor to initialize Shortcut from its virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK);
 
-    // Constructor to initialize Shortcut from it's virtual key code string representation.
+    // Constructor to initialize Shortcut from its virtual key code string representation.
     Shortcut(const std::wstring& shortcutVK, const DWORD _secondKeyOfChord);
 
     // Constructor to initialize shortcut from a list of keys
@@ -139,13 +141,13 @@ public:
     DWORD GetWinKey(const ModifierKey& input) const;
 
     // Function to return the virtual key code of the ctrl key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-    DWORD GetCtrlKey() const;
+    DWORD GetCtrlKey(const ModifierKey& input) const;
 
     // Function to return the virtual key code of the alt key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-    DWORD GetAltKey() const;
+    DWORD GetAltKey(const ModifierKey& input) const;
 
     // Function to return the virtual key code of the shift key state expected in the shortcut. Return NULL if it is not a part of the shortcut
-    DWORD GetShiftKey() const;
+    DWORD GetShiftKey(const ModifierKey& input) const;
 
     // Function to check if the input key matches the win key expected in the shortcut
     bool CheckWinKey(const DWORD input) const;

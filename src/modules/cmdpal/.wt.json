@@ -1,0 +1,31 @@
+{
+    "$version": "1.0.0",
+    "snippets":
+    [
+        {
+            "input": "pwsh -c .\\doc\\initial-sdk-spec\\generate-interface.ps1 > .\\extensionsdk\\Microsoft.CommandPalette.Extensions\\Microsoft.CommandPalette.Extensions.idl",
+            "name": "Generate interface",
+            "description": "Generate the interface from the SDK spec\nThis drops it into Microsoft.CommandPalette.Extensions"
+        },
+        {
+            "input": "tasklist | findstr Extension",
+            "name": "List running extensions",
+            "description": "This will list all running extensions, as long as they have 'Extension' in the name (they should)"
+        },
+        {
+            "input": "for /F \"tokens=2\" %A in ('tasklist ^| findstr Extension') do taskkill /PID %A /F",
+            "name": "🚨 Terminate extensions 🚨",
+            "description": "Terminate anything with 'Extension' in the name"
+        },
+        {
+            "input": "start https://github.com/zadjii-msft/PowerToys/compare/main...zadjii-msft:PowerToys:{branch}?expand=1\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D",
+            "name": "New PR",
+            "description": "Create a new PR targeting the right fork.\nReplace {branch} with the actual branch you want to merge."
+        },
+        {
+            "input": "pushd .\\ExtensionTemplate\\ ; git archive -o ..\\Microsoft.CmdPal.UI.ViewModels\\Assets\\template.zip HEAD -- .\\TemplateCmdPalExtension\\ ; popd",
+            "name": "Update template project",
+            "description": "zips up the ExtensionTemplate into our assets. Run this in the cmdpal/ directory."
+        }
+    ]
+}

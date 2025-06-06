@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -18,7 +19,7 @@ using Microsoft.PowerToys.Telemetry;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class CmdNotFoundViewModel : Observable
+    public partial class CmdNotFoundViewModel : Observable
     {
         public ButtonClickCommand CheckRequirementsEventHandler => new ButtonClickCommand(CheckCommandNotFoundRequirements);
 
@@ -31,16 +32,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ButtonClickCommand UninstallModuleEventHandler => new ButtonClickCommand(UninstallModule);
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
-        private bool _enabledStateIsGPOConfigured;
+        private bool _moduleIsGpoEnabled;
+        private bool _moduleIsGpoDisabled;
 
         public static string AssemblyDirectory
         {
             get
             {
-                string codeBase = Assembly.GetExecutingAssembly().Location;
-                UriBuilder uri = new UriBuilder(codeBase);
-                string path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
+                return Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory);
             }
         }
 
@@ -52,11 +51,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void InitializeEnabledValue()
         {
             _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredCmdNotFoundEnabledValue();
-            if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
-            {
-                // Get the enabled state from GPO.
-                _enabledStateIsGPOConfigured = true;
-            }
+            _moduleIsGpoEnabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            _moduleIsGpoDisabled = _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
 
             // Update PATH environment variable to get pwsh.exe on further calls.
             Environment.SetEnvironmentVariable("PATH", (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.Machine) ?? string.Empty) + ";" + (Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) ?? string.Empty), EnvironmentVariableTarget.Process);
@@ -127,9 +123,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool IsEnabledGpoConfigured
+        public bool IsModuleGpoEnabled
         {
-            get => _enabledStateIsGPOConfigured;
+            get => _moduleIsGpoEnabled;
+        }
+
+        public bool IsModuleGpoDisabled
+        {
+            get => _moduleIsGpoDisabled;
         }
 
         public string RunPowerShellOrPreviewScript(string powershellExecutable, string powershellArguments, bool hidePowerShellWindow = false)

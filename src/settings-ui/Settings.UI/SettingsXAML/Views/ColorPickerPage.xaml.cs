@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Windows.Input;
+
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -30,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel = new ColorPickerViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
-                null,
+                SettingsRepository<ColorPickerSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
             InitializeComponent();

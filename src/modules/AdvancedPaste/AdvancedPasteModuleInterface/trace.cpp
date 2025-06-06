@@ -8,20 +8,10 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0x38e8889b, 0x9731, 0x53f5, 0xe9, 0x01, 0xe8, 0xa7, 0xc1, 0x75, 0x30, 0x74),
     TraceLoggingOptionProjectTelemetry());
 
-void Trace::RegisterProvider()
-{
-    TraceLoggingRegister(g_hProvider);
-}
-
-void Trace::UnregisterProvider()
-{
-    TraceLoggingUnregister(g_hProvider);
-}
-
 // Log if the user has AdvancedPaste enabled or disabled
 void Trace::AdvancedPaste_Enable(const bool enabled) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "AdvancedPaste_EnableAdvancedPaste",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -32,7 +22,7 @@ void Trace::AdvancedPaste_Enable(const bool enabled) noexcept
 // Log if the user has invoked AdvancedPaste
 void Trace::AdvancedPaste_Invoked(std::wstring mode) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "AdvancedPaste_InvokeAdvancedPaste",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -43,7 +33,7 @@ void Trace::AdvancedPaste_Invoked(std::wstring mode) noexcept
 // Log if an error occurs in AdvancedPaste
 void Trace::AdvancedPaste_Error(const DWORD errorCode, std::wstring errorMessage, std::wstring methodName) noexcept
 {
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "AdvancedPaste_Error",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
@@ -58,45 +48,48 @@ void Trace::AdvancedPaste_SettingsTelemetry(const PowertoyModuleIface::Hotkey& p
                               const PowertoyModuleIface::Hotkey& advancedPasteUIHotkey,
                               const PowertoyModuleIface::Hotkey& pasteMarkdownHotkey,
                               const PowertoyModuleIface::Hotkey& pasteJsonHotkey,
-                              const bool preview_custom_format_output) noexcept
+                              const bool is_advanced_ai_enabled,
+                              const bool preview_custom_format_output,
+                              const std::unordered_map<std::wstring, PowertoyModuleIface::Hotkey>& additionalActionsHotkeys) noexcept
 {
-    std::wstring pastePlainHotkeyStr =
-        std::wstring(pastePlainHotkey.win ? L"Win + " : L"") +
-        std::wstring(pastePlainHotkey.ctrl ? L"Ctrl + " : L"") +
-        std::wstring(pastePlainHotkey.shift ? L"Shift + " : L"") +
-        std::wstring(pastePlainHotkey.alt ? L"Alt + " : L"") +
-        std::wstring(L"VK ") + std::to_wstring(pastePlainHotkey.key);
+    const auto getHotKeyStr = [](const PowertoyModuleIface::Hotkey& hotKey)
+    {
+        return std::wstring(hotKey.win ? L"Win + " : L"") +
+               std::wstring(hotKey.ctrl ? L"Ctrl + " : L"") +
+               std::wstring(hotKey.shift ? L"Shift + " : L"") +
+               std::wstring(hotKey.alt ? L"Alt + " : L"") +
+               std::wstring(L"VK ") + std::to_wstring(hotKey.key);
+    };
 
-    std::wstring advancedPasteUIHotkeyStr =
-        std::wstring(advancedPasteUIHotkey.win ? L"Win + " : L"") +
-        std::wstring(advancedPasteUIHotkey.ctrl ? L"Ctrl + " : L"") +
-        std::wstring(advancedPasteUIHotkey.shift ? L"Shift + " : L"") +
-        std::wstring(advancedPasteUIHotkey.alt ? L"Alt + " : L"") +
-        std::wstring(L"VK ") + std::to_wstring(advancedPasteUIHotkey.key);
+    std::vector<std::wstring> hotkeyStrs;
+    const auto getHotkeyCStr = [&](const PowertoyModuleIface::Hotkey& hotkey)
+    {
+        hotkeyStrs.push_back(getHotKeyStr(hotkey)); // Probably unnecessary, but offers protection against the macro TraceLoggingWideString expanding to something that would invalidate the pointer
+        return hotkeyStrs.back().c_str();
+    };
 
-    std::wstring pasteMarkdownHotkeyStr =
-        std::wstring(pasteMarkdownHotkey.win ? L"Win + " : L"") +
-        std::wstring(pasteMarkdownHotkey.ctrl ? L"Ctrl + " : L"") +
-        std::wstring(pasteMarkdownHotkey.shift ? L"Shift + " : L"") +
-        std::wstring(pasteMarkdownHotkey.alt ? L"Alt + " : L"") +
-        std::wstring(L"VK ") + std::to_wstring(pasteMarkdownHotkey.key);
+    const auto getAdditionalActionHotkeyCStr = [&](const std::wstring& name)
+    {
+        const auto it = additionalActionsHotkeys.find(name);
+        return it != additionalActionsHotkeys.end() ? getHotkeyCStr(it->second) : L"";
+    };
 
-    std::wstring pasteJsonHotkeyStr =
-        std::wstring(pasteJsonHotkey.win ? L"Win + " : L"") +
-        std::wstring(pasteJsonHotkey.ctrl ? L"Ctrl + " : L"") +
-        std::wstring(pasteJsonHotkey.shift ? L"Shift + " : L"") +
-        std::wstring(pasteJsonHotkey.alt ? L"Alt + " : L"") +
-        std::wstring(L"VK ") + std::to_wstring(pasteJsonHotkey.key);
-
-    TraceLoggingWrite(
+    TraceLoggingWriteWrapper(
         g_hProvider,
         "AdvancedPaste_Settings",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
-        TraceLoggingWideString(pastePlainHotkeyStr.c_str(), "PastePlainHotkey"),
-        TraceLoggingWideString(advancedPasteUIHotkeyStr.c_str(), "AdvancedPasteUIHotkey"),
-        TraceLoggingWideString(pasteMarkdownHotkeyStr.c_str(), "PasteMarkdownHotkey"),
-        TraceLoggingWideString(pasteJsonHotkeyStr.c_str(), "PasteJsonHotkey"),
-        TraceLoggingBoolean(preview_custom_format_output, "ShowCustomPreview")
+        TraceLoggingWideString(getHotkeyCStr(pastePlainHotkey), "PastePlainHotkey"),
+        TraceLoggingWideString(getHotkeyCStr(advancedPasteUIHotkey), "AdvancedPasteUIHotkey"),
+        TraceLoggingWideString(getHotkeyCStr(pasteMarkdownHotkey), "PasteMarkdownHotkey"),
+        TraceLoggingWideString(getHotkeyCStr(pasteJsonHotkey), "PasteJsonHotkey"),
+        TraceLoggingBoolean(is_advanced_ai_enabled, "IsAdvancedAIEnabled"),
+        TraceLoggingBoolean(preview_custom_format_output, "ShowCustomPreview"),
+        TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"ImageToText"), "ImageToTextHotkey"),
+        TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"PasteAsTxtFile"), "PasteAsTxtFileHotkey"),
+        TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"PasteAsPngFile"), "PasteAsPngFileHotkey"),
+        TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"PasteAsHtmlFile"), "PasteAsHtmlFileHotkey"),
+        TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"TranscodeToMp3"), "TranscodeToMp3Hotkey"),
+        TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"TranscodeToMp4"), "TranscodeToMp4Hotkey")
     );
 }
