@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -23,16 +22,15 @@ namespace HostsUILib.Helpers
 {
     public partial class HostsService : IHostsService, IDisposable
     {
-        private const string _backupSuffix = $"_PowerToysBackup_";
-        private const int _defaultBufferSize = 4096; // From System.IO.File source code
+        private const int DefaultBufferSize = 4096; // From System.IO.File source code
 
         private readonly SemaphoreSlim _asyncLock = new SemaphoreSlim(1, 1);
         private readonly IFileSystem _fileSystem;
         private readonly IUserSettings _userSettings;
         private readonly IElevationHelper _elevationHelper;
         private readonly IFileSystemWatcher _fileSystemWatcher;
+        private readonly IBackupManager _backupManager;
         private readonly string _hostsFilePath;
-        private bool _backupDone;
         private bool _disposed;
 
         public string HostsFilePath => _hostsFilePath;
@@ -44,11 +42,13 @@ namespace HostsUILib.Helpers
         public HostsService(
             IFileSystem fileSystem,
             IUserSettings userSettings,
-            IElevationHelper elevationHelper)
+            IElevationHelper elevationHelper,
+            IBackupManager backupManager)
         {
             _fileSystem = fileSystem;
             _userSettings = userSettings;
             _elevationHelper = elevationHelper;
+            _backupManager = backupManager;
 
             _hostsFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\drivers\etc\hosts");
 
@@ -60,18 +60,13 @@ namespace HostsUILib.Helpers
             _fileSystemWatcher.EnableRaisingEvents = true;
         }
 
-        public bool Exists()
-        {
-            return _fileSystem.File.Exists(HostsFilePath);
-        }
-
         public async Task<HostsData> ReadAsync()
         {
             var entries = new List<Entry>();
             var unparsedBuilder = new StringBuilder();
             var splittedEntries = false;
 
-            if (!Exists())
+            if (!_fileSystem.File.Exists(HostsFilePath))
             {
                 return new HostsData(entries, unparsedBuilder.ToString(), false);
             }
@@ -192,15 +187,10 @@ namespace HostsUILib.Helpers
             {
                 await _asyncLock.WaitAsync();
                 _fileSystemWatcher.EnableRaisingEvents = false;
-
-                if (!_backupDone && Exists())
-                {
-                    _fileSystem.File.Copy(HostsFilePath, HostsFilePath + _backupSuffix + DateTime.Now.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture));
-                    _backupDone = true;
-                }
+                _backupManager.Create(HostsFilePath);
 
                 // FileMode.OpenOrCreate is necessary to prevent UnauthorizedAccessException when the hosts file is hidden
-                using var stream = _fileSystem.FileStream.New(HostsFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read, _defaultBufferSize, FileOptions.Asynchronous);
+                using var stream = _fileSystem.FileStream.New(HostsFilePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read, DefaultBufferSize, FileOptions.Asynchronous);
                 using var writer = new StreamWriter(stream, Encoding);
                 foreach (var line in lines)
                 {
@@ -229,15 +219,6 @@ namespace HostsUILib.Helpers
             {
                 return false;
             }
-        }
-
-        public void CleanupBackup()
-        {
-            Directory.GetFiles(Path.GetDirectoryName(HostsFilePath), $"*{_backupSuffix}*")
-                .Select(f => new FileInfo(f))
-                .Where(f => f.CreationTime < DateTime.Now.AddDays(-15))
-                .ToList()
-                .ForEach(f => f.Delete());
         }
 
         public void OpenHostsFile()
