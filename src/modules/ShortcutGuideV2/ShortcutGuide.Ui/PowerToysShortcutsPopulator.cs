@@ -56,17 +56,18 @@ namespace ShortcutGuide
         public static string HotkeySettingsToYaml(HotkeySettings hotkeySettings, string moduleName, string content, string? description = null)
         {
             content += "      - Name: " + moduleName + Environment.NewLine;
-            content += "        Win: " + hotkeySettings.Win.ToString() + Environment.NewLine;
-            content += "        Ctrl: " + hotkeySettings.Ctrl.ToString() + Environment.NewLine;
-            content += "        Alt: " + hotkeySettings.Alt.ToString() + Environment.NewLine;
-            content += "        Shift: " + hotkeySettings.Shift.ToString() + Environment.NewLine;
+            content += "        Shortcut: " + Environment.NewLine;
+            content += "        - Win: " + hotkeySettings.Win.ToString() + Environment.NewLine;
+            content += "          Ctrl: " + hotkeySettings.Ctrl.ToString() + Environment.NewLine;
+            content += "          Alt: " + hotkeySettings.Alt.ToString() + Environment.NewLine;
+            content += "          Shift: " + hotkeySettings.Shift.ToString() + Environment.NewLine;
+            content += "          Keys:" + Environment.NewLine;
+            content += "            - " + hotkeySettings.Code.ToString(CultureInfo.InvariantCulture) + Environment.NewLine;
             if (description != null)
             {
                 content += "        Description: " + description + Environment.NewLine;
             }
 
-            content += "        Keys:" + Environment.NewLine;
-            content += "          - " + hotkeySettings.Code.ToString(CultureInfo.InvariantCulture) + Environment.NewLine;
             return content;
         }
 

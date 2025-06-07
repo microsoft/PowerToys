@@ -28,11 +28,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Assets\Hosts\AppList.scale-100.png" />
-    <None Remove="Assets\Hosts\AppList.scale-125.png" />
-    <None Remove="Assets\Hosts\AppList.scale-150.png" />
-    <None Remove="Assets\Hosts\AppList.scale-200.png" />
-    <None Remove="Assets\Hosts\AppList.scale-400.png" />
+    <None Remove="Assets\ShortcutGuide\AppList.scale-100.png" />
+    <None Remove="Assets\ShortcutGuide\AppList.scale-125.png" />
+    <None Remove="Assets\ShortcutGuide\AppList.scale-150.png" />
+    <None Remove="Assets\ShortcutGuide\AppList.scale-200.png" />
+    <None Remove="Assets\ShortcutGuide\AppList.scale-400.png" />
     <None Remove="ShortcutGuideXAML\ShortcutView.xaml" />
     <None Include="Assets\ShortcutGuide\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

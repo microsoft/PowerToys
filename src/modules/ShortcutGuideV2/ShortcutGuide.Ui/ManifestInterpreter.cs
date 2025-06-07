@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -50,6 +51,8 @@ namespace ShortcutGuide
 
             static bool IsMatch(string input, string filter)
             {
+                input = input.ToLower(CultureInfo.InvariantCulture);
+                filter = filter.ToLower(CultureInfo.InvariantCulture);
                 string regexPattern = "^" + Regex.Escape(filter).Replace("\\*", ".*") + "$";
                 return Regex.IsMatch(input, regexPattern);
             }

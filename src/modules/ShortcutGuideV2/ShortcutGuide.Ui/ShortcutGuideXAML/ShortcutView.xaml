@@ -11,27 +11,27 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
     <Page.Resources>
         <DataTemplate x:Key="ShortcutTemplate" x:DataType="local:ShortcutTemplateDataObject">
-            <Grid MinWidth="300">
-                <Grid.ContextFlyout>
-                    <MenuFlyout Opening="MenuFlyout_Opening">
-                        <MenuFlyoutItem Text="Pin" Click="PinShortcut"/>
-                    </MenuFlyout>
-                </Grid.ContextFlyout>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Padding="6,0,6,0" Margin="6,0,6,0" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{x:Bind Name}" />
-                <Border CornerRadius="{StaticResource ControlCornerRadius}" BorderThickness="{StaticResource ButtonBorderThemeThickness}" Grid.Row="1" Grid.Column="1" Margin="20,6,6,6" HorizontalAlignment="Right" Background="White" >
-                    <ContentPresenter Content="{x:Bind Shortcut}" Padding="6,6,6,6" HorizontalAlignment="Right" />
-                </Border>
-                <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="6,0,6,0" Padding="6,0,6,0" Text="{x:Bind Description}" />
-            </Grid>
+                <Grid HorizontalAlignment="Left" MinWidth="400">
+                    <Grid.ContextFlyout>
+                        <MenuFlyout Opening="MenuFlyout_Opening">
+                            <MenuFlyoutItem Text="Pin" Click="PinShortcut"/>
+                        </MenuFlyout>
+                    </Grid.ContextFlyout>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Padding="6,0,6,0" Margin="6,0,6,0" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" Text="{x:Bind Name}" />
+                    <Border CornerRadius="{StaticResource ControlCornerRadius}" BorderThickness="{StaticResource ButtonBorderThemeThickness}" Grid.Row="1" Grid.Column="1" Margin="20,6,6,6" HorizontalAlignment="Right" Background="White" >
+                        <ContentPresenter Content="{x:Bind Shortcut}" Padding="6,6,6,6" HorizontalAlignment="Stretch" />
+                    </Border>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="6,0,6,0" Padding="6,0,6,0" Text="{x:Bind Description}" />
+                </Grid>
         </DataTemplate>
     </Page.Resources>
     <Grid>
@@ -69,10 +69,10 @@
                         </GridView>
                     </StackPanel>
                 </StackPanel>
-                <GridView Height="{Binding ContentHeight}" SelectionMode="None" x:Name="ShortcutListElement" Grid.Row="1" ItemTemplate="{StaticResource ShortcutTemplate}">
+                <GridView HorizontalContentAlignment="Left" HorizontalAlignment="Left" Height="{Binding ContentHeight}" SelectionMode="None" x:Name="ShortcutListElement" Grid.Row="1" ItemTemplate="{StaticResource ShortcutTemplate}">
                     <GridView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Vertical"/>
+                            <ItemsWrapGrid HorizontalAlignment="Left" x:Name="MaxItemsWrapGrid" Orientation="Vertical"/>
                         </ItemsPanelTemplate>
                     </GridView.ItemsPanel>
                 </GridView>

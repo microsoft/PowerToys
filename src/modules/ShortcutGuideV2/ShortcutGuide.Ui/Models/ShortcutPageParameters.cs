@@ -11,7 +11,7 @@ namespace ShortcutGuide.Models
     {
         public static SeachFilterObservable SearchFilter = new();
 
-        public static Dictionary<string, List<Shortcut>> PinnedShortcuts = [];
+        public static Dictionary<string, List<ShortcutEntry>> PinnedShortcuts = [];
 
         public static string CurrentPageName = string.Empty;
 
