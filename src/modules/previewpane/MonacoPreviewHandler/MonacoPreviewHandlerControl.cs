@@ -389,7 +389,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                 }
 
                 fileReader.Close();
-                _base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
+                _base64FileCode = Convert.ToBase64String(encodingToUse.GetBytes(fileContent));
                 Logger.LogInfo("Reading requested file ended");
             }
 
