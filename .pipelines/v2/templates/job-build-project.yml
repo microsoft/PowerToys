@@ -11,6 +11,9 @@ parameters:
     default:
       - x64
       - arm64
+  - name: official
+    type: boolean
+    default: false
   - name: codeSign
     type: boolean
     default: false
@@ -54,9 +57,6 @@ parameters:
     type: boolean
     default: false
   - name: versionNumber
-    type: string
-    default: '0.0.1'
-  - name: cmdPalVersionNumber
     type: string
     default: '0.0.1'
   - name: useLatestWinAppSDK
@@ -215,6 +215,11 @@ jobs:
       env:
         VCWhereExtraVersionTarget: '-prerelease'
 
+  - ${{ if eq(parameters.official, true) }}:
+    - template: .\steps-setup-versioning.yml
+      parameters:
+        directory: $(build.sourcesdirectory)\src\modules\cmdpal
+
   - pwsh: |-
       & "$(build.sourcesdirectory)\.pipelines\installWiX.ps1"
     displayName: Download and install WiX 3.14 development build
@@ -344,6 +349,11 @@ jobs:
       flattenFolders: True
       OverWrite: True
 
+  # Check if all projects (located in src sub-folder) import common props
+  - pwsh: |-
+      & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)\src'
+    displayName: Audit shared common props for CSharp projects in src sub-folder
+
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-
       & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)'
@@ -389,13 +399,13 @@ jobs:
           **\UnitTests-FancyZones.dll
           !**\obj\**
 
-  - ${{ if eq(parameters.codeSign, true) }}:
-    - pwsh: |-
-        $Package = (Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix" | Select -First 1)
-        $PackageFilename = $Package.FullName
-        Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
-      displayName: Locate the MSIX
+  - pwsh: |-
+      $Package = (Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix" | Select -First 1)
+      $PackageFilename = $Package.FullName
+      Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
+    displayName: Locate the CmdPal MSIX
 
+  - ${{ if eq(parameters.codeSign, true) }}:
     - pwsh: |-
         & "$(MakeAppxPath)" unpack /p "$(CmdPalPackagePath)" /d "$(JobOutputDirectory)/CmdPalPackageContents"
       displayName: Unpack the MSIX for signing
@@ -415,6 +425,8 @@ jobs:
         $PackageFilename = Join-Path $outDir.FullName (Split-Path -Leaf "$(CmdPalPackagePath)")
         & "$(MakeAppxPath)" pack /h SHA256 /o /p $PackageFilename /d "$(JobOutputDirectory)/CmdPalPackageContents"
         Copy-Item -Force $PackageFilename "$(CmdPalPackagePath)"
+        Remove-Item -Force -Recurse "$(JobOutputDirectory)/CmdPalPackageContents" -ErrorAction:Ignore
+        Remove-Item -Force -Recurse "$(JobOutputDirectory)/_appx" -ErrorAction:Ignore
       displayName: Re-pack the new CmdPal package after signing
 
     - template: steps-esrp-signing.yml
@@ -436,6 +448,10 @@ jobs:
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_DSC.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+
+  - pwsh: |-
+      Copy-Item -Verbose -Force "$(CmdPalPackagePath)" "$(JobOutputDirectory)"
+    displayName: Stage the final CmdPal package
 
   - template: steps-build-installer.yml
     parameters:

@@ -29,6 +29,7 @@
 
             <cmdpalUI:DetailsDataTemplateSelector
                 x:Key="DetailsDataTemplateSelector"
+                CommandTemplate="{StaticResource DetailsCommandsTemplate}"
                 LinkTemplate="{StaticResource DetailsLinkTemplate}"
                 SeparatorTemplate="{StaticResource DetailsSeparatorTemplate}"
                 TagTemplate="{StaticResource DetailsTagsTemplate}" />
@@ -41,12 +42,34 @@
             <DataTemplate x:Key="TagTemplate" x:DataType="viewModels:TagViewModel">
                 <cpcontrols:Tag
                     HorizontalAlignment="Left"
+                    AutomationProperties.Name="{x:Bind Text, Mode=OneWay}"
                     BackgroundColor="{x:Bind Background, Mode=OneWay}"
                     FontSize="12"
                     ForegroundColor="{x:Bind Foreground, Mode=OneWay}"
                     Icon="{x:Bind Icon, Mode=OneWay}"
                     Text="{x:Bind Text, Mode=OneWay}"
                     ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
+            </DataTemplate>
+
+            <DataTemplate x:Key="CommandTemplate" x:DataType="viewModels:CommandViewModel">
+                <StackPanel Orientation="Vertical">
+                    <Button
+                        Name="Command"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Click="Command_Click"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <cpcontrols:IconBox
+                                Width="16"
+                                Height="16"
+                                Margin="0,3,8,0"
+                                SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                            <TextBlock Text="{x:Bind Name}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </DataTemplate>
 
             <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="viewModels:DetailsLinkViewModel">
@@ -68,6 +91,18 @@
                         FontSize="12"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
                         Visibility="{x:Bind IsLink, Mode=OneWay}" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="viewModels:DetailsCommandsViewModel">
+                <StackPanel Orientation="Vertical" Spacing="4">
+                    <TextBlock
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind Key, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                    <ItemsControl
+                        ItemTemplate="{StaticResource CommandTemplate}"
+                        ItemsSource="{x:Bind Commands, Mode=OneWay}"
+                        Visibility="{x:Bind HasCommands, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="viewModels:DetailsSeparatorViewModel">
@@ -147,27 +182,36 @@
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
+                                EasingMode="EaseIn"
+                                EasingType="Cubic"
                                 From="0"
                                 To="1.0"
-                                Duration="0:0:0.340" />
+                                Duration="0:0:0.187" />
                             <animations:ScaleAnimation
+                                EasingMode="EaseIn"
+                                EasingType="Cubic"
                                 From="0.5"
                                 To="1"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.ShowAnimations>
                         <animations:Implicit.HideAnimations>
                             <animations:OpacityAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="1.0"
                                 To="0"
-                                Duration="0:0:0.240" />
+                                Duration="0:0:0.187" />
                             <animations:ScaleAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="1"
                                 To="0.5"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.HideAnimations>
                     </Image>
                     <Button
                         x:Name="BackButton"
+                        x:Uid="BackButton"
                         Margin="4,0,4,0"
                         Padding="4"
                         HorizontalAlignment="Center"
@@ -178,35 +222,42 @@
                         FontSize="16"
                         Style="{StaticResource SubtleButtonStyle}"
                         Tapped="BackButton_Tapped"
-                        ToolTipService.ToolTip="Back"
                         Visibility="{x:Bind ViewModel.CurrentPage.IsNested, Mode=OneWay}">
                         <animations:Implicit.ShowAnimations>
                             <animations:OpacityAnimation
+                                EasingMode="EaseIn"
+                                EasingType="Cubic"
                                 From="0"
                                 To="1.0"
-                                Duration="0:0:0.340" />
+                                Duration="0:0:0.333" />
                             <animations:ScaleAnimation
                                 From="0.5"
                                 To="1"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.333" />
                             <animations:TranslationAnimation
                                 From="16,0,0"
                                 To="0,0,0"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.333" />
                         </animations:Implicit.ShowAnimations>
                         <animations:Implicit.HideAnimations>
                             <animations:OpacityAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="1.0"
                                 To="0"
-                                Duration="0:0:0.340" />
+                                Duration="0:0:0.333" />
                             <animations:ScaleAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="1"
                                 To="0.5"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.333" />
                             <animations:TranslationAnimation
+                                EasingMode="EaseOut"
+                                EasingType="Cubic"
                                 From="0,0,0"
                                 To="16,0,0"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.HideAnimations>
                     </Button>
                     <cpcontrols:IconBox
@@ -223,29 +274,29 @@
                             <animations:OpacityAnimation
                                 From="0"
                                 To="1.0"
-                                Duration="0:0:0.450" />
+                                Duration="0:0:0.333" />
                             <animations:ScaleAnimation
                                 From="0.8"
                                 To="1"
-                                Duration="0:0:0.500" />
+                                Duration="0:0:0.333" />
                             <animations:TranslationAnimation
                                 From="8,0,0"
                                 To="0,0,0"
-                                Duration="0:0:0.400" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.ShowAnimations>
                         <animations:Implicit.HideAnimations>
                             <animations:OpacityAnimation
                                 From="1.0"
                                 To="0"
-                                Duration="0:0:0.340" />
+                                Duration="0:0:0.333" />
                             <animations:ScaleAnimation
                                 From="1"
                                 To="0.8"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.333" />
                             <animations:TranslationAnimation
                                 From="0,0,0"
                                 To="8,0,0"
-                                Duration="0:0:0.350" />
+                                Duration="0:0:0.187" />
                         </animations:Implicit.HideAnimations>
                     </cpcontrols:IconBox>
                 </StackPanel>
@@ -272,13 +323,13 @@
                     <animations:OpacityAnimation
                         From="0"
                         To="1.0"
-                        Duration="0:0:0.340" />
+                        Duration="0:0:0.333" />
                 </animations:Implicit.ShowAnimations>
                 <animations:Implicit.HideAnimations>
                     <animations:OpacityAnimation
                         From="1.0"
                         To="0"
-                        Duration="0:0:0.340" />
+                        Duration="0:0:0.333" />
                 </animations:Implicit.HideAnimations>
             </ProgressBar>
 
@@ -313,21 +364,21 @@
                         <animations:OpacityAnimation
                             From="0"
                             To="1.0"
-                            Duration="0:0:0.270" />
+                            Duration="0:0:0.187" />
                         <animations:TranslationAnimation
                             From="24,0,0"
                             To="0,0,0"
-                            Duration="0:0:0.280" />
+                            Duration="0:0:0.187" />
                     </animations:Implicit.ShowAnimations>
                     <animations:Implicit.HideAnimations>
                         <animations:OpacityAnimation
                             From="1.0"
                             To="0"
-                            Duration="0:0:0.180" />
+                            Duration="0:0:0.187" />
                         <animations:TranslationAnimation
                             From="0,0,0"
                             To="24,0,0"
-                            Duration="0:0:0.220" />
+                            Duration="0:0:0.187" />
                     </animations:Implicit.HideAnimations>
                     <Grid Margin="12">
                         <Grid.RowDefinitions>
@@ -339,10 +390,10 @@
 
                         <cpcontrols:IconBox
                             x:Name="HeroImageBorder"
-                            MinWidth="64"
-                            MinHeight="64"
-                            MaxHeight="96"
+                            Width="64"
+                            Margin="16,8,16,16"
                             HorizontalAlignment="Center"
+                            AutomationProperties.AccessibilityView="Raw"
                             SourceKey="{x:Bind ViewModel.Details.HeroImage, Mode=OneWay}"
                             SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}"
                             Visibility="{x:Bind HasHeroImage, Mode=OneWay}" />
@@ -350,8 +401,10 @@
                         <TextBlock
                             Grid.Row="1"
                             HorizontalAlignment="Center"
-                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            FontSize="18"
+                            FontWeight="SemiBold"
                             Text="{x:Bind ViewModel.Details.Title, Mode=OneWay}"
+                            TextAlignment="Center"
                             TextWrapping="WrapWholeWords"
                             Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 

@@ -67,6 +67,7 @@ public partial class ImageResizerViewModel : Observable
         try
         {
             Settings = _settingsUtils.GetSettings<ImageResizerSettings>(ModuleName);
+            IdRecoveryHelper.RecoverInvalidIds(Settings.Properties.ImageresizerSizes.Value);
         }
         catch (Exception e)
         {

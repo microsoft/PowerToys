@@ -195,8 +195,15 @@ namespace winrt::PowerRenameUI::implementation
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$DDD", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_DayNameAbbr").ValueAsString()));
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$DD", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_DayDigitLZero").ValueAsString()));
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$D", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_DayDigit").ValueAsString()));
-        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$hh", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_HoursLZero").ValueAsString()));
-        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$h", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_Hours").ValueAsString()));
+        
+        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$HH", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_Hours12LZero").ValueAsString()));
+        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$H", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_Hours12").ValueAsString()));
+        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$TT", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_AMPMUpperCase").ValueAsString()));
+        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$tt", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_AMPMLowerCase").ValueAsString()));
+        
+        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$hh", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_Hours24LZero").ValueAsString()));
+        m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$h", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_Hours24").ValueAsString()));
+        
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$mm", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_MinutesLZero").ValueAsString()));
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$m", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_Minutes").ValueAsString()));
         m_dateTimeShortcuts.Append(winrt::make<PatternSnippet>(L"$ss", manager.MainResourceMap().GetValue(L"Resources/DateTimeCheatSheet_SecondsLZero").ValueAsString()));
@@ -784,6 +791,32 @@ namespace winrt::PowerRenameUI::implementation
         // ButtonSettings
         button_settings().Click([&](auto const&, auto const&) {
             OpenSettingsApp();
+        });
+
+        // ComboBox RenameParts
+        comboBox_fileTimeParts().SelectionChanged([&](auto const&, auto const&) {
+            int selectedIndex = comboBox_fileTimeParts().SelectedIndex();
+            if (selectedIndex == 0)
+            { 
+                // default behaviour. Date Created
+                UpdateFlag(CreationTime, UpdateFlagCommand::Set);
+                UpdateFlag(ModificationTime, UpdateFlagCommand::Reset);
+                UpdateFlag(AccessTime, UpdateFlagCommand::Reset);
+            }
+            else if (selectedIndex == 1)
+            {
+                // Date Modified
+                UpdateFlag(ModificationTime, UpdateFlagCommand::Set);
+                UpdateFlag(CreationTime, UpdateFlagCommand::Reset);
+                UpdateFlag(AccessTime, UpdateFlagCommand::Reset);
+            }
+            else if (selectedIndex == 2)
+            {
+                // Accessed
+                UpdateFlag(AccessTime, UpdateFlagCommand::Set);
+                UpdateFlag(CreationTime, UpdateFlagCommand::Reset);
+                UpdateFlag(ModificationTime, UpdateFlagCommand::Reset);
+            }
         });
     }
 
