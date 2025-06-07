@@ -496,18 +496,27 @@ public sealed partial class MainWindow : WindowEx,
 
             if (key != null)
             {
-                var vk = key.Code;
-                var modifiers =
-                    (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
-                    (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
-                    (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
-                    (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
-                    ;
-
-                var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
-                if (success)
+                if (settings.UseLowLevelGlobalHotkey)
                 {
-                    _hotkeys.Add(commandHotkey);
+                    _keyboardListener.SetHotkeyAction(key.Win, key.Ctrl, key.Shift, key.Alt, (byte)key.Code, commandHotkey.CommandId);
+
+                    _hotkeys.Add(new(globalHotkey, string.Empty));
+                }
+                else
+                {
+                    var vk = key.Code;
+                    var modifiers =
+                        (key.Alt ? HOT_KEY_MODIFIERS.MOD_ALT : 0) |
+                        (key.Ctrl ? HOT_KEY_MODIFIERS.MOD_CONTROL : 0) |
+                        (key.Shift ? HOT_KEY_MODIFIERS.MOD_SHIFT : 0) |
+                        (key.Win ? HOT_KEY_MODIFIERS.MOD_WIN : 0)
+                        ;
+
+                    var success = PInvoke.RegisterHotKey(_hwnd, _hotkeys.Count, modifiers, (uint)vk);
+                    if (success)
+                    {
+                        _hotkeys.Add(commandHotkey);
+                    }
                 }
             }
         }
