@@ -17,6 +17,7 @@ using Peek.Common.Extensions;
 using Peek.FilePreviewer.Models;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
+using Peek.UI.Models;
 using Peek.UI.Telemetry.Events;
 using Windows.Foundation;
 using WinUIEx;
@@ -115,12 +116,12 @@ namespace Peek.UI
         /// <summary>
         /// Toggling the window visibility and querying files when necessary.
         /// </summary>
-        public void Toggle(bool firstActivation, Windows.Win32.Foundation.HWND foregroundWindowHandle)
+        public void Toggle(bool firstActivation, SelectedItem selectedItem)
         {
             if (firstActivation)
             {
                 Activate();
-                Initialize(foregroundWindowHandle);
+                Initialize(selectedItem);
                 return;
             }
 
@@ -131,9 +132,9 @@ namespace Peek.UI
 
             if (AppWindow.IsVisible)
             {
-                if (IsNewSingleSelectedItem(foregroundWindowHandle))
+                if (IsNewSingleSelectedItem(selectedItem))
                 {
-                    Initialize(foregroundWindowHandle);
+                    Initialize(selectedItem);
                     Activate(); // Brings existing window into focus in case it was previously minimized
                 }
                 else
@@ -143,7 +144,7 @@ namespace Peek.UI
             }
             else
             {
-                Initialize(foregroundWindowHandle);
+                Initialize(selectedItem);
             }
         }
 
@@ -181,12 +182,12 @@ namespace Peek.UI
             Uninitialize();
         }
 
-        private void Initialize(Windows.Win32.Foundation.HWND foregroundWindowHandle)
+        private void Initialize(SelectedItem selectedItem)
         {
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
-            ViewModel.Initialize(foregroundWindowHandle);
+            ViewModel.Initialize(selectedItem);
             ViewModel.ScalingFactor = this.GetMonitorScale();
             this.Content.KeyUp += Content_KeyUp;
 
@@ -269,20 +270,11 @@ namespace Peek.UI
             Uninitialize();
         }
 
-        private bool IsNewSingleSelectedItem(Windows.Win32.Foundation.HWND foregroundWindowHandle)
+        private bool IsNewSingleSelectedItem(SelectedItem selectedItem)
         {
             try
             {
-                var selectedItems = FileExplorerHelper.GetSelectedItems(foregroundWindowHandle);
-                var selectedItemsCount = selectedItems?.GetCount() ?? 0;
-                if (selectedItems == null || selectedItemsCount == 0 || selectedItemsCount > 1)
-                {
-                    return false;
-                }
-
-                var fileExplorerSelectedItemPath = selectedItems.GetItemAt(0).ToIFileSystemItem().Path;
-                var currentItemPath = ViewModel.CurrentItem?.Path;
-                return fileExplorerSelectedItemPath != null && currentItemPath != null && fileExplorerSelectedItemPath != currentItemPath;
+                return selectedItem.Matches(ViewModel.CurrentItem?.Path);
             }
             catch (Exception ex)
             {
