@@ -223,6 +223,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool enableBgcodePreview = true;
+
+        [JsonPropertyName("bgcode-previewer-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableBgcodePreview
+        {
+            get => enableBgcodePreview;
+            set
+            {
+                if (value != enableBgcodePreview)
+                {
+                    LogTelemetryEvent(value);
+                    enableBgcodePreview = value;
+                }
+            }
+        }
+
         private bool enableGcodeThumbnail = true;
 
         [JsonPropertyName("gcode-thumbnail-toggle-setting")]
@@ -236,6 +253,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     enableGcodeThumbnail = value;
+                }
+            }
+        }
+
+        private bool enableBgcodeThumbnail = true;
+
+        [JsonPropertyName("bgcode-thumbnail-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableBgcodeThumbnail
+        {
+            get => enableBgcodeThumbnail;
+            set
+            {
+                if (value != enableBgcodeThumbnail)
+                {
+                    LogTelemetryEvent(value);
+                    enableBgcodeThumbnail = value;
                 }
             }
         }
