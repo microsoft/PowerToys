@@ -2,9 +2,13 @@
 
 ## 1 What this spec is about
 
-This spec provides an extension to the existing [WinGet manifest schema](https://github.com/microsoft/winget-pkgs/blob/master/doc/manifest/README.md), that allows saving keyboard shortcuts of an application in form of an additional yaml file.
+This spec provides an extension to the existing [WinGet manifest schema](https://github.com/microsoft/winget-pkgs/blob/master/doc/manifest/README.md) in form of an additional yaml file, that describes keyboard shortcuts the application provides.
 
 These yaml files are saved on a per-user base and so called manifest interpreters can then display these manifests in a human-friendly version.
+
+### 1.1 What this spec is not about
+
+This spec does not provide a way to back up or save user-defined keyboard shortcuts.
 
 ## 2 Save location of manifests
 
@@ -15,6 +19,20 @@ These files are saved online along with the other manifest files in the [WinGet 
 ### 2.2 Locally
 
 All manifests and one index file are saved locally under `%LocalAppData%/Microsoft/WinGet/KeyboardShortcuts`. All apps are allowed to add their manifest files there. In addition Package Managers (like WinGet) and manifest interpreters (like PowerToys Shortcut Guide) can control and add other manifests themselves.
+
+#### 2.2.1 Downloading manifests
+
+When WinGet or other package managers download a package, they should also download the corresponding keyboard shortcuts manifest file and save it in the local directory, given such a file exists in the WinGet repository.
+
+The downloader is also responsible for updating the local `index.yaml` file, which contains all the information about the different manifest files that are saved in the same directory.
+
+#### 2.2.2 Updating manifests
+
+When a manifest interpreter starts, it should download the latest version of the manifests from the WinGet repository and save them in the local directory. If a manifest interpreter is not able to download the manifests or they do not exist, it should use the locally saved manifests.
+
+The updater is also responsible for updating the local `index.yaml` file, which contains all the information about the different manifest files that are saved in the same directory.
+
+> Note: Winget must provide a way to update the keyboard shortcuts manifests given a package id.
 
 ### 2.3 File names
 
