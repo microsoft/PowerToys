@@ -44,6 +44,7 @@ resw
 resx
 srt
 Stereolithography
+taskmgr
 terabyte
 UYVY
 xbf
