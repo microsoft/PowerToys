@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
@@ -11,7 +12,10 @@ using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using ShortcutGuide;
 using ShortcutGuide.Models;
+using Windows.Foundation;
 
 namespace ShortcutGuide
 {
@@ -142,9 +146,12 @@ namespace ShortcutGuide
             }
         }
 
+        private string _searchFilter = string.Empty;
+
         private void SearchFilter_FilterChanged(object? sender, string e)
         {
             FilterBy(e);
+            _searchFilter = e;
         }
 
         public void FilterBy(string filter)
@@ -214,6 +221,7 @@ namespace ShortcutGuide
                 if (int.Parse(sender.SelectedItem.Name, CultureInfo.InvariantCulture) == -1)
                 {
                     OpenOverview();
+                    FilterBy(_searchFilter);
                     return;
                 }
 
@@ -227,6 +235,8 @@ namespace ShortcutGuide
                 ErrorMessage.Visibility = Visibility.Visible;
                 ErrorMessage.Text = "Error displaying category";
             }
+
+            FilterBy(_searchFilter);
         }
 
         private void PinShortcut(object sender, RoutedEventArgs e)
@@ -262,7 +272,7 @@ namespace ShortcutGuide
                 return;
             }
 
-            Shortcut originalObject = dataObject.OriginalShortcutObject;
+            ShortcutEntry originalObject = dataObject.OriginalShortcutObject;
 
             bool isItemPinned = ShortcutPageParameters.PinnedShortcuts[ShortcutPageParameters.CurrentPageName].Contains(originalObject);
 

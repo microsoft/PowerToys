@@ -8,6 +8,6 @@ namespace ShortcutGuide.Models
     {
         public string SectionName { get; set; }
 
-        public Shortcut[] Properties { get; set; }
+        public ShortcutEntry[] Properties { get; set; }
     }
 }

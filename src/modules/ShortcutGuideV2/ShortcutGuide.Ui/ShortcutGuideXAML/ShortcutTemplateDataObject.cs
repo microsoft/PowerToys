@@ -16,11 +16,11 @@ namespace ShortcutGuide
 
         public StackPanel Shortcut { get; set; }
 
-        public Shortcut OriginalShortcutObject { get; set; }
+        public ShortcutEntry OriginalShortcutObject { get; set; }
 
         public Visibility DescriptionVisible { get; set; }
 
-        public ShortcutTemplateDataObject(string name, string description, StackPanel shortcut, Shortcut originalShortcutObject)
+        public ShortcutTemplateDataObject(string name, string description, StackPanel shortcut, ShortcutEntry originalShortcutObject)
         {
             Name = name;
             Description = description;

@@ -65,7 +65,7 @@ namespace ShortcutGuide
             if (settingsUtils.SettingsExists(ShortcutGuideSettings.ModuleName, "Pinned.json"))
             {
                 string pinnedPath = settingsUtils.GetSettingsFilePath(ShortcutGuideSettings.ModuleName, "Pinned.json");
-                ShortcutPageParameters.PinnedShortcuts = JsonSerializer.Deserialize<Dictionary<string, List<Shortcut>>>(File.ReadAllText(pinnedPath))!;
+                ShortcutPageParameters.PinnedShortcuts = JsonSerializer.Deserialize<Dictionary<string, List<ShortcutEntry>>>(File.ReadAllText(pinnedPath))!;
             }
         }
 
