@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-
 using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -414,6 +413,49 @@ namespace RegistryPreviewUILib
                 RefreshRegistryFile();
                 saveButton.IsEnabled = true;
             });
+        }
+
+        // Commands to show data preview
+        public void ButtonExtendedPreview_Click(object sender, RoutedEventArgs e)
+        {
+            var data = ((Button)sender).DataContext as RegistryValue;
+            InvokeExtendedDataPreview(data);
+        }
+
+        public void MenuExtendedPreview_Click(object sender, RoutedEventArgs e)
+        {
+            var data = ((MenuFlyoutItem)sender).DataContext as RegistryValue;
+            InvokeExtendedDataPreview(data);
+        }
+
+        private async void InvokeExtendedDataPreview(RegistryValue valueData)
+        {
+            // Only one content dialog can be open at the same time and multiple instances of data preview can crash the app.
+            if (_dialogSemaphore.CurrentCount == 0)
+            {
+                return;
+            }
+
+            try
+            {
+                // Lock ui and request dialog lock
+                _dialogSemaphore.Wait();
+                ChangeCursor(gridPreview, true);
+
+                await ShowExtendedDataPreview(valueData.Name, valueData.Type, valueData.Value);
+            }
+            catch
+            {
+#if DEBUG
+                throw;
+#endif
+            }
+            finally
+            {
+                // Unblock ui and release dialog lock
+                ChangeCursor(gridPreview, false);
+                _dialogSemaphore.Release();
+            }
         }
     }
 }
