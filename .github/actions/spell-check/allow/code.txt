@@ -274,6 +274,11 @@ mengyuanchen
 
 # DllName
 testhost
+Testably
 
 #Tools
 OIP
+xef
+xes
+PACKAGEVERSIONNUMBER
+APPXMANIFESTVERSION

@@ -27,12 +27,17 @@
                     Severity="Informational" />
 
                 <controls:SettingsGroup x:Uid="CmdPal_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-
                     <tkcontrols:SettingsCard x:Uid="CmdPal_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=OneWay}"
                             IsEnabled="False" />
+                        <tkcontrols:SettingsCard.Description>
+                            <HyperlinkButton
+                                x:Name="CmdPalSettingsDeeplink"
+                                x:Uid="CmdPal_DeeplinkContent"
+                                Click="CmdPalSettingsDeeplink_Click" />
+                        </tkcontrols:SettingsCard.Description>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>

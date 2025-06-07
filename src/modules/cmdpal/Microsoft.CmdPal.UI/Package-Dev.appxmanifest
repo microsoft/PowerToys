@@ -70,6 +70,13 @@
             DisplayName="ms-resource:StartupTaskNameDev" />
         </uap5:Extension>
 
+        <uap:Extension Category="windows.protocol">
+          <uap:Protocol Name="x-cmdpal">
+            <uap:Logo>Assets\StoreLogo.png</uap:Logo>
+            <uap:DisplayName>Command Palette Dev URI scheme</uap:DisplayName>
+          </uap:Protocol>
+        </uap:Extension>
+
       </Extensions>
 
     </Application>
