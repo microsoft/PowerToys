@@ -14,13 +14,13 @@ These files are saved online along with the other manifest files in the [WinGet 
 
 ### 2.2 Locally
 
-All manifests and one index file are saved locally under `%LocalAppData%/Microsoft/Windows/KeyboardShortcuts`. All apps are allowed to add their manifest files there. In addition Package Managers (like WinGet) and manifest interpreters (like PowerToys Shortcut Guide) can control and add other manifests themselves.
+All manifests and one index file are saved locally under `%LocalAppData%/Microsoft/WinGet/KeyboardShortcuts`. All apps are allowed to add their manifest files there. In addition Package Managers (like WinGet) and manifest interpreters (like PowerToys Shortcut Guide) can control and add other manifests themselves.
 
 ### 2.3 File names
 
 The file name of a keyboard shortcuts file is the WinGet package identifier, plus the locale of the strings of the file and at last the `.KBSC.yaml` file extension.
 
-For example the package "test.bar" saves its manifest with `en-US` strings in `test.bar.en-US.KBSC.yaml"
+For example the package "test.bar" saves its manifest with `en-US` strings in `test.bar.en-US.KBSC.yaml`.
 
 #### 2.3.1 No winget package available
 
@@ -46,14 +46,15 @@ Shortcuts:                  # List of sections with keyboard shortcuts
   - SectionName:            # Name of the category of shortcuts
     Properties:             # List of shortcuts in the category
       - Name:               # Name of the shortcut
-        Win:                # Determines if the Windows Key is part of the shortcut
-        Ctrl:               # Determines if the Ctrl Key is part of the shortcut
-        Shift:              # Determines if the Shift Key is part of the shortcut
-        Alt:                # Determines if the Alt Key is part of the shortcut
         Description:        # Optional description of the shortcut
         AdditionalInfo:     # Optional additional information about the shortcut
         Recommended:        # Optionally determines if the shortcut is displayed in a designated recommended area
-        Keys:               # Array of keys that need to be pressed
+        Shortcut:           # An array of shortcuts that need to be pressed
+          - Win:            # Determines if the Windows Key is part of the shortcut
+            Ctrl:           # Determines if the Ctrl Key is part of the shortcut
+            Shift:          # Determines if the Shift Key is part of the shortcut
+            Alt:            # Determines if the Alt Key is part of the shortcut
+            Keys:           # Array of keys that need to be pressed
 ```
 
 Per Application/Package one or more Keyboard manifests can be declared. Every manifest must have a different locale and the same `PackageName`, `WindowFilter` and `BackgroundProcess` fields.
@@ -73,7 +74,7 @@ Per Application/Package one or more Keyboard manifests can be declared. Every ma
 </details>
 
 <details>
- <summary><b>BackgroundProcess</b> - Optionally allows applying WindowFilter to background processes</summary>
+ <summary><b>BackgroundProcess</b> - Optionally allows applying WindowFilter to background processes.</summary>
 
  **Optional field**
 
@@ -109,6 +110,34 @@ Special sections start with an identifier enclosed between `<` and `>`. This dec
 
 </details>
 
+
+<details>
+ <summary><b>Description</b> - Optional description of the shortcut</summary>
+
+ Optional description of the shortcut. This is the description that will be displayed by the interpreter.
+</details>
+
+<details>
+ <summary><b>AdditionalInfo</b> - Optional additional information about the shortcut</summary>
+
+ Array of additional information about the shortcut. This is the additional information that will be displayed by the interpreter and are not part of this manifest.
+
+ **Example**:
+
+ For example, if the shortcut is only available on a certain Windows version, this information could be added here.
+ ```yaml
+  AdditionalInfo:
+    - MinWindowsVersion: "10.0.19041.0"
+  ```
+</details>
+
+<details>
+ <summary><b>Shortcut</b> - An array of shortcuts that need to be pressed</summary>
+
+  An array of shortcuts that need to be pressed. This allows defining sequential shortcuts that need to be pressed in order to trigger the action.
+
+</details>
+
 <details>
  <summary><b>Win</b> - Determines if the Windows Key is part of the shortcut</summary>
 
@@ -133,25 +162,6 @@ Special sections start with an identifier enclosed between `<` and `>`. This dec
   Refers to the left Alt Key on the keyboard.
 </details>
 
-<details>
- <summary><b>Description</b> - Optional description of the shortcut</summary>
-
- Optional description of the shortcut. This is the description that will be displayed by the interpreter.
-</details>
-
-<details>
- <summary><b>AdditionalInfo</b> - Optional additional information about the shortcut</summary>
-
- Array of additional information about the shortcut. This is the additional information that will be displayed by the interpreter and are not part of this manifest.
-
- **Example**:
-
- For example, if the shortcut is only available on a certain Windows version, this information could be added here.
- ```yaml
-  AdditionalInfo:
-    - MinWindowsVersion: "10.0.19041.0"
-  ```
-</details>
 
 <details>
  <summary><b>Recommended</b> - Optionally determines if the shortcut is displayed in a designated recommended area</summary>
@@ -165,7 +175,7 @@ Special sections start with an identifier enclosed between `<` and `>`. This dec
 <details>
  <summary><b>Keys</b> - Array of keys that need to be pressed</summary>
 
- An string array of all the keys that need to be pressed. If a number is supplied, it should be read as a [KeyCode](https://learn.microsoft.com/windows/win32/inputdev/virtual-key-codes) and displayed accordingly (based on the Keyboard Layout of the user).
+ A string array of all the keys that need to be pressed. If a number is supplied, it should be read as a [KeyCode](https://learn.microsoft.com/windows/win32/inputdev/virtual-key-codes) and displayed accordingly (based on the Keyboard Layout of the user).
 
 **Special keys**:
 
@@ -207,21 +217,24 @@ Shortcuts:
   - SectionName: General
     Properties:
       - Name: Advanced Paste
-        Win: True
-        Ctrl: False
-        Alt: False
-        Shift: True
+        Shortcut:
+          - Win: True
+            Ctrl: False
+            Alt: False
+            Shift: False
+            Keys:
+              - 86
         Description: Open Advanced Paste window
-        Keys:
-          - 86
       - Name: Advanced Paste
-        Win: True
-        Ctrl: True
-        Alt: True
-        Shift: False
+        Shortcut:
+          - Win: True
+            Ctrl: True
+            Alt: True
+            Shift: False
+            Keys:
+              - 86
         Description: Paste as plain text directly
-        Keys:
-          - 86
+
 ```
 
 
