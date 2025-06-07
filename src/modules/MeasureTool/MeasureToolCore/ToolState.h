@@ -33,6 +33,17 @@ struct CommonState
 
     POINT cursorPosSystemSpace = {}; // updated atomically
     std::atomic_bool closeOnOtherMonitors = false;
+
+    float GetPhysicalPx2MmRatio(HWND window) const
+    {
+        auto ratio = -1.0f;
+        auto size = MonitorInfo::GetFromWindow(window).GetSize();
+        if (size.width_physical > 0u)
+        {
+            ratio = size.width_mm / static_cast<float>(size.width_physical);
+        }
+        return ratio;
+    }
 };
 
 struct CursorDrag

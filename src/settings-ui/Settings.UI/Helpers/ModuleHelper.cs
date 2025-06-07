@@ -49,6 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.AdvancedPaste: return generalSettingsConfig.Enabled.AdvancedPaste;
                 case ModuleType.AlwaysOnTop: return generalSettingsConfig.Enabled.AlwaysOnTop;
                 case ModuleType.Awake: return generalSettingsConfig.Enabled.Awake;
+                case ModuleType.CmdPal: return generalSettingsConfig.Enabled.CmdPal;
                 case ModuleType.ColorPicker: return generalSettingsConfig.Enabled.ColorPicker;
                 case ModuleType.CropAndLock: return generalSettingsConfig.Enabled.CropAndLock;
                 case ModuleType.EnvironmentVariables: return generalSettingsConfig.Enabled.EnvironmentVariables;
@@ -72,6 +73,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: return generalSettingsConfig.Enabled.MeasureTool;
                 case ModuleType.ShortcutGuide: return generalSettingsConfig.Enabled.ShortcutGuide;
                 case ModuleType.PowerOCR: return generalSettingsConfig.Enabled.PowerOcr;
+                case ModuleType.ZoomIt: return generalSettingsConfig.Enabled.ZoomIt;
                 default: return false;
             }
         }
@@ -83,6 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.AdvancedPaste: generalSettingsConfig.Enabled.AdvancedPaste = isEnabled; break;
                 case ModuleType.AlwaysOnTop: generalSettingsConfig.Enabled.AlwaysOnTop = isEnabled; break;
                 case ModuleType.Awake: generalSettingsConfig.Enabled.Awake = isEnabled; break;
+                case ModuleType.CmdPal: generalSettingsConfig.Enabled.CmdPal = isEnabled; break;
                 case ModuleType.ColorPicker: generalSettingsConfig.Enabled.ColorPicker = isEnabled; break;
                 case ModuleType.CropAndLock: generalSettingsConfig.Enabled.CropAndLock = isEnabled; break;
                 case ModuleType.EnvironmentVariables: generalSettingsConfig.Enabled.EnvironmentVariables = isEnabled; break;
@@ -106,6 +109,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: generalSettingsConfig.Enabled.MeasureTool = isEnabled; break;
                 case ModuleType.ShortcutGuide: generalSettingsConfig.Enabled.ShortcutGuide = isEnabled; break;
                 case ModuleType.PowerOCR: generalSettingsConfig.Enabled.PowerOcr = isEnabled; break;
+                case ModuleType.ZoomIt: generalSettingsConfig.Enabled.ZoomIt = isEnabled; break;
             }
         }
 
@@ -116,6 +120,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.AdvancedPaste: return GPOWrapper.GetConfiguredAdvancedPasteEnabledValue();
                 case ModuleType.AlwaysOnTop: return GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue();
                 case ModuleType.Awake: return GPOWrapper.GetConfiguredAwakeEnabledValue();
+                case ModuleType.CmdPal: return GPOWrapper.GetConfiguredCmdPalEnabledValue();
                 case ModuleType.ColorPicker: return GPOWrapper.GetConfiguredColorPickerEnabledValue();
                 case ModuleType.CropAndLock: return GPOWrapper.GetConfiguredCropAndLockEnabledValue();
                 case ModuleType.EnvironmentVariables: return GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue();
@@ -139,6 +144,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.MeasureTool: return GPOWrapper.GetConfiguredScreenRulerEnabledValue();
                 case ModuleType.ShortcutGuide: return GPOWrapper.GetConfiguredShortcutGuideEnabledValue();
                 case ModuleType.PowerOCR: return GPOWrapper.GetConfiguredTextExtractorEnabledValue();
+                case ModuleType.ZoomIt: return GPOWrapper.GetConfiguredZoomItEnabledValue();
                 default: return GpoRuleConfigured.Unavailable;
             }
         }
@@ -150,6 +156,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.AdvancedPaste => typeof(AdvancedPastePage),
                 ModuleType.AlwaysOnTop => typeof(AlwaysOnTopPage),
                 ModuleType.Awake => typeof(AwakePage),
+                ModuleType.CmdPal => typeof(CmdPalPage),
                 ModuleType.ColorPicker => typeof(ColorPickerPage),
                 ModuleType.CropAndLock => typeof(CropAndLockPage),
                 ModuleType.EnvironmentVariables => typeof(EnvironmentVariablesPage),
@@ -173,6 +180,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.MeasureTool => typeof(MeasureToolPage),
                 ModuleType.ShortcutGuide => typeof(ShortcutGuidePage),
                 ModuleType.PowerOCR => typeof(PowerOcrPage),
+                ModuleType.ZoomIt => typeof(ZoomItPage),
                 _ => typeof(DashboardPage), // never called, all values listed above
             };
         }

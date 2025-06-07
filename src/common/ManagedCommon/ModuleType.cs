@@ -10,6 +10,7 @@ namespace ManagedCommon
         AlwaysOnTop,
         Awake,
         ColorPicker,
+        CmdPal,
         CropAndLock,
         EnvironmentVariables,
         FancyZones,
@@ -32,5 +33,6 @@ namespace ManagedCommon
         ShortcutGuide,
         PowerOCR,
         Workspaces,
+        ZoomIt,
     }
 }

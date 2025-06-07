@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO.Abstractions;
 using System.Linq.Expressions;
 using System.Text;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;

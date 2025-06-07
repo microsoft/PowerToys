@@ -6,15 +6,22 @@
 #include <workspaces-common/GuidUtils.h>
 #include <workspaces-common/InvokePoint.h>
 
+namespace NonLocalizable
+{
+    const wchar_t restartedString[] = L"restarted";
+}
+
 struct CommandLineArgs
 {
     std::wstring workspaceId;
     InvokePoint invokePoint;
+    bool isRestarted;
 };
 
 CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
 {
     CommandLineArgs cmdArgs{};
+    cmdArgs.isRestarted = false;
 
     size_t pos = 0;
     std::wstring token;
@@ -29,16 +36,9 @@ CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
 
     for (const auto& token : tokens)
     {
-        if (!cmdArgs.workspaceId.empty())
+        if (token == NonLocalizable::restartedString)
         {
-            try
-            {
-                auto invokePoint = static_cast<InvokePoint>(std::stoi(token));
-                cmdArgs.invokePoint = invokePoint;
-            }
-            catch (std::exception)
-            {
-            }
+            cmdArgs.isRestarted = true;
         }
         else
         {
@@ -47,7 +47,18 @@ CommandLineArgs split(std::wstring s, const std::wstring& delimiter)
             {
                 cmdArgs.workspaceId = token;
             }
-        }   
+            else
+            {
+                try
+                {
+                    auto invokePoint = static_cast<InvokePoint>(std::stoi(token));
+                    cmdArgs.invokePoint = invokePoint;
+                }
+                catch (std::exception)
+                {
+                }
+            }
+        }
     }
 
     return cmdArgs;

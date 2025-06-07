@@ -6,7 +6,6 @@
     xmlns:helpers="clr-namespace:ColorPicker.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:p="clr-namespace:ColorPicker.Properties"
-    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
     AutomationProperties.Name="{x:Static p:Resources.Color_Palette}"
     FocusManager.IsFocusScope="True"
     KeyboardNavigation.TabNavigation="Once"
@@ -213,175 +212,177 @@
                 Style="{DynamicResource ColorShadeButtonStyle}"
                 ToolTipService.ToolTip="{x:Static p:Resources.Selected_color_tooltip}">
 
-                <ui:Flyout
+                <Popup
                     x:Name="DetailsFlyout"
                     Margin="24,0,0,0"
+                    AllowsTransparency="True"
                     Closed="DetailsFlyout_Closed"
                     Opened="DetailsFlyout_Opened"
-                    Placement="Top">
-                    <Grid x:Name="detailsGrid" KeyboardNavigation.TabNavigation="Contained">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="44" />
-                            <ColumnDefinition Width="86" />
-                            <ColumnDefinition Width="86" />
-                            <ColumnDefinition Width="86" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="8" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="8" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="12" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="12" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+                    Placement="Top"
+                    StaysOpen="False">
+                    <Border
+                        Padding="15"
+                        Background="{DynamicResource ApplicationBackgroundBrush}"
+                        BorderBrush="{DynamicResource SurfaceStrokeColorFlyoutBrush}"
+                        BorderThickness="1"
+                        CornerRadius="16">
+                        <Grid x:Name="detailsGrid" KeyboardNavigation.TabNavigation="Contained">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="44" />
+                                <ColumnDefinition Width="86" />
+                                <ColumnDefinition Width="86" />
+                                <ColumnDefinition Width="86" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="8" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="12" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="12" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
 
-                        <TextBlock
-                            VerticalAlignment="Center"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="H"
-                            TextAlignment="Center" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="H"
+                                TextAlignment="Center" />
 
-                        <Slider
-                            x:Name="HueGradientSlider"
-                            Grid.Column="1"
-                            Grid.ColumnSpan="3"
-                            VerticalAlignment="Center"
-                            AutomationProperties.Name="{x:Static p:Resources.Hue_slider}"
-                            IsMoveToPointEnabled="True"
-                            Maximum="289"
-                            Minimum="0"
-                            ValueChanged="HueGradientSlider_ValueChanged" />
+                            <Slider
+                                x:Name="HueGradientSlider"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="3"
+                                VerticalAlignment="Center"
+                                AutomationProperties.Name="{x:Static p:Resources.Hue_slider}"
+                                IsMoveToPointEnabled="True"
+                                Maximum="289"
+                                Minimum="0"
+                                ValueChanged="HueGradientSlider_ValueChanged" />
 
-                        <TextBlock
-                            Grid.Row="2"
-                            VerticalAlignment="Center"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="S"
-                            TextAlignment="Center" />
+                            <TextBlock
+                                Grid.Row="2"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="S"
+                                TextAlignment="Center" />
 
-                        <Slider
-                            x:Name="SaturationGradientSlider"
-                            Grid.Row="2"
-                            Grid.Column="1"
-                            Grid.ColumnSpan="3"
-                            AutomationProperties.Name="{x:Static p:Resources.Saturation_slider}"
-                            IsMoveToPointEnabled="True"
-                            Maximum="289"
-                            Minimum="0"
-                            ValueChanged="SaturationGradientSlider_ValueChanged">
-                            <Slider.Background>
-                                <LinearGradientBrush StartPoint="0, 0.5" EndPoint="1,0.5">
-                                    <GradientStop x:Name="SaturationStartColor" Color="Black" />
-                                    <GradientStop x:Name="SaturationStopColor" Offset="1" Color="Red" />
-                                </LinearGradientBrush>
-                            </Slider.Background>
-                        </Slider>
+                            <Slider
+                                x:Name="SaturationGradientSlider"
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="3"
+                                AutomationProperties.Name="{x:Static p:Resources.Saturation_slider}"
+                                IsMoveToPointEnabled="True"
+                                Maximum="289"
+                                Minimum="0"
+                                ValueChanged="SaturationGradientSlider_ValueChanged">
+                                <Slider.Background>
+                                    <LinearGradientBrush StartPoint="0, 0.5" EndPoint="1,0.5">
+                                        <GradientStop x:Name="SaturationStartColor" Color="Black" />
+                                        <GradientStop x:Name="SaturationStopColor" Offset="1" Color="Red" />
+                                    </LinearGradientBrush>
+                                </Slider.Background>
+                            </Slider>
 
-                        <TextBlock
-                            Grid.Row="4"
-                            VerticalAlignment="Center"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="V"
-                            TextAlignment="Center" />
+                            <TextBlock
+                                Grid.Row="4"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="V"
+                                TextAlignment="Center" />
 
-                        <Slider
-                            x:Name="ValueGradientSlider"
-                            Grid.Row="4"
-                            Grid.Column="1"
-                            Grid.ColumnSpan="3"
-                            AutomationProperties.Name="{x:Static p:Resources.Value_slider}"
-                            IsMoveToPointEnabled="True"
-                            Maximum="289"
-                            Minimum="0"
-                            ValueChanged="ValueGradientSlider_ValueChanged">
-                            <Slider.Background>
-                                <LinearGradientBrush StartPoint="0, 0.5" EndPoint="1,0.5">
-                                    <GradientStop x:Name="ValueStartColor" Color="Black" />
-                                    <GradientStop x:Name="ValueStopColor" Offset="1" Color="Red" />
-                                </LinearGradientBrush>
-                            </Slider.Background>
-                        </Slider>
+                            <Slider
+                                x:Name="ValueGradientSlider"
+                                Grid.Row="4"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="3"
+                                AutomationProperties.Name="{x:Static p:Resources.Value_slider}"
+                                IsMoveToPointEnabled="True"
+                                Maximum="289"
+                                Minimum="0"
+                                ValueChanged="ValueGradientSlider_ValueChanged">
+                                <Slider.Background>
+                                    <LinearGradientBrush StartPoint="0, 0.5" EndPoint="1,0.5">
+                                        <GradientStop x:Name="ValueStartColor" Color="Black" />
+                                        <GradientStop x:Name="ValueStopColor" Offset="1" Color="Red" />
+                                    </LinearGradientBrush>
+                                </Slider.Background>
+                            </Slider>
 
-                        <TextBlock
-                            Grid.Row="6"
-                            VerticalAlignment="Center"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="RGB"
-                            TextAlignment="Center" />
+                            <TextBlock
+                                Grid.Row="6"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="RGB"
+                                TextAlignment="Center" />
 
-                        <ui:NumberBox
-                            x:Name="RNumberBox"
-                            Grid.Row="6"
-                            Grid.Column="1"
-                            AutomationProperties.Name="{x:Static p:Resources.Red_value}"
-                            Maximum="255"
-                            Minimum="0"
-                            SpinButtonPlacementMode="Compact"
-                            TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
+                            <TextBox
+                                x:Name="RNumberBox"
+                                Grid.Row="6"
+                                Grid.Column="1"
+                                AutomationProperties.Name="{x:Static p:Resources.Red_value}"
+                                PreviewTextInput="TextBox_PreviewTextInput"
+                                TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
+                            <TextBox
+                                x:Name="GNumberBox"
+                                Grid.Row="6"
+                                Grid.Column="2"
+                                Margin="4,0,0,0"
+                                AutomationProperties.Name="{x:Static p:Resources.Green_value}"
+                                PreviewTextInput="TextBox_PreviewTextInput"
+                                TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
+                            <TextBox
+                                x:Name="BNumberBox"
+                                Grid.Row="6"
+                                Grid.Column="3"
+                                Margin="4,0,0,0"
+                                AutomationProperties.Name="{x:Static p:Resources.Blue_value}"
+                                PreviewTextInput="TextBox_PreviewTextInput"
+                                TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
 
-                        <ui:NumberBox
-                            x:Name="GNumberBox"
-                            Grid.Row="6"
-                            Grid.Column="2"
-                            Margin="4,0,0,0"
-                            AutomationProperties.Name="{x:Static p:Resources.Green_value}"
-                            Maximum="255"
-                            Minimum="0"
-                            SpinButtonPlacementMode="Compact"
-                            TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
+                            <TextBlock
+                                Grid.Row="8"
+                                Width="38"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="HEX"
+                                TextAlignment="Center" />
+                            <TextBox
+                                x:Name="HexCode"
+                                Grid.Row="8"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="3"
+                                HorizontalAlignment="Stretch"
+                                AutomationProperties.Name="{x:Static p:Resources.Hex_value}"
+                                CharacterCasing="Lower"
+                                GotKeyboardFocus="HexCode_GotKeyboardFocus"
+                                MaxLength="7"
+                                TextChanged="HexCode_TextChanged"
+                                TextWrapping="Wrap" />
 
-                        <ui:NumberBox
-                            x:Name="BNumberBox"
-                            Grid.Row="6"
-                            Grid.Column="3"
-                            Margin="4,0,0,0"
-                            AutomationProperties.Name="{x:Static p:Resources.Blue_value}"
-                            Maximum="255"
-                            Minimum="0"
-                            SpinButtonPlacementMode="Compact"
-                            TextBoxBase.TextChanged="RGBNumberBox_TextChanged" />
+                            <Button
+                                x:Name="OKButton"
+                                Grid.Row="9"
+                                Grid.ColumnSpan="4"
+                                Margin="0,32,0,0"
+                                HorizontalAlignment="Stretch"
+                                AutomationProperties.Name="{x:Static p:Resources.Select}"
+                                Click="OKButton_Click"
+                                Content="{x:Static p:Resources.Select}"
+                                Style="{StaticResource CustomAccentButtonStyle}" />
 
-                        <TextBlock
-                            Grid.Row="8"
-                            Width="38"
-                            VerticalAlignment="Center"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                            Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="HEX"
-                            TextAlignment="Center" />
-                        <TextBox
-                            x:Name="HexCode"
-                            Grid.Row="8"
-                            Grid.Column="1"
-                            Grid.ColumnSpan="3"
-                            HorizontalAlignment="Stretch"
-                            AutomationProperties.Name="{x:Static p:Resources.Hex_value}"
-                            CharacterCasing="Lower"
-                            GotKeyboardFocus="HexCode_GotKeyboardFocus"
-                            MaxLength="7"
-                            TextChanged="HexCode_TextChanged"
-                            TextWrapping="Wrap" />
-
-                        <ui:Button
-                            x:Name="OKButton"
-                            Grid.Row="9"
-                            Grid.ColumnSpan="4"
-                            Margin="0,32,0,0"
-                            HorizontalAlignment="Stretch"
-                            Appearance="Primary"
-                            AutomationProperties.Name="{x:Static p:Resources.Select}"
-                            Click="OKButton_Click"
-                            Content="{x:Static p:Resources.Select}" />
-                    </Grid>
-                </ui:Flyout>
+                        </Grid>
+                    </Border>
+                </Popup>
             </Button>
 
 

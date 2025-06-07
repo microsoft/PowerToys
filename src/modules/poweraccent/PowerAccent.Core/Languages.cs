@@ -10,7 +10,7 @@ namespace PowerAccent.Core
 {
     public enum Language
     {
-        ALL,
+        SPECIAL,
         BG,
         CA,
         CRH,
@@ -39,6 +39,7 @@ namespace PowerAccent.Core
         NL,
         NO,
         PI,
+        PIE,
         PL,
         PT,
         RO,
@@ -47,57 +48,76 @@ namespace PowerAccent.Core
         SL,
         SP,
         SR,
+        SR_CYRL,
         SV,
         TK,
     }
 
     internal sealed class Languages
     {
-        public static string[] GetDefaultLetterKey(LetterKey letter, Language lang)
+        public static string[] GetDefaultLetterKey(LetterKey letter, Language[] langs)
         {
-            return lang switch
+            if (langs.Length == Enum.GetValues<Language>().Length)
             {
-                Language.ALL => GetDefaultLetterKeyALL(letter), // All
-                Language.BG => GetDefaultLetterKeyBG(letter), // Bulgarian
-                Language.CA => GetDefaultLetterKeyCA(letter), // Catalan
-                Language.CRH => GetDefaultLetterKeyCRH(letter), // Crimean Tatar
-                Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
-                Language.CY => GetDefaultLetterKeyCY(letter), // Welsh
-                Language.CZ => GetDefaultLetterKeyCZ(letter), // Czech
-                Language.DK => GetDefaultLetterKeyDK(letter), // Danish
-                Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish)
-                Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
-                Language.DE => GetDefaultLetterKeyDE(letter), // German
-                Language.EL => GetDefaultLetterKeyEL(letter), // Greek
-                Language.EST => GetDefaultLetterKeyEST(letter), // Estonian
-                Language.EPO => GetDefaultLetterKeyEPO(letter), // Esperanto
-                Language.FI => GetDefaultLetterKeyFI(letter), // Finnish
-                Language.FR => GetDefaultLetterKeyFR(letter), // French
-                Language.HR => GetDefaultLetterKeyHR(letter), // Croatian
-                Language.HE => GetDefaultLetterKeyHE(letter), // Hebrew
-                Language.HU => GetDefaultLetterKeyHU(letter), // Hungarian
-                Language.IS => GetDefaultLetterKeyIS(letter), // Iceland
-                Language.IPA => GetDefaultLetterKeyIPA(letter), // IPA (International phonetic alphabet)
-                Language.IT => GetDefaultLetterKeyIT(letter), // Italian
-                Language.KU => GetDefaultLetterKeyKU(letter), // Kurdish
-                Language.LT => GetDefaultLetterKeyLT(letter), // Lithuanian
-                Language.MK => GetDefaultLetterKeyMK(letter), // Macedonian
-                Language.MI => GetDefaultLetterKeyMI(letter), // Maori
-                Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
-                Language.NO => GetDefaultLetterKeyNO(letter), // Norwegian
-                Language.PI => GetDefaultLetterKeyPI(letter), // Pinyin
-                Language.PL => GetDefaultLetterKeyPL(letter), // Polish
-                Language.PT => GetDefaultLetterKeyPT(letter), // Portuguese
-                Language.RO => GetDefaultLetterKeyRO(letter), // Romanian
-                Language.ROM => GetDefaultLetterKeyROM(letter), // Middle Eastern Romanization
-                Language.SK => GetDefaultLetterKeySK(letter), // Slovak
-                Language.SL => GetDefaultLetterKeySL(letter), // Slovenian
-                Language.SP => GetDefaultLetterKeySP(letter), // Spain
-                Language.SR => GetDefaultLetterKeySR(letter), // Serbian
-                Language.SV => GetDefaultLetterKeySV(letter), // Swedish
-                Language.TK => GetDefaultLetterKeyTK(letter), // Turkish
-                _ => throw new ArgumentException("The language {0} is not known in this context", lang.ToString()),
-            };
+                return GetDefaultLetterKeyALL(letter);
+            }
+
+            if (langs.Length == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            var characters = new List<string>();
+            foreach (var lang in langs)
+            {
+                characters.AddRange(lang switch
+                {
+                    Language.SPECIAL => GetDefaultLetterKeySPECIAL(letter), // Special Characters
+                    Language.BG => GetDefaultLetterKeyBG(letter), // Bulgarian
+                    Language.CA => GetDefaultLetterKeyCA(letter), // Catalan
+                    Language.CRH => GetDefaultLetterKeyCRH(letter), // Crimean Tatar
+                    Language.CUR => GetDefaultLetterKeyCUR(letter), // Currency
+                    Language.CY => GetDefaultLetterKeyCY(letter), // Welsh
+                    Language.CZ => GetDefaultLetterKeyCZ(letter), // Czech
+                    Language.DK => GetDefaultLetterKeyDK(letter), // Danish
+                    Language.GA => GetDefaultLetterKeyGA(letter), // Gaeilge (Irish)
+                    Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
+                    Language.DE => GetDefaultLetterKeyDE(letter), // German
+                    Language.EL => GetDefaultLetterKeyEL(letter), // Greek
+                    Language.EST => GetDefaultLetterKeyEST(letter), // Estonian
+                    Language.EPO => GetDefaultLetterKeyEPO(letter), // Esperanto
+                    Language.FI => GetDefaultLetterKeyFI(letter), // Finnish
+                    Language.FR => GetDefaultLetterKeyFR(letter), // French
+                    Language.HR => GetDefaultLetterKeyHR(letter), // Croatian
+                    Language.HE => GetDefaultLetterKeyHE(letter), // Hebrew
+                    Language.HU => GetDefaultLetterKeyHU(letter), // Hungarian
+                    Language.IS => GetDefaultLetterKeyIS(letter), // Iceland
+                    Language.IPA => GetDefaultLetterKeyIPA(letter), // IPA (International phonetic alphabet)
+                    Language.IT => GetDefaultLetterKeyIT(letter), // Italian
+                    Language.KU => GetDefaultLetterKeyKU(letter), // Kurdish
+                    Language.LT => GetDefaultLetterKeyLT(letter), // Lithuanian
+                    Language.MK => GetDefaultLetterKeyMK(letter), // Macedonian
+                    Language.MI => GetDefaultLetterKeyMI(letter), // Maori
+                    Language.NL => GetDefaultLetterKeyNL(letter), // Dutch
+                    Language.NO => GetDefaultLetterKeyNO(letter), // Norwegian
+                    Language.PI => GetDefaultLetterKeyPI(letter), // Pinyin
+                    Language.PIE => GetDefaultLetterKeyPIE(letter), // Proto-Indo-European
+                    Language.PL => GetDefaultLetterKeyPL(letter), // Polish
+                    Language.PT => GetDefaultLetterKeyPT(letter), // Portuguese
+                    Language.RO => GetDefaultLetterKeyRO(letter), // Romanian
+                    Language.ROM => GetDefaultLetterKeyROM(letter), // Middle Eastern Romanization
+                    Language.SK => GetDefaultLetterKeySK(letter), // Slovak
+                    Language.SL => GetDefaultLetterKeySL(letter), // Slovenian
+                    Language.SP => GetDefaultLetterKeySP(letter), // Spain
+                    Language.SR => GetDefaultLetterKeySR(letter), // Serbian
+                    Language.SR_CYRL => GetDefaultLetterKeySRCyrillic(letter), // Serbian Cyrillic
+                    Language.SV => GetDefaultLetterKeySV(letter), // Swedish
+                    Language.TK => GetDefaultLetterKeyTK(letter), // Turkish
+                    _ => throw new ArgumentException("The language {0} is not known in this context", lang.ToString()),
+                });
+            }
+
+            return characters.Distinct().ToArray();
         }
 
         // Store the computed letters for each key, so that subsequent calls don't take as long.
@@ -137,6 +157,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyNL(letter))
                 .Union(GetDefaultLetterKeyNO(letter))
                 .Union(GetDefaultLetterKeyPI(letter))
+                .Union(GetDefaultLetterKeyPIE(letter))
                 .Union(GetDefaultLetterKeyPL(letter))
                 .Union(GetDefaultLetterKeyPT(letter))
                 .Union(GetDefaultLetterKeyRO(letter))
@@ -144,9 +165,10 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeySL(letter))
                 .Union(GetDefaultLetterKeySP(letter))
                 .Union(GetDefaultLetterKeySR(letter))
+                .Union(GetDefaultLetterKeySRCyrillic(letter))
                 .Union(GetDefaultLetterKeySV(letter))
                 .Union(GetDefaultLetterKeyTK(letter))
-                .Union(GetDefaultLetterKeyAllLanguagesOnly(letter))
+                .Union(GetDefaultLetterKeySPECIAL(letter))
                 .ToArray();
 
                 _allLanguagesCache[letter] = cachedValue;
@@ -157,7 +179,7 @@ namespace PowerAccent.Core
 
         // Contains all characters that should be shown in all languages but currently don't belong to any of the single languages available for that letter.
         // These characters can be removed from this list after they've been added to one of the other languages for that specific letter.
-        private static string[] GetDefaultLetterKeyAllLanguagesOnly(LetterKey letter)
+        private static string[] GetDefaultLetterKeySPECIAL(LetterKey letter)
         {
             return letter switch
             {
@@ -203,6 +225,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_DIVIDE_ => new[] { "÷", "√" },
                 LetterKey.VK_MULTIPLY_ => new[] { "×", "⋅" },
                 LetterKey.VK_PLUS => new[] { "≤", "≥", "≠", "≈", "≙", "⊕", "⊗", "∓", "≅", "≡" },
+                LetterKey.VK_BACKSLASH => new[] { "`", "~" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -302,7 +325,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_H => new[] { "ĥ" },
                 LetterKey.VK_J => new[] { "ĵ" },
                 LetterKey.VK_S => new[] { "ŝ" },
-                LetterKey.VK_U => new[] { "ǔ" },
+                LetterKey.VK_U => new[] { "ŭ" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -440,6 +463,24 @@ namespace PowerAccent.Core
                 LetterKey.VK_V => new[] { "ü", "ǖ", "ǘ", "ǚ", "ǜ" },
                 LetterKey.VK_Y => new[] { "¥" },
                 LetterKey.VK_Z => new[] { "ẑ" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Proto-Indo-European
+        private static string[] GetDefaultLetterKeyPIE(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new[] { "ā" },
+                LetterKey.VK_E => new[] { "ē" },
+                LetterKey.VK_O => new[] { "ō" },
+                LetterKey.VK_K => new[] { "ḱ" },
+                LetterKey.VK_G => new[] { "ǵ" },
+                LetterKey.VK_R => new[] { "r̥" },
+                LetterKey.VK_L => new[] { "l̥" },
+                LetterKey.VK_M => new[] { "m̥" },
+                LetterKey.VK_N => new[] { "n̥" },
                 _ => Array.Empty<string>(),
             };
         }
@@ -636,7 +677,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_O => new string[] { "ο", "ό", "ω", "ώ" },
                 LetterKey.VK_P => new string[] { "π", "φ", "ψ" },
                 LetterKey.VK_R => new string[] { "ρ" },
-                LetterKey.VK_S => new string[] { "σ" },
+                LetterKey.VK_S => new string[] { "σ", "ς" },
                 LetterKey.VK_T => new string[] { "τ", "θ", "ϑ" },
                 LetterKey.VK_U => new string[] { "υ", "ύ" },
                 LetterKey.VK_X => new string[] { "ξ" },
@@ -771,6 +812,19 @@ namespace PowerAccent.Core
             };
         }
 
+        // Serbian Cyrillic
+        private static string[] GetDefaultLetterKeySRCyrillic(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_D => new[] { "ђ", "џ" },
+                LetterKey.VK_L => new[] { "љ" },
+                LetterKey.VK_N => new[] { "њ" },
+                LetterKey.VK_C => new[] { "ћ" },
+                _ => Array.Empty<string>(),
+            };
+        }
+
         // Macedonian
         private static string[] GetDefaultLetterKeyMK(LetterKey letter)
         {
@@ -828,7 +882,7 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_C => new[] { "č" },
+                LetterKey.VK_C => new[] { "č", "ć" },
                 LetterKey.VK_E => new[] { "€" },
                 LetterKey.VK_S => new[] { "š" },
                 LetterKey.VK_Z => new[] { "ž" },
@@ -841,7 +895,7 @@ namespace PowerAccent.Core
         {
             return letter switch
             {
-                LetterKey.VK_A => new[] { "ɐ", "ɑ", "ɒ" },
+                LetterKey.VK_A => new[] { "ɐ", "ɑ", "ɒ", "ǎ" },
                 LetterKey.VK_B => new[] { "ʙ" },
                 LetterKey.VK_E => new[] { "ɘ", "ɵ", "ə", "ɛ", "ɜ", "ɞ" },
                 LetterKey.VK_F => new[] { "ɟ", "ɸ" },
@@ -851,10 +905,10 @@ namespace PowerAccent.Core
                 LetterKey.VK_J => new[] { "ʝ" },
                 LetterKey.VK_L => new[] { "ɬ", "ɮ", "ꞎ", "ɭ", "ʎ", "ʟ", "ɺ" },
                 LetterKey.VK_N => new[] { "ɳ", "ɲ", "ŋ", "ɴ" },
-                LetterKey.VK_O => new[] { "ɤ", "ɔ", "ɶ" },
+                LetterKey.VK_O => new[] { "ɤ", "ɔ", "ɶ", "ǒ" },
                 LetterKey.VK_R => new[] { "ʁ", "ɹ", "ɻ", "ɾ", "ɽ", "ʀ" },
                 LetterKey.VK_S => new[] { "ʃ", "ʂ", "ɕ" },
-                LetterKey.VK_U => new[] { "ʉ", "ʊ" },
+                LetterKey.VK_U => new[] { "ʉ", "ʊ", "ǔ" },
                 LetterKey.VK_V => new[] { "ʋ", "ⱱ", "ʌ" },
                 LetterKey.VK_W => new[] { "ɰ", "ɯ" },
                 LetterKey.VK_Y => new[] { "ʏ" },

@@ -25,7 +25,7 @@ namespace AllExperiments
             }
 
             // Using InvariantCulture since this is used for a log file name
-            var logFilePath = Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".txt");
+            var logFilePath = Path.Combine(ApplicationLogPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log");
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 

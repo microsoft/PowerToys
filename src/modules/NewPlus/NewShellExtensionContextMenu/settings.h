@@ -12,6 +12,8 @@ public:
     void SetHideFileExtension(const bool hide_file_extension);
     bool GetHideStartingDigits() const;
     void SetHideStartingDigits(const bool hide_starting_digits);
+    bool GetReplaceVariables() const;
+    void SetReplaceVariables(const bool resolve_variables);
     std::wstring GetTemplateLocation() const;
     void SetTemplateLocation(const std::wstring template_location);
 
@@ -25,12 +27,13 @@ private:
         bool enabled{ false };
         bool hide_file_extension{ true };
         bool hide_starting_digits{ true };
+        bool replace_variables{ true };
         std::wstring template_location;
     };
 
     void RefreshEnabledState();
     void InitializeWithDefaultSettings();
-    std::wstring GetTemplateLocationDefaultPath();
+    std::wstring GetTemplateLocationDefaultPath() const;
 
     void Reload();
     void ParseJson();

@@ -4,10 +4,11 @@
 
 using System;
 using System.Web;
-
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
+using RegistryPreview.Telemetry;
 using Windows.ApplicationModel.Activation;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -26,6 +27,8 @@ namespace RegistryPreview
         /// </summary>
         public App()
         {
+            PowerToysTelemetry.Log.WriteEvent(new RegistryPreviewEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+
             string appLanguage = LanguageHelper.LoadLanguage();
 
             if (!string.IsNullOrEmpty(appLanguage))
@@ -111,5 +114,7 @@ namespace RegistryPreview
         public static string AppFilename;
 #pragma warning restore CA2211 // Non-constant fields should not be visible
 #pragma warning restore SA1401 // Fields should be private
+
+        public ETWTrace EtwTrace { get; private set; } = new ETWTrace();
     }
 }

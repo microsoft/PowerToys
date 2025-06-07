@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 using System;
 using System.Threading;
+
 using global::Windows.System;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Controls;
@@ -132,6 +133,14 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
 
                     break;
 
+                case ModuleType.CmdPal: // Show CmdPal
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.ShowCmdPalEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    break;
+
                 default:
                     moduleRun = false;
                     break;
@@ -167,7 +176,7 @@ namespace Microsoft.PowerToys.Settings.UI.Flyout
             });
         }
 
-        private void ReportBugBtn_Click(object sender, RoutedEventArgs e)
+        internal void ReportBugBtn_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.StartBugReport();
 

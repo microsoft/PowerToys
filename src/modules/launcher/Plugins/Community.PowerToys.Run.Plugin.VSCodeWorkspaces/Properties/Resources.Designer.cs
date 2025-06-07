@@ -140,5 +140,32 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties {
                 return ResourceManager.GetString("Workspace", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy Path.
+        /// </summary>
+        internal static string CopyPath {
+            get {
+                return ResourceManager.GetString("CopyPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open in console.
+        /// </summary>
+        internal static string OpenInConsole {
+            get {
+                return ResourceManager.GetString("OpenInConsole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open in Explorer.
+        /// </summary>
+        internal static string OpenInExplorer {
+            get {
+                return ResourceManager.GetString("OpenInExplorer", resourceCulture);
+            }
+        }
     }
 }

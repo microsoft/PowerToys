@@ -5,6 +5,7 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using Microsoft.PowerToys.Settings.Telemetry;
 using Microsoft.PowerToys.Telemetry;
 using Settings.UI.Library.Enumerations;
@@ -150,6 +151,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     LogTelemetryEvent(value);
                     monacoPreviewStickyScroll = value;
+                }
+            }
+        }
+
+        private bool monacoPreviewMinimap;
+
+        [JsonPropertyName("monaco-previewer-minimap")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool MonacoPreviewMinimap
+        {
+            get => monacoPreviewMinimap;
+            set
+            {
+                if (value != monacoPreviewMinimap)
+                {
+                    LogTelemetryEvent(value);
+                    monacoPreviewMinimap = value;
                 }
             }
         }

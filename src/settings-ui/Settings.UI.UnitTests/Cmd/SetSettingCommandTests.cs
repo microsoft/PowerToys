@@ -4,6 +4,7 @@
 
 using System;
 using System.IO.Abstractions.TestingHelpers;
+
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

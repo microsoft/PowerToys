@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Security.Cryptography;
 using System.Windows.Input;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -46,12 +47,17 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 new ColorFormatParameter() { Parameter = "%In", Description = resourceLoader.GetString("Help_intensity") },
                 new ColorFormatParameter() { Parameter = "%Hn", Description = resourceLoader.GetString("Help_hueNat") },
                 new ColorFormatParameter() { Parameter = "%Ll", Description = resourceLoader.GetString("Help_lightnessNat") },
-                new ColorFormatParameter() { Parameter = "%Lc", Description = resourceLoader.GetString("Help_lightnessCIE") },
                 new ColorFormatParameter() { Parameter = "%Va", Description = resourceLoader.GetString("Help_value") },
                 new ColorFormatParameter() { Parameter = "%Wh", Description = resourceLoader.GetString("Help_whiteness") },
                 new ColorFormatParameter() { Parameter = "%Bn", Description = resourceLoader.GetString("Help_blackness") },
-                new ColorFormatParameter() { Parameter = "%Ca", Description = resourceLoader.GetString("Help_chromaticityA") },
-                new ColorFormatParameter() { Parameter = "%Cb", Description = resourceLoader.GetString("Help_chromaticityB") },
+                new ColorFormatParameter() { Parameter = "%Lc", Description = resourceLoader.GetString("Help_lightnessCIE") },
+                new ColorFormatParameter() { Parameter = "%Ca", Description = resourceLoader.GetString("Help_chromaticityACIE") },
+                new ColorFormatParameter() { Parameter = "%Cb", Description = resourceLoader.GetString("Help_chromaticityBCIE") },
+                new ColorFormatParameter() { Parameter = "%Lo", Description = resourceLoader.GetString("Help_lightnessOklab") },
+                new ColorFormatParameter() { Parameter = "%Oa", Description = resourceLoader.GetString("Help_chromaticityAOklab") },
+                new ColorFormatParameter() { Parameter = "%Ob", Description = resourceLoader.GetString("Help_chromaticityBOklab") },
+                new ColorFormatParameter() { Parameter = "%Oc", Description = resourceLoader.GetString("Help_chromaOklch") },
+                new ColorFormatParameter() { Parameter = "%Oh", Description = resourceLoader.GetString("Help_hueOklch") },
                 new ColorFormatParameter() { Parameter = "%Xv", Description = resourceLoader.GetString("Help_X_value") },
                 new ColorFormatParameter() { Parameter = "%Yv", Description = resourceLoader.GetString("Help_Y_value") },
                 new ColorFormatParameter() { Parameter = "%Zv", Description = resourceLoader.GetString("Help_Z_value") },

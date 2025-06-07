@@ -5,6 +5,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -17,6 +18,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // Gets or sets a value indicating whether run powertoys on start-up.
         [JsonPropertyName("startup")]
         public bool Startup { get; set; }
+
+        // Gets or sets a value indicating whether the powertoys system tray icon should be hidden.
+        [JsonPropertyName("show_tray_icon")]
+        public bool ShowSysTrayIcon { get; set; }
 
         // Gets or sets a value indicating whether the powertoy elevated.
         [CmdConfigureIgnoreAttribute]
@@ -74,6 +79,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public GeneralSettings()
         {
             Startup = false;
+            ShowSysTrayIcon = true;
             IsAdmin = false;
             EnableWarningsElevatedApps = true;
             IsElevated = false;

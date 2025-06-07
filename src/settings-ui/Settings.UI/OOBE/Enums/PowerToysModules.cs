@@ -11,6 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         AlwaysOnTop,
         Awake,
         CmdNotFound,
+        CmdPal,
         ColorPicker,
         CropAndLock,
         EnvironmentVariables,
@@ -27,12 +28,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         QuickAccent,
         ShortcutGuide,
         TextExtractor,
-        VideoConference,
         MeasureTool,
         Hosts,
         Workspaces,
         WhatsNew,
         RegistryPreview,
         NewPlus,
+        ZoomIt,
     }
 }
