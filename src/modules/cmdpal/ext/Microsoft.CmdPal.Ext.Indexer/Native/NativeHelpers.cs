@@ -11,6 +11,7 @@ public sealed partial class NativeHelpers
     public const uint SEEMASKINVOKEIDLIST = 12;
 
     public const uint CLSCTXINPROCALL = 0x17;
+    public const uint CLSCTXLOCALSERVER = 0x4;
 
     public struct PropertyKeys
     {

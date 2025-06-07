@@ -4,7 +4,7 @@
     <PathToRoot>..\..\..\..\..\</PathToRoot>
     <WasdkNuget>$(PathToRoot)packages\Microsoft.WindowsAppSDK.1.7.250513003</WasdkNuget>
     <CppWinRTNuget>$(PathToRoot)packages\Microsoft.Windows.CppWinRT.2.0.240111.5</CppWinRTNuget>
-    <WindowsSdkBuildToolsNuget>$(PathToRoot)packages\Microsoft.Windows.SDK.BuildTools.10.0.22621.2428</WindowsSdkBuildToolsNuget>
+    <WindowsSdkBuildToolsNuget>$(PathToRoot)packages\Microsoft.Windows.SDK.BuildTools.10.0.26100.4188</WindowsSdkBuildToolsNuget>
     <WebView2Nuget>$(PathToRoot)packages\Microsoft.Web.WebView2.1.0.2903.40</WebView2Nuget>
   </PropertyGroup>
   <Import Project="$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('$(WasdkNuget)\build\native\Microsoft.WindowsAppSDK.props')" />
@@ -24,7 +24,7 @@
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <WindowsTargetPlatformMinVersion>10.0.19041.0</WindowsTargetPlatformMinVersion>
-    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <ItemGroup Label="ProjectConfigurations">
