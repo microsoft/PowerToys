@@ -5,6 +5,7 @@
 using System;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.UI.Xaml;
 
 namespace SamplePagesExtension;
 
@@ -127,6 +128,25 @@ internal sealed partial class SampleListPageWithDetails : ListPage
                                     new Tag("in") { Foreground = RandomColor(), Background = RandomColor() },
                                     new Tag("it") { Foreground = RandomColor(), Background = RandomColor() },
                                 ],
+                            },
+                        },
+                        new DetailsElement()
+                        {
+                            Key = "Commands",
+                            Data = new DetailsCommands()
+                            {
+                                Commands = [
+                                    new ToastCommand("Hey! You clicked it!", MessageState.Success)
+                                    {
+                                        Name = "Do something amazing",
+                                        Icon = new("\uE945"),
+                                    },
+                                    new ToastCommand("I warned you!", MessageState.Error)
+                                    {
+                                        Name = "Don't click me",
+                                        Icon = new("\uEA39"),
+                                    },
+                               ],
                             },
                         },
                     ],
