@@ -14,13 +14,10 @@ namespace Microsoft.CmdPal.Ext.Shell;
 
 internal sealed partial class FallbackExecuteItem : FallbackCommandItem
 {
-    public bool FoundExecutable { get; private set; }
-
     public FallbackExecuteItem(SettingsManager settings)
         : base(new NoOpCommand(), Resources.shell_command_display_title)
     {
         Title = string.Empty;
-
         Icon = Icons.RunV2;
     }
 
@@ -33,7 +30,6 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
         {
             Command = null;
             Title = string.Empty;
-            FoundExecutable = false;
             return;
         }
 
@@ -44,13 +40,13 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
 
         if (exeExists)
         {
+            // TODO we need to probably get rid of the settings for this provider entirely
             var exeItem = ShellListPage.CreateExeItems(exe, args, fullExePath);
             Title = exeItem.Title;
             Subtitle = exeItem.Subtitle;
             Icon = exeItem.Icon;
             Command = exeItem.Command;
             MoreCommands = exeItem.MoreCommands;
-            FoundExecutable = true;
         }
         else if (pathIsDir)
         {
@@ -60,14 +56,11 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
             Icon = pathItem.Icon;
             Command = pathItem.Command;
             MoreCommands = pathItem.MoreCommands;
-
-            FoundExecutable = true;
         }
         else
         {
             Command = null;
             Title = string.Empty;
-            FoundExecutable = false;
         }
     }
 
