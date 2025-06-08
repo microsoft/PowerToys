@@ -168,32 +168,38 @@ internal sealed partial class ShellListPage : DynamicListPage
         var directoryPath = string.Empty;
         var searchPattern = string.Empty;
 
-        // Easiest case: text is literally already a full directory
-        if (Directory.Exists(searchPath))
+        var startsWithQuote = searchPath.Length > 0 && searchPath[0] == '"';
+        var endsWithQuote = searchPath.Last() == '"';
+        var trimmed = (startsWithQuote && endsWithQuote) ? searchPath.Substring(1, searchPath.Length - 2) : searchPath;
+        var isDriveRoot = trimmed.Length == 2 && trimmed[1] == ':';
+
+        // we should also handle just drive roots, ala c:\ or d:\
+        // we need to handle this case first, because "C:" does exist, but we need to append the "\" in that case
+        if (isDriveRoot)
         {
-            directoryPath = searchPath;
+            directoryPath = trimmed + "\\";
+            searchPattern = $"*";
+        }
+
+        // Easiest case: text is literally already a full directory
+        else if (Directory.Exists(trimmed))
+        {
+            directoryPath = trimmed;
             searchPattern = $"*";
         }
 
         // Check if the search text is a valid path
-        else if (Path.IsPathRooted(searchPath) && Path.GetDirectoryName(searchPath) is string directoryName)
+        else if (Path.IsPathRooted(trimmed) && Path.GetDirectoryName(trimmed) is string directoryName)
         {
             directoryPath = directoryName;
-            searchPattern = $"{Path.GetFileName(searchPath)}*";
-        }
-
-        // we should also handle just drive roots, ala c:\ or d:\
-        else if (searchPath.Length == 2 && searchPath[1] == ':')
-        {
-            directoryPath = searchPath + "\\";
-            searchPattern = $"*";
+            searchPattern = $"{Path.GetFileName(trimmed)}*";
         }
 
         // Check if the search text is a valid UNC path
-        else if (searchPath.StartsWith(@"\\", System.StringComparison.CurrentCultureIgnoreCase) &&
-                 searchPath.Contains(@"\\"))
+        else if (trimmed.StartsWith(@"\\", System.StringComparison.CurrentCultureIgnoreCase) &&
+                 trimmed.Contains(@"\\"))
         {
-            directoryPath = searchPath;
+            directoryPath = trimmed;
             searchPattern = $"*";
         }
 
@@ -217,9 +223,14 @@ internal sealed partial class ShellListPage : DynamicListPage
             // Get all the files in the directory that start with the search text
             var files = Directory.GetFileSystemEntries(directoryPath, searchPattern);
 
-            var searchPathTrailer = searchPath.Remove(0, directoryPath.Length);
+            var searchPathTrailer = trimmed.Remove(0, Math.Min(directoryPath.Length, trimmed.Length));
             var originalBeginning = originalPath.Remove(originalPath.Length - searchPathTrailer.Length);
-            Debug.WriteLine($"  '{searchPath}'\n->'{searchPathTrailer.PadLeft(directoryPath.Length)}'\n->'{originalBeginning}'");
+            if (isDriveRoot)
+            {
+                originalBeginning = string.Concat(originalBeginning, '\\');
+            }
+
+            Debug.WriteLine($"  '{trimmed}'\n->'{searchPathTrailer.PadLeft(directoryPath.Length)}'\n->'{originalBeginning}'");
 
             // Create a list of commands for each file
             var commands = files.Select(f => PathToListItem(f, originalBeginning)).ToList();

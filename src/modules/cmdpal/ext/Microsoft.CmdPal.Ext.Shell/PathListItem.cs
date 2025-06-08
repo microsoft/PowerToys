@@ -30,11 +30,45 @@ internal sealed partial class PathListItem : ListItem
         Title = fileName;
         Subtitle = path;
 
-        var hasSpace = path.Contains(' ');
+        // NOTE ME:
+        // If there are spaces on originalDir, trim them off, BEFORE combining originalDir and fileName.
+        // THEN add quotes at the end
+        // var hasSpace = path.Contains(' ');
 
-        // var originalDir = Path.GetDirectoryName(originalSearch) ?? path;
-        var originalPath = Path.Combine(originalDir, fileName);
-        TextToSuggest = hasSpace ? string.Concat("\"", originalPath, "\"") : originalPath;
+        // // var originalDir = Path.GetDirectoryName(originalSearch) ?? path;
+        // var originalPath = Path.Combine(originalDir, fileName);
+        // var suggestion = originalPath;
+        // if (hasSpace)
+        // {
+        //     var startsWithQuote = originalDir.StartsWith("\"", StringComparison.CurrentCultureIgnoreCase);
+        //     var endsWithQuote = originalDir.EndsWith("\"", StringComparison.CurrentCultureIgnoreCase);
+        //     if (!startsWithQuote)
+        //     {
+        //         suggestion = string.Concat("\"", suggestion);
+        //     }
+        //
+        //     if (!endsWithQuote)
+        //     {
+        //         suggestion = string.Concat(suggestion, "\"");
+        //     }
+        // }
+
+        // NOTE ME:
+        // If there are spaces on originalDir, trim them off, BEFORE combining originalDir and fileName.
+        // THEN add quotes at the end
+
+        // Trim off leading & trailing quote, if there is one
+        var trimmed = originalDir.Trim('"');
+        var originalPath = Path.Combine(trimmed, fileName);
+        var suggestion = originalPath;
+        var hasSpace = originalPath.Contains(' ');
+        if (hasSpace)
+        {
+            // wrap it in quotes
+            suggestion = string.Concat("\"", suggestion, "\"");
+        }
+
+        TextToSuggest = suggestion;
         MoreCommands = [
             new CommandContextItem(new CopyTextCommand(path) { Name = "Copy path" }) { } // TODO:LOC
         ];
