@@ -77,21 +77,20 @@
                     <TextBlock
                         IsTextSelectionEnabled="True"
                         Text="{x:Bind Key, Mode=OneWay}"
-                        TextWrapping="WrapWholeWords" />
+                        TextWrapping="Wrap" />
                     <TextBlock
                         FontSize="12"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         IsTextSelectionEnabled="True"
                         Text="{x:Bind Text, Mode=OneWay}"
-                        TextWrapping="WrapWholeWords"
+                        TextWrapping="Wrap"
                         Visibility="{x:Bind IsText, Mode=OneWay}" />
                     <HyperlinkButton
                         Padding="0"
                         Content="{x:Bind Text, Mode=OneWay}"
                         FontSize="12"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
-                        Visibility="{x:Bind IsLink, Mode=OneWay}"
-                        TextWrapping="Wrap" />
+                        Visibility="{x:Bind IsLink, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="viewModels:DetailsCommandsViewModel">
