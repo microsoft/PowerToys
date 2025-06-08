@@ -35,6 +35,7 @@ public sealed partial class SearchBar : UserControl,
 
     private bool _inSuggestion;
     private string? _lastText;
+    private string? _deletedSuggestion;
 
     public PageViewModel? CurrentPageViewModel
     {
@@ -237,12 +238,15 @@ public sealed partial class SearchBar : UserControl,
                  e.Key == VirtualKey.Delete
                  )
             {
+                _deletedSuggestion = FilterBox.Text;
+
                 FilterBox.Text = _lastText ?? string.Empty;
                 FilterBox.Select(FilterBox.Text.Length, 0);
 
                 Logger.LogInfo("deleting suggestion");
                 _inSuggestion = false;
                 _lastText = null;
+
                 e.Handled = true;
                 return;
             }
@@ -392,18 +396,21 @@ public sealed partial class SearchBar : UserControl,
 
             if (clearSuggestion)
             {
+                _deletedSuggestion = null;
                 return;
+            }
+
+            if (suggestion == _deletedSuggestion)
+            {
+                return;
+            }
+            else
+            {
+                _deletedSuggestion = null;
             }
 
             var currentText = _lastText ?? FilterBox.Text;
 
-            // var isSubstring = suggestion.StartsWith(currentText, StringComparison.CurrentCultureIgnoreCase);
-
-            // if ()
-            // {
-            //    _lastText = null;
-            //    _inSuggestion = false;
-            // }
             _lastText = currentText;
 
             if (_inSuggestion)
@@ -418,11 +425,16 @@ public sealed partial class SearchBar : UserControl,
             _inSuggestion = true;
 
             var matchedChars = 0;
-            for (var i = 0; i < suggestion.Length && i < currentText.Length; i++)
+            var suggestionStartsWithQuote = suggestion.Length > 0 && suggestion[0] == '"';
+            var currentStartsWithQuote = currentText.Length > 0 && currentText[0] == '"';
+            var skipCheckingFirst = suggestionStartsWithQuote && !currentStartsWithQuote;
+            for (int i = skipCheckingFirst ? 1 : 0, j = 0;
+                 i < suggestion.Length && j < currentText.Length;
+                 i++, j++)
             {
                 if (string.Equals(
                     suggestion[i].ToString(),
-                    currentText[i].ToString(),
+                    currentText[j].ToString(),
                     StringComparison.OrdinalIgnoreCase))
                 {
                     matchedChars++;
@@ -433,19 +445,28 @@ public sealed partial class SearchBar : UserControl,
                 }
             }
 
-            var newText = string.Concat(currentText.AsSpan(0, matchedChars), suggestion.AsSpan(matchedChars));
+            var first = skipCheckingFirst ? "\"" : string.Empty;
+            var second = currentText.AsSpan(0, matchedChars);
+            var third = suggestion.AsSpan(matchedChars + (skipCheckingFirst ? 1 : 0));
+
+            var newText = string.Concat(
+                first,
+                second,
+                third);
+
             FilterBox.Text = newText;
 
-            FilterBox.Select(matchedChars, suggestion.Length - matchedChars);
-
-            // if (isSubstring)
-            // {
-            //    FilterBox.Select(currentText.Length, suggestion.Length - currentText.Length);
-            // }
-            // else
-            // {
-            //    FilterBox.SelectAll();
-            // }
+            var wrappedInQuotes = suggestionStartsWithQuote && suggestion.Last() == '"';
+            if (wrappedInQuotes)
+            {
+                FilterBox.Select(
+                    (skipCheckingFirst ? 1 : 0) + matchedChars, // matchedChars == 0 ? 1 : matchedChars,
+                    Math.Max(0, suggestion.Length - matchedChars - 1 + (skipCheckingFirst ? -1 : 0)));
+            }
+            else
+            {
+                FilterBox.Select(matchedChars, suggestion.Length - matchedChars);
+            }
         }));
     }
 }
