@@ -77,7 +77,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("CommunityToolkit.Mvvm.SourceGenerators.INotifyPropertyChangedGenerator", "MVVMTK0049:Using [INotifyPropertyChanged] is not AOT compatible for WinRT", Justification = "Updated MVVM toolkit package introduced this.", Scope = "type", Target = "~T:Peek.UI.Views.TitleBar")]
 [assembly: SuppressMessage("CommunityToolkit.Mvvm.SourceGenerators.ObservablePropertyGenerator", "MVVMTK0049:Using [INotifyPropertyChanged] is not AOT compatible for WinRT", Justification = "Updated MVVM toolkit package introduced this.", Scope = "namespaceanddescendants", Target = "RegistryPreviewUILib")]
 
-// HexBox control in RegistryPreviewUILib
+// HexBox control in RegistryPreviewUILib (We decided to copy the original code and not fix all theses problems for easier updating.)
 [assembly: SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "<Code port with style preservation>", Scope = "namespaceanddescendants", Target = "RegistryPreviewUILib.HexBox")]
 [assembly: SuppressMessage("Design", "CA1051:Do not declare visible instance fields", Justification = "<Code port with style preservation>", Scope = "namespaceanddescendants", Target = "RegistryPreviewUILib.HexBox")]
 [assembly: SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "<Code port with style preservation>", Scope = "namespaceanddescendants", Target = "RegistryPreviewUILib.HexBox")]
