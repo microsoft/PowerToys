@@ -14,6 +14,7 @@ AColumn
 acrt
 ACTIVATEAPP
 activationaction
+ACTIVATEOPTIONS
 ACVS
 adaptivecards
 ADate
@@ -788,6 +789,7 @@ LCIDTo
 Lclean
 Ldone
 Ldr
+LEFTALIGN
 LEFTSCROLLBAR
 LEFTTEXT
 LError
@@ -1589,6 +1591,7 @@ steamapps
 STGC
 STGM
 STGMEDIUM
+STGMREAD
 STICKYKEYS
 sticpl
 storelogo
@@ -1693,6 +1696,7 @@ TLayout
 tlb
 tlbimp
 tlc
+TGM
 TNP
 Toolhelp
 toolkitconverters
@@ -1996,3 +2000,15 @@ culori
 Evercoder
 LCh
 CIELCh
+CLSCTXINPROCALL
+IIDI
+irow
+lcid
+OTHERUNZOOM
+OTHERZOOM
+PARENTCLOSING
+PARENTOPENING
+ppwsz
+rguid
+SCROLLCHILDREN
+VARTYPE
