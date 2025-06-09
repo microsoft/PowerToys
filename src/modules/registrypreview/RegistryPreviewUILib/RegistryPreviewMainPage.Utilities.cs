@@ -970,7 +970,7 @@ namespace RegistryPreviewUILib
                     _updateWindowTitleFunction(_unsavedFileIndicator + currentTitle);
                 }
             }
-            else if (!unsavedChanges)
+            else
             {
                 saveButton.IsEnabled = false;
 
