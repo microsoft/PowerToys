@@ -243,7 +243,7 @@
             <controls:PageLink x:Uid="LearnMore_PowerPreview" Link="https://aka.ms/PowerToysOverview_FileExplorerAddOns" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://blog.aaron-junker.ch" Text="Aaron Junker's work on developer file preview" />
+            <controls:PageLink Link="https://noraajunker.ch" Text="Noraa Junker's work on developer file preview" />
             <controls:PageLink Link="https://www.pedrolamas.com" Text="Pedro Lamas's work on G-Code, STL, and QOI" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>

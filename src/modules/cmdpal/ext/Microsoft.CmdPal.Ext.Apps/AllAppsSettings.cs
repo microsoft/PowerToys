@@ -71,7 +71,7 @@ public class AllAppsSettings : JsonSettingsManager
 
     internal static string SettingsJsonPath()
     {
-        string directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
         // now, the state is just next to the exe

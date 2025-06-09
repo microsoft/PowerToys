@@ -629,4 +629,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             return iconInfoVM?.HasIcon(requestedTheme == Microsoft.UI.Xaml.ElementTheme.Light) ?? false;
         }
     }
+
+    private void Command_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (sender is Button button && button.DataContext is CommandViewModel commandViewModel)
+        {
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(commandViewModel.Model));
+        }
+    }
 }

@@ -5,6 +5,7 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -16,7 +17,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Programs;
 /// <summary>
 /// Provides access to NTFS reparse points in .Net.
 /// </summary>
-public static class ReparsePoint
+public static partial class ReparsePoint
 {
 #pragma warning disable SA1310 // Field names should not contain underscore
 
@@ -36,7 +37,7 @@ public static class ReparsePoint
 #pragma warning restore SA1310 // Field names should not contain underscore
 
     [Flags]
-    private enum FileAccessType : uint
+    internal enum FileAccessType : uint
     {
         DELETE = 0x00010000,
         READ_CONTROL = 0x00020000,
@@ -100,7 +101,7 @@ public static class ReparsePoint
     }
 
     [Flags]
-    private enum FileShareType : uint
+    internal enum FileShareType : uint
     {
         None = 0x00000000,
         Read = 0x00000001,
@@ -108,7 +109,7 @@ public static class ReparsePoint
         Delete = 0x00000004,
     }
 
-    private enum CreationDisposition : uint
+    internal enum CreationDisposition : uint
     {
         New = 1,
         CreateAlways = 2,
@@ -118,7 +119,7 @@ public static class ReparsePoint
     }
 
     [Flags]
-    private enum FileAttributes : uint
+    internal enum FileAttributes : uint
     {
         Readonly = 0x00000001,
         Hidden = 0x00000002,
@@ -195,8 +196,9 @@ public static class ReparsePoint
         public AppExecutionAliasReparseTagBufferLayoutVersion Version;
     }
 
-    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    private static extern bool DeviceIoControl(
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool DeviceIoControl(
         IntPtr hDevice,
         uint dwIoControlCode,
         IntPtr inBuffer,
@@ -206,8 +208,8 @@ public static class ReparsePoint
         out int pBytesReturned,
         IntPtr lpOverlapped);
 
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    private static extern IntPtr CreateFile(
+    [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    internal static partial int CreateFile(
         string lpFileName,
         FileAccessType dwDesiredAccess,
         FileShareType dwShareMode,
@@ -284,15 +286,18 @@ public static class ReparsePoint
                         ThrowLastWin32Error("Unable to get information about reparse point.");
                     }
 
-                    AppExecutionAliasReparseTagHeader aliasReparseHeader = Marshal.PtrToStructure<AppExecutionAliasReparseTagHeader>(outBuffer);
-
-                    if (aliasReparseHeader.ReparseTag == IO_REPARSE_TAG_APPEXECLINK)
+                    unsafe
                     {
-                        var metadata = AppExecutionAliasMetadata.FromPersistedRepresentationIntPtr(
-                            outBuffer,
-                            aliasReparseHeader.Version);
+                        var aliasReparseHeader = Unsafe.Read<AppExecutionAliasReparseTagHeader>((void*)outBuffer);
 
-                        return metadata.ExePath;
+                        if (aliasReparseHeader.ReparseTag == IO_REPARSE_TAG_APPEXECLINK)
+                        {
+                            var metadata = AppExecutionAliasMetadata.FromPersistedRepresentationIntPtr(
+                                outBuffer,
+                                aliasReparseHeader.Version);
+
+                            return metadata.ExePath;
+                        }
                     }
 
                     return null;
@@ -319,61 +324,65 @@ public static class ReparsePoint
 
         public static AppExecutionAliasMetadata FromPersistedRepresentationIntPtr(IntPtr reparseDataBufferPtr, AppExecutionAliasReparseTagBufferLayoutVersion version)
         {
-            var dataOffset = Marshal.SizeOf<AppExecutionAliasReparseTagHeader>();
-            var dataBufferPtr = reparseDataBufferPtr + dataOffset;
-
-            string? packageFullName = null;
-            string? packageFamilyName = null;
-            string? aumid = null;
-            string? exePath = null;
-
-            VerifyVersion(version);
-
-            switch (version)
+            unsafe
             {
-                case AppExecutionAliasReparseTagBufferLayoutVersion.Initial:
-                    packageFullName = Marshal.PtrToStringUni(dataBufferPtr);
-                    if (packageFullName is not null)
-                    {
-                        dataBufferPtr += Encoding.Unicode.GetByteCount(packageFullName) + Encoding.Unicode.GetByteCount("\0");
-                        aumid = Marshal.PtrToStringUni(dataBufferPtr);
+                var dataOffset = Unsafe.SizeOf<AppExecutionAliasReparseTagHeader>();
 
-                        if (aumid is not null)
+                var dataBufferPtr = reparseDataBufferPtr + dataOffset;
+
+                string? packageFullName = null;
+                string? packageFamilyName = null;
+                string? aumid = null;
+                string? exePath = null;
+
+                VerifyVersion(version);
+
+                switch (version)
+                {
+                    case AppExecutionAliasReparseTagBufferLayoutVersion.Initial:
+                        packageFullName = Marshal.PtrToStringUni(dataBufferPtr);
+                        if (packageFullName is not null)
                         {
-                            dataBufferPtr += Encoding.Unicode.GetByteCount(aumid) + Encoding.Unicode.GetByteCount("\0");
-                            exePath = Marshal.PtrToStringUni(dataBufferPtr);
+                            dataBufferPtr += Encoding.Unicode.GetByteCount(packageFullName) + Encoding.Unicode.GetByteCount("\0");
+                            aumid = Marshal.PtrToStringUni(dataBufferPtr);
+
+                            if (aumid is not null)
+                            {
+                                dataBufferPtr += Encoding.Unicode.GetByteCount(aumid) + Encoding.Unicode.GetByteCount("\0");
+                                exePath = Marshal.PtrToStringUni(dataBufferPtr);
+                            }
                         }
-                    }
 
-                    break;
+                        break;
 
-                case AppExecutionAliasReparseTagBufferLayoutVersion.PackageFamilyName:
-                case AppExecutionAliasReparseTagBufferLayoutVersion.MultiAppTypeSupport:
-                    packageFamilyName = Marshal.PtrToStringUni(dataBufferPtr);
+                    case AppExecutionAliasReparseTagBufferLayoutVersion.PackageFamilyName:
+                    case AppExecutionAliasReparseTagBufferLayoutVersion.MultiAppTypeSupport:
+                        packageFamilyName = Marshal.PtrToStringUni(dataBufferPtr);
 
-                    if (packageFamilyName is not null)
-                    {
-                        dataBufferPtr += Encoding.Unicode.GetByteCount(packageFamilyName) + Encoding.Unicode.GetByteCount("\0");
-                        aumid = Marshal.PtrToStringUni(dataBufferPtr);
-
-                        if (aumid is not null)
+                        if (packageFamilyName is not null)
                         {
-                            dataBufferPtr += Encoding.Unicode.GetByteCount(aumid) + Encoding.Unicode.GetByteCount("\0");
+                            dataBufferPtr += Encoding.Unicode.GetByteCount(packageFamilyName) + Encoding.Unicode.GetByteCount("\0");
+                            aumid = Marshal.PtrToStringUni(dataBufferPtr);
 
-                            exePath = Marshal.PtrToStringUni(dataBufferPtr);
+                            if (aumid is not null)
+                            {
+                                dataBufferPtr += Encoding.Unicode.GetByteCount(aumid) + Encoding.Unicode.GetByteCount("\0");
+
+                                exePath = Marshal.PtrToStringUni(dataBufferPtr);
+                            }
                         }
-                    }
 
-                    break;
+                        break;
+                }
+
+                return new AppExecutionAliasMetadata
+                {
+                    PackageFullName = packageFullName ?? string.Empty,
+                    PackageFamilyName = packageFamilyName ?? string.Empty,
+                    Aumid = aumid ?? string.Empty,
+                    ExePath = exePath ?? string.Empty,
+                };
             }
-
-            return new AppExecutionAliasMetadata
-            {
-                PackageFullName = packageFullName ?? string.Empty,
-                PackageFamilyName = packageFamilyName ?? string.Empty,
-                Aumid = aumid ?? string.Empty,
-                ExePath = exePath ?? string.Empty,
-            };
         }
 
         private static void VerifyVersion(AppExecutionAliasReparseTagBufferLayoutVersion version)

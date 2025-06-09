@@ -2,42 +2,75 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using ManagedCommon;
+using Microsoft.CmdPal.Ext.Apps.Utils;
+using Microsoft.UI.Xaml.Controls;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.Storage.Packaging.Appx;
 using Windows.Win32.System.Com;
-using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
 
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 public static class AppxPackageHelper
 {
-    private static readonly IAppxFactory AppxFactory = (IAppxFactory)new AppxFactory();
-
-    // This function returns a list of attributes of applications
-    internal static IEnumerable<IAppxManifestApplication> GetAppsFromManifest(IStream stream)
+    internal static unsafe List<IntPtr> GetAppsFromManifest(IStream* stream)
     {
-        var reader = AppxFactory.CreateManifestReader(stream);
-        var manifestApps = reader.GetApplications();
+        PInvoke.CoCreateInstance(typeof(AppxFactory).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out IAppxFactory* appxFactory).ThrowOnFailure();
+        using var handle = new SafeComHandle((IntPtr)appxFactory);
 
-        while (manifestApps.GetHasCurrent())
+        IAppxManifestReader* reader = null;
+        IAppxManifestApplicationsEnumerator* manifestApps = null;
+        var result = new List<IntPtr>();
+
+        appxFactory->CreateManifestReader(stream, &reader);
+        using var readerHandle = new SafeComHandle((IntPtr)reader);
+        reader->GetApplications(&manifestApps);
+        using var manifestAppsHandle = new SafeComHandle((IntPtr)manifestApps);
+
+        while (true)
         {
-            var manifestApp = manifestApps.GetCurrent();
-            var hr = manifestApp.GetStringValue("AppListEntry", out var appListEntry);
-            _ = CheckHRAndReturnOrThrow(hr, appListEntry);
-            if (appListEntry != "none")
+            manifestApps->GetHasCurrent(out var hasCurrent);
+            if (hasCurrent == false)
             {
-                yield return manifestApp;
+                break;
             }
 
-            manifestApps.MoveNext();
-        }
-    }
+            IAppxManifestApplication* manifestApp = null;
 
-    internal static T CheckHRAndReturnOrThrow<T>(HRESULT hr, T result)
-    {
-        if (hr != HRESULT.S_OK)
-        {
-            Marshal.ThrowExceptionForHR((int)hr);
+            try
+            {
+                manifestApps->GetCurrent(&manifestApp).ThrowOnFailure();
+
+                var hr = manifestApp->GetStringValue("AppListEntry", out var appListEntryPtr);
+                var appListEntry = ComFreeHelper.GetStringAndFree(hr, appListEntryPtr);
+
+                if (appListEntry != "none")
+                {
+                    result.Add((IntPtr)manifestApp);
+                }
+                else if (manifestApp != null)
+                {
+                    manifestApp->Release();
+                }
+            }
+            catch (Exception ex)
+            {
+                if (manifestApp != null)
+                {
+                    manifestApp->Release();
+                }
+
+                Logger.LogError($"Failed to get current application from manifest: {ex.Message}");
+            }
+
+            manifestApps->MoveNext(out var hasNext);
+            if (hasNext == false)
+            {
+                break;
+            }
         }
 
         return result;

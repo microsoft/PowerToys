@@ -18,6 +18,8 @@ public partial class DetailsDataTemplateSelector : DataTemplateSelector
 
     public DataTemplate? TagTemplate { get; set; }
 
+    public DataTemplate? CommandTemplate { get; set; }
+
     protected override DataTemplate? SelectTemplateCore(object item)
     {
         if (item is DetailsElementViewModel element)
@@ -27,6 +29,7 @@ public partial class DetailsDataTemplateSelector : DataTemplateSelector
             {
                 DetailsSeparatorViewModel => SeparatorTemplate,
                 DetailsLinkViewModel => LinkTemplate,
+                DetailsCommandsViewModel => CommandTemplate,
                 DetailsTagsViewModel => TagTemplate,
                 _ => null,
             };
