@@ -274,5 +274,7 @@ namespace WorkspacesEditor.Models
             CommandLineArguments = newCommandLineValue;
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppMainParams)));
         }
+
+        public string Version { get; set; }
     }
 }
