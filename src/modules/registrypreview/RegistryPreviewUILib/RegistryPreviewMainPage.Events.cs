@@ -81,7 +81,7 @@ namespace RegistryPreviewUILib
         }
 
         /// <summary>
-        /// Resets the editor content
+        /// New button action: Ask to save last changes and reset editor content to reg header only
         /// </summary>
         private async void NewButton_Click(object sender, RoutedEventArgs e)
         {
@@ -109,7 +109,7 @@ namespace RegistryPreviewUILib
                 switch (contentDialogResult)
                 {
                     case ContentDialogResult.Primary:
-                        // Save, then continue the file open
+                        // Save, then continue the new action
                         if (!AskFileName(string.Empty) ||
                             !SaveFile())
                         {
@@ -118,10 +118,10 @@ namespace RegistryPreviewUILib
 
                         break;
                     case ContentDialogResult.Secondary:
-                        // Don't save and continue the file open!
+                        // Don't save and continue the new action!
                         break;
                     default:
-                        // Don't open the new file!
+                        // Don't open the new action!
                         return;
                 }
             }
@@ -281,10 +281,10 @@ namespace RegistryPreviewUILib
                 switch (contentDialogResult)
                 {
                     case ContentDialogResult.Primary:
-                        // Don't save and continue the file open!
+                        // Don't save and continue the reload action!
                         break;
                     default:
-                        // Don't open the new file!
+                        // Don't continue the reload action!
                         return;
                 }
             }
@@ -360,7 +360,7 @@ namespace RegistryPreviewUILib
                 switch (contentDialogResult)
                 {
                     case ContentDialogResult.Primary:
-                        // Save, then continue the file open
+                        // Save, then continue the merge action
                         if (!AskFileName(string.Empty) ||
                             !SaveFile())
                         {
@@ -369,11 +369,11 @@ namespace RegistryPreviewUILib
 
                         break;
                     case ContentDialogResult.Secondary:
-                        // Don't save and continue the file open!
+                        // Don't save and continue the merge action!
                         UpdateUnsavedFileState(false);
                         break;
                     default:
-                        // Don't open the new file!
+                        // Don't merge the file!
                         return;
                 }
             }
