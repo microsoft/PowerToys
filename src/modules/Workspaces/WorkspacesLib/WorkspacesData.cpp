@@ -87,6 +87,7 @@ namespace WorkspacesData
                 const static wchar_t* MaximizedID = L"maximized";
                 const static wchar_t* PositionID = L"position";
                 const static wchar_t* MonitorID = L"monitor";
+                const static wchar_t* VersionID = L"version";
             }
 
             json::JsonObject ToJson(const WorkspacesProject::Application& data)
@@ -106,6 +107,7 @@ namespace WorkspacesData
                 json.SetNamedValue(NonLocalizable::MaximizedID, json::value(data.isMaximized));
                 json.SetNamedValue(NonLocalizable::PositionID, PositionJSON::ToJson(data.position));
                 json.SetNamedValue(NonLocalizable::MonitorID, json::value(data.monitor));
+                json.SetNamedValue(NonLocalizable::VersionID, json::value(data.version));
 
                 return json;
             }
@@ -286,6 +288,7 @@ namespace WorkspacesData
             const static wchar_t* MoveExistingWindowsID = L"move-existing-windows";
             const static wchar_t* MonitorConfigurationID = L"monitor-configuration";
             const static wchar_t* AppsID = L"applications";
+            const static wchar_t* Version = L"version";
         }
 
         json::JsonObject ToJson(const WorkspacesProject& data)
@@ -315,7 +318,6 @@ namespace WorkspacesData
             json.SetNamedValue(NonLocalizable::MoveExistingWindowsID, json::value(data.moveExistingWindows));
             json.SetNamedValue(NonLocalizable::MonitorConfigurationID, monitorsArray);
             json.SetNamedValue(NonLocalizable::AppsID, appsArray);
-            return json;
         }
 
         std::optional<WorkspacesProject> FromJson(const json::JsonObject& json)

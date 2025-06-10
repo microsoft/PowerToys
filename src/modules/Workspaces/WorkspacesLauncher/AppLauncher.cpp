@@ -174,12 +174,10 @@ namespace AppLauncher
 
             if (version >= 1)
             {
-                // Should launch directaly from appUserModelId first.
                 auto res = LaunchApp(L"shell:AppsFolder\\" + app.appUserModelId, app.commandLineArgs, app.isElevated);
                 if (res.isOk())
                 {
                     launched = true;
-                    Logger::trace("Successfully launched pwa apps through appusermodelid");
                 }
                 else
                 {
