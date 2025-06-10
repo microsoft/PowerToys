@@ -170,6 +170,11 @@ namespace WorkspacesData
 
                         result.position = position.value();
                     }
+
+                    if (json.HasKey(NonLocalizable::VersionID))
+                    {
+                        result.version = json.GetNamedString(NonLocalizable::VersionID);
+                    }
                 }
                 catch (const winrt::hresult_error&)
                 {
