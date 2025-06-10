@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
+using System.Text;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -23,6 +25,8 @@ internal sealed partial class CopyPathCommand : InvokableCommand
         _target = target;
     }
 
+    private static readonly CompositeFormat CopyFailedFormat = CompositeFormat.Parse(Resources.copy_failed);
+
     public override CommandResult Invoke()
     {
         try
@@ -32,9 +36,14 @@ internal sealed partial class CopyPathCommand : InvokableCommand
         catch (Exception ex)
         {
             Logger.LogError(ex.Message);
-            return CommandResult.ShowToast(Resources.copy_failed + ": " + ex.Message);
+            return CommandResult.ShowToast(
+                new ToastArgs
+                {
+                    Message = string.Format(CultureInfo.CurrentCulture, CopyFailedFormat, ex.Message),
+                    Result = CommandResult.KeepOpen(),
+                });
         }
 
-        return CommandResult.KeepOpen();
+        return CommandResult.ShowToast(Resources.copied_to_clipboard);
     }
 }

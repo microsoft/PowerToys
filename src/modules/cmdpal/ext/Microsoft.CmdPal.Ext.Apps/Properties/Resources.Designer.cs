@@ -79,7 +79,16 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy failed.
+        ///   Looks up a localized string similar to Copied to clipboard!.
+        /// </summary>
+        internal static string copied_to_clipboard {
+            get {
+                return ResourceManager.GetString("copied_to_clipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy failed ({0}). Please try again..
         /// </summary>
         internal static string copy_failed {
             get {
