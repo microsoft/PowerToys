@@ -16,8 +16,6 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 
-using MouseWithoutBorders.Core;
-
 // We are sure we dont have managed resource in KEYBDINPUT, IntPtr just holds a value
 [module: SuppressMessage("Microsoft.Design", "CA1049:TypesThatOwnNativeResourcesShouldBeDisposable", Scope = "type", Target = "MouseWithoutBorders.NativeMethods+KEYBDINPUT", Justification = "Dotnet port with style preservation")]
 
