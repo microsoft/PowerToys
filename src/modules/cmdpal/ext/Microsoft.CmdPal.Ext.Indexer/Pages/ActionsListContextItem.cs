@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Indexer.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Data;
@@ -18,6 +19,7 @@ internal sealed partial class ActionsListContextItem : CommandContextItem
 {
     private readonly string fullPath;
     private readonly List<CommandContextItem> actions = [];
+    private static readonly Lock UpdateMoreCommandsLock = new();
     private static ActionRuntime actionRuntime;
 
     public ActionsListContextItem(string fullPath)
@@ -41,14 +43,17 @@ internal sealed partial class ActionsListContextItem : CommandContextItem
     {
         try
         {
-            if (actionRuntime == null)
+            lock (UpdateMoreCommandsLock)
             {
-                actionRuntime = ActionRuntimeFactory.CreateActionRuntime();
-                Task.Delay(500).Wait();
-            }
+                if (actionRuntime == null)
+                {
+                    actionRuntime = ActionRuntimeFactory.CreateActionRuntime();
+                    Task.Delay(500).Wait();
+                }
 
-            actionRuntime.ActionCatalog.Changed -= ActionCatalog_Changed;
-            actionRuntime.ActionCatalog.Changed += ActionCatalog_Changed;
+                actionRuntime.ActionCatalog.Changed -= ActionCatalog_Changed;
+                actionRuntime.ActionCatalog.Changed += ActionCatalog_Changed;
+            }
 
             var extension = System.IO.Path.GetExtension(fullPath).ToLower(CultureInfo.InvariantCulture);
             ActionEntity entity = null;
