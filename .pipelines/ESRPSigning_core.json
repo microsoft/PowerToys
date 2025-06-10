@@ -221,6 +221,7 @@
 
                 "PowerToys.CmdPalModuleInterface.dll",
                 "CmdPalKeyboardService.dll",
+                "CmdPalCalculator.dll",
                 "*Microsoft.CmdPal.UI_*.msix"
             ],
             "SigningInfo": {

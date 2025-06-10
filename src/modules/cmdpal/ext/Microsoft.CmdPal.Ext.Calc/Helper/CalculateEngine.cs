@@ -7,16 +7,19 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using CmdPalCalculator;
+using Windows.Foundation.Collections;
 
 namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
 public static class CalculateEngine
 {
-    private static readonly Calculator _calculator = new Calculator(new Dictionary<string, double>
-        {
-            { "pi", Math.PI },
-            { "e", Math.E },
-        });
+    private static readonly PropertySet _constants = new()
+    {
+        { "pi", Math.PI },
+        { "e", Math.E },
+    };
+
+    private static readonly Calculator _calculator = new Calculator(_constants);
 
     public const int RoundingDigits = 10;
 

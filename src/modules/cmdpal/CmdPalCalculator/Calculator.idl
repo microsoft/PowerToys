@@ -4,7 +4,7 @@ namespace CmdPalCalculator
     runtimeclass Calculator
     {
         Calculator();
-        Calculator(IMap<String, Double> constants);
+        Calculator(Windows.Foundation.Collections.IPropertySet constants);
         String EvaluateExpression(String expression);
     }
 }

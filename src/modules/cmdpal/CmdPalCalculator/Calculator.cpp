@@ -5,11 +5,13 @@
 
 namespace winrt::CmdPalCalculator::implementation
 {
-    Calculator::Calculator(Windows::Foundation::Collections::IMap<hstring, double> const& constants)
+    Calculator::Calculator(winrt::Windows::Foundation::Collections::IPropertySet const& constants)
     {
-        for (auto const& [k, v] : constants)
+        for (auto const& pair : constants)
         {
-            m_constants.emplace(k.c_str(), v);
+            auto key = pair.Key();
+            auto value = winrt::unbox_value<double>(pair.Value());
+            m_constants.emplace(key.c_str(), value);
         }
     }
 

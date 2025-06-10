@@ -3,7 +3,7 @@
   <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
   <Target Name="BuildCmdPalCalculator" BeforeTargets="Build">
     <MSBuild
-        Projects="$(SolutionDir)src\modules\cmdpal\CmdPalCalculator\CmdPalCalculator.vcxproj"
+        Projects="..\..\CmdPalCalculator\CmdPalCalculator.vcxproj"
         Targets="Build"
         Properties="Configuration=$(Configuration);Platform=$(Platform)" />
   </Target>
@@ -26,11 +26,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <CsWinRTInputs Include="..\..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\CmdPalCalculator.winmd" />
-    <Content Include="..\..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\CmdPalCalculator.winmd" Link="CmdPalCalculator.winmd">
+    <CsWinRTInputs Include="..\..\..\..\..\$(Platform)\$(Configuration)\CmdPalCalculator.winmd" />
+    <Content Include="..\..\..\..\..\$(Platform)\$(Configuration)\CmdPalCalculator.winmd" Link="CmdPalCalculator.winmd">
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</Content>
-    <Content Include="..\..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\CmdPalCalculator.dll">
+    <Content Include="..\..\..\..\..\$(Platform)\$(Configuration)\CmdPalCalculator.dll">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
