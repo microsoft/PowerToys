@@ -1013,7 +1013,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool EasyMouseEnabled => (EasyMouseOption)EasyMouseOptionIndex != EasyMouseOption.Disable;
 
-        public bool EasyMouseEnabledAndDisableOnFullscreen =>
+        public bool IsEasyMouseBlockingOnFullscreenEnabled =>
             EasyMouseEnabled && DisableEasyMouseWhenForegroundWindowIsFullscreen;
 
         public bool DisableEasyMouseWhenForegroundWindowIsFullscreen

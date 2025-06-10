@@ -294,7 +294,7 @@
                     <tkcontrols:SettingsExpander
                         x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
-                        IsEnabled="{x:Bind ViewModel.EasyMouseEnabledAndDisableOnFullscreen, Mode=OneWay}"
+                        IsEnabled="{x:Bind ViewModel.IsEasyMouseBlockingOnFullscreenEnabled, Mode=OneWay}"
                         IsExpanded="False">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
