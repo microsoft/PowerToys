@@ -5,130 +5,74 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
 [Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF63")]
-[InterfaceType(1)]
-[ComImport]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1212:Property accessors should follow order", Justification = "The order of the property accessors must match the order in which the methods were defined in the vtable")]
-public interface ISearchQueryHelper
+[GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "I don't want to change the name")]
+public partial interface ISearchQueryHelper
 {
-    [DispId(1610678272)]
-    string ConnectionString
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-    }
+    string GetConnectionString();
 
-    [DispId(1610678273)]
-    uint QueryContentLocale
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [param: In]
-        set;
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        get;
-    }
+    void SetQueryContentLocale(int lcid);
 
-    [DispId(1610678275)]
-    uint QueryKeywordLocale
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [param: In]
-        set;
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        get;
-    }
+    uint GetQueryContentLocale();
 
-    [DispId(1610678277)]
-    object QueryTermExpansion
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [param: In]
-        set;
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        get;
-    }
+    void SetQueryKeywordLocale(int lcid);
 
-    [DispId(1610678279)]
-    object QuerySyntax
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [param: In]
-        set;
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        get;
-    }
+    uint GetQueryKeywordLocale();
 
-    [DispId(1610678281)]
-    string QueryContentProperties
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [param: MarshalAs(UnmanagedType.LPWStr)]
-        [param: In]
-        set;
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-    }
+    void SetQueryTermExpansion(SEARCH_TERM_EXPANSION expandTerms);
 
-    [DispId(1610678283)]
-    string QuerySelectColumns
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [param: MarshalAs(UnmanagedType.LPWStr)]
-        [param: In]
-        set;
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-    }
+    void GetQueryTermExpansion(out SEARCH_TERM_EXPANSION pExpandTerms);
 
-    [DispId(1610678285)]
-    string QueryWhereRestrictions
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [param: MarshalAs(UnmanagedType.LPWStr)]
-        [param: In]
-        set;
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-    }
+    void SetQuerySyntax(SEARCH_QUERY_SYNTAX querySyntax);
 
-    [DispId(1610678287)]
-    string QuerySorting
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [param: MarshalAs(UnmanagedType.LPWStr)]
-        [param: In]
-        set;
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-    }
+    [return: MarshalAs(UnmanagedType.Interface)]
+    object GetQuerySyntax();
 
-    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-    [return: MarshalAs(UnmanagedType.LPWStr)]
-    string GenerateSQLFromUserQuery([MarshalAs(UnmanagedType.LPWStr), In] string pszQuery);
+    void SetQueryContentProperties(string pszContentProperties);
 
-    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+    string GetQueryContentProperties();
+
+    void SetQuerySelectColumns(string pszColumns);
+
+    string GetQuerySelectColumns();
+
+    void SetQueryWhereRestrictions(string pszRestrictions);
+
+    string GetQueryWhereRestrictions();
+
+    void SetQuerySorting(string pszSorting);
+
+    string GetQuerySorting();
+
+    string GenerateSQLFromUserQuery(string pszQuery);
+
     void WriteProperties(
-      [In] int itemID,
-      [In] uint dwNumberOfColumns,
-      [In] ref object pColumns,
-      [In] ref object pValues,
-      [In] ref object pftGatherModifiedTime);
+      int itemID,
+      uint dwNumberOfColumns,
+      [MarshalAs(UnmanagedType.Interface)] ref object pColumns,
+      [MarshalAs(UnmanagedType.Interface)] ref object pValues,
+      [MarshalAs(UnmanagedType.Interface)] ref object pftGatherModifiedTime);
 
-    [DispId(1610678291)]
-    int QueryMaxResults
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [param: In]
-        set;
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        get;
-    }
+    void SetQueryMaxResults(int lMaxResults);
+
+    int GetQueryMaxResults();
+}
+
+public enum SEARCH_TERM_EXPANSION
+{
+    SEARCH_TERM_NO_EXPANSION,
+    SEARCH_TERM_PREFIX_ALL,
+    SEARCH_TERM_STEM_ALL,
+}
+
+public enum SEARCH_QUERY_SYNTAX
+{
+    SEARCH_NO_QUERY_SYNTAX,
+    SEARCH_ADVANCED_QUERY_SYNTAX,
+    SEARCH_NATURAL_QUERY_SYNTAX,
 }
