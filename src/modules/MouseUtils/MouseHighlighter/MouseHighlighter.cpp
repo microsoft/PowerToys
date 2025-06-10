@@ -295,7 +295,14 @@ void Highlighter::ClearDrawingPoint(MouseButton _button)
     // always
     circleShape = m_alwaysPointer;
 
-    circleShape.FillBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+    if (m_spotlightMode)
+    {
+        circleShape.StrokeBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+    }
+    else
+    {
+        circleShape.FillBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+    }
 }
 
 void Highlighter::ClearDrawing()
