@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
-
+using ManagedCommon;
 using Windows.Management.Deployment;
 
 // using Wox.Plugin.Logger;
@@ -41,6 +41,7 @@ public class TerminalQuery : ITerminalQuery
         {
             // TODO: what kind of logging should we do?
             // Log.Warn($"No Windows Terminal packages installed", typeof(TerminalQuery));
+            Logger.LogWarning("No Windows Terminal packages installed");
         }
 
         foreach (var terminal in Terminals)
@@ -49,6 +50,7 @@ public class TerminalQuery : ITerminalQuery
             {
                 // TODO: what kind of logging should we do?
                 // Log.Warn($"Failed to find settings file {terminal.SettingsPath}", typeof(TerminalQuery));
+                Logger.LogWarning($"Failed to find settings file {terminal.SettingsPath}");
                 continue;
             }
 

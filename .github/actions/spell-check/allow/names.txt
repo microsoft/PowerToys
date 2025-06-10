@@ -48,8 +48,8 @@ betsegaw
 bricelam
 bsky
 CCcat
-chenmy
 chemwolf
+chenmy
 Chinh
 chrdavis
 Chrzan
@@ -67,8 +67,8 @@ Deondre
 DHowett
 ductdo
 Essey
-Feng
 ethanfangg
+Feng
 ferraridavide
 foxmsft
 frankychen
@@ -79,6 +79,7 @@ Galaxi
 Garside
 Gershaft
 Giordani
+Gleb
 Gokce
 gordon
 Griese
@@ -97,6 +98,7 @@ Huynh
 Ionut
 jamrobot
 Jaswal
+Jaylyn
 jefflord
 Jordi
 jyuwono
@@ -107,6 +109,7 @@ Kantarci
 Karthick
 kaylacinnamon
 kevinguo
+Khmyznikov
 Krigun
 Lambson
 Laute
@@ -129,6 +132,8 @@ Naro
 nathancartlidge
 Nemeth
 nielslaute
+Noraa
+noraajunker
 oldnewthing
 onegreatworld
 palenshus
@@ -148,11 +153,13 @@ ricardosantos
 riri
 ritchielawrence
 robmikh
+ruslanlap
 Russinovich
 Rutkas
 ryanbodrug
 saahmedm
 sachaple
+Sameerjs
 Santossio
 Schoen
 Sekan
@@ -171,6 +178,7 @@ TBM
 tilovell
 Triet
 urnotdfs
+vednig
 waaverecords
 wang
 Whuihuan
@@ -189,9 +197,6 @@ zhaopy
 zhaoqpcn
 Zoltan
 Zykova
-Sameerjs
-ruslanlap
-vednig
 
 # OTHERS
 
