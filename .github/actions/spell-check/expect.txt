@@ -470,6 +470,8 @@ EXPCMDFLAGS
 EXPCMDSTATE
 explr
 exppowertoys
+exprtk
+Exprtk
 exptas
 exsb
 exstyle

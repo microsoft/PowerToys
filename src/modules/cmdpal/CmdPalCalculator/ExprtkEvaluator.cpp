@@ -24,7 +24,7 @@ namespace ExprtkCalculator::internal
     }
 
     std::wstring EvaluateExpression(
-        const std::wstring& wexpr,
+        const std::wstring& expressionText,
         const std::unordered_map<std::wstring, double>& constants)
     {
         exprtk::symbol_table<double> symbol_table;
@@ -38,7 +38,7 @@ namespace ExprtkCalculator::internal
         expression.register_symbol_table(symbol_table);
 
         exprtk::parser<double> parser;
-        if (!parser.compile(WStringToAscii(wexpr), expression))
+        if (!parser.compile(WStringToAscii(expressionText), expression))
             return L"NaN";
 
         return ToWStringFullPrecision(expression.value());

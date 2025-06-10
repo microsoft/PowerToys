@@ -8,7 +8,7 @@ namespace winrt::CmdPalCalculator::implementation
     {
         Calculator() = default;
 
-        Calculator(Windows::Foundation::Collections::IMap<hstring, double> const& constants);
+        Calculator(winrt::Windows::Foundation::Collections::IPropertySet const& constants);
 
         winrt::hstring EvaluateExpression(winrt::hstring const& expression);
 

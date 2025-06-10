@@ -66,7 +66,7 @@
   </ImportGroup>
   <PropertyGroup>
     <TargetName>CmdPalCalculator</TargetName>
-    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+    <OutDir>..\..\..\..\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
