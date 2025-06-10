@@ -1,0 +1,10 @@
+namespace CmdPalCalculator
+{
+    [default_interface]
+    runtimeclass Calculator
+    {
+        Calculator();
+        Calculator(IMap<String, Double> constants);
+        String EvaluateExpression(String expression);
+    }
+}
