@@ -281,7 +281,7 @@
                     <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen"
                         IsEnabled="{x:Bind ViewModel.EasyMouseEnabled, Mode=OneWay}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
-                        <ToggleSwitch x:Uid="MouseMouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ToggleSwitch"
+                        <ToggleSwitch x:Uid="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_ToggleSwitch"
                                       IsOn="{x:Bind ViewModel.DisableEasyMouseWhenForegroundWindowIsFullscreen, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
