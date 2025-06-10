@@ -169,7 +169,20 @@ namespace AppLauncher
 
             if (app.version != L"")
             {
-                version = std::stoi(app.version);
+                try
+                {
+                    version = std::stoi(app.version);
+                }
+                catch (const std::invalid_argument&)
+                {
+                    Logger::error(L"Invalid version format: {}", app.version);
+                    version = 0;
+                }
+                catch (const std::out_of_range&)
+                {
+                    Logger::error(L"Version out of range: {}", app.version);
+                    version = 0;
+                }
             }
 
             if (version >= 1)
