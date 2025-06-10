@@ -318,6 +318,7 @@ namespace WorkspacesData
             json.SetNamedValue(NonLocalizable::MoveExistingWindowsID, json::value(data.moveExistingWindows));
             json.SetNamedValue(NonLocalizable::MonitorConfigurationID, monitorsArray);
             json.SetNamedValue(NonLocalizable::AppsID, appsArray);
+            return json;
         }
 
         std::optional<WorkspacesProject> FromJson(const json::JsonObject& json)
