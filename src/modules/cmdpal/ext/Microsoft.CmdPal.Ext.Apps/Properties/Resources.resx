@@ -163,11 +163,17 @@
   <data name="open_location" xml:space="preserve">
     <value>Open location</value>
   </data>
+  <data name="copy_path" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
   <data name="run_as_administrator" xml:space="preserve">
     <value>Run as administrator</value>
   </data>
   <data name="run_as_different_user" xml:space="preserve">
     <value>Run as different user</value>
+  </data>
+  <data name="copy_failed" xml:space="preserve">
+    <value>Copy failed</value>
   </data>
   <data name="enable_start_menu_source" xml:space="preserve">
     <value>Include apps found in the Start Menu</value>

@@ -79,6 +79,24 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy failed.
+        /// </summary>
+        internal static string copy_failed {
+            get {
+                return ResourceManager.GetString("copy_failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy path.
+        /// </summary>
+        internal static string copy_path {
+            get {
+                return ResourceManager.GetString("copy_path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Include apps found on the desktop.
         /// </summary>
         internal static string enable_desktop_source {
