@@ -6,20 +6,17 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-
-using Mages.Core;
+using CmdPalCalculator;
 
 namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
 public static class CalculateEngine
 {
-    private static readonly Engine _magesEngine = new Engine(new Configuration
-    {
-        Scope = new Dictionary<string, object>
+    private static readonly Calculator _calculator = new Calculator(new Dictionary<string, double>
         {
-            { "e", Math.E }, // e is not contained in the default mages engine
-        },
-    });
+            { "pi", Math.PI },
+            { "e", Math.E },
+        });
 
     public const int RoundingDigits = 10;
 
@@ -68,28 +65,23 @@ public static class CalculateEngine
         // Expand conversions between trig units
         input = CalculateHelper.ExpandTrigConversions(input, trigMode);
 
-        var result = _magesEngine.Interpret(input);
+        var result = _calculator.EvaluateExpression(input);
 
         // This could happen for some incorrect queries, like pi(2)
-        if (result == null)
+        if (result == "NaN")
         {
             error = Properties.Resources.calculator_expression_not_complete;
             return default;
         }
 
-        result = TransformResult(result);
-        if (result is string)
-        {
-            error = result as string;
-            return default;
-        }
-
-        if (string.IsNullOrEmpty(result?.ToString()))
+        if (string.IsNullOrEmpty(result))
         {
             return default;
         }
 
         var decimalResult = Convert.ToDecimal(result, cultureInfo);
+        var formatted = decimalResult.ToString("G29", cultureInfo);
+        decimalResult = Convert.ToDecimal(formatted, cultureInfo);
         var roundedResult = Round(decimalResult);
 
         return new CalculateResult()
@@ -102,26 +94,5 @@ public static class CalculateEngine
     public static decimal Round(decimal value)
     {
         return Math.Round(value, RoundingDigits, MidpointRounding.AwayFromZero);
-    }
-
-    private static dynamic TransformResult(object result)
-    {
-        if (result.ToString() == "NaN")
-        {
-            return Properties.Resources.calculator_not_a_number;
-        }
-
-        if (result is Function)
-        {
-            return Properties.Resources.calculator_expression_not_complete;
-        }
-
-        if (result is double[,])
-        {
-            // '[10,10]' is interpreted as array by mages engine
-            return Properties.Resources.calculator_double_array_returned;
-        }
-
-        return result;
     }
 }

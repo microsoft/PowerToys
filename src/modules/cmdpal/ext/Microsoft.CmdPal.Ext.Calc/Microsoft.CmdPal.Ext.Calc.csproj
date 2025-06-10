@@ -1,6 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+  <Target Name="BuildCmdPalCalculator" BeforeTargets="Build">
+    <MSBuild
+        Projects="$(SolutionDir)src\modules\cmdpal\CmdPalCalculator\CmdPalCalculator.vcxproj"
+        Targets="Build"
+        Properties="Configuration=$(Configuration);Platform=$(Platform)" />
+  </Target>
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.Calc</RootNamespace>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
@@ -9,13 +15,24 @@
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>Microsoft.CmdPal.Ext.Calc.pri</ProjectPriFileName>
   </PropertyGroup>
+  <PropertyGroup>
+    <CsWinRTIncludes>CmdPalCalculator</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mages" />
+    <CsWinRTInputs Include="..\..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\CmdPalCalculator.winmd" />
+    <Content Include="..\..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\CmdPalCalculator.winmd" Link="CmdPalCalculator.winmd">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>
+    <Content Include="..\..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps\CmdPalCalculator.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
