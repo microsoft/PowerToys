@@ -139,7 +139,7 @@
     <value>Open with</value>
   </data>
   <data name="Indexer_Command_Actions" xml:space="preserve">
-    <value>Actions</value>
+    <value>Actions...</value>
   </data>
   <data name="Indexer_Command_ShowInFolder" xml:space="preserve">
     <value>Show in folder</value>
