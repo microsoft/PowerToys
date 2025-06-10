@@ -65,7 +65,6 @@
                         Background="Transparent"
                         Header3FontSize="12"
                         Header3FontWeight="Normal"
-                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         IsTextSelectionEnabled="True"
                         Text="{x:Bind Body, Mode=OneWay}" />
                 </Grid>
