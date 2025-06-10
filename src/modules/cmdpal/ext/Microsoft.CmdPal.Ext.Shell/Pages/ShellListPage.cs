@@ -22,6 +22,7 @@ internal sealed partial class ShellListPage : DynamicListPage
     private readonly List<ListItem> _topLevelItems = [];
     private readonly List<ListItem> _historyItems = [];
     private List<ListItem> _pathItems = [];
+    private ListItem? _uriItem;
 
     public ShellListPage(SettingsManager settingsManager, bool addBuiltins = false)
     {
@@ -40,24 +41,8 @@ internal sealed partial class ShellListPage : DynamicListPage
 
         if (addBuiltins)
         {
-            var allAppsCommandItem = new ListItem(new NoOpCommand()
-            {
-                Name = "Open",
-                Icon = IconHelpers.FromRelativePath("Assets\\AllApps.svg"),
-            })
-            {
-                Title = "All apps",
-                Subtitle = "Search installed apps",
-            };
-            var calculatorCommandItem = new ListItem(new NoOpCommand()
-            {
-                Name = "Open",
-                Icon = IconHelpers.FromRelativePath("Assets\\Calculator.png"),
-            })
-            {
-                Title = "Calculator",
-                Subtitle = "Press = to type an equation",
-            };
+            // here, we _could_ add built-in providers if we wanted. links to apps, calc, etc.
+            // That would be a truly run-first experience
         }
     }
 
@@ -74,8 +59,6 @@ internal sealed partial class ShellListPage : DynamicListPage
 
         var expanded = Environment.ExpandEnvironmentVariables(searchText);
         Debug.WriteLine($"Run: searchText={searchText} -> expanded={expanded}");
-
-        // searchText = expanded;
 
         // _historyItems = _helper.Query(searchText);
         // _historyItems.ForEach(i =>
@@ -120,6 +103,8 @@ internal sealed partial class ShellListPage : DynamicListPage
             _exeItems.Clear();
         }
 
+        CreateUriItems(searchText);
+
         RaiseItemsChanged();
     }
 
@@ -131,24 +116,23 @@ internal sealed partial class ShellListPage : DynamicListPage
     public override IListItem[] GetItems()
     {
         var filteredTopLevel = ListHelpers.FilterList(_topLevelItems, SearchText);
+        List<ListItem> uriItems = _uriItem != null ? [_uriItem] : [];
         return
             _exeItems
             .Concat(filteredTopLevel)
             .Concat(_historyItems)
             .Concat(_pathItems)
+            .Concat(uriItems)
             .ToArray();
     }
 
     internal static RunExeItem CreateExeItems(string exe, string args, string fullExePath)
     {
-        // var command = new AnonymousCommand(() => { ShellHelpers.OpenInShell(exe, args); }) { Result = CommandResult.Dismiss() };
         var exeItem = new RunExeItem(exe, args, fullExePath);
 
         var pathItem = PathToListItem(fullExePath, exe);
         exeItem.MoreCommands = [
             .. exeItem.MoreCommands,
-
-            // new CommandContextItem(pathItem.Command!),
             .. pathItem.MoreCommands];
 
         return exeItem;
@@ -208,8 +192,8 @@ internal sealed partial class ShellListPage : DynamicListPage
 
         // searchPath is fully expanded, and originalPath is not. We might get:
         // * original: X%Y%Z\partial
-        // * search: XfooZ\partial
-        // and we want the result `XfooZ\partialOne` to use the suggestion `X%Y%Z\partialOne`
+        // * search: X_foo_Z\partial
+        // and we want the result `X_foo_Z\partialOne` to use the suggestion `X%Y%Z\partialOne`
         //
         // To do this:
         // * Get the directoryPath
@@ -274,7 +258,6 @@ internal sealed partial class ShellListPage : DynamicListPage
             var firstSpaceIndex = input.IndexOf(' ');
             if (firstSpaceIndex > 0)
             {
-                // executable = string.Concat("\"", input.AsSpan(0, firstSpaceIndex), "\"");
                 executable = input.Substring(0, firstSpaceIndex);
                 arguments = input[(firstSpaceIndex + 1)..].TrimStart();
             }
@@ -283,5 +266,20 @@ internal sealed partial class ShellListPage : DynamicListPage
                 executable = input;
             }
         }
+    }
+
+    internal void CreateUriItems(string searchText)
+    {
+        if (!System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
+        {
+            _uriItem = null;
+            return;
+        }
+
+        var command = new OpenUrlCommand(searchText) { Result = CommandResult.Dismiss() };
+        _uriItem = new ListItem(command)
+        {
+            Title = searchText,
+        };
     }
 }

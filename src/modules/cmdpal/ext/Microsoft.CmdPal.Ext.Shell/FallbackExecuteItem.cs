@@ -57,6 +57,11 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem
             Command = pathItem.Command;
             MoreCommands = pathItem.MoreCommands;
         }
+        else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
+        {
+            Command = new OpenUrlCommand(searchText) { Result = CommandResult.Dismiss() };
+            Title = searchText;
+        }
         else
         {
             Command = null;
