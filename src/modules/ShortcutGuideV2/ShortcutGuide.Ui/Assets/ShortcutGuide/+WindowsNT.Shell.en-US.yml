@@ -1,0 +1,778 @@
+PackageName: +WindowsNT.Shell
+WindowFilter: "*"
+BackgroundProcess: true
+Shortcuts:
+  - SectionName: Desktop Shortcuts
+    Properties:
+      - Name: Close active window
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - F4
+      - Name: Open shutdown box
+        Description: When no windows are open
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - F4
+      - Name: Cycle through open Windows
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Esc
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Esc
+      - Name: Reveal typed password
+        Description: On sign-in screen
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - F8
+      - Name: Go back
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "<Left>"
+      - Name: Go forward
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "<Right>"
+      - Name: Move up one screen
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "<Page Up>"
+      - Name: Move down one screen
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "<Page Down>"
+      - Name: Window context menu
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - Space
+      - Name: Switch between open apps 
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - Tab
+        Description: While pressing Tab multiple times
+      - Name: Run command
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "<Underlined letter>"
+        Description: for the underlined letter in the app
+      - Name: View open apps
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - Tab
+      - Name: Change start menu size
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Arrow>"
+      - Name: Move cursor
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<ArrowLR>"
+        Description: To the beginning or end of a word
+      - Name: Switch keyboard layout
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - ""
+      - Name: Select block of text
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - "<Arrow>"
+      - Name: Open Task Manager
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - Esc
+      - Name: Enable/Disable Chinese IME
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - Space
+      - Name: Open context menu
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - F10
+        Description: For the selected item
+  - SectionName: Virtual desktop
+    Properties:
+      - Name: Open task view
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Tab
+      - Name: Add a virtual desktop
+        Shortcut:
+          - Win: true
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - D
+      - Name: Close current desktop
+        Shortcut:
+          - Win: true
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - F4
+        Recommended: true
+      - Name: Switch desktop
+        Shortcut:
+          - Win: true
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<ArrowLR>"
+  - SectionName: "Windows key"
+    Properties:
+      - Name: Open start menu
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - ""
+        Recommended: true
+      - Name: Open Action Center
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "A"
+      - Name: Open Date and Time
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "D"
+      - Name: Focus on the notification area
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "B"
+      - Name: Open narrator
+        Shortcut:
+          - Win: true
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "Enter"
+      - Name: Open domain search
+        Shortcut:
+          - Win: true
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "F"
+      - Name: Open Quick Assist
+        Shortcut:
+          - Win: true
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "Q"
+      - Name: Wake up device
+        Shortcut:
+          - Win: true
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - "B"
+        Description: When black or a blank screen.
+      - Name: Change input option
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "Space"
+        Description: To next option
+      - Name: Change input option
+        Shortcut:
+          - Win: true
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "Space"
+        Description: To previous option
+      - Name: Display/Hide desktop
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "D"
+      - Name: Minimize the active window
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "Down"
+      - Name: Open file Explorer
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "E"
+      - Name: Close Magnifier
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "Esc"
+      - Name: Open Feedback Hub
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "F"
+      - Name: Start IME reconversion
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "/"
+      - Name: Open Gamebar
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "G"
+      - Name: Open voice dictation
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "H"
+      - Name: Minimize or restore all other windows
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Home>"
+      - Name: Open Settings
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "I"
+      - Name: Set focus to a Windows tip
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "J"
+      - Name: Open Cast
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "K"
+      - Name: Lock the device
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "L"
+      - Name: Snap the window
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<ArrowLR>"
+      - Name: Minimize all windows
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "M"
+      - Name: Zoom out Magnifier
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "-"
+      - Name: Zoom in Magnifier
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "="
+      - Name: Open notification center
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "N"
+      - Name: Lock the device orientation
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "O"
+      - Name: Open project Settings
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "P"
+      - Name: Open Settings about Page
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Pause>"
+      - Name: Open the emoji panel
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "."
+      - Name: Open the emoji panel
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - ";"
+      - Name:  Capture a screenshot
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<PrtSc>"
+        Description: Save to the pictures folder
+      - Name: Open search
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "Q"
+      - Name: Open search
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "S"
+      - Name: Open Run dialog
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "R"
+      - Name: Restore window
+        Description: If a window is snapped or maximized
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - "<Down>"
+      - Name: Make UWP app full screen
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - "<Up>"
+      - Name: Move window to monitor
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - "<Arrow>"
+      - Name: Open Snipping Tool
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - "S"
+      - Name: Stretch window
+        Description: To the top and bottom of the screen
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - "<Up>"
+      - Name: Open task view
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "Tab"
+      - Name: Open Accessibility Settings
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "U"
+      - Name: Maximize the active window
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Up>"
+      - Name: Open the clipboard history
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "V"
+      - Name: Open widgets
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "W" 
+      - Name: Open Quick Link menu
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "X"
+      - Name: Open snap layouts
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "Z"
+  - SectionName: Clipboard
+    Properties:
+      - Name: Copy
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "C"
+      - Name: Cut
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "X"
+      - Name: Paste
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "V"
+      - Name: Paste
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - "<Insert>"
+        Description: Paste as plain text
+  - SectionName: <TASKBAR1-9>Taskbar Shortcuts
+    Properties:
+      - Name: Open app in Taskbar
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<TASKBAR1-9>"
+      - Name: Open jump list
+        Shortcut:
+          - Win: true
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - "<TASKBAR1-9>"
+      - Name: Switch to last active window
+        Shortcut:
+          - Win: true
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "<TASKBAR1-9>"
+      - Name: Open as administrator
+        Shortcut:
+          - Win: true
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - "<TASKBAR1-9>"
+  - SectionName: Copilot key
+    Properties:
+      - Name: Open Copilot
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - '<Copilot>'
+        Description: When copilot is available
+      - Name: Open Windows search
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - '<Copilot>'
+        Description: When copilot is not available
+  - SectionName: Office key
+    Properties:
+      - Name: Open Word
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Office>"
+              - "W"
+      - Name: Open Excel
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Office>"
+              - "X"
+      - Name: Open PowerPoint
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Office>"
+              - "P"
+      - Name: Open Outlook
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Office>"
+              - "O"
+      - Name: Open Microsoft Teams
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Office>"
+              - "T"
+      - Name: Open OneNote
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Office>"
+              - "N"
+      - Name: Open OneDrive
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Office>"
+              - "D"
+      - Name: Open Yammer
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Office>"
+              - "Y"
+      - Name: Open LinkedIn
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - "<Office>"
+              - "L"

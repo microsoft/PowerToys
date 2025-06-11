@@ -20,8 +20,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <SelectorBar Grid.Column="0" Grid.Row="0" x:Name="WindowSelector" SelectionChanged="WindowSelectionChanged">
-        </SelectorBar>
+        <SelectorBar Grid.Column="0" Grid.Row="0" x:Name="WindowSelector" SelectionChanged="WindowSelectionChanged" />
         <TextBox Grid.Column="1" Grid.Row="0" Height="32" Width="300" HorizontalAlignment="Right" VerticalContentAlignment="Center" x:Name="SearchBox" HorizontalContentAlignment="Right" TextChanged="SearchBox_TextChanged"></TextBox>
         <Button Grid.Column="2" Grid.Row="0" HorizontalContentAlignment="Center">
             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE713;" />

@@ -1,0 +1,3 @@
+PackageName: +WindowsNT.WindowsExplorer
+WindowFilter: "explorer.exe"
+Shortcuts:

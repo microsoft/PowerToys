@@ -17,17 +17,32 @@ namespace ShortcutGuide
 {
     public class ManifestInterpreter
     {
-        public static ShortcutList GetShortcutsOfApplication(string applicationName)
+        // Todo: Get language from settings or environment variable, default to "en-US"
+        public static string Language => "en-US";
+
+        public static ShortcutFile GetShortcutsOfApplication(string applicationName)
         {
             string path = GetPathOfIntepretations();
-            string content = File.ReadAllText(Path.Combine(path, applicationName + ".yml"));
-            return YamlToShortcutList(content);
+            IEnumerable<string> files = Directory.EnumerateFiles(path, applicationName + ".*.yml") ??
+                throw new FileNotFoundException($"The file for the application '{applicationName}' was not found in '{path}'.");
+
+            if (files.Any(f => f.EndsWith($".{Language}.yml", StringComparison.InvariantCulture)))
+            {
+                return YamlToShortcutList(File.ReadAllText(Path.Combine(path, applicationName + $".{Language}.yml")));
+            }
+
+            if (files.Any(f => f.EndsWith(".en-US.yml", StringComparison.InvariantCulture)))
+            {
+                return YamlToShortcutList(File.ReadAllText(files.First(f => f.EndsWith(".en-US.yml", StringComparison.InvariantCulture))));
+            }
+
+            throw new FileNotFoundException($"The file for the application '{applicationName}' was not found in '{path}' with the language '{Language}' or 'en-US'.");
         }
 
-        public static ShortcutList YamlToShortcutList(string content)
+        public static ShortcutFile YamlToShortcutList(string content)
         {
             Deserializer deserializer = new();
-            return deserializer.Deserialize<ShortcutList>(content);
+            return deserializer.Deserialize<ShortcutFile>(content);
         }
 
         public static string GetPathOfIntepretations()
@@ -59,6 +74,25 @@ namespace ShortcutGuide
 
             var processes = Process.GetProcesses();
 
+            if (NativeMethods.GetWindowThreadProcessId(handle, out uint processId) > 0)
+            {
+                string? name = Process.GetProcessById((int)processId).MainModule?.ModuleName;
+
+                if (name is not null)
+                {
+                    try
+                    {
+                        foreach (var item in GetIndexYamlFile().Index.First((s) => !s.BackgroundProcess && IsMatch(name, s.WindowFilter)).Apps)
+                        {
+                            applicationIds.Add(item);
+                        }
+                    }
+                    catch (InvalidOperationException)
+                    {
+                    }
+                }
+            }
+
             foreach (var item in GetIndexYamlFile().Index.Where((s) => s.BackgroundProcess))
             {
                 try
@@ -86,29 +120,10 @@ namespace ShortcutGuide
                 }
             }
 
-            if (NativeMethods.GetWindowThreadProcessId(handle, out uint processId) > 0)
-            {
-                string? name = Process.GetProcessById((int)processId).MainModule?.ModuleName;
-
-                if (name is not null)
-                {
-                    try
-                    {
-                        foreach (var item in GetIndexYamlFile().Index.First((s) => !s.BackgroundProcess && IsMatch(name, s.WindowFilter)).Apps)
-                        {
-                            applicationIds.Add(item);
-                        }
-                    }
-                    catch (InvalidOperationException)
-                    {
-                    }
-                }
-            }
-
             return [.. applicationIds];
         }
 
-        public static ShortcutList GetShortcutsOfDefaultShell()
+        public static ShortcutFile GetShortcutsOfDefaultShell()
         {
             return GetShortcutsOfApplication(GetIndexYamlFile().DefaultShellName);
         }
