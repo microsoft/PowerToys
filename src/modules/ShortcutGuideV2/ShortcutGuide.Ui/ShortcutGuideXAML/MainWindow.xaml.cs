@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
@@ -59,7 +60,7 @@ namespace ShortcutGuide
             SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 #endif
 
-            Activated += OnLauched;
+            Activated += Window_Activated;
 
             SettingsUtils settingsUtils = new();
 
@@ -70,8 +71,13 @@ namespace ShortcutGuide
             }
         }
 
-        private void OnLauched(object sender, WindowActivatedEventArgs e)
+        private void Window_Activated(object sender, WindowActivatedEventArgs e)
         {
+            if (e.WindowActivationState == WindowActivationState.Deactivated)
+            {
+                Environment.Exit(0);
+            }
+
             if (!_setPosition)
             {
                 var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);

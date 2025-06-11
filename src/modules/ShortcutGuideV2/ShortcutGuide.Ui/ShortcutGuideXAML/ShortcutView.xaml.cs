@@ -30,44 +30,53 @@ namespace ShortcutGuide
 
             int i = -1;
 
-            CategorySelector.Items.Add(new SelectorBarItem() { Text = "Overview", Name = i.ToString(CultureInfo.InvariantCulture) });
-
-            i++;
-
-            foreach (var category in shortcutList.Shortcuts)
+            try
             {
-                switch (category.SectionName)
-                {
-                    case string name when name.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal):
-                        // Todo: Implement GetTaskbarIconPositions
-                        break;
-                    case string name when name.StartsWith('<') && name.EndsWith('>'):
-                        break;
-                    default:
-                        CategorySelector.Items.Add(new SelectorBarItem() { Text = category.SectionName, Name = i.ToString(CultureInfo.InvariantCulture) });
-                        break;
-                }
+                CategorySelector.Items.Add(new SelectorBarItem() { Text = "Overview", Name = i.ToString(CultureInfo.InvariantCulture) });
 
                 i++;
+
+                foreach (var category in shortcutList.Shortcuts)
+                {
+                    switch (category.SectionName)
+                    {
+                        case string name when name.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal):
+                            // Todo: Implement GetTaskbarIconPositions
+                            break;
+                        case string name when name.StartsWith('<') && name.EndsWith('>'):
+                            break;
+                        default:
+                            CategorySelector.Items.Add(new SelectorBarItem() { Text = category.SectionName, Name = i.ToString(CultureInfo.InvariantCulture) });
+                            break;
+                    }
+
+                    i++;
+                }
+
+                CategorySelector.SelectedItem = CategorySelector.Items[0];
+                CategorySelector.SelectionChanged += CategorySelector_SelectionChanged;
+
+                foreach (var shortcut in shortcutList.Shortcuts[0].Properties)
+                {
+                    ShortcutListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
+                }
+
+                ShortcutPageParameters.FrameHeight.FrameHeightChanged += ContentHeightChanged;
+                ShortcutPageParameters.SearchFilter.FilterChanged += SearchFilter_FilterChanged;
+
+                if (!ShortcutPageParameters.PinnedShortcuts.TryGetValue(ShortcutPageParameters.CurrentPageName, out var _))
+                {
+                    ShortcutPageParameters.PinnedShortcuts.Add(ShortcutPageParameters.CurrentPageName, []);
+                }
+
+                OpenOverview();
             }
-
-            CategorySelector.SelectedItem = CategorySelector.Items[0];
-            CategorySelector.SelectionChanged += CategorySelector_SelectionChanged;
-
-            foreach (var shortcut in shortcutList.Shortcuts[0].Properties)
+            catch (Exception)
             {
-                ShortcutListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
+                OverviewStackPanel.Visibility = Visibility.Collapsed;
+                ErrorMessage.Visibility = Visibility.Visible;
+                ErrorMessage.Text = "Error displaying the applications shortcuts";
             }
-
-            ShortcutPageParameters.FrameHeight.FrameHeightChanged += ContentHeightChanged;
-            ShortcutPageParameters.SearchFilter.FilterChanged += SearchFilter_FilterChanged;
-
-            if (!ShortcutPageParameters.PinnedShortcuts.TryGetValue(ShortcutPageParameters.CurrentPageName, out var _))
-            {
-                ShortcutPageParameters.PinnedShortcuts.Add(ShortcutPageParameters.CurrentPageName, []);
-            }
-
-            OpenOverview();
         }
 
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
