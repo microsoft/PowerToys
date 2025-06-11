@@ -79,7 +79,7 @@ $noticeMatch = [regex]::Match($noticeFile, $noticePattern)
 if ($noticeMatch.Success) {
     $currentNoticePackageList = $noticeMatch.Groups[1].Value.Trim()
 } else {
-    Write-Host -ForegroundColor Yellow "Warning: Could not find 'NuGet Packages used by PowerToys' section in NOTICE.md"
+    Write-Warning "Warning: Could not find 'NuGet Packages used by PowerToys' section in NOTICE.md"
     $currentNoticePackageList = ""
 }
 
