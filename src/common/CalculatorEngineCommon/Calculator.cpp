@@ -3,7 +3,7 @@
 #include "Calculator.g.cpp"
 #include "ExprtkEvaluator.h"
 
-namespace winrt::CmdPalCalculator::implementation
+namespace winrt::CalculatorEngineCommon::implementation
 {
     Calculator::Calculator(winrt::Windows::Foundation::Collections::IPropertySet const& constants)
     {

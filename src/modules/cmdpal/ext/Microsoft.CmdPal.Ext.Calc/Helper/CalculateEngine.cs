@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using CmdPalCalculator;
+using CalculatorEngineCommon;
 using Windows.Foundation.Collections;
 
 namespace Microsoft.CmdPal.Ext.Calc.Helper;
@@ -83,6 +83,9 @@ public static class CalculateEngine
         }
 
         var decimalResult = Convert.ToDecimal(result, cultureInfo);
+
+        // Remove trailing zeros from the decimal string representation (e.g., "1.2300" -> "1.23")
+        // This is necessary because the value extracted from exptrkt may contain unnecessary trailing zeros.
         var formatted = decimalResult.ToString("G29", cultureInfo);
         decimalResult = Convert.ToDecimal(formatted, cultureInfo);
         var roundedResult = Round(decimalResult);

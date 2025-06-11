@@ -20,7 +20,7 @@
     <Midl Include="Calculator.idl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CmdPalCalculator.def" />
+    <None Include="CalculatorEngineCommon.def" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

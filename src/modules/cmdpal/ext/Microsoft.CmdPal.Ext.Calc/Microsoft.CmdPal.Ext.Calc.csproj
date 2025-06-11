@@ -1,12 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
   <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
-  <Target Name="BuildCmdPalCalculator" BeforeTargets="Build">
-    <MSBuild
-        Projects="..\..\CmdPalCalculator\CmdPalCalculator.vcxproj"
-        Targets="Build"
-        Properties="Configuration=$(Configuration);Platform=$(Platform)" />
-  </Target>
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.Calc</RootNamespace>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
@@ -16,25 +10,24 @@
     <ProjectPriFileName>Microsoft.CmdPal.Ext.Calc.pri</ProjectPriFileName>
   </PropertyGroup>
   <PropertyGroup>
-    <CsWinRTIncludes>CmdPalCalculator</CsWinRTIncludes>
+    <CsWinRTIncludes>CalculatorEngineCommon</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\CalculatorEngineCommon\CalculatorEngineCommon.vcxproj" />
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-    <CsWinRTInputs Include="..\..\..\..\..\$(Platform)\$(Configuration)\CmdPalCalculator.winmd" />
-    <Content Include="..\..\..\..\..\$(Platform)\$(Configuration)\CmdPalCalculator.winmd" Link="CmdPalCalculator.winmd">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	</Content>
-    <Content Include="..\..\..\..\..\$(Platform)\$(Configuration)\CmdPalCalculator.dll">
+    <CsWinRTInputs Include="..\..\..\..\..\$(Platform)\$(Configuration)\CalculatorEngineCommon.winmd" />
+    <Content Include="..\..\..\..\..\$(Platform)\$(Configuration)\CalculatorEngineCommon.winmd" Link="CalculatorEngineCommon.winmd">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\..\..\..\$(Platform)\$(Configuration)\CalculatorEngineCommon.dll">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>

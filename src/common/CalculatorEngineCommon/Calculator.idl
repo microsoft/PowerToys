@@ -1,4 +1,4 @@
-namespace CmdPalCalculator
+namespace CalculatorEngineCommon
 {
     [default_interface]
     runtimeclass Calculator

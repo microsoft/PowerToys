@@ -2,7 +2,7 @@
 
 #include "Calculator.g.h"
 
-namespace winrt::CmdPalCalculator::implementation
+namespace winrt::CalculatorEngineCommon::implementation
 {
     struct Calculator : CalculatorT<Calculator>
     {
@@ -17,7 +17,7 @@ namespace winrt::CmdPalCalculator::implementation
     };
 }
 
-namespace winrt::CmdPalCalculator::factory_implementation
+namespace winrt::CalculatorEngineCommon::factory_implementation
 {
     struct Calculator : CalculatorT<Calculator, implementation::Calculator>
     {
