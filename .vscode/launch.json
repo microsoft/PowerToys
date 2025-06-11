@@ -1,0 +1,47 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Powertoys Runner(x64)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/x64/Debug/PowerToys.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/x64/Debug",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+        {
+            "name": "Debug Powertoys Runner(arm64)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/arm64/Debug/PowerToys.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/arm64/Debug",
+            "environment": [],
+            "console": "externalTerminal"
+        },
+        {
+            "name": "Debug Powertoys Settings(arm64)",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/arm64/Debug/WinUI3Apps/PowerToys.Settings.exe",
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}/arm64/Debug/WinUI3Apps",
+            "console": "externalTerminal"
+        },
+        {
+            "name": "Debug Workspaces Editor(arm64)",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/arm64/Debug/PowerToys.WorkspacesEditor.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/arm64/Debug",
+            "stopAtEntry": false,
+            "console": "externalTerminal"
+        }
+    ]
+}
