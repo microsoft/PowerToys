@@ -244,7 +244,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
 
                     _disableBuiltInNew = value;
-                    OnPropertyChanged(nameof(DisableBuiltInNew));
+                    OnPropertyChanged(nameof(HideBuiltInNew));
 
                     NotifySettingsChanged();
                 }
