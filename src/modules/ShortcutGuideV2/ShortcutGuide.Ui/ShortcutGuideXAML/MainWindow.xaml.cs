@@ -12,6 +12,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using ShortcutGuide.Models;
 using ShortcutGuide.Properties;
 using Windows.Foundation;
@@ -137,6 +138,11 @@ namespace ShortcutGuide
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             ShortcutPageParameters.SearchFilter.OnFilterChanged(SearchBox.Text);
+        }
+
+        private void SearchBoy_KeyboardAcceleratorInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            SearchBox.Focus(FocusState.Programmatic);
         }
     }
 }

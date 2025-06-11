@@ -21,7 +21,11 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <SelectorBar Grid.Column="0" Grid.Row="0" x:Name="WindowSelector" SelectionChanged="WindowSelectionChanged" />
-        <TextBox Grid.Column="1" Grid.Row="0" Height="32" Width="300" HorizontalAlignment="Right" VerticalContentAlignment="Center" x:Name="SearchBox" HorizontalContentAlignment="Right" TextChanged="SearchBox_TextChanged"></TextBox>
+        <TextBox Grid.Column="1" Grid.Row="0" Height="32" Width="300" HorizontalAlignment="Right" VerticalContentAlignment="Center" x:Name="SearchBox" HorizontalContentAlignment="Right" TextChanged="SearchBox_TextChanged">
+            <TextBox.KeyboardAccelerators>
+                <KeyboardAccelerator Modifiers="Control" Key="F" Invoked="SearchBoy_KeyboardAcceleratorInvoked" />
+            </TextBox.KeyboardAccelerators>
+        </TextBox>
         <Button Grid.Column="2" Grid.Row="0" HorizontalContentAlignment="Center">
             <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE713;" />
         </Button>
