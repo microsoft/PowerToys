@@ -182,8 +182,8 @@ namespace Microsoft.CommandPalette.Extensions
         String Text { get; };
     }
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IDetailsCommand requires IDetailsData {
-        ICommand Command { get; };
+    interface IDetailsCommands requires IDetailsData {
+        ICommand[] Commands { get; };
     }
     [uuid("58070392-02bb-4e89-9beb-47ceb8c3d741")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
