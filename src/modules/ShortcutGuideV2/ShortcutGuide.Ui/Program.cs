@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
@@ -12,9 +14,29 @@ namespace ShortcutGuide
 {
     public sealed class Program
     {
+        private static readonly string[] InbuiltManifestFiles = [
+            "+WindowsNT.Shell.en-US.yml",
+            "+WindowsNT.WindowsExplorer.en-US.yml",
+            "+WindowsNT.Notepad.en-US.yml",
+            "Microsoft.PowerToys.en-US.yml",
+        ];
+
         [STAThread]
         public static void Main()
         {
+            if (!Directory.Exists(ManifestInterpreter.GetPathOfIntepretations()))
+            {
+                Directory.CreateDirectory(ManifestInterpreter.GetPathOfIntepretations());
+            }
+
+            // Todo: Only copy files after an update.
+            // Todo: Handle error
+            foreach (var file in InbuiltManifestFiles)
+            {
+                File.Copy(Path.GetDirectoryName(Environment.ProcessPath) + "\\Assets\\ShortcutGuide\\" + file, ManifestInterpreter.GetPathOfIntepretations() + "\\" + file, true);
+            }
+
+            Process.Start(Path.GetDirectoryName(Environment.ProcessPath) + "\\PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
             PowerToysShortcutsPopulator.Populate();
 
             Logger.InitializeLogger("\\ShortcutGuide\\Logs");

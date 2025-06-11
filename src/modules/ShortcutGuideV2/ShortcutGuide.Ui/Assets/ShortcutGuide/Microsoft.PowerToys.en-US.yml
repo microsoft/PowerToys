@@ -1,0 +1,165 @@
+PackageName: Microsoft.PowerToys  
+Name: PowerToys
+BackgroundProcess: True
+WindowFilter: "powertoys.exe"
+Shortcuts:
+  - SectionName: General
+    Properties:
+# <Populate start>
+      - Name: Advanced Paste
+        Shortcut: 
+        - Win: True
+          Ctrl: False
+          Alt: False
+          Shift: True
+          Keys:
+            - 86
+        Description: Open Advanced Paste window
+      - Name: Advanced Paste
+        Shortcut: 
+        - Win: True
+          Ctrl: True
+          Alt: True
+          Shift: False
+          Keys:
+            - 86
+        Description: Paste as plain text directly
+      - Name: Advanced Paste
+        Shortcut: 
+        - Win: False
+          Ctrl: False
+          Alt: False
+          Shift: False
+          Keys:
+            - 0
+        Description: Paste as markdown directly
+      - Name: Advanced Paste
+        Shortcut: 
+        - Win: False
+          Ctrl: False
+          Alt: False
+          Shift: False
+          Keys:
+            - 0
+        Description: Paste as JSON directly
+      - Name: Always On Top
+        Shortcut: 
+        - Win: True
+          Ctrl: True
+          Alt: False
+          Shift: False
+          Keys:
+            - 84
+        Description: Pin a window
+      - Name: Color Picker
+        Shortcut: 
+        - Win: True
+          Ctrl: False
+          Alt: False
+          Shift: True
+          Keys:
+            - 67
+        Description: Pick a color
+      - Name: Crop And Lock
+        Shortcut: 
+        - Win: True
+          Ctrl: True
+          Alt: False
+          Shift: True
+          Keys:
+            - 84
+        Description: Thumbnail
+      - Name: Crop And Lock
+        Shortcut: 
+        - Win: True
+          Ctrl: True
+          Alt: False
+          Shift: True
+          Keys:
+            - 82
+        Description: Reparent
+      - Name: FancyZones
+        Shortcut: 
+        - Win: True
+          Ctrl: False
+          Alt: False
+          Shift: True
+          Keys:
+            - 192
+        Description: Open editor
+      - Name: Mouse Highlight
+        Shortcut: 
+        - Win: True
+          Ctrl: False
+          Alt: False
+          Shift: True
+          Keys:
+            - 72
+        Description: Highlight clicks
+      - Name: Mouse Jump
+        Shortcut: 
+        - Win: True
+          Ctrl: False
+          Alt: False
+          Shift: True
+          Keys:
+            - 68
+        Description: Quickly move the mouse pointer
+      - Name: Mouse Pointer Crosshairs
+        Shortcut: 
+        - Win: True
+          Ctrl: False
+          Alt: True
+          Shift: False
+          Keys:
+            - 80
+        Description: Show crosshairs
+      - Name: Peek
+        Shortcut: 
+        - Win: False
+          Ctrl: True
+          Alt: False
+          Shift: False
+          Keys:
+            - 32
+      - Name: PowerToys Run
+        Shortcut: 
+        - Win: False
+          Ctrl: False
+          Alt: True
+          Shift: False
+          Keys:
+            - 32
+      - Name: Screen Ruler
+        Shortcut: 
+        - Win: True
+          Ctrl: True
+          Alt: False
+          Shift: True
+          Keys:
+            - 77
+      - Name: Shortcut Guide
+        Shortcut: 
+        - Win: True
+          Ctrl: False
+          Alt: False
+          Shift: True
+          Keys:
+            - 191
+      - Name: Text Extractor
+        Shortcut: 
+        - Win: True
+          Ctrl: False
+          Alt: False
+          Shift: True
+          Keys:
+            - 84
+      - Name: Workspaces
+        Shortcut: 
+        - Win: True
+          Ctrl: True
+          Alt: False
+          Shift: False
+          Keys:
+            - 192
+# <Populate end>

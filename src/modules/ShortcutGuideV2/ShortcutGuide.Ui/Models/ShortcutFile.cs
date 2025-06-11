@@ -4,7 +4,7 @@
 
 namespace ShortcutGuide.Models
 {
-    public struct ShortcutList
+    public struct ShortcutFile
     {
         public string PackageName { get; set; }
 

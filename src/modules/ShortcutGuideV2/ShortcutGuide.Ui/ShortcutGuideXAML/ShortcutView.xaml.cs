@@ -21,7 +21,7 @@ namespace ShortcutGuide
 {
     public sealed partial class ShortcutView : Page, INotifyPropertyChanged
     {
-        private ShortcutList shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
+        private ShortcutFile shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
 
         public ShortcutView()
         {
