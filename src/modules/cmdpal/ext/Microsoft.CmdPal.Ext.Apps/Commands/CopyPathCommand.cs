@@ -35,7 +35,7 @@ internal sealed partial class CopyPathCommand : InvokableCommand
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex.Message);
+            Logger.LogError("Copy failed: " + ex.Message);
             return CommandResult.ShowToast(
                 new ToastArgs
                 {
