@@ -2011,3 +2011,5 @@ ppwsz
 rguid
 SCROLLCHILDREN
 VARTYPE
+Rns
+GC'd
