@@ -6,8 +6,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.IO.Abstractions;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Programs;
@@ -15,11 +15,9 @@ using Win32Program = Microsoft.CmdPal.Ext.Apps.Programs.Win32Program;
 
 namespace Microsoft.CmdPal.Ext.Apps.Storage;
 
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 internal sealed partial class Win32ProgramRepository : ListRepository<Programs.Win32Program>, IProgramRepository
 {
-    private static readonly IFileSystem FileSystem = new FileSystem();
-    private static readonly IPath Path = FileSystem.Path;
-
     private const string LnkExtension = ".lnk";
     private const string UrlExtension = ".url";
 
