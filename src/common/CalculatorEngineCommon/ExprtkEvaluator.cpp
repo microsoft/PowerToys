@@ -38,7 +38,7 @@ namespace ExprtkCalculator::internal
         parser.settings().disable_all_control_structures(); // Disable control structures like if, for, while, etc.
         parser.settings().disable_all_assignment_ops(); // Disable assignment operators like =, +=, -=, etc.
 
-        // Disable fisrt but we could enable it when we want enhanced functionality
+        // Disabled for now, but can be enabled later for enhanced functionality
         parser.settings().disable_all_logic_ops(); // Disable logical operators like &&, ||, !, etc.
         parser.settings().disable_all_inequality_ops(); // Disable inequality operators like <, >, <=, >=, !=, etc.
 
