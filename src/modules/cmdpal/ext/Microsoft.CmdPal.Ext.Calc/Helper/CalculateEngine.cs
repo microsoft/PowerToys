@@ -85,7 +85,7 @@ public static class CalculateEngine
         var decimalResult = Convert.ToDecimal(result, cultureInfo);
 
         // Remove trailing zeros from the decimal string representation (e.g., "1.2300" -> "1.23")
-        // This is necessary because the value extracted from exptrtk may contain unnecessary trailing zeros.
+        // This is necessary because the value extracted from exprtk may contain unnecessary trailing zeros.
         var formatted = decimalResult.ToString("G29", cultureInfo);
         decimalResult = Convert.ToDecimal(formatted, cultureInfo);
         var roundedResult = Round(decimalResult);
