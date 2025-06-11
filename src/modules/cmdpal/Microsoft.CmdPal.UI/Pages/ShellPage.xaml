@@ -146,10 +146,12 @@
                     </ItemsControl>
                 </StackPanel>
             </DataTemplate>
-            <markdownTextBlockRns:MarkdownThemes x:Key="DefaultMarkdownThemeConfig" 
+            <markdownTextBlockRns:MarkdownThemes
+                x:Key="DefaultMarkdownThemeConfig" 
                 H3FontSize="12"
                 H3FontWeight="Normal" />
-            <labToolkit:MarkdownConfig x:Key="DefaultMarkdownConfig"
+            <labToolkit:MarkdownConfig
+                x:Key="DefaultMarkdownConfig"
                 Themes="{StaticResource DefaultMarkdownThemeConfig}" />
         </ResourceDictionary>
     </Page.Resources>

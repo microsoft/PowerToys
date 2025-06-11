@@ -20,11 +20,14 @@
 
     <Page.Resources>
         <ResourceDictionary>
-            <markdownTextBlockRns:MarkdownThemes x:Key="DefaultMarkdownThemeConfig"
+            <markdownTextBlockRns:MarkdownThemes
+                x:Key="DefaultMarkdownThemeConfig"
                 H3FontSize="12"
-                H3FontWeight="Normal"/>
-            <toolkit:MarkdownConfig x:Key="DefaultMarkdownConfig"
-                Themes="{StaticResource DefaultMarkdownThemeConfig}"/>
+                H3FontWeight="Normal" />
+            <toolkit:MarkdownConfig
+                x:Key="DefaultMarkdownConfig"
+                Themes="{StaticResource DefaultMarkdownThemeConfig}" />
+
             <StackLayout
                 x:Name="VerticalStackLayout"
                 Orientation="Vertical"
