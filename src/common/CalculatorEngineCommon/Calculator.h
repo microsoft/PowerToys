@@ -13,7 +13,7 @@ namespace winrt::CalculatorEngineCommon::implementation
         winrt::hstring EvaluateExpression(winrt::hstring const& expression);
 
     private:
-        std::unordered_map<std::wstring, double> m_constants;
+        std::unordered_map<std::string, double> m_constants;
     };
 }
 

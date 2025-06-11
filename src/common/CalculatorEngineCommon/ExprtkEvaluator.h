@@ -5,6 +5,6 @@
 namespace ExprtkCalculator::internal
 {
     std::wstring EvaluateExpression(
-        const std::wstring& expression,
-        const std::unordered_map<std::wstring, double>& constants = {});
+        const std::string& expression,
+        const std::unordered_map<std::string, double>& constants);
 }
