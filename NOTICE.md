@@ -1492,7 +1492,7 @@ SOFTWARE.
 - System.ComponentModel.Composition 9.0.6
 - System.Configuration.ConfigurationManager 9.0.6
 - System.Data.OleDb 9.0.6
-- System.Data.SqlClient 4.8.6
+- System.Data.SqlClient 4.9.0
 - System.Diagnostics.EventLog 9.0.6
 - System.Diagnostics.PerformanceCounter 9.0.6
 - System.Drawing.Common 9.0.6
