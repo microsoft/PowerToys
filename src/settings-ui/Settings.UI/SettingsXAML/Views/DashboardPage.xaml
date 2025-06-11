@@ -511,7 +511,7 @@
                         <ItemsRepeater
                             x:Name="DashboardView"
                             Grid.Row="2"
-                            ItemsSource="{x:Bind ViewModel.ActiveModules, Mode=OneWay}">
+                            ItemsSource="{x:Bind ViewModel.AllModules, Mode=OneWay}">
                             <ItemsRepeater.Layout>
                                 <StackLayout Orientation="Vertical" Spacing="0" />
                             </ItemsRepeater.Layout>

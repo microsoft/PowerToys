@@ -31,6 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public Func<string, int> SendConfigMSG { get; }
 
+        public ObservableCollection<DashboardListItem> AllModules { get; set; } = new ObservableCollection<DashboardListItem>();
+
         public ObservableCollection<DashboardListItem> ActiveModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<DashboardListItem> DisabledModules { get; set; } = new ObservableCollection<DashboardListItem>();
@@ -60,6 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 AddDashboardListItem(moduleType);
             }
 
+            AllModules = new ObservableCollection<DashboardListItem>(_allModules);
             ActiveModules = new ObservableCollection<DashboardListItem>(_allModules.Where(x => x.IsEnabled));
             DisabledModules = new ObservableCollection<DashboardListItem>(_allModules.Where(x => !x.IsEnabled));
 
