@@ -144,7 +144,7 @@ internal sealed partial class SearchQuery : IDisposable
     {
         try
         {
-            getRow.GetRowFromHROW(null, rowHandle, ref Unsafe.AsRef(in IIDGUID.IPropertyStore), out var propertyStore);
+            getRow.GetRowFromHROW(null, rowHandle, ref Unsafe.AsRef(in IID.IPropertyStore), out var propertyStore);
 
             if (propertyStore == null)
             {
