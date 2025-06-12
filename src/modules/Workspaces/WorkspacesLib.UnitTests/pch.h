@@ -17,3 +17,5 @@
 #include <WorkspacesLib/StringUtils.h>
 #include <WorkspacesLib/JsonUtils.h>
 #include <WorkspacesLib/Result.h>
+#include <WorkspacesLib/AppUtils.h>
+#include <WorkspacesLib/PwaHelper.h>

@@ -48,6 +48,8 @@
     <ClCompile Include="WorkspacesDataTests.cpp" />
     <ClCompile Include="StringUtilsTests.cpp" />
     <ClCompile Include="JsonUtilsTests.cpp" />
+    <ClCompile Include="AppUtilsTests.cpp" />
+    <ClCompile Include="PwaHelperTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
