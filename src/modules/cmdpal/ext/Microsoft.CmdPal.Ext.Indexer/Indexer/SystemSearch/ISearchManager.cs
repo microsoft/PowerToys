@@ -3,87 +3,46 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
-[ComConversionLoss]
 [Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF69")]
-[InterfaceType(1)]
-[ComImport]
-public interface ISearchManager
+[GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Please do not change the function name")]
+public partial interface ISearchManager
 {
-    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-    void GetIndexerVersionStr([MarshalAs(UnmanagedType.LPWStr)] out string ppszVersionString);
+    string GetIndexerVersionStr();
 
-    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
     void GetIndexerVersion(out uint pdwMajor, out uint pdwMinor);
 
-    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-    IntPtr GetParameter([MarshalAs(UnmanagedType.LPWStr), In] string pszName);
+    void GetParameter(string pszName, [MarshalAs(UnmanagedType.Interface)] out object pValue);
 
-    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-    void SetParameter([MarshalAs(UnmanagedType.LPWStr), In] string pszName, [In] ref object pValue);
+    void SetParameter(string pszName, [MarshalAs(UnmanagedType.Interface)] ref object pValue);
 
-    [DispId(1610678276)]
-    string ProxyName
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-    }
+    [return: MarshalAs(UnmanagedType.Bool)]
+    bool get_UseProxy();
 
-    [DispId(1610678277)]
-    string BypassList
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-    }
+    string get_BypassList();
 
-    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
     void SetProxy(
-      [In] object sUseProxy,
-      [In] int fLocalByPassProxy,
-      [In] uint dwPortNumber,
-      [MarshalAs(UnmanagedType.LPWStr), In] string pszProxyName,
-      [MarshalAs(UnmanagedType.LPWStr), In] string pszByPassList);
+        string pszProxyName,
+        [MarshalAs(UnmanagedType.Bool)] bool fLocalBypass,
+        string pszBypassList,
+        uint dwPortNumber);
 
-    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
     [return: MarshalAs(UnmanagedType.Interface)]
-    CSearchCatalogManager GetCatalog([MarshalAs(UnmanagedType.LPWStr), In] string pszCatalog);
+    ISearchCatalogManager GetCatalog(string pszCatalog);
 
-    [DispId(1610678280)]
-    string UserAgent
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [return: MarshalAs(UnmanagedType.LPWStr)]
-        get;
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        [param: MarshalAs(UnmanagedType.LPWStr)]
-        [param: In]
-        set;
-    }
+    string get_UserAgent();
 
-    [DispId(1610678282)]
-    object UseProxy
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        get;
-    }
+    void put_UserAgent(string pszUserAgent);
 
-    [DispId(1610678283)]
-    int LocalBypass
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        get;
-    }
+    string get_ProxyName();
 
-    [DispId(1610678284)]
-    uint PortNumber
-    {
-        [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-        get;
-    }
+    [return: MarshalAs(UnmanagedType.Bool)]
+    bool get_LocalBypass();
+
+    uint get_PortNumber();
 }
