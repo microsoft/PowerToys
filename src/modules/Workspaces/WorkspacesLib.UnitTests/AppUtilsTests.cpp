@@ -175,7 +175,7 @@ namespace WorkspacesLibUnitTests
         {
             // Arrange
             Utils::Apps::AppData appData;
-            appData.protocolPath = L"notsteam://run/123456";
+            appData.protocolPath = L"http://run/123456";
 
             // Act
             bool result = appData.IsSteamGame();
