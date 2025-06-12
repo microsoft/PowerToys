@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml;
 using ManagedCommon;
@@ -13,7 +14,9 @@ using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using static Microsoft.CmdPal.Ext.Apps.Utils.Native;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.Storage.Packaging.Appx;
 using PackageVersion = Microsoft.CmdPal.Ext.Apps.Programs.UWP.PackageVersion;
 using Theme = Microsoft.CmdPal.Ext.Apps.Utils.Theme;
 
@@ -97,27 +100,27 @@ public class UWPApplication : IProgram
         return commands;
     }
 
-    public UWPApplication(IAppxManifestApplication manifestApp, UWP package)
+    internal unsafe UWPApplication(IAppxManifestApplication* manifestApp, UWP package)
     {
         ArgumentNullException.ThrowIfNull(manifestApp);
 
-        var hr = manifestApp.GetAppUserModelId(out var tmpUserModelId);
-        UserModelId = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpUserModelId);
+        var hr = manifestApp->GetAppUserModelId(out var tmpUserModelIdPtr);
+        UserModelId = ComFreeHelper.GetStringAndFree(hr, tmpUserModelIdPtr);
 
-        hr = manifestApp.GetAppUserModelId(out var tmpUniqueIdentifier);
-        UniqueIdentifier = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpUniqueIdentifier);
+        manifestApp->GetAppUserModelId(out var tmpUniqueIdentifierPtr);
+        UniqueIdentifier = ComFreeHelper.GetStringAndFree(hr, tmpUniqueIdentifierPtr);
 
-        hr = manifestApp.GetStringValue("DisplayName", out var tmpDisplayName);
-        DisplayName = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpDisplayName);
+        manifestApp->GetStringValue("DisplayName", out var tmpDisplayNamePtr);
+        DisplayName = ComFreeHelper.GetStringAndFree(hr, tmpDisplayNamePtr);
 
-        hr = manifestApp.GetStringValue("Description", out var tmpDescription);
-        Description = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpDescription);
+        manifestApp->GetStringValue("Description", out var tmpDescriptionPtr);
+        Description = ComFreeHelper.GetStringAndFree(hr, tmpDescriptionPtr);
 
-        hr = manifestApp.GetStringValue("BackgroundColor", out var tmpBackgroundColor);
-        BackgroundColor = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpBackgroundColor);
+        manifestApp->GetStringValue("BackgroundColor", out var tmpBackgroundColorPtr);
+        BackgroundColor = ComFreeHelper.GetStringAndFree(hr, tmpBackgroundColorPtr);
 
-        hr = manifestApp.GetStringValue("EntryPoint", out var tmpEntryPoint);
-        EntryPoint = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, tmpEntryPoint);
+        manifestApp->GetStringValue("EntryPoint", out var tmpEntryPointPtr);
+        EntryPoint = ComFreeHelper.GetStringAndFree(hr, tmpEntryPointPtr);
 
         Package = package ?? throw new ArgumentNullException(nameof(package));
 
@@ -166,7 +169,7 @@ public class UWPApplication : IProgram
         return false;
     }
 
-    internal string ResourceFromPri(string packageFullName, string resourceReference)
+    internal unsafe string ResourceFromPri(string packageFullName, string resourceReference)
     {
         const string prefix = "ms-resource:";
 
@@ -200,30 +203,8 @@ public class UWPApplication : IProgram
                 parsedFallback = prefix + "///" + key;
             }
 
-            var outBuffer = new StringBuilder(128);
-            var source = $"@{{{packageFullName}? {parsed}}}";
-            var capacity = (uint)outBuffer.Capacity;
-            var hResult = SHLoadIndirectString(source, outBuffer, capacity, IntPtr.Zero);
-            if (hResult != HRESULT.S_OK)
+            if (string.IsNullOrEmpty(parsedFallback))
             {
-                if (!string.IsNullOrEmpty(parsedFallback))
-                {
-                    var sourceFallback = $"@{{{packageFullName}? {parsedFallback}}}";
-                    hResult = SHLoadIndirectString(sourceFallback, outBuffer, capacity, IntPtr.Zero);
-                    if (hResult == HRESULT.S_OK)
-                    {
-                        var loaded = outBuffer.ToString();
-                        if (!string.IsNullOrEmpty(loaded))
-                        {
-                            return loaded;
-                        }
-                        else
-                        {
-                            return string.Empty;
-                        }
-                    }
-                }
-
                 // https://github.com/Wox-launcher/Wox/issues/964
                 // known hresult 2147942522:
                 // 'Microsoft Corporation' violates pattern constraint of '\bms-resource:.{1,256}'.
@@ -232,17 +213,40 @@ public class UWPApplication : IProgram
                 // Microsoft.BingFoodAndDrink_3.0.4.336_x64__8wekyb3d8bbwe: ms-resource:AppDescription
                 return string.Empty;
             }
-            else
+
+            var capacity = 1024U;
+            PWSTR outBuffer = new PWSTR((char*)(void*)Marshal.AllocHGlobal((int)capacity * sizeof(char)));
+            var source = $"@{{{packageFullName}? {parsed}}}";
+            void* reserved = null;
+
+            try
             {
+                PInvoke.SHLoadIndirectString(source, outBuffer, capacity, ref reserved).ThrowOnFailure();
+
                 var loaded = outBuffer.ToString();
-                if (!string.IsNullOrEmpty(loaded))
+                return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
+            }
+            catch (Exception)
+            {
+                try
                 {
-                    return loaded;
+                    var sourceFallback = $"@{{{packageFullName}?{parsedFallback}}}";
+                    PInvoke.SHLoadIndirectString(sourceFallback, outBuffer, capacity, ref reserved).ThrowOnFailure();
+                    var loaded = outBuffer.ToString();
+                    return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
                 }
-                else
+                catch (Exception)
                 {
+                    // ProgramLogger.Exception($"Unable to load resource {resourceReference} from {packageFullName}", new InvalidOperationException(), GetType(), packageFullName);
                     return string.Empty;
                 }
+                finally
+                {
+                }
+            }
+            finally
+            {
+                Marshal.FreeHGlobal((IntPtr)outBuffer.Value);
             }
         }
         else
@@ -258,13 +262,12 @@ public class UWPApplication : IProgram
             { PackageVersion.Windows8, "SmallLogo" },
         };
 
-    internal string LogoUriFromManifest(IAppxManifestApplication app)
+    internal unsafe string LogoUriFromManifest(IAppxManifestApplication* app)
     {
         if (_logoKeyFromVersion.TryGetValue(Package.Version, out var key))
         {
-            var hr = app.GetStringValue(key, out var logoUriFromApp);
-            _ = AppxPackageHelper.CheckHRAndReturnOrThrow(hr, logoUriFromApp);
-            return logoUriFromApp;
+            var hr = app->GetStringValue(key, out var logoUriFromAppPtr);
+            return ComFreeHelper.GetStringAndFree(hr, logoUriFromAppPtr);
         }
         else
         {
@@ -349,7 +352,7 @@ public class UWPApplication : IProgram
             var prefix = path.Substring(0, end);
             var paths = new List<string> { };
             const int appIconSize = 36;
-            var targetSizes = new List<int> { 16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256 }.AsParallel();
+            var targetSizes = new List<int> { 16, 24, 30, 36, 44, 60, 72, 96, 128, 180, 256 };
             var pathFactorPairs = new Dictionary<string, int>();
 
             foreach (var factor in targetSizes)

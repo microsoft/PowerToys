@@ -123,7 +123,7 @@ public class ThumbnailHelper
     private static nint GetLargestIcon(string path)
     {
         var shinfo = default(NativeMethods.SHFILEINFO);
-        NativeMethods.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SYSICONINDEX);
+        NativeMethods.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX);
 
         var hIcon = IntPtr.Zero;
         var iID_IImageList = new Guid("46EB5926-582E-4017-9FDF-E8998DAA0950");

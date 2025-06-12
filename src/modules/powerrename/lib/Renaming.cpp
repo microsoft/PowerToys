@@ -78,7 +78,7 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
 
     if (useFileTime)
     {
-        winrt::check_hresult(spItem->GetTime(&fileTime));
+        winrt::check_hresult(spItem->GetTime(flags, &fileTime));
         winrt::check_hresult(spRenameRegEx->PutFileTime(fileTime));
     }
 
