@@ -20,7 +20,7 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class DefaultLayoutsTest : UITestBase
     {
         public DefaultLayoutsTest()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 
@@ -121,6 +121,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestInitialize]
         public void TestInitialize()
         {
+            FancyZonesEditorHelper.Files.Restore();
             var defaultLayouts = new DefaultLayouts();
             FancyZonesEditorHelper.Files.DefaultLayoutsIOHelper.WriteData(defaultLayouts.Serialize(Layouts));
 
@@ -237,20 +238,16 @@ namespace Microsoft.FancyZonesEditor.UITests
             this.RestartScopeExe();
         }
 
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            FancyZonesEditorHelper.Files.Restore();
-        }
-
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Default_Initialize")]
+        [TestCategory("FancyZones Editor #12")]
         public void Initialize()
         {
             CheckTemplateLayouts(LayoutType.Grid, null);
             CheckCustomLayouts(string.Empty, CustomLayouts.CustomLayouts[0].Uuid);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Default_Assign_Cancel")]
+        [TestCategory("FancyZones Editor #12")]
         public void Assign_Cancel()
         {
             // assign Focus as a default horizontal and vertical layout
@@ -266,7 +263,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             CheckCustomLayouts(string.Empty, CustomLayouts.CustomLayouts[0].Uuid);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Default_Assign_Save")]
+        [TestCategory("FancyZones Editor #12")]
         public void Assign_Save()
         {
             // assign Focus as a default horizontal and vertical layout

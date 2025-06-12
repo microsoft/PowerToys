@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using OpenQA.Selenium;
-
 namespace Microsoft.PowerToys.UITest
 {
     /// <summary>
@@ -35,9 +33,10 @@ namespace Microsoft.PowerToys.UITest
                 PerformAction((actions, windowElement) =>
                 {
                     // select all text and delete it
-                    windowElement.SendKeys(Keys.Control + "a");
-                    windowElement.SendKeys(Keys.Delete);
+                    windowElement.SendKeys(OpenQA.Selenium.Keys.Control + "a");
+                    windowElement.SendKeys(OpenQA.Selenium.Keys.Delete);
                 });
+                Task.Delay(500).Wait();
             }
 
             PerformAction((actions, windowElement) =>

@@ -23,17 +23,12 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class UIInitializeTest : UITestBase
     {
         public UIInitializeTest()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            FancyZonesEditorHelper.Files.Restore();
-        }
-
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.EditorParams_VerifySelectedMonitor")]
+        [TestCategory("FancyZones Editor #10")]
         public void EditorParams_VerifySelectedMonitor()
         {
             InitFileData();
@@ -737,6 +732,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
         private void InitFileData()
         {
+            FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {

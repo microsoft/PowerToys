@@ -21,7 +21,7 @@ namespace Microsoft.FancyZonesEditor.UITests
     public class EditLayoutTests : UITestBase
     {
         public EditLayoutTests()
-            : base(PowerToysModule.FancyZone)
+            : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
         {
         }
 
@@ -105,6 +105,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         [TestInitialize]
         public void TestInitialize()
         {
+            FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
@@ -209,13 +210,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             this.RestartScopeExe();
         }
 
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            FancyZonesEditorHelper.Files.Restore();
-        }
-
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.OpenEditMode")]
+        [TestCategory("FancyZones Editor #7")]
         public void OpenEditMode()
         {
             Session.Find<Element>(Layouts.CustomLayouts[0].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
@@ -224,7 +220,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Button>(ElementName.Cancel).Click();
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.OpenEditModeFromContextMenu")]
+        [TestCategory("FancyZones Editor #7")]
         public void OpenEditModeFromContextMenu()
         {
             FancyZonesEditorHelper.ClickContextMenuItem(Session, Layouts.CustomLayouts[0].Name, FancyZonesEditorHelper.ElementName.EditZones);
@@ -232,7 +229,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Session.Find<Button>(ElementName.Cancel).Click();
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Canvas_AddZone_Save")]
+        [TestCategory("FancyZones Editor #7")]
         public void Canvas_AddZone_Save()
         {
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
@@ -248,7 +246,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected.Zones.Count + 1, actual.Zones.Count);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Canvas_AddZone_Cancel")]
+        [TestCategory("FancyZones Editor #7")]
         public void Canvas_AddZone_Cancel()
         {
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
@@ -264,7 +263,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected.Zones.Count, actual.Zones.Count);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Canvas_DeleteZone_Save")]
+        [TestCategory("FancyZones Editor #7")]
         public void Canvas_DeleteZone_Save()
         {
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
@@ -280,7 +280,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected.Zones.Count - 1, actual.Zones.Count);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Canvas_DeleteZone_Cancel")]
+        [TestCategory("FancyZones Editor #7")]
         public void Canvas_DeleteZone_Cancel()
         {
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
@@ -296,7 +297,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(expected.Zones.Count, actual.Zones.Count);
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Canvas_MoveZone_Save")]
+        [TestCategory("FancyZones Editor #7")]
         public void Canvas_MoveZone_Save()
         {
             int zoneNumber = 1;
@@ -333,7 +335,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Canvas_MoveZone_Cancel")]
+        [TestCategory("FancyZones Editor #7")]
         public void Canvas_MoveZone_Cancel()
         {
             int zoneNumber = 1;
@@ -357,7 +360,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Canvas_ResizeZone_Save")]
+        [TestCategory("FancyZones Editor #7")]
         public void Canvas_ResizeZone_Save()
         {
             int zoneNumber = 1;
@@ -366,7 +370,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
             FancyZonesEditorHelper.ClickContextMenuItem(Session, canvas.Name, FancyZonesEditorHelper.ElementName.EditZones);
 
-            FancyZonesEditorHelper.GetZone(Session, zoneNumber, FancyZonesEditorHelper.ClassName.CanvasZone)?.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.TopRightCorner)).Drag(xOffset, yOffset);
+            FancyZonesEditorHelper.GetZone(Session, zoneNumber, FancyZonesEditorHelper.ClassName.CanvasZone)?.Find<Thumb>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.TopRightCorner)).Drag(xOffset, yOffset);
             Session.Find<Button>(ElementName.Save).Click();
 
             // check the file
@@ -394,7 +398,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Canvas_ResizeZone_Cancel")]
+        [TestCategory("FancyZones Editor #7")]
         public void Canvas_ResizeZone_Cancel()
         {
             int zoneNumber = 1;
@@ -403,7 +408,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
             FancyZonesEditorHelper.ClickContextMenuItem(Session, canvas.Name, FancyZonesEditorHelper.ElementName.EditZones);
 
-            FancyZonesEditorHelper.GetZone(Session, zoneNumber, FancyZonesEditorHelper.ClassName.CanvasZone)?.Find<Element>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.TopRightCorner)).Drag(xOffset, yOffset);
+            FancyZonesEditorHelper.GetZone(Session, zoneNumber, FancyZonesEditorHelper.ClassName.CanvasZone)?.Find<Thumb>(By.AccessibilityId(FancyZonesEditorHelper.AccessibilityId.TopRightCorner)).Drag(xOffset, yOffset);
             Session.Find<Button>(ElementName.Cancel).Click();
 
             // check the file
@@ -421,7 +426,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Grid_SplitZone_Save")]
+        [TestCategory("FancyZones Editor #8")]
         public void Grid_SplitZone_Save()
         {
             int zoneNumber = 1;
@@ -450,7 +456,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Grid_SplitZone_Cancel")]
+        [TestCategory("FancyZones Editor #8")]
         public void Grid_SplitZone_Cancel()
         {
             int zoneNumber = 1;
@@ -481,7 +488,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Grid_MergeZones_Save")]
+        [TestCategory("FancyZones Editor #8")]
         public void Grid_MergeZones_Save()
         {
             var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString());
@@ -515,7 +523,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(actual.CellChildMap[1].SequenceEqual([1, 2]));
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Grid_MergeZones_Cancel")]
+        [TestCategory("FancyZones Editor #8")]
         public void Grid_MergeZones_Cancel()
         {
             var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString());
@@ -551,7 +560,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Grid_MoveSplitter_Save")]
+        [TestCategory("FancyZones Editor #8")]
         public void Grid_MoveSplitter_Save()
         {
             EditorParameters editorParameters = new EditorParameters();
@@ -614,7 +624,8 @@ namespace Microsoft.FancyZonesEditor.UITests
             }
         }
 
-        [TestMethod]
+        [TestMethod("FancyZonesEditor.Basic.Grid_MoveSplitter_Cancel")]
+        [TestCategory("FancyZones Editor #8")]
         public void Grid_MoveSplitter_Cancel()
         {
             var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString() && x.Name == "Grid-9");

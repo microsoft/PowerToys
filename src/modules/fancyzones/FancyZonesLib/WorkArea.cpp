@@ -23,6 +23,7 @@
 namespace NonLocalizable
 {
     const wchar_t ToolWindowClassName[] = L"FancyZones_ZonesOverlay";
+    const wchar_t ToolWindowName[] = L"FancyZones_ZonesOverlay";
 }
 
 using namespace FancyZonesUtils;
@@ -59,7 +60,7 @@ namespace
             HWND windowFromPool = ExtractWindow();
             if (windowFromPool == NULL)
             {
-                HWND window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, L"", WS_POPUP, position.left(), position.top(), position.width(), position.height(), nullptr, nullptr, hinstance, owner);
+                HWND window = CreateWindowExW(WS_EX_TOOLWINDOW, NonLocalizable::ToolWindowClassName, NonLocalizable::ToolWindowName, WS_POPUP, position.left(), position.top(), position.width(), position.height(), nullptr, nullptr, hinstance, owner);
                 Logger::info("Creating new ZonesOverlay window, hWnd = {}", (void*)window);
                 FancyZonesWindowUtils::MakeWindowTransparent(window);
 
