@@ -604,6 +604,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowProperties", "WindowP
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorkspacesLib", "src\modules\Workspaces\WorkspacesLib\WorkspacesLib.vcxproj", "{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorkspacesLibUnitTests", "src\modules\Workspaces\WorkspacesLib.UnitTests\WorkspacesLibUnitTests.vcxproj", "{A85D4D9F-9A39-4B5D-8B5A-9F2D5C9A8B4C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332} = {B31FCC55-B5A4-4EA7-B414-2DCEAE6AF332}
+	EndProjectSection
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkspacesLauncherUI", "src\modules\Workspaces\WorkspacesLauncherUI\WorkspacesLauncherUI.csproj", "{9C53CC25-0623-4569-95BC-B05410675EE3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorkspacesModuleInterface", "src\modules\Workspaces\WorkspacesModuleInterface\WorkspacesModuleInterface.vcxproj", "{45285DF2-9742-4ECA-9AC9-58951FC26489}"
