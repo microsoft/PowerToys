@@ -7,8 +7,8 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
+using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
-using Microsoft.CmdPal.Ext.Indexer.Native;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
 
@@ -32,7 +32,7 @@ internal sealed partial class QueryStringBuilder
             ComWrappers cw = new StrategyBasedComWrappers();
             var searchManagerPtr = IntPtr.Zero;
 
-            var hr = NativeMethods.CoCreateInstance(ref Unsafe.AsRef(in NativeHelpers.CsWin32GUID.CLSIDSearchManager), IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref Unsafe.AsRef(in NativeHelpers.CsWin32GUID.IIDISearchManager), out searchManagerPtr);
+            var hr = Ole32.CoCreateInstance(ref Unsafe.AsRef(in CLSGUID.SearchManager), IntPtr.Zero, (uint)CLSCTX.ALL, ref Unsafe.AsRef(in IIDGUID.ISearchManager), out searchManagerPtr);
             if (hr != 0)
             {
                 throw new ArgumentException($"Failed to create SearchManager instance. HR: 0x{hr:X}");

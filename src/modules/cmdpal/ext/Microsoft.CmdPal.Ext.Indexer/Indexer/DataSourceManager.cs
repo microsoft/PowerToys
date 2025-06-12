@@ -7,8 +7,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
+using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
-using Microsoft.CmdPal.Ext.Indexer.Native;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
@@ -29,7 +29,7 @@ internal static class DataSourceManager
     private static bool InitializeDataSource()
     {
         var riid = typeof(IDBInitialize).GUID;
-        var hr = NativeMethods.CoCreateInstance(ref Unsafe.AsRef(in NativeHelpers.CsWin32GUID.CLSIDCollatorDataSource), IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref riid, out var dataSourceObjPtr);
+        var hr = Ole32.CoCreateInstance(ref Unsafe.AsRef(in CLSGUID.CollatorDataSource), IntPtr.Zero, (uint)CLSCTX.ALL, ref riid, out var dataSourceObjPtr);
         if (hr != 0)
         {
             Logger.LogError("CoCreateInstance failed: " + hr);
