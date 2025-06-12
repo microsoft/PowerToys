@@ -1,2 +1,3 @@
 DBID
 SHOW_WINDOW_CMD
+CoCreateInstance

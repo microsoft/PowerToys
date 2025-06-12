@@ -2,5 +2,11 @@
   "$schema": "https://aka.ms/CsWin32.schema.json",
   "allowMarshaling": false,
   "emitSingleFile": false,
-  "public": true
+  "useSafeHandles": false,
+  "comInterop": {
+    "preserveSigMethods": [ "*" ]
+  },
+  "friendlyOverloads": {
+    "enabled": false
+  }
 }
