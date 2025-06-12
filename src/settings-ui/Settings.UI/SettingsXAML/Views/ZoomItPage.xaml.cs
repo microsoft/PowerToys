@@ -12,7 +12,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class ZoomItPage : Page, IRefreshablePage
+    public sealed partial class ZoomItPage : NavigatablePage, IRefreshablePage
     {
         private ZoomItViewModel ViewModel { get; set; }
 

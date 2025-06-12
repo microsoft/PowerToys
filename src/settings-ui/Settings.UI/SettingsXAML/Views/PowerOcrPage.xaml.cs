@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PowerOcrPage : Page, IRefreshablePage
+    public sealed partial class PowerOcrPage : NavigatablePage, IRefreshablePage
     {
         private PowerOcrViewModel ViewModel { get; set; }
 

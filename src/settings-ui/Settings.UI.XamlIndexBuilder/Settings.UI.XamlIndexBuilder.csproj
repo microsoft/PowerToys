@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="..\..\Common.SelfContained.props" />
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<RootNamespace>Microsoft.PowerToys.Settings.UI.XamlIndexBuilder</RootNamespace>
+		<AssemblyName>XamlIndexBuilder</AssemblyName>
+		<OutputType>Exe</OutputType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.Text.Json" />
+		<PackageReference Include="System.CommandLine" />
+	</ItemGroup>
+</Project>
