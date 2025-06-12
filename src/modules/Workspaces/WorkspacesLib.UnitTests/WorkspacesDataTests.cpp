@@ -50,10 +50,10 @@ namespace WorkspacesLibUnitTests
             RECT rect = position.toRect();
 
             // Assert
-            Assert::AreEqual(100, rect.left);
-            Assert::AreEqual(200, rect.top);
-            Assert::AreEqual(900, rect.right); // x + width
-            Assert::AreEqual(800, rect.bottom); // y + height
+            Assert::AreEqual(100, static_cast<int>(rect.left));
+            Assert::AreEqual(200, static_cast<int>(rect.top));
+            Assert::AreEqual(900, static_cast<int>(rect.right)); // x + width
+            Assert::AreEqual(800, static_cast<int>(rect.bottom)); // y + height
         }
 
         TEST_METHOD(Position_ToRect_ZeroPosition)
@@ -69,10 +69,10 @@ namespace WorkspacesLibUnitTests
             RECT rect = position.toRect();
 
             // Assert
-            Assert::AreEqual(0, rect.left);
-            Assert::AreEqual(0, rect.top);
-            Assert::AreEqual(0, rect.right);
-            Assert::AreEqual(0, rect.bottom);
+            Assert::AreEqual(0, static_cast<int>(rect.left));
+            Assert::AreEqual(0, static_cast<int>(rect.top));
+            Assert::AreEqual(0, static_cast<int>(rect.right));
+            Assert::AreEqual(0, static_cast<int>(rect.bottom));
         }
 
         TEST_METHOD(Position_ToRect_NegativeCoordinates)
@@ -88,10 +88,10 @@ namespace WorkspacesLibUnitTests
             RECT rect = position.toRect();
 
             // Assert
-            Assert::AreEqual(-100, rect.left);
-            Assert::AreEqual(-50, rect.top);
-            Assert::AreEqual(100, rect.right); // -100 + 200
-            Assert::AreEqual(100, rect.bottom); // -50 + 150
+            Assert::AreEqual(-100, static_cast<int>(rect.left));
+            Assert::AreEqual(-50, static_cast<int>(rect.top));
+            Assert::AreEqual(100, static_cast<int>(rect.right)); // -100 + 200
+            Assert::AreEqual(100, static_cast<int>(rect.bottom)); // -50 + 150
         }
 
         TEST_METHOD(Application_DefaultValues)
@@ -112,11 +112,11 @@ namespace WorkspacesLibUnitTests
             Assert::IsFalse(app.canLaunchElevated);
             Assert::IsFalse(app.isMinimized);
             Assert::IsFalse(app.isMaximized);
-            Assert::AreEqual(0, app.position.x);
-            Assert::AreEqual(0, app.position.y);
-            Assert::AreEqual(0, app.position.width);
-            Assert::AreEqual(0, app.position.height);
-            Assert::AreEqual(0u, app.monitor);
+            Assert::AreEqual(0, static_cast<int>(app.position.x));
+            Assert::AreEqual(0, static_cast<int>(app.position.y));
+            Assert::AreEqual(0, static_cast<int>(app.position.width));
+            Assert::AreEqual(0, static_cast<int>(app.position.height));
+            Assert::AreEqual(0u, static_cast<unsigned int>(app.monitor));
         }
 
         TEST_METHOD(Application_Comparison_EqualObjects)

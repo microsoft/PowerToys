@@ -100,7 +100,10 @@ namespace WorkspacesLibUnitTests
             
             WorkspacesData::WorkspacesProject workspace;
             workspace.name = L"Test Workspace";
-            workspace.creationTime = L"2024-01-01T00:00:00";
+            
+            // Convert string to time_t
+            std::tm tm = {};
+            workspace.creationTime = std::mktime(&tm);
 
             // Act
             bool result = JsonUtils::Write(tempPath, workspace);
@@ -123,11 +126,11 @@ namespace WorkspacesLibUnitTests
             
             WorkspacesData::WorkspacesProject workspace1;
             workspace1.name = L"Test Workspace 1";
-            workspace1.creationTime = L"2024-01-01T00:00:00";
+            workspace1.creationTime = std::time(nullptr);
             
             WorkspacesData::WorkspacesProject workspace2;
             workspace2.name = L"Test Workspace 2";
-            workspace2.creationTime = L"2024-01-02T00:00:00";
+            workspace2.creationTime = std::time(nullptr);
             
             workspaces.push_back(workspace1);
             workspaces.push_back(workspace2);
@@ -169,6 +172,7 @@ namespace WorkspacesLibUnitTests
             
             WorkspacesData::WorkspacesProject workspace;
             workspace.name = L"Test Workspace";
+            workspace.creationTime = std::time(nullptr);
 
             // Act
             bool result = JsonUtils::Write(invalidPath, workspace);

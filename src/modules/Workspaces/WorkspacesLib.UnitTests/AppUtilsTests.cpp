@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <filesystem> // Add this line
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 

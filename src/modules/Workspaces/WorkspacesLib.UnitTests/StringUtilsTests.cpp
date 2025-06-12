@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <StringUtils.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
