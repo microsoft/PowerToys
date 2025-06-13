@@ -1406,6 +1406,18 @@
   <data name="ImageResizer_UseResizeDate.Content" xml:space="preserve">
     <value>Timestamp of resize action</value>
   </data>
+  <data name="ImageResizer_ShellIntegration.Header" xml:space="preserve">
+    <value>Shell integration</value>
+  </data>
+  <data name="ImageResizer_Toggle_ContextMenu.Header" xml:space="preserve">
+    <value>Show Image Resizer in</value>
+  </data>
+  <data name="ImageResizer_Toggle_StandardContextMenu.Content" xml:space="preserve">
+    <value>Default and extended context menu</value>
+  </data>
+  <data name="ImageResizer_Toggle_ExtendedContextMenu.Content" xml:space="preserve">
+    <value>Extended context menu only</value>
+  </data>
   <data name="Encoding.Header" xml:space="preserve">
     <value>Encoding</value>
   </data>
