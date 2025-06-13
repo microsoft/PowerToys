@@ -181,7 +181,7 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 ## PowerToys core team
 
 - [@cinnamon-msft](https://github.com/cinnamon-msft) - Kayla Cinnamon - Lead
- [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
+- [@craigloewen-msft](https://github.com/craigloewen-msft) - Craig Loewen - Product Manager
 - [@niels9001](https://github.com/niels9001/) - Niels Laute - Product Manager
 - [@dhowett](https://github.com/dhowett) - Dustin Howett - Dev lead
 - [@yeelam-gordon](https://github.com/yeelam-gordon) - Gordon Lam - Dev lead
