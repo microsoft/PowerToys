@@ -26,10 +26,10 @@ internal static partial class NativeMethods
     internal static partial int SetWindowLongW(IntPtr hWnd, int nIndex, int dwNewLong);
 
     [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
-    internal static partial int FindWindowA(in string lpClassName, in string? lpWindowName);
+    internal static partial IntPtr FindWindowA(in string lpClassName, in string? lpWindowName);
 
     [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
-    internal static partial int FindWindowExA(int hwndParent, int hwndChildAfter, in string lpClassName, in string? lpWindowName);
+    public static partial IntPtr FindWindowExA(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
 
     [LibraryImport("User32.dll")]
     internal static partial IntPtr MonitorFromWindow(int hwnd, int dwFlags);
@@ -46,6 +46,14 @@ internal static partial class NativeMethods
 
     [DllImport("user32.dll", SetLastError = true)]
     public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+
+    [DllImport("ole32.dll", SetLastError = true)]
+    public static extern uint CoCreateInstance(
+        in Guid rclsid,
+        IntPtr pUnkOuter,
+        uint dwClsContext,
+        in Guid riid,
+        out IntPtr ppv);
 
     public struct POINT
     {

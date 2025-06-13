@@ -60,6 +60,17 @@
   <ItemGroup>
     <ApplicationDefinition Include="ShortcutGuideXAML\App.xaml" />
   </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="UIAutomationClient">
+      <WrapperTool>tlbimp</WrapperTool>
+      <VersionMinor>0</VersionMinor>
+      <VersionMajor>1</VersionMajor>
+      <Guid>944de083-8fb8-45cf-bcb7-c477acb2f897</Guid>
+      <Lcid>0</Lcid>
+      <Isolated>false</Isolated>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\Hosts\Hosts.ico" />
@@ -95,6 +106,7 @@
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\ShortcutGuide.CPPProject\ShortcutGuide.CPPProject.vcxproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resource.Designer.cs">
