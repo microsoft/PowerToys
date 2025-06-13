@@ -8,11 +8,13 @@ using System.Text;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using HostsUILib.Helpers;
-using Microsoft.UI.Xaml.Data;
 
 namespace HostsUILib.Models
 {
-    [Bindable]
+#if !EXCLUDE_FORFUZZTEST
+
+    [Microsoft.UI.Xaml.Data.Bindable]
+#endif
     public partial class Entry : ObservableObject
     {
         private static readonly char[] _spaceCharacters = new char[] { ' ', '\t' };

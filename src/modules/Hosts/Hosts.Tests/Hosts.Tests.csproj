@@ -9,6 +9,7 @@
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\Hosts.Tests\</OutputPath>
     <RootNamespace>Hosts.Tests</RootNamespace>
     <AssemblyName>PowerToys.Hosts.Tests</AssemblyName>
+	<DefineConstants>EXCLUDE_FORFUZZTEST</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
