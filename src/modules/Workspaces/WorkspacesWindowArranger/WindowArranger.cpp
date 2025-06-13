@@ -13,6 +13,7 @@
 
 #include <WindowProperties/WorkspacesWindowPropertyUtils.h>
 #include <WorkspacesLib/PwaHelper.h>
+#include <WorkspacesLib/WindowUtils.h>
 
 namespace NonLocalizable
 {
@@ -203,7 +204,7 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 
         if (!data->IsSteamGame() && !WindowUtils::HasThickFrame(window))
         {
-            // Only care about steam games if it has no thick frame to remain consistent with 
+            // Only care about steam games if it has no thick frame to remain consistent with
             // the behavior as before.
             continue;
         }
@@ -220,7 +221,7 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
         bool isChrome = appData.IsChrome();
         if (isEdge || isChrome)
         {
-            auto windowAumid = pwaHelper.GetAUMIDFromWindow(window);
+            auto windowAumid = Utils::GetAUMIDFromWindow(window);
             std::optional<std::wstring> pwaAppId{};
 
             if (isEdge)

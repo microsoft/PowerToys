@@ -49,6 +49,8 @@ namespace WorkspacesEditor.Data
             public WindowPositionWrapper Position { get; set; }
 
             public int Monitor { get; set; }
+
+            public string Version { get; set; }
         }
 
         public struct MonitorConfigurationWrapper
