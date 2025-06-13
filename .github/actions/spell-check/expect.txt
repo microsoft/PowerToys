@@ -1513,6 +1513,7 @@ SICHINT
 SIDs
 siex
 sigdn
+Signedness
 SIGNINGSCENARIO
 signtool
 SINGLEKEY
