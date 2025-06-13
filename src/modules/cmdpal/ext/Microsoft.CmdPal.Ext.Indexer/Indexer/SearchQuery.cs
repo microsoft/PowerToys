@@ -4,14 +4,15 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using ManagedCommon;
+using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.Utils;
-using Microsoft.CmdPal.Ext.Indexer.Native;
-using static Microsoft.CmdPal.Ext.Indexer.Native.NativeHelpers;
+using static Microsoft.CmdPal.Ext.Indexer.Indexer.Utils.NativeHelpers;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
@@ -143,9 +144,7 @@ internal sealed partial class SearchQuery : IDisposable
     {
         try
         {
-            var riid = CsWin32GUID.PropertyStore;
-
-            getRow.GetRowFromHROW(null, rowHandle, ref riid, out var propertyStore);
+            getRow.GetRowFromHROW(null, rowHandle, ref Unsafe.AsRef(in IID.IPropertyStore), out var propertyStore);
 
             if (propertyStore == null)
             {

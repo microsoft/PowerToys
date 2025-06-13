@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
+using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -36,7 +37,7 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
         ComWrappers cw = new StrategyBasedComWrappers();
         var appManagerPtr = IntPtr.Zero;
 
-        var hr = NativeHelpers.CoCreateInstance(ref Unsafe.AsRef(in NativeHelpers.ApplicationActivationManagerCLSID), IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref Unsafe.AsRef(in NativeHelpers.ApplicationActivationManagerIID), out appManagerPtr);
+        var hr = Ole32.CoCreateInstance(ref Unsafe.AsRef(in CLSID.ApplicationActivationManager), IntPtr.Zero, (uint)CLSCTX.ALL, ref Unsafe.AsRef(in IID.IApplicationActivationManager), out appManagerPtr);
         if (hr != 0)
         {
             throw new ArgumentException($"Failed to create IApplicationActivationManager instance. HR: 0x{hr:X}");

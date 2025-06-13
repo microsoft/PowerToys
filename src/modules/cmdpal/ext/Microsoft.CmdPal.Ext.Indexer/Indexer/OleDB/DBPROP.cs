@@ -4,9 +4,7 @@
 
 using System.Runtime.InteropServices;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
-using Microsoft.CmdPal.Ext.Indexer.Native;
 using Windows.Win32.Storage.IndexServer;
-using Windows.Win32.System.Com.StructuredStorage;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.OleDB;
 
