@@ -21,6 +21,8 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
 
     private uint _queryCookie = 10;
 
+    private Func<string, bool> _suppressCallback;
+
     public FallbackOpenFileItem()
         : base(new NoOpCommand(), Resources.Indexer_Find_Path_fallback_display_title)
     {
@@ -31,6 +33,17 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
     public override void UpdateQuery(string query)
     {
         if (string.IsNullOrWhiteSpace(query))
+        {
+            Command = new NoOpCommand();
+            Title = string.Empty;
+            Subtitle = string.Empty;
+            Icon = null;
+            MoreCommands = null;
+
+            return;
+        }
+
+        if (_suppressCallback != null && _suppressCallback(query))
         {
             Command = new NoOpCommand();
             Title = string.Empty;
@@ -124,5 +137,10 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, System
     {
         _searchEngine.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    public void SuppressFallbackWhen(Func<string, bool> callback)
+    {
+        _suppressCallback = callback;
     }
 }

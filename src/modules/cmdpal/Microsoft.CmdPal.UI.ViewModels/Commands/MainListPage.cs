@@ -233,7 +233,7 @@ public partial class MainListPage : DynamicListPage,
         max = max + extensionTitleMatch;
 
         // ... but downweight them
-        var matchSomething = (max / (isFallback ? 3 : 1))
+        var matchSomething = max /*/ (isFallback ? 3 : 1)*/
             + (isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0));
 
         // If we matched title, subtitle, or alias (something real), then

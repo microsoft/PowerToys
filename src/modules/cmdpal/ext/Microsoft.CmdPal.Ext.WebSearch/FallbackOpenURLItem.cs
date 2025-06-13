@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Text;
 using Microsoft.CmdPal.Ext.WebSearch.Commands;
 using Microsoft.CmdPal.Ext.WebSearch.Helpers;
-using Microsoft.CmdPal.Ext.WebSearch.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using BrowserInfo = Microsoft.CmdPal.Ext.WebSearch.Helpers.DefaultBrowserInfo;
 
@@ -33,6 +32,7 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
     {
         if (!IsValidUrl(query))
         {
+            _executeItem.Name = string.Empty;
             Title = string.Empty;
             Subtitle = string.Empty;
             return;
