@@ -7,13 +7,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using ShortcutGuide;
+using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Shapes;
 using ShortcutGuide.Models;
 using Windows.Foundation;
 
@@ -21,6 +24,8 @@ namespace ShortcutGuide
 {
     public sealed partial class ShortcutView : Page, INotifyPropertyChanged
     {
+        private readonly DispatcherTimer _taskbarUpdateTimer = new() { Interval = TimeSpan.FromMilliseconds(500) };
+        private bool _showTaskbarShortcuts = true;
         private ShortcutFile shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
 
         public ShortcutView()
@@ -41,7 +46,7 @@ namespace ShortcutGuide
                     switch (category.SectionName)
                     {
                         case string name when name.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal):
-                            // Todo: Implement GetTaskbarIconPositions
+                            _showTaskbarShortcuts = true;
                             break;
                         case string name when name.StartsWith('<') && name.EndsWith('>'):
                             break;
@@ -69,6 +74,13 @@ namespace ShortcutGuide
                     ShortcutPageParameters.PinnedShortcuts.Add(ShortcutPageParameters.CurrentPageName, []);
                 }
 
+                if (_showTaskbarShortcuts)
+                {
+                    TaskbarIndicators.Visibility = Visibility.Visible;
+                    _taskbarUpdateTimer.Tick += UpdateTaskbarIndicators;
+                    _taskbarUpdateTimer.Start();
+                }
+
                 OpenOverview();
             }
             catch (Exception)
@@ -76,6 +88,59 @@ namespace ShortcutGuide
                 OverviewStackPanel.Visibility = Visibility.Collapsed;
                 ErrorMessage.Visibility = Visibility.Visible;
                 ErrorMessage.Text = "Error displaying the applications shortcuts";
+            }
+        }
+
+        private void UpdateTaskbarIndicators(object? sender, object? e)
+        {
+            var buttons = TasklistPositions.GetButtons();
+            Canvas[] canvases = [
+                TaskbarIndicator1,
+                TaskbarIndicator2,
+                TaskbarIndicator3,
+                TaskbarIndicator4,
+                TaskbarIndicator5,
+                TaskbarIndicator6,
+                TaskbarIndicator7,
+                TaskbarIndicator8,
+                TaskbarIndicator9,
+                TaskbarIndicator10,
+            ];
+
+            for (int i = 0; i < canvases.Length; i++)
+            {
+                if (i < buttons.Length)
+                {
+                    canvases[i].Visibility = Visibility.Visible;
+                    Rect workArea = DisplayHelper.GetWorkAreaForDisplayWithWindow(MainWindow.WindowHwnd);
+                    DoubleAnimation animation = new DoubleAnimation
+                    {
+                        To = (buttons[i].X - workArea.Left) / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32()),
+                        Duration = TimeSpan.FromMilliseconds(500),
+                    };
+
+                    // Create the storyboard
+                    Storyboard storyboard = new Storyboard();
+                    storyboard.Children.Add(animation);
+
+                    // Set the target and property
+                    Storyboard.SetTarget(animation, canvases[i]);
+                    Storyboard.SetTargetProperty(animation, "(Canvas.Left)");
+
+                    // Start the animation
+                    storyboard.Begin();
+
+                    canvases[i].Width = buttons[i].Width / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
+                    canvases[i].Height = buttons[i].Height / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
+                    ((Rectangle)canvases[i].Children[0]).Width = buttons[i].Width / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
+                    ((Rectangle)canvases[i].Children[0]).Height = buttons[i].Height / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
+                    ((TextBlock)canvases[i].Children[1]).Width = buttons[i].Width / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
+                    ((TextBlock)canvases[i].Children[1]).Height = buttons[i].Height / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32());
+                }
+                else
+                {
+                    canvases[i].Visibility = Visibility.Collapsed;
+                }
             }
         }
 

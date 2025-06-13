@@ -12,6 +12,21 @@ Shortcuts:
           Alt: true
           Keys:
             - F4
+      - Name: Test shortcut
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - K
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - C
+
       - Name: Open shutdown box
         Description: When no windows are open
         Shortcut:
@@ -23,12 +38,6 @@ Shortcuts:
             - F4
       - Name: Cycle through open Windows
         Shortcut:
-        - Win: false
-          Ctrl: false
-          Shift: false
-          Alt: true
-          Keys:
-            - Esc
         - Win: false
           Ctrl: false
           Shift: false

@@ -38,6 +38,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <SelectorBar Grid.Row="0" x:Name="CategorySelector" />
         <TextBlock x:Name="ErrorMessage" Style="{StaticResource SubheaderTextBlockStyle}" Grid.Row="1" Margin="6,0,6,0"></TextBlock>
@@ -78,5 +79,47 @@
                 </GridView>
             </Grid>
         </ScrollViewer>
+        <Canvas Grid.Row="2" x:Name="TaskbarIndicators" Visibility="Collapsed" Height="20">
+            <Canvas x:Name="TaskbarIndicator1" Height="10" Width="10">
+                <Rectangle Fill="Blue" Height="10" Width="10" />
+                <TextBlock Text="1" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            </Canvas>
+            <Canvas x:Name="TaskbarIndicator2" Canvas.Left="20" Height="10" Width="10">
+                <Rectangle Fill="Blue" Height="10" Width="10" />
+                <TextBlock Text="2" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            </Canvas>
+            <Canvas x:Name="TaskbarIndicator3" Canvas.Left="40" Height="10" Width="10">
+                <Rectangle Fill="Blue" Height="10" Width="10" />
+                <TextBlock Text="3" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            </Canvas>
+            <Canvas x:Name="TaskbarIndicator4" Canvas.Left="60" Height="10" Width="10">
+                <Rectangle Fill="Blue" Height="10" Width="10" />
+                <TextBlock Text="4" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            </Canvas>
+            <Canvas x:Name="TaskbarIndicator5" Canvas.Left="80" Height="10" Width="10">
+                <Rectangle Fill="Blue" Height="10" Width="10" />
+                <TextBlock Text="5" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            </Canvas>
+            <Canvas x:Name="TaskbarIndicator6" Canvas.Left="100" Height="10" Width="10">
+                <Rectangle Fill="Blue" Height="10" Width="10" />
+                <TextBlock Text="6" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            </Canvas>
+            <Canvas x:Name="TaskbarIndicator7" Canvas.Left="120" Height="10" Width="10">
+                <Rectangle Fill="Blue" Height="10" Width="10" />
+                <TextBlock Text="7" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            </Canvas>
+            <Canvas x:Name="TaskbarIndicator8" Canvas.Left="140" Height="10" Width="10">
+                <Rectangle Fill="Blue" Height="10" Width="10" />
+                <TextBlock Text="8" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            </Canvas>
+            <Canvas x:Name="TaskbarIndicator9" Canvas.Left="160" Height="10" Width="10">
+                <Rectangle Fill="Blue" Height="10" Width="10" />
+                <TextBlock Text="9" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            </Canvas>
+            <Canvas x:Name="TaskbarIndicator10" Canvas.Left="180" Height="10" Width="10">
+                <Rectangle Fill="Blue" Height="10" Width="10" />
+                <TextBlock Text="0" Foreground="White" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold"/>
+            </Canvas>
+        </Canvas>
     </Grid>
 </Page>

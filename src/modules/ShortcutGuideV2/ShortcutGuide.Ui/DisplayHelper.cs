@@ -19,6 +19,7 @@ namespace ShortcutGuide
         public static Rect GetWorkAreaForDisplayWithWindow(IntPtr hwnd)
         {
             foundMonitorIndex = -1;
+            monitorIndex = 0;
             var monitor = MonitorFromWindow(hwnd, (int)MonitorFromWindowDwFlags.MONITOR_DEFAULTTONEAREST);
             EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, MonitorEnumProc, new LPARAM(monitor));
             return MonitorInfo.GetDisplayMonitors()[foundMonitorIndex].RectWork;

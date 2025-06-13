@@ -28,6 +28,8 @@ namespace ShortcutGuide
     /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
+        public static nint WindowHwnd { get; set; }
+
         private AppWindow _appWindow;
 
         private string[] _currentApplicationIds;
@@ -41,6 +43,7 @@ namespace ShortcutGuide
             Title = Resource.ResourceManager.GetString("Title", CultureInfo.InvariantCulture)!;
 
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            WindowHwnd = hwnd;
             WindowId windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
             _appWindow = AppWindow.GetFromWindowId(windowId);
 #if !DEBUG
@@ -75,7 +78,9 @@ namespace ShortcutGuide
         {
             if (e.WindowActivationState == WindowActivationState.Deactivated)
             {
+#if !DEBUG
                 Environment.Exit(0);
+#endif
             }
 
             if (!_setPosition)
@@ -96,6 +101,16 @@ namespace ShortcutGuide
                 // Move top of the window to the center of the monitor
                 _appWindow.Move(new PointInt32((int)monitorRect.X, (int)(monitorRect.Y + (int)(monitorRect.Height / 2))));
                 _setPosition = true;
+                AppWindow.Changed += (_, a) =>
+                {
+                    if (a.DidPresenterChange)
+                    {
+                        Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
+                        float dpiScale = DpiHelper.GetDPIScaleForWindow((int)hwnd);
+                        this.SetWindowSize(monitorRect.Width / dpiScale, monitorRect.Height / dpiScale / 2);
+                        _appWindow.Move(new PointInt32((int)monitorRect.X, (int)(monitorRect.Y + (int)(monitorRect.Height / 2))));
+                    }
+                };
             }
 
             if (WindowSelector.Items.Count == 0)
