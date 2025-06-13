@@ -36,49 +36,19 @@ Runs the pipeline for x64 Debug.
 - The installer can't be run right after the build, I need to copy it to another file before it can be run.
 #>
 
-
 param (
     [string]$Platform = 'arm64',
     [string]$Configuration = 'Release'
 )
 
+# Import shared build utilities
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+Import-Module (Join-Path $scriptDir "BuildUtils.psm1") -Force
+
 $repoRoot = Resolve-Path "$PSScriptRoot\..\.."
 Set-Location $repoRoot
 
-function RunMSBuild {
-    param (
-        [string]$Solution, 
-        [string]$ExtraArgs  
-    )
-
-    $base = @(
-        $Solution
-        "/p:Platform=`"$Platform`""
-        "/p:Configuration=$Configuration"
-        '/verbosity:normal'
-        '/clp:Summary;PerformanceSummary;ErrorsOnly;WarningsOnly'
-        '/nologo'
-    )
-
-    $cmd = $base + ($ExtraArgs -split ' ')
-    Write-Host ("[MSBUILD] {0} {1}" -f $Solution, ($cmd -join ' '))
-    & msbuild.exe @cmd
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error ("Build failed: {0}  {1}" -f $Solution, $ExtraArgs)
-        exit $LASTEXITCODE
-    }
-
-}
-
-function RestoreThenBuild {
-    param ([string]$Solution)
-
-    # 1) restore
-    RunMSBuild $Solution '/t:restore /p:RestorePackagesConfig=true'
-    # 2) build  -------------------------------------------------
-    RunMSBuild $Solution '/m'
-}
+Write-BuildHeader "PowerToys Installer Build Script"
 
 Write-Host ("Make sure wix is installed and available")
 & "$PSScriptRoot\ensure-wix.ps1"
@@ -93,7 +63,8 @@ if (Test-Path $cmdpalOutputPath) {
     Remove-Item $cmdpalOutputPath -Recurse -Force -ErrorAction Ignore
 }
 
-RestoreThenBuild '.\PowerToys.sln'
+# Build PowerToys main solution
+Invoke-RestoreThenBuild -Solution '.\PowerToys.sln' -Platform $Platform -Configuration $Configuration
 
 $msixSearchRoot = Join-Path $repoRoot "$Platform\$Configuration"
 $msixFiles = Get-ChildItem -Path $msixSearchRoot -Recurse -Filter *.msix |
@@ -107,16 +78,18 @@ else {
     Write-Warning "[SIGN] No .msix files found in $msixSearchRoot"
 }
 
-RestoreThenBuild '.\tools\BugReportTool\BugReportTool.sln'
-RestoreThenBuild '.\tools\StylesReportTool\StylesReportTool.sln'
+# Build tool solutions
+Invoke-RestoreThenBuild -Solution '.\tools\BugReportTool\BugReportTool.sln' -Platform $Platform -Configuration $Configuration
+Invoke-RestoreThenBuild -Solution '.\tools\StylesReportTool\StylesReportTool.sln' -Platform $Platform -Configuration $Configuration
 
 Write-Host '[CLEAN] installer (keep *.exe)'
 git clean -xfd -e '*.exe' -- .\installer\ | Out-Null
 
-RunMSBuild  '.\installer\PowerToysSetup.sln' '/t:restore /p:RestorePackagesConfig=true'
+# Build installer components
+Invoke-MSBuild -Solution '.\installer\PowerToysSetup.sln' -Platform $Platform -Configuration $Configuration -Target 'restore' -ExtraArgs '/p:RestorePackagesConfig=true'
 
-RunMSBuild '.\installer\PowerToysSetup.sln' '/m /t:PowerToysInstaller /p:PerUser=true'
+Invoke-MSBuild -Solution '.\installer\PowerToysSetup.sln' -Platform $Platform -Configuration $Configuration -Target 'PowerToysInstaller' -ExtraArgs '/p:PerUser=true' -UseMultiProcessor
 
-RunMSBuild '.\installer\PowerToysSetup.sln' '/m /t:PowerToysBootstrapper /p:PerUser=true'
+Invoke-MSBuild -Solution '.\installer\PowerToysSetup.sln' -Platform $Platform -Configuration $Configuration -Target 'PowerToysBootstrapper' -ExtraArgs '/p:PerUser=true' -UseMultiProcessor
 
 Write-Host '[PIPELINE] Completed'
