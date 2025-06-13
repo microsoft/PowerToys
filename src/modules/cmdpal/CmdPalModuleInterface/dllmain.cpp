@@ -117,16 +117,18 @@ private:
 
         for (DWORD pid : processIds)
         {
-            HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+            HANDLE hProcess = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, FALSE, pid);
 
             if (hProcess != NULL)
             {
                 SetEvent(m_hTerminateEvent);
 
-                // Wait for 1.5 seconds for the process to end correctly and stop etw tracer
-                WaitForSingleObject(hProcess, 1500);
+                // Wait for 1.5 seconds for the process to end correctly, allowing time for ETW tracer and extensions to stop
+                if (WaitForSingleObject(hProcess, 1500) == WAIT_TIMEOUT)
+                {
+                    TerminateProcess(hProcess, 0);
+                }
 
-                TerminateProcess(hProcess, 0);
                 CloseHandle(hProcess);
             }
         }
