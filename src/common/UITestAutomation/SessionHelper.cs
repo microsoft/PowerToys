@@ -40,13 +40,7 @@ namespace Microsoft.PowerToys.UITest
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
             this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-            if (SessionHelper.root == null || SessionHelper.appDriver?.SessionId == null || SessionHelper.appDriver == null || SessionHelper.appDriver.HasExited)
-            {
-                this.StartWindowsAppDriverApp();
-                var desktopCapabilities = new AppiumOptions();
-                desktopCapabilities.AddAdditionalCapability("app", "Root");
-                SessionHelper.root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
-            }
+            CheckWinAppDriverAndRoot();
 
             var runnerProcessInfo = new ProcessStartInfo
             {
@@ -58,6 +52,20 @@ namespace Microsoft.PowerToys.UITest
             {
                 this.ExitExe(runnerProcessInfo.FileName);
                 this.runner = Process.Start(runnerProcessInfo);
+            }
+        }
+
+        /// <summary>
+        /// Initializes WinAppDriver And Root.
+        /// </summary>
+        public void CheckWinAppDriverAndRoot()
+        {
+            if (SessionHelper.root == null || SessionHelper.appDriver?.SessionId == null || SessionHelper.appDriver == null || SessionHelper.appDriver.HasExited)
+            {
+                this.StartWindowsAppDriverApp();
+                var desktopCapabilities = new AppiumOptions();
+                desktopCapabilities.AddAdditionalCapability("app", "Root");
+                SessionHelper.root = new WindowsDriver<WindowsElement>(new Uri(ModuleConfigData.Instance.GetWindowsApplicationDriverUrl()), desktopCapabilities);
             }
         }
 
@@ -157,6 +165,7 @@ namespace Microsoft.PowerToys.UITest
                     }
 
                     Task.Delay(retryInterval).Wait();
+                    CheckWinAppDriverAndRoot();
                 }
             }
         }
