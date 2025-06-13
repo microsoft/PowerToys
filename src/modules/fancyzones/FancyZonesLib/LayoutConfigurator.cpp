@@ -3,7 +3,6 @@
 
 #include <common/display/dpi_aware.h>
 #include <common/logger/logger.h>
-#include <common/utils/gpo.h>
 
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 
@@ -107,8 +106,20 @@ bool AddZone(Zone zone, ZonesMap& zones) noexcept
 
 int AdjustSpacingForRegistry(int originalSpacing)
 {
-    auto adjustMarginSetting = powertoys_gpo::getConfiguredFancyZonesAdjustMarginValue();
-    if (adjustMarginSetting == powertoys_gpo::gpo_rule_configured_enabled)
+    // Check Windows DWM ColorPrevalence setting
+    // When ColorPrevalence = 0 (accent color not shown), subtract 1 from spacing
+    HKEY hKey;
+    DWORD dwValue = 1; // Default to 1 (accent color shown)
+    DWORD dwSize = sizeof(DWORD);
+    
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\DWM", 0, KEY_READ, &hKey) == ERROR_SUCCESS)
+    {
+        RegQueryValueExW(hKey, L"ColorPrevalence", nullptr, nullptr, (LPBYTE)&dwValue, &dwSize);
+        RegCloseKey(hKey);
+    }
+    
+    // Apply -1 margin when ColorPrevalence = 0 (accent color not shown)
+    if (dwValue == 0)
     {
         return originalSpacing - 1;
     }
