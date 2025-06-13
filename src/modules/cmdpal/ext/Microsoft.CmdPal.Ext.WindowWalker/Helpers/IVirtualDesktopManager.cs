@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 
@@ -11,18 +12,16 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 /// Interface for accessing Virtual Desktop Manager.
 /// Code used from <see href="https://learn.microsoft.com/archive/blogs/winsdk/virtual-desktop-switching-in-windows-10"./>
 /// </summary>
-[ComImport]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+[GeneratedComInterface]
 [Guid("a5cd92ff-29be-454c-8d04-d82879fb3f1b")]
-[System.Security.SuppressUnmanagedCodeSecurity]
-internal interface IVirtualDesktopManager
+public partial interface IVirtualDesktopManager
 {
     [PreserveSig]
-    int IsWindowOnCurrentVirtualDesktop([In] IntPtr hTopLevelWindow, [Out] out int onCurrentDesktop);
+    int IsWindowOnCurrentVirtualDesktop(IntPtr hTopLevelWindow, out int onCurrentDesktop);
 
     [PreserveSig]
-    int GetWindowDesktopId([In] IntPtr hTopLevelWindow, [Out] out Guid desktop);
+    int GetWindowDesktopId(IntPtr hTopLevelWindow, out Guid desktop);
 
     [PreserveSig]
-    int MoveWindowToDesktop([In] IntPtr hTopLevelWindow, [MarshalAs(UnmanagedType.LPStruct)][In] Guid desktop);
+    int MoveWindowToDesktop(IntPtr hTopLevelWindow, ref Guid desktop);
 }

@@ -397,6 +397,7 @@ jobs:
           **\UnitTests-CommonLib.dll
           **\PowerRenameUnitTests.dll
           **\UnitTests-FancyZones.dll
+          **\\WorkspacesLibUnitTests.dll
           !**\obj\**
 
   - pwsh: |-
