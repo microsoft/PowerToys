@@ -9,7 +9,6 @@
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\Hosts.Tests\</OutputPath>
     <RootNamespace>Hosts.Tests</RootNamespace>
     <AssemblyName>PowerToys.Hosts.Tests</AssemblyName>
-	<DefineConstants>TESTONLY</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
