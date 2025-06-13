@@ -90,13 +90,10 @@ public:
             return S_OK;
         }
 
-        // Hide MSIX handler when extended context menu setting is enabled
-        // This prevents duplicate context menu entries
-        if (CSettingsInstance().GetExtendedContextMenuOnly())
-        {
-            *cmdState = ECS_HIDDEN;
-            return S_OK;
-        }
+        // Hide MSIX handler to prevent duplicate context menu entries
+        // The traditional handler provides the context menu functionality
+        *cmdState = ECS_HIDDEN;
+        return S_OK;
         // Hide if the file is not an image
         *cmdState = ECS_HIDDEN;
         // Suppressing C26812 warning as the issue is in the shtypes.h library
