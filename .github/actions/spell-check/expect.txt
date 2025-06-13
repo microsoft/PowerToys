@@ -329,7 +329,6 @@ DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
 DEFPUSHBUTTON
-DEFT
 deinitialization
 DELA
 DELETEDKEYIMAGE
@@ -672,7 +671,6 @@ IBeam
 icf
 ICONERROR
 ICONLOCATION
-idc
 IDCANCEL
 IDD
 idk
@@ -683,7 +681,6 @@ IDR
 IDXGI
 ietf
 IEXPLORE
-iextn
 IFACEMETHOD
 IFACEMETHODIMP
 IFile
@@ -722,7 +719,6 @@ INPUTMOUSE
 INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
-INSTALLDIR
 installdir
 INSTALLFOLDER
 INSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER
@@ -758,6 +754,7 @@ iwr
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
+JLO
 jobject
 jpe
 jpnime
@@ -814,7 +811,6 @@ LMENU
 lnks
 LOADFROMFILE
 LOBYTE
-localappdata
 LOCALDISPLAY
 localpackage
 LOCALSYSTEM
@@ -979,7 +975,6 @@ msrc
 msstore
 mst
 msvcp
-msvsmon
 MTND
 MULTIPLEUSE
 multizone
@@ -1287,7 +1282,6 @@ pstm
 PStr
 pstream
 pstrm
-pswd
 PSYSTEM
 psz
 ptb
@@ -1479,16 +1473,12 @@ SHELLDLL
 shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
-SHELLEXTENSION
 SHELLICONSIZE
-SHELLNEWVALUE
 SHFILEINFO
 SHFILEOPSTRUCT
 SHGDN
 SHGDNF
 SHGFI
-SHGFIICON
-SHGFILARGEICON
 SHIL
 shinfo
 shlwapi
@@ -1522,7 +1512,6 @@ siex
 sigdn
 SIGNINGSCENARIO
 signtool
-Signtool
 SINGLEKEY
 sipolicy
 SIZEBOX
@@ -1698,7 +1687,6 @@ TLayout
 tlb
 tlbimp
 tlc
-TGM
 TNP
 Toolhelp
 toolkitconverters
@@ -1786,7 +1774,6 @@ uxtheme
 vabdq
 validmodulename
 valuegenerator
-VARENUM
 variantassignment
 vcamp
 VCENTER
@@ -2006,11 +1993,6 @@ CLSCTXINPROCALL
 IIDI
 irow
 lcid
-OTHERUNZOOM
-OTHERZOOM
-PARENTCLOSING
-PARENTOPENING
 ppwsz
 rguid
-SCROLLCHILDREN
 VARTYPE
