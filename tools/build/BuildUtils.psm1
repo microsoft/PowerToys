@@ -110,10 +110,10 @@ function Invoke-RestoreThenBuild {
         [string]$Configuration,
         
         [string]$ExtraArgs = ""
-    )
-
-    Write-Host "Restoring packages for: $Solution" -ForegroundColor Cyan
-    Invoke-MSBuild -Solution $Solution -Platform $Platform -Configuration $Configuration -Target "Restore" -ExtraArgs "/p:RestorePackagesConfig=true"    Write-Host "Building solution: $Solution" -ForegroundColor Cyan
+    )    Write-Host "Restoring packages for: $Solution" -ForegroundColor Cyan
+    Invoke-MSBuild -Solution $Solution -Platform $Platform -Configuration $Configuration -Target "Restore" -ExtraArgs "/p:RestorePackagesConfig=true"
+    
+    Write-Host "Building solution: $Solution" -ForegroundColor Cyan
     Invoke-MSBuild -Solution $Solution -Platform $Platform -Configuration $Configuration -Target "Build" -ExtraArgs $ExtraArgs -UseMultiProcessor
 }
 
