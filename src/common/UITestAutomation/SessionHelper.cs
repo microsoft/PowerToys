@@ -40,7 +40,7 @@ namespace Microsoft.PowerToys.UITest
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
             this.locationPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-            if (SessionHelper.root == null || SessionHelper.appDriver?.SessionId == null)
+            if (SessionHelper.root == null || SessionHelper.appDriver?.SessionId == null || SessionHelper.appDriver == null || SessionHelper.appDriver.HasExited)
             {
                 this.StartWindowsAppDriverApp();
                 var desktopCapabilities = new AppiumOptions();
