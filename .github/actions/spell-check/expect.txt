@@ -910,6 +910,7 @@ metafile
 mfc
 Mgmt
 Microwaved
+middleclickaction
 midl
 mii
 mindaro
@@ -1251,6 +1252,7 @@ prg
 prgh
 prgms
 pri
+primaryclickaction
 PRINTCLIENT
 printmanagement
 prm
@@ -1426,6 +1428,7 @@ SDKDDK
 sdns
 searchterm
 SEARCHUI
+secondaryclickaction
 SECONDARYDISPLAY
 secpol
 securestring
