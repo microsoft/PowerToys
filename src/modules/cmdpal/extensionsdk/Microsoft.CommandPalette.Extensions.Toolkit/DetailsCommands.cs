@@ -4,7 +4,7 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class DetailsCommand : IDetailsCommand
+public partial class DetailsCommands : IDetailsCommands
 {
-    public ICommand? Command { get; set; }
+    public ICommand[]? Commands { get; set; }
 }

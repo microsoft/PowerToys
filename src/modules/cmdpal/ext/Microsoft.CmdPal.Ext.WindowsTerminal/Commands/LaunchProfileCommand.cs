@@ -3,18 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Resources;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
-using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.UI;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal.Commands;
 
@@ -38,7 +33,23 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
 
     private void Launch(string id, string profile)
     {
-        var appManager = new ApplicationActivationManager();
+        ComWrappers cw = new StrategyBasedComWrappers();
+        var appManagerPtr = IntPtr.Zero;
+
+        var hr = NativeHelpers.CoCreateInstance(ref Unsafe.AsRef(in NativeHelpers.ApplicationActivationManagerCLSID), IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref Unsafe.AsRef(in NativeHelpers.ApplicationActivationManagerIID), out appManagerPtr);
+        if (hr != 0)
+        {
+            throw new ArgumentException($"Failed to create IApplicationActivationManager instance. HR: 0x{hr:X}");
+        }
+
+        var appManager = (IApplicationActivationManager)cw.GetOrCreateObjectForComInstance(
+            appManagerPtr, CreateObjectFlags.None);
+
+        if (appManager == null)
+        {
+            throw new ArgumentException("Failed to get IApplicationActivationManager interface");
+        }
+
         const ActivateOptions noFlags = ActivateOptions.None;
         var queryArguments = TerminalHelper.GetArguments(profile, _openNewTab, _openQuake);
         try
@@ -54,6 +65,13 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
             // Log.Exception("Failed to open Windows Terminal", ex, GetType());
             // _context.API.ShowMsg(name, message, string.Empty);
             Logger.LogError($"Failed to open Windows Terminal: {ex.Message}");
+        }
+        finally
+        {
+            if (appManagerPtr != IntPtr.Zero)
+            {
+                Marshal.Release(appManagerPtr);
+            }
         }
     }
 #pragma warning restore IDE0059, CS0168

@@ -14,6 +14,7 @@ AColumn
 acrt
 ACTIVATEAPP
 activationaction
+ACTIVATEOPTIONS
 ACVS
 adaptivecards
 ADate
@@ -68,6 +69,7 @@ appwiz
 APSTUDIO
 AQS
 ARandom
+Arash
 ARCHITEW
 ARemapped
 ARPINSTALLLOCATION
@@ -327,7 +329,6 @@ DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
 DEFPUSHBUTTON
-DEFT
 deinitialization
 DELA
 DELETEDKEYIMAGE
@@ -469,6 +470,7 @@ EXPCMDFLAGS
 EXPCMDSTATE
 explr
 exppowertoys
+exprtk
 exptas
 exsb
 exstyle
@@ -669,7 +671,6 @@ IBeam
 icf
 ICONERROR
 ICONLOCATION
-idc
 IDCANCEL
 IDD
 idk
@@ -680,7 +681,6 @@ IDR
 IDXGI
 ietf
 IEXPLORE
-iextn
 IFACEMETHOD
 IFACEMETHODIMP
 IFile
@@ -719,7 +719,6 @@ INPUTMOUSE
 INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
-INSTALLDIR
 installdir
 INSTALLFOLDER
 INSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER
@@ -755,6 +754,7 @@ iwr
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
+JLO
 jobject
 jpe
 jpnime
@@ -788,6 +788,7 @@ LCIDTo
 Lclean
 Ldone
 Ldr
+LEFTALIGN
 LEFTSCROLLBAR
 LEFTTEXT
 LError
@@ -810,7 +811,6 @@ LMENU
 lnks
 LOADFROMFILE
 LOBYTE
-localappdata
 LOCALDISPLAY
 localpackage
 LOCALSYSTEM
@@ -975,7 +975,6 @@ msrc
 msstore
 mst
 msvcp
-msvsmon
 MTND
 MULTIPLEUSE
 multizone
@@ -1153,6 +1152,7 @@ PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
+partow
 PATPAINT
 pbc
 pbi
@@ -1282,7 +1282,6 @@ pstm
 PStr
 pstream
 pstrm
-pswd
 PSYSTEM
 psz
 ptb
@@ -1474,16 +1473,12 @@ SHELLDLL
 shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
-SHELLEXTENSION
 SHELLICONSIZE
-SHELLNEWVALUE
 SHFILEINFO
 SHFILEOPSTRUCT
 SHGDN
 SHGDNF
 SHGFI
-SHGFIICON
-SHGFILARGEICON
 SHIL
 shinfo
 shlwapi
@@ -1517,7 +1512,6 @@ siex
 sigdn
 SIGNINGSCENARIO
 signtool
-Signtool
 SINGLEKEY
 sipolicy
 SIZEBOX
@@ -1588,6 +1582,7 @@ steamapps
 STGC
 STGM
 STGMEDIUM
+STGMREAD
 STICKYKEYS
 sticpl
 storelogo
@@ -1779,7 +1774,6 @@ uxtheme
 vabdq
 validmodulename
 valuegenerator
-VARENUM
 variantassignment
 vcamp
 VCENTER
@@ -1995,3 +1989,10 @@ culori
 Evercoder
 LCh
 CIELCh
+CLSCTXINPROCALL
+IIDI
+irow
+lcid
+ppwsz
+rguid
+VARTYPE
