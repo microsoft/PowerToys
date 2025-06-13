@@ -172,7 +172,7 @@
             VerticalContentAlignment="Stretch"
             VerticalScrollBarVisibility="Auto"
             Visibility="{Binding IsWorkspacesViewEmpty, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}, UpdateSourceTrigger=PropertyChanged}">
-            <ItemsControl ItemsSource="{Binding WorkspacesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+            <ItemsControl ItemsSource="{Binding WorkspacesView, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" x:Name="WorkspacesItemsControl">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel
@@ -235,7 +235,7 @@
                                         Grid.Column="1"
                                         Margin="12,12,12,12"
                                         Orientation="Vertical">
-                                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" x:Name="WorkspaceActionGroup">
                                             <Button
                                                 x:Name="MoreButton"
                                                 HorizontalAlignment="Right"
@@ -248,7 +248,8 @@
                                             </Button>
                                             <Popup
                                                 AllowsTransparency="True"
-                                                IsOpen="{Binding IsPopupVisible, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                                IsOpen="{Binding IsPopupVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                Closed="PopupClosed"
                                                 Placement="Left"
                                                 PlacementTarget="{Binding ElementName=MoreButton}"
                                                 StaysOpen="False">
