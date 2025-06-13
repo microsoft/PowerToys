@@ -3,6 +3,7 @@
 
 #include <common/display/dpi_aware.h>
 #include <common/logger/logger.h>
+#include <common/utils/gpo.h>
 
 #include <FancyZonesLib/FancyZonesDataTypes.h>
 
@@ -104,8 +105,19 @@ bool AddZone(Zone zone, ZonesMap& zones) noexcept
     return true;
 }
 
+int AdjustSpacingForRegistry(int originalSpacing)
+{
+    auto adjustMarginSetting = powertoys_gpo::getConfiguredFancyZonesAdjustMarginValue();
+    if (adjustMarginSetting == powertoys_gpo::gpo_rule_configured_enabled)
+    {
+        return originalSpacing - 1;
+    }
+    return originalSpacing;
+}
+
 ZonesMap CalculateGridZones(FancyZonesUtils::Rect workArea, FancyZonesDataTypes::GridLayoutInfo gridLayoutInfo, int spacing)
 {
+    spacing = AdjustSpacingForRegistry(spacing);
     ZonesMap zones;
 
     long totalWidth = workArea.width();
@@ -239,6 +251,7 @@ ZonesMap LayoutConfigurator::Rows(FancyZonesUtils::Rect workArea, int zoneCount,
         return {};
     }
 
+    spacing = AdjustSpacingForRegistry(spacing);
     ZonesMap zones;
     
     long totalWidth = workArea.width() - (spacing * 2);
@@ -285,6 +298,7 @@ ZonesMap LayoutConfigurator::Columns(FancyZonesUtils::Rect workArea, int zoneCou
         return {};
     }
 
+    spacing = AdjustSpacingForRegistry(spacing);
     ZonesMap zones;
 
     long totalWidth = workArea.width() - (spacing * (zoneCount + 1));
@@ -330,6 +344,8 @@ ZonesMap LayoutConfigurator::Grid(FancyZonesUtils::Rect workArea, int zoneCount,
     {
         return {};
     }
+
+    spacing = AdjustSpacingForRegistry(spacing);
 
     int rows = 1, columns = 1;
     while (zoneCount / rows >= rows)
@@ -388,6 +404,8 @@ ZonesMap LayoutConfigurator::PriorityGrid(FancyZonesUtils::Rect workArea, int zo
         return {};
     }
 
+    spacing = AdjustSpacingForRegistry(spacing);
+
     constexpr int predefinedLayoutsCount = sizeof(predefinedPriorityGridLayouts) / sizeof(FancyZonesDataTypes::GridLayoutInfo);
     if (zoneCount < predefinedLayoutsCount)
     {
@@ -399,6 +417,8 @@ ZonesMap LayoutConfigurator::PriorityGrid(FancyZonesUtils::Rect workArea, int zo
 
 ZonesMap LayoutConfigurator::Custom(FancyZonesUtils::Rect workArea, HMONITOR monitor, const FancyZonesDataTypes::CustomLayoutData& zoneSet, int spacing) noexcept
 {
+    spacing = AdjustSpacingForRegistry(spacing);
+    
     if (zoneSet.type == FancyZonesDataTypes::CustomLayoutType::Canvas && std::holds_alternative<FancyZonesDataTypes::CanvasLayoutInfo>(zoneSet.info))
     {
         ZonesMap zones;

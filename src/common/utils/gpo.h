@@ -92,6 +92,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES = L"MwbPolicyDefinedIpMappingRules";
     const std::wstring POLICY_NEW_PLUS_HIDE_TEMPLATE_FILENAME_EXTENSION = L"NewPlusHideTemplateFilenameExtension";
     const std::wstring POLICY_NEW_PLUS_REPLACE_VARIABLES = L"NewPlusReplaceVariablesInTemplateFilenames";
+    const std::wstring POLICY_FANCYZONES_ADJUST_MARGIN = L"FancyZonesAdjustMargin";
 
     // Methods used for reading the registry
 #pragma region ReadRegistryMethods
@@ -637,6 +638,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredNewPlusReplaceVariablesValue()
     {
         return getConfiguredValue(POLICY_NEW_PLUS_REPLACE_VARIABLES);
+    }
+
+    inline gpo_rule_configured_t getConfiguredFancyZonesAdjustMarginValue()
+    {
+        return getConfiguredValue(POLICY_FANCYZONES_ADJUST_MARGIN);
     }
     
 #pragma endregion IndividualModuleSettingPolicies
