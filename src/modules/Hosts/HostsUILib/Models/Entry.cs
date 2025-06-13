@@ -11,7 +11,7 @@ using HostsUILib.Helpers;
 
 namespace HostsUILib.Models
 {
-#if !EXCLUDE_FORFUZZTEST
+#if !TESTONLY
 
     [Microsoft.UI.Xaml.Data.Bindable]
 #endif
