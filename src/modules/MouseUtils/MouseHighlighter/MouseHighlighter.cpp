@@ -165,6 +165,7 @@ void Highlighter::AddDrawingPoint(MouseButton button)
             float borderThickness = static_cast<float>(std::hypot(GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN)));
             circleGeometry.Radius({ static_cast<float>(borderThickness / 2.0 + m_radius), static_cast<float>(borderThickness / 2.0 + m_radius) });
             circleShape.FillBrush(nullptr);
+            circleShape.StrokeBrush(m_compositor.CreateColorBrush(m_alwaysColor));
             circleShape.StrokeThickness(borderThickness);
             m_spotlightPointer = circleShape;
         }
