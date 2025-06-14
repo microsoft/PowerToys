@@ -42,7 +42,6 @@ private:
     void StopDrawing();
     bool CreateHighlighter();
     void AddDrawingPoint(MouseButton button);
-    void DrawSpotlight();
     void UpdateDrawingPointPosition(MouseButton button);
     void StartDrawingPointFading(MouseButton button);
     void ClearDrawingPoint();
@@ -258,13 +257,11 @@ void Highlighter::StartDrawingPointFading(MouseButton button)
 
 void Highlighter::ClearDrawingPoint()
 {
-    winrt::Windows::UI::Composition::CompositionSpriteShape circleShape{ nullptr };
-
     if (m_spotlightMode)
     {
         if (m_spotlightPointer)
         {
-            circleShape.StrokeBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+            m_spotlightPointer.StrokeBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
         }
     }
     else
