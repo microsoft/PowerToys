@@ -976,6 +976,7 @@ msrc
 msstore
 mst
 msvcp
+MT
 MTND
 MULTIPLEUSE
 multizone
