@@ -72,9 +72,57 @@ $returnList = [System.Collections.Generic.HashSet[string]]($totalList) -join "`r
 
 Write-Host $returnList
 
+# Extract the current package list from NOTICE.md
+$noticePattern = "## NuGet Packages used by PowerToys\s*((?:\r?\n- .+)+)"
+$noticeMatch = [regex]::Match($noticeFile, $noticePattern)
+
+if ($noticeMatch.Success) {
+    $currentNoticePackageList = $noticeMatch.Groups[1].Value.Trim()
+} else {
+    Write-Warning "Warning: Could not find 'NuGet Packages used by PowerToys' section in NOTICE.md"
+    $currentNoticePackageList = ""
+}
+
 if (!$noticeFile.Trim().EndsWith($returnList.Trim()))
 {
 	Write-Host -ForegroundColor Red "Notice.md does not match NuGet list."
+
+	# Show detailed differences
+	$generatedPackages = $returnList -split "`r`n|`n" | Where-Object { $_.Trim() -ne "" } | Sort-Object
+	$noticePackages = $currentNoticePackageList -split "`r`n|`n" | Where-Object { $_.Trim() -ne "" } | ForEach-Object { $_.Trim() } | Sort-Object
+
+	Write-Host ""
+	Write-Host -ForegroundColor Cyan "=== DETAILED DIFFERENCE ANALYSIS ==="
+	Write-Host ""
+
+	# Find packages in proj file list but not in NOTICE.md
+	$missingFromNotice = $generatedPackages | Where-Object { $noticePackages -notcontains $_ }
+	if ($missingFromNotice.Count -gt 0) {
+		Write-Host -ForegroundColor Red "MissingFromNotice:"
+		foreach ($pkg in $missingFromNotice) {
+			Write-Host -ForegroundColor Red "  $pkg"
+		}
+		Write-Host ""
+	}
+
+	# Find packages in NOTICE.md but not in proj file list
+	$extraInNotice = $noticePackages | Where-Object { $generatedPackages -notcontains $_ }
+	if ($extraInNotice.Count -gt 0) {
+		Write-Host -ForegroundColor Yellow "ExtraInNotice:"
+		foreach ($pkg in $extraInNotice) {
+			Write-Host -ForegroundColor Yellow "  $pkg"
+		}
+		Write-Host ""
+	}
+
+	# Show counts for summary
+	Write-Host -ForegroundColor Cyan "Summary:"
+	Write-Host "  Proj file list has $($generatedPackages.Count) packages"
+	Write-Host "  NOTICE.md has $($noticePackages.Count) packages"
+	Write-Host "  MissingFromNotice: $($missingFromNotice.Count) packages"
+	Write-Host "  ExtraInNotice: $($extraInNotice.Count) packages"
+	Write-Host ""
+
 	exit 1
 }
 

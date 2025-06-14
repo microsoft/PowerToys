@@ -79,6 +79,43 @@ For more information, please refer to <http://unlicense.org/>
 
 ### Calculator
 
+#### exprtk
+
+We use the exprtk library (exprtk.hpp) to evaluate mathematical expressions.
+
+**Source**: [https://github.com/ArashPartow/exprtk](https://github.com/ArashPartow/exprtk)
+
+```
+MIT License
+
+Copyright (c) 1999-2024 Arash Partow
+
+https://www.partow.net/programming/exprtk/index.html
+
+Permission is hereby granted, free of charge, to any person  obtaining
+a  copy  of  this software  and  associated  documentation files  (the
+"Software"), to  deal in  the Software  without restriction, including
+without limitation the  rights to use,  copy, modify, merge,  publish,
+distribute, sublicense,  and/or sell  copies of  the Software,  and to
+permit persons to whom the Software is furnished to do so, subject  to
+the following conditions:
+
+The  above  copyright  notice  and  this  permission  notice  shall be
+included in all copies or substantial portions of the Software.
+
+THE  SOFTWARE  IS PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+EXPRESS OR  IMPLIED, INCLUDING  BUT NOT  LIMITED TO  THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS  OR COPYRIGHT HOLDERS BE LIABLE FOR  ANY
+CLAIM, DAMAGES OR OTHER LIABILITY,  WHETHER IN AN ACTION OF  CONTRACT,
+TORT OR  OTHERWISE, ARISING  FROM, OUT  OF OR  IN CONNECTION  WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+## Utility: PowerToys Run Built-in Extensions
+
+### Calculator
+
 #### Mages
 
 We use the Mages NuGet package for calculating the result of expression.
@@ -807,30 +844,25 @@ DEALINGS IN THE SOFTWARE.
 
 **Source**: https://github.com/kuba--/zip
 
-This is free and unencumbered software released into the public domain.
+All Rights Reserved.
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-
-For more information, please refer to <http://unlicense.org/>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
 
 ## Utility: Measure tool
 
@@ -1395,6 +1427,37 @@ EXHIBIT A -Mozilla Public License.
 
 ## Utility: Registry Preview
 
+### HexBox.WinUI
+
+We use HexBox.WinUI to show a preview of binary values.
+
+**Source**: https://github.com/hotkidfamily/HexBox.WinUI
+
+```
+MIT License
+
+Copyright (c) 2019 Filip Jeremic
+Copyright (c) 2024~2025 hotkidfamily@gmail.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ### Monaco Editor
 
 **Source**: https://github.com/Microsoft/monaco-editor
@@ -1425,6 +1488,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+
 ## NuGet Packages used by PowerToys
 
 - AdaptiveCards.ObjectModel.WinUI3 2.0.0-beta
@@ -1453,22 +1517,22 @@ SOFTWARE.
 - Mages 3.0.0
 - Markdig.Signed 0.34.0
 - MessagePack 3.1.3
-- Microsoft.Bcl.AsyncInterfaces 9.0.5
+- Microsoft.Bcl.AsyncInterfaces 9.0.6
 - Microsoft.CodeAnalysis.NetAnalyzers 9.0.0
-- Microsoft.Data.Sqlite 9.0.5
+- Microsoft.Data.Sqlite 9.0.6
 - Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16
 - Microsoft.DotNet.ILCompiler (A)
-- Microsoft.Extensions.DependencyInjection 9.0.5
-- Microsoft.Extensions.Hosting 9.0.5
-- Microsoft.Extensions.Hosting.WindowsServices 9.0.5
-- Microsoft.Extensions.Logging 9.0.5
-- Microsoft.Extensions.Logging.Abstractions 9.0.5
+- Microsoft.Extensions.DependencyInjection 9.0.6
+- Microsoft.Extensions.Hosting 9.0.6
+- Microsoft.Extensions.Hosting.WindowsServices 9.0.6
+- Microsoft.Extensions.Logging 9.0.6
+- Microsoft.Extensions.Logging.Abstractions 9.0.6
 - Microsoft.NET.ILLink.Tasks (A)
 - Microsoft.SemanticKernel 1.15.0
 - Microsoft.Toolkit.Uwp.Notifications 7.1.2
 - Microsoft.Web.WebView2 1.0.2903.40
-- Microsoft.Win32.SystemEvents 9.0.5
-- Microsoft.Windows.Compatibility 9.0.5
+- Microsoft.Win32.SystemEvents 9.0.6
+- Microsoft.Windows.Compatibility 9.0.6
 - Microsoft.Windows.CsWin32 0.2.46-beta
 - Microsoft.Windows.CsWinRT 2.2.0
 - Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
@@ -1485,27 +1549,28 @@ SOFTWARE.
 - ReverseMarkdown 4.1.0
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.37.2
+- SkiaSharp.Views.WinUI 2.88.9
 - StreamJsonRpc 2.21.69
 - StyleCop.Analyzers 1.2.0-beta.556
-- System.CodeDom 9.0.5
+- System.CodeDom 9.0.6
 - System.CommandLine 2.0.0-beta4.22272.1
-- System.ComponentModel.Composition 9.0.5
-- System.Configuration.ConfigurationManager 9.0.5
-- System.Data.OleDb 9.0.5
-- System.Data.SqlClient 4.8.6
-- System.Diagnostics.EventLog 9.0.5
-- System.Diagnostics.PerformanceCounter 9.0.5
-- System.Drawing.Common 9.0.5
+- System.ComponentModel.Composition 9.0.6
+- System.Configuration.ConfigurationManager 9.0.6
+- System.Data.OleDb 9.0.6
+- System.Data.SqlClient 4.9.0
+- System.Diagnostics.EventLog 9.0.6
+- System.Diagnostics.PerformanceCounter 9.0.6
+- System.Drawing.Common 9.0.6
 - System.IO.Abstractions 22.0.13
 - System.IO.Abstractions.TestingHelpers 22.0.13
-- System.Management 9.0.5
+- System.Management 9.0.6
 - System.Net.Http 4.3.4
 - System.Private.Uri 4.3.2
 - System.Reactive 6.0.1
-- System.Runtime.Caching 9.0.5
-- System.ServiceProcess.ServiceController 9.0.5
-- System.Text.Encoding.CodePages 9.0.5
-- System.Text.Json 9.0.5
+- System.Runtime.Caching 9.0.6
+- System.ServiceProcess.ServiceController 9.0.6
+- System.Text.Encoding.CodePages 9.0.6
+- System.Text.Json 9.0.6
 - System.Text.RegularExpressions 4.3.1
 - UnicodeInformation 2.6.0
 - UnitsNet 5.56.0

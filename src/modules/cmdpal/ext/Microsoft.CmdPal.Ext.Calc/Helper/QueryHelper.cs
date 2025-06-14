@@ -65,11 +65,6 @@ public static partial class QueryHelper
 
             return ResultHelper.CreateResult(result.RoundedResult, inputCulture, outputCulture, query, handleSave);
         }
-        catch (Mages.Core.ParseException)
-        {
-            // Invalid input
-            return ErrorHandler.OnError(isFallbackSearch, query, Properties.Resources.calculator_expression_not_complete);
-        }
         catch (OverflowException)
         {
             // Result to big to convert to decimal
