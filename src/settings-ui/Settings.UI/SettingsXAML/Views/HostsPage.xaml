@@ -62,6 +62,9 @@
                             <ComboBoxItem x:Uid="Hosts_Encoding_Utf8Bom" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_AddLeadingWhitespace" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AddLeadingWhitespace, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
