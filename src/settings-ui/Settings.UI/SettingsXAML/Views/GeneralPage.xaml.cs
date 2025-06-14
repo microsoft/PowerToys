@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.UI.Dispatching;
 
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Flyout;
@@ -13,6 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Data.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -27,6 +29,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets or sets view model.
         /// </summary>
         public GeneralViewModel ViewModel { get; set; }
+
+        private DispatcherTimer _bugReportStatusTimer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneralPage"/> class.
@@ -86,6 +90,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
 
             ViewModel.InitializeReportBugLink();
+
+            // Register IPC handler for bug report status
+            ShellPage.ShellHandler.IPCResponseHandleList.Add(HandleBugReportStatusResponse);
 
             doRefreshBackupRestoreStatus(100);
         }
@@ -182,8 +189,55 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void BugReportToolClicked(object sender, RoutedEventArgs e)
         {
+            // Start bug report
             var launchPage = new LaunchPage();
             launchPage.ReportBugBtn_Click(sender, e);
+
+            // Set initial state to indicate bug report is starting
+            ViewModel.IsBugReportRunning = true;
+
+            // Start timer to check bug report status
+            StartBugReportStatusCheck();
+        }
+
+        private void StartBugReportStatusCheck()
+        {
+            if (_bugReportStatusTimer != null)
+            {
+                _bugReportStatusTimer.Stop();
+            }
+
+            _bugReportStatusTimer = new DispatcherTimer();
+            _bugReportStatusTimer.Interval = TimeSpan.FromSeconds(1); // Check every second
+            _bugReportStatusTimer.Tick += BugReportStatusTimer_Tick;
+            _bugReportStatusTimer.Start();
+        }
+
+        private void BugReportStatusTimer_Tick(object sender, object e)
+        {
+            // Check bug report status
+            ViewModel.CheckBugReportStatus();
+        }
+
+        private void HandleBugReportStatusResponse(JsonObject response)
+        {
+            if (response.ContainsKey("running"))
+            {
+                var isRunning = response.GetNamedBoolean("running");
+                
+                // Update UI on the UI thread
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    ViewModel.IsBugReportRunning = isRunning;
+                    
+                    // Stop timer if bug report is no longer running
+                    if (!isRunning && _bugReportStatusTimer != null)
+                    {
+                        _bugReportStatusTimer.Stop();
+                        _bugReportStatusTimer = null;
+                    }
+                });
+            }
         }
     }
 }

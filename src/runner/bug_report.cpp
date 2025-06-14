@@ -31,3 +31,8 @@ void launch_bug_report() noexcept
         }).detach();
     }
 }
+
+bool is_bug_report_running() noexcept
+{
+    return isBugReportThreadRunning.load();
+}

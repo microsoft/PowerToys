@@ -260,6 +260,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isNewVersionDownloading;
         private bool _isNewVersionChecked;
         private bool _isNoNetwork;
+        private bool _isBugReportRunning;
 
         private bool _settingsBackupRestoreMessageVisible;
         private string _settingsBackupMessage;
@@ -952,6 +953,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsBugReportRunning
+        {
+            get
+            {
+                return _isBugReportRunning;
+            }
+
+            set
+            {
+                if (value != _isBugReportRunning)
+                {
+                    _isBugReportRunning = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public bool SettingsBackupRestoreMessageVisible
         {
             get
@@ -1288,6 +1306,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 NotifyPropertyChanged(nameof(IsDownloadAllowed));
             }
+        }
+
+        public void CheckBugReportStatus()
+        {
+            SendConfigMSG("{\"bug_report_status\": 0}");
         }
 
         private void InitializeLanguages()
