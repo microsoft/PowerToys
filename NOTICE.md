@@ -1497,6 +1497,7 @@ SOFTWARE.
 - Appium.WebDriver 4.4.5
 - Azure.AI.OpenAI 1.0.0-beta.17
 - CommunityToolkit.Common 8.4.0
+- CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock 0.1.250513-build.2126
 - CommunityToolkit.Mvvm 8.4.0
 - CommunityToolkit.WinUI.Animations 8.2.250402
 - CommunityToolkit.WinUI.Collections 8.2.250402
