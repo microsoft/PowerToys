@@ -221,10 +221,10 @@
                                 <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
-                                <StackPanel>
-                                    <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
-                                    <ToggleSwitch x:Uid="EnableSpotlightMode" IsOn="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=TwoWay}" />
-                                </StackPanel>
+                                <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="Enable_Spotlight_Mode">
+                                <ToggleSwitch IsOn="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
                                 <NumberBox

@@ -55,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             HighlightFadeDelayMs = new IntProperty(500);
             HighlightFadeDurationMs = new IntProperty(250);
             AutoActivate = new BoolProperty(false);
+            SpotlightMode = new BoolProperty(false);
         }
     }
 }
