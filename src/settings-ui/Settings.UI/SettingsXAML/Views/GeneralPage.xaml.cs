@@ -31,6 +31,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public GeneralViewModel ViewModel { get; set; }
 
         private DispatcherTimer _bugReportStatusTimer;
+        private int _statusCheckCount = 0;
+        private const int MAX_STATUS_CHECKS = 30; // Stop after 30 seconds of checking
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneralPage"/> class.
@@ -93,6 +95,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // Register IPC handler for bug report status
             ShellPage.ShellHandler.IPCResponseHandleList.Add(HandleBugReportStatusResponse);
+
+            // Register cleanup on unload
+            this.Unloaded += GeneralPage_Unloaded;
+
+            // Check initial bug report status after a short delay
+            Task.Delay(500).ContinueWith(_ =>
+            {
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    ViewModel.CheckBugReportStatus();
+                });
+            });
 
             doRefreshBackupRestoreStatus(100);
         }
@@ -193,10 +207,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var launchPage = new LaunchPage();
             launchPage.ReportBugBtn_Click(sender, e);
 
-            // Set initial state to indicate bug report is starting
-            ViewModel.IsBugReportRunning = true;
-
-            // Start timer to check bug report status
+            // Start timer to check bug report status (will set running state when confirmed)
             StartBugReportStatusCheck();
         }
 
@@ -207,6 +218,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 _bugReportStatusTimer.Stop();
             }
 
+            _statusCheckCount = 0;
             _bugReportStatusTimer = new DispatcherTimer();
             _bugReportStatusTimer.Interval = TimeSpan.FromSeconds(1); // Check every second
             _bugReportStatusTimer.Tick += BugReportStatusTimer_Tick;
@@ -215,6 +227,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void BugReportStatusTimer_Tick(object sender, object e)
         {
+            _statusCheckCount++;
+            
+            // Stop checking after max attempts to avoid infinite polling
+            if (_statusCheckCount > MAX_STATUS_CHECKS)
+            {
+                _bugReportStatusTimer.Stop();
+                _bugReportStatusTimer = null;
+                ViewModel.IsBugReportRunning = false;
+                return;
+            }
+
             // Check bug report status
             ViewModel.CheckBugReportStatus();
         }
@@ -235,8 +258,33 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     {
                         _bugReportStatusTimer.Stop();
                         _bugReportStatusTimer = null;
+                        _statusCheckCount = 0;
                     }
                 });
+            }
+        }
+
+        private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            CleanupBugReportHandlers();
+        }
+
+        private void CleanupBugReportHandlers()
+        {
+            // Stop timer if running
+            if (_bugReportStatusTimer != null)
+            {
+                _bugReportStatusTimer.Stop();
+                _bugReportStatusTimer = null;
+            }
+
+            // Reset check counter
+            _statusCheckCount = 0;
+
+            // Remove IPC handler
+            if (ShellPage.ShellHandler?.IPCResponseHandleList != null)
+            {
+                ShellPage.ShellHandler.IPCResponseHandleList.Remove(HandleBugReportStatusResponse);
             }
         }
     }
