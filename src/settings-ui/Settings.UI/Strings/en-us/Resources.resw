@@ -1519,6 +1519,39 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
 	<data name="ColorPicker_ActivationAction.Header" xml:space="preserve">
     <value>Activation behavior</value>
   </data>
+  <data name="ColorPicker_ActivationAction.Header" xml:space="preserve">
+    <value>Activation behavior</value>
+  </data>
+  <data name="ColorPicker_OpenEditor.Content" xml:space="preserve">
+    <value>Open editor</value>
+  </data>
+  <data name="ColorPicker_PickColor.Content" xml:space="preserve">
+    <value>Pick a color first</value>
+  </data>
+  <data name="ColorPicker_MouseActions.Header" xml:space="preserve">
+    <value>Mouse actions</value>
+  </data>
+  <data name="ColorPicker_MouseActions.Description" xml:space="preserve">
+    <value>Choose what clicking individual buttons does</value>
+  </data>
+  <data name="ColorPicker_PrimaryClick.Header" xml:space="preserve">
+    <value>Primary click</value>
+  </data>
+  <data name="ColorPicker_MiddleClick.Header" xml:space="preserve">
+    <value>Middle click</value>
+  </data>
+  <data name="ColorPicker_SecondaryClick.Header" xml:space="preserve">
+    <value>Secondary click</value>
+  </data>
+  <data name="ColorPicker_PickColorThenEditor.Content" xml:space="preserve">
+    <value>Pick a color and open editor</value>
+  </data>
+  <data name="ColorPicker_PickColorAndClose.Content" xml:space="preserve">
+    <value>Pick a color and close</value>
+  </data>
+  <data name="ColorPicker_Close.Content" xml:space="preserve">
+    <value>Close</value>
+  </data>
 	<data name="ColorFormats.Header" xml:space="preserve">
     <value>Picker behavior</value>
   </data>

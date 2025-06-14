@@ -6,7 +6,7 @@
 
 namespace StringUtils
 {
-    bool CaseInsensitiveEquals(const std::wstring& str1, const std::wstring& str2)
+    inline bool CaseInsensitiveEquals(const std::wstring& str1, const std::wstring& str2)
     {
         if (str1.size() != str2.size())
         {

@@ -107,21 +107,14 @@ namespace ColorPicker.Helpers
             }
         }
 
-        public void OnColorPickerMouseDown()
+        public void OpenColorEditor()
         {
-            if (_userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenColorPickerAndThenEditor || _userSettings.ActivationAction.Value == ColorPickerActivationAction.OpenEditor)
+            lock (_colorPickerVisibilityLock)
             {
-                lock (_colorPickerVisibilityLock)
-                {
-                    HideColorPicker();
-                }
+                HideColorPicker();
+            }
 
-                ShowColorPickerEditor();
-            }
-            else
-            {
-                EndUserSession();
-            }
+            ShowColorPickerEditor();
         }
 
         public static void SetTopMost()
