@@ -41,6 +41,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("auto_activate")]
         public BoolProperty AutoActivate { get; set; }
 
+        [JsonPropertyName("spotlight_mode")]
+        public BoolProperty SpotlightMode { get; set; }
+
         public MouseHighlighterProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;

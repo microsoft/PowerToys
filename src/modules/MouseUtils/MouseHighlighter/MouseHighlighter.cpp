@@ -42,10 +42,10 @@ private:
     void StopDrawing();
     bool CreateHighlighter();
     void AddDrawingPoint(MouseButton button);
-    void AddDrawingPointReverse(MouseButton button);
+    void DrawSpotlight();
     void UpdateDrawingPointPosition(MouseButton button);
     void StartDrawingPointFading(MouseButton button);
-    void ClearDrawingPoint(MouseButton button);
+    void ClearDrawingPoint();
     void ClearDrawing();
     void BringToFront();
     HHOOK m_mouseHook = NULL;
@@ -68,11 +68,12 @@ private:
     winrt::CompositionSpriteShape m_leftPointer{ nullptr };
     winrt::CompositionSpriteShape m_rightPointer{ nullptr };
     winrt::CompositionSpriteShape m_alwaysPointer{ nullptr };
+    winrt::CompositionSpriteShape m_spotlightPointer{ nullptr };
 
     bool m_leftPointerEnabled = true;
     bool m_rightPointerEnabled = true;
     bool m_alwaysPointerEnabled = true;
-    bool m_spotlightMode = true;
+    bool m_spotlightMode = false;
 
     bool m_leftButtonPressed = false;
     bool m_rightButtonPressed = false;
@@ -160,58 +161,21 @@ void Highlighter::AddDrawingPoint(MouseButton button)
     else
     {
         // always
-        circleShape.FillBrush(m_compositor.CreateColorBrush(m_alwaysColor));
-        m_alwaysPointer = circleShape;
+        if (m_spotlightMode)
+        {
+            float borderThickness = static_cast<float>(std::hypot(GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN)));
+            circleGeometry.Radius({ static_cast<float>(borderThickness / 2.0 + m_radius), static_cast<float>(borderThickness / 2.0 + m_radius) });
+            circleShape.FillBrush(nullptr);
+            circleShape.StrokeThickness(borderThickness);
+            m_spotlightPointer = circleShape;
+        }
+        else
+        {
+            circleShape.FillBrush(m_compositor.CreateColorBrush(m_alwaysColor));
+            m_alwaysPointer = circleShape;
+        }
     }
-    m_shape.Shapes().Append(circleShape);
 
-    // TODO: We're leaking shapes for long drawing sessions.
-    // Perhaps add a task to the Dispatcher every X circles to clean up.
-
-    // Get back on top in case other Window is now the topmost.
-    // HACK: Draw with 1 pixel off. Otherwise Windows glitches the task bar transparency when a transparent window fill the whole screen.
-    SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
-}
-
-void Highlighter::AddDrawingPointReverse(MouseButton button)
-{
-    POINT pt;
-
-    // Applies DPIs.
-    GetCursorPos(&pt);
-
-    // Converts to client area of the Windows.
-    ScreenToClient(m_hwnd, &pt);
-
-    // Create circle and add it.
-    auto circleGeometry = m_compositor.CreateEllipseGeometry();
-
-    float borderThickness = static_cast<float>(std::hypot(GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN)));
-    circleGeometry.Radius({ static_cast<float>(borderThickness / 2.0 + m_radius), static_cast<float>(borderThickness / 2.0 + m_radius) });
-
-    //Logger::debug(L"Adding drawing point at ({}, {}) with radius {} and border thickness {}", pt.x, pt.y, m_radius, borderThickness);
-
-    auto circleShape = m_compositor.CreateSpriteShape(circleGeometry);
-    circleShape.FillBrush(nullptr);
-    circleShape.StrokeThickness(borderThickness);
-    circleShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
-
-    if (button == MouseButton::Left)
-    {
-        circleShape.StrokeBrush(m_compositor.CreateColorBrush(m_leftClickColor));
-        m_leftPointer = circleShape;
-    }
-    else if (button == MouseButton::Right)
-    {
-        circleShape.StrokeBrush(m_compositor.CreateColorBrush(m_rightClickColor));
-        m_rightPointer = circleShape;
-    }
-    else
-    {
-        // always
-        circleShape.StrokeBrush(m_compositor.CreateColorBrush(m_alwaysColor));
-        m_alwaysPointer = circleShape;
-    }
     m_shape.Shapes().Append(circleShape);
 
     // TODO: We're leaking shapes for long drawing sessions.
@@ -243,7 +207,17 @@ void Highlighter::UpdateDrawingPointPosition(MouseButton button)
     else
     {
         // always
-        m_alwaysPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+        if (m_spotlightMode)
+        {
+            if (m_spotlightPointer)
+            {
+                m_spotlightPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+            }
+        }
+        else
+        {
+            m_alwaysPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+        }
     }
 }
 void Highlighter::StartDrawingPointFading(MouseButton button)
@@ -282,26 +256,23 @@ void Highlighter::StartDrawingPointFading(MouseButton button)
     circleShape.FillBrush().StartAnimation(L"Color", animation);
 }
 
-void Highlighter::ClearDrawingPoint(MouseButton _button)
+void Highlighter::ClearDrawingPoint()
 {
     winrt::Windows::UI::Composition::CompositionSpriteShape circleShape{ nullptr };
 
-    if (nullptr == m_alwaysPointer)
-    {
-        // Guard against alwaysPointer not being initialized.
-        return;
-    }
-
-    // always
-    circleShape = m_alwaysPointer;
-
     if (m_spotlightMode)
     {
-        circleShape.StrokeBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+        if (m_spotlightPointer)
+        {
+            circleShape.StrokeBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+        }
     }
     else
     {
-        circleShape.FillBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+        if (m_alwaysPointer)
+        {
+            m_alwaysPointer.FillBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color(winrt::Windows::UI::ColorHelper::FromArgb(0, 0, 0, 0));
+        }
     }
 }
 
@@ -329,7 +300,7 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
                 if (instance->m_alwaysPointerEnabled && !instance->m_rightButtonPressed)
                 {
                     // Clear AlwaysPointer only when it's enabled and RightPointer is not active
-                    instance->ClearDrawingPoint(MouseButton::None);
+                    instance->ClearDrawingPoint();
                 }
                 if (instance->m_leftButtonPressed)
                 {
@@ -354,7 +325,7 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
                 if (instance->m_alwaysPointerEnabled && !instance->m_leftButtonPressed)
                 {
                     // Clear AlwaysPointer only when it's enabled and LeftPointer is not active
-                    instance->ClearDrawingPoint(MouseButton::None);
+                    instance->ClearDrawingPoint();
                 }
                 if (instance->m_rightButtonPressed)
                 {
@@ -425,7 +396,9 @@ void Highlighter::StartDrawing()
     SetWindowPos(m_hwnd, HWND_TOPMOST, GetSystemMetrics(SM_XVIRTUALSCREEN) + 1, GetSystemMetrics(SM_YVIRTUALSCREEN) + 1, GetSystemMetrics(SM_CXVIRTUALSCREEN) - 2, GetSystemMetrics(SM_CYVIRTUALSCREEN) - 2, 0);
     ClearDrawing();
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
-    instance->AddDrawingPointReverse(MouseButton::None);
+
+    instance->AddDrawingPoint(Highlighter::MouseButton::None);
+
     m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
 }
 
@@ -438,6 +411,7 @@ void Highlighter::StopDrawing()
     m_leftPointer = nullptr;
     m_rightPointer = nullptr;
     m_alwaysPointer = nullptr;
+    m_spotlightPointer = nullptr;
     ShowWindow(m_hwnd, SW_HIDE);
     UnhookWindowsHookEx(m_mouseHook);
     ClearDrawing();
@@ -460,7 +434,7 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings)
     m_leftPointerEnabled = settings.leftButtonColor.A != 0;
     m_rightPointerEnabled = settings.rightButtonColor.A != 0;
     m_alwaysPointerEnabled = settings.alwaysColor.A != 0;
-    m_spotlightMode = true;
+    m_spotlightMode = settings.spotlightMode && settings.alwaysColor.A != 0;
 }
 
 void Highlighter::BringToFront()
