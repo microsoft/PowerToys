@@ -1300,6 +1300,7 @@ pwcs
 PWSTR
 pwsz
 pwtd
+rstrtmgr
 QDC
 qianlifeng
 qit
