@@ -887,6 +887,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public string EasyMouseFullscreenSwitchBlockExcludedApps
+        {
+            // Convert the list of excluded apps retrieved from the settings
+            // to a single string that can be displayed in the bound textbox
+            get
+            {
+                var excludedApps = Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value;
+
+                return excludedApps.Count == 0 ? string.Empty : string.Join('\r', excludedApps);
+            }
+
+            set
+            {
+                if (EasyMouseFullscreenSwitchBlockExcludedApps == value)
+                {
+                    return;
+                }
+
+                Settings.Properties.EasyMouseFullscreenSwitchBlockExcludedApps.Value = value == string.Empty ? [] : [..value.Split('\r')];
+                NotifyPropertyChanged();
+            }
+        }
+
         public bool CardForName2IpSettingIsEnabled => _disableUserDefinedIpMappingRulesIsGPOConfigured == false;
 
         public bool ShowPolicyConfiguredInfoForName2IPSetting => _disableUserDefinedIpMappingRulesIsGPOConfigured && IsEnabled;
@@ -985,6 +1008,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Settings.Properties.EasyMouse.Value = value;
                     NotifyPropertyChanged(nameof(EasyMouseOptionIndex));
                 }
+            }
+        }
+
+        public bool EasyMouseEnabled => (EasyMouseOption)EasyMouseOptionIndex != EasyMouseOption.Disable;
+
+        public bool IsEasyMouseBlockingOnFullscreenEnabled =>
+            EasyMouseEnabled && DisableEasyMouseWhenForegroundWindowIsFullscreen;
+
+        public bool DisableEasyMouseWhenForegroundWindowIsFullscreen
+        {
+            get
+            {
+                return Settings.Properties.DisableEasyMouseWhenForegroundWindowIsFullscreen;
+            }
+
+            set
+            {
+                if (Settings.Properties.DisableEasyMouseWhenForegroundWindowIsFullscreen == value)
+                {
+                    return;
+                }
+
+                Settings.Properties.DisableEasyMouseWhenForegroundWindowIsFullscreen = value;
+                NotifyPropertyChanged();
             }
         }
 

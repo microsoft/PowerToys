@@ -398,6 +398,9 @@
   <data name="MouseWithoutBorders_AdvancedSettings_Group.Header" xml:space="preserve">
     <value>Advanced Settings</value>
   </data>
+  <data name="MouseWithoutBorders_EasyMouseSettings_Group.Header" xml:space="preserve">
+    <value>Easy Mouse Settings</value>
+  </data>
   <data name="MouseWithoutBorders_EasyMouseOption.Header" xml:space="preserve">
     <value>Easy Mouse: move between machines by moving the mouse pointer to the screen edges.</value>
   </data>
@@ -418,6 +421,25 @@
   <data name="MouseWithoutBorders_EasyMouseOption_Shift.Content" xml:space="preserve">
     <value>Shift</value>
     <comment>This is the Shift keyboard key</comment>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Header" xml:space="preserve">
+    <value>Disable easy mouse when an application is running in full screen.</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen.Description" xml:space="preserve">
+    <value>Prevent easy mouse from moving to another machine if an application is running in the foreground in full screen mode.</value>
+  </data>
+  <data name="MouseWithoutBorders_CanOnlyStopEasyMouseIfMovingFromHostMachine.Title" xml:space="preserve">
+    <value>Disabling Easy Mouse when an application is running in full screen will only work on the host computer, it will not prevent moving away from remote machines.</value>
+  </data>
+   <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: chrome.exe</value>
+    <comment>Allow easy mouse when chrome is in fullscreen mode.</comment>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Header" xml:space="preserve">
+    <value>Ignored fullscreen applications</value>
+  </data>
+  <data name="MouseWithoutBorders_DisableEasyMouseWhenForegroundWindowIsFullscreen_Expander.Description" xml:space="preserve">
+    <value>Allow easy mouse to move between machines even if one of these applications is running in full screen.</value>
   </data>
   <data name="MouseWithoutBorders_LockMachinesShortcut.Header" xml:space="preserve">
     <value>Shortcut to lock all machines.</value>
@@ -4319,12 +4341,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="GeneralPage_ShowWhatsNewAfterUpdates.Content" xml:space="preserve">
     <value>Show the release notes after an update</value>
-  </data>
-  <data name="ShowSystemTrayIcon.Description" xml:space="preserve">
-    <value>This settings page is accessible by running the PowerToys executable again</value>
-  </data>
-  <data name="ShowSystemTrayIcon.Header" xml:space="preserve">
-    <value>Show system tray icon</value>
   </data>
   <data name="QuickAccent_Prevent_Activation_On_Game_Mode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
