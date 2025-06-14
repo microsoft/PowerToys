@@ -139,10 +139,23 @@ namespace HostsUILib.Views
                 dialog.XamlRoot = XamlRoot;
                 dialog.Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style;
                 dialog.Title = resourceLoader.GetString("WarningDialog_Title");
-                dialog.Content = new TextBlock
+                dialog.Content = new StackPanel
                 {
-                    Text = resourceLoader.GetString("WarningDialog_Text"),
-                    TextWrapping = TextWrapping.Wrap,
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Text = resourceLoader.GetString("WarningDialog_Text"),
+                            TextWrapping = TextWrapping.Wrap,
+                        },
+                        new HyperlinkButton
+                        {
+                            Content = resourceLoader.GetString("WarningDialog_LearnMore"),
+                            NavigateUri = new Uri("https://aka.ms/PowerToysOverview_HostsFileEditor"),
+                            Padding = new Thickness(0),
+                            Margin = new Thickness(0, 5, 0, 5),
+                        },
+                    },
                 };
                 dialog.PrimaryButtonText = resourceLoader.GetString("WarningDialog_AcceptBtn");
                 dialog.PrimaryButtonStyle = Application.Current.Resources["AccentButtonStyle"] as Style;
