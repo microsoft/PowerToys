@@ -223,6 +223,9 @@
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
                                 <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="Enable_Spotlight_Mode">
+                                <ToggleSwitch IsOn="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
