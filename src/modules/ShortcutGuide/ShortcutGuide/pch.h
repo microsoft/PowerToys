@@ -1,9 +1,11 @@
 ﻿#pragma once
 #define NOMINMAX
+#include <vector>
 #include <winrt/base.h>
+#include <UIAutomation.h>
+#include <windows.h>
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Foundation.Collections.h>
-#include <Windows.h>
 #include <dxgi1_3.h>
 #include <d3d11_2.h>
 #include <d2d1_3.h>
@@ -24,5 +26,4 @@
 #include <stdexcept>
 #include <tuple>
 #include <unordered_set>
-#include <string>
 #include <filesystem>

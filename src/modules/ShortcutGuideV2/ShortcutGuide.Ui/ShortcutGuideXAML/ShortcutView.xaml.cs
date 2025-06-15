@@ -3,21 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.UI;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Shapes;
+using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
+using ShortcutGuide.Properties;
 using Windows.Foundation;
 
 namespace ShortcutGuide
@@ -25,7 +23,7 @@ namespace ShortcutGuide
     public sealed partial class ShortcutView : Page, INotifyPropertyChanged
     {
         private readonly DispatcherTimer _taskbarUpdateTimer = new() { Interval = TimeSpan.FromMilliseconds(500) };
-        private bool _showTaskbarShortcuts = true;
+        private readonly bool _showTaskbarShortcuts;
         private ShortcutFile shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
 
         public ShortcutView()
@@ -37,7 +35,11 @@ namespace ShortcutGuide
 
             try
             {
-                CategorySelector.Items.Add(new SelectorBarItem() { Text = "Overview", Name = i.ToString(CultureInfo.InvariantCulture) });
+                CategorySelector.Items.Add(new SelectorBarItem()
+                {
+                    Text = Resource.ResourceManager.GetString("Overview", CultureInfo.CurrentUICulture),
+                    Name = i.ToString(CultureInfo.InvariantCulture),
+                });
 
                 i++;
 
@@ -87,7 +89,7 @@ namespace ShortcutGuide
             {
                 OverviewStackPanel.Visibility = Visibility.Collapsed;
                 ErrorMessage.Visibility = Visibility.Visible;
-                ErrorMessage.Text = "Error displaying the applications shortcuts";
+                ErrorMessage.Text = Resource.ResourceManager.GetString("ErrorInAppParsing", CultureInfo.CurrentUICulture);
             }
         }
 
@@ -113,14 +115,14 @@ namespace ShortcutGuide
                 {
                     canvases[i].Visibility = Visibility.Visible;
                     Rect workArea = DisplayHelper.GetWorkAreaForDisplayWithWindow(MainWindow.WindowHwnd);
-                    DoubleAnimation animation = new DoubleAnimation
+                    DoubleAnimation animation = new()
                     {
                         To = (buttons[i].X - workArea.Left) / DpiHelper.GetDPIScaleForWindow(MainWindow.WindowHwnd.ToInt32()),
                         Duration = TimeSpan.FromMilliseconds(500),
                     };
 
                     // Create the storyboard
-                    Storyboard storyboard = new Storyboard();
+                    Storyboard storyboard = new();
                     storyboard.Children.Add(animation);
 
                     // Set the target and property
@@ -216,7 +218,7 @@ namespace ShortcutGuide
             {
                 OverviewStackPanel.Visibility = Visibility.Collapsed;
                 ErrorMessage.Visibility = Visibility.Visible;
-                ErrorMessage.Text = "No shortcuts pinned or recommended";
+                ErrorMessage.Text = Resource.ResourceManager.GetString("NoShortcutsInOverview", CultureInfo.CurrentUICulture);
             }
         }
 
@@ -275,7 +277,7 @@ namespace ShortcutGuide
             {
                 ShortcutListElement.Visibility = Visibility.Collapsed;
                 ErrorMessage.Visibility = Visibility.Visible;
-                ErrorMessage.Text = "No results found";
+                ErrorMessage.Text = Resource.ResourceManager.GetString("SearchBlank", CultureInfo.CurrentUICulture);
             }
         }
 
@@ -307,7 +309,7 @@ namespace ShortcutGuide
             catch (NullReferenceException)
             {
                 ErrorMessage.Visibility = Visibility.Visible;
-                ErrorMessage.Text = "Error displaying category";
+                ErrorMessage.Text = Resource.ResourceManager.GetString("ErrorInCategoryParsing", CultureInfo.CurrentUICulture);
             }
 
             FilterBy(_searchFilter);
@@ -350,7 +352,7 @@ namespace ShortcutGuide
 
             bool isItemPinned = ShortcutPageParameters.PinnedShortcuts[ShortcutPageParameters.CurrentPageName].Contains(originalObject);
 
-            pinItem.Text = isItemPinned ? "Unpin" : "Pin";
+            pinItem.Text = isItemPinned ? Resource.ResourceManager.GetString("UnpinShortcut", CultureInfo.CurrentUICulture) : Resource.ResourceManager.GetString("PinShortcut", CultureInfo.CurrentUICulture);
             pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
         }
     }

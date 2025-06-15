@@ -117,7 +117,35 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ErrorInAppParsing" xml:space="preserve">
+    <value>Error displaying the application's shortcuts</value>
+    <comment>Shortcuts refers to keyboard shortcuts; Application refers to a PC application</comment>
+  </data>
+  <data name="ErrorInCategoryParsing" xml:space="preserve">
+    <value>There has been an error displaying this category</value>
+  </data>
+  <data name="NoShortcutsInOverview" xml:space="preserve">
+    <value>No shortcuts pinned or recommended</value>
+    <comment>Shortcuts refers to keyboard shortcuts</comment>
+  </data>
+  <data name="Overview" xml:space="preserve">
+    <value>Overview</value>
+    <comment>Category title</comment>
+  </data>
+  <data name="PinShortcut" xml:space="preserve">
+    <value>Pin</value>
+    <comment>Refers to the action of pinning something on a pinboard</comment>
+  </data>
+  <data name="SearchBlank" xml:space="preserve">
+    <value>No results found</value>
+    <comment>Results refers to search results</comment>
+  </data>
   <data name="Title" xml:space="preserve">
     <value>Shortcut Guide</value>
+    <comment>Shortcut refers to a keyboard shortcut</comment>
+  </data>
+  <data name="UnpinShortcut" xml:space="preserve">
+    <value>Unpin</value>
+    <comment>Refers to the action of unpinning something from a pinboard</comment>
   </data>
 </root>
