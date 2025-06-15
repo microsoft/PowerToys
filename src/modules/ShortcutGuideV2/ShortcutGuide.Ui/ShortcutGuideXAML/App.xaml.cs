@@ -17,6 +17,11 @@ namespace ShortcutGuide
         {
             _window = new MainWindow();
             _window.Activate();
+            _window.Closed += (s, e) =>
+            {
+                _window = null;
+                Current.Exit();
+            };
         }
 
         private Window? _window;

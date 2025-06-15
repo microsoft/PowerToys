@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -24,11 +25,13 @@ namespace ShortcutGuide
     {
         private readonly DispatcherTimer _taskbarUpdateTimer = new() { Interval = TimeSpan.FromMilliseconds(500) };
         private readonly bool _showTaskbarShortcuts;
+        public static readonly CancellationTokenSource AnimationCancellationTokenSource = new();
         private ShortcutFile shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
 
         public ShortcutView()
         {
             InitializeComponent();
+            AnimationCancellationTokenSource.TryReset();
             DataContext = this;
 
             int i = -1;
@@ -91,6 +94,13 @@ namespace ShortcutGuide
                 ErrorMessage.Visibility = Visibility.Visible;
                 ErrorMessage.Text = Resource.ResourceManager.GetString("ErrorInAppParsing", CultureInfo.CurrentUICulture);
             }
+
+            Unloaded += (s, e) =>
+            {
+                AnimationCancellationTokenSource.Cancel();
+                _taskbarUpdateTimer.Tick -= UpdateTaskbarIndicators;
+                _taskbarUpdateTimer.Stop();
+            };
         }
 
         private void UpdateTaskbarIndicators(object? sender, object? e)

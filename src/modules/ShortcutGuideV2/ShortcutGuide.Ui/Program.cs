@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using ShortcutGuide.Helpers;
 
@@ -25,6 +26,12 @@ namespace ShortcutGuide
         [STAThread]
         public static void Main()
         {
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredShortcutGuideEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                return;
+            }
+
             if (!Directory.Exists(ManifestInterpreter.GetPathOfIntepretations()))
             {
                 Directory.CreateDirectory(ManifestInterpreter.GetPathOfIntepretations());
@@ -43,17 +50,11 @@ namespace ShortcutGuide
             Logger.InitializeLogger("\\ShortcutGuide\\Logs");
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
-            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredShortcutGuideEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
-            {
-                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
-                return;
-            }
-
             var instanceKey = AppInstance.FindOrRegisterForKey("PowerToys_ShortcutGuide_Instance");
 
             if (instanceKey.IsCurrent)
             {
-                Microsoft.UI.Xaml.Application.Start((p) =>
+                Application.Start((p) =>
                 {
                     var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
                     SynchronizationContext.SetSynchronizationContext(context);
@@ -64,6 +65,9 @@ namespace ShortcutGuide
             {
                 Logger.LogWarning("Another instance of ShortcutGuide is running. Exiting ShortcutGuide");
             }
+
+            // Something prevents the process from exiting, so we need to kill it manually.
+            Process.GetCurrentProcess().Kill();
 
             return;
         }

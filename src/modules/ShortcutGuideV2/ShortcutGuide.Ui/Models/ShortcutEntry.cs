@@ -62,13 +62,19 @@ namespace ShortcutGuide.Models
 
             async void AnimateTextBlock(TextBlock animatedTextBlock, string text, int delay = 500)
             {
-                int index = 0;
-
-                while (true)
+                try
                 {
-                    animatedTextBlock.Text = text[index].ToString();
-                    index = (index + 1) % text.Length;
-                    await Task.Delay(delay);
+                    int index = 0;
+
+                    while (!ShortcutView.AnimationCancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        animatedTextBlock.Text = text[index].ToString();
+                        index = (index + 1) % text.Length;
+                        await Task.Delay(delay);
+                    }
+                }
+                catch
+                {
                 }
             }
 
@@ -254,7 +260,7 @@ namespace ShortcutGuide.Models
                 async void AnimateStackPanels(StackPanel[] panels, int delay = 2000)
                 {
                     int index = 0;
-                    while (true)
+                    while (!ShortcutView.AnimationCancellationTokenSource.Token.IsCancellationRequested)
                     {
                         foreach (StackPanel panel in panels)
                         {
