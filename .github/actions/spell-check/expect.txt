@@ -201,6 +201,7 @@ CLIPSIBLINGS
 closesocket
 clp
 CLSCTX
+CLSCTXLOCALSERVER
 clsids
 Clusion
 cmder
