@@ -28,12 +28,12 @@ namespace Peek.UI.Extensions
 
             // If the window is maximized, restore to normal state before change its size
             var placement = default(WINDOWPLACEMENT);
-            if (PInvoke.GetWindowPlacement(hwndToCenter, ref placement))
+            if (PInvoke_PeekUI.GetWindowPlacement(hwndToCenter, ref placement))
             {
                 if (placement.showCmd == SHOW_WINDOW_CMD.SW_MAXIMIZE)
                 {
                     placement.showCmd = SHOW_WINDOW_CMD.SW_SHOWNORMAL;
-                    if (!PInvoke.SetWindowPlacement(hwndToCenter, in placement))
+                    if (!PInvoke_PeekUI.SetWindowPlacement(hwndToCenter, in placement))
                     {
                         Logger.LogError($"SetWindowPlacement failed with error {Marshal.GetLastWin32Error()}");
                     }
@@ -44,12 +44,12 @@ namespace Peek.UI.Extensions
                 Logger.LogError($"GetWindowPlacement failed with error {Marshal.GetLastWin32Error()}");
             }
 
-            var monitor = PInvoke.MonitorFromWindow(hwndDesktop, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+            var monitor = PInvoke_PeekUI.MonitorFromWindow(hwndDesktop, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
             MONITORINFO info = default(MONITORINFO);
             info.cbSize = 40;
-            PInvoke.GetMonitorInfo(monitor, ref info);
-            var dpi = PInvoke.GetDpiForWindow(new HWND(hwndDesktop));
-            PInvoke.GetWindowRect(hwndToCenter, out RECT windowRect);
+            PInvoke_PeekUI.GetMonitorInfo(monitor, ref info);
+            var dpi = PInvoke_PeekUI.GetDpiForWindow(new HWND((nint)hwndDesktop));
+            PInvoke_PeekUI.GetWindowRect(hwndToCenter, out RECT windowRect);
             var scalingFactor = dpi / 96d;
             var w = width.HasValue ? (int)(width * scalingFactor) : windowRect.right - windowRect.left;
             var h = height.HasValue ? (int)(height * scalingFactor) : windowRect.bottom - windowRect.top;
@@ -63,7 +63,7 @@ namespace Peek.UI.Extensions
 
         private static void SetWindowPosOrThrow(HWND hWnd, HWND hWndInsertAfter, int x, int y, int cx, int cy, SET_WINDOW_POS_FLAGS uFlags)
         {
-            bool result = PInvoke.SetWindowPos(hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
+            bool result = PInvoke_PeekUI.SetWindowPos(hWnd, hWndInsertAfter, x, y, cx, cy, uFlags);
             if (!result)
             {
                 Marshal.ThrowExceptionForHR(Marshal.GetLastWin32Error());

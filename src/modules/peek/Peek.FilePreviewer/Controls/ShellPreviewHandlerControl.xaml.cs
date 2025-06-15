@@ -4,7 +4,6 @@
 
 using System;
 using System.Runtime.CompilerServices;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
@@ -24,8 +23,8 @@ namespace Peek.FilePreviewer.Controls
         private static readonly COLORREF LightThemeBgColor = new(0x00f3f3f3);
         private static readonly COLORREF DarkThemeBgColor = new(0x00202020);
 
-        private static readonly HBRUSH LightThemeBgBrush = PInvoke.CreateSolidBrush(LightThemeBgColor);
-        private static readonly HBRUSH DarkThemeBgBrush = PInvoke.CreateSolidBrush(DarkThemeBgColor);
+        private static readonly HBRUSH LightThemeBgBrush = PInvoke_FilePreviewer.CreateSolidBrush(LightThemeBgColor);
+        private static readonly HBRUSH DarkThemeBgBrush = PInvoke_FilePreviewer.CreateSolidBrush(DarkThemeBgColor);
 
         [ObservableProperty]
         private IPreviewHandler? source;
@@ -88,19 +87,19 @@ namespace Peek.FilePreviewer.Controls
 
             if (HandlerVisibility == Visibility.Visible)
             {
-                PInvoke.ShowWindow(containerHwnd, SHOW_WINDOW_CMD.SW_SHOW);
+                PInvoke_FilePreviewer.ShowWindow(containerHwnd, SHOW_WINDOW_CMD.SW_SHOW);
                 IsEnabled = true;
 
                 // Clears the background from the last previewer
                 // The brush can only be drawn here because flashes will occur during resize
-                PInvoke.SetClassLongPtr(containerHwnd, GET_CLASS_LONG_INDEX.GCLP_HBRBACKGROUND, containerBgBrush);
-                PInvoke.UpdateWindow(containerHwnd);
-                PInvoke.SetClassLongPtr(containerHwnd, GET_CLASS_LONG_INDEX.GCLP_HBRBACKGROUND, IntPtr.Zero);
-                PInvoke.InvalidateRect(containerHwnd, (RECT*)null, true);
+                PInvoke_FilePreviewer.SetClassLongPtr(containerHwnd, GET_CLASS_LONG_INDEX.GCLP_HBRBACKGROUND, containerBgBrush);
+                PInvoke_FilePreviewer.UpdateWindow(containerHwnd);
+                PInvoke_FilePreviewer.SetClassLongPtr(containerHwnd, GET_CLASS_LONG_INDEX.GCLP_HBRBACKGROUND, IntPtr.Zero);
+                PInvoke_FilePreviewer.InvalidateRect(containerHwnd, (RECT*)null, true);
             }
             else
             {
-                PInvoke.ShowWindow(containerHwnd, SHOW_WINDOW_CMD.SW_HIDE);
+                PInvoke_FilePreviewer.ShowWindow(containerHwnd, SHOW_WINDOW_CMD.SW_HIDE);
                 IsEnabled = false;
             }
         }
@@ -132,14 +131,14 @@ namespace Peek.FilePreviewer.Controls
                 visuals.SetTextColor(fgColor);
 
                 // Changing the previewer colors might not always redraw itself
-                PInvoke.InvalidateRect(containerHwnd, (RECT*)null, true);
+                PInvoke_FilePreviewer.InvalidateRect(containerHwnd, (RECT*)null, true);
             }
         }
 
         private LRESULT ContainerWndProc(HWND hWnd, uint msg, WPARAM wParam, LPARAM lParam)
         {
             // Here for future use :)
-            return PInvoke.DefWindowProc(hWnd, msg, wParam, lParam);
+            return PInvoke_FilePreviewer.DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
         private void EnsureContainerHwndCreated()
@@ -157,14 +156,14 @@ namespace Peek.FilePreviewer.Controls
 
             fixed (char* pContainerClassName = "PeekShellPreviewHandlerContainer")
             {
-                PInvoke.RegisterClass(new WNDCLASSW()
+                PInvoke_FilePreviewer.RegisterClass(new WNDCLASSW()
                 {
                     lpfnWndProc = containerWndProc,
                     lpszClassName = pContainerClassName,
                 });
 
                 // Create the container window to host the preview handler
-                containerHwnd = PInvoke.CreateWindowEx(
+                containerHwnd = PInvoke_FilePreviewer.CreateWindowEx(
                     WINDOW_EX_STYLE.WS_EX_LAYERED,
                     pContainerClassName,
                     null,
@@ -178,7 +177,7 @@ namespace Peek.FilePreviewer.Controls
                     HINSTANCE.Null);
 
                 // Allows the preview handlers to display properly
-                PInvoke.SetLayeredWindowAttributes(containerHwnd, default, byte.MaxValue, LAYERED_WINDOW_ATTRIBUTES_FLAGS.LWA_ALPHA);
+                PInvoke_FilePreviewer.SetLayeredWindowAttributes(containerHwnd, default, byte.MaxValue, LAYERED_WINDOW_ATTRIBUTES_FLAGS.LWA_ALPHA);
             }
         }
 
@@ -186,12 +185,12 @@ namespace Peek.FilePreviewer.Controls
         {
             EnsureContainerHwndCreated();
 
-            var dpi = (float)PInvoke.GetDpiForWindow(containerHwnd) / 96;
+            var dpi = (float)PInvoke_FilePreviewer.GetDpiForWindow(containerHwnd) / 96;
 
             // Resize the container window
-            PInvoke.SetWindowPos(
+            PInvoke_FilePreviewer.SetWindowPos(
                 containerHwnd,
-                (HWND)0, // HWND_TOP
+                (HWND)(nint)0, // HWND_TOP
                 (int)(Math.Abs(args.EffectiveViewport.X) * dpi),
                 (int)(Math.Abs(args.EffectiveViewport.Y) * dpi),
                 (int)(ActualWidth * dpi),
@@ -210,7 +209,7 @@ namespace Peek.FilePreviewer.Controls
             }
 
             // Resizing the previewer might not always redraw itself
-            PInvoke.InvalidateRect(containerHwnd, (RECT*)null, false);
+            PInvoke_FilePreviewer.InvalidateRect(containerHwnd, (RECT*)null, false);
         }
 
         private void UserControl_GotFocus(object sender, RoutedEventArgs e)
