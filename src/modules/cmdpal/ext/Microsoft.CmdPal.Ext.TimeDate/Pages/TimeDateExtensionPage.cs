@@ -18,8 +18,6 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
 
     private IList<ListItem> _results = new List<ListItem>();
 
-    private bool initialized;
-
     private SettingsManager _settingsManager;
 
     public TimeDateExtensionPage(SettingsManager settingsManager)
@@ -35,12 +33,9 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
 
     public override IListItem[] GetItems()
     {
-       if (!initialized)
-        {
-            DoExecuteSearch(string.Empty);
-        }
+        DoExecuteSearch(string.Empty);
 
-       lock (_resultsLock)
+        lock (_resultsLock)
         {
             ListItem[] results = _results.ToArray();
             return results;
@@ -49,11 +44,6 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        if (newSearch == oldSearch)
-        {
-            return;
-        }
-
         DoExecuteSearch(newSearch);
     }
 
@@ -84,7 +74,6 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage
     {
         lock (_resultsLock)
         {
-            initialized = true;
             this._results = result;
         }
 
