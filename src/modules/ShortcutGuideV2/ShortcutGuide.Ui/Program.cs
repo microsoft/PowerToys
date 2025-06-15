@@ -9,6 +9,7 @@ using System.Threading;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
+using ShortcutGuide.Helpers;
 
 namespace ShortcutGuide
 {

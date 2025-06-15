@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
@@ -14,6 +13,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using ShortcutGuide.Properties;
 using Windows.Foundation;
@@ -28,11 +28,11 @@ namespace ShortcutGuide
     /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
+        private readonly string[] _currentApplicationIds;
+
         public static nint WindowHwnd { get; set; }
 
         private AppWindow _appWindow;
-
-        private string[] _currentApplicationIds;
 
         public MainWindow()
         {

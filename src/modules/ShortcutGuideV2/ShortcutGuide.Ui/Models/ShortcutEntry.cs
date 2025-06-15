@@ -2,17 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
-using ShortcutGuide;
 using Windows.UI.Text;
 using static ShortcutGuide.Models.ShortcutEntry;
 
@@ -165,7 +161,7 @@ namespace ShortcutGuide.Models
 
                                 // Use monospaced font to ensure the text doesn't move
                                 FontFamily = new("Courier New"),
-                                TextDecorations = Windows.UI.Text.TextDecorations.Underline,
+                                TextDecorations = TextDecorations.Underline,
                             };
 
                             shortcutStackPanel.Children.Add(animatedTextBlock);

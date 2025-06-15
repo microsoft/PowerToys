@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using YamlDotNet.Serialization;
 

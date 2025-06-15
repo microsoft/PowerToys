@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Settings.UI.Library;
+using ShortcutGuide.Helpers;
 
 namespace ShortcutGuide
 {

@@ -1,17 +1,10 @@
 #include "pch.h"
 #include "tasklist_positions.h"
-#include <windows.h>
-#include <vector>
-#include <winrt/base.h>
-#include <UIAutomation.h>
+
+// Tried my hardest adapting this to C#, but FindWindowW didn't work properly in C#. ~Noraa Junker
 
 extern "C"
 {
-    winrt::com_ptr<IUIAutomation> automation;
-    winrt::com_ptr<IUIAutomationElement> element;
-    winrt::com_ptr<IUIAutomationCondition> true_condition;
-
-    // Helper to get the taskbar HWND for the monitor under the cursor
     HWND GetTaskbarHwndForCursorMonitor(HMONITOR monitor)
     {
         POINT pt;
@@ -124,7 +117,7 @@ extern "C"
             child = nullptr;
             if (elements->GetElement(i, child.put()) < 0)
                 return false;
-            TasklistButton button;
+            TasklistButton button = {};
             if (VARIANT var_rect; child->GetCurrentPropertyValue(UIA_BoundingRectanglePropertyId, &var_rect) >= 0)
             {
                 if (var_rect.vt == (VT_R8 | VT_ARRAY))

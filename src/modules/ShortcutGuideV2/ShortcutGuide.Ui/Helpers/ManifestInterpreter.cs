@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 using ShortcutGuide.Models;
 using YamlDotNet.Serialization;
 
-namespace ShortcutGuide
+namespace ShortcutGuide.Helpers
 {
     public class ManifestInterpreter
     {
@@ -26,17 +26,11 @@ namespace ShortcutGuide
             IEnumerable<string> files = Directory.EnumerateFiles(path, applicationName + ".*.yml") ??
                 throw new FileNotFoundException($"The file for the application '{applicationName}' was not found in '{path}'.");
 
-            if (files.Any(f => f.EndsWith($".{Language}.yml", StringComparison.InvariantCulture)))
-            {
-                return YamlToShortcutList(File.ReadAllText(Path.Combine(path, applicationName + $".{Language}.yml")));
-            }
-
-            if (files.Any(f => f.EndsWith(".en-US.yml", StringComparison.InvariantCulture)))
-            {
-                return YamlToShortcutList(File.ReadAllText(files.First(f => f.EndsWith(".en-US.yml", StringComparison.InvariantCulture))));
-            }
-
-            throw new FileNotFoundException($"The file for the application '{applicationName}' was not found in '{path}' with the language '{Language}' or 'en-US'.");
+            return files.Any(f => f.EndsWith($".{Language}.yml", StringComparison.InvariantCulture))
+                ? YamlToShortcutList(File.ReadAllText(Path.Combine(path, applicationName + $".{Language}.yml")))
+                : files.Any(f => f.EndsWith(".en-US.yml", StringComparison.InvariantCulture))
+                ? YamlToShortcutList(File.ReadAllText(files.First(f => f.EndsWith(".en-US.yml", StringComparison.InvariantCulture))))
+                : throw new FileNotFoundException($"The file for the application '{applicationName}' was not found in '{path}' with the language '{Language}' or 'en-US'.");
         }
 
         public static ShortcutFile YamlToShortcutList(string content)
@@ -60,7 +54,7 @@ namespace ShortcutGuide
 
         public static string[] GetAllCurrentApplicationIds()
         {
-            IntPtr handle = NativeMethods.GetForegroundWindow();
+            nint handle = NativeMethods.GetForegroundWindow();
 
             List<string> applicationIds = [];
 

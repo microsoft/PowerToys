@@ -61,11 +61,74 @@ namespace ShortcutGuide.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error displaying the application&apos;s shortcuts.
+        /// </summary>
+        internal static string ErrorInAppParsing {
+            get {
+                return ResourceManager.GetString("ErrorInAppParsing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There has been an error displaying this category.
+        /// </summary>
+        internal static string ErrorInCategoryParsing {
+            get {
+                return ResourceManager.GetString("ErrorInCategoryParsing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No shortcuts pinned or recommended.
+        /// </summary>
+        internal static string NoShortcutsInOverview {
+            get {
+                return ResourceManager.GetString("NoShortcutsInOverview", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Overview.
+        /// </summary>
+        internal static string Overview {
+            get {
+                return ResourceManager.GetString("Overview", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pin.
+        /// </summary>
+        internal static string PinShortcut {
+            get {
+                return ResourceManager.GetString("PinShortcut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No results found.
+        /// </summary>
+        internal static string SearchBlank {
+            get {
+                return ResourceManager.GetString("SearchBlank", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Shortcut Guide.
         /// </summary>
         internal static string Title {
             get {
                 return ResourceManager.GetString("Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unpin.
+        /// </summary>
+        internal static string UnpinShortcut {
+            get {
+                return ResourceManager.GetString("UnpinShortcut", resourceCulture);
             }
         }
     }

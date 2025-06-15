@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace ShortcutGuide
+namespace ShortcutGuide.Helpers
 {
     // This class is rewritten from C++ to C# from the measure tool project
     internal static partial class DpiHelper
