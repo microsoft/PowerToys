@@ -17,7 +17,7 @@
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <AssemblyName>PowerToys.ShortcutGuide</AssemblyName>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
-    <ApplicationIcon>Assets/Hosts/Hosts.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\ShortcutGuide\ShortcutGuide.ico</ApplicationIcon>
     <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.ShortcutGuide.pri</ProjectPriFileName>
   </PropertyGroup>
@@ -28,14 +28,10 @@
     <Content Remove="Assets\ShortcutGuide\+WindowsNT.WindowsExplorer.en-US.yml" />
     <Content Remove="Assets\ShortcutGuide\Microsoft.PowerToys.en-US.yml" />
     <Content Remove="Assets\ShortcutGuide\OfficeKey.png" />
+    <Content Remove="Assets\ShortcutGuide\ShortcutGuide.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Assets\ShortcutGuide\AppList.scale-100.png" />
-    <None Remove="Assets\ShortcutGuide\AppList.scale-125.png" />
-    <None Remove="Assets\ShortcutGuide\AppList.scale-150.png" />
-    <None Remove="Assets\ShortcutGuide\AppList.scale-200.png" />
-    <None Remove="Assets\ShortcutGuide\AppList.scale-400.png" />
     <None Remove="ShortcutGuideXAML\ShortcutView.xaml" />
     <None Include="Assets\ShortcutGuide\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -46,7 +42,7 @@
     <Message Text="Executing CopyPRIFileToOutputDir task" Importance="High" />
 
     <ItemGroup>
-      <PRIFile Include="$(OutDir)**\PowerToys.Hosts.pri" />
+      <PRIFile Include="$(OutDir)**\PowerToys.ShortcutGuide.pri" />
     </ItemGroup>
 
     <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
@@ -70,10 +66,6 @@
       <Isolated>false</Isolated>
       <EmbedInteropTypes>true</EmbedInteropTypes>
     </COMReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Assets\Hosts\Hosts.ico" />
   </ItemGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->

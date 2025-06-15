@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -79,7 +80,7 @@ namespace ShortcutGuide
             if (e.WindowActivationState == WindowActivationState.Deactivated)
             {
 #if !DEBUG
-                Environment.Exit(0);
+                Close();
 #endif
             }
 
@@ -153,7 +154,8 @@ namespace ShortcutGuide
 
         public void CloseButton_Clicked(object sender, RoutedEventArgs e)
         {
-            Environment.Exit(0);
+            ShortcutView.AnimationCancellationTokenSource.Cancel();
+            Close();
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
