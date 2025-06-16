@@ -1,5 +1,11 @@
 # ZoomIt Module
 
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AProduct-ZoomIt)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AProduct-ZoomIt%20label%3AIssue-Bug%20)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+ZoomIt)
+
 ## Overview
 
 ZoomIt is a screen zoom and annotation tool originally from Microsoft's Sysinternals suite. It allows users to:
@@ -43,6 +49,13 @@ src/
 │       ├── ZoomIt/             # Main ZoomIt application code
 │       ├── ZoomItModuleInterface/  # PowerToys module interface implementation
 │       └── ZoomItSettingsInterop/  # WinRT/C++ interop for settings
+├── settings-ui/
+│   └── Settings.UI/
+│       ├── SettingsXAML/
+│       │   └── Views/
+│       │       └── ZoomItPage.xaml  # ZoomIt settings page UI
+│       └── ViewModels/
+│           └── ZoomItViewModel.cs   # ZoomIt settings view model
 └── common/
     └── sysinternals/          # Common code from Sysinternals
 ```
@@ -73,32 +86,42 @@ The integration of ZoomIt into PowerToys involved these key steps:
    - Moving code from the Sysinternals ZoomIt repository to `src/modules/ZoomIt/ZoomIt`
    - Adding required common libraries to `src/common/sysinternals`
    - Sanitizing code for open source (removing private APIs, undocumented details, etc.)
+   - Ensuring no private APIs (validated through APIScan)
+   - Removing references to undocumented implementation details, constants, and names
+   - Standardizing dependencies with other PowerToys utilities
 
 2. **Module Interface Implementation**:
    - Creating the PowerToys module interface
    - Adding process management (start/terminate)
    - Implementing event-based communication for settings updates
+   - Adding named events for communication between PowerToys and ZoomIt
 
 3. **Settings Integration**:
    - Extracting ZoomIt settings code to a shareable component
    - Creating a WinRT/C++ interop library for registry-JSON conversion
    - Implementing all settings UI controls in PowerToys settings
+   - Building `ZoomItSettingsInterop` as a bridge between registry and JSON settings
 
 4. **PowerToys Integration**:
    - Adding ZoomIt to the PowerToys runner
    - Adding GPO rules for ZoomIt
    - Implementing telemetry and logging
-   - Creating OOBE (out-of-box experience) page
+   - Creating OOBE (out-of-box experience) page with animated tutorial
+   - Adding ZoomIt to process termination list for proper cleanup
+   - Adding telemetry events documentation
 
 5. **UI/UX Adjustments**:
    - Redirecting ZoomIt's settings UI to PowerToys settings
-   - Handling hotkey conflicts
+   - Handling hotkey conflicts with warning notifications
    - Modifying tray icon behavior
+   - Removing original ZoomIt options menu entries
+   - Adding Sysinternals attribution on the settings page
 
 6. **Build System Updates**:
    - Adding ZoomIt to the PowerToys solution
    - Implementing build flags for standalone vs. PowerToys versions
    - Adding signing for new binaries
+   - Fixing analyzer errors and code quality issues
 
 ## Special Implementation Details
 
@@ -124,3 +147,38 @@ Communication between PowerToys and ZoomIt uses:
 - Command-line arguments to pass PowerToys process ID
 - Named events for signaling settings changes and exit requests
 - Windows messages for internal ZoomIt state management
+
+## Implementation Challenges
+
+Several challenges were encountered during ZoomIt integration:
+
+1. **First-Run Behavior**:
+   - Font loading crashed when no ZoomIt data existed in registry
+   - Hotkeys weren't registered on first run with no existing data
+   - Implemented safeguards to handle missing registry data
+
+2. **Settings Synchronization**:
+   - Modifier keys for shortcuts weren't correctly updated when settings changed
+   - Implemented proper event notification for settings changes
+   - Added hotkey conflict detection and warnings
+
+3. **File Interaction**:
+   - ZoomIt file pickers changed the working directory of the Settings project
+   - Fixed to maintain proper directory context
+
+4. **Drawing Issues**:
+   - Color settings lacking opacity caused drawing functionality to fail
+   - Removed internal state settings that weren't truly editable
+
+5. **Dual-Build Support**:
+   - Added build flags to support both PowerToys and standalone Sysinternals versions
+   - Implemented different executable properties based on build target
+
+## Source Code Management
+
+The PowerToys repository serves as the source of truth for both PowerToys and Sysinternals standalone versions of ZoomIt. Key repositories involved:
+
+- Utility repo: `https://dev.azure.com/sysinternals/Tools/_git/ZoomIt`
+- Common library repo: `https://dev.azure.com/sysinternals/Tools/_git/Common`
+
+The integration process can be tracked through [PR #35880](https://github.com/microsoft/PowerToys/pull/35880) which contains the complete history of changes required to properly integrate ZoomIt.
