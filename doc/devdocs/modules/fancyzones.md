@@ -18,6 +18,9 @@ FancyZones consists of several interconnected components:
 - **FancyZonesEditorCommon**: Provides data structures and I/O helpers for the Editor
 - Acts as a visual config editor for layout configuration
 
+![Editor Code Map](../images/fancyzones/editor_map.png)
+![Editor Common Code Map](../images/fancyzones/editor_common_map.png)
+
 ### Backend Implementation: FancyZones and FancyZonesLib
 - **FancyZonesLib**: Core logic implementation
   - All drag-and-drop behavior
