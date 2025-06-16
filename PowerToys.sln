@@ -720,6 +720,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MouseUtils.UITests", "src\modules\MouseUtils\MouseUtils.UITests\MouseUtils.UITests.csproj", "{4E0AE3A4-2EE0-44D7-A2D0-8769977254A1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkspacesEditorUITest", "src\modules\Workspaces\WorkspacesEditorUITest\WorkspacesEditorUITest.csproj", "{43E779F3-D83C-48B1-BA8D-1912DBD76FC9}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CalculatorEngineCommon", "src\common\CalculatorEngineCommon\CalculatorEngineCommon.vcxproj", "{2CF78CF7-8FEB-4BE1-9591-55FA25B48FC6}"
 EndProject
 Global
