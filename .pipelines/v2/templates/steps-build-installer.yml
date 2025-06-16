@@ -73,7 +73,7 @@ steps:
       msbuildArgs: >-
         -restore
         /t:PowerToysInstaller
-        /p:RunBuildEvents=false;PerUser=${{parameters.buildUserInstaller}};BuildProjectReferences=false;CIBuild=true;TargetFramework=net9.0-windows10.0.26100.0
+        /p:RunBuildEvents=false;PerUser=${{parameters.buildUserInstaller}};BuildProjectReferences=false;CIBuild=true
         /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -143,7 +143,7 @@ steps:
       vsVersion: 17.0
       msbuildArgs: >-
         /t:PowerToysBootstrapper
-        /p:PerUser=${{parameters.buildUserInstaller}};CIBuild=true;TargetFramework=net9.0-windows10.0.26100.0
+        /p:PerUser=${{parameters.buildUserInstaller}};CIBuild=true
         /bl:$(LogOutputDirectory)\installer-$(InstallerBuildSlug)-bootstrapper.binlog
         -restore -graph
         ${{ parameters.additionalBuildOptions }}
