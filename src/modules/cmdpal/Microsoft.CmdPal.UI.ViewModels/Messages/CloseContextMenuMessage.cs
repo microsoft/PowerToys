@@ -5,8 +5,8 @@
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
-/// Used to announce the context menu should open
+/// Used to announce that a context menu should close
 /// </summary>
-public record OpenContextMenuMessage
+public record CloseContextMenuMessage
 {
 }

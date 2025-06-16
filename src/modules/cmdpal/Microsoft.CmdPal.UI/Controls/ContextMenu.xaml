@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.ContextMenu"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
+    xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <cmdpalUI:KeyChordToStringConverter x:Key="KeyChordToStringConverter" />
+
+            <StackLayout
+                x:Name="VerticalStackLayout"
+                Orientation="Vertical"
+                Spacing="4" />
+
+            <cmdpalUI:ContextItemTemplateSelector
+                x:Key="ContextItemTemplateSelector"
+                Critical="{StaticResource CriticalContextMenuViewModelTemplate}"
+                Default="{StaticResource DefaultContextMenuViewModelTemplate}" />
+
+            <!--  Template for context items in the context item menu  -->
+            <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
+                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <cpcontrols:IconBox
+                        Width="16"
+                        Height="16"
+                        Margin="4,0,0,0"
+                        HorizontalAlignment="Left"
+                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Title, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Margin="16,0,0,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                </Grid>
+            </DataTemplate>
+
+            <!--  Template for context items flagged as critical  -->
+            <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
+                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <cpcontrols:IconBox
+                        Width="16"
+                        Height="16"
+                        Margin="4,0,0,0"
+                        HorizontalAlignment="Left"
+                        Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                    <TextBlock
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
+                        Text="{x:Bind Title, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Margin="16,0,0,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Style="{StaticResource ContextItemCaptionTextBlockCriticalStyle}"
+                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                </Grid>
+            </DataTemplate>
+
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel>
+
+        <ListView
+            x:Name="CommandsDropdown"
+            MinWidth="248"
+            Margin="-16,-12,-16,-12"
+            IsItemClickEnabled="True"
+            ItemClick="CommandsDropdown_ItemClick"
+            ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
+            ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+            KeyDown="CommandsDropdown_KeyDown"
+            SelectionMode="Single">
+            <ListView.ItemContainerStyle>
+                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                    <Setter Property="MinHeight" Value="0" />
+                    <Setter Property="Padding" Value="12,7,12,7" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemContainerTransitions>
+                <TransitionCollection />
+            </ListView.ItemContainerTransitions>
+        </ListView>
+
+        <TextBox
+            x:Name="ContextFilterBox"
+            x:Uid="ContextFilterBox"
+            Margin="-12,12,-12,-12"
+            KeyDown="ContextFilterBox_KeyDown"
+            PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
+            TextChanged="ContextFilterBox_TextChanged" />
+
+    </StackPanel>
+</UserControl>

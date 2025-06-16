@@ -18,6 +18,7 @@ namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class CommandBar : UserControl,
     IRecipient<OpenContextMenuMessage>,
+    IRecipient<CloseContextMenuMessage>,
     IRecipient<TryCommandKeybindingMessage>,
     ICurrentPageAware
 {
@@ -39,6 +40,7 @@ public sealed partial class CommandBar : UserControl,
 
         // RegisterAll isn't AOT compatible
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
+        WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
 
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
@@ -56,7 +58,15 @@ public sealed partial class CommandBar : UserControl,
             ShowMode = FlyoutShowMode.Standard,
         };
         MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
-        UpdateUiForStackChange();
+    }
+
+    public void Receive(CloseContextMenuMessage message)
+    {
+        if (MoreCommandsButton.Flyout.IsOpen)
+        {
+            MoreCommandsButton.Flyout.Hide();
+            return;
+        }
     }
 
     public void Receive(TryCommandKeybindingMessage msg)
@@ -82,8 +92,6 @@ public sealed partial class CommandBar : UserControl,
                 };
                 MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
             }
-
-            UpdateUiForStackChange();
 
             msg.Handled = true;
         }
@@ -121,164 +129,19 @@ public sealed partial class CommandBar : UserControl,
         e.Handled = true;
     }
 
-    private void CommandsDropdown_ItemClick(object sender, ItemClickEventArgs e)
-    {
-        if (e.ClickedItem is CommandContextItemViewModel item)
-        {
-            if (ViewModel?.InvokeItem(item) == ContextKeybindingResult.Hide)
-            {
-                MoreCommandsButton.Flyout.Hide();
-            }
-            else
-            {
-                UpdateUiForStackChange();
-            }
-        }
-    }
-
-    private void CommandsDropdown_KeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (e.Handled)
-        {
-            return;
-        }
-
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
-            InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
-
-        var result = ViewModel?.CheckKeybinding(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
-
-        if (result == ContextKeybindingResult.Hide)
-        {
-            e.Handled = true;
-            MoreCommandsButton.Flyout.Hide();
-            WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
-        }
-        else if (result == ContextKeybindingResult.KeepOpen)
-        {
-            e.Handled = true;
-        }
-        else if (result == ContextKeybindingResult.Unhandled)
-        {
-            e.Handled = false;
-        }
-    }
-
-    private void Flyout_Opened(object sender, object e)
-    {
-        UpdateUiForStackChange();
-    }
-
-    private void Flyout_Closing(FlyoutBase sender, FlyoutBaseClosingEventArgs args)
-    {
-        ViewModel?.ClearContextStack();
-        WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
-    }
-
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var prop = e.PropertyName;
         if (prop == nameof(ViewModel.ContextMenu))
         {
-            UpdateUiForStackChange();
+            // UpdateUiForStackChange();
         }
     }
 
-    private void ContextFilterBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void Flyout_Closed(object sender, object e)
     {
-        ViewModel.ContextMenu?.SetSearchText(ContextFilterBox.Text);
-
-        if (CommandsDropdown.SelectedIndex == -1)
-        {
-            CommandsDropdown.SelectedIndex = 0;
-        }
-    }
-
-    private void ContextFilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
-            InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
-
-        if (e.Key == VirtualKey.Enter)
-        {
-            if (CommandsDropdown.SelectedItem is CommandContextItemViewModel item)
-            {
-                if (ViewModel?.InvokeItem(item) == ContextKeybindingResult.Hide)
-                {
-                    MoreCommandsButton.Flyout.Hide();
-                    WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
-                }
-                else
-                {
-                    UpdateUiForStackChange();
-                }
-
-                e.Handled = true;
-            }
-        }
-        else if (e.Key == VirtualKey.Escape ||
-            (e.Key == VirtualKey.Left && altPressed))
-        {
-            if (ViewModel.CanPopContextStack())
-            {
-                ViewModel.PopContextStack();
-                UpdateUiForStackChange();
-            }
-            else
-            {
-                MoreCommandsButton.Flyout.Hide();
-                WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
-            }
-
-            e.Handled = true;
-        }
-
-        CommandsDropdown_KeyDown(sender, e);
-    }
-
-    private void ContextFilterBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (e.Key == VirtualKey.Up)
-        {
-            // navigate previous
-            if (CommandsDropdown.SelectedIndex > 0)
-            {
-                CommandsDropdown.SelectedIndex--;
-            }
-            else
-            {
-                CommandsDropdown.SelectedIndex = CommandsDropdown.Items.Count - 1;
-            }
-
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Down)
-        {
-            // navigate next
-            if (CommandsDropdown.SelectedIndex < CommandsDropdown.Items.Count - 1)
-            {
-                CommandsDropdown.SelectedIndex++;
-            }
-            else
-            {
-                CommandsDropdown.SelectedIndex = 0;
-            }
-
-            e.Handled = true;
-        }
-    }
-
-    private void UpdateUiForStackChange()
-    {
-        ContextFilterBox.Text = string.Empty;
-        ViewModel.ContextMenu?.SetSearchText(string.Empty);
-        CommandsDropdown.SelectedIndex = 0;
-        ContextFilterBox.Focus(FocusState.Programmatic);
+        ViewModel?.ClearContextStack();
+        WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+        WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
     }
 }

@@ -18,7 +18,6 @@ public partial class ContextMenuStackViewModel : ObservableObject
     private readonly IContextMenuContext _context;
     private string _lastSearchText = string.Empty;
 
-    // private Dictionary<KeyChord, CommandContextItemViewModel>? _contextKeybindings;
     public ContextMenuStackViewModel(IContextMenuContext context)
     {
         _context = context;
