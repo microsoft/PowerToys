@@ -216,7 +216,10 @@ void Highlighter::UpdateDrawingPointPosition(MouseButton button)
         }
         else
         {
-            m_alwaysPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+            if (m_alwaysPointer)
+            {
+                m_alwaysPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+            }
         }
     }
 }
@@ -433,6 +436,8 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings)
     m_rightPointerEnabled = settings.rightButtonColor.A != 0;
     m_alwaysPointerEnabled = settings.alwaysColor.A != 0;
     m_spotlightMode = settings.spotlightMode && settings.alwaysColor.A != 0;
+
+    instance->StopDrawing();
 }
 
 void Highlighter::BringToFront()
