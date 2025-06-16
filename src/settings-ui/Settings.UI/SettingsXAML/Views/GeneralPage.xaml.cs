@@ -5,13 +5,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.UI.Dispatching;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Flyout;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Data.Json;
@@ -31,8 +30,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public GeneralViewModel ViewModel { get; set; }
 
         private DispatcherTimer _bugReportStatusTimer;
-        private int _statusCheckCount = 0;
-        private const int MAX_STATUS_CHECKS = 30; // Stop after 30 seconds of checking
+        private int _statusCheckCount;
+        private const int MaxStatusChecks = 30; // Stop after 30 seconds of checking
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneralPage"/> class.
@@ -228,9 +227,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void BugReportStatusTimer_Tick(object sender, object e)
         {
             _statusCheckCount++;
-            
+
             // Stop checking after max attempts to avoid infinite polling
-            if (_statusCheckCount > MAX_STATUS_CHECKS)
+            if (_statusCheckCount > MaxStatusChecks)
             {
                 _bugReportStatusTimer.Stop();
                 _bugReportStatusTimer = null;
@@ -247,12 +246,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (response.ContainsKey("running"))
             {
                 var isRunning = response.GetNamedBoolean("running");
-                
+
                 // Update UI on the UI thread
                 this.DispatcherQueue.TryEnqueue(() =>
                 {
                     ViewModel.IsBugReportRunning = isRunning;
-                    
+
                     // Stop timer if bug report is no longer running
                     if (!isRunning && _bugReportStatusTimer != null)
                     {
