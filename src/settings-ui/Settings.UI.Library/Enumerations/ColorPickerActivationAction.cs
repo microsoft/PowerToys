@@ -9,10 +9,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         // Activation shortcut opens editor
         OpenEditor,
 
-        // Activation shortcut opens color picker and after picking a color is copied into clipboard and opens editor
-        OpenColorPickerAndThenEditor,
-
-        // Activation shortcut opens color picker only and picking color copies color into clipboard
-        OpenOnlyColorPicker,
+        // Activation shortcut opens color picker and after picking a color is copied into clipboard and editor optionally opens depending on which mouse button was pressed
+        OpenColorPicker,
     }
 }

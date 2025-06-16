@@ -69,6 +69,7 @@ appwiz
 APSTUDIO
 AQS
 ARandom
+Arash
 ARCHITEW
 ARemapped
 ARPINSTALLLOCATION
@@ -470,6 +471,7 @@ EXPCMDFLAGS
 EXPCMDSTATE
 explr
 exppowertoys
+exprtk
 exptas
 exsb
 exstyle
@@ -753,6 +755,7 @@ iwr
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
+JLO
 jobject
 jpe
 jpnime
@@ -909,6 +912,7 @@ metafile
 mfc
 Mgmt
 Microwaved
+middleclickaction
 midl
 mii
 mindaro
@@ -1151,6 +1155,7 @@ PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
+partow
 PATPAINT
 pbc
 pbi
@@ -1249,6 +1254,7 @@ prg
 prgh
 prgms
 pri
+primaryclickaction
 PRINTCLIENT
 printmanagement
 prm
@@ -1424,6 +1430,7 @@ SDKDDK
 sdns
 searchterm
 SEARCHUI
+secondaryclickaction
 SECONDARYDISPLAY
 secpol
 securestring
@@ -1508,6 +1515,7 @@ SICHINT
 SIDs
 siex
 sigdn
+Signedness
 SIGNINGSCENARIO
 signtool
 SINGLEKEY

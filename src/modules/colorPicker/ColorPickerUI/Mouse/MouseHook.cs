@@ -7,16 +7,17 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
 
-using ColorPicker.Helpers;
 using ManagedCommon;
 
 using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Mouse
 {
-    public delegate void MouseUpEventHandler(object sender, System.Drawing.Point p);
+    public delegate void PrimaryMouseDownEventHandler(object sender, IntPtr wParam);
 
     public delegate void SecondaryMouseUpEventHandler(object sender, IntPtr wParam);
+
+    public delegate void MiddleMouseDownEventHandler(object sender, IntPtr wParam);
 
     internal class MouseHook
     {
@@ -30,23 +31,25 @@ namespace ColorPicker.Mouse
         private const int WM_RBUTTONUP = 0x0205;
         [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
         private const int WM_RBUTTONDOWN = 0x0204;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
+        private const int WM_MBUTTONDOWN = 0x0207;
 
         private IntPtr _mouseHookHandle;
         private HookProc _mouseDelegate;
 
-        private event MouseUpEventHandler MouseDown;
+        private event PrimaryMouseDownEventHandler PrimaryMouseDown;
 
-        public event MouseUpEventHandler OnMouseDown
+        public event PrimaryMouseDownEventHandler OnPrimaryMouseDown
         {
             add
             {
                 Subscribe();
-                MouseDown += value;
+                PrimaryMouseDown += value;
             }
 
             remove
             {
-                MouseDown -= value;
+                PrimaryMouseDown -= value;
                 Unsubscribe();
             }
         }
@@ -64,6 +67,23 @@ namespace ColorPicker.Mouse
             remove
             {
                 SecondaryMouseUp -= value;
+                Unsubscribe();
+            }
+        }
+
+        private event MiddleMouseDownEventHandler MiddleMouseDown;
+
+        public event MiddleMouseDownEventHandler OnMiddleMouseDown
+        {
+            add
+            {
+                Subscribe();
+                MiddleMouseDown += value;
+            }
+
+            remove
+            {
+                MiddleMouseDown -= value;
                 Unsubscribe();
             }
         }
@@ -126,9 +146,9 @@ namespace ColorPicker.Mouse
                 MSLLHOOKSTRUCT mouseHookStruct = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
                 if (wParam.ToInt32() == WM_LBUTTONDOWN)
                 {
-                    if (MouseDown != null)
+                    if (PrimaryMouseDown != null)
                     {
-                        MouseDown.Invoke(null, new System.Drawing.Point(mouseHookStruct.pt.x, mouseHookStruct.pt.y));
+                        PrimaryMouseDown.Invoke(null, wParam);
                     }
 
                     return new IntPtr(-1);
@@ -147,6 +167,16 @@ namespace ColorPicker.Mouse
                 if (wParam.ToInt32() == WM_RBUTTONDOWN)
                 {
                     // Consume the event to avoid triggering context menus while in a Color Picker session.
+                    return new IntPtr(-1);
+                }
+
+                if (wParam.ToInt32() == WM_MBUTTONDOWN)
+                {
+                    if (MiddleMouseDown != null)
+                    {
+                        MiddleMouseDown.Invoke(null, wParam);
+                    }
+
                     return new IntPtr(-1);
                 }
 
