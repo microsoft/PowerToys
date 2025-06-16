@@ -11,9 +11,6 @@ parameters:
   - name: useLatestWebView2
     type: boolean
     default: false
-  - name: isUIAutomationPipeline
-    type: boolean
-    default: false
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}
@@ -32,14 +29,14 @@ jobs:
     ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
       ${{ if ne(parameters.platform, 'ARM64') }}:
         name: SHINE-INT-Testing-x64
-        ${{ if and(eq(parameters.isUIAutomationPipeline, true), eq(parameters.platform, 'x64Win11')) }}:
+        ${{ if eq(parameters.platform, 'x64Win11') }}:
           demands: ImageOverride -equals SHINE-W11-Testing
       ${{ else }}:
         name: SHINE-INT-Testing-arm64
     ${{ else }}:
       ${{ if ne(parameters.platform, 'ARM64') }}:
         name: SHINE-OSS-Testing-x64
-        ${{ if and(eq(parameters.isUIAutomationPipeline, true), eq(parameters.platform, 'x64Win11')) }}:
+        ${{ if eq(parameters.platform, 'x64Win11') }}:
           demands: ImageOverride -equals SHINE-W11-Testing
       ${{ else }}:
         name: SHINE-OSS-Testing-arm64
@@ -113,17 +110,10 @@ jobs:
       vsTestVersion: 'toolsInstaller'
       uiTests: true
       rerunFailedTests: true
-      ${{ if eq(parameters.isUIAutomationPipeline, true) }}:
-        testAssemblyVer2: |
-          **\*UITest*.dll
-          !**\obj\**
-          !**\ref\**
-          !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
-      ${{ else }}:
-        testAssemblyVer2: |
-          **\UITests-FancyZonesEditor.dll
-          !**\obj\**
-          !**\ref\**
-          !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
+      testAssemblyVer2: |
+        **\*UITest*.dll
+        !**\obj\**
+        !**\ref\**
+        !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
     env:
       platform: '$(TestPlatform)'
