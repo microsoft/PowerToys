@@ -397,9 +397,7 @@ jobs:
         testAssemblyVer2: |
           **\KeyboardManagerEngineTest.dll
           **\KeyboardManagerEditorTest.dll
-          **\UnitTests-CommonLib.dll
-          **\PowerRenameUnitTests.dll
-          **\UnitTests-FancyZones.dll
+          **\*UnitTest*.dll
           !**\obj\**
 
   - pwsh: |-
