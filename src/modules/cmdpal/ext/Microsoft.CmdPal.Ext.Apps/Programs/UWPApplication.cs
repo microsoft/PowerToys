@@ -87,6 +87,10 @@ public class UWPApplication : IProgram
 
         commands.Add(
             new CommandContextItem(
+                new CopyPathCommand(Location)));
+
+        commands.Add(
+            new CommandContextItem(
                 new OpenPathCommand(Location)
                 {
                     Name = Resources.open_containing_folder,
