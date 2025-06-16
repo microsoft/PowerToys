@@ -61,6 +61,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private Task? _initializeItemsTask;
     private CancellationTokenSource? _cancellationTokenSource;
 
+    private ListItemViewModel? _lastSelectedItem;
+
     public override bool IsInitialized
     {
         get => base.IsInitialized; protected set
@@ -330,6 +332,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [RelayCommand]
     private void UpdateSelectedItem(ListItemViewModel? item)
     {
+        if (_lastSelectedItem != null)
+        {
+            _lastSelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
+        }
+
         if (item != null)
         {
             SetSelectedItem(item);
@@ -367,6 +374,43 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
                TextToSuggest = item.TextToSuggest;
            });
+
+        _lastSelectedItem = item;
+        _lastSelectedItem.PropertyChanged += SelectedItemPropertyChanged;
+    }
+
+    private void SelectedItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        var item = _lastSelectedItem;
+        if (item == null)
+        {
+            return;
+        }
+
+        // already on the UI thread here
+        switch (e.PropertyName)
+        {
+            case nameof(item.Command):
+            case nameof(item.SecondaryCommand):
+            case nameof(item.AllCommands):
+            case nameof(item.Name):
+                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(item));
+                break;
+            case nameof(item.Details):
+                if (ShowDetails && item.HasDetails)
+                {
+                    WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(item.Details));
+                }
+                else
+                {
+                    WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+                }
+
+                break;
+            case nameof(item.TextToSuggest):
+                TextToSuggest = item.TextToSuggest;
+                break;
+        }
     }
 
     private void ClearSelectedItem()

@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
+using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.Shell;
@@ -19,6 +20,7 @@ using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -65,6 +67,7 @@ public partial class App : Application
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
                 EtwTrace?.Dispose();
+                AppWindow?.Close();
                 Environment.Exit(0);
             });
     }
@@ -73,26 +76,12 @@ public partial class App : Application
     /// Invoked when the application is launched.
     /// </summary>
     /// <param name="args">Details about the launch request and process.</param>
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
     {
         AppWindow = new MainWindow();
 
-        var cmdArgs = Environment.GetCommandLineArgs();
-
-        var runFromPT = false;
-        foreach (var arg in cmdArgs)
-        {
-            if (arg == "RunFromPT")
-            {
-                runFromPT = true;
-                break;
-            }
-        }
-
-        if (!runFromPT)
-        {
-            AppWindow.Activate();
-        }
+        var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
+        ((MainWindow)AppWindow).HandleLaunch(activatedEventArgs);
     }
 
     /// <summary>
@@ -114,8 +103,7 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, IndexerCommandsProvider>();
         services.AddSingleton<ICommandProvider, BookmarksCommandProvider>();
 
-        // TODO GH #527 re-enable the clipboard commands
-        // services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
+        services.AddSingleton<ICommandProvider, ClipboardHistoryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
 
@@ -154,6 +142,7 @@ public partial class App : Application
         var state = AppStateModel.LoadState();
         services.AddSingleton(state);
         services.AddSingleton<IExtensionService, ExtensionService>();
+        services.AddSingleton<TrayIconService>();
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();

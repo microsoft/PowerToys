@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
@@ -101,7 +102,7 @@ internal sealed partial class BookmarkPlaceholderForm : FormContent
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Error launching URL: {ex.Message}");
+            Logger.LogError(ex.Message);
         }
 
         return CommandResult.GoHome();
