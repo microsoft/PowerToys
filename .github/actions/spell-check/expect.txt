@@ -69,6 +69,7 @@ appwiz
 APSTUDIO
 AQS
 ARandom
+Arash
 ARCHITEW
 ARemapped
 ARPINSTALLLOCATION
@@ -328,7 +329,6 @@ DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
 DEFPUSHBUTTON
-DEFT
 deinitialization
 DELA
 DELETEDKEYIMAGE
@@ -470,6 +470,7 @@ EXPCMDFLAGS
 EXPCMDSTATE
 explr
 exppowertoys
+exprtk
 exptas
 exsb
 exstyle
@@ -670,7 +671,6 @@ IBeam
 icf
 ICONERROR
 ICONLOCATION
-idc
 IDCANCEL
 IDD
 idk
@@ -681,7 +681,6 @@ IDR
 IDXGI
 ietf
 IEXPLORE
-iextn
 IFACEMETHOD
 IFACEMETHODIMP
 IFile
@@ -720,7 +719,6 @@ INPUTMOUSE
 INPUTSINK
 INPUTTYPE
 INSTALLDESKTOPSHORTCUT
-INSTALLDIR
 installdir
 INSTALLFOLDER
 INSTALLFOLDERTOBOOTSTRAPPERINSTALLFOLDER
@@ -756,6 +754,7 @@ iwr
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
 jjw
+JLO
 jobject
 jpe
 jpnime
@@ -812,7 +811,6 @@ LMENU
 lnks
 LOADFROMFILE
 LOBYTE
-localappdata
 LOCALDISPLAY
 localpackage
 LOCALSYSTEM
@@ -912,6 +910,7 @@ metafile
 mfc
 Mgmt
 Microwaved
+middleclickaction
 midl
 mii
 mindaro
@@ -977,7 +976,6 @@ msrc
 msstore
 mst
 msvcp
-msvsmon
 MTND
 MULTIPLEUSE
 multizone
@@ -1155,6 +1153,7 @@ PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 PATHMUSTEXIST
 PATINVERT
+partow
 PATPAINT
 pbc
 pbi
@@ -1253,6 +1252,7 @@ prg
 prgh
 prgms
 pri
+primaryclickaction
 PRINTCLIENT
 printmanagement
 prm
@@ -1284,7 +1284,6 @@ pstm
 PStr
 pstream
 pstrm
-pswd
 PSYSTEM
 psz
 ptb
@@ -1429,6 +1428,7 @@ SDKDDK
 sdns
 searchterm
 SEARCHUI
+secondaryclickaction
 SECONDARYDISPLAY
 secpol
 securestring
@@ -1476,16 +1476,12 @@ SHELLDLL
 shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
-SHELLEXTENSION
 SHELLICONSIZE
-SHELLNEWVALUE
 SHFILEINFO
 SHFILEOPSTRUCT
 SHGDN
 SHGDNF
 SHGFI
-SHGFIICON
-SHGFILARGEICON
 SHIL
 shinfo
 shlwapi
@@ -1517,9 +1513,9 @@ SICHINT
 SIDs
 siex
 sigdn
+Signedness
 SIGNINGSCENARIO
 signtool
-Signtool
 SINGLEKEY
 sipolicy
 SIZEBOX
@@ -1667,6 +1663,7 @@ TDefault
 TDevice
 telephon
 templatenamespace
+TESTONLY
 testprocess
 TEXCOORD
 TEXTBOXNEWLINE
@@ -1695,7 +1692,6 @@ TLayout
 tlb
 tlbimp
 tlc
-TGM
 TNP
 Toolhelp
 toolkitconverters
@@ -1720,6 +1716,7 @@ trx
 tsa
 TSender
 TServer
+tskill
 tstoi
 TStr
 tweakme
@@ -1783,7 +1780,6 @@ uxtheme
 vabdq
 validmodulename
 valuegenerator
-VARENUM
 variantassignment
 vcamp
 VCENTER
@@ -2003,11 +1999,6 @@ CLSCTXINPROCALL
 IIDI
 irow
 lcid
-OTHERUNZOOM
-OTHERZOOM
-PARENTCLOSING
-PARENTOPENING
 ppwsz
 rguid
-SCROLLCHILDREN
 VARTYPE
