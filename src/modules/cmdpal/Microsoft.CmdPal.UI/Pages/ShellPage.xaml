@@ -9,8 +9,10 @@
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
+    xmlns:markdownTextBlockRns="using:CommunityToolkit.WinUI.Controls.MarkdownTextBlockRns"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
@@ -29,6 +31,7 @@
 
             <cmdpalUI:DetailsDataTemplateSelector
                 x:Key="DetailsDataTemplateSelector"
+                CommandTemplate="{StaticResource DetailsCommandsTemplate}"
                 LinkTemplate="{StaticResource DetailsLinkTemplate}"
                 SeparatorTemplate="{StaticResource DetailsSeparatorTemplate}"
                 TagTemplate="{StaticResource DetailsTagsTemplate}" />
@@ -50,6 +53,27 @@
                     ToolTipService.ToolTip="{x:Bind ToolTip, Mode=OneWay}" />
             </DataTemplate>
 
+            <DataTemplate x:Key="CommandTemplate" x:DataType="viewModels:CommandViewModel">
+                <StackPanel Orientation="Vertical">
+                    <Button
+                        Name="Command"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Click="Command_Click"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                            <cpcontrols:IconBox
+                                Width="16"
+                                Height="16"
+                                Margin="0,3,8,0"
+                                SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                            <TextBlock Text="{x:Bind Name}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </DataTemplate>
+
             <DataTemplate x:Key="DetailsLinkTemplate" x:DataType="viewModels:DetailsLinkViewModel">
                 <StackPanel Orientation="Vertical">
                     <TextBlock
@@ -69,6 +93,18 @@
                         FontSize="12"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
                         Visibility="{x:Bind IsLink, Mode=OneWay}" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="viewModels:DetailsCommandsViewModel">
+                <StackPanel Orientation="Vertical" Spacing="4">
+                    <TextBlock
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind Key, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                    <ItemsControl
+                        ItemTemplate="{StaticResource CommandTemplate}"
+                        ItemsSource="{x:Bind Commands, Mode=OneWay}"
+                        Visibility="{x:Bind HasCommands, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
             <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="viewModels:DetailsSeparatorViewModel">
@@ -110,6 +146,11 @@
                     </ItemsControl>
                 </StackPanel>
             </DataTemplate>
+            <markdownTextBlockRns:MarkdownThemes
+                x:Key="DefaultMarkdownThemeConfig"
+                H3FontSize="12"
+                H3FontWeight="Normal" />
+            <labToolkit:MarkdownConfig x:Key="DefaultMarkdownConfig" Themes="{StaticResource DefaultMarkdownThemeConfig}" />
         </ResourceDictionary>
     </Page.Resources>
 
@@ -374,14 +415,11 @@
                             TextWrapping="WrapWholeWords"
                             Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
-                        <toolkit:MarkdownTextBlock
+                        <labToolkit:MarkdownTextBlock
                             Grid.Row="2"
                             Margin="0,12,0,24"
                             Background="Transparent"
-                            Header3FontSize="12"
-                            Header3FontWeight="Normal"
-                            Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            IsTextSelectionEnabled="True"
+                            Config="{StaticResource DefaultMarkdownConfig}"
                             Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}" />
 
                         <ItemsRepeater

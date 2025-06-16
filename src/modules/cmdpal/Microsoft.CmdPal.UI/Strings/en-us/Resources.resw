@@ -394,6 +394,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="BehaviorSettingsHeader.Text" xml:space="preserve">
     <value>Behavior</value>
   </data>
+  <data name="ContextFilterBox.PlaceholderText" xml:space="preserve">
+    <value>Search commands...</value>
+  </data>
   <data name="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Header" xml:space="preserve">
     <value>Show system tray icon</value>
   </data>
@@ -412,5 +415,16 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Run_Radio_Position_LastPosition.Content" xml:space="preserve">
     <value>Last Position</value>
     <comment>Reopen the window where it was last closed</comment>
+  <data name="TrayMenu_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TrayMenu_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_ToggleSwitch.OnContent" xml:space="preserve">
+    <value>Direct</value>
+  </data>
+  <data name="Settings_ExtensionPage_Alias_ToggleSwitch.OffContent" xml:space="preserve">
+    <value>Indirect</value>
   </data>
 </root>

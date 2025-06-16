@@ -265,15 +265,6 @@
   <data name="Microsoft_plugin_timedate_SettingDateWithWeekday_Description" xml:space="preserve">
     <value>This setting applies to the 'Date' and 'Now' result.</value>
   </data>
-  <data name="Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery" xml:space="preserve">
-    <value>Hide 'Invalid number input' error message on global queries</value>
-  </data>
-  <data name="Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal" xml:space="preserve">
-    <value>Show only 'Time', 'Date' and 'Now' result for system time on global queries</value>
-  </data>
-  <data name="Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description" xml:space="preserve">
-    <value>Regardless of this setting, for global queries the first word of the query has to be a complete match.</value>
-  </data>
   <data name="Microsoft_plugin_timedate_SettingTimeWithSeconds" xml:space="preserve">
     <value>Show time with seconds</value>
   </data>
@@ -432,5 +423,17 @@
   </data>
   <data name="Microsoft_plugin_timedate_DaysInMonth" xml:space="preserve">
     <value>Days in month</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_fallback_display_title" xml:space="preserve">
+    <value>Open Time Data Command</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SearchTagWeek" xml:space="preserve">
+    <value>Current Week; Calendar week; Week of the year; Week</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingEnableFallbackItems" xml:space="preserve">
+    <value>Enable fallback items for TimeDate (week, year, now, time, date)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingEnableFallbackItems_Description" xml:space="preserve">
+    <value>Show time and date results when typing keywords like "week", "year", "now", "time", or "date"</value>
   </data>
 </root>

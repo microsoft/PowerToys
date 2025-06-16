@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
+
   <PropertyGroup>
 	<Nullable>enable</Nullable>
     <RootNamespace>Microsoft.CmdPal.Ext.Shell</RootNamespace>

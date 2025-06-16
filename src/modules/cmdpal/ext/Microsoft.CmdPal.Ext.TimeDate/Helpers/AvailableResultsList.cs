@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
@@ -33,6 +34,7 @@ internal static class AvailableResultsList
         var dateTimeNowUtc = dateTimeNow.ToUniversalTime();
         var firstWeekRule = firstWeekOfYear ?? TimeAndDateHelper.GetCalendarWeekRule(settings.FirstWeekOfYear);
         var firstDayOfTheWeek = firstDayOfWeek ?? TimeAndDateHelper.GetFirstDayOfWeek(settings.FirstDayOfWeek);
+        var weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
 
         results.AddRange(new[]
         {
@@ -59,14 +61,20 @@ internal static class AvailableResultsList
                 AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                 IconType = ResultIconType.DateTime,
             },
+            new AvailableResult()
+            {
+                Value = weekOfYear.ToString(CultureInfo.CurrentCulture),
+                Label = Resources.Microsoft_plugin_timedate_WeekOfYear,
+                AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
+                IconType = ResultIconType.Date,
+            },
         });
 
-        if (isKeywordSearch || !settings.OnlyDateTimeNowGlobal)
+        if (isKeywordSearch)
         {
             // We use long instead of int for unix time stamp because int is too small after 03:14:07 UTC 2038-01-19
             var unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
             var unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();
-            var weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
             var era = DateTimeFormatInfo.CurrentInfo.GetEraName(calendar.GetEra(dateTimeNow));
             var eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
 
@@ -102,10 +110,11 @@ internal static class AvailableResultsList
                         {
                             value = dtObject.ToString(value, CultureInfo.CurrentCulture);
                         }
-                        catch
+                        catch (Exception ex)
                         {
                             if (!containsCustomSyntax)
                             {
+                                Logger.LogError($"Unable to format date time with format: {value}. Error: {ex.Message}");
                                 throw;
                             }
                             else
@@ -126,6 +135,7 @@ internal static class AvailableResultsList
                     }
                     catch (ArgumentOutOfRangeException e)
                     {
+                        Logger.LogError($"ArgumentOutOfRangeException with format: {formatSyntax}. Error: {e.Message}");
                         results.Add(new AvailableResult()
                         {
                             Value = Resources.Microsoft_plugin_timedate_ErrorConvertCustomFormat,
@@ -137,6 +147,7 @@ internal static class AvailableResultsList
                     }
                     catch (Exception e)
                     {
+                        Logger.LogError($"Exception with format: {formatSyntax}. Error: {e.Message}");
                         results.Add(new AvailableResult()
                         {
                             Value = Resources.Microsoft_plugin_timedate_InvalidCustomFormat + " " + formatSyntax,
@@ -252,13 +263,6 @@ internal static class AvailableResultsList
                 },
                 new AvailableResult()
                 {
-                    Value = weekOfYear.ToString(CultureInfo.CurrentCulture),
-                    Label = Resources.Microsoft_plugin_timedate_WeekOfYear,
-                    AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
-                    IconType = ResultIconType.Date,
-                },
-                new AvailableResult()
-                {
                     Value = DateTimeFormatInfo.CurrentInfo.GetMonthName(dateTimeNow.Month),
                     Label = Resources.Microsoft_plugin_timedate_Month,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagDate"),
@@ -325,8 +329,9 @@ internal static class AvailableResultsList
                     IconType = ResultIconType.DateTime,
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError($"Unable to convert to Windows file time: {ex.Message}");
                 results.Add(new AvailableResult()
                 {
                     Value = Resources.Microsoft_plugin_timedate_ErrorConvertWft,

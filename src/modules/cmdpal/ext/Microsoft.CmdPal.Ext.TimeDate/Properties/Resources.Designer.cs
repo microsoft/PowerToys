@@ -214,6 +214,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open Time Data Command.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_fallback_display_title {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_fallback_display_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Date and time in filename-compatible format.
         /// </summary>
         public static string Microsoft_plugin_timedate_filename_compatible {
@@ -610,6 +619,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Current Week; Calendar week; Week of the year; Week.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SearchTagWeek {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SearchTagWeek", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Second.
         /// </summary>
         public static string Microsoft_plugin_timedate_Second {
@@ -660,6 +678,24 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_SettingDateWithWeekday_Description {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_SettingDateWithWeekday_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable fallback items for TimeDate (week, year, now, time, date).
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingEnableFallbackItems {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingEnableFallbackItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show time and date results when typing keywords like &quot;week&quot;, &quot;year&quot;, &quot;now&quot;, &quot;time&quot;, or &quot;date&quot;.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingEnableFallbackItems_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingEnableFallbackItems_Description", resourceCulture);
             }
         }
         
@@ -777,33 +813,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_SettingFirstWeekRule_FirstFullWeek", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Hide &apos;Invalid number input&apos; error message on global queries.
-        /// </summary>
-        public static string Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingHideNumberMessageOnGlobalQuery", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Show only &apos;Time&apos;, &apos;Date&apos; and &apos;Now&apos; result for system time on global queries.
-        /// </summary>
-        public static string Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Regardless of this setting, for global queries the first word of the query has to be a complete match..
-        /// </summary>
-        public static string Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingOnlyDateTimeNowGlobal_Description", resourceCulture);
             }
         }
         
