@@ -5068,4 +5068,10 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="BugReportUnderConstruction" xml:space="preserve">
     <value>Bug report package is being created</value>
   </data>
+  <data name="Enable_Spotlight_Mode.Header" xml:space="preserve">
+    <value>Enable spotlight mode</value>
+  </data>
+  <data name="Enable_Spotlight_Mode.Description" xml:space="preserve">
+    <value>Spotlight with a transparent center and always highlight color as the backdrop.</value>
+  </data>
 </root>
