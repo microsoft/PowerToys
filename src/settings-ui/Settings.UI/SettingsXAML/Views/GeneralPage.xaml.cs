@@ -206,7 +206,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var launchPage = new LaunchPage();
             launchPage.ReportBugBtn_Click(sender, e);
 
-            // Start timer to check bug report status (will set running state when confirmed)
+            ViewModel.IsBugReportRunning = true;
             StartBugReportStatusCheck();
         }
 
