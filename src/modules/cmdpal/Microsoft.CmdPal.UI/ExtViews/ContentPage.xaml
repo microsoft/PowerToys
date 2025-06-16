@@ -54,10 +54,15 @@
                         Background="Transparent"
                         Config="{StaticResource DefaultMarkdownConfig}"
                         Text="{x:Bind Body, Mode=OneWay}" />
-
                 </Grid>
             </DataTemplate>
-            <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
+            <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
+                <Grid>
+                    <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="NestedMarkdownContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
                 <Grid>
                     <toolkit:MarkdownTextBlock
                         Background="Transparent"
@@ -65,6 +70,7 @@
                         Text="{x:Bind Body, Mode=OneWay}" />
                 </Grid>
             </DataTemplate>
+
             <DataTemplate x:Key="TreeContentTemplate" x:DataType="viewmodels:ContentTreeViewModel">
                 <StackPanel
                     Margin="0,4,4,4"
