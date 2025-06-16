@@ -150,9 +150,9 @@ namespace Peek.FilePreviewer
             return isValidPreview ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        public Visibility IsWarningMessageVisible(string? missingCodecName)
+        public Visibility IsWarningMessageVisible(IPreviewer? previewer, PreviewState? state)
         {
-            var shouldShow = !string.IsNullOrEmpty(missingCodecName);
+            var shouldShow = previewer is IVideoPreviewer videoPreviewer && MatchPreviewState(state, PreviewState.Loaded) && !string.IsNullOrEmpty(videoPreviewer.MissingCodecName);
 
             return shouldShow ? Visibility.Visible : Visibility.Collapsed;
         }
