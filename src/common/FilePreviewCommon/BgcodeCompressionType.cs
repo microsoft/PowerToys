@@ -7,7 +7,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
     public enum BgcodeCompressionType
     {
         NoCompression = 0,
-        Deflatealgorithm = 1,
+        DeflateAlgorithm = 1,
         HeatshrinkAlgorithm11 = 2,
         HeatshrinkAlgorithm12 = 3,
     }

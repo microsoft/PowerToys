@@ -93,6 +93,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                 {
                     BgcodeThumbnailFormat.PNG => 2,
                     BgcodeThumbnailFormat.QOI => 1,
+                    BgcodeThumbnailFormat.JPG => 0,
                     _ => 0,
                 })
                 .ThenByDescending(x => x.Data.Length)
