@@ -35,36 +35,6 @@ public static class NativeMethods
 
     [DllImport("Shell32.dll", CharSet = CharSet.Unicode)]
     public static extern uint SHEmptyRecycleBin(IntPtr hWnd, uint dwFlags);
-
-    [DllImport("rstrtmgr.dll", CharSet = CharSet.Unicode)]
-    public static extern uint RmStartSession(out IntPtr pSessionHandle, uint dwSessionFlags, string strSessionKey);
-
-    [DllImport("rstrtmgr.dll")]
-    public static extern uint RmEndSession(IntPtr pSessionHandle);
-
-    [DllImport("rstrtmgr.dll", CharSet = CharSet.Auto)]
-    public static extern uint RmRegisterResources(
-        IntPtr pSessionHandle,
-        uint nFiles,
-        string[]? rgsFilenames,
-        uint applications,
-        RM_UNIQUE_PROCESS[]? rgApplications,
-        uint nServices,
-        string[]? rgsServiceNames);
-
-    [DllImport("rstrtmgr.dll")]
-    public static extern uint RmShutdown(IntPtr pSessionHandle, RM_SHUTDOWN_TYPE lActionFlags, [Optional] RM_WRITE_STATUS_CALLBACK? fnStatus);
-
-    [DllImport("rstrtmgr.dll")]
-    public static extern uint RmRestart(IntPtr pSessionHandle, uint dwRestartFlags, [Optional] RM_WRITE_STATUS_CALLBACK? fnStatus);
-}
-
-public enum SystemErrorCode : uint
-{
-    /// <summary>
-    /// The function succeeds and returns.
-    /// </summary>
-    ERROR_SUCCESS = 0,
 }
 
 public enum HRESULT : uint
@@ -149,26 +119,3 @@ public enum FirmwareType
 }
 
 public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
-
-[StructLayout(LayoutKind.Sequential)]
-public struct FILETIME
-{
-    public uint DateTimeLow;
-    public uint DateTimeHigh;
-}
-
-[StructLayout(LayoutKind.Sequential)]
-public struct RM_UNIQUE_PROCESS
-{
-    public int ProcessId;
-    public FILETIME ProcessStartTime;
-}
-
-[Flags]
-public enum RM_SHUTDOWN_TYPE : uint
-{
-    RmForceShutdown = 0x1,
-    RmShutdownOnlyRegistered = 0x10,
-}
-
-public delegate void RM_WRITE_STATUS_CALLBACK(uint nPercentComplete);

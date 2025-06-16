@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.NetworkInformation;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -111,7 +110,7 @@ internal static class Commands
                 });
         }
 
-        results.Add(new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_sys_RestartShell_name!, confirmCommands, Resources.Microsoft_plugin_sys_RestartShell_confirmation!, static () => Task.Run(static () => ShellRestartHelper.RestartAllInCurrentSession())))
+        results.Add(new ListItem(new ExecuteCommandConfirmation(Resources.Microsoft_plugin_sys_RestartShell_name!, confirmCommands, Resources.Microsoft_plugin_sys_RestartShell_confirmation!, static () => OpenInShellHelper.OpenInShell("cmd", "/C tskill explorer && start explorer", runWithHiddenWindow: true)))
         {
             Title = Resources.Microsoft_plugin_sys_RestartShell!,
             Subtitle = Resources.Microsoft_plugin_sys_RestartShell_description!,
