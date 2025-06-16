@@ -10,12 +10,16 @@ Welcome to the PowerToys developer documentation. This documentation provides in
 - [Installer](core/installer.md) - Information about the PowerToys installer
 - [Modules](modules/readme.md) - Documentation for individual PowerToys modules
 
+## Common Components
+
+- [Context Menu Handlers](common/context-menus.md) - How PowerToys implements and registers Explorer context menu handlers
+- [Logging and Telemetry](development/logging.md) - How to use logging and telemetry
+- [Localization](development/localization.md) - How to support multiple languages
+
 ## Development Guidelines
 
 - [Coding Guidelines](development/guidelines.md) - Development guidelines and best practices
 - [Coding Style](development/style.md) - Code formatting and style conventions
-- [Logging and Telemetry](development/logging.md) - How to use logging and telemetry
-- [Localization](development/localization.md) - How to support multiple languages
 - [UI Testing](development/ui-tests.md) - How to write UI tests for PowerToys
 - [Debugging](development/debugging.md) - Techniques for debugging PowerToys
 
