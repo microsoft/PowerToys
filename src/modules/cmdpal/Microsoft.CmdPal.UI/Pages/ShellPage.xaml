@@ -9,6 +9,8 @@
     xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:labToolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
+    xmlns:markdownTextBlockRns="using:CommunityToolkit.WinUI.Controls.MarkdownTextBlockRns"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
@@ -131,11 +133,23 @@
                         Visibility="{x:Bind HasTags, Mode=OneWay}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
+                                <toolkit:WrapPanel
+                                    x:Name="TagsWrapPanel"
+                                    MinWidth="0"
+                                    Padding="0"
+                                    HorizontalSpacing="4"
+                                    Orientation="Horizontal"
+                                    VerticalSpacing="4" />
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                     </ItemsControl>
                 </StackPanel>
             </DataTemplate>
+            <markdownTextBlockRns:MarkdownThemes
+                x:Key="DefaultMarkdownThemeConfig"
+                H3FontSize="12"
+                H3FontWeight="Normal" />
+            <labToolkit:MarkdownConfig x:Key="DefaultMarkdownConfig" Themes="{StaticResource DefaultMarkdownThemeConfig}" />
         </ResourceDictionary>
     </Page.Resources>
 
@@ -399,6 +413,13 @@
                             TextAlignment="Center"
                             TextWrapping="WrapWholeWords"
                             Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
+
+                        <labToolkit:MarkdownTextBlock
+                            Grid.Row="2"
+                            Margin="0,12,0,24"
+                            Background="Transparent"
+                            Config="{StaticResource DefaultMarkdownConfig}"
+                            Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}" />
 
                         <ItemsRepeater
                             Grid.Row="3"

@@ -12,13 +12,19 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:toolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
     <Page.Resources>
         <ResourceDictionary>
+            <markdownTextBlockRns:MarkdownThemes
+                x:Key="DefaultMarkdownThemeConfig"
+                H3FontSize="12"
+                H3FontWeight="Normal" />
+            <toolkit:MarkdownConfig x:Key="DefaultMarkdownConfig" Themes="{StaticResource DefaultMarkdownThemeConfig}" />
+
             <StackLayout
                 x:Name="VerticalStackLayout"
                 Orientation="Vertical"
@@ -37,21 +43,31 @@
 
             <DataTemplate x:Key="FormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
+                    <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
                 </Grid>
             </DataTemplate>
 
             <DataTemplate x:Key="MarkdownContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
+                    <toolkit:MarkdownTextBlock
+                        Background="Transparent"
+                        Config="{StaticResource DefaultMarkdownConfig}"
+                        Text="{x:Bind Body, Mode=OneWay}" />
+
                 </Grid>
             </DataTemplate>
 
             <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
-                <Grid>
-                </Grid>
-            </DataTemplate>
-
-            <DataTemplate x:Key="NestedMarkdownContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
-                <Grid>
+                    <toolkit:MarkdownTextBlock
+                        Background="Transparent"
+                        Config="{StaticResource DefaultMarkdownConfig}"
+                        Text="{x:Bind Body, Mode=OneWay}" />
+                        Background="Transparent"
+                        Header3FontSize="12"
+                        Header3FontWeight="Normal"
+                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind Body, Mode=OneWay}" />
                 </Grid>
             </DataTemplate>
 

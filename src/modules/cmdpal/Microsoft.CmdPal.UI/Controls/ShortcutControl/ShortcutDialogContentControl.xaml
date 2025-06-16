@@ -5,7 +5,7 @@
     xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:tk7controls="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     x:Name="ShortcutContentControl"
     mc:Ignorable="d">
     <Grid MinWidth="498" MinHeight="220">
