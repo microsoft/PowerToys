@@ -5,7 +5,7 @@ Welcome to the PowerToys developer documentation. This documentation provides in
 ## Core Architecture
 
 - [Architecture Overview](core/architecture.md) - Overview of the PowerToys architecture and module interface
-- [Runner](core/runner.md) - Details about the PowerToys Runner process
+- [Runner and System tray](core/runner.md) - Details about the PowerToys Runner process
 - [Settings](core/settings.md) - Documentation on the settings system
 - [Installer](core/installer.md) - Information about the PowerToys installer
 - [Modules](modules/readme.md) - Documentation for individual PowerToys modules
