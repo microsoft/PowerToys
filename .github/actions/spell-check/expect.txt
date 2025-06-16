@@ -1712,6 +1712,7 @@ trx
 tsa
 TSender
 TServer
+tskill
 tstoi
 TStr
 tweakme
