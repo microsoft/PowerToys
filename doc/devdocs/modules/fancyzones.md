@@ -14,6 +14,23 @@ FancyZones is a window manager utility that allows users to create custom layout
 
 FancyZones consists of several interconnected components:
 
+### Directory Structure
+- **src**: Contains the source code for FancyZones.
+  - **Editor**: Code for the zone editor.
+  - **Runner**: Code for the zone management and window snapping.
+  - **Settings**: Code for managing user settings.
+- **tests**: Contains unit and integration tests for FancyZones and UI test code.
+
+### Project Structure
+FancyZones is divided into several projects:
+
+- **FancyZones**: Used for thread starting and module initialization.
+- **FancyZonesLib**: Contains the main backend logic, called by FancyZones (via COM).
+  - **FancyZonesData** folder: Contains classes and utilities for managing FancyZones data.
+- **FancyZonesEditor**: Main UI implementation for creating and editing layouts.
+- **FancyZonesEditorCommon**: Stores editor's data and provides shared functionality.
+- **FancyZonesModuleInterface**: Interface layer between FancyZones and the PowerToys Runner.
+
 ### Interface Layer: FancyZonesModuleInterface
 - Exposes interface between FancyZones and the Runner
 - Handles communication and configuration exchange
@@ -33,6 +50,58 @@ FancyZones consists of several interconnected components:
   - Layout UI during dragging (generated in C++ via WorkArea.cpp, NewZonesOverlayWindow function)
   - Core data structures
 - **FancyZones**: Wrapper around FancyZonesLib
+
+### Data Flow
+- User interactions with the Editor are saved in the Settings
+- The Runner reads the Settings to apply the zones and manage window positions
+- Editor sends update events, which trigger FancyZones to refresh memory data
+
+## Key Files
+
+### FancyZones and FancyZonesLib Projects
+
+- **FancyZonesApp.h/cpp**:
+  - **FancyZonesApp Class**: Initializes and manages the FancyZones application.
+  - **Constructor**: Initializes DPI awareness, sets up event hooks, creates the FancyZones instance.
+  - **Destructor**: Cleans up resources, destroys the FancyZones instance, unhooks event hooks.
+  - **Run Method**: Starts the FancyZones application.
+  - **InitHooks Method**: Sets up Windows event hooks to monitor system events.
+  - **DisableModule Method**: Posts a quit message to the main thread.
+  - **HandleWinHookEvent/HandleKeyboardHookEvent Methods**: Handle Windows event hooks.
+
+- **Data Management Files**:
+  - **AppliedLayouts.h/cpp**: Manages applied layouts for different monitors and virtual desktops.
+  - **AppZoneHistory.h/cpp**: Tracks history of app zones.
+  - **CustomLayouts.h/cpp**: Handles user-created layouts.
+  - **DefaultLayouts.h/cpp**: Manages default layouts for different monitor configurations.
+  - **LayoutHotkeys.h/cpp**: Manages hotkeys for switching layouts.
+  - **LayoutTemplates.h/cpp**: Handles layout templates.
+
+- **Core Functionality**:
+  - **FancyZonesDataTypes.h**: Defines data types used throughout FancyZones.
+  - **FancyZonesWindowProcessing.h/cpp**: Processes window events like moving and resizing.
+  - **FancyZonesWindowProperties.h/cpp**: Manages window properties like assigned zones.
+  - **JsonHelpers.h/cpp**: Utilities for JSON serialization/deserialization.
+  - **Layout.h/cpp**: Defines the Layout class for zone layout management.
+  - **LayoutConfigurator.h/cpp**: Configures different layout types (grid, rows, columns).
+  - **Settings.h/cpp**: Manages FancyZones module settings.
+
+### FancyZonesEditor and FancyZonesEditorCommon Projects
+
+- **UI Components**:
+  - **MainWindow.xaml/cs**: Main window of the FancyZones Editor.
+  - **EditorOverlay.xaml/cs**: Overlay window for editing zones.
+  - **EditorSettings.xaml/cs**: Settings window for the FancyZones Editor.
+  - **LayoutPreview.xaml/cs**: Provides layout preview.
+  - **ZoneSettings.xaml/cs**: Manages individual zone settings.
+
+- **Data Components**:
+  - **EditorParameters.cs**: Parameters used by the FancyZones Editor.
+  - **LayoutData.cs**: Manages data for individual layouts.
+  - **LayoutHotkeys.cs**: Manages hotkeys for switching layouts.
+  - **LayoutTemplates.cs**: Manages layout templates.
+  - **Zone.cs**: Represents an individual zone.
+  - **ZoneSet.cs**: Manages sets of zones within a layout.
 
 ## Configuration Management
 
@@ -77,6 +146,57 @@ FancyZones consists of several interconnected components:
 - FancyZones can't move admin windows unless running as admin
 - By default, all utilities run as admin if PowerToys is running as admin
 
+## Development Environment Setup
+
+### Prerequisites
+- Visual Studio 2022: Required for building and debugging
+- Windows 10 SDK: Ensure the latest version is installed
+- PowerToys Repository: Clone from GitHub
+
+### Setup Steps
+1. Clone the Repository:
+   ```
+   git clone https://github.com/microsoft/PowerToys.git
+   ```
+2. Open `PowerToys.sln` in Visual Studio
+3. Select the Release configuration and build the solution
+4. If you encounter build errors, try deleting the x64 output folder and rebuild
+
+## Debugging
+
+### Before Successfully Building the Project
+1. In Visual Studio 2022, set FancyZonesEditor as the startup project
+2. Set breakpoints in the code where needed
+3. Click Run to start debugging
+
+### During Active Development
+- You can perform breakpoint debugging to troubleshoot issues
+- Attach to running processes if needed to debug the module in context
+
+## Deployment and Release Process
+
+### Deployment
+
+#### Local Testing
+1. Build the solution in Visual Studio
+2. Run PowerToys.exe from the output directory
+
+#### Packaging
+- Use the MSIX packaging tool to create an installer
+- Ensure all dependencies are included
+
+### Release
+
+#### Versioning
+- Follow semantic versioning for releases
+
+#### Release Notes
+- Document all changes, fixes, and new features
+
+#### Publishing
+1. Create a new release on GitHub
+2. Upload the installer and release notes
+
 ## Troubleshooting
 
 ### First Run JSON Error
@@ -106,6 +226,16 @@ UI tests are implemented using [Windows Application Driver](https://github.com/m
   - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`). 
 
 >Note: notifications or other application windows, that are shown above the window under test, can disrupt the testing process.
+
+### Testing Strategy
+
+#### Unit Tests
+- Build the unit test project
+- Run using the Visual Studio Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`)
+
+#### Integration Tests
+- Ensure the entire FancyZones module works as expected
+- Test different window layouts and snapping behaviors
 
 ### Test Framework Structure
 
