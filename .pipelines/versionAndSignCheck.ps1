@@ -28,6 +28,8 @@ $versionExceptions = @(
     "ObjectModelCsProjection.dll",
     "RendererCsProjection.dll") -join '|';
 $nullVersionExceptions = @(
+    "SkiaSharp.Views.WinUI.Native.dll",
+    "libSkiaSharp.dll",
     "codicon.ttf",
     "e_sqlite3.dll",
     "getfilesiginforedist.dll",
