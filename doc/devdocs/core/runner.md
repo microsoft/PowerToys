@@ -46,6 +46,71 @@ The system tray icon is one of the first components that starts when calling the
 - Monitors taskbar creation to re-register the icon if needed
 - Uses `shell_notify_icon` to register with the system tray
 
+### Tray Icon Initialization and Message Processing
+
+- `start_tray_icon()` initializes the tray icon by:
+  - Creating a window with the specified class name
+  - Setting up the notification icon data structure (NOTIFYICONDATA)
+  - Registering for taskbar recreate messages
+  - Adding the icon to the system tray
+
+- `tray_icon_window_proc()` processes window messages, including:
+  - Handling `wm_icon_notify` messages from tray icon interactions
+  - Distinguishing between left-click, double-click, and right-click actions
+  - Showing context menus or opening Settings windows based on interaction type
+
+### Communication with Settings UI
+
+When the tray icon is clicked or a menu option is selected, the Runner communicates with the Settings UI:
+
+- For quick access flyout (left-click):
+  ```cpp
+  current_settings_ipc->send(L"{\"ShowYourself\":\"flyout\"}");
+  ```
+  
+- For the main dashboard (menu option or double-click):
+  ```cpp
+  current_settings_ipc->send(L"{\"ShowYourself\":\"Dashboard\"}");
+  ```
+
+### IPC Communication Mechanism
+
+- The Runner and Settings UI communicate through Windows Named Pipes
+- A two-way pipe (TwoWayPipeMessageIPC) is established between processes
+- JSON messages are sent through this pipe to control UI behavior
+- The Settings UI initializes the pipe connection on startup:
+  ```csharp
+  ipcmanager = new TwoWayPipeMessageIPCManaged(cmdArgs[(int)Arguments.SettingsPipeName], 
+                                              cmdArgs[(int)Arguments.PTPipeName], 
+                                              (string message) => {
+      if (IPCMessageReceivedCallback != null && message.Length > 0) {
+          IPCMessageReceivedCallback(message);
+      }
+  });
+  ```
+
+### Settings UI Message Processing
+
+The Settings UI processes incoming IPC messages through a callback chain:
+
+1. Messages from the Runner are received through the IPC callback
+2. Messages are parsed as JSON objects
+3. Registered handlers in `ShellPage.ShellHandler.IPCResponseHandleList` process the messages
+4. The `ReceiveMessage` method in `ShellPage` interprets commands:
+   - For flyout display: `"ShowYourself": "flyout"`
+   - For main window: `"ShowYourself": "Dashboard"` or other page names
+
+When showing the flyout, the tray icon can also send position coordinates to place the flyout near the tray icon:
+```json
+{
+  "ShowYourself": "flyout",
+  "x_position": 1234,
+  "y_position": 567
+}
+```
+
+The flyout window is then activated and brought to the foreground using native Windows APIs to ensure visibility.
+
 ### Tray Icon Menu
 - Menus are defined in `.RC` files (Resource files)
 - `base.h` defines IDs
