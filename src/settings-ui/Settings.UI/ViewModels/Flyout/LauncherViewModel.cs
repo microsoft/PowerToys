@@ -122,6 +122,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendIPCMessage("{\"bugreport\": 0 }");
         }
 
+        internal void GetBugReportStatus()
+        {
+            SendIPCMessage("{\"bug_report_status\": 0 }");
+        }
+
         internal void KillRunner()
         {
             SendIPCMessage("{\"killrunner\": 0 }");

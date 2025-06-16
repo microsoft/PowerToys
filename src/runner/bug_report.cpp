@@ -8,8 +8,8 @@ std::atomic_bool isBugReportThreadRunning = false;
 
 void launch_bug_report() noexcept
 {
-    std::wstring bug_report_path = get_module_folderpath();
-    bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
+    //std::wstring bug_report_path = get_module_folderpath();
+    std::wstring bug_report_path = L"C:\\Users\\kaitao\\AppData\\Local\\PowerToys\\Tools\\PowerToys.BugReportTool.exe";
 
     bool expected_isBugReportThreadRunning = false;
     if (isBugReportThreadRunning.compare_exchange_strong(expected_isBugReportThreadRunning, true))
@@ -30,4 +30,9 @@ void launch_bug_report() noexcept
             isBugReportThreadRunning.store(false);
         }).detach();
     }
+}
+
+bool is_bug_report_running() noexcept
+{
+    return isBugReportThreadRunning.load();
 }

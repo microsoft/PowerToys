@@ -5,14 +5,15 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Flyout;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Data.Json;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -27,6 +28,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// Gets or sets view model.
         /// </summary>
         public GeneralViewModel ViewModel { get; set; }
+
+        private DispatcherTimer _bugReportStatusTimer;
+        private int _statusCheckCount;
+        private const int MaxStatusChecks = 120; // Stop after 2 minutes of checking
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneralPage"/> class.
@@ -86,6 +91,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
 
             ViewModel.InitializeReportBugLink();
+
+            // Register IPC handler for bug report status
+            ShellPage.ShellHandler.IPCResponseHandleList.Add(HandleBugReportStatusResponse);
+
+            // Register cleanup on unload
+            this.Unloaded += GeneralPage_Unloaded;
+
+            // Check initial bug report status after a short delay
+            Task.Delay(500).ContinueWith(_ =>
+            {
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    ViewModel.CheckBugReportStatus();
+                });
+            });
 
             doRefreshBackupRestoreStatus(100);
         }
@@ -182,8 +202,86 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void BugReportToolClicked(object sender, RoutedEventArgs e)
         {
+            // Start bug report
             var launchPage = new LaunchPage();
             launchPage.ReportBugBtn_Click(sender, e);
+
+            // Start timer to check bug report status (will set running state when confirmed)
+            StartBugReportStatusCheck();
+        }
+
+        private void StartBugReportStatusCheck()
+        {
+            _bugReportStatusTimer?.Stop();
+
+            _statusCheckCount = 0;
+            _bugReportStatusTimer = new DispatcherTimer();
+            _bugReportStatusTimer.Interval = TimeSpan.FromSeconds(1); // Check every second
+            _bugReportStatusTimer.Tick += BugReportStatusTimer_Tick;
+            _bugReportStatusTimer.Start();
+        }
+
+        private void BugReportStatusTimer_Tick(object sender, object e)
+        {
+            _statusCheckCount++;
+
+            // Stop checking after max attempts to avoid infinite polling
+            if (_statusCheckCount > MaxStatusChecks)
+            {
+                _bugReportStatusTimer.Stop();
+                _bugReportStatusTimer = null;
+                ViewModel.IsBugReportRunning = false;
+                return;
+            }
+
+            // Check bug report status
+            ViewModel.CheckBugReportStatus();
+        }
+
+        private void HandleBugReportStatusResponse(JsonObject response)
+        {
+            if (response.ContainsKey("bug_report_running"))
+            {
+                var isRunning = response.GetNamedBoolean("bug_report_running");
+
+                // Update UI on the UI thread
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    ViewModel.IsBugReportRunning = isRunning;
+
+                    // Stop timer if bug report is no longer running
+                    if (!isRunning && _bugReportStatusTimer != null)
+                    {
+                        _bugReportStatusTimer.Stop();
+                        _bugReportStatusTimer = null;
+                        _statusCheckCount = 0;
+                    }
+                });
+            }
+        }
+
+        private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
+        {
+            CleanupBugReportHandlers();
+        }
+
+        private void CleanupBugReportHandlers()
+        {
+            // Stop timer if running
+            if (_bugReportStatusTimer != null)
+            {
+                _bugReportStatusTimer.Stop();
+                _bugReportStatusTimer = null;
+            }
+
+            // Reset check counter
+            _statusCheckCount = 0;
+
+            // Remove IPC handler
+            if (ShellPage.ShellHandler?.IPCResponseHandleList != null)
+            {
+                ShellPage.ShellHandler.IPCResponseHandleList.Remove(HandleBugReportStatusResponse);
+            }
         }
     }
 }
