@@ -458,7 +458,7 @@
                             <Button
                                 x:Uid="GeneralPageReportBugPackage"
                                 HorizontalAlignment="Right"
-                                IsEnabled="{x:Bind ViewModel.IsBugReportRunning, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                                IsEnabled="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}"
                                 Click="BugReportToolClicked" />
                         </tkcontrols:SettingsCard>
                     </StackPanel>
