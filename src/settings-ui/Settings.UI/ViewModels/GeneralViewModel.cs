@@ -964,6 +964,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _isBugReportRunning)
                 {
+                    Debug.WriteLine("IsBugReportRunning set to " + value);
                     _isBugReportRunning = value;
                     NotifyPropertyChanged();
                 }

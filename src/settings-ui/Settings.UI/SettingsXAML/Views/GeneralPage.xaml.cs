@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private DispatcherTimer _bugReportStatusTimer;
         private int _statusCheckCount;
-        private const int MaxStatusChecks = 30; // Stop after 30 seconds of checking
+        private const int MaxStatusChecks = 120; // Stop after 2 minutes of checking
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneralPage"/> class.
@@ -212,10 +212,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void StartBugReportStatusCheck()
         {
-            if (_bugReportStatusTimer != null)
-            {
-                _bugReportStatusTimer.Stop();
-            }
+            _bugReportStatusTimer?.Stop();
 
             _statusCheckCount = 0;
             _bugReportStatusTimer = new DispatcherTimer();
@@ -243,9 +240,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void HandleBugReportStatusResponse(JsonObject response)
         {
-            if (response.ContainsKey("running"))
+            if (response.ContainsKey("bug_report_running"))
             {
-                var isRunning = response.GetNamedBoolean("running");
+                var isRunning = response.GetNamedBoolean("bug_report_running");
 
                 // Update UI on the UI thread
                 this.DispatcherQueue.TryEnqueue(() =>

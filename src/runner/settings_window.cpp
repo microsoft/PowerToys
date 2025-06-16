@@ -230,7 +230,7 @@ void dispatch_received_json(const std::wstring& json_to_parse)
         else if (name == L"bug_report_status")
         {
             json::JsonObject result;
-            result.SetNamedValue(L"running", winrt::Windows::Data::Json::JsonValue::CreateBooleanValue(is_bug_report_running()));
+            result.SetNamedValue(L"bug_report_running", winrt::Windows::Data::Json::JsonValue::CreateBooleanValue(is_bug_report_running()));
             std::unique_lock lock{ ipc_mutex };
             if (current_settings_ipc)
                 current_settings_ipc->send(result.Stringify().c_str());

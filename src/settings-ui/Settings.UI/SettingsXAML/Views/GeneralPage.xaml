@@ -455,18 +455,11 @@
                             </InfoBar.ActionButton>
                         </InfoBar>
                         <tkcontrols:SettingsCard x:Uid="GeneralPage_ReportBugPackage" HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <!-- Progress ring for bug report -->
-                                <ProgressRing 
-                                    Width="20" 
-                                    Height="20" 
-                                    Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}" />
-                                <Button
-                                    x:Uid="GeneralPageReportBugPackage"
-                                    HorizontalAlignment="Right"
-                                    Click="BugReportToolClicked"
-                                    IsEnabled="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
-                            </StackPanel>
+                            <Button
+                                x:Uid="GeneralPageReportBugPackage"
+                                HorizontalAlignment="Right"
+                                IsEnabled="{x:Bind ViewModel.IsBugReportRunning, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                                Click="BugReportToolClicked" />
                         </tkcontrols:SettingsCard>
                     </StackPanel>
                 </controls:SettingsGroup>
