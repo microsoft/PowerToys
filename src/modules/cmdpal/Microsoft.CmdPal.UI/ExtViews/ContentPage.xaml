@@ -14,6 +14,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:markdownTextBlockRns="using:CommunityToolkit.WinUI.Controls.MarkdownTextBlockRns"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -56,21 +57,14 @@
 
                 </Grid>
             </DataTemplate>
-
-            <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
+            <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
+                <Grid>
                     <toolkit:MarkdownTextBlock
                         Background="Transparent"
                         Config="{StaticResource DefaultMarkdownConfig}"
                         Text="{x:Bind Body, Mode=OneWay}" />
-                        Background="Transparent"
-                        Header3FontSize="12"
-                        Header3FontWeight="Normal"
-                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        IsTextSelectionEnabled="True"
-                        Text="{x:Bind Body, Mode=OneWay}" />
                 </Grid>
             </DataTemplate>
-
             <DataTemplate x:Key="TreeContentTemplate" x:DataType="viewmodels:ContentTreeViewModel">
                 <StackPanel
                     Margin="0,4,4,4"
