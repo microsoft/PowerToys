@@ -1,5 +1,11 @@
 # FancyZones
 
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AProduct-FancyZones)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AProduct-FancyZones%20label%3AIssue-Bug%20)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+FancyZone)
+
 ## Overview
 
 FancyZones is a window manager utility that allows users to create custom layouts for organizing windows on their screen.
@@ -66,7 +72,6 @@ FancyZones consists of several interconnected components:
   - Options for child windows or pop-up windows
   - Some options were removed later
   - Community feedback led to more interactions being implemented
-
 ## Admin Mode Considerations
 
 - FancyZones can't move admin windows unless running as admin
@@ -169,3 +174,4 @@ All test cases require pre-configured user data and must reset this data before 
 While working on tests, you may need a tool that helps you to view the element's accessibility data, e.g. for finding the button to click. For this purpose, you could use [AccessibilityInsights](https://accessibilityinsights.io/docs/windows/overview) or [WinAppDriver UI Recorder](https://github.com/microsoft/WinAppDriver/wiki/WinAppDriver-UI-Recorder).
 
 >Note: close helper tools while running tests. Overlapping windows can affect test results.
+
