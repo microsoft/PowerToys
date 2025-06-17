@@ -6,6 +6,7 @@ This section contains documentation for individual PowerToys modules, including 
 
 | Module | Description | Documentation |
 |--------|-------------|---------------|
+| Environment Variables | Tool for managing user and system environment variables | [Architecture & Implementation](environmentvariables.md) |
 | FancyZones | Window manager utility for custom window layouts | [Architecture & Implementation](fancyzones.md), [Debugging Tools](fancyzones-tools.md) |
 | NewPlus | Context menu extension for creating new files in File Explorer | [Architecture & Implementation](newplus.md) |
 | Registry Preview | Tool for visualizing and editing Registry files | [Architecture & Implementation](registrypreview.md) |
