@@ -13,6 +13,7 @@ Welcome to the PowerToys developer documentation. This documentation provides in
 ## Common Components
 
 - [Context Menu Handlers](common/context-menus.md) - How PowerToys implements and registers Explorer context menu handlers
+- [Monaco Editor](common/monaco-editor.md) - How PowerToys uses the Monaco code editor component across modules
 - [Logging and Telemetry](development/logging.md) - How to use logging and telemetry
 - [Localization](development/localization.md) - How to support multiple languages
 

@@ -4,16 +4,12 @@ This section contains documentation for individual PowerToys modules, including 
 
 ## Available Modules
 
-### FancyZones
-
-FancyZones is a window manager utility that allows users to create custom layouts for organizing windows on their screen.
-
-- [FancyZones Architecture and Implementation](fancyzones.md) - Details about the FancyZones architecture, components, and implementation
-- [FancyZones Debugging Tools](fancyzones-tools.md) - Information about specialized tools for debugging FancyZones
-
-### Other Modules
-
-This section will be expanded with documentation for other PowerToys modules.
+| Module | Description | Documentation |
+|--------|-------------|---------------|
+| FancyZones | Window manager utility for custom window layouts | [Architecture & Implementation](fancyzones.md), [Debugging Tools](fancyzones-tools.md) |
+| NewPlus | Context menu extension for creating new files in File Explorer | [Architecture & Implementation](newplus.md) |
+| Registry Preview | Tool for visualizing and editing Registry files | [Architecture & Implementation](registrypreview.md) |
+| ZoomIt | Screen zoom and annotation tool | [Architecture & Implementation](zoomit.md) |
 
 ## Adding New Module Documentation
 
