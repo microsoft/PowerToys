@@ -126,3 +126,4 @@
 ^src/common/sysinternals/Eula/
 ^tools/Verification scripts/Check preview handler registration\.ps1$
 ignore$
+^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$

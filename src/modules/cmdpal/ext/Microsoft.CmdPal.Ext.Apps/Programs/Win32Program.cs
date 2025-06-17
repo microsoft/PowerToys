@@ -199,6 +199,9 @@ public class Win32Program : IProgram
         }
 
         commands.Add(new CommandContextItem(
+                    new CopyPathCommand(FullPath)));
+
+        commands.Add(new CommandContextItem(
                     new OpenPathCommand(ParentDirectory)));
 
         commands.Add(new CommandContextItem(

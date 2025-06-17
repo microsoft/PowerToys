@@ -106,6 +106,10 @@
   </ItemGroup>
 
   <ItemGroup>
+	<RdXmlFile Include="rd.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WebSearch\Microsoft.CmdPal.Ext.WebSearch.csproj" />
