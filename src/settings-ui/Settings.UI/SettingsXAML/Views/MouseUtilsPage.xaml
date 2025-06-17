@@ -223,8 +223,14 @@
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
                                 <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="Enable_Spotlight_Mode">
-                                <ToggleSwitch IsOn="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=TwoWay}" />
+                            <tkcontrols:SettingsCard x:Uid="HighlightMode">
+                                <ComboBox
+                                    x:Uid="MouseUtils_MouseHighlighter_SpotlightModeType"
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    SelectedIndex="{x:Bind ViewModel.IsSpotlightModeEnabled, Converter={StaticResource BoolToComboBoxIndexConverter}, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="HighlightMode_Spotlight_Mode" />
+                                    <ComboBoxItem x:Uid="HighlightMode_Circle_Highlight_Mode" />
+                                </ComboBox>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
                                 <NumberBox
