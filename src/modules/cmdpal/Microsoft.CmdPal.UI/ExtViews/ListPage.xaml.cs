@@ -294,4 +294,18 @@ public sealed partial class ListPage : Page,
 
         return null;
     }
+
+    private void ItemsList_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        if (e.OriginalSource is FrameworkElement element &&
+            element.DataContext is ListItemViewModel item)
+        {
+            if (ItemsList.SelectedItem != item)
+            {
+                ItemsList.SelectedItem = item;
+            }
+
+            ItemsList.ContextFlyout.ShowAt(this);
+        }
+    }
 }

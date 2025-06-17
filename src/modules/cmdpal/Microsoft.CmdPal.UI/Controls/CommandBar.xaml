@@ -199,8 +199,7 @@
                         Closed="Flyout_Closed"
                         Placement="TopEdgeAlignedRight">
 
-                        <cpcontrols:ContextMenu
-                            ViewModel="{x:Bind ViewModel.ContextMenu, Mode=OneWay}"/>
+                        <cpcontrols:ContextMenu />
 
                     </Flyout>
                 </Button.Flyout>

@@ -4,24 +4,83 @@
 
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContextMenuStackViewModel : ObservableObject
+public partial class ContextMenuViewModel : ObservableObject,
+    IRecipient<UpdateCommandBarMessage>
 {
-    [ObservableProperty]
-    public partial ObservableCollection<CommandContextItemViewModel> FilteredItems { get; set; }
+    public ICommandBarContext? SelectedItem
+    {
+        get => field;
+        set
+        {
+            if (field != null)
+            {
+                field.PropertyChanged -= SelectedItemPropertyChanged;
+            }
 
-    private readonly IContextMenuContext _context;
+            field = value;
+            SetSelectedItem(value);
+
+            OnPropertyChanged(nameof(SelectedItem));
+        }
+    }
+
+    [ObservableProperty]
+    public partial ObservableCollection<CommandContextItemViewModel> FilteredItems { get; set; } = [];
+
     private string _lastSearchText = string.Empty;
 
-    public ContextMenuStackViewModel(IContextMenuContext context)
+    public ContextMenuViewModel()
     {
-        _context = context;
-        FilteredItems = [.. context.AllCommands];
+        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
+    }
+
+    public void Receive(UpdateCommandBarMessage message)
+    {
+        SelectedItem = message.ViewModel;
+        OnPropertyChanged(nameof(FilteredItems));
+    }
+
+    private void SetSelectedItem(ICommandBarContext? value)
+    {
+        if (value != null)
+        {
+            value.PropertyChanged += SelectedItemPropertyChanged;
+        }
+        else
+        {
+            if (SelectedItem != null)
+            {
+                SelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
+            }
+        }
+
+        UpdateContextItems();
+    }
+
+    private void SelectedItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(SelectedItem.HasMoreCommands):
+                UpdateContextItems();
+                break;
+        }
+    }
+
+    public void UpdateContextItems()
+    {
+        FilteredItems.Clear();
+        if (SelectedItem != null)
+        {
+            FilteredItems = [.. SelectedItem.AllCommands];
+        }
     }
 
     public void SetSearchText(string searchText)
@@ -31,9 +90,14 @@ public partial class ContextMenuStackViewModel : ObservableObject
             return;
         }
 
+        if (SelectedItem == null)
+        {
+            return;
+        }
+
         _lastSearchText = searchText;
 
-        var commands = _context.AllCommands.Where(c => c.ShouldBeVisible);
+        var commands = SelectedItem.AllCommands.Where(c => c.ShouldBeVisible);
         if (string.IsNullOrEmpty(searchText))
         {
             ListHelpers.InPlaceUpdateList(FilteredItems, commands);
@@ -65,7 +129,7 @@ public partial class ContextMenuStackViewModel : ObservableObject
 
     public CommandContextItemViewModel? CheckKeybinding(bool ctrl, bool alt, bool shift, bool win, VirtualKey key)
     {
-        var keybindings = _context.Keybindings();
+        var keybindings = SelectedItem?.Keybindings();
         if (keybindings != null)
         {
             // Does the pressed key match any of the keybindings?

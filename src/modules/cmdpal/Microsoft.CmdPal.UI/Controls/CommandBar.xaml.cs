@@ -42,8 +42,6 @@ public sealed partial class CommandBar : UserControl,
         WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
-
-        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
     }
 
     public void Receive(OpenContextMenuMessage message)
@@ -129,18 +127,8 @@ public sealed partial class CommandBar : UserControl,
         e.Handled = true;
     }
 
-    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        var prop = e.PropertyName;
-        if (prop == nameof(ViewModel.ContextMenu))
-        {
-            // UpdateUiForStackChange();
-        }
-    }
-
     private void Flyout_Closed(object sender, object e)
     {
-        ViewModel?.ClearContextStack();
         WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
         WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
     }

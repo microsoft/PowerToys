@@ -82,7 +82,7 @@
                         TextWrapping="NoWrap"
                         Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
                 </StackPanel>
-
+                
                 <ItemsControl
                     Grid.RowSpan="2"
                     Grid.Column="2"
@@ -116,6 +116,7 @@
                     IsDoubleTapEnabled="True"
                     IsItemClickEnabled="True"
                     ItemClick="ItemsList_ItemClick"
+                    RightTapped="ItemsList_RightTapped"
                     ItemTemplate="{StaticResource ListItemViewModelTemplate}"
                     ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
                     SelectionChanged="ItemsList_SelectionChanged">
@@ -134,6 +135,12 @@
                         </GroupStyle.HeaderTemplate>
                     </GroupStyle>
                 </ListView.GroupStyle>-->
+                    <ListView.ContextFlyout>
+                        <Flyout
+                            Placement="BottomEdgeAlignedLeft">
+                            <cpcontrols:ContextMenu />
+                        </Flyout>
+                    </ListView.ContextFlyout>
                 </ListView>
             </controls:Case>
             <controls:Case Value="True">
