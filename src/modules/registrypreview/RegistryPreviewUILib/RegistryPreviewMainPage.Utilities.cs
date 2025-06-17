@@ -30,6 +30,7 @@ namespace RegistryPreviewUILib
         private static SemaphoreSlim _dialogSemaphore = new(1);
 
         private string lastKeyPath;
+
         public delegate void UpdateWindowTitleFunction(string title);
 
         /// <summary>
