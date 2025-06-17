@@ -437,7 +437,14 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings)
     m_alwaysPointerEnabled = settings.alwaysColor.A != 0;
     m_spotlightMode = settings.spotlightMode && settings.alwaysColor.A != 0;
 
+    if (m_spotlightMode)
+    {
+        m_leftPointerEnabled = false;
+        m_rightPointerEnabled = false;
+    }
+
     instance->StopDrawing();
+    instance->StartDrawing();
 }
 
 void Highlighter::BringToFront()
