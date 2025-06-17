@@ -103,7 +103,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 this.DispatcherQueue.TryEnqueue(() =>
                 {
-                    ViewModel.CheckBugReportStatus();
+                    StartBugReportStatusCheck();
                 });
             });
 
