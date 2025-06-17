@@ -110,11 +110,13 @@ jobs:
       vsTestVersion: 'toolsInstaller'
       uiTests: true
       rerunFailedTests: true
-      testAssemblyVer2:
-        - '**\*UITest*.dll'
-        - '!**\obj\**'
-        - '!**\ref\**'
-        - '!**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll' # Since uitests-fancyzoneseditor.dll is generated in both UITests-FancyZonesEditor and UITests-FancyZones, removed one to avoid duplicate test runs
+      # Since UITests-FancyZonesEditor.dll is generated in both UITests-FancyZonesEditor and UITests-FancyZones, removed one to avoid duplicate test runs
+      testAssemblyVer2: |
+        **\*UITest*.dll
+        !**\obj\**
+        !**\ref\**
+        !**\UITests-FancyZones\**\UITests-FancyZonesEditor.dll
+
 
     env:
       platform: '$(TestPlatform)'
