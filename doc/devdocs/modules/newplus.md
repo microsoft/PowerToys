@@ -1,5 +1,10 @@
 # NewPlus Module
 
+## Quick Links
+
+[Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue%20state%3Aopen%20label%3AProduct-New%2B)<br>
+[PRs](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3AProduct-New%2B+)
+
 ## Overview
 
 NewPlus is a PowerToys module that provides a context menu entry for creating new files directly from File Explorer. Unlike some other modules, NewPlus implements a different approach to context menu registration to avoid duplication issues in Windows 11.

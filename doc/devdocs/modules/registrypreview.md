@@ -1,5 +1,10 @@
 # Registry Preview Module
 
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue%20state%3Aopen%20registry%20preview)
+[PRs](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Registry+Preview%22)
+
 ## Overview
 
 Registry Preview simplifies the process of visualizing and editing complex Windows Registry files. It provides a powerful interface to preview, edit, and write changes to the Windows Registry. The module leverages the [Monaco Editor](../common/monaco-editor.md) to provide features like syntax highlighting and line numbering for registry files.
