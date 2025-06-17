@@ -91,6 +91,7 @@ Hemmerlein
 hlaueriksson
 Horvalds
 Howett
+hotkidfamily
 htcfreek
 Huynh
 Ionut
@@ -98,6 +99,7 @@ jamrobot
 Jaswal
 Jaylyn
 jefflord
+Jeremic
 Jordi
 jyuwono
 kai
@@ -173,6 +175,7 @@ Tadele
 talynone
 Taras
 TBM
+Teutsch
 tilovell
 Triet
 urnotdfs
@@ -221,6 +224,7 @@ openai
 Quickime
 regedit
 roslyn
+Skia
 Spotify
 Vanara
 wangyi
