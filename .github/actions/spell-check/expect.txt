@@ -155,6 +155,7 @@ builttoroam
 BVal
 BValue
 byapp
+BYCOMMAND
 BYPOSITION
 CALCRECT
 CALG
