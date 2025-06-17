@@ -20,6 +20,8 @@ namespace Microsoft.FancyZonesEditor.UITests.Utils
 
         public IOTestHelper LayoutTemplatesIOHelper { get; }
 
+        public IOTestHelper AppZoneHistoryIOHelper { get; }
+
         public FancyZonesEditorFiles()
         {
             ParamsIOHelper = new IOTestHelper(new EditorParameters().File);
@@ -28,6 +30,7 @@ namespace Microsoft.FancyZonesEditor.UITests.Utils
             DefaultLayoutsIOHelper = new IOTestHelper(new DefaultLayouts().File);
             LayoutHotkeysIOHelper = new IOTestHelper(new LayoutHotkeys().File);
             LayoutTemplatesIOHelper = new IOTestHelper(new LayoutTemplates().File);
+            AppZoneHistoryIOHelper = new IOTestHelper(new AppZoneHistory().File);
         }
 
         public void Restore()
@@ -38,6 +41,7 @@ namespace Microsoft.FancyZonesEditor.UITests.Utils
             DefaultLayoutsIOHelper.RestoreData();
             LayoutHotkeysIOHelper.RestoreData();
             LayoutTemplatesIOHelper.RestoreData();
+            AppZoneHistoryIOHelper.RestoreData();
         }
     }
 }
