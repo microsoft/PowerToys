@@ -1533,6 +1533,7 @@ SOFTWARE.
 - System.Text.Encoding.CodePages 9.0.6
 - System.Text.Json 9.0.6
 - System.Text.RegularExpressions 4.3.1
+- ToolGood.Words.Pinyin 3.1.0.3
 - UnicodeInformation 2.6.0
 - UnitsNet 5.56.0
 - UTF.Unknown 2.5.1
