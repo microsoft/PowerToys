@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
-using IExtension = Microsoft.CmdPal.Common.Native.IExtension;
+using IExtension = Microsoft.CommandPalette.Extensions.Toolkit.Local.IExtension;
 
 namespace Microsoft.CmdPal.Common.Services;
 

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Native;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
@@ -253,6 +254,8 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
     private static ExtensionWrapper CreateExtensionWrapper(AppExtension extension, IPropertySet cmdPalProvider, string classId)
     {
+        _ = NativeMethods.CoInitialize(IntPtr.Zero);
+
         var extensionWrapper = new ExtensionWrapper(extension, classId);
 
         var supportedInterfaces = GetSubPropertySet(cmdPalProvider, "SupportedInterfaces");

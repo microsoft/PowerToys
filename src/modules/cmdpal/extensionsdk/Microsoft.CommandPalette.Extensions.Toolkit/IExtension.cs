@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using Microsoft.CommandPalette.Extensions;
 
-namespace Microsoft.CmdPal.Common.Native;
+namespace Microsoft.CommandPalette.Extensions.Toolkit.Local;
 
 [GeneratedComInterface]
 [Guid("D5F951D9-661B-51E0-9CB8-D83BEF0098E4")]

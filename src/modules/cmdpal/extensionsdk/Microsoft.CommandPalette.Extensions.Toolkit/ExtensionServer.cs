@@ -15,7 +15,7 @@ public sealed partial class ExtensionServer : IDisposable
     private ComWrappers? _comWrappers;
 
     public void RegisterExtension<T>(Func<T> createExtension, bool restrictToMicrosoftExtensionHosts = false)
-        where T : IExtension
+        where T : Microsoft.CommandPalette.Extensions.Toolkit.Local.IExtension
     {
         Trace.WriteLine($"Registering class object:");
         Trace.Indent();

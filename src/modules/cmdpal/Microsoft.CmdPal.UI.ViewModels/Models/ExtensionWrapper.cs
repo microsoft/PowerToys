@@ -13,7 +13,7 @@ using Windows.ApplicationModel.AppExtensions;
 using Windows.Win32;
 using Windows.Win32.System.Com;
 using WinRT;
-using IExtension = Microsoft.CmdPal.Common.Native.IExtension;
+using IExtension = Microsoft.CommandPalette.Extensions.Toolkit.Local.IExtension;
 
 // [assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
@@ -187,7 +187,7 @@ public class ExtensionWrapper : IExtensionWrapper
         {
             if (IsRunning())
             {
-                _extensionObject?.Dispose();
+                // _extensionObject?.Dispose();
             }
 
             _extensionObject = null;
