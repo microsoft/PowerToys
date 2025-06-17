@@ -109,7 +109,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                 case BgcodeCompressionType.NoCompression:
                     return reader.ReadBytes(size);
 
-                case BgcodeCompressionType.Deflatealgorithm:
+                case BgcodeCompressionType.DeflateAlgorithm:
                     var buffer = new byte[size];
 
                     using (var deflateStream = new DeflateStream(reader.BaseStream, CompressionMode.Decompress, true))
