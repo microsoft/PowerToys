@@ -133,6 +133,9 @@ bool Highlighter::CreateHighlighter()
 
 void Highlighter::AddDrawingPoint(MouseButton button)
 {
+    if (!m_compositor)
+        return;
+
     POINT pt;
 
     // Applies DPIs.

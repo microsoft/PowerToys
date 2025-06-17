@@ -229,7 +229,7 @@
                                 <ComboBox
                                     x:Uid="MouseUtils_MouseHighlighter_SpotlightModeType"
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    SelectedIndex="{x:Bind ViewModel.IsSpotlightModeEnabled, Converter={StaticResource BoolToComboBoxIndexConverter}, Mode=TwoWay}">
+                                    SelectedIndex="{x:Bind ViewModel.IsSpotlightModeEnabled, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="HighlightMode_Spotlight_Mode" />
                                     <ComboBoxItem x:Uid="HighlightMode_Circle_Highlight_Mode" />
                                 </ComboBox>
