@@ -496,7 +496,18 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
         std::unique_lock lock{ ipc_mutex };
         current_settings_ipc = new TwoWayPipeMessageIPC(powertoys_pipe_name, settings_pipe_name, receive_json_send_to_main_thread);
         current_settings_ipc->start(hToken);
+
+        // Register callback for bug report status changes
+        BugReportManager::instance().register_callback([](bool isRunning) {
+            json::JsonObject result;
+            result.SetNamedValue(L"bug_report_running", winrt::Windows::Data::Json::JsonValue::CreateBooleanValue(isRunning));
+
+            std::unique_lock lock{ ipc_mutex };
+            if (current_settings_ipc)
+                current_settings_ipc->send(result.Stringify().c_str());
+        });
     }
+
     g_settings_process_id = process_info.dwProcessId;
 
     if (process_info.hProcess)

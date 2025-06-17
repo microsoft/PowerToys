@@ -29,10 +29,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// </summary>
         public GeneralViewModel ViewModel { get; set; }
 
-        private DispatcherTimer _bugReportStatusTimer;
-        private int _statusCheckCount;
-        private const int MaxStatusChecks = 120; // Stop after 2 minutes of checking
-
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneralPage"/> class.
         /// General Settings page constructor.
@@ -93,19 +89,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.InitializeReportBugLink();
 
             // Register IPC handler for bug report status
-            ShellPage.ShellHandler.IPCResponseHandleList.Add(HandleBugReportStatusResponse);
-
-            // Register cleanup on unload
+            ShellPage.ShellHandler.IPCResponseHandleList.Add(HandleBugReportStatusResponse);            // Register cleanup on unload
             this.Unloaded += GeneralPage_Unloaded;
 
-            // Check initial bug report status after a short delay
-            Task.Delay(500).ContinueWith(_ =>
-            {
-                this.DispatcherQueue.TryEnqueue(() =>
-                {
-                    StartBugReportStatusCheck();
-                });
-            });
+            CheckBugReportStatus();
 
             doRefreshBackupRestoreStatus(100);
         }
@@ -207,35 +194,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             launchPage.ReportBugBtn_Click(sender, e);
 
             ViewModel.IsBugReportRunning = true;
-            StartBugReportStatusCheck();
+
+            // No need to start timer - the observer pattern will notify us when it finishes
         }
 
-        private void StartBugReportStatusCheck()
+        private void CheckBugReportStatus()
         {
-            _bugReportStatusTimer?.Stop();
-
-            _statusCheckCount = 0;
-            _bugReportStatusTimer = new DispatcherTimer();
-            _bugReportStatusTimer.Interval = TimeSpan.FromSeconds(1); // Check every second
-            _bugReportStatusTimer.Tick += BugReportStatusTimer_Tick;
-            _bugReportStatusTimer.Start();
-        }
-
-        private void BugReportStatusTimer_Tick(object sender, object e)
-        {
-            _statusCheckCount++;
-
-            // Stop checking after max attempts to avoid infinite polling
-            if (_statusCheckCount > MaxStatusChecks)
-            {
-                _bugReportStatusTimer.Stop();
-                _bugReportStatusTimer = null;
-                ViewModel.IsBugReportRunning = false;
-                return;
-            }
-
-            // Check bug report status
-            ViewModel.CheckBugReportStatus();
+            // Send one-time request to check current bug report status
+            string ipcMessage = "{ \"bug_report_status\": { } }";
+            ShellPage.SendDefaultIPCMessage(ipcMessage);
         }
 
         private void HandleBugReportStatusResponse(JsonObject response)
@@ -248,14 +215,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 this.DispatcherQueue.TryEnqueue(() =>
                 {
                     ViewModel.IsBugReportRunning = isRunning;
-
-                    // Stop timer if bug report is no longer running
-                    if (!isRunning && _bugReportStatusTimer != null)
-                    {
-                        _bugReportStatusTimer.Stop();
-                        _bugReportStatusTimer = null;
-                        _statusCheckCount = 0;
-                    }
                 });
             }
         }
@@ -267,16 +226,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void CleanupBugReportHandlers()
         {
-            // Stop timer if running
-            if (_bugReportStatusTimer != null)
-            {
-                _bugReportStatusTimer.Stop();
-                _bugReportStatusTimer = null;
-            }
-
-            // Reset check counter
-            _statusCheckCount = 0;
-
             // Remove IPC handler
             if (ShellPage.ShellHandler?.IPCResponseHandleList != null)
             {
