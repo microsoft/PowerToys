@@ -154,6 +154,9 @@
     <ProjectReference Include="..\..\..\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
       <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
+      <Project>{98537082-0fdb-40de-abd8-0dc5a4269bab}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
