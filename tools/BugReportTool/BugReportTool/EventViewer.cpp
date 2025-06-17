@@ -146,32 +146,26 @@ namespace
         }
 
     public:
-        EventViewerReporter(const std::filesystem::path& tmpDir, std::wstring processName)
+        EventViewerReporter(const std::filesystem::path& tmpDir, std::wstring queryName, std::wstring fileName, bool isChannel)
         {
-            auto query = GetQuery(processName);
-            auto reportPath = tmpDir;
-            reportPath.append(L"EventViewer-" + processName + L".xml");
-            report = std::wofstream(reportPath);
-
-            hResults = EvtQuery(NULL, NULL, GetQuery(processName).c_str(), EvtQueryChannelPath);
-            if (NULL == hResults)
+            std::wstring query = L"";
+            if (isChannel)
             {
-                report << "Failed to report info for " << processName << ". " << get_last_error_or_default(GetLastError()) << std::endl;
-                return;
+				query = GetQueryByChannel(queryName);
+			}
+			else
+			{
+				query = GetQuery(queryName);
             }
-        }
 
-        EventViewerReporter(const std::filesystem::path& tmpDir, std::wstring channelName, bool isChannel)
-        {
-            auto query = GetQueryByChannel(channelName);
             auto reportPath = tmpDir;
-            reportPath.append(L"EventViewer-" + channelName + L".xml");
+            reportPath.append(L"EventViewer-" + fileName + L".xml");
             report = std::wofstream(reportPath);
 
             hResults = EvtQuery(NULL, NULL, query.c_str(), EvtQueryChannelPath);
             if (NULL == hResults)
             {
-                report << "Failed to report info for channel " << channelName << ". " << get_last_error_or_default(GetLastError()) << std::endl;
+                report << "Failed to report info for " << queryName << ". " << get_last_error_or_default(GetLastError()) << std::endl;
                 return;
             }
         }
@@ -206,11 +200,11 @@ void EventViewer::ReportEventViewerInfo(const std::filesystem::path& tmpDir)
 {
     for (auto& process : processes)
     {
-        EventViewerReporter(tmpDir, process).Report();
+        EventViewerReporter(tmpDir, process, process, false).Report();
     }
 }
 
 void EventViewer::ReportAppXDeploymentLogs(const std::filesystem::path& tmpDir)
 {
-    EventViewerReporter(tmpDir, L"Microsoft-Windows-AppXDeploymentServer/Operational", true).Report();
+    EventViewerReporter(tmpDir, L"Microsoft-Windows-AppXDeploymentServer/Operational", L"AppXDeploymentServerEventLog", true).Report();
 }
