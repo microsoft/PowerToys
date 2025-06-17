@@ -33,6 +33,9 @@ namespace WorkspacesData
             std::wstring appUserModelId;
             std::wstring pwaAppId;
             std::wstring commandLineArgs;
+
+            // empty to 1,
+            std::wstring version;
             bool isElevated{};
             bool canLaunchElevated{};
             bool isMinimized{};
@@ -86,7 +89,7 @@ namespace WorkspacesData
     {
         WorkspacesData::WorkspacesProject::Application application;
         HWND window{};
-        LaunchingState state { LaunchingState::Waiting };
+        LaunchingState state{ LaunchingState::Waiting };
     };
 
     using LaunchingAppStateMap = std::map<WorkspacesData::WorkspacesProject::Application, LaunchingAppState>;
