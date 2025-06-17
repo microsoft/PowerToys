@@ -5,7 +5,6 @@ using System.Drawing;
 using Windows.Data.Pdf;
 using Windows.Storage;
 using Windows.Storage.Streams;
-using System.Drawing;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
 {
