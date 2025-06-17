@@ -214,12 +214,10 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor"
-                                IsEnabled="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor" IsEnabled="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                                 <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor"
-                                IsEnabled="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor" IsEnabled="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                                 <controls:AlphaColorPickerButton SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
