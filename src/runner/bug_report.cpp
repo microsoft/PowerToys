@@ -40,7 +40,8 @@ void BugReportManager::notify_observers(bool isRunning)
 
 void BugReportManager::launch_bug_report() noexcept
 {
-    std::wstring bug_report_path = L"C:\\Users\\kaitao\\AppData\\Local\\PowerToys\\Tools\\PowerToys.BugReportTool.exe";
+    std::wstring bug_report_path = get_module_folderpath();
+    bug_report_path += L"\\Tools\\PowerToys.BugReportTool.exe";
 
     bool expected_isBugReportRunning = false;
     if (m_isBugReportRunning.compare_exchange_strong(expected_isBugReportRunning, true))
