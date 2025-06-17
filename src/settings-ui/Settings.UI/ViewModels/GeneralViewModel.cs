@@ -964,7 +964,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 if (value != _isBugReportRunning)
                 {
-                    Debug.WriteLine("IsBugReportRunning set to " + value);
                     _isBugReportRunning = value;
                     NotifyPropertyChanged();
                 }
@@ -1307,11 +1306,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 NotifyPropertyChanged(nameof(IsDownloadAllowed));
             }
-        }
-
-        public void CheckBugReportStatus()
-        {
-            SendConfigMSG("{\"bug_report_status\": 0}");
         }
 
         private void InitializeLanguages()
