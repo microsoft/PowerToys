@@ -1563,6 +1563,7 @@ SOFTWARE.
 - SkiaSharp.Views.WinUI
 - StreamJsonRpc
 - StyleCop.Analyzers
+- ToolGood.Words.Pinyin
 - UnicodeInformation
 - UnitsNet
 - UTF.Unknown
