@@ -53,6 +53,9 @@ parameters:
   - name: runTests
     type: boolean
     default: true
+  - name: buildTests
+    type: boolean
+    default: true
   - name: useVSPreview
     type: boolean
     default: false
@@ -110,7 +113,7 @@ jobs:
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    ${{ if eq(parameters.runTests, true) }}:
+    ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
       MSBuildMainBuildTargets: Build;Test
     ${{ else }}:
       MSBuildMainBuildTargets: Build
@@ -528,7 +531,7 @@ jobs:
     displayName: Stage GPO files
 
   # Running the tests may result in future jobs consuming artifacts out of this build
-  - ${{ if eq(parameters.runTests, true) }}:
+  - ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
     - task: CopyFiles@2
       displayName: Stage entire build output
       inputs:

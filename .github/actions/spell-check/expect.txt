@@ -192,6 +192,7 @@ CImage
 cla
 CLASSDC
 CLASSNOTAVAILABLE
+cleanmgr
 clickable
 clickonce
 CLIENTEDGE
@@ -276,6 +277,7 @@ currentculture
 CURRENTDIR
 CURSORINFO
 cursorpos
+CURSORSHOWING
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
@@ -343,7 +345,9 @@ DESELECTOTHERS
 DESIGNINFO
 DESKTOPABSOLUTEEDITING
 DESKTOPABSOLUTEPARSING
+DESKTOPHORZRES
 desktopshorcutinstalled
+DESKTOPVERTRES
 devblogs
 devdocs
 devmgmt
@@ -354,6 +358,7 @@ DFX
 DIALOGEX
 digicert
 dimm
+DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
 diskmgmt
@@ -397,6 +402,7 @@ DVASPECTINFO
 DVD
 dvr
 DVTARGETDEVICE
+dwflags
 dwl
 dwm
 dwmapi
@@ -485,6 +491,7 @@ FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
 FARPROC
 fff
+FFFF
 FILEEXPLORER
 FILEFLAGS
 FILEFLAGSMASK
@@ -603,6 +610,7 @@ helptext
 HGFE
 hglobal
 hhk
+HHmmssfff
 hhx
 Hiber
 Hiberboot
@@ -611,6 +619,7 @@ hicon
 HIDEREADONLY
 HIDEWINDOW
 Hif
+hightlight
 HIMAGELIST
 himl
 hinst
@@ -745,6 +754,7 @@ isocpp
 iss
 issecret
 ISSEPARATOR
+istep
 ith
 ITHUMBNAIL
 IUI
@@ -1275,6 +1285,7 @@ prvpane
 psapi
 pscid
 PSECURITY
+psexec
 psfgao
 psfi
 PSMODULEPATH
@@ -1532,6 +1543,7 @@ SLGP
 sln
 SMALLICON
 smartphone
+smileys
 SMTO
 SNAPPROCESS
 snk
@@ -1876,6 +1888,7 @@ WINDOWPOSCHANGING
 WINDOWSBUILDNUMBER
 windowssearch
 windowssettings
+windowsterminal
 WINDOWSTYLES
 WINDOWSTYLESICON
 winerror
@@ -1985,6 +1998,7 @@ Zoneszonabletester
 Zoomin
 zoomit
 ZOOMITX
+Zorder
 ZXk
 ZXNs
 zzz
