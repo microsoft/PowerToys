@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -85,11 +86,21 @@ public sealed class CommandProviderWrapper
         }
 
         var extensionImpl = extension.GetExtensionObject();
-        var providerObject = extensionImpl?.GetProvider(ProviderType.Commands);
-        if (providerObject is not ICommandProvider provider)
+        var providerPtr = extensionImpl?.GetProvider(ProviderType.Commands);
+        if (providerPtr == null)
         {
-            throw new ArgumentException("extension didn't actually implement ICommandProvider");
+            throw new ArgumentException($"Extension {extension.ExtensionDisplayName} does not implement ICommandProvider. Did you forget to add the provider type?");
         }
+
+        var providerInterfaceIID = typeof(ICommandProvider).GUID;
+        var hr = Marshal.QueryInterface(providerPtr.Value, in providerInterfaceIID, out var providerIntrefacePtr);
+        if (hr != 0)
+        {
+            Logger.LogDebug($"Failed to get provider {typeof(ICommandProvider).Name} from {extension.ExtensionDisplayName}: {hr}");
+            Marshal.ThrowExceptionForHR(hr);
+        }
+
+        var provider = (ICommandProvider)Marshal.GetTypedObjectForIUnknown(providerIntrefacePtr, typeof(ICommandProvider));
 
         _commandProvider = new(provider);
 

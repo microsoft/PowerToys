@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Native;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
@@ -11,6 +13,7 @@ using Windows.ApplicationModel.AppExtensions;
 using Windows.Win32;
 using Windows.Win32.System.Com;
 using WinRT;
+using IExtension = Microsoft.CmdPal.Common.Native.IExtension;
 
 // [assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
@@ -82,7 +85,8 @@ public class ExtensionWrapper : IExtensionWrapper
 
         try
         {
-            _extensionObject.As<IInspectable>().GetRuntimeClassName();
+            // _extensionObject.As<IInspectable>().GetRuntimeClassName();
+            return true;
         }
         catch (COMException e)
         {
@@ -94,7 +98,7 @@ public class ExtensionWrapper : IExtensionWrapper
             throw;
         }
 
-        return true;
+        // return true;
     }
 
     public async Task StartExtensionAsync()
@@ -113,10 +117,9 @@ public class ExtensionWrapper : IExtensionWrapper
                         // -2147024809: E_INVALIDARG
                         // -2147467262: E_NOINTERFACE
                         // -2147024893: E_PATH_NOT_FOUND
-                        var guid = typeof(IExtension).GUID;
-
                         unsafe
                         {
+                            /*
                             var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out var extensionObj);
 
                             if (hr.Value == -2147024893)
@@ -142,7 +145,28 @@ public class ExtensionWrapper : IExtensionWrapper
                                 Marshal.ThrowExceptionForHR(hr);
                             }
 
-                            _extensionObject = MarshalInterface<IExtension>.FromAbi(extensionPtr);
+                            _extensionObject = MarshalInterface<IExtension>.FromAbi(extensionPtr);*/
+                            var clsID = Guid.Parse(ExtensionClassId);
+                            var iid = typeof(IExtension).GUID;
+
+                            var hr = NativeMethods.CoCreateInstance(ref clsID, IntPtr.Zero, (uint)CLSCTX.CLSCTX_LOCAL_SERVER, ref iid, out extensionPtr);
+                            if (hr == -2147024893)
+                            {
+                                Logger.LogDebug($"Failed to find {ExtensionDisplayName}: {hr}. It may have been uninstalled or deleted.");
+
+                                // We don't really need to throw this exception.
+                                // We'll just return out nothing.
+                                return;
+                            }
+
+                            if (hr != 0)
+                            {
+                                Logger.LogDebug($"Failed to instantiate {ExtensionDisplayName}: {hr}");
+                                return;
+                            }
+
+                            var comWrappers = new StrategyBasedComWrappers();
+                            _extensionObject = (IExtension)comWrappers.GetOrCreateObjectForComInstance(extensionPtr, CreateObjectFlags.None);
                         }
                     }
                     finally
@@ -183,7 +207,23 @@ public class ExtensionWrapper : IExtensionWrapper
     {
         await StartExtensionAsync();
 
-        return GetExtensionObject()?.GetProvider(_providerTypeMap[typeof(T)]) as T;
+        var providerPtr = GetExtensionObject()?.GetProvider(_providerTypeMap[typeof(T)]);
+        if (providerPtr == null)
+        {
+            return null;
+        }
+
+        var providerInterfaceIID = typeof(T).GUID;
+        var hr = Marshal.QueryInterface(providerPtr.Value, in providerInterfaceIID, out var providerIntrefacePtr);
+        if (hr != 0)
+        {
+            Logger.LogDebug($"Failed to get provider {typeof(T).Name} from {ExtensionDisplayName}: {hr}");
+            Marshal.ThrowExceptionForHR(hr);
+        }
+
+        var providerInterface = (T)Marshal.GetTypedObjectForIUnknown(providerIntrefacePtr, typeof(T));
+
+        return providerInterface;
     }
 
     public async Task<IEnumerable<T>> GetListOfProvidersAsync<T>()
