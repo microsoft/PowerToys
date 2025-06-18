@@ -10,9 +10,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels" 
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -407,16 +407,6 @@
                             TextAlignment="Center"
                             TextWrapping="WrapWholeWords"
                             Visibility="{x:Bind ViewModel.Details.Title, Converter={StaticResource StringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
-
-                        <toolkit:MarkdownTextBlock
-                            Grid.Row="2"
-                            Margin="0,12,0,24"
-                            Background="Transparent"
-                            Header3FontSize="12"
-                            Header3FontWeight="Normal"
-                            Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            IsTextSelectionEnabled="True"
-                            Text="{x:Bind ViewModel.Details.Body, Mode=OneWay}" />
 
                         <ItemsRepeater
                             Grid.Row="3"
