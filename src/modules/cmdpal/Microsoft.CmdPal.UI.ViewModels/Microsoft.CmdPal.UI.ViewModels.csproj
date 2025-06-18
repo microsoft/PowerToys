@@ -29,6 +29,14 @@
 
   </ItemGroup>
 
+  <PropertyGroup>
+    <AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
+  </PropertyGroup>
+  <ItemGroup>
+    <CsWinRTInputs Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\lib\uap10.0\AdaptiveCards.ObjectModel.WinUI3.winmd" />
+    <Content Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.ObjectModel.WinUI3.dll" Link="AdaptiveCards.ObjectModel.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
