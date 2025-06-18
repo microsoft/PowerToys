@@ -13,6 +13,7 @@ This section contains documentation for individual PowerToys modules, including 
 | Quick Accent | Tool for quickly inserting accented characters and special symbols | [Architecture & Implementation](quickaccent.md) |
 | Registry Preview | Tool for visualizing and editing Registry files | [Architecture & Implementation](registrypreview.md) |
 | Screen Ruler | Tool for measuring pixel distances and color boundaries on screen | [Architecture & Implementation](screenruler.md) |
+| Shortcut Guide | Tool for displaying Windows keyboard shortcuts when holding the Windows key | [Architecture & Implementation](shortcut_guide.md) |
 | ZoomIt | Screen zoom and annotation tool | [Architecture & Implementation](zoomit.md) |
 
 ## Adding New Module Documentation
