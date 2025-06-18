@@ -31,7 +31,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <PostBuildEvent>
-      call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
+      <!-- call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
       call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
       call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
       call move /Y ..\..\..\CmdPal.wxs.bk ..\..\..\CmdPal.wxs
@@ -56,7 +56,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs
       call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
       call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
-      call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
+      call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs -->
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
