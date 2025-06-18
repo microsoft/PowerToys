@@ -1,4 +1,4 @@
-<Project Sdk="WixToolset.Sdk/5.0.2">
+<Project Sdk="WixToolset.Sdk/6.0.1">
   <Import Project="..\..\src\CmdPalVersion.props" Condition="Exists('..\..\src\CmdPalVersion.props')" />
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
