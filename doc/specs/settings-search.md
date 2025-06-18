@@ -174,14 +174,14 @@ So now we have all the entries and entry properties.
 Runtime:
 ```mermaid
 flowchart TD
-    A[User launches Settings (ShellPage)] --> B[Start building index in background (<1s)]
-    B --> C[User types into AutoSuggestBox]
-    C --> D[Search for matched settings items]
-    D --> E[Populate AutoSuggestBox with matches]
-    E --> F[User selects a suggestion]
-    F --> G[Navigate to target settings page]
-    G --> H[On PageLoaded: locate and scroll to item]
-    H --> I[Optionally apply visual highlight]
+    A("User launches Settings (ShellPage)") --> B("Start building index in background (<1s)")
+    B --> C("User types into AutoSuggestBox")
+    C --> D("Search for matched settings items")
+    D --> E("Populate AutoSuggestBox with matches")
+    E --> F("User selects a suggestion")
+    F --> G("Navigate to target settings page")
+    G --> H("On PageLoaded: locate and scroll to item")
+    H --> I("Optionally apply visual highlight")
 ```
 
 
