@@ -41,18 +41,9 @@
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="MarkdownContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
-                <Grid Margin="0,4,4,4" Padding="12,8,8,8">
-                </Grid>
-            </DataTemplate>
             <DataTemplate x:Key="NestedFormContentTemplate" x:DataType="viewmodels:ContentFormViewModel">
                 <Grid>
                     <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
-                </Grid>
-            </DataTemplate>
-
-            <DataTemplate x:Key="NestedMarkdownContentTemplate" x:DataType="viewmodels:ContentMarkdownViewModel">
-                <Grid>
                 </Grid>
             </DataTemplate>
 
