@@ -12,6 +12,11 @@ namespace Hosts.UITests
     [TestClass]
     public class HostsSettingTests : UITestBase
     {
+        public HostsSettingTests()
+        : base(PowerToysModule.PowerToysSettings, WindowSize.Medium)
+        {
+        }
+
         /// <summary>
         /// Test Warning Dialog at startup
         /// <list type="bullet">
@@ -29,7 +34,9 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod]
+        [TestMethod("Hosts.Settings.ShowWarningDialogIfRunAsAdmin")]
+        [TestCategory("Hosts File Editor #1")]
+        [TestCategory("Hosts File Editor #9")]
         public void TestWarningDialog()
         {
             this.LaunchFromSetting(showWarning: true);
@@ -51,10 +58,7 @@ namespace Hosts.UITests
 
             this.Find<Button>("Launch Hosts File Editor").Click();
 
-            // wait for 500 ms to make sure Hosts File Editor is launched
-            Task.Delay(500).Wait();
-
-            this.Session.Attach(PowerToysModule.Hosts);
+            this.Session.Attach(PowerToysModule.Hosts, WindowSize.Small_Vertical);
 
             // Should show warning dialog
             Assert.IsTrue(this.FindAll("Warning").Count > 0, "Should show warning dialog");
@@ -68,7 +72,7 @@ namespace Hosts.UITests
             Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed after click Accept button in Warning Dialog");
 
             // Close Hosts File Editor window
-            this.Session.Find<Window>("Hosts File Editor").Close();
+            this.Session.CloseMainWindow();
 
             // Restore back to PowerToysSettings Session
             this.Session.Attach(PowerToysModule.PowerToysSettings);
@@ -82,7 +86,7 @@ namespace Hosts.UITests
             Assert.IsFalse(this.IsHostsFileEditorClosed(), "Hosts File Editor should NOT be closed");
 
             // Close Hosts File Editor window
-            this.Session.Find<Window>("Hosts File Editor").Close();
+            this.Session.CloseMainWindow();
 
             // Restore back to PowerToysSettings Session
             this.Session.Attach(PowerToysModule.PowerToysSettings);
@@ -90,14 +94,9 @@ namespace Hosts.UITests
 
         private bool IsHostsFileEditorClosed()
         {
-            try
+            if (this.Session.FindAll<Window>("Hosts File Editor").Count == 0 && this.Session.FindAll<Window>("Administrator: Hosts File Editor").Count == 0)
             {
-                this.Session.FindAll<Window>("Hosts File Editor");
-            }
-            catch (Exception ex)
-            {
-                // Validate if editor window closed by checking exception.Message
-                return ex.Message.Contains("Currently selected window has been closed");
+                return true;
             }
 
             return false;
@@ -121,7 +120,7 @@ namespace Hosts.UITests
             // launch Hosts File Editor
             this.Find<Button>("Launch Hosts File Editor").Click();
 
-            Task.Delay(500).Wait();
+            Task.Delay(2000).Wait();
 
             this.Session.Attach(PowerToysModule.Hosts);
         }

@@ -24,9 +24,12 @@ namespace Microsoft.PowerToys.UITest
         /// Click the ListItem element.
         /// </summary>
         /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
-        public override void Click(bool rightClick = false)
+        /// <param name="msPreAction">Pre action delay in milliseconds. Default value is 500</param>
+        /// <param name="msPostAction">Post action delay in milliseconds. Default value is 500</param>
+        public override void Click(bool rightClick = false, int msPreAction = 500, int msPostAction = 500)
         {
-            PerformAction((actions, windowElement) =>
+            PerformAction(
+                (actions, windowElement) =>
             {
                 actions.MoveToElement(windowElement, 10, 10);
 
@@ -40,7 +43,36 @@ namespace Microsoft.PowerToys.UITest
                 }
 
                 actions.Build().Perform();
-            });
+            },
+                msPreAction,
+                msPostAction);
+        }
+
+        /// <summary>
+        /// Click the center of the ListItem element.
+        /// </summary>
+        /// <param name="rightClick">If true, performs a right-click; otherwise, performs a left-click. Default value is false</param>
+        /// <param name="msPreAction">Pre action delay in milliseconds. Default value is 500</param>
+        /// <param name="msPostAction">Post action delay in milliseconds. Default value is 500</param>
+        public void ClickCenter(bool rightClick = false, int msPreAction = 500, int msPostAction = 500)
+        {
+            PerformAction(
+                (actions, windowElement) =>
+                {
+                    actions.MoveToElement(windowElement);
+                    if (rightClick)
+                    {
+                        actions.ContextClick();
+                    }
+                    else
+                    {
+                        actions.Click();
+                    }
+
+                    actions.Build().Perform();
+                },
+                msPreAction,
+                msPostAction);
         }
 
         /// <summary>

@@ -87,6 +87,10 @@ public class UWPApplication : IProgram
 
         commands.Add(
             new CommandContextItem(
+                new CopyPathCommand(Location)));
+
+        commands.Add(
+            new CommandContextItem(
                 new OpenPathCommand(Location)
                 {
                     Name = Resources.open_containing_folder,
@@ -217,11 +221,10 @@ public class UWPApplication : IProgram
             var capacity = 1024U;
             PWSTR outBuffer = new PWSTR((char*)(void*)Marshal.AllocHGlobal((int)capacity * sizeof(char)));
             var source = $"@{{{packageFullName}? {parsed}}}";
-            void* reserved = null;
 
             try
             {
-                PInvoke.SHLoadIndirectString(source, outBuffer, capacity, ref reserved).ThrowOnFailure();
+                PInvoke.SHLoadIndirectString(source, outBuffer.AsSpan()).ThrowOnFailure();
 
                 var loaded = outBuffer.ToString();
                 return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
@@ -231,7 +234,7 @@ public class UWPApplication : IProgram
                 try
                 {
                     var sourceFallback = $"@{{{packageFullName}?{parsedFallback}}}";
-                    PInvoke.SHLoadIndirectString(sourceFallback, outBuffer, capacity, ref reserved).ThrowOnFailure();
+                    PInvoke.SHLoadIndirectString(sourceFallback, outBuffer.AsSpan()).ThrowOnFailure();
                     var loaded = outBuffer.ToString();
                     return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
                 }
