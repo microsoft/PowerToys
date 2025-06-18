@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Pages.ShellPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -12,7 +12,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels" 
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
     mc:Ignorable="d">
 
@@ -93,7 +93,8 @@
                         Visibility="{x:Bind IsLink, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsCommandsTemplate" x:DataType="viewModels:DetailsCommandsViewModel">
+            <DataTemplate x:Key="DetailsCommandsTemplate"
+                x:DataType="viewModels:DetailsCommandsViewModel">
                 <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock
                         IsTextSelectionEnabled="True"
@@ -105,7 +106,8 @@
                         Visibility="{x:Bind HasCommands, Mode=OneWay}" />
                 </StackPanel>
             </DataTemplate>
-            <DataTemplate x:Key="DetailsSeparatorTemplate" x:DataType="viewModels:DetailsSeparatorViewModel">
+            <DataTemplate x:Key="DetailsSeparatorTemplate"
+                x:DataType="viewModels:DetailsSeparatorViewModel">
                 <StackPanel Margin="0,8,8,0" Orientation="Vertical">
                     <Border
                         Margin="8,0,0,0"
@@ -434,7 +436,8 @@
                         FontWeight="SemiBold"
                         Foreground="{ThemeResource SystemErrorTextColor}"
                         Text="Error(s) on page:" />
-                    <LineBreak /><Run Text="{x:Bind ViewModel.CurrentPage.ErrorMessage, Mode=OneWay}" />
+                    <LineBreak />
+                    <Run Text="{x:Bind ViewModel.CurrentPage.ErrorMessage, Mode=OneWay}" />
                 </TextBlock>
             </ScrollView>
         </Grid>
@@ -475,7 +478,8 @@
         </StackPanel>
 
         <Grid Grid.Row="1" Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}">
-            <cpcontrols:CommandBar CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
+            <cpcontrols:CommandBar
+                CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
         </Grid>
 
         <VisualStateManager.VisualStateGroups>
