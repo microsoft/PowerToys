@@ -1,0 +1,42 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels;
+
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
+namespace Microsoft.CmdPal.UI;
+
+internal sealed class RunHistoryService : IRunHistoryService
+{
+    private readonly AppStateModel _appStateModel;
+
+    public RunHistoryService(AppStateModel appStateModel)
+    {
+        _appStateModel = appStateModel;
+    }
+
+    public IReadOnlyList<string> GetRunHistory()
+    {
+        if (_appStateModel.RunHistory.Count == 0)
+        {
+            var history = Microsoft.Terminal.UI.IconPathConverter.CreateRunHistory();
+            _appStateModel.RunHistory.AddRange(history);
+        }
+
+        return _appStateModel.RunHistory;
+    }
+
+    public void ClearRunHistory()
+    {
+        _appStateModel.RunHistory.Clear();
+    }
+
+    public void AddRunHistoryItem(string item)
+    {
+        _appStateModel.RunHistory.Add(item);
+        AppStateModel.SaveState(_appStateModel);
+    }
+}

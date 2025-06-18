@@ -4,11 +4,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using Microsoft.CmdPal.Ext.Shell.Commands;
+using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell.Helpers;
@@ -158,5 +160,54 @@ public class ShellListPageHelpers
                 return false;
             }
         }
+    }
+
+    internal static ListItem? ListItemForCommandString(string query)
+    {
+        var li = new ListItem();
+
+        var searchText = query.Trim();
+        var expanded = Environment.ExpandEnvironmentVariables(searchText);
+        searchText = expanded;
+        if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
+        {
+            return null;
+        }
+
+        ShellListPage.ParseExecutableAndArgs(searchText, out var exe, out var args);
+        var exeExists = ShellListPageHelpers.FileExistInPath(exe, out var fullExePath);
+        var pathIsDir = Directory.Exists(exe);
+        Debug.WriteLine($"Run: exeExists={exeExists}, pathIsDir={pathIsDir}");
+
+        if (exeExists)
+        {
+            // TODO we need to probably get rid of the settings for this provider entirely
+            var exeItem = ShellListPage.CreateExeItems(exe, args, fullExePath);
+            li.Command = exeItem.Command;
+            li.Title = exeItem.Title;
+            li.Subtitle = exeItem.Subtitle;
+            li.Icon = exeItem.Icon;
+            li.MoreCommands = exeItem.MoreCommands;
+        }
+        else if (pathIsDir)
+        {
+            var pathItem = new PathListItem(exe, query);
+            li.Command = pathItem.Command;
+            li.Title = pathItem.Title;
+            li.Subtitle = pathItem.Subtitle;
+            li.Icon = pathItem.Icon;
+            li.MoreCommands = pathItem.MoreCommands;
+        }
+        else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
+        {
+            li.Command = new OpenUrlCommand(searchText) { Result = CommandResult.Dismiss() };
+            li.Title = searchText;
+        }
+        else
+        {
+            return null;
+        }
+
+        return li;
     }
 }

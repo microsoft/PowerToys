@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -21,16 +22,18 @@ internal sealed partial class ShellListPage : DynamicListPage
     private readonly List<ListItem> _exeItems = [];
     private readonly List<ListItem> _topLevelItems = [];
     private readonly List<ListItem> _historyItems = [];
+    private readonly IRunHistoryService _historyService;
     private List<ListItem> _pathItems = [];
     private ListItem? _uriItem;
 
-    public ShellListPage(SettingsManager settingsManager, bool addBuiltins = false)
+    public ShellListPage(SettingsManager settingsManager, IRunHistoryService runHistoryService, bool addBuiltins = false)
     {
         Icon = Icons.RunV2;
         Id = "com.microsoft.cmdpal.shell";
         Name = Resources.cmd_plugin_name;
         PlaceholderText = Resources.list_placeholder_text;
         _helper = new(settingsManager);
+        _historyService = runHistoryService;
 
         EmptyContent = new CommandItem()
         {
@@ -66,6 +69,15 @@ internal sealed partial class ShellListPage : DynamicListPage
         //    i.Icon = Icons.RunV2;
         //    i.Subtitle = string.Empty;
         // });
+        var hist = _historyService.GetRunHistory();
+        var filteredHist = string.IsNullOrEmpty(searchText) ?
+            hist :
+            ListHelpers.FilterList(hist, searchText, (q, s) => StringMatcher.FuzzySearch(q, s).Score);
+        var histItems = filteredHist
+            .Select(h => ShellListPageHelpers.ListItemForCommandString(h))
+            .Where(i => i != null)
+            .Select(i => i!);
+        ListHelpers.InPlaceUpdateList(_historyItems, histItems);
 
         // TODO we can be smarter about only re-reading the filesystem if the
         // new search is just the oldSearch+some chars
