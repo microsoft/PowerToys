@@ -1,254 +1,201 @@
 # PowerToys Settings – Search Index (Hard-sealed)
 
-> **Scope**  
-> *This document covers only the data we index, where we pull it from in XAML,  
->  how we build & store the index, and how a query runs against it.*  
-> Out-of-scope: UI rendering, telemetry, semantic search
+## 1. What to index
+
+This section describes the current structure of the settings pages in PowerToys. All user-facing settings are contained in the content of <controls:SettingsPageControl>. The logical and visual structure of settings follows a nested layout as shown below:
+
+```css
+SettingsPageControl
+ └─ SettingsGroup
+     └─ [SettingsExpander]
+         └─ SettingsCard
+```
+* Each SettingsGroup defines a functional section within a settings page.
+
+* An optional SettingsExpander may be used to further organize related settings inside a group.
+
+* Each actual setting is represented by a SettingsCard, which contains one user-tweakable control or a group of closely related controls.
+
+>Note: Not all SettingsCard are necessarily wrapped in a SettingsExpander; they can exist directly under a SettingsGroup. 
+
+> For indexing purposes, we are specifically targeting all SettingsCard elements. These are the smallest units of user interaction and correspond to individual configurable settings.
+
+Each SettingsCard should have an x:Uid for localization and indexing. The associated display strings are defined in the .resw files:
+
+{x:Uid}.Header – The visible label/title of the setting.
+
+{x:Uid}.Description – (optional) The tooltip or explanatory text.
+
+The index should be built around these SettingsCard elements and their x:Uid-bound resources, as they represent the actual settings users will search for.
+
 ---
 
-## 1 · Indexable elements
+## 2. How to Navigate
 
-| Kind&nbsp;(`EntryKind`) | XAML selector | Must have | Why it's indexed | Extracted fields | Sources & Examples |
-|-------------------------|---------------|-----------|------------------|------------------|-------------------|
-| **`Section`** | `tkcontrols:SettingsGroup` (or any `SettingsGroup`) | `x:Uid` | Gives users a named navigation landmark ("Clipboard sharing") | *caption* ← `{Uid}/Text`<br>*description* ← `{Uid}/Description` (optional) | All settings pages<br>e.g. `x:Uid="ColorPicker_GroupSettings"` |
-| **`Leaf`** | Any **user-interactive setting control** whose type derives from:<br>`ToggleSwitch`, `CheckBox`, `ComboBox`, `Slider`, `Button`, `TextBox`, `tkcontrols:SettingsCard`, `tkcontrols:SettingsExpander`, `RadioButton`| `x:Uid` | Represents a tweakable knob users will search for | *caption* ← `{Uid}/Text`<br>*description* ← `{Uid}/Description` **or** control `ToolTip` | **ToggleSwitch**: FancyZones/`x:Uid="ToggleSwitch"`<br>**SettingsCard**: General/`x:Uid="General_RunAtStartUp"`<br>**SettingsExpander**: General/`x:Uid="General_SettingsBackupAndRestore"`<br>**ComboBox**: PowerRename/`x:Uid="PowerRename_Toggle_StandardContextMenu"`<br>**Button**: ColorPicker/`x:Uid="ColorPickerAddNewFormat"` |
-| **Ignored** | Everything else (layout panels, `TextBlock`, `InfoBar`, `HyperlinkButton`, etc.) | — | No user interaction or settings value | — | Non-interactive display elements |
-
-All strings are taken from the **localized** RESW resources.
-
-**Note**: `Settings.IsSearchable="True"` is a custom attached property that would need to be implemented if used. Currently not found in existing codebase.
-
----
-
-## 2 · `SettingEntry` struct
-
+### Entry
 ```csharp
-internal readonly struct SettingEntry
+enum EntryType
 {
-    public readonly EntryKind Kind;           // SettingsCard | SettingsExpandar
-    public readonly string    Module;         // e.g. "Mouse Without Borders, General"
-    public readonly string    DisplayedText;          // Displayed text
-    public readonly string    PageTypeName;   // page for navigate to
-    public readonly string    ElementUid;     // FrameworkElement to navigate to
-    public readonly string    Name;           // Used to reflection and navigate to
+    SettingsCard,
+    SettingsExpandar
+}
+struct SettingEntry
+{
+    string    PageName;         // Navigation among pages
+    
+    EntryType Type;             // Whether I need to expand my parent Expander
+    string    ParentElementName // Empty if 
+    string    ElementName;             // ElementName
+
+    string    ElementUid;       // UID 
+    string    DisplayedText;    // Localized Text For Setting Entry
 }
 ```
 
+### Navigation
+We need to do two phase navigation to locate the setting entry
+* Navigate among pages
+* Navigate within page
 
-## 3 · One-shot index build 
-```mermaid
-flowchart TD
-    A[App start] --> B[Reflect ISettingsPage types]
-    B --> C[Instantiate page]
-    C --> D[Walk visual tree]
-    D --> E{UID?<br>& matches Section/Leaf rules}
-    E -- yes --> F[Create SettingEntry<br>& add to builder]
-    E -- no --> G[skip]
-    F --> D
-    G --> D
-    D -->|done| H[Freeze ImmutableArray&lt;SettingEntry&gt;]
-    H --> I[static SearchIndex.Index]
+> Use page name for navigation:
+```csharp
+Type GetPageTypeFromPageName(string PageName)
+{
+    var assembly = typeof(GeneralPage).Assembly;
+    return assembly.GetType($"Microsoft.PowerToys.Settings.UI.Views.{PageName}");
+}
+
+NavigationService.Navigate(PageType, ElementName，ParentElementName);
 ```
 
-* Runs once per process.
-* Any locale switch requires a full app restart; no incremental rebuild.
-
-Visual-tree walk
+> Use ElementName and ParentElementName for in page navigation:
 ```csharp
-/// <summary>
-/// Scans <paramref name="root"/> for any FrameworkElement that
-///   • has a non-empty x:Uid
-///   • is either a SettingsGroup  (⇒ Section)
-///     or passes IsLeafSetting() (⇒ Leaf)
-/// and emits a SettingEntry into <paramref name="builder"/>.
-/// </summary>
-void CollectEntries(
-    FrameworkElement root,
-    string module,                              // e.g. "Mouse Without Borders"
-    string pageType,                            // fully-qualified type name
-    ImmutableArray<SettingEntry>.Builder builder)
-{
-    foreach (var fe in root.GetVisualDescendants().OfType<FrameworkElement>())
-    {
-        if (!HasUid(fe))
-            continue;                                   // want Uid-only
+Page.OnNavigateTo(ElementName， ParentElementName){
+    UIElement element = Reflection.GetType(Name);
+    UIElement parentElement = Reflection.GetType(ParentElementName);
 
-        EntryKind kind =
-            fe is SettingsGroup          ? EntryKind.Section :
-            IsLeafSetting(fe)            ? EntryKind.Leaf    :
-                                             (EntryKind)(-1); // ignore
+    if(parentElement) {
+        expander = (Expander)parentElement;
+        if(expander){
+            expander.Expand();
+        }
 
-        if (kind == (EntryKind)(-1))
-            continue;                                   // not a group, not a leaf
-
-        string value = GetLocalizedString(fe.Uid);      // Header→Value→Content→Text
-        if (string.IsNullOrWhiteSpace(value))
-            continue;                                   // nothing to show
-
-        builder.Add(new SettingEntry(
-            kind,
-            module,            // no section breadcrumb — exactly what you asked for
-            value,
-            pageType,
-            fe.Uid));
+        // https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.uielement.startbringintoview?view=winrt-26100        
+        element.StartBringIntoView();
     }
 }
-
-static bool HasUid(FrameworkElement fe) => !string.IsNullOrWhiteSpace(fe.Uid);
-
-static string GetLocalizedString(string uid) =>
-    Res.FirstNonEmpty(uid, "Header", "Value", "Content", "Text") ?? string.Empty;
-
-static bool IsLeafSetting(FrameworkElement fe) =>
-    fe is ToggleSwitch  or CheckBox   or ComboBox  or Slider
-    or Button           or TextBox    or NumberBox or PasswordBox
-    or ColorPicker      or HotkeyControl
-    || Settings.GetIsSearchable(fe);
-
 ```
 
-## 4 · Query algorithm
-Normalize the query string Entrys, e.g. MouseWithoutBorders Security Key
+## 3. Search
+When user start typing for an entry, e.g. shortcut or 快捷键(cn version of shortcut),
+we need to go through all the entries to see if an entry matches the search text.
 
-Iterate SearchIndex.Index; compute fuzzy subsequence score on normalized string.
+A naive approach will be try to match all the localized text one by one and see if they match.
+Total entry is within thousand(To fill in an exact number), performance is acceptable now.
+```csharp
+// Match
+query = UerInput();
+matched = {};
 
-Maintain a binary heap of the top N results (default 20).
+indexes = BuildIndex();
 
-Return list of SearchHit (Search Entry).
+foreach(var entry in indexes) {
+    if(entry.Match(query)) {
+        matched.Add(entry);
+    }
+}
+```
+
+And we don't intend to introduce complexity on the match algorithm discussion, so let's use powertoys FuzzMatch impl for now.
+```csharp
+MatchResult Match(this Entry entry, string query) {
+    return FuzzMatch(entry.DisplayedText, query);
+}
+
+struct MatchResult{
+    int Score;
+    bool Result;
+}
+```
 
 
+## 4. Index 
+So, the entry is good enough for search&navigation, now We need to build all the entries in our settings.
 
-## 5 · End-to-end flow when user selects a hit
+Most of the entry properties are static, and in runtime, the `SettingsCard` is compied into native winUI3 controls <small>(I suppose, please correct here if it's wrong)</small>, it's hard to locate all the `SettingsCard`, and performance is terrible if we do dfs for all the pages' elements.
+
+### Build time indexing
+We can rely on xmal file parsing to get all the SettingsCard Entries. 
+And we don't want xaml file to be brought into production bundle.
+Use a project for parsing and bring that index file into production bundle is a solution.
+```csproj
+  <Target Name="GenerateSearchIndex" BeforeTargets="BeforeBuild">
+    <PropertyGroup>
+      <BuilderExe>$(MSBuildProjectDirectory)\..\Settings.UI.XamlIndexBuilder\bin\$(Configuration)\net8.0\XamlIndexBuilder.exe</BuilderExe>
+      <XamlDir>$(MSBuildProjectDirectory)\Views</XamlDir>
+      <GeneratedJson>$(MSBuildProjectDirectory)\Services\searchable_elements.json</GeneratedJson>
+    </PropertyGroup>
+    <Exec Command="&quot;$(BuilderExe)&quot; &quot;$(XamlDir)&quot; &quot;$(GeneratedJson)&quot;" />
+  </Target>
+```
+```csharp
+for(xamlFile in xamlFiles){
+    var doc = Load(xamlFile);
+    var elements = doc.Descendants();
+
+    foreach(var element in elements){
+        if(element.Name == "SettingsCard") {
+            var entry = new Entry{
+                ElementName = element.Attribute["Name"],
+                PageName = FileName,
+                Type = "SettingsCard",
+                ElementUid = element.Attribute["Uid"],
+                DisplayedText = "",
+            }
+
+            var parent = element.GetParent();
+            if(parent.Name == "SettingsExpander"){
+                entry.ParentElementName = parent.Attribute["Name"];
+            }
+        }
+    }
+}
+```
+Runtime index loading:
+```
+var entries = LoadEntriesFromFile();
+foreach(var entry in entries){
+    entry.DisplayedText = ResourceLoader.GetString(entry.Uid);
+}
+```
+So now we have all the entries and entry properties.
+
+## Overrall flow:
+Runtime:
 ```mermaid
-sequenceDiagram
-    participant UI as SearchBox
-    participant Ctrl as SearchController
-    participant Frame
-    participant Page
-    participant FE as FrameworkElement (target)
-
-    UI->>Ctrl: User presses Enter on hit
-    Ctrl->>Frame: Navigate(PageType, hit.ElementUid)
-    Frame-->>Page: OnNavigatedTo(param = ElementUid)
-    Page->>Page: var fe = FindElementByUid(param)
-    Page->>FE: fe.StartBringIntoView()
-    Note over FE: pulse highlight 1s
+flowchart TD
+    A[User launches Settings (ShellPage)] --> B[Start building index in background (<1s)]
+    B --> C[User types into AutoSuggestBox]
+    C --> D[Search for matched settings items]
+    D --> E[Populate AutoSuggestBox with matches]
+    E --> F[User selects a suggestion]
+    F --> G[Navigate to target settings page]
+    G --> H[On PageLoaded: locate and scroll to item]
+    H --> I[Optionally apply visual highlight]
 ```
 
-## 5 · Unit tests
 
-## 6 · Performance targets [TBD]
+## 5. Tests
+
+
+
+## 6. Performance targets [TBD]
 | Metric        | Target                                        |
 | ------------- | --------------------------------------------- |
-| Build time    | ≤ 100 ms total for all modules on surface laptop 7th edition |
 | Memory        | ≤ 150 kB for 1 000 entries                    |
-| Query latency | ≤ 1 ms 95-pctl per keystroke (ARM64)          |
+| Query latency | ≤ 20 ms 95-pctl per keystroke                 |
 
 
 
 
-> appendix
-Why we build index in such a way
-
-## 1  Business requirement
-> **Goal:** Build (and later refresh) a `SettingEntry` index so users can **search** every heading and control in the Settings UI – in any language that the app supports at run-time.
-
-* Must work **in debug builds and in the shipped MSIX**.
-* Must honour the user’s **current language** (they can switch at run-time).
-* **No brittle path logic**; reflection is preferred.
-* **Minimal perf / size impact** on the production package.
-
----
-
-## 2  Constraints discovered
-
-| Fact                                                                                                        | Impact                                                                    |
-| ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| WinUI 3 strips `x:Uid` during XAML compilation → run-time `FrameworkElement` no longer exposes `Uid`.       | Reflection cannot read that value back unless we store it somewhere else. |
-| We still need the **same string** (`uid`) to build “`uid/Value`” resource keys.                             | Whatever property we store must carry *that* exact text.                  |
-| Localisation is **dynamic** – resources are loaded through `ResourceLoader` each time the index is rebuilt. | We **cannot** pre-compute a final text table at build time.               |
-
----
-
-## 3  Design options evaluated
-
-| Option                                                      | Keeps uid at run-time? | Repo / package impact                                     | Notes                                                                        |
-| ----------------------------------------------------------- | ---------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| **A. Ship raw *.xaml***<br>`Content CopyToOutputDirectory`  | ✔︎                     | Package grows (loose XAML); still need directory probing. | Works but messy; performance fine (one-off disk read) yet feels like a hack. |
-| **B. Source-generator** produces a static `SettingEntry[]`. | ✘ (text frozen)        | No package impact, fastest start-up.                      | **Rejected** – localisation is dynamic, so we cannot hard-code captions.     |
-| **C-1. Add a *custom* attached DP** (`local:RuntimeUid`)    | ✔︎                     | One new helper class; XAML bulk-edit.                     | Clean, but new xmlns & property everywhere.                                  |
-| **C-2. Re-use an *existing* property that survives**        | ✔︎                     | Only XAML edit, no new API surface.                       | Candidate props: **AutomationId**, Name, Tag, x\:NameScope etc.              |
-
----
-
-## 4  Why **AutomationId** beats **Name**
-
-| Criterion                                                             | `AutomationProperties.AutomationId`                | `FrameworkElement.Name`                                                                                                      |
-| --------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| **Guaranteed to exist at run-time** on every FrameworkElement         | ✅ DependencyProperty, always available             | ✅ DependencyProperty                                                                                                         |
-| **Already intended for “unique identifier for automation / testing”** | ✅ (official guidance)                              | ⚠️ Primary purpose is XAML namescope + code-behind field binding                                                             |
-| **Does not collide** with XAML designer-generated fields              | ✅ No code-behind field is created                  | ⚠️ `x:Name` generates a backing field – adding hundreds of names bloats generated code and can trigger duplicate-name errors |
-| **Rarely used elsewhere in PowerToys Settings** (low conflict risk)   | ✅ (nearly all controls have no AutomationId today) | ❌ many controls already have `Name` for layout, tests or bindings                                                            |
-| **Semantics match `uid`** (“language-independent logical id”)         | ✅ Exactly                                          | ⚠️ Often treated as developer-only label; maintainers might rename casually                                                  |
-| **Accessible-tech / UI-Automation benefits**                          | ✅ Adds clarity for Narrator & UI tests             | Neutral                                                                                                                      |
-| **One-line XAML edit (regex) without new xmlns**                      | ✅ `AutomationProperties.AutomationId="Foo"`        | ✅/⚠️ but risk of name collisions                                                                                             |
-
-**Conclusion:** `AutomationId` is the safest, least intrusive place to mirror `x:Uid`.
-
----
-
-## 5  Implementation plan
-
-### 5.1  Bulk-apply the mirror attribute
-
-*Regex* (run once across `SettingsXAML\Views`):
-
-| find              | replace                                             |
-| ----------------- | --------------------------------------------------- |
-| `x:Uid="([^"]+)"` | `x:Uid="$1" AutomationProperties.AutomationId="$1"` |
-
-(Review existing controls that already set AutomationId to avoid double definitions.)
-
-### 5.2  Update the reflection indexer
-
-```csharp
-using Microsoft.UI.Xaml.Automation;
-
-// …
-
-private static bool TryGetUid(FrameworkElement fe, out string uid)
-{
-    uid = AutomationProperties.GetAutomationId(fe);
-    return !string.IsNullOrWhiteSpace(uid);
-}
-
-// Everywhere the old code expected fe.Uid:
-if (TryGetUid(node, out var uid))
-{
-    // use uid exactly as before (resourceLoader $"{uid}/Value")
-}
-```
-
-> No other logic changes – section/leaf detection, caption lookup, module-name switch all stay exactly the same.
-
-### 5.3  Reload index on language change
-
-If the app offers an in-app “Choose language” menu, call:
-
-```csharp
-SettingEntryIndex = SettingsIndexer.BuildIndex();
-SearchViewModel.Refresh(SettingEntryIndex);
-```
-
-whenever the `ResourceContext` language list changes, to display captions in the new locale.
-
----
-
-## 6  Outcome
-
-* **Reflection-based index**: works in debug and packaged builds, no file-system probing.
-* **Package footprint**: unchanged (no extra XAML or code-gen fields).
-* **Accessibility**: gains well-structured AutomationIds “for free”.
-* **Maintenance**: uid-to-text resource link remains intact; developers can still rely on Name for their own code-behind without collision risk.
-
-This satisfies all functional, localisation, and engineering constraints with the smallest long-term maintenance cost.
+## 7.  Design options evaluated
