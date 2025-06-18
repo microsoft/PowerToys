@@ -141,6 +141,7 @@ FancyZones is divided into several projects:
   - Options for child windows or pop-up windows
   - Some options were removed later
   - Community feedback led to more interactions being implemented
+
 ## Admin Mode Considerations
 
 - FancyZones can't move admin windows unless running as admin
@@ -162,9 +163,24 @@ FancyZones is divided into several projects:
 3. Select the Release configuration and build the solution
 4. If you encounter build errors, try deleting the x64 output folder and rebuild
 
+## Getting Started with FancyZones Development
+
+### Step 1: Familiarize with the Feature
+- Use the feature to understand its functionality
+- Read the official documentation: [PowerToys FancyZones utility for Windows](https://learn.microsoft.com/en-us/windows/powertoys/fancyzones)
+
+### Step 2: Build and Debug
+- Ensure you can successfully compile and debug the module
+- First-time setup may require running the Editor through PowerToys Settings UI to initialize configuration files
+
+### Step 3: Learn through Bug Fixes
+- Examine existing bugs and feature requests to understand code structure
+- Use debugging to trace code execution for specific features
+- Examine UI test code to understand how features are tested
+
 ## Debugging
 
-### Before Successfully Building the Project
+### Setup for Debugging
 1. In Visual Studio 2022, set FancyZonesEditor as the startup project
 2. Set breakpoints in the code where needed
 3. Click Run to start debugging
@@ -172,6 +188,10 @@ FancyZones is divided into several projects:
 ### During Active Development
 - You can perform breakpoint debugging to troubleshoot issues
 - Attach to running processes if needed to debug the module in context
+
+### Common Debugging Issues
+- If encountering JSON errors on first run, launch the FancyZones Editor once through PowerToys Settings UI to initialize required configuration files
+- For UI-related issues, use tools like AccessibilityInsights to inspect element properties
 
 ## Deployment and Release Process
 
@@ -297,33 +317,13 @@ All test cases require pre-configured user data and must reset this data before 
 - Focuses on hotkey-related functionality
 - Tests actual hotkey behavior implementation
 
-## Rump up step
+### UI Testing Tools
 
-### Step One:
+While working on tests, you may need tools to view element accessibility data:
+- [AccessibilityInsights](https://accessibilityinsights.io/docs/windows/overview)
+- [WinAppDriver UI Recorder](https://github.com/microsoft/WinAppDriver/wiki/WinAppDriver-UI-Recorder)
 
-For FancyZones, Always On Top, and Drop And Lock, it's necessary to use each feature to become familiar with its functionality.
-
-Link：[PowerToys FancyZones utility for Windows | Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/fancyzones)
-
-[PowerToys Always On Top utility for Windows | Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/always-on-top)
-
-[PowerToys Crop And Lock for Windows | Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/crop-and-lock)
-
-### Step Two：
-
-Ensure that the module can be successfully compiled and debugged.
-
-### Step Three：
-
-Get to know the code by working with feature requirements and debugging issues.
-
-#### Example:
-
-[FancyZone layout editor not covering full screen · Issue #34454 · microsoft/PowerToys](https://github.com/microsoft/PowerToys/issues/34454)
-
-The bug describes that FancyZones does not adapt to the user's monitor width. However, I currently do not have a screen that wide, so I cannot reproduce the bug. Based on the available information, here are several possible inferences:
-
-1. Editor display error
+>Note: Close helper tools while running tests. Overlapping windows can affect test results.
 2. FancyZones might have implemented certain screen resolution limits in the code that do not support such wide screens
 3. User error — it can be seen that no layout has been applied to the screen, so it's normal that the far right is not displayed, as the user hasn't used the FancyZones feature
 4. From the image, it appears the user is trying to maximize a game window, but some games may not support rendering windows at such high resolutions due to internal implementation
@@ -335,8 +335,11 @@ To demonstrate a debugging example, I will assume it's a code issue, specificall
   
 
 Let's first locate the corresponding code. Since the error is in the Editor, we'll start by checking the FancyZonesEditor shown in the image.
+
 ![Debug Step Image](../images/fancyzones/1.png)
-However, I currently don't know where the code for this specific UI element in the Editor is located.![Debug Step Image](../images/fancyzones/2.png)
+
+However, I currently don't know where the code for this specific UI element in the Editor is located.
+![Debug Step Image](../images/fancyzones/2.png)
 
 We now have two approaches to find the exact code location.
 
@@ -410,19 +413,21 @@ By searching, we found that the `editor-parameters.json` file has write function
 
 Familiarize yourself with the module code through the current tasks at hand.
 
-Bug：[Issues · microsoft/PowerToys](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue state%3Aopen type%3ABug label%3AProduct-FancyZones)
+Bug：[Issues · microsoftPowerToys](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue%20state%3Aopen%20type%3ABug%20label%3AProduct-FancyZones)
 
-PR review：no PR
+UITest Code：
 
-UITest Code：[Task 57329836: [PowerToys\] [UI Test] FancyZone UI Test Override Windows Snap-1 - Boards](https://microsoft.visualstudio.com/OS/_workitems/edit/57329836/)
+[Task 57329836: PowerToys UI Test FancyZone UI Test Override Windows Snap-1 - Boards](https://microsoft.visualstudio.com/OS/_workitems/edit/57329836/)
 
-[Task 57329843: [PowerToys\] [UI Test] FancyZone UI Test Override Windows Snap-2 - Boards](https://microsoft.visualstudio.com/OS/_workitems/edit/57329843/)
+[Task 57329843: PowerToys UI Test FancyZone UI Test Override Windows Snap-2 - Boards](https://microsoft.visualstudio.com/OS/_workitems/edit/57329843/)
 
-[Task 57329845: [PowerToys\] [UI Test] FancyZone UI Test Override Windows Snap-3 - Boards](https://microsoft.visualstudio.com/OS/_workitems/edit/57329845/)
+[Task 57329845: PowerToys UI Test FancyZone UI Test Override Windows Snap-3 - Boards](https://microsoft.visualstudio.com/OS/_workitems/edit/57329845/)
 
-[Task 56940387: [PowerToys\] [UI Test] FancyZone UI Test Override Windows Snap-4 - Boards](https://microsoft.visualstudio.com/OS/_workitems/edit/56940387/)
+[Task 56940387: PowerToys UI Test FancyZone UI Test Override Windows Snap-4 - Boards](https://microsoft.visualstudio.com/OS/_workitems/edit/56940387/)
 
-UI Test Check List:[PowerToys/doc/releases/tests-checklist-template.md at releaseChecklist · microsoft/PowerToys](https://github.com/microsoft/PowerToys/blob/releaseChecklist/doc/releases/tests-checklist-template.md)
+UI Test Check List:
+
+PowerToys/doc/releases/tests-checklist-template.md at releaseChecklist · microsoft/PowerToys](https://github.com/microsoft/PowerToys/blob/releaseChecklist/doc/releases/tests-checklist-template.md)
 
 
 
@@ -439,16 +444,19 @@ If you encounter this situation, you need to launch the FancyZones Editor once i
 
 There is no central configuration handler. 
 
-Editor read/write config data handler is in FancyZonesEditorCommon project. 
+Editor read/write config data handler is in FancyZonesEditorCommon project.
+
 ![Debug Step Image](../images/fancyzones/18.png)
 
 FancyZones cpp project read/write config data handler is in FancyZonesLib project.
+
 ![Debug Step Image](../images/fancyzones/19.png)
 However, the files write and read those are C:\Users\“xxxxxx”\AppData\Local\Microsoft\PowerToys\FancyZones
 
 You can think of the editor as a visual config editor, which is most of its functionality. Another feature is used to set the layout for the monitor displays.
 
 When the Editor starts, it will load the config data, and when FancyZones starts, it will also load the config data. After the Editor updates the config data, it will send a data update event, and FancyZones will refresh the current data in memory upon receiving the event.
+
 ![Debug Step Image](../images/fancyzones/20.png)
 
 - ### Which parts of the code are responsible for monitor detection and DPI scaling?
