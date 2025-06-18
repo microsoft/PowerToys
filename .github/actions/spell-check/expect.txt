@@ -998,6 +998,7 @@ MYICON
 NAMECHANGE
 namespaceanddescendants
 nao
+NavigatablePage
 NCACTIVATE
 ncc
 NCCALCSIZE
