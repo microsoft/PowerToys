@@ -446,8 +446,11 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings)
         m_rightPointerEnabled = false;
     }
 
-    instance->StopDrawing();
-    instance->StartDrawing();
+    if (instance->m_visible)
+    {
+        instance->StopDrawing();
+        instance->StartDrawing();
+    }
 }
 
 void Highlighter::BringToFront()
