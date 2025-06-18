@@ -104,12 +104,12 @@
     <PackageVersion Include="WinUIEx" Version="2.2.0" />
     <PackageVersion Include="WPF-UI" Version="3.0.5" />
     <PackageVersion Include="WyHash" Version="1.0.5" />
-    <PackageVersion Include="WixToolset.Heat" Version="5.0.2" />
-    <PackageVersion Include="WixToolset.Firewall.wixext" Version="5.0.2" />
-    <PackageVersion Include="WixToolset.Util.wixext" Version="5.0.2" />
-    <PackageVersion Include="WixToolset.UI.wixext" Version="5.0.2" />
-    <PackageVersion Include="WixToolset.NetFx.wixext" Version="5.0.2" />
-    <PackageVersion Include="WixToolset.Bal.wixext" Version="5.0.2" />
+    <PackageVersion Include="WixToolset.Heat" Version="6.0.1" />
+    <PackageVersion Include="WixToolset.Firewall.wixext" Version="6.0.1" />
+    <PackageVersion Include="WixToolset.Util.wixext" Version="6.0.1" />
+    <PackageVersion Include="WixToolset.UI.wixext" Version="6.0.1" />
+    <PackageVersion Include="WixToolset.NetFx.wixext" Version="6.0.1" />
+    <PackageVersion Include="WixToolset.Bal.wixext" Version="6.0.1" />
   </ItemGroup>
   <ItemGroup Condition="'$(IsExperimentationLive)'!=''">
     <!-- Additional dependencies used by experimentation -->
