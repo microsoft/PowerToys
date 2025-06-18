@@ -99,7 +99,7 @@ namespace Peek.FilePreviewer.Previewers
                                 // Storing the factory in memory helps makes the handlers load faster
                                 factory = (IClassFactory)Marshal.GetObjectForIUnknown((IntPtr)pFactory);
                                 factory.LockServer(true);
-                                _ = HandlerFactories.TryAdd(clsid, factory);
+                                HandlerFactories.AddOrUpdate(clsid, factory, (_, _) => factory);
                             }
 
                             try
