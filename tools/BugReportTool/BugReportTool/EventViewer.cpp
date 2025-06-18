@@ -40,6 +40,7 @@ namespace
             L"  </Query>" \
             L"</QueryList>";
 
+
         std::wstring GetQuery(std::wstring processName)
         {
             wchar_t buff[1000];
@@ -58,6 +59,19 @@ namespace
 
         std::wofstream report;
         EVT_HANDLE hResults;
+        bool isChannel;
+
+        bool ShouldIncludeEvent(const std::wstring& eventXml)
+        {
+            if (!isChannel)
+            {
+                return true;  // Include all events if no filtering
+            }
+
+            // Check if the event contains PowerToys or CommandPalette
+            return (eventXml.find(L"PowerToys") != std::wstring::npos ||
+                eventXml.find(L"CommandPalette") != std::wstring::npos);
+        }
 
         void PrintEvent(EVT_HANDLE hEvent)
         {
@@ -89,6 +103,17 @@ namespace
                     }
                     return;
                 }
+            }
+
+            // Apply filtering if needed
+            std::wstring eventContent(pRenderedContent);
+            if (!ShouldIncludeEvent(eventContent))
+            {
+                if (pRenderedContent)
+                {
+                    free(pRenderedContent);
+                }
+                return; // Skip this event
             }
 
             XmlDocumentEx doc;
@@ -147,6 +172,7 @@ namespace
 
     public:
         EventViewerReporter(const std::filesystem::path& tmpDir, std::wstring queryName, std::wstring fileName, bool isChannel)
+            :isChannel(isChannel)
         {
             std::wstring query = L"";
             if (isChannel)
