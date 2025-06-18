@@ -107,6 +107,7 @@ namespace WorkspacesEditor.Utils
                         CommandLineArguments = app.CommandLineArguments,
                         IsElevated = app.IsElevated,
                         CanLaunchElevated = app.CanLaunchElevated,
+                        Version = app.Version,
                         Maximized = app.Maximized,
                         Minimized = app.Minimized,
                         Position = new ProjectData.ApplicationWrapper.WindowPositionWrapper

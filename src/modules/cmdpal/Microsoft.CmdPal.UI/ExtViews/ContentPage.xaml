@@ -12,7 +12,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:toolkit="using:CommunityToolkit.Labs.WinUI.MarkdownTextBlock"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
     xmlns:markdownTextBlockRns="using:CommunityToolkit.WinUI.Controls.MarkdownTextBlockRns"
     Background="Transparent"
@@ -20,12 +20,6 @@
 
     <Page.Resources>
         <ResourceDictionary>
-            <markdownTextBlockRns:MarkdownThemes
-                x:Key="DefaultMarkdownThemeConfig"
-                H3FontSize="12"
-                H3FontWeight="Normal" />
-            <toolkit:MarkdownConfig x:Key="DefaultMarkdownConfig" Themes="{StaticResource DefaultMarkdownThemeConfig}" />
-
             <StackLayout
                 x:Name="VerticalStackLayout"
                 Orientation="Vertical"
@@ -52,7 +46,10 @@
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
                     <toolkit:MarkdownTextBlock
                         Background="Transparent"
-                        Config="{StaticResource DefaultMarkdownConfig}"
+                        Header3FontSize="12"
+                        Header3FontWeight="Normal"
+                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsTextSelectionEnabled="True"
                         Text="{x:Bind Body, Mode=OneWay}" />
                 </Grid>
             </DataTemplate>
@@ -66,7 +63,10 @@
                 <Grid>
                     <toolkit:MarkdownTextBlock
                         Background="Transparent"
-                        Config="{StaticResource DefaultMarkdownConfig}"
+                        Header3FontSize="12"
+                        Header3FontWeight="Normal"
+                        Header3Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsTextSelectionEnabled="True"
                         Text="{x:Bind Body, Mode=OneWay}" />
                 </Grid>
             </DataTemplate>
