@@ -32,16 +32,16 @@ namespace ShortcutGuide
                 return;
             }
 
-            if (!Directory.Exists(ManifestInterpreter.GetPathOfIntepretations()))
+            if (!Directory.Exists(ManifestInterpreter.GetPathOfInterpretations()))
             {
-                Directory.CreateDirectory(ManifestInterpreter.GetPathOfIntepretations());
+                Directory.CreateDirectory(ManifestInterpreter.GetPathOfInterpretations());
             }
 
             // Todo: Only copy files after an update.
             // Todo: Handle error
             foreach (var file in InbuiltManifestFiles)
             {
-                File.Copy(Path.GetDirectoryName(Environment.ProcessPath) + "\\Assets\\ShortcutGuide\\" + file, ManifestInterpreter.GetPathOfIntepretations() + "\\" + file, true);
+                File.Copy(Path.GetDirectoryName(Environment.ProcessPath) + "\\Assets\\ShortcutGuide\\" + file, ManifestInterpreter.GetPathOfInterpretations() + "\\" + file, true);
             }
 
             Process.Start(Path.GetDirectoryName(Environment.ProcessPath) + "\\PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
@@ -68,8 +68,6 @@ namespace ShortcutGuide
 
             // Something prevents the process from exiting, so we need to kill it manually.
             Process.GetCurrentProcess().Kill();
-
-            return;
         }
     }
 }

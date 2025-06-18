@@ -5,7 +5,7 @@
 namespace ShortcutGuide.Helpers
 {
     // This class is rewritten from C++ to C# from the measure tool project
-    internal static partial class DpiHelper
+    internal static class DpiHelper
     {
 #pragma warning disable SA1310 // Field names should not contain underscore
         private const int DEFAULT_DPI = 96;

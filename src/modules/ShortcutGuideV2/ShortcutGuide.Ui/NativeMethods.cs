@@ -6,13 +6,10 @@ using System;
 using System.Runtime.InteropServices;
 using Windows.Graphics;
 
+namespace ShortcutGuide;
+
 internal static partial class NativeMethods
 {
-    internal static readonly IntPtr HWND_TOPMOST = new(-1);
-    internal const uint SWP_NOSIZE = 0x0001;
-    internal const uint SWP_NOMOVE = 0x0002;
-    internal const uint SWP_NOACTIVATE = 0x0010;
-    internal const uint SWP_SHOWWINDOW = 0x0040;
     internal const int GWL_STYLE = -16;
     internal const int WS_CAPTION = 0x00C00000;
 
@@ -28,9 +25,6 @@ internal static partial class NativeMethods
 
     [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
     internal static partial IntPtr FindWindowA(in string lpClassName, in string? lpWindowName);
-
-    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
-    internal static partial IntPtr FindWindowExA(IntPtr hwndParent, IntPtr hwndChildAfter, string lpszClass, string lpszWindow);
 
     [LibraryImport("User32.dll")]
     internal static partial IntPtr MonitorFromWindow(IntPtr hwnd, int dwFlags);

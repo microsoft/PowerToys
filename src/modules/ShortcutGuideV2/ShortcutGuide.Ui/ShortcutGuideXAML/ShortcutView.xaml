@@ -44,7 +44,7 @@
         <TextBlock x:Name="ErrorMessage" Style="{StaticResource SubheaderTextBlockStyle}" Grid.Row="1" Margin="6,0,6,0"></TextBlock>
         <ScrollViewer Grid.Row="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
             <Grid>
-                <StackPanel Height="{Binding ContentHeight}" Orientation="Horizontal" Grid.Row="1" x:Name="OverviewStackPanel">
+                <StackPanel Height="{Binding ContentHeight}" Orientation="Horizontal" x:Name="OverviewStackPanel">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -54,7 +54,7 @@
                         <GridView Grid.Row="1" SelectionMode="None" x:Name="PinnedListElement" ItemTemplate="{StaticResource ShortcutTemplate}">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Vertical"/>
+                                    <ItemsWrapGrid Orientation="Vertical"/>
                                 </ItemsPanelTemplate>
                             </GridView.ItemsPanel>
                         </GridView>
@@ -64,16 +64,16 @@
                         <GridView SelectionMode="None" x:Name="RecommendedListElement" ItemTemplate="{StaticResource ShortcutTemplate}">
                             <GridView.ItemsPanel>
                                 <ItemsPanelTemplate>
-                                    <ItemsWrapGrid x:Name="MaxItemsWrapGrid" Orientation="Vertical"/>
+                                    <ItemsWrapGrid Orientation="Vertical"/>
                                 </ItemsPanelTemplate>
                             </GridView.ItemsPanel>
                         </GridView>
                     </StackPanel>
                 </StackPanel>
-                <GridView HorizontalContentAlignment="Left" HorizontalAlignment="Left" Height="{Binding ContentHeight}" SelectionMode="None" x:Name="ShortcutListElement" Grid.Row="1" ItemTemplate="{StaticResource ShortcutTemplate}">
+                <GridView HorizontalContentAlignment="Left" HorizontalAlignment="Left" Height="{Binding ContentHeight}" SelectionMode="None" x:Name="ShortcutListElement" ItemTemplate="{StaticResource ShortcutTemplate}">
                     <GridView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <ItemsWrapGrid HorizontalAlignment="Left" x:Name="MaxItemsWrapGrid" Orientation="Vertical"/>
+                            <ItemsWrapGrid HorizontalAlignment="Left" Orientation="Vertical"/>
                         </ItemsPanelTemplate>
                     </GridView.ItemsPanel>
                 </GridView>

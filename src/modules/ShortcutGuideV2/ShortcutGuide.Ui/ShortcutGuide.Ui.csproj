@@ -101,19 +101,6 @@
     <ProjectReference Include="..\ShortcutGuide.CPPProject\ShortcutGuide.CPPProject.vcxproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="Properties\Resource.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resource.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resource.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <Page Update="ShortcutGuideXAML\ShortcutView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
