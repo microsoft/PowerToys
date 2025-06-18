@@ -12,6 +12,7 @@ This section contains documentation for individual PowerToys modules, including 
 | NewPlus | Context menu extension for creating new files in File Explorer | [Architecture & Implementation](newplus.md) |
 | Quick Accent | Tool for quickly inserting accented characters and special symbols | [Architecture & Implementation](quickaccent.md) |
 | Registry Preview | Tool for visualizing and editing Registry files | [Architecture & Implementation](registrypreview.md) |
+| Screen Ruler | Tool for measuring pixel distances and color boundaries on screen | [Architecture & Implementation](screenruler.md) |
 | ZoomIt | Screen zoom and annotation tool | [Architecture & Implementation](zoomit.md) |
 
 ## Adding New Module Documentation

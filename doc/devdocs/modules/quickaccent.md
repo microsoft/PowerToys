@@ -1,5 +1,10 @@
 # Quick Accent
 
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=state%3Aopen%20label%3A%22Product-Quick%20Accent%22)
+[PRs](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+label%3A%22Product-Quick+Accent%22+)
+
 ## Overview
 
 Quick Accent (formerly known as Power Accent) is a PowerToys module that allows users to quickly insert accented characters by holding a key and pressing an activation key (like the Space key or arrow keys). For example, holding 'a' might display options like 'à', 'á', 'â', etc. This tool enhances productivity by streamlining the input of special characters without the need to memorize keyboard shortcuts.
