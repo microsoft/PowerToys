@@ -1,32 +1,26 @@
 ﻿<local:NavigatablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.HostsPage"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="Hosts"
- AutomationProperties.AutomationId="Hosts" ModuleImageSource="ms-appx:///Assets/Settings/Modules/HostsFileEditor.png">
+    <controls:SettingsPageControl x:Uid="Hosts" ModuleImageSource="ms-appx:///Assets/Settings/Modules/HostsFileEditor.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="Hosts_EnableToggleControl_HeaderText"
-
-                    AutomationProperties.AutomationId="Hosts_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch"
- AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
-
-                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -35,55 +29,38 @@
                         <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                     </InfoBar.IconSource>
                 </InfoBar>
-                <controls:SettingsGroup x:Uid="Hosts_Activation_GroupSettings"
- AutomationProperties.AutomationId="Hosts_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <controls:SettingsGroup x:Uid="Hosts_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="Hosts_LaunchButtonControl"
-
-                        AutomationProperties.AutomationId="Hosts_LaunchButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
                     <tkcontrols:SettingsCard
                         x:Uid="Hosts_Toggle_LaunchAdministrator"
-
-                        AutomationProperties.AutomationId="Hosts_Toggle_LaunchAdministrator"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7EF;}"
                         IsEnabled="{x:Bind ViewModel.LaunchAdministratorEnabled, Mode=OneWay}">
-                        <ToggleSwitch x:Uid="ToggleSwitch"
- AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.LaunchAdministrator, Mode=TwoWay}" />
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.LaunchAdministrator, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_ShowStartupWarning"
- AutomationProperties.AutomationId="Hosts_Toggle_ShowStartupWarning" HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch"
- AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowStartupWarning, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_ShowStartupWarning" HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowStartupWarning, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="Hosts_Behavior_GroupSettings"
- AutomationProperties.AutomationId="Hosts_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="Hosts_AdditionalLinesPosition"
- AutomationProperties.AutomationId="Hosts_AdditionalLinesPosition" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
+                <controls:SettingsGroup x:Uid="Hosts_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="Hosts_AdditionalLinesPosition" HeaderIcon="{ui:FontIcon Glyph=&#xE8A5;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.AdditionalLinesPosition, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Top"
- AutomationProperties.AutomationId="Hosts_AdditionalLinesPosition_Top" />
-                            <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Bottom"
- AutomationProperties.AutomationId="Hosts_AdditionalLinesPosition_Bottom" />
+                            <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Top" />
+                            <ComboBoxItem x:Uid="Hosts_AdditionalLinesPosition_Bottom" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_LoopbackDuplicates"
- AutomationProperties.AutomationId="Hosts_Toggle_LoopbackDuplicates" HeaderIcon="{ui:FontIcon Glyph=&#xEC27;}">
-                        <ToggleSwitch x:Uid="ToggleSwitch"
- AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.LoopbackDuplicates, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard x:Uid="Hosts_Toggle_LoopbackDuplicates" HeaderIcon="{ui:FontIcon Glyph=&#xEC27;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.LoopbackDuplicates, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="Hosts_Encoding"
- AutomationProperties.AutomationId="Hosts_Encoding">
+                    <tkcontrols:SettingsCard x:Uid="Hosts_Encoding">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.Encoding, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Hosts_Encoding_Utf8"
- AutomationProperties.AutomationId="Hosts_Encoding_Utf8" />
-                            <ComboBoxItem x:Uid="Hosts_Encoding_Utf8Bom"
- AutomationProperties.AutomationId="Hosts_Encoding_Utf8Bom" />
+                            <ComboBoxItem x:Uid="Hosts_Encoding_Utf8" />
+                            <ComboBoxItem x:Uid="Hosts_Encoding_Utf8Bom" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
@@ -91,8 +68,7 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_Hosts"
- AutomationProperties.AutomationId="LearnMore_Hosts" Link="https://aka.ms/PowerToysOverview_HostsFileEditor" />
+            <controls:PageLink x:Uid="LearnMore_Hosts" Link="https://aka.ms/PowerToysOverview_HostsFileEditor" />
         </controls:SettingsPageControl.PrimaryLinks>
     </controls:SettingsPageControl>
 </local:NavigatablePage>

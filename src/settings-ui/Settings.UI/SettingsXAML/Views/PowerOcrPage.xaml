@@ -1,18 +1,17 @@
 ﻿<local:NavigatablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerOcrPage"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
 
-    <controls:SettingsPageControl x:Uid="TextExtractor"
- AutomationProperties.AutomationId="TextExtractor" ModuleImageSource="ms-appx:///Assets/Settings/Modules/TextExtractor.png">
+    <controls:SettingsPageControl x:Uid="TextExtractor" ModuleImageSource="ms-appx:///Assets/Settings/Modules/TextExtractor.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel
                 ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
@@ -20,8 +19,6 @@
                 Spacing="2">
                 <InfoBar
                     x:Uid="TextExtractor_UseSnippingToolWarning"
-
-                    AutomationProperties.AutomationId="TextExtractor_UseSnippingToolWarning"
                     Margin="{x:Bind ViewModel.SnippingToolInfoBarMargin, Mode=OneWay}"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsWin11OrGreater, Mode=OneWay}"
@@ -29,17 +26,12 @@
                     Severity="Informational" />
                 <tkcontrols:SettingsCard
                     x:Uid="TextExtractor_EnableToggleControl_HeaderText"
-
-                    AutomationProperties.AutomationId="TextExtractor_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/TextExtractor.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch"
- AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
-
-                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -50,26 +42,20 @@
                 </InfoBar>
                 <InfoBar
                     x:Uid="TextExtractor_SupportedLanguages"
-
-                    AutomationProperties.AutomationId="TextExtractor_SupportedLanguages"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                     Severity="Informational">
                     <InfoBar.ActionButton>
-                        <HyperlinkButton x:Uid="TextExtractor_SupportedLanguages_Link"
- AutomationProperties.AutomationId="TextExtractor_SupportedLanguages_Link" NavigateUri="https://aka.ms/PowerToysOverview_TextExtractor#supported-languages" />
+                        <HyperlinkButton x:Uid="TextExtractor_SupportedLanguages_Link" NavigateUri="https://aka.ms/PowerToysOverview_TextExtractor#supported-languages" />
                     </InfoBar.ActionButton>
                 </InfoBar>
 
-                <controls:SettingsGroup x:Uid="Shortcut"
- AutomationProperties.AutomationId="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="Activation_Shortcut"
- AutomationProperties.AutomationId="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="TextExtractor_Languages"
- AutomationProperties.AutomationId="TextExtractor_Languages">
+                    <tkcontrols:SettingsCard x:Uid="TextExtractor_Languages">
                         <ComboBox
                             x:Name="TextExtractor_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -83,8 +69,7 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_TextExtractor"
- AutomationProperties.AutomationId="LearnMore_TextExtractor" Link="https://aka.ms/PowerToysOverview_TextExtractor" />
+            <controls:PageLink x:Uid="LearnMore_TextExtractor" Link="https://aka.ms/PowerToysOverview_TextExtractor" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink Link="https://github.com/TheJoeFin/Text-Grab" Text="Based upon Joseph Finney's Text Grab" />

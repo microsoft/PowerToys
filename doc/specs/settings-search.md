@@ -25,11 +25,12 @@ All strings are taken from the **localized** RESW resources.
 ```csharp
 internal readonly struct SettingEntry
 {
-    public readonly EntryKind Kind;           // Section | Leaf
+    public readonly EntryKind Kind;           // SettingsCard | SettingsExpandar
     public readonly string    Module;         // e.g. "Mouse Without Borders, General"
-    public readonly string    Value;          // Displayed text
+    public readonly string    DisplayedText;          // Displayed text
     public readonly string    PageTypeName;   // page for navigate to
     public readonly string    ElementUid;     // FrameworkElement to navigate to
+    public readonly string    Name;           // Used to reflection and navigate to
 }
 ```
 

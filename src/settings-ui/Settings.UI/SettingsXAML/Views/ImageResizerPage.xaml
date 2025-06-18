@@ -1,11 +1,11 @@
 ﻿<local:NavigatablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ImageResizerPage"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Microsoft.PowerToys.Settings.UI.Library"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
@@ -28,24 +28,18 @@
             FalseValue="1"
             TrueValue="0" />
     </local:NavigatablePage.Resources>
-    <controls:SettingsPageControl x:Uid="ImageResizer"
- AutomationProperties.AutomationId="ImageResizer" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ImageResizer.png">
+    <controls:SettingsPageControl x:Uid="ImageResizer" ModuleImageSource="ms-appx:///Assets/Settings/Modules/ImageResizer.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
                 <tkcontrols:SettingsCard
                     x:Uid="ImageResizer_EnableToggle"
-
-                    AutomationProperties.AutomationId="ImageResizer_EnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ImageResizer.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                    <ToggleSwitch x:Uid="ToggleSwitch"
- AutomationProperties.AutomationId="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
 
                 <InfoBar
                     x:Uid="GPO_SettingIsManaged"
-
-                    AutomationProperties.AutomationId="GPO_SettingIsManaged"
                     IsClosable="False"
                     IsOpen="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
                     IsTabStop="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}"
@@ -55,22 +49,16 @@
                     </InfoBar.IconSource>
                 </InfoBar>
 
-                <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes"
- AutomationProperties.AutomationId="ImageResizer_CustomSizes" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_Presets"
- AutomationProperties.AutomationId="ImageResizer_Presets" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
+                <controls:SettingsGroup x:Uid="ImageResizer_CustomSizes" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_Presets" HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
                         <Button
                             x:Uid="ImageResizer_AddSizeButton"
-
-                            AutomationProperties.AutomationId="ImageResizer_AddSizeButton"
                             Click="AddSizeButton_Click"
                             Style="{ThemeResource AccentButtonStyle}" />
                     </tkcontrols:SettingsCard>
                     <ListView
                         x:Name="ImagesSizesListView"
                         x:Uid="ImagesSizesListView"
-
-                        AutomationProperties.AutomationId="ImagesSizesListView"
                         ContainerContentChanging="ImagesSizesListView_ContainerContentChanging"
                         ItemsSource="{x:Bind ViewModel.Sizes, Mode=TwoWay}"
                         SelectionMode="None">
@@ -122,8 +110,6 @@
                                         Spacing="8">
                                         <Button
                                             x:Uid="ImageResizer_EditButton"
-
-                                            AutomationProperties.AutomationId="ImageResizer_EditButton"
                                             Width="40"
                                             Height="36"
                                             AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Edit'}"
@@ -132,41 +118,30 @@
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                             Style="{StaticResource SubtleButtonStyle}">
                                             <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="EditTooltip"
- AutomationProperties.AutomationId="EditTooltip" />
+                                                <TextBlock x:Uid="EditTooltip" />
                                             </ToolTipService.ToolTip>
                                             <Button.Flyout>
-                                                <Flyout x:Uid="ImageResizer_EditSize"
- AutomationProperties.AutomationId="ImageResizer_EditSize" ShouldConstrainToRootBounds="False">
+                                                <Flyout x:Uid="ImageResizer_EditSize" ShouldConstrainToRootBounds="False">
                                                     <StackPanel Spacing="16">
                                                         <TextBox
                                                             x:Uid="ImageResizer_Name"
-
-                                                            AutomationProperties.AutomationId="ImageResizer_Name"
                                                             Width="240"
                                                             HorizontalAlignment="Left"
                                                             Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
                                                         <ComboBox
                                                             x:Uid="ImageResizer_Fit"
-
-                                                            AutomationProperties.AutomationId="ImageResizer_Fit"
                                                             Width="240"
                                                             HorizontalAlignment="Left"
                                                             SelectedIndex="{x:Bind Fit, Mode=TwoWay, Converter={StaticResource ImageResizerFitToIntConverter}}">
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill"
- AutomationProperties.AutomationId="ImageResizer_Sizes_Fit_Fill" />
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit"
- AutomationProperties.AutomationId="ImageResizer_Sizes_Fit_Fit" />
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch"
- AutomationProperties.AutomationId="ImageResizer_Sizes_Fit_Stretch" />
+                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
+                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
+                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
                                                         </ComboBox>
 
                                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                                             <controls:ImageResizerDimensionsNumberBox
                                                                 x:Uid="ImageResizer_Width"
-
-                                                                AutomationProperties.AutomationId="ImageResizer_Width"
                                                                 Width="116"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
@@ -174,8 +149,6 @@
 
                                                             <controls:ImageResizerDimensionsNumberBox
                                                                 x:Uid="ImageResizer_Height"
-
-                                                                AutomationProperties.AutomationId="ImageResizer_Height"
                                                                 Width="116"
                                                                 Minimum="0"
                                                                 SpinButtonPlacementMode="Compact"
@@ -185,18 +158,12 @@
 
                                                         <ComboBox
                                                             x:Uid="ImageResizer_Size"
-
-                                                            AutomationProperties.AutomationId="ImageResizer_Size"
                                                             Width="240"
                                                             SelectedIndex="{Binding Unit, Mode=TwoWay, Converter={StaticResource ImageResizerUnitToIntConverter}}">
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM"
- AutomationProperties.AutomationId="ImageResizer_Sizes_Units_CM" />
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches"
- AutomationProperties.AutomationId="ImageResizer_Sizes_Units_Inches" />
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Percent"
- AutomationProperties.AutomationId="ImageResizer_Sizes_Units_Percent" />
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Pixels"
- AutomationProperties.AutomationId="ImageResizer_Sizes_Units_Pixels" />
+                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
+                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
+                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Percent" />
+                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Pixels" />
                                                         </ComboBox>
                                                     </StackPanel>
                                                 </Flyout>
@@ -205,8 +172,6 @@
 
                                         <Button
                                             x:Uid="ImageResizer_RemoveButton"
-
-                                            AutomationProperties.AutomationId="ImageResizer_RemoveButton"
                                             Width="40"
                                             Height="36"
                                             AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Remove'}"
@@ -217,8 +182,7 @@
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                             Style="{StaticResource SubtleButtonStyle}">
                                             <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="RemoveTooltip"
- AutomationProperties.AutomationId="RemoveTooltip" />
+                                                <TextBlock x:Uid="RemoveTooltip" />
                                             </ToolTipService.ToolTip>
                                         </Button>
                                     </StackPanel>
@@ -228,28 +192,19 @@
                     </ListView>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="Encoding"
- AutomationProperties.AutomationId="Encoding" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_FallBackEncoderText"
- AutomationProperties.AutomationId="ImageResizer_FallBackEncoderText">
+                <controls:SettingsGroup x:Uid="Encoding" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_FallBackEncoderText">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.Encoder, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG"
- AutomationProperties.AutomationId="ImageResizer_FallbackEncoder_PNG" />
-                            <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP"
- AutomationProperties.AutomationId="ImageResizer_FallbackEncoder_BMP" />
-                            <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG"
- AutomationProperties.AutomationId="ImageResizer_FallbackEncoder_JPEG" />
-                            <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_TIFF"
- AutomationProperties.AutomationId="ImageResizer_FallbackEncoder_TIFF" />
-                            <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_WMPhoto"
- AutomationProperties.AutomationId="ImageResizer_FallbackEncoder_WMPhoto" />
-                            <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF"
- AutomationProperties.AutomationId="ImageResizer_FallbackEncoder_GIF" />
+                            <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_PNG" />
+                            <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_BMP" />
+                            <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_JPEG" />
+                            <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_TIFF" />
+                            <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_WMPhoto" />
+                            <ComboBoxItem x:Uid="ImageResizer_FallbackEncoder_GIF" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_Encoding"
- AutomationProperties.AutomationId="ImageResizer_Encoding">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_Encoding">
                         <Slider
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="100"
@@ -257,93 +212,68 @@
                             Value="{x:Bind ViewModel.JPEGQualityLevel, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_PNGInterlacing"
- AutomationProperties.AutomationId="ImageResizer_PNGInterlacing">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_PNGInterlacing">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PngInterlaceOption, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Default"
- AutomationProperties.AutomationId="Default" />
-                            <ComboBoxItem x:Uid="On"
- AutomationProperties.AutomationId="On" />
-                            <ComboBoxItem x:Uid="Off"
- AutomationProperties.AutomationId="Off" />
+                            <ComboBoxItem x:Uid="Default" />
+                            <ComboBoxItem x:Uid="On" />
+                            <ComboBoxItem x:Uid="Off" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_TIFFCompression"
- AutomationProperties.AutomationId="ImageResizer_TIFFCompression">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_TIFFCompression">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.TiffCompressOption, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default"
- AutomationProperties.AutomationId="ImageResizer_ENCODER_TIFF_Default" />
-                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None"
- AutomationProperties.AutomationId="ImageResizer_ENCODER_TIFF_None" />
-                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT3"
- AutomationProperties.AutomationId="ImageResizer_ENCODER_TIFF_CCITT3" />
-                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT4"
- AutomationProperties.AutomationId="ImageResizer_ENCODER_TIFF_CCITT4" />
-                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_LZW"
- AutomationProperties.AutomationId="ImageResizer_ENCODER_TIFF_LZW" />
-                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_RLE"
- AutomationProperties.AutomationId="ImageResizer_ENCODER_TIFF_RLE" />
-                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Zip"
- AutomationProperties.AutomationId="ImageResizer_ENCODER_TIFF_Zip" />
+                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Default" />
+                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_None" />
+                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT3" />
+                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_CCITT4" />
+                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_LZW" />
+                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_RLE" />
+                            <ComboBoxItem x:Uid="ImageResizer_ENCODER_TIFF_Zip" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="File"
- AutomationProperties.AutomationId="File" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_FilenameFormatHeader"
- AutomationProperties.AutomationId="ImageResizer_FilenameFormatHeader">
+                <controls:SettingsGroup x:Uid="File" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_FilenameFormatHeader">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <TextBox
                                 x:Uid="ImageResizer_FilenameFormatPlaceholder"
-
-                                AutomationProperties.AutomationId="ImageResizer_FilenameFormatPlaceholder"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                 Text="{x:Bind ViewModel.FileName, Mode=TwoWay}" />
                             <Button
                                 x:Uid="ImageResizer_FilenameParameters"
-
-                                AutomationProperties.AutomationId="ImageResizer_FilenameParameters"
                                 Content="&#xE946;"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Style="{StaticResource SubtleButtonStyle}">
                                 <Button.Flyout>
                                     <Flyout ShouldConstrainToRootBounds="False">
                                         <TextBlock x:Name="FileFormatTextBlock">
-                                            <Run x:Uid="ImageResizer_FileFormatDescription"
- AutomationProperties.AutomationId="ImageResizer_FileFormatDescription" />
+                                            <Run x:Uid="ImageResizer_FileFormatDescription" />
                                             <LineBreak />
                                             <LineBreak />
                                             <Run FontWeight="Bold" Text="%1" />
                                             <Run Text=" - " />
-                                            <Run x:Uid="ImageResizer_Formatting_Filename"
- AutomationProperties.AutomationId="ImageResizer_Formatting_Filename" />
+                                            <Run x:Uid="ImageResizer_Formatting_Filename" />
                                             <LineBreak />
                                             <Run FontWeight="Bold" Text="%2" />
                                             <Run Text=" - " />
-                                            <Run x:Uid="ImageResizer_Formatting_Sizename"
- AutomationProperties.AutomationId="ImageResizer_Formatting_Sizename" />
+                                            <Run x:Uid="ImageResizer_Formatting_Sizename" />
                                             <LineBreak />
                                             <Run FontWeight="Bold" Text="%3" />
                                             <Run Text=" - " />
-                                            <Run x:Uid="ImageResizer_Formatting_SelectedWidth"
- AutomationProperties.AutomationId="ImageResizer_Formatting_SelectedWidth" />
+                                            <Run x:Uid="ImageResizer_Formatting_SelectedWidth" />
                                             <LineBreak />
                                             <Run FontWeight="Bold" Text="%4" />
                                             <Run Text=" - " />
-                                            <Run x:Uid="ImageResizer_Formatting_SelectedHeight"
- AutomationProperties.AutomationId="ImageResizer_Formatting_SelectedHeight" />
+                                            <Run x:Uid="ImageResizer_Formatting_SelectedHeight" />
                                             <LineBreak />
                                             <Run FontWeight="Bold" Text="%5" />
                                             <Run Text=" - " />
-                                            <Run x:Uid="ImageResizer_Formatting_ActualWidth"
- AutomationProperties.AutomationId="ImageResizer_Formatting_ActualWidth" />
+                                            <Run x:Uid="ImageResizer_Formatting_ActualWidth" />
                                             <LineBreak />
                                             <Run FontWeight="Bold" Text="%6" />
                                             <Run Text=" - " />
-                                            <Run x:Uid="ImageResizer_Formatting_ActualHeight"
- AutomationProperties.AutomationId="ImageResizer_Formatting_ActualHeight" />
+                                            <Run x:Uid="ImageResizer_Formatting_ActualHeight" />
                                         </TextBlock>
                                     </Flyout>
                                 </Button.Flyout>
@@ -351,13 +281,10 @@
                         </StackPanel>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ImageResizer_FileModifiedDate"
- AutomationProperties.AutomationId="ImageResizer_FileModifiedDate">
+                    <tkcontrols:SettingsCard x:Uid="ImageResizer_FileModifiedDate">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.KeepDateModified, Mode=TwoWay, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}}">
-                            <ComboBoxItem x:Uid="ImageResizer_UseOriginalDate"
- AutomationProperties.AutomationId="ImageResizer_UseOriginalDate" />
-                            <ComboBoxItem x:Uid="ImageResizer_UseResizeDate"
- AutomationProperties.AutomationId="ImageResizer_UseResizeDate" />
+                            <ComboBoxItem x:Uid="ImageResizer_UseOriginalDate" />
+                            <ComboBoxItem x:Uid="ImageResizer_UseResizeDate" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
@@ -366,8 +293,7 @@
         </controls:SettingsPageControl.ModuleContent>
 
         <controls:SettingsPageControl.PrimaryLinks>
-            <controls:PageLink x:Uid="LearnMore_ImageResizer"
- AutomationProperties.AutomationId="LearnMore_ImageResizer" Link="https://aka.ms/PowerToysOverview_ImageResizer" />
+            <controls:PageLink x:Uid="LearnMore_ImageResizer" Link="https://aka.ms/PowerToysOverview_ImageResizer" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
             <controls:PageLink Link="https://github.com/bricelam/ImageResizer/" Text="Brice Lambson's ImageResizer" />
