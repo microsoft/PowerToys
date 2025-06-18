@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace ManagedCsWin32;
 
-public partial class Shell32
+public static partial class Shell32
 {
     [LibraryImport("SHELL32.dll", EntryPoint = "ShellExecuteExW", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

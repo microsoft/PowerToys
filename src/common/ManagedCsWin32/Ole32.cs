@@ -3,20 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace ManagedCsWin32;
 
-public partial class Ole32
+public static partial class Ole32
 {
     [LibraryImport("ole32.dll")]
-    [return: MarshalAs(UnmanagedType.U4)]
-    public static partial uint CoCreateInstance(
+    public static partial int CoCreateInstance(
         ref Guid rclsid,
         IntPtr pUnkOuter,
-        uint dwClsContext,
+        CLSCTX dwClsContext,
         ref Guid riid,
         out IntPtr rReturnedComObject);
 }

@@ -29,7 +29,7 @@ internal static class DataSourceManager
     private static bool InitializeDataSource()
     {
         var riid = typeof(IDBInitialize).GUID;
-        var hr = Ole32.CoCreateInstance(ref Unsafe.AsRef(in CLSID.CollatorDataSource), IntPtr.Zero, (uint)CLSCTX.ALL, ref riid, out var dataSourceObjPtr);
+        var hr = Ole32.CoCreateInstance(ref Unsafe.AsRef(in CLSID.CollatorDataSource), IntPtr.Zero, CLSCTX.InProcServer, ref riid, out var dataSourceObjPtr);
         if (hr != 0)
         {
             Logger.LogError("CoCreateInstance failed: " + hr);

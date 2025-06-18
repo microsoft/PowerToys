@@ -50,10 +50,6 @@ public class VirtualDesktopHelper
     /// </summary>
     private readonly List<Guid> _availableDesktops = [];
 
-#pragma warning disable SA1306 // Field names should begin with lower-case letter
-    private readonly uint CLSCTXINPROCALL = 0x17;
-#pragma warning restore SA1306 // Field names should begin with lower-case letter
-
     /// <summary>
     /// Id of the current visible Desktop.
     /// </summary>
@@ -72,7 +68,7 @@ public class VirtualDesktopHelper
 
         try
         {
-            var hr = Ole32.CoCreateInstance(ref Unsafe.AsRef(in CLSID.VirtualDesktopManager), nint.Zero, CLSCTXINPROCALL, ref Unsafe.AsRef(in IID.IVirtualDesktopManager), out virtualDesktopManagerPtr);
+            var hr = Ole32.CoCreateInstance(ref Unsafe.AsRef(in CLSID.VirtualDesktopManager), nint.Zero, CLSCTX.InProcServer, ref Unsafe.AsRef(in IID.IVirtualDesktopManager), out virtualDesktopManagerPtr);
             if (hr != 0)
             {
                 throw new ArgumentException($"Failed to create IVirtualDesktopManager instance. HR: 0x{hr:X}");

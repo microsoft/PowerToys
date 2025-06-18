@@ -97,11 +97,11 @@ public static partial class ReparsePoint
         using (SafeFileHandle reparsePointHandle = new SafeFileHandle(
             Kernel32.CreateFile(
                 reparsePoint,
-                Kernel32.FileAccessType.FILE_READ_ATTRIBUTES | Kernel32.FileAccessType.FILE_READ_EA,
-                Kernel32.FileShareType.Delete | Kernel32.FileShareType.Read | Kernel32.FileShareType.Write,
+                FileAccessType.FILE_READ_ATTRIBUTES | FileAccessType.FILE_READ_EA,
+                FileShareType.Delete | FileShareType.Read | FileShareType.Write,
                 IntPtr.Zero,
-                Kernel32.CreationDisposition.OpenExisting,
-                Kernel32.FileAttributes.OpenReparsePoint,
+                CreationDisposition.OpenExisting,
+                ManagedCsWin32.FileAttributes.OpenReparsePoint,
                 IntPtr.Zero),
             true))
         {

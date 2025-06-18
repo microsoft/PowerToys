@@ -67,7 +67,7 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
         ComWrappers cw = new StrategyBasedComWrappers();
         var appManagerPtr = IntPtr.Zero;
 
-        var hr = Ole32.CoCreateInstance(ref Unsafe.AsRef(in CLSID.ApplicationActivationManager), IntPtr.Zero, (uint)CLSCTX.ALL, ref Unsafe.AsRef(in IID.IApplicationActivationManager), out appManagerPtr);
+        var hr = Ole32.CoCreateInstance(ref Unsafe.AsRef(in CLSID.ApplicationActivationManager), IntPtr.Zero, CLSCTX.InProcServer, ref Unsafe.AsRef(in IID.IApplicationActivationManager), out appManagerPtr);
 
         if (hr != 0)
         {

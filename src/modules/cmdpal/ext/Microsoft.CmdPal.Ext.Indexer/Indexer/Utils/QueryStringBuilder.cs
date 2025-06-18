@@ -32,7 +32,7 @@ internal sealed partial class QueryStringBuilder
             ComWrappers cw = new StrategyBasedComWrappers();
             var searchManagerPtr = IntPtr.Zero;
 
-            var hr = Ole32.CoCreateInstance(ref Unsafe.AsRef(in CLSID.SearchManager), IntPtr.Zero, (uint)CLSCTX.ALL, ref Unsafe.AsRef(in IID.ISearchManager), out searchManagerPtr);
+            var hr = Ole32.CoCreateInstance(ref Unsafe.AsRef(in CLSID.SearchManager), IntPtr.Zero, CLSCTX.LocalServer, ref Unsafe.AsRef(in IID.ISearchManager), out searchManagerPtr);
             if (hr != 0)
             {
                 throw new ArgumentException($"Failed to create SearchManager instance. HR: 0x{hr:X}");
