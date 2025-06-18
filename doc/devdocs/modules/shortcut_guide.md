@@ -27,6 +27,8 @@ Shortcut Guide is a PowerToy that displays an overlay of available keyboard shor
 
 ## Code Structure
 
+![Diagram](../images/shortcutguide/diagram.png)
+
 ### Core Files
 
 #### [`dllmain.cpp`](/src/modules/shortcut_guide/dllmain.cpp)
