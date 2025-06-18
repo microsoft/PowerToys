@@ -93,7 +93,7 @@ namespace Peek.FilePreviewer.Previewers
                             // TODO: Figure out how to get it to run in a low integrity level
                             if (!HandlerFactories.TryGetValue(clsid, out var factory))
                             {
-                                var hr = PInvoke.CoGetClassObject(clsid, CLSCTX.CLSCTX_LOCAL_SERVER, null, typeof(IClassFactory).GUID, out var pFactory);
+                                var hr = PInvoke_FilePreviewer.CoGetClassObject(clsid, CLSCTX.CLSCTX_LOCAL_SERVER, null, typeof(IClassFactory).GUID, out var pFactory);
                                 Marshal.ThrowExceptionForHR(hr);
 
                                 // Storing the factory in memory helps makes the handlers load faster
@@ -149,7 +149,7 @@ namespace Peek.FilePreviewer.Previewers
                 }
                 else if (previewHandler is IInitializeWithItem initWithItem)
                 {
-                    var hr = PInvoke.SHCreateItemFromParsingName(FileItem.Path, null, typeof(IShellItem).GUID, out var item);
+                    var hr = PInvoke_FilePreviewer.SHCreateItemFromParsingName(FileItem.Path, null, typeof(IShellItem).GUID, out var item);
                     Marshal.ThrowExceptionForHR(hr);
 
                     initWithItem.Initialize((IShellItem)item, STGM_READ);
