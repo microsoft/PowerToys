@@ -26,6 +26,8 @@ internal sealed partial class ShellListPage : DynamicListPage
     private List<ListItem> _pathItems = [];
     private ListItem? _uriItem;
 
+    private bool _loadedInitialHistory;
+
     public ShellListPage(SettingsManager settingsManager, IRunHistoryService runHistoryService, bool addBuiltins = false)
     {
         Icon = Icons.RunV2;
@@ -129,6 +131,12 @@ internal sealed partial class ShellListPage : DynamicListPage
     {
         var filteredTopLevel = ListHelpers.FilterList(_topLevelItems, SearchText);
         List<ListItem> uriItems = _uriItem != null ? [_uriItem] : [];
+
+        if (!_loadedInitialHistory)
+        {
+            LoadInitialHistory();
+        }
+
         return
             _exeItems
             .Concat(filteredTopLevel)
@@ -293,5 +301,19 @@ internal sealed partial class ShellListPage : DynamicListPage
         {
             Title = searchText,
         };
+    }
+
+    private void LoadInitialHistory()
+    {
+        var hist = _historyService.GetRunHistory();
+
+        _historyItems.AddRange(
+            hist
+                .Select(h => ShellListPageHelpers.ListItemForCommandString(h))
+                .Where(i => i != null)
+                .Select(i => i!)
+                .ToList());
+
+        _loadedInitialHistory = true;
     }
 }
