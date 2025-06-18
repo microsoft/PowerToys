@@ -114,7 +114,7 @@ int AdjustSpacingForRegistry(int originalSpacing)
     
     if (RegOpenKeyExW(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\DWM", 0, KEY_READ, &hKey) == ERROR_SUCCESS)
     {
-        RegQueryValueExW(hKey, L"ColorPrevalence", nullptr, nullptr, (LPBYTE)&dwValue, &dwSize);
+        RegQueryValueExW(hKey, L"ColorPrevalence", nullptr, nullptr, reinterpret_cast<LPBYTE>(&dwValue), &dwSize);
         RegCloseKey(hKey);
     }
     
