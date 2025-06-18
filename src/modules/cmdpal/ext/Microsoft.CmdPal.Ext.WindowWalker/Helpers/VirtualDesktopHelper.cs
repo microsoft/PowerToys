@@ -67,7 +67,7 @@ public class VirtualDesktopHelper
 
         try
         {
-            _virtualDesktopManager = ComHelper.CreateComInstance<IVirtualDesktopManager>(ref Unsafe.AsRef(in CLSID.VirtualDesktopManager), ref Unsafe.AsRef(in IID.IVirtualDesktopManager), CLSCTX.InProcServer);
+            _virtualDesktopManager = ComHelper.CreateComInstance<IVirtualDesktopManager>(ref Unsafe.AsRef(in CLSID.VirtualDesktopManager), CLSCTX.InProcServer);
         }
         catch (COMException ex)
         {

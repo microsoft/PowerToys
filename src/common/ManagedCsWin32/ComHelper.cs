@@ -12,8 +12,10 @@ public static class ComHelper
 {
     private static StrategyBasedComWrappers cw = new StrategyBasedComWrappers();
 
-    public static T CreateComInstance<T>(ref Guid rclsid, ref Guid riid, CLSCTX dwClsContext)
+    public static T CreateComInstance<T>(ref Guid rclsid, CLSCTX dwClsContext)
     {
+        var riid = typeof(T).GUID;
+
         var hr = Ole32.CoCreateInstance(ref rclsid, IntPtr.Zero, dwClsContext, ref riid, out IntPtr comPtr);
         if (hr != 0)
         {

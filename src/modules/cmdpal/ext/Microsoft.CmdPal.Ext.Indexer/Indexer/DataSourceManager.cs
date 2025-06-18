@@ -30,7 +30,7 @@ internal static class DataSourceManager
 
         try
         {
-            _dataSource = ComHelper.CreateComInstance<IDBInitialize>(ref Unsafe.AsRef(in CLSID.CollatorDataSource), ref riid, CLSCTX.InProcServer);
+            _dataSource = ComHelper.CreateComInstance<IDBInitialize>(ref Unsafe.AsRef(in CLSID.CollatorDataSource), CLSCTX.InProcServer);
         }
         catch (Exception e)
         {

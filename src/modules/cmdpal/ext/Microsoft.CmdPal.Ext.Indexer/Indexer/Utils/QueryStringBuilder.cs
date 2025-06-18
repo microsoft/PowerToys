@@ -34,7 +34,7 @@ internal sealed partial class QueryStringBuilder
 
             try
             {
-                searchManager = ComHelper.CreateComInstance<ISearchManager>(ref Unsafe.AsRef(in CLSID.SearchManager), ref Unsafe.AsRef(in IID.ISearchManager), CLSCTX.LocalServer);
+                searchManager = ComHelper.CreateComInstance<ISearchManager>(ref Unsafe.AsRef(in CLSID.SearchManager), CLSCTX.LocalServer);
             }
             catch (Exception ex)
             {

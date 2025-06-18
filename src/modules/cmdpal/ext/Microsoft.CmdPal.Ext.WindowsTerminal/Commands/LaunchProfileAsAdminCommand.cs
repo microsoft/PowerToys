@@ -68,7 +68,7 @@ internal sealed partial class LaunchProfileAsAdminCommand : InvokableCommand
 
         try
         {
-            appManager = ComHelper.CreateComInstance<IApplicationActivationManager>(ref Unsafe.AsRef(in CLSID.ApplicationActivationManager), ref Unsafe.AsRef(in IID.IApplicationActivationManager), CLSCTX.InProcServer);
+            appManager = ComHelper.CreateComInstance<IApplicationActivationManager>(ref Unsafe.AsRef(in CLSID.ApplicationActivationManager), CLSCTX.InProcServer);
         }
         catch (Exception e)
         {
