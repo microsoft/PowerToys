@@ -548,5 +548,16 @@ namespace EnvironmentVariablesUILib
             CancelAddVariable();
             ConfirmAddVariableBtn.IsEnabled = false;
         }
+
+        private void EditVariableValuesList_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        {
+            if (EditVariableDialog.DataContext is Variable variable && variable.ValuesList != null)
+            {
+                var newValues = string.Join(";", variable.ValuesList.Select(x => x.Text));
+                EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
+                EditVariableDialogValueTxtBox.Text = newValues;
+                EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+            }
+        }
     }
 }
