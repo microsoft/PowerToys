@@ -30,7 +30,7 @@ internal sealed partial class OpenPropertiesCommand : InvokableCommand
                 CbSize = (uint)sizeof(Shell32.SHELLEXECUTEINFOW),
                 LpVerb = propertiesPtr,
                 LpFile = filenamePtr,
-                NShow = (int)SHOW_WINDOW_CMD.SW_SHOW,
+                Show = (int)SHOW_WINDOW_CMD.SW_SHOW,
                 FMask = NativeHelpers.SEEMASKINVOKEIDLIST,
             };
 

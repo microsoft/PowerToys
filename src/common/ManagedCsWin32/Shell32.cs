@@ -24,13 +24,13 @@ public static partial class Shell32
         public IntPtr LpFile;
         public IntPtr LpParameters;
         public IntPtr LpDirectory;
-        public int NShow;
+        public int Show;
         public IntPtr HInstApp;
         public IntPtr LpIDList;
         public IntPtr LpClass;
         public IntPtr HkeyClass;
         public uint DwHotKey;
         public IntPtr HIconOrMonitor;
-        public IntPtr HProcess;
+        public IntPtr Process;
     }
 }

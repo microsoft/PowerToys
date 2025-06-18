@@ -28,7 +28,7 @@ internal sealed partial class OpenWithCommand : InvokableCommand
                 CbSize = (uint)sizeof(Shell32.SHELLEXECUTEINFOW),
                 LpVerb = verbPtr,
                 LpFile = filenamePtr,
-                NShow = (int)SHOW_WINDOW_CMD.SW_SHOWNORMAL,
+                Show = (int)SHOW_WINDOW_CMD.SW_SHOWNORMAL,
                 FMask = NativeHelpers.SEEMASKINVOKEIDLIST,
             };
 
