@@ -34,21 +34,16 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
 
     private void Launch(string id, string profile)
     {
-        ComWrappers cw = new StrategyBasedComWrappers();
-        var appManagerPtr = IntPtr.Zero;
+        IApplicationActivationManager appManager;
 
-        var hr = Ole32.CoCreateInstance(ref Unsafe.AsRef(in CLSID.ApplicationActivationManager), IntPtr.Zero, CLSCTX.InProcServer, ref Unsafe.AsRef(in IID.IApplicationActivationManager), out appManagerPtr);
-        if (hr != 0)
+        try
         {
-            throw new ArgumentException($"Failed to create IApplicationActivationManager instance. HR: 0x{hr:X}");
+            appManager = ComHelper.CreateComInstance<IApplicationActivationManager>(ref Unsafe.AsRef(in CLSID.ApplicationActivationManager), ref Unsafe.AsRef(in IID.IApplicationActivationManager), CLSCTX.InProcServer);
         }
-
-        var appManager = (IApplicationActivationManager)cw.GetOrCreateObjectForComInstance(
-            appManagerPtr, CreateObjectFlags.None);
-
-        if (appManager == null)
+        catch (Exception e)
         {
-            throw new ArgumentException("Failed to get IApplicationActivationManager interface");
+            Logger.LogError($"Failed to create IApplicationActivationManager instance. ex: {e.Message}");
+            throw;
         }
 
         const ActivateOptions noFlags = ActivateOptions.None;
@@ -66,13 +61,6 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
             // Log.Exception("Failed to open Windows Terminal", ex, GetType());
             // _context.API.ShowMsg(name, message, string.Empty);
             Logger.LogError($"Failed to open Windows Terminal: {ex.Message}");
-        }
-        finally
-        {
-            if (appManagerPtr != IntPtr.Zero)
-            {
-                Marshal.Release(appManagerPtr);
-            }
         }
     }
 #pragma warning restore IDE0059, CS0168
