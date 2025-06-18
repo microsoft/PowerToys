@@ -297,6 +297,170 @@ All test cases require pre-configured user data and must reset this data before 
 - Focuses on hotkey-related functionality
 - Tests actual hotkey behavior implementation
 
+## Rump up step
+
+### Step One:
+
+For FancyZones, Always On Top, and Drop And Lock, it's necessary to use each feature to become familiar with its functionality.
+
+Link：[PowerToys FancyZones utility for Windows | Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/fancyzones)
+
+[PowerToys Always On Top utility for Windows | Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/always-on-top)
+
+[PowerToys Crop And Lock for Windows | Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/crop-and-lock)
+
+### Step Two：
+
+Ensure that the module can be successfully compiled and debugged.
+
+### Step Three：
+
+Get to know the code by working with feature requirements and debugging issues.
+
+#### Example:
+
+[FancyZone layout editor not covering full screen · Issue #34454 · microsoft/PowerToys](https://github.com/microsoft/PowerToys/issues/34454)
+
+The bug describes that FancyZones does not adapt to the user's monitor width. However, I currently do not have a screen that wide, so I cannot reproduce the bug. Based on the available information, here are several possible inferences:
+
+1. Editor display error
+2. FancyZones might have implemented certain screen resolution limits in the code that do not support such wide screens
+3. User error — it can be seen that no layout has been applied to the screen, so it's normal that the far right is not displayed, as the user hasn't used the FancyZones feature
+4. From the image, it appears the user is trying to maximize a game window, but some games may not support rendering windows at such high resolutions due to internal implementation
+
+The **optimal solution** for this bug is to first comment on the user's usage issue. Let them correctly use the FancyZones feature before making further judgments. If the issue persists after proper usage, then investigate whether it's a code issue or a problem with the game itself.
+
+To demonstrate a debugging example, I will assume it's a code issue, specifically an issue with the Editor. Please see the following debug process.
+
+  
+
+Let's first locate the corresponding code. Since the error is in the Editor, we'll start by checking the FancyZonesEditor shown in the image.
+![Debug Step Image](../images/fancyzones/1.png)
+However, I currently don't know where the code for this specific UI element in the Editor is located.![Debug Step Image](../images/fancyzones/2.png)
+
+We now have two approaches to find the exact code location.
+
+**First approach:**
+
+The main XAML page is usually named `App.xaml` or `MainWindow.xaml`. Let's start by locating these two files in the FancyZones Editor. Upon reviewing their contents, we find that `App.xaml` is primarily a wrapper file and doesn't contain much UI code. Therefore, it's highly likely that the UI code is located in `MainWindow.xaml`. In the preview of `MainWindow.xaml`, we can also see a rough outline of the UI elements.![Debug Step Image](../images/fancyzones/3.png)
+
+By searching for "monitor", we found that only lines 82 and 338 contain the string "monitor".![Debug Step Image](../images/fancyzones/4.png)
+
+Then, upon reviewing the code, we found that the line at 82 is part of a template. The UI element we're looking for is located within the code block around line 338.
+
+**Second approach:**
+
+We can use the **AccessibilityInsights** tool to inspect the specific information of the corresponding UI element.
+![Debug Step Image](../images/fancyzones/5.png)
+
+However, the current UI element does not have an AutomationId. Let's check whether its parent or child nodes have an AutomationId value. (In fact, using ClassName could also help locate it, but elements with the same ClassName might be numerous, making AutomationId a more accurate option.)
+![Debug Step Image](../images/fancyzones/6.png)
+We found that the parent node "List View" has an AutomationId value. Copy this value and search for it in the code.
+![Debug Step Image](../images/fancyzones/7.png)
+
+**Accurately located at line 338.**
+
+Now that we've found the code for the UI element, let's look at where the size data for this UI element comes from. First, the text of this `Text` element is bound within the `MonitorItemTemplate`. The name of this `Text` element is `ResolutionText`, and it binds to a data property named `Dimensions`.
+
+![Debug Step Image](../images/fancyzones/8.png)
+
+Search for code related to `Dimensions` across all projects in FancyZones.
+
+![Debug Step Image](../images/fancyzones/9.png)
+
+We found that this string corresponds to a variable. However, the return value differs in Debug mode, so let's first examine the logic in Release mode.
+
+We found that the variable `ScreenBoundsWidth` is located in the constructor of `MonitorInfoModel`.
+
+![Debug Step Image](../images/fancyzones/10.png)
+
+Then, by searching for `MonitorInfoModel`, we found that this class is instantiated in the constructor of the `MonitorViewModel` class.
+
+![Debug Step Image](../images/fancyzones/11.png)
+
+The width and height of the monitor, which are crucial, are also assigned at this point. Let's continue by checking where the data in `App.Overlay.Monitors` is initialized.
+
+My idea is to examine all references to the `Monitors` variable and identify the initialization point based on those references.
+
+![Debug Step Image](../images/fancyzones/12.png)
+
+Finally, by tracing the `Add` function of `Monitors`, we found the `AddMonitor()` method. This method is only called by `ParseParams()`, which confirms that the data originates from there.
+ However, by examining the context around the `AddMonitor()` function, we can see that the data comes from the `editor-parameters.json` file. Next, we will continue to investigate how this file is initialized and modified.
+
+![Debug Step Image](../images/fancyzones/13.png)
+
+By searching, we found that the `editor-parameters.json` file has write functions in both the Editor and FancyZones projects.
+
+![Debug Step Image](../images/fancyzones/14.png)
+
+**The display information is retrieved through the following call stack:**
+ `UpdateWorkAreas()` → `IdentifyMonitors()` → `GetDisplays()` → `EnumDisplayDevicesW()`.
+
+**How was the `UpdateWorkAreas()` function identified?**
+ It was discovered by searching for `EditorParameters` and noticing that when the `save` function is called on `EditorParameters`, the parameter passed is `m_workAreaConfiguration`.
+
+![Debug Step Image](../images/fancyzones/15.png)
+
+**Then, by checking the initialization location of the `m_workAreaConfiguration` variable, we found that it is initialized inside `UpdateWorkAreas`.**
+ With this, we have successfully identified the source of the monitor resolution data displayed in the Editor's `Monitors` section.
+
+
+
+### Step Four：
+
+Familiarize yourself with the module code through the current tasks at hand.
+
+Bug：[Issues · microsoft/PowerToys](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue state%3Aopen type%3ABug label%3AProduct-FancyZones)
+
+PR review：no PR
+
+UITest Code：[Task 57329836: [PowerToys\] [UI Test] FancyZone UI Test Override Windows Snap-1 - Boards](https://microsoft.visualstudio.com/OS/_workitems/edit/57329836/)
+
+[Task 57329843: [PowerToys\] [UI Test] FancyZone UI Test Override Windows Snap-2 - Boards](https://microsoft.visualstudio.com/OS/_workitems/edit/57329843/)
+
+[Task 57329845: [PowerToys\] [UI Test] FancyZone UI Test Override Windows Snap-3 - Boards](https://microsoft.visualstudio.com/OS/_workitems/edit/57329845/)
+
+[Task 56940387: [PowerToys\] [UI Test] FancyZone UI Test Override Windows Snap-4 - Boards](https://microsoft.visualstudio.com/OS/_workitems/edit/56940387/)
+
+UI Test Check List:[PowerToys/doc/releases/tests-checklist-template.md at releaseChecklist · microsoft/PowerToys](https://github.com/microsoft/PowerToys/blob/releaseChecklist/doc/releases/tests-checklist-template.md)
+
+
+
+## Q&A
+
+- ### First Run FancyZones error
+![Debug Step Image](../images/fancyzones/16.png)
+
+If you encounter this situation, you need to launch the FancyZones Editor once in the powertoys settings UI (Refer to the image below). The reason is that running the Editor directly within the project will not initialize various configuration files.
+
+![Debug Step Image](../images/fancyzones/17.png)
+
+- ### How are layouts stored and loaded? Is there a central configuration handler?
+
+There is no central configuration handler. 
+
+Editor read/write config data handler is in FancyZonesEditorCommon project. 
+![Debug Step Image](../images/fancyzones/18.png)
+
+FancyZones cpp project read/write config data handler is in FancyZonesLib project.
+![Debug Step Image](../images/fancyzones/19.png)
+However, the files write and read those are C:\Users\“xxxxxx”\AppData\Local\Microsoft\PowerToys\FancyZones
+
+You can think of the editor as a visual config editor, which is most of its functionality. Another feature is used to set the layout for the monitor displays.
+
+When the Editor starts, it will load the config data, and when FancyZones starts, it will also load the config data. After the Editor updates the config data, it will send a data update event, and FancyZones will refresh the current data in memory upon receiving the event.
+![Debug Step Image](../images/fancyzones/20.png)
+
+- ### Which parts of the code are responsible for monitor detection and DPI scaling?
+
+About monitor detection you can find "FancyZones::MoveSizeUpdate" function. 
+
+I believe that in the case without DPI scaling, FancyZones retrieves the window's position and does not need to know what the mouse's DPI scaling is like. If you are referring to window scaling, it is called through the system interface, and you can see the detailed code in "WindowMouseSnap::MoveSizeEnd()" fucntion.
+
+- ### How does FancyZones track which windows belong to which zones?
+
+In "FancyZones::MoveSizeUpdate" function.
+
 ### Extra tools and information
 
 **Test samples**: https://github.com/microsoft/WinAppDriver/tree/master/Samples
