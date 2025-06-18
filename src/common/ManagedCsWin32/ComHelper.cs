@@ -12,9 +12,9 @@ public static class ComHelper
 {
     private static StrategyBasedComWrappers cw = new StrategyBasedComWrappers();
 
-    public static T CreateComInstance<T>(ref Guid clsID, ref Guid iID, CLSCTX rclsCtx)
+    public static T CreateComInstance<T>(ref Guid rclsid, ref Guid riid, CLSCTX dwClsContext)
     {
-        var hr = Ole32.CoCreateInstance(ref clsID, IntPtr.Zero, rclsCtx, ref iID, out IntPtr comPtr);
+        var hr = Ole32.CoCreateInstance(ref rclsid, IntPtr.Zero, dwClsContext, ref riid, out IntPtr comPtr);
         if (hr != 0)
         {
             throw new ArgumentException($"Failed to create {typeof(T).Name} instance. HR: {hr}");
