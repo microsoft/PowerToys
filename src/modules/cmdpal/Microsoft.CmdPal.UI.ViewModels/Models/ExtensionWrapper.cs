@@ -128,8 +128,12 @@ public class ExtensionWrapper : IExtensionWrapper
                                 return;
                             }
 
-                            Marshal.ThrowExceptionForHR(hr);
+                            // Marshal.ThrowExceptionForHR(hr);
                             _extensionObject = MarshalInterface<IExtension>.FromAbi((nint)extensionPtr);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.LogDebug($"Failed to start {ExtensionDisplayName}. ex: {e.Message}");
                         }
                         finally
                         {
