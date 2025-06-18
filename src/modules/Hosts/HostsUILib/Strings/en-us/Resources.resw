@@ -331,6 +331,9 @@
   <data name="WarningDialog_Title" xml:space="preserve">
     <value>Warning</value>
   </data>
+  <data name="WarningDialog_LearnMore" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
   <data name="WindowAdminTitle" xml:space="preserve">
     <value>Administrator: Hosts File Editor</value>
     <comment>Title of the window when running as administrator. "Hosts File Editor" is the name of the utility. "Hosts" refers to the system hosts file, do not loc</comment>

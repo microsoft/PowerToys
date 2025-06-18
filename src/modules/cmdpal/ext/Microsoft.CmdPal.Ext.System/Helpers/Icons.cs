@@ -20,6 +20,8 @@ public static partial class Icons
 
     public static IconInfo RestartIcon { get; } = new IconInfo("\uE777");
 
+    public static IconInfo RestartShellIcon { get; } = new IconInfo("\uEC50");
+
     public static IconInfo ShutdownIcon { get; } = new IconInfo("\uE7E8");
 
     public static IconInfo SleepIcon { get; } = new IconInfo("\uE708");
