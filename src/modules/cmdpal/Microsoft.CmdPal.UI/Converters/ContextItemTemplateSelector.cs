@@ -14,8 +14,15 @@ internal sealed partial class ContextItemTemplateSelector : DataTemplateSelector
 
     public DataTemplate? Critical { get; set; }
 
+    public DataTemplate? Separator { get; set; }
+
     protected override DataTemplate? SelectTemplateCore(object item)
     {
+        if (item is SeparatorContextItemViewModel)
+        {
+            return Separator;
+        }
+
         return ((CommandContextItemViewModel)item).IsCritical ? Critical : Default;
     }
 }

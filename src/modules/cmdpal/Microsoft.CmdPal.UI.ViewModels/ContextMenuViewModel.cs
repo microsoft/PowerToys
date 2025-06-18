@@ -32,7 +32,7 @@ public partial class ContextMenuViewModel : ObservableObject,
     }
 
     [ObservableProperty]
-    public partial ObservableCollection<CommandContextItemViewModel> FilteredItems { get; set; } = [];
+    public partial ObservableCollection<IContextItemViewModel> FilteredItems { get; set; } = [];
 
     private string _lastSearchText = string.Empty;
 
@@ -97,7 +97,9 @@ public partial class ContextMenuViewModel : ObservableObject,
 
         _lastSearchText = searchText;
 
-        var commands = SelectedItem.AllCommands.Where(c => c.ShouldBeVisible);
+        var commands = SelectedItem.AllCommands
+                            .OfType<CommandContextItemViewModel>()
+                            .Where(c => c.ShouldBeVisible);
         if (string.IsNullOrEmpty(searchText))
         {
             ListHelpers.InPlaceUpdateList(FilteredItems, commands);

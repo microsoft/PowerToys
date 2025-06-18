@@ -27,7 +27,8 @@
             <cmdpalUI:ContextItemTemplateSelector
                 x:Key="ContextItemTemplateSelector"
                 Critical="{StaticResource CriticalContextMenuViewModelTemplate}"
-                Default="{StaticResource DefaultContextMenuViewModelTemplate}" />
+                Default="{StaticResource DefaultContextMenuViewModelTemplate}"
+                Separator="{StaticResource SeparatorContextMenuViewModelTemplate}" />
 
             <!--  Template for context items in the context item menu  -->
             <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
@@ -90,6 +91,22 @@
                 </Grid>
             </DataTemplate>
 
+            <!-- Template for context item separators -->
+            <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="viewmodels:SeparatorContextItemViewModel">
+                <StackPanel Margin="0,8,8,0" Orientation="Vertical">
+                    <Border
+                        Margin="8,0,0,0"
+                        BorderBrush="{ThemeResource TextFillColorSecondaryBrush}"
+                        BorderThickness="0,0,0,2">
+                        <TextBlock
+                            Margin="-8,0,0,8"
+                            FontWeight="SemiBold"
+                            IsTextSelectionEnabled="True"
+                            Text=" "
+                            TextWrapping="WrapWholeWords" />
+                    </Border>
+                </StackPanel>
+            </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
 
