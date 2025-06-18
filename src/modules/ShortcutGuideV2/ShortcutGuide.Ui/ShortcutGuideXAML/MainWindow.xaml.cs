@@ -2,12 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -16,18 +14,17 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
-using ShortcutGuide.Properties;
 using Windows.Foundation;
 using Windows.Graphics;
 using WinUIEx;
-using static NativeMethods;
+using static ShortcutGuide.NativeMethods;
 
 namespace ShortcutGuide
 {
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainWindow : WindowEx
+    public sealed partial class MainWindow
     {
         private readonly string[] _currentApplicationIds;
 
@@ -41,7 +38,7 @@ namespace ShortcutGuide
 
             InitializeComponent();
 
-            Title = Resource.ResourceManager.GetString("Title", CultureInfo.InvariantCulture)!;
+            Title = ResourceLoaderInstance.ResourceLoader.GetString("Title")!;
 
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             WindowHwnd = hwnd;
@@ -92,7 +89,7 @@ namespace ShortcutGuide
                 _appWindow = AppWindow.GetFromWindowId(windowId);
 
                 GetCursorPos(out POINT lpPoint);
-                _appWindow.Move(lpPoint with { Y = lpPoint.Y - ((int)Height / 2), X = lpPoint.X - ((int)Width / 2) });
+                _appWindow.Move(new POINT { Y = lpPoint.Y - ((int)Height / 2), X = lpPoint.X - ((int)Width / 2) });
 
                 float dpiScale = DpiHelper.GetDPIScaleForWindow((int)hwnd);
 
@@ -104,13 +101,15 @@ namespace ShortcutGuide
                 _setPosition = true;
                 AppWindow.Changed += (_, a) =>
                 {
-                    if (a.DidPresenterChange)
+                    if (!a.DidPresenterChange)
                     {
-                        Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
-                        float dpiScale = DpiHelper.GetDPIScaleForWindow((int)hwnd);
-                        this.SetWindowSize(monitorRect.Width / dpiScale, monitorRect.Height / dpiScale / 2);
-                        _appWindow.Move(new PointInt32((int)monitorRect.X, (int)(monitorRect.Y + (int)(monitorRect.Height / 2))));
+                        return;
                     }
+
+                    Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
+                    float dpiScale = DpiHelper.GetDPIScaleForWindow((int)hwnd);
+                    this.SetWindowSize(monitorRect.Width / dpiScale, monitorRect.Height / dpiScale / 2);
+                    _appWindow.Move(new PointInt32((int)monitorRect.X, (int)(monitorRect.Y + (int)(monitorRect.Height / 2))));
                 };
             }
 

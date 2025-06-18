@@ -16,17 +16,16 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Shapes;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
-using ShortcutGuide.Properties;
 using Windows.Foundation;
 
 namespace ShortcutGuide
 {
-    public sealed partial class ShortcutView : Page, INotifyPropertyChanged
+    public sealed partial class ShortcutView : INotifyPropertyChanged
     {
         private readonly DispatcherTimer _taskbarUpdateTimer = new() { Interval = TimeSpan.FromMilliseconds(500) };
         private readonly bool _showTaskbarShortcuts;
         public static readonly CancellationTokenSource AnimationCancellationTokenSource = new();
-        private ShortcutFile shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
+        private readonly ShortcutFile _shortcutList = ManifestInterpreter.GetShortcutsOfApplication(ShortcutPageParameters.CurrentPageName);
 
         public ShortcutView()
         {
@@ -40,20 +39,20 @@ namespace ShortcutGuide
             {
                 CategorySelector.Items.Add(new SelectorBarItem()
                 {
-                    Text = Resource.ResourceManager.GetString("Overview", CultureInfo.CurrentUICulture),
+                    Text = ResourceLoaderInstance.ResourceLoader.GetString("Overview"),
                     Name = i.ToString(CultureInfo.InvariantCulture),
                 });
 
                 i++;
 
-                foreach (var category in shortcutList.Shortcuts)
+                foreach (var category in _shortcutList.Shortcuts)
                 {
                     switch (category.SectionName)
                     {
-                        case string name when name.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal):
+                        case { } name when name.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal):
                             _showTaskbarShortcuts = true;
                             break;
-                        case string name when name.StartsWith('<') && name.EndsWith('>'):
+                        case { } name when name.StartsWith('<') && name.EndsWith('>'):
                             break;
                         default:
                             CategorySelector.Items.Add(new SelectorBarItem() { Text = category.SectionName, Name = i.ToString(CultureInfo.InvariantCulture) });
@@ -66,7 +65,7 @@ namespace ShortcutGuide
                 CategorySelector.SelectedItem = CategorySelector.Items[0];
                 CategorySelector.SelectionChanged += CategorySelector_SelectionChanged;
 
-                foreach (var shortcut in shortcutList.Shortcuts[0].Properties)
+                foreach (var shortcut in _shortcutList.Shortcuts[0].Properties)
                 {
                     ShortcutListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
                 }
@@ -92,10 +91,10 @@ namespace ShortcutGuide
             {
                 OverviewStackPanel.Visibility = Visibility.Collapsed;
                 ErrorMessage.Visibility = Visibility.Visible;
-                ErrorMessage.Text = Resource.ResourceManager.GetString("ErrorInAppParsing", CultureInfo.CurrentUICulture);
+                ErrorMessage.Text = ResourceLoaderInstance.ResourceLoader.GetString("ErrorInAppParsing");
             }
 
-            Unloaded += (s, e) =>
+            Unloaded += (_, _) =>
             {
                 AnimationCancellationTokenSource.Cancel();
                 _taskbarUpdateTimer.Tick -= UpdateTaskbarIndicators;
@@ -105,7 +104,7 @@ namespace ShortcutGuide
 
         private void UpdateTaskbarIndicators(object? sender, object? e)
         {
-            var buttons = TasklistPositions.GetButtons();
+            NativeMethods.TasklistButton[] buttons = TasklistPositions.GetButtons();
             Canvas[] canvases = [
                 TaskbarIndicator1,
                 TaskbarIndicator2,
@@ -171,7 +170,7 @@ namespace ShortcutGuide
             set
             {
                 _contentHeight = value;
-                OnPropertyChanged(nameof(ContentHeight));
+                OnPropertyChanged();
             }
         }
 
@@ -191,13 +190,8 @@ namespace ShortcutGuide
             PinnedListTitle.Visibility = Visibility.Visible;
             ShortcutListElement.Visibility = Visibility.Collapsed;
 
-            foreach (var list in shortcutList.Shortcuts)
+            foreach (var list in _shortcutList.Shortcuts)
             {
-                if (list.Properties == null)
-                {
-                    continue;
-                }
-
                 foreach (var shortcut in list.Properties)
                 {
                     if (shortcut.Recommended)
@@ -228,7 +222,7 @@ namespace ShortcutGuide
             {
                 OverviewStackPanel.Visibility = Visibility.Collapsed;
                 ErrorMessage.Visibility = Visibility.Visible;
-                ErrorMessage.Text = Resource.ResourceManager.GetString("NoShortcutsInOverview", CultureInfo.CurrentUICulture);
+                ErrorMessage.Text = ResourceLoaderInstance.ResourceLoader.GetString("NoShortcutsInOverview");
             }
         }
 
@@ -256,13 +250,8 @@ namespace ShortcutGuide
 
                 OverviewStackPanel.Visibility = Visibility.Collapsed;
 
-                foreach (var list in shortcutList.Shortcuts)
+                foreach (var list in _shortcutList.Shortcuts)
                 {
-                    if (list.Properties == null)
-                    {
-                        continue;
-                    }
-
                     foreach (var shortcut in list.Properties)
                     {
                         if (shortcut.Name.Contains(filter, StringComparison.InvariantCultureIgnoreCase))
@@ -274,7 +263,7 @@ namespace ShortcutGuide
             }
             else
             {
-                foreach (var shortcut in shortcutList.Shortcuts[int.Parse(CategorySelector.SelectedItem.Name, CultureInfo.InvariantCulture)].Properties)
+                foreach (var shortcut in _shortcutList.Shortcuts[int.Parse(CategorySelector.SelectedItem.Name, CultureInfo.InvariantCulture)].Properties)
                 {
                     if (shortcut.Name.Contains(filter, StringComparison.InvariantCultureIgnoreCase))
                     {
@@ -283,12 +272,14 @@ namespace ShortcutGuide
                 }
             }
 
-            if (ShortcutListElement.Items.Count == 0)
+            if (ShortcutListElement.Items.Count != 0)
             {
-                ShortcutListElement.Visibility = Visibility.Collapsed;
-                ErrorMessage.Visibility = Visibility.Visible;
-                ErrorMessage.Text = Resource.ResourceManager.GetString("SearchBlank", CultureInfo.CurrentUICulture);
+                return;
             }
+
+            ShortcutListElement.Visibility = Visibility.Collapsed;
+            ErrorMessage.Visibility = Visibility.Visible;
+            ErrorMessage.Text = ResourceLoaderInstance.ResourceLoader.GetString("SearchBlank");
         }
 
         public void CategorySelector_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs e)
@@ -311,7 +302,7 @@ namespace ShortcutGuide
                     return;
                 }
 
-                foreach (var shortcut in shortcutList.Shortcuts[int.Parse(sender.SelectedItem.Name, CultureInfo.InvariantCulture)].Properties)
+                foreach (var shortcut in _shortcutList.Shortcuts[int.Parse(sender.SelectedItem.Name, CultureInfo.InvariantCulture)].Properties)
                 {
                     ShortcutListElement.Items.Add((ShortcutTemplateDataObject)shortcut);
                 }
@@ -319,7 +310,7 @@ namespace ShortcutGuide
             catch (NullReferenceException)
             {
                 ErrorMessage.Visibility = Visibility.Visible;
-                ErrorMessage.Text = Resource.ResourceManager.GetString("ErrorInCategoryParsing", CultureInfo.CurrentUICulture);
+                ErrorMessage.Text = ResourceLoaderInstance.ResourceLoader.GetString("ErrorInCategoryParsing");
             }
 
             FilterBy(_searchFilter);
@@ -362,7 +353,7 @@ namespace ShortcutGuide
 
             bool isItemPinned = ShortcutPageParameters.PinnedShortcuts[ShortcutPageParameters.CurrentPageName].Contains(originalObject);
 
-            pinItem.Text = isItemPinned ? Resource.ResourceManager.GetString("UnpinShortcut", CultureInfo.CurrentUICulture) : Resource.ResourceManager.GetString("PinShortcut", CultureInfo.CurrentUICulture);
+            pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
             pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
         }
     }

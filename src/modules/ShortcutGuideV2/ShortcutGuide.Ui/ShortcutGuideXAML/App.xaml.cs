@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml;
 
 namespace ShortcutGuide
 {
-    public partial class App : Application
+    public partial class App
     {
         public App()
         {
@@ -17,7 +17,7 @@ namespace ShortcutGuide
         {
             _window = new MainWindow();
             _window.Activate();
-            _window.Closed += (s, e) =>
+            _window.Closed += (_, _) =>
             {
                 _window = null;
                 Current.Exit();

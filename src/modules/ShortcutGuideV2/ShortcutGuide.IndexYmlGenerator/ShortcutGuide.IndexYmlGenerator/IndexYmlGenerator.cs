@@ -21,7 +21,7 @@ namespace ShortcutGuide.IndexYmlGenerator
         // Todo: Exception handling
         public static void CreateIndexYmlFile()
         {
-            string path = ManifestInterpreter.GetPathOfIntepretations();
+            string path = ManifestInterpreter.GetPathOfInterpretations();
             if (File.Exists(Path.Combine(path, "index.yml")))
             {
                 File.Delete(Path.Combine(path, "index.yml"));

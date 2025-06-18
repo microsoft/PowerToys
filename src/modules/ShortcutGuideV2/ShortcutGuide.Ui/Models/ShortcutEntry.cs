@@ -75,6 +75,7 @@ namespace ShortcutGuide.Models
                 }
                 catch
                 {
+                    // ignored
                 }
             }
 
@@ -86,7 +87,7 @@ namespace ShortcutGuide.Models
                 shortcutStackPanel.Orientation = Orientation.Horizontal;
 
                 // If any entry is blank, we skip the whole shortcut
-                if (!shortcutEntry.Ctrl && !shortcutEntry.Alt && !shortcutEntry.Shift && !shortcutEntry.Win && shortcutEntry.Keys.Length == 0)
+                if (shortcutEntry is { Ctrl: false, Alt: false, Shift: false, Win: false, Keys.Length: 0 })
                 {
                     return new ShortcutTemplateDataObject(shortcut.Name, shortcut.Description ?? string.Empty, shortcutStackPanel, shortcut);
                 }
@@ -103,21 +104,18 @@ namespace ShortcutGuide.Models
                     shortcutStackPanel.Children.Add(shortcutIndexTextBlock);
                 }
 
-                void AddNewTextToStackPanel(string text)
-                {
-                    shortcutStackPanel.Children.Add(new TextBlock { Text = text, Margin = new Thickness(3), VerticalAlignment = VerticalAlignment.Center });
-                }
-
                 if (shortcutEntry.Win)
                 {
                     PathIcon winIcon = (XamlReader.Load(@"<PathIcon xmlns=""http://schemas.microsoft.com/winfx/2006/xaml/presentation"" Data=""M683 1229H0V546h683v683zm819 0H819V546h683v683zm-819 819H0v-683h683v683zm819 0H819v-683h683v683z"" />") as PathIcon)!;
-                    Viewbox winIconContainer = new();
-                    winIconContainer.Child = winIcon;
-                    winIconContainer.HorizontalAlignment = HorizontalAlignment.Center;
-                    winIconContainer.VerticalAlignment = VerticalAlignment.Center;
-                    winIconContainer.Height = 24;
-                    winIconContainer.Width = 24;
-                    winIconContainer.Margin = new Thickness(3);
+                    Viewbox winIconContainer = new()
+                    {
+                        Child = winIcon,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Height = 24,
+                        Width = 24,
+                        Margin = new Thickness(3),
+                    };
                     shortcutStackPanel.Children.Add(winIconContainer);
                 }
 
@@ -136,7 +134,7 @@ namespace ShortcutGuide.Models
                     AddNewTextToStackPanel("Shift");
                 }
 
-                foreach (object key in shortcutEntry.Keys)
+                foreach (string key in shortcutEntry.Keys)
                 {
                     switch (key)
                     {
@@ -208,18 +206,10 @@ namespace ShortcutGuide.Models
                             shortcutStackPanel.Children.Add(arrowUDTextBlock);
                             AnimateTextBlock(arrowUDTextBlock, "↑↓", 1000);
                             break;
-                        case string name when name.StartsWith('<') && name.EndsWith('>'):
+                        case { } name when name.StartsWith('<') && name.EndsWith('>'):
                             AddNewTextToStackPanel(name[1..^1]);
                             break;
-                        case int num:
-                            if (num == 0)
-                            {
-                                break;
-                            }
-
-                            AddNewTextToStackPanel(Helper.GetKeyName((uint)num));
-                            break;
-                        case string num when int.TryParse(num, out int parsedNum):
+                        case { } num when int.TryParse(num, out int parsedNum):
                             if (parsedNum == 0)
                             {
                                 break;
@@ -228,55 +218,76 @@ namespace ShortcutGuide.Models
                             AddNewTextToStackPanel(Helper.GetKeyName((uint)parsedNum));
                             break;
                         default:
-                            AddNewTextToStackPanel((string)key);
+                            AddNewTextToStackPanel(key);
                             break;
                     }
+                }
+
+                continue;
+
+                void AddNewTextToStackPanel(string text)
+                {
+                    shortcutStackPanel.Children.Add(new TextBlock { Text = text, Margin = new Thickness(3), VerticalAlignment = VerticalAlignment.Center });
                 }
             }
 
             StackPanel stackPanelToReturn = shortcutStackPanels[0];
 
-            if (shortcutStackPanels.Count == 0)
+            switch (shortcutStackPanels.Count)
             {
-                return new ShortcutTemplateDataObject(shortcut.Name, shortcut.Description ?? string.Empty, new StackPanel(), shortcut);
-            }
-            else if (shortcutStackPanels.Count > 1)
-            {
-                stackPanelToReturn = new StackPanel();
-
-                stackPanelToReturn.Orientation = Orientation.Vertical;
-                foreach (StackPanel panel in shortcutStackPanels)
+                case 0:
+                    return new ShortcutTemplateDataObject(shortcut.Name, shortcut.Description ?? string.Empty, new StackPanel(), shortcut);
+                case <= 1:
+                    return new ShortcutTemplateDataObject(shortcut.Name, shortcut.Description ?? string.Empty, stackPanelToReturn, shortcut);
+                default:
                 {
-                    panel.Visibility = Visibility.Collapsed;
-                    stackPanelToReturn.Children.Add(panel);
-                }
-
-                shortcutStackPanels[0].Visibility = Visibility.Visible;
-                for (int i = 1; i < shortcutStackPanels.Count; i++)
-                {
-                    shortcutStackPanels[i].Visibility = Visibility.Collapsed;
-                }
-
-                async void AnimateStackPanels(StackPanel[] panels, int delay = 2000)
-                {
-                    int index = 0;
-                    while (!ShortcutView.AnimationCancellationTokenSource.Token.IsCancellationRequested)
                     {
-                        foreach (StackPanel panel in panels)
+                        stackPanelToReturn = new StackPanel
+                        {
+                            Orientation = Orientation.Vertical,
+                        };
+
+                        foreach (StackPanel panel in shortcutStackPanels)
                         {
                             panel.Visibility = Visibility.Collapsed;
+                            stackPanelToReturn.Children.Add(panel);
                         }
 
-                        panels[index].Visibility = Visibility.Visible;
-                        index = (index + 1) % panels.Length;
-                        await Task.Delay(delay);
+                        shortcutStackPanels[0].Visibility = Visibility.Visible;
+                        for (int i = 1; i < shortcutStackPanels.Count; i++)
+                        {
+                            shortcutStackPanels[i].Visibility = Visibility.Collapsed;
+                        }
+
+                        async void AnimateStackPanels(StackPanel[] panels, int delay = 2000)
+                        {
+                            try
+                            {
+                                int index = 0;
+                                while (!ShortcutView.AnimationCancellationTokenSource.Token.IsCancellationRequested)
+                                {
+                                    foreach (StackPanel panel in panels)
+                                    {
+                                        panel.Visibility = Visibility.Collapsed;
+                                    }
+
+                                    panels[index].Visibility = Visibility.Visible;
+                                    index = (index + 1) % panels.Length;
+                                    await Task.Delay(delay);
+                                }
+                            }
+                            catch
+                            {
+                                // ignored
+                            }
+                        }
+
+                        AnimateStackPanels([.. shortcutStackPanels]);
                     }
+
+                    return new ShortcutTemplateDataObject(shortcut.Name, shortcut.Description ?? string.Empty, stackPanelToReturn, shortcut);
                 }
-
-                AnimateStackPanels([.. shortcutStackPanels]);
             }
-
-            return new ShortcutTemplateDataObject(shortcut.Name, shortcut.Description ?? string.Empty, stackPanelToReturn, shortcut);
         }
     }
 }

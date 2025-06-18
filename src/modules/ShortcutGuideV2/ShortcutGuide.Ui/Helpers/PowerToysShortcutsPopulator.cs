@@ -7,15 +7,14 @@ using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Settings.UI.Library;
-using ShortcutGuide.Helpers;
 
-namespace ShortcutGuide
+namespace ShortcutGuide.Helpers
 {
     internal sealed partial class PowerToysShortcutsPopulator
     {
         public static void Populate()
         {
-            string path = Path.Combine(ManifestInterpreter.GetPathOfIntepretations(), $"Microsoft.PowerToys.{ManifestInterpreter.Language}.yml");
+            string path = Path.Combine(ManifestInterpreter.GetPathOfInterpretations(), $"Microsoft.PowerToys.{ManifestInterpreter.Language}.yml");
 
             string content = File.ReadAllText(path);
 
