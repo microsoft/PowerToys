@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -90,17 +91,15 @@ namespace Peek.FilePreviewer.Previewers
                         unsafe
                         {
                             // This runs the preview handler in a separate process (prevhost.exe)
-                            // TODO: Figure out how to get it to run in a low integrity level
                             if (!HandlerFactories.TryGetValue(clsid, out var factory))
                             {
                                 var hr = PInvoke_FilePreviewer.CoGetClassObject(clsid, CLSCTX.CLSCTX_LOCAL_SERVER, null, typeof(IClassFactory).GUID, out var pFactory);
                                 Marshal.ThrowExceptionForHR(hr);
 
                                 // Storing the factory in memory helps makes the handlers load faster
-                                // TODO: Maybe free them after some inactivity or when Peek quits?
                                 factory = (IClassFactory)Marshal.GetObjectForIUnknown((IntPtr)pFactory);
                                 factory.LockServer(true);
-                                HandlerFactories.AddOrUpdate(clsid, factory, (_, _) => factory);
+                                _ = HandlerFactories.TryAdd(clsid, factory);
                             }
 
                             try
@@ -211,6 +210,24 @@ namespace Peek.FilePreviewer.Previewers
         public static bool IsItemSupported(IFileSystemItem item)
         {
             return !string.IsNullOrEmpty(GetPreviewHandlerGuid(item.Extension));
+        }
+
+        public static void ReleaseHandlerFactories()
+        {
+            var tasks = HandlerFactories.Values.Select(f => Task.Run(() =>
+            {
+                try
+                {
+                    f.LockServer(false);
+                    Marshal.FinalReleaseComObject(f);
+                }
+                catch
+                {
+                }
+            })).ToArray();
+
+            Task.WaitAll(tasks);
+            HandlerFactories.Clear();
         }
 
         private static string? GetPreviewHandlerGuid(string fileExt)
