@@ -2,8 +2,11 @@
 
 > To address https://github.com/microsoft/PowerToys/issues/8060
 
+[![Watch the demo](./search-demo-cover.png)](https://github.com/user-attachments/assets/662e0b9f-8eb7-44e7-a428-cf2a428e501c)
+
 ## Goal
-To keep users productivity within powertoys, we propose a search functionality in settings page.
+Powertoys is a productivity toolset, and we need to keep users' productivity within powertoys, propose a search functionality in settings page.
+
 So that users can find relevance quickly when they need to locate and tweak a settings easily and quickly.
 
 ## 1. What to index
