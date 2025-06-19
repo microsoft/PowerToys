@@ -7,6 +7,7 @@ using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Commands;
 
@@ -20,7 +21,7 @@ internal sealed partial class PasteCommand : InvokableCommand
         _clipboardItem = clipboardItem;
         _clipboardFormat = clipboardFormat;
         Name = "Paste";
-        Icon = new("\xE8C8"); // Copy icon
+        Icon = new("\uE77F"); // Paste icon
     }
 
     private void HideWindow()
@@ -51,7 +52,7 @@ internal sealed partial class PasteCommand : InvokableCommand
 
         ClipboardHelper.SendPasteKeyCombination();
 
-        // Clipboard.DeleteItemFromHistory(_clipboardItem.Item);
+        Clipboard.DeleteItemFromHistory(_clipboardItem.Item);
         return CommandResult.ShowToast("Pasting");
     }
 }
