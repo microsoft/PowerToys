@@ -9,6 +9,7 @@ Monaco is the text editor that powers Visual Studio Code. In PowerToys, Monaco i
 Monaco is primarily used in:
 - Registry Preview module - For editing registry files
 - File Preview handlers - For syntax highlighting when previewing code files
+- Peek module - For preview a file
 
 ## Technical Implementation
 
