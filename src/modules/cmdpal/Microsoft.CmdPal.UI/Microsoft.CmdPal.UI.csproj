@@ -60,6 +60,7 @@
 
   <ItemGroup>
     <None Remove="Controls\ActionBar.xaml" />
+    <None Remove="Controls\ContentFormControl.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
     <None Remove="ListDetailPage.xaml" />
     <None Remove="LoadingPage.xaml" />
@@ -97,11 +98,13 @@
 
     <PackageReference Include="System.Private.Uri" />
     <PackageReference Include="System.Text.Json" />
-
+    <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
+    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" />
+    <PackageReference Include="AdaptiveCards.Templating" />
     <!-- LOAD BEARING: GeneratePathProperty=true on BOTH the AC dependencies. Don't forget the AdaptiveCardsWorkaround below -->
     <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
-
+	
   <!--
     Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
     Tools extension to be activated for this project even if the Windows App SDK Nuget
@@ -111,6 +114,21 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
 
+	<!-- <AdaptiveCardsWorkaround> -->
+	<!-- Workaround for Adaptive Cards not supporting correct RIDs when using .NET 8.
+       Don't forget GeneratePathProperty on the AdaptiveCards PackageReference's above -->
+	<PropertyGroup>
+		<AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
+	</PropertyGroup>
+	<ItemGroup>
+		<CsWinRTInputs Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\lib\uap10.0\AdaptiveCards.ObjectModel.WinUI3.winmd" />
+		<Content Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.ObjectModel.WinUI3.dll" Link="AdaptiveCards.ObjectModel.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+	<ItemGroup>
+		<CsWinRTInputs Include="$(PkgAdaptiveCards_Rendering_WinUI3)\lib\uap10.0\AdaptiveCards.Rendering.WinUI3.winmd" />
+		<Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" Link="AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+	
   <ItemGroup>
 	<RdXmlFile Include="rd.xml" />
   </ItemGroup>
@@ -195,6 +213,11 @@
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Controls\ContentFormControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Styles\Colors.xaml">
