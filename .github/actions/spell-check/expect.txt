@@ -204,6 +204,7 @@ CLIPSIBLINGS
 closesocket
 clp
 CLSCTX
+CLSCTXLOCALSERVER
 clsids
 Clusion
 cmder
@@ -826,6 +827,7 @@ LOCALDISPLAY
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
+LOCKTYPE
 LOGFONT
 LOGFONTW
 logon
@@ -1963,6 +1965,7 @@ Wwanpp
 XAxis
 xclip
 xcopy
+XDeployment
 XDocument
 XElement
 xfd

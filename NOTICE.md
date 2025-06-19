@@ -1533,9 +1533,9 @@ SOFTWARE.
 - Microsoft.Web.WebView2 1.0.2903.40
 - Microsoft.Win32.SystemEvents 9.0.6
 - Microsoft.Windows.Compatibility 9.0.6
-- Microsoft.Windows.CsWin32 0.2.46-beta
+- Microsoft.Windows.CsWin32 0.3.183
 - Microsoft.Windows.CsWinRT 2.2.0
-- Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
+- Microsoft.Windows.SDK.BuildTools 10.0.26100.4188
 - Microsoft.WindowsAppSDK 1.7.250513003
 - Microsoft.WindowsPackageManager.ComInterop 1.10.340
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
