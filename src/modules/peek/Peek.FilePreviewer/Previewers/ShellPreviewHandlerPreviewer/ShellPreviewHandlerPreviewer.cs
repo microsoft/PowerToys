@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -93,11 +93,11 @@ namespace Peek.FilePreviewer.Previewers
                             // This runs the preview handler in a separate process (prevhost.exe)
                             if (!HandlerFactories.TryGetValue(clsid, out var factory))
                             {
-                                var hr = PInvoke_FilePreviewer.CoGetClassObject(clsid, CLSCTX.CLSCTX_LOCAL_SERVER, null, typeof(IClassFactory).GUID, out var pFactory);
+                                var hr = PInvoke_FilePreviewer.CoGetClassObject(clsid, CLSCTX.CLSCTX_LOCAL_SERVER, null, typeof(IClassFactory).GUID, out object pFactory);
                                 Marshal.ThrowExceptionForHR(hr);
 
                                 // Storing the factory in memory helps makes the handlers load faster
-                                factory = (IClassFactory)Marshal.GetObjectForIUnknown((IntPtr)pFactory);
+                                factory = (IClassFactory)pFactory;
                                 factory.LockServer(true);
                                 HandlerFactories.AddOrUpdate(clsid, factory, (_, _) => factory);
                             }
