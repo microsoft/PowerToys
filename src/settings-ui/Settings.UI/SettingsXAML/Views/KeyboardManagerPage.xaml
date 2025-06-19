@@ -57,6 +57,7 @@
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="KeyboardManager_EnableToggle"
+                    Name="KeyboardManagerEnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.Enabled, Mode=TwoWay}" />
@@ -80,6 +81,7 @@
                 <controls:SettingsGroup x:Uid="KeyboardManager_Keys" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="KeyboardManager_RemapKeyboardButton"
+                        Name="KeyboardManagerRemapKeyboardButton"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{Binding Path=RemapKeyboardCommand}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE92E;}"
@@ -133,6 +135,7 @@
                 <controls:SettingsGroup x:Uid="KeyboardManager_Shortcuts" IsEnabled="{x:Bind ViewModel.Enabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="KeyboardManager_RemapShortcutsButton"
+                        Name="KeyboardManagerRemapShortcutsButton"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{Binding Path=EditShortcutCommand}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE713;}"

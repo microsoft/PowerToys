@@ -24,6 +24,7 @@
                 <controls:SettingsGroup x:Name="ActivationSettingsGroup" x:Uid="MouseWithoutBorders_ActivationSettings">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseWithoutBorders_Toggle_Enable"
+                        Name="MouseWithoutBordersToggleEnable"
                         HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}"
                         IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
@@ -49,6 +50,7 @@
                     <tkcontrols:SettingsExpander
                         x:Name="MouseWithoutBorders_ConnectSettings"
                         x:Uid="MouseWithoutBorders_SecurityKey"
+                        Name="MouseWithoutBordersSecurityKey"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8D7;}"
                         IsExpanded="{x:Bind ViewModel.ConnectFieldsVisible, Mode=TwoWay}">
                         <tkcontrols:SettingsExpander.Items>
@@ -83,7 +85,7 @@
                         </StackPanel>
                     </tkcontrols:SettingsExpander>
 
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ThisMachineNameLabel">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ThisMachineNameLabel" Name="MouseWithoutBordersThisMachineNameLabel">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBlock
                                 VerticalAlignment="Center"
@@ -188,7 +190,7 @@
 
 
 
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_MatrixOneRow">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_MatrixOneRow" Name="MouseWithoutBordersMatrixOneRow">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_MatrixOneRow_ToggleSwitch" IsOn="{x:Bind ViewModel.MatrixOneRow, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
@@ -196,7 +198,7 @@
                     x:Name="ServiceSettingsGroup"
                     x:Uid="MouseWithoutBorders_ServiceSettings"
                     IsEnabled="{x:Bind ViewModel.CanToggleUseService, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_UseService" IsEnabled="{x:Bind ViewModel.UseServiceSettingIsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_UseService" Name="MouseWithoutBordersUseService" IsEnabled="{x:Bind ViewModel.UseServiceSettingIsEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_UseService_ToggleSwitch" IsOn="{x:Bind ViewModel.UseService, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
@@ -223,6 +225,7 @@
                         Severity="Warning" />
                     <tkcontrols:SettingsCard
                         x:Uid="MouseWithoutBorders_UninstallService"
+                        Name="MouseWithoutBordersUninstallService"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.UninstallServiceEventHandler}"
                         IsClickEnabled="{x:Bind ViewModel.CanUninstallService, Mode=OneWay}"
@@ -242,42 +245,43 @@
                             <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                         </InfoBar.IconSource>
                     </InfoBar>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_WrapMouse">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_WrapMouse" Name="MouseWithoutBordersWrapMouse">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_WrapMouse_ToggleSwitch" IsOn="{x:Bind ViewModel.WrapMouse, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsExpander
                         x:Uid="MouseWithoutBorders_ShareClipboard"
+                        Name="MouseWithoutBordersShareClipboard"
                         IsEnabled="{x:Bind ViewModel.CardForShareClipboardSettingIsEnabled, Mode=OneWay}"
                         IsExpanded="True">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_ShareClipboard_ToggleSwitch" IsOn="{x:Bind ViewModel.ShareClipboard, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_TransferFile" IsEnabled="{x:Bind ViewModel.CardForTransferFileSettingIsEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_TransferFile" Name="MouseWithoutBordersTransferFile" IsEnabled="{x:Bind ViewModel.CardForTransferFileSettingIsEnabled, Mode=OneWay}">
                                 <ToggleSwitch x:Uid="MouseWithoutBorders_TransferFile_ToggleSwitch" IsOn="{x:Bind ViewModel.TransferFile, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_HideMouseAtScreenEdge">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_HideMouseAtScreenEdge" Name="MouseWithoutBordersHideMouseAtScreenEdge">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_HideMouseAtScreenEdge_ToggleSwitch" IsOn="{x:Bind ViewModel.HideMouseAtScreenEdge, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_DrawMouseCursor">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_DrawMouseCursor" Name="MouseWithoutBordersDrawMouseCursor">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_DrawMouseCursor_ToggleSwitch" IsOn="{x:Bind ViewModel.DrawMouseCursor, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ValidateRemoteMachineIP" IsEnabled="{x:Bind ViewModel.CardForValidateRemoteIpSettingIsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ValidateRemoteMachineIP" Name="MouseWithoutBordersValidateRemoteMachineIP" IsEnabled="{x:Bind ViewModel.CardForValidateRemoteIpSettingIsEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_ValidateRemoteMachineIP_ToggleSwitch" IsOn="{x:Bind ViewModel.ValidateRemoteMachineIP, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_SameSubnetOnly" IsEnabled="{x:Bind ViewModel.CardForSameSubnetOnlySettingIsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_SameSubnetOnly" Name="MouseWithoutBordersSameSubnetOnly" IsEnabled="{x:Bind ViewModel.CardForSameSubnetOnlySettingIsEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_SameSubnetOnly_ToggleSwitch" IsOn="{x:Bind ViewModel.SameSubnetOnly, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_BlockScreenSaverOnOtherMachines" IsEnabled="{x:Bind ViewModel.CardForBlockScreensaverSettingIsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_BlockScreenSaverOnOtherMachines" Name="MouseWithoutBordersBlockScreenSaverOnOtherMachines" IsEnabled="{x:Bind ViewModel.CardForBlockScreensaverSettingIsEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_BlockScreenSaverOnOtherMachines_ToggleSwitch" IsOn="{x:Bind ViewModel.BlockScreenSaverOnOtherMachines, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_MoveMouseRelatively">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_MoveMouseRelatively" Name="MouseWithoutBordersMoveMouseRelatively">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_MoveMouseRelatively_ToggleSwitch" IsOn="{x:Bind ViewModel.MoveMouseRelatively, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_BlockMouseAtScreenCorners">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_BlockMouseAtScreenCorners" Name="MouseWithoutBordersBlockMouseAtScreenCorners">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_BlockMouseAtScreenCorners_ToggleSwitch" IsOn="{x:Bind ViewModel.BlockMouseAtScreenCorners, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages" Name="MouseWithoutBordersShowClipboardAndNetworkStatusMessages">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_ShowClipboardAndNetworkStatusMessages_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowClipboardAndNetworkStatusMessages, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
@@ -285,7 +289,7 @@
                     x:Name="KeyboardShortcutsGroup"
                     x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_EasyMouseOption" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_EasyMouseOption" Name="MouseWithoutBordersEasyMouseOption" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.EasyMouseOptionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Disabled" />
                             <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Enabled" />
@@ -294,35 +298,35 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ToggleEasyMouseShortcut" Name="MouseWithoutBordersToggleEasyMouseShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ToggleEasyMouseShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_LockMachinesShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_LockMachinesShortcut" Name="MouseWithoutBordersLockMachinesShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.LockMachinesShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_Switch2AllPcShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_Switch2AllPcShortcut" Name="MouseWithoutBordersSwitch2AllPcShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.HotKeySwitch2AllPC, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ReconnectShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ReconnectShortcut" Name="MouseWithoutBordersReconnectShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AllowDisable="True"
                             HotkeySettings="{x:Bind Path=ViewModel.ReconnectShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_SwitchBetweenMachineShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_SwitchBetweenMachineShortcut" Name="MouseWithoutBordersSwitchBetweenMachineShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.SelectedSwitchBetweenMachineShortcutOptionsIndex, Mode=TwoWay}">
                             <!--  These should be in the same order as the array items in MouseWithoutBordersViewModel.cs  -->
                             <ComboBoxItem x:Uid="MouseWithoutBorders_SwitchBetweenMachineShortcut_F1" />
@@ -335,7 +339,7 @@
                     x:Name="AdvancedSettingsGroup"
                     x:Uid="MouseWithoutBorders_AdvancedSettings_Group"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsExpander x:Uid="MouseWithoutBorders_IPAddressMapping" IsExpanded="True">
+                    <tkcontrols:SettingsExpander x:Uid="MouseWithoutBorders_IPAddressMapping" Name="MouseWithoutBordersIPAddressMapping" IsExpanded="True">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 HorizontalContentAlignment="Stretch"
@@ -416,10 +420,11 @@
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="MouseWithoutBorders_AddFirewallRuleButtonControl"
+                        Name="MouseWithoutBordersAddFirewallRuleButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.AddFirewallRuleEventHandler}"
                         IsClickEnabled="True" />
-                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ShowOriginalUI" IsEnabled="{x:Bind ViewModel.CardForOriginalUiSettingIsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="MouseWithoutBorders_ShowOriginalUI" Name="MouseWithoutBordersShowOriginalUI" IsEnabled="{x:Bind ViewModel.CardForOriginalUiSettingIsEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_ShowOriginalUI_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowOriginalUI, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar

@@ -16,6 +16,7 @@
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="RegistryPreview_Enable_RegistryPreview"
+                    Name="RegistryPreviewEnableRegistryPreview"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/RegistryPreview.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsRegistryPreviewEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -35,12 +36,13 @@
                 <controls:SettingsGroup x:Uid="RegistryPreview_Launch_GroupSettings" IsEnabled="{x:Bind ViewModel.IsRegistryPreviewEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="RegistryPreview_LaunchButtonControl"
+                        Name="RegistryPreviewLaunchButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.LaunchEventHandler}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA37;}"
                         IsClickEnabled="True" />
 
-                    <tkcontrols:SettingsCard x:Uid="RegistryPreview_DefaultRegApp" HeaderIcon="{ui:FontIcon Glyph=&#xE7AC;}">
+                    <tkcontrols:SettingsCard x:Uid="RegistryPreview_DefaultRegApp" Name="RegistryPreviewDefaultRegApp" HeaderIcon="{ui:FontIcon Glyph=&#xE7AC;}">
                         <ToggleSwitch x:Uid="RegistryPreview_DefaultRegApp_ToggleSwitch" IsOn="{x:Bind ViewModel.IsRegistryPreviewDefaultRegApp, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>

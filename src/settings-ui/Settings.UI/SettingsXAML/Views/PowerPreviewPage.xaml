@@ -35,6 +35,7 @@
 
                     <tkcontrols:SettingsExpander
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_SVG"
+                        Name="FileExplorerPreviewToggleSwitchPreviewSVG"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}"
                         IsEnabled="{x:Bind ViewModel.SVGRenderIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
@@ -42,7 +43,7 @@
                             IsEnabled="{x:Bind ViewModel.SVGRenderIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                             IsOn="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Color_Mode">
+                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Color_Mode" Name="FileExplorerPreviewPreviewSVGColorMode">
                                 <ComboBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}"
@@ -52,10 +53,10 @@
                                     <ComboBoxItem x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Background_Color" Visibility="{x:Bind ViewModel.IsSvgBackgroundColorVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Background_Color" Name="FileExplorerPreviewPreviewSVGBackgroundColor" Visibility="{x:Bind ViewModel.IsSvgBackgroundColorVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                                 <controls:ColorPickerButton IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}" SelectedColor="{x:Bind Path=ViewModel.SVGRenderBackgroundSolidColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode" Visibility="{x:Bind ViewModel.IsSvgCheckeredShadeVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Preview_SVG_Checkered_Shade_Mode" Name="FileExplorerPreviewPreviewSVGCheckeredShadeMode" Visibility="{x:Bind ViewModel.IsSvgCheckeredShadeVisible, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                                 <ComboBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     IsEnabled="{x:Bind ViewModel.SVGRenderIsEnabled, Mode=OneWay}"
@@ -70,6 +71,7 @@
 
                     <tkcontrols:SettingsExpander
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_Monaco"
+                        Name="FileExplorerPreviewToggleSwitchPreviewMonaco"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE99A;}"
                         IsEnabled="{x:Bind ViewModel.MonacoRenderIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
@@ -86,7 +88,7 @@
                                     IsChecked="{x:Bind ViewModel.MonacoPreviewTryFormat, Mode=TwoWay}"
                                     IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Toggle_Monaco_Max_File_Size" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Toggle_Monaco_Max_File_Size" Name="FileExplorerPreviewToggleMonacoMaxFileSize" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
@@ -94,7 +96,7 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MonacoPreviewMaxFileSize, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Toggle_Monaco_Font_Size" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Toggle_Monaco_Font_Size" Name="FileExplorerPreviewToggleMonacoFontSize" IsEnabled="{x:Bind ViewModel.MonacoRenderIsEnabled, Mode=OneWay}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
@@ -119,6 +121,7 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_MD"
+                        Name="FileExplorerPreviewToggleSwitchPreviewMD"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE943;}"
                         IsEnabled="{x:Bind ViewModel.MDRenderIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
@@ -129,6 +132,7 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_PDF"
+                        Name="FileExplorerPreviewToggleSwitchPreviewPDF"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA90;}"
                         IsEnabled="{x:Bind ViewModel.PDFRenderIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
@@ -139,6 +143,7 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_GCODE"
+                        Name="FileExplorerPreviewToggleSwitchPreviewGCODE"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
                         IsEnabled="{x:Bind ViewModel.GCODERenderIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
@@ -149,6 +154,7 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Preview_QOI"
+                        Name="FileExplorerPreviewToggleSwitchPreviewQOI"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
                         IsEnabled="{x:Bind ViewModel.QOIRenderIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
@@ -184,6 +190,7 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_SVG"
+                        Name="FileExplorerPreviewToggleSwitchThumbnailSVG"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}"
                         IsEnabled="{x:Bind ViewModel.SVGThumbnailIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
@@ -194,6 +201,7 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_PDF"
+                        Name="FileExplorerPreviewToggleSwitchThumbnailPDF"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEA90;}"
                         IsEnabled="{x:Bind ViewModel.PDFThumbnailIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
@@ -204,6 +212,7 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE"
+                        Name="FileExplorerPreviewToggleSwitchThumbnailGCODE"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
                         IsEnabled="{x:Bind ViewModel.GCODEThumbnailIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
@@ -214,6 +223,7 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_QOI"
+                        Name="FileExplorerPreviewToggleSwitchThumbnailQOI"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
                         IsEnabled="{x:Bind ViewModel.QOIThumbnailIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
@@ -224,6 +234,7 @@
 
                     <tkcontrols:SettingsExpander
                         x:Uid="FileExplorerPreview_ToggleSwitch_Thumbnail_STL"
+                        Name="FileExplorerPreviewToggleSwitchThumbnailSTL"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE914;}"
                         IsEnabled="{x:Bind ViewModel.STLThumbnailIsGpoDisabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                         <ToggleSwitch
@@ -231,7 +242,7 @@
                             IsEnabled="{x:Bind ViewModel.STLThumbnailIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                             IsOn="{x:Bind ViewModel.STLThumbnailIsEnabled, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Color_Thumbnail_STL">
+                            <tkcontrols:SettingsCard x:Uid="FileExplorerPreview_Color_Thumbnail_STL" Name="FileExplorerPreviewColorThumbnailSTL">
                                 <controls:ColorPickerButton IsEnabled="{x:Bind ViewModel.STLThumbnailIsEnabled, Mode=OneWay}" SelectedColor="{x:Bind Path=ViewModel.STLThumbnailColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>

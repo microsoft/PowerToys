@@ -16,6 +16,7 @@
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="ShortcutGuide_Enable"
+                    Name="ShortcutGuideEnable"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -31,7 +32,7 @@
                     </InfoBar.IconSource>
                 </InfoBar>
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ShortcutGuide_ActivationMethod">
+                    <tkcontrols:SettingsCard x:Uid="ShortcutGuide_ActivationMethod" Name="ShortcutGuideActivationMethod">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut" />
                             <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey" />
@@ -40,6 +41,7 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="Activation_Shortcut"
+                        Name="ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         Visibility="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}" />
@@ -47,6 +49,7 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="ShortcutGuide_PressTimeForGlobalWindowsShortcuts"
+                        Name="ShortcutGuidePressTimeForGlobalWindowsShortcuts"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         Visibility="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <NumberBox
@@ -60,6 +63,7 @@
 
                     <tkcontrols:SettingsCard
                         x:Uid="ShortcutGuide_PressTimeForTaskbarIconShortcuts"
+                        Name="ShortcutGuidePressTimeForTaskbarIconShortcuts"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         Visibility="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <NumberBox
@@ -81,7 +85,7 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
+                    <tkcontrols:SettingsCard x:Uid="ColorModeHeader" Name="ColorModeHeader" HeaderIcon="{ui:FontIcon Glyph=&#xE790;}">
                         <tkcontrols:SettingsCard.Description>
                             <HyperlinkButton x:Uid="Windows_Color_Settings" Click="OpenColorsSettings_Click" />
                         </tkcontrols:SettingsCard.Description>
@@ -92,7 +96,7 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard x:Uid="ShortcutGuide_OverlayOpacity">
+                    <tkcontrols:SettingsCard x:Uid="ShortcutGuide_OverlayOpacity" Name="ShortcutGuideOverlayOpacity">
                         <Slider
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             Maximum="100"
@@ -104,6 +108,7 @@
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="ShortcutGuide_DisabledApps"
+                        Name="ShortcutGuideDisabledApps"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
                         IsExpanded="True">
                         <tkcontrols:SettingsExpander.Items>

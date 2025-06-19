@@ -199,3 +199,17 @@ flowchart TD
 
 
 ## 7.  Design options evaluated
+
+
+## 8. Corner cases we can't perform a search
+1. Some SettingsCard does not x:Uid binded, so no text is shown.
+```
+// e.g. Mouse Utils:
+<tkcontrols:SettingsCard ContentAlignment="Left">
+    <CheckBox x:Uid="MouseUtils_MousePointerCrosshairs_CrosshairsAutoHide" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoHide, Mode=TwoWay}" />
+</tkcontrols:SettingsCard>
+```
+
+2. CmdPal page is not in scope of this effort, that needs additional effort&design to launch and search within cmdpal settings page.
+
+3. 

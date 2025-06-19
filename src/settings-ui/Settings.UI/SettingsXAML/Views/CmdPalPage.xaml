@@ -16,6 +16,7 @@
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="CmdPal_Enable_CmdPal"
+                    Name="CmdPalEnableCmdPal"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CmdPal.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -28,7 +29,7 @@
                     Severity="Informational" />
 
                 <controls:SettingsGroup x:Uid="CmdPal_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="CmdPal_ActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard x:Uid="CmdPal_ActivationShortcut" Name="CmdPalActivationShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=OneWay}"
