@@ -4,19 +4,20 @@ This section contains documentation for individual PowerToys modules, including 
 
 ## Available Modules
 
-| Module | Description | Documentation |
-|--------|-------------|---------------|
-| Environment Variables | Tool for managing user and system environment variables | [Architecture & Implementation](environmentvariables.md) |
-| FancyZones | Window manager utility for custom window layouts | [Architecture & Implementation](fancyzones.md), [Debugging Tools](fancyzones-tools.md) |
-| File Locksmith | Tool for finding processes that lock files | [Architecture & Implementation](filelocksmith.md) |
-| Hosts File Editor | Tool for managing the system hosts file | [Architecture & Implementation](hostsfileeditor.md) |
-| Keyboard Manager | Tool for remapping keys and keyboard shortcuts | [Documentation](keyboardmanager/README.md) |
-| NewPlus | Context menu extension for creating new files in File Explorer | [Architecture & Implementation](newplus.md) |
-| Quick Accent | Tool for quickly inserting accented characters and special symbols | [Architecture & Implementation](quickaccent.md) |
-| Registry Preview | Tool for visualizing and editing Registry files | [Architecture & Implementation](registrypreview.md) |
-| Screen Ruler | Tool for measuring pixel distances and color boundaries on screen | [Architecture & Implementation](screenruler.md) |
-| Shortcut Guide | Tool for displaying Windows keyboard shortcuts when holding the Windows key | [Architecture & Implementation](shortcut_guide.md) |
-| ZoomIt | Screen zoom and annotation tool | [Architecture & Implementation](zoomit.md) |
+| Module | Description |
+|--------|-------------|
+| [Environment Variables](environmentvariables.md) | Tool for managing user and system environment variables |
+| [FancyZones](fancyzones.md) ([debugging tools](fancyzones-tools.md)) | Window manager utility for custom window layouts |
+| [File Locksmith](filelocksmith.md) | Tool for finding processes that lock files |
+| [Hosts File Editor](hostsfileeditor.md) | Tool for managing the system hosts file |
+| [Keyboard Manager](keyboardmanager/README.md) | Tool for remapping keys and keyboard shortcuts |
+| [Mouse Utilities](mouseutils/readme.md) | Collection of tools to enhance mouse and cursor functionality |
+| [NewPlus](newplus.md) | Context menu extension for creating new files in File Explorer |
+| [Quick Accent](quickaccent.md) | Tool for quickly inserting accented characters and special symbols |
+| [Registry Preview](registrypreview.md) | Tool for visualizing and editing Registry files |
+| [Screen Ruler](screenruler.md) | Tool for measuring pixel distances and color boundaries on screen |
+| [Shortcut Guide](shortcut_guide.md) | Tool for displaying Windows keyboard shortcuts when holding the Windows key |
+| [ZoomIt](zoomit.md) | Screen zoom and annotation tool |
 
 ## Adding New Module Documentation
 
