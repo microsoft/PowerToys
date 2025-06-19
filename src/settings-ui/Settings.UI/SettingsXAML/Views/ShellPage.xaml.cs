@@ -531,16 +531,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 var matchedNavItem = ViewModel.NavItems
                     .FirstOrDefault(item =>
                         (item.GetValue(NavHelper.NavigateToProperty) as Type) == searchHit.PageType);
-
                 if (matchedNavItem != null)
                 {
-                    NavigateToItem(matchedNavItem, searchHit.Uid);
+                    NavigateToItem(matchedNavItem, searchHit.ElementName, searchHit.ParentElementName);
                     return;
                 }
             }
         }
 
-        private void NavigateToItem(NavigationViewItem item, string automationId = null)
+        private void NavigateToItem(NavigationViewItem item, string elementName = null, string parentElementName = null)
         {
             var pageType = item.GetValue(NavHelper.NavigateToProperty) as Type;
 
@@ -559,7 +558,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (pageType != null)
             {
-                NavigationService.Navigate(pageType, automationId);
+                // Create navigation parameters if element name is provided
+                object navigationParameter = null;
+                if (!string.IsNullOrEmpty(elementName))
+                {
+                    navigationParameter = new NavigationParams(elementName, parentElementName);
+                }
+
+                NavigationService.Navigate(pageType, navigationParameter);
             }
         }
     }

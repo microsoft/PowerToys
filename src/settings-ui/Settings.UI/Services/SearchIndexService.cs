@@ -21,35 +21,35 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Services
 {
-    public enum EntryKind
+    public enum EntryType
     {
-        Section,
-        Leaf,
+        SettingsCard,
+        SettingsExpander,
     }
 
 #pragma warning disable SA1649 // File name should match first type name
     public readonly struct SettingEntry
 #pragma warning restore SA1649 // File name should match first type name
     {
-        public readonly EntryKind Kind;
+        public readonly EntryType Type;
         public readonly string Module;
-        public readonly string Value;
+        public readonly string Header;
         public readonly string PageTypeName;
-        public readonly string Uid;
+        public readonly string ElementName;
+        public readonly string ElementUid;
+        public readonly string ParentElementName;
         public readonly string Description;
-        public readonly string Section;
-        public readonly int NestingLevel;
 
-        public SettingEntry(EntryKind kind, string module, string value, string pageTypeName, string uid, string description = null, string section = null, int nestingLevel = 0)
+        public SettingEntry(EntryType type, string module, string header, string pageTypeName, string elementName, string elementUid, string parentElementName = null, string description = null)
         {
-            Kind = kind;
+            Type = type;
             Module = module;
-            Value = value;
+            Header = header;
             PageTypeName = pageTypeName;
-            Uid = uid;
+            ElementName = elementName;
+            ElementUid = elementUid;
+            ParentElementName = parentElementName;
             Description = description;
-            Section = section;
-            NestingLevel = nestingLevel;
         }
     }
 
@@ -60,16 +60,20 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         public readonly string Description;
         public readonly double Score;
         public readonly Type PageType;
-        public readonly string Uid;
+        public readonly string ElementName;
+        public readonly string ElementUid;
+        public readonly string ParentElementName;
 
-        public SearchHit(string module, string caption, string description, double score, Type pageType, string uid)
+        public SearchHit(string module, string caption, string description, double score, Type pageType, string elementName, string elementUid, string parentElementName = null)
         {
             Module = module;
             Caption = caption;
             Description = description;
             Score = score;
             PageType = pageType;
-            Uid = uid;
+            ElementName = elementName;
+            ElementUid = elementUid;
+            ParentElementName = parentElementName;
         }
     }
 
@@ -79,9 +83,13 @@ namespace Microsoft.PowerToys.Settings.UI.Services
     {
         public string PageName { get; set; }
 
-        public string AutomationId { get; set; }
+        public EntryType Type { get; set; }
 
-        public string ControlType { get; set; }
+        public string ParentElementName { get; set; }
+
+        public string ElementName { get; set; }
+
+        public string ElementUid { get; set; }
     }
 
     public static class SearchIndexService
@@ -91,6 +99,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         private static bool _isIndexBuilt;
         private static bool _isIndexBuilding;
         private const string PrebuiltIndexResourceName = "Microsoft.PowerToys.Settings.UI.Assets.search.index.json";
+        private static JsonSerializerOptions _serializerOptions = new() { PropertyNameCaseInsensitive = true };
 
         public static ImmutableArray<SettingEntry> Index
         {
@@ -166,20 +175,15 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                     return;
                 }
 
-                using (StreamReader reader = new StreamReader(stream))
+                using StreamReader reader = new(stream);
+                string json = reader.ReadToEnd();
+                if (string.IsNullOrWhiteSpace(json))
                 {
-                    string json = reader.ReadToEnd();
-                    if (string.IsNullOrWhiteSpace(json))
-                    {
-                        Debug.WriteLine("[SearchIndexService] ERROR: Embedded resource was empty.");
-                        return;
-                    }
-
-#pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-#pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-                    metadataList = JsonSerializer.Deserialize<List<SearchableElementMetadata>>(json, options);
+                    Debug.WriteLine("[SearchIndexService] ERROR: Embedded resource was empty.");
+                    return;
                 }
+
+                metadataList = JsonSerializer.Deserialize<List<SearchableElementMetadata>>(json, _serializerOptions);
             }
             catch (Exception ex)
             {
@@ -193,99 +197,45 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 return;
             }
 
-            var pageSections = new Dictionary<string, Stack<(string Uid, string Caption)>>();
-
             foreach (var metadata in metadataList.OrderBy(m => m.PageName))
             {
                 string moduleName = GetModuleNameFromTypeName(metadata.PageName);
-                string localizedText = GetLocalizedText(resourceLoader, metadata.AutomationId, metadata.ControlType);
 
-                if (string.IsNullOrEmpty(localizedText))
+                var (header, description) = GetLocalizedHeaderAndDescription(resourceLoader, metadata.ElementUid);
+
+                if (string.IsNullOrEmpty(header))
                 {
-                    Debug.WriteLine($"[SearchIndexService] WARNING: Missing primary localization for AutomationId: '{metadata.AutomationId}' in Page: '{metadata.PageName}'. Skipping.");
+                    Debug.WriteLine($"[SearchIndexService] WARNING: Missing primary localization for ElementUid: '{metadata.ElementUid}' in Page: '{metadata.PageName}'. Skipping.");
                     continue;
                 }
 
-                EntryKind kind = GetEntryKindFromControlType(metadata.ControlType);
-                string currentSectionCaption = null;
-                int nestingLevel = 0;
-
-                if (!pageSections.TryGetValue(metadata.PageName, out var sectionStack))
-                {
-                    sectionStack = new Stack<(string Uid, string Caption)>();
-                    pageSections[metadata.PageName] = sectionStack;
-                }
-
-                if (kind == EntryKind.Section && metadata.ControlType == "SettingsGroup")
-                {
-                    while (sectionStack.Count > 0)
-                    {
-                        sectionStack.Pop();
-                    }
-
-                    sectionStack.Push((metadata.AutomationId, localizedText));
-                }
-
-                if (sectionStack.Count != 0)
-                {
-                    currentSectionCaption = sectionStack.Peek().Caption;
-                    nestingLevel = sectionStack.Count;
-                }
-
                 builder.Add(new SettingEntry(
-                    kind,
+                    metadata.Type,
                     moduleName,
-                    localizedText,
+                    header,
                     metadata.PageName,
-                    metadata.AutomationId,
-                    string.Empty,
-                    currentSectionCaption,
-                    nestingLevel));
+                    metadata.ElementName,
+                    metadata.ElementUid,
+                    metadata.ParentElementName,
+                    description));
 
-                Debug.WriteLine($"[SearchIndexService] ADDED: [{kind}] {moduleName} - {localizedText} (ID: {metadata.AutomationId}, Page: {metadata.PageName}, Section: {currentSectionCaption ?? "None"})");
+                Debug.WriteLine($"[SearchIndexService] ADDED: [{metadata.Type}] {moduleName} - {header} (ElementName: {metadata.ElementName}, ElementUid: {metadata.ElementUid}, Page: {metadata.PageName}, Parent: {metadata.ParentElementName ?? "None"})");
             }
 
             Debug.WriteLine($"[SearchIndexService] Finished loading index. Total entries: {builder.Count}");
         }
 
-        private static string GetLocalizedText(ResourceLoader resourceLoader, string automationId, string controlType)
+        private static (string Header, string Description) GetLocalizedHeaderAndDescription(ResourceLoader resourceLoader, string elementUid)
         {
-            string localizedText = string.Empty;
+            string header = GetString(resourceLoader, $"{elementUid}/Header");
+            string description = GetString(resourceLoader, $"{elementUid}/Description");
 
-            if (controlType == "SettingsPageControl")
+            if (string.IsNullOrEmpty(header))
             {
-                localizedText = GetString(resourceLoader, $"{automationId}/ModuleTitle");
-            }
-            else if (controlType == "Button" || controlType == "CheckBox" || controlType == "RadioButton" || controlType == "ToggleButton" || controlType == "ToggleSwitch")
-            {
-                localizedText = GetString(resourceLoader, $"{automationId}/Content");
-            }
-            else if (controlType == "SettingsGroup" || controlType == "SettingsExpander" || controlType == "SettingsCard")
-            {
-                localizedText = GetString(resourceLoader, $"{automationId}/Header");
+                Debug.WriteLine($"[SearchIndexService] WARNING: No header localization found for ElementUid: '{elementUid}'");
             }
 
-            if (localizedText.Length == 0)
-            {
-                Debug.WriteLine("[SearchIndexService] WARNING: No localization found for AutomationId: '{automationId}'");
-            }
-
-            return localizedText;
-        }
-
-        private static EntryKind GetEntryKindFromControlType(string controlType)
-        {
-            if (controlType == "SettingsGroup")
-            {
-                return EntryKind.Section;
-            }
-
-            if (controlType == "SettingsExpander")
-            {
-                return EntryKind.Section;
-            }
-
-            return EntryKind.Leaf;
+            return (header, description);
         }
 
         private static string GetString(ResourceLoader rl, string key)
@@ -339,14 +289,14 @@ namespace Microsoft.PowerToys.Settings.UI.Services
         {
             if (string.IsNullOrWhiteSpace(query))
             {
-                return new List<SearchHit>();
+                return [];
             }
 
             var currentIndex = Index;
             if (currentIndex.IsEmpty)
             {
                 Debug.WriteLine("[SearchIndexService] Search called but index is empty.");
-                return new List<SearchHit>();
+                return [];
             }
 
             var normalizedQuery = NormalizeString(query);
@@ -354,7 +304,7 @@ namespace Microsoft.PowerToys.Settings.UI.Services
 
             foreach (var entry in currentIndex)
             {
-                var captionScoreResult = StringMatcher.FuzzyMatch(normalizedQuery, NormalizeString(entry.Value));
+                var captionScoreResult = StringMatcher.FuzzyMatch(normalizedQuery, NormalizeString(entry.Header));
                 double score = captionScoreResult.Score;
 
                 if (!string.IsNullOrEmpty(entry.Description))
@@ -373,11 +323,13 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                     {
                         var hit = new SearchHit(
                             entry.Module,
-                            entry.Value,
+                            entry.Header,
                             entry.Description,
                             score,
                             pageType,
-                            entry.Uid);
+                            entry.ElementName,
+                            entry.ElementUid,
+                            entry.ParentElementName);
                         results.Add((hit, score));
                     }
                 }

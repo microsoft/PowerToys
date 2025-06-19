@@ -5,6 +5,7 @@
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
@@ -14,9 +15,26 @@ using Windows.Foundation;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers;
 
+#pragma warning disable SA1402 // File may only contain a single type
+#pragma warning disable SA1649 // File name should match first type name
+public class NavigationParams
+#pragma warning restore SA1649 // File name should match first type name
+#pragma warning restore SA1402 // File may only contain a single type
+{
+    public string ElementName { get; set; }
+
+    public string ParentElementName { get; set; }
+
+    public NavigationParams(string elementName, string parentElementName = null)
+    {
+        ElementName = elementName;
+        ParentElementName = parentElementName;
+    }
+}
+
 public abstract partial class NavigatablePage : Page
 {
-    private string _pendingElementKey;
+    private NavigationParams _pendingNavigationParams;
 
     public NavigatablePage()
     {
@@ -26,14 +44,37 @@ public abstract partial class NavigatablePage : Page
     protected override void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
-        _pendingElementKey = e.Parameter as string;
+
+        // Handle both old string parameter and new NavigationParams
+        if (e.Parameter is NavigationParams navParams)
+        {
+            _pendingNavigationParams = navParams;
+        }
+        else if (e.Parameter is string elementKey)
+        {
+            _pendingNavigationParams = new NavigationParams(elementKey);
+        }
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
-        if (!string.IsNullOrEmpty(_pendingElementKey))
+        if (_pendingNavigationParams != null && !string.IsNullOrEmpty(_pendingNavigationParams.ElementName))
         {
-            var target = FindElementByAutomationId(this, _pendingElementKey);
+            // First, expand parent if specified
+            if (!string.IsNullOrEmpty(_pendingNavigationParams.ParentElementName))
+            {
+                var parentElement = FindElementByName(this, _pendingNavigationParams.ParentElementName);
+                if (parentElement is SettingsExpander expander)
+                {
+                    expander.IsExpanded = true;
+
+                    // Give time for the expander to animate
+                    await Task.Delay(200);
+                }
+            }
+
+            // Then find and navigate to the target element
+            var target = FindElementByName(this, _pendingNavigationParams.ElementName);
 
             target?.StartBringIntoView(new BringIntoViewOptions
             {
@@ -41,9 +82,9 @@ public abstract partial class NavigatablePage : Page
                 AnimationDesired = true,
             });
 
-            await OnTargetElementNavigatedAsync(target, _pendingElementKey);
+            await OnTargetElementNavigatedAsync(target, _pendingNavigationParams.ElementName);
 
-            _pendingElementKey = null;
+            _pendingNavigationParams = null;
         }
     }
 

@@ -12,6 +12,12 @@ using System.Xml.Linq;
 
 namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
 {
+    public enum EntryType
+    {
+        SettingsCard,
+        SettingsExpander,
+    }
+
     public class Program
     {
         private static JsonSerializerOptions serializeOption = new JsonSerializerOptions
@@ -55,8 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
                     searchableElements.AddRange(elements);
                 }
 
-                // Sort by page name for consistent output
-                searchableElements = searchableElements.OrderBy(e => e.PageName).ThenBy(e => e.AutomationId).ToList();
+                searchableElements = searchableElements.OrderBy(e => e.PageName).ThenBy(e => e.ElementName).ToList();
 
                 string json = JsonSerializer.Serialize(searchableElements, serializeOption);
                 File.WriteAllText(outputFile, json);
@@ -85,67 +90,28 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
                 XNamespace x = "http://schemas.microsoft.com/winfx/2006/xaml";
                 XNamespace controls = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
                 XNamespace labs = "using:CommunityToolkit.Labs.WinUI";
-                XNamespace winui = "using:CommunityToolkit.WinUI.UI.Controls";
+                XNamespace winui = "using:CommunityToolkit.WinUI.UI.Controls";                // Extract SettingsCards and SettingsExpanders
+                var settingsElements = doc.Descendants()
+                    .Where(e => e.Name.LocalName == "SettingsCard" || e.Name.LocalName == "SettingsExpander")
+                    .Where(e => e.Attribute("Name") != null || e.Attribute(x + "Uid") != null);
 
-                // Extract SettingsCards
-                var settingsCards = doc.Descendants()
-                    .Where(e => e.Name.LocalName == "SettingsCard" ||
-                               e.Name.LocalName == "SettingsExpander" ||
-                               e.Name.LocalName == "SettingsGroup")
-                    .Where(e => e.Attribute(x + "Name") != null || e.Attribute("AutomationProperties.AutomationId") != null);
-
-                foreach (var card in settingsCards)
+                foreach (var element in settingsElements)
                 {
-                    var automationId = GetAutomationId(card, x);
-                    if (!string.IsNullOrEmpty(automationId))
+                    var elementName = GetElementName(element, x);
+                    var elementUid = GetElementUid(element, x);
+
+                    if (!string.IsNullOrEmpty(elementName) || !string.IsNullOrEmpty(elementUid))
                     {
+                        var entryType = element.Name.LocalName == "SettingsCard" ? EntryType.SettingsCard : EntryType.SettingsExpander;
+                        var parentElementName = GetParentElementName(element, x);
+
                         elements.Add(new SearchableElementMetadata
                         {
                             PageName = pageName,
-                            AutomationId = automationId,
-                            ControlType = card.Name.LocalName,
-                        });
-                    }
-                }
-
-                // Extract Buttons, CheckBoxes, RadioButtons, ToggleButtons, ToggleSwitches
-                var interactiveControls = doc.Descendants()
-                    .Where(e => e.Name.LocalName == "Button" ||
-                               e.Name.LocalName == "CheckBox" ||
-                               e.Name.LocalName == "RadioButton" ||
-                               e.Name.LocalName == "ToggleButton" ||
-                               e.Name.LocalName == "ToggleSwitch")
-                    .Where(e => e.Attribute(x + "Name") != null || e.Attribute("AutomationProperties.AutomationId") != null);
-
-                foreach (var control in interactiveControls)
-                {
-                    var automationId = GetAutomationId(control, x);
-                    if (!string.IsNullOrEmpty(automationId))
-                    {
-                        elements.Add(new SearchableElementMetadata
-                        {
-                            PageName = pageName,
-                            AutomationId = automationId,
-                            ControlType = control.Name.LocalName,
-                        });
-                    }
-                }
-
-                // Extract TextBlocks with x:Uid for section headers
-                var textBlocks = doc.Descendants()
-                    .Where(e => e.Name.LocalName == "TextBlock")
-                    .Where(e => e.Attribute(x + "Uid") != null);
-
-                foreach (var textBlock in textBlocks)
-                {
-                    var uid = textBlock.Attribute(x + "Uid")?.Value;
-                    if (!string.IsNullOrEmpty(uid) && IsLikelyHeader(textBlock))
-                    {
-                        elements.Add(new SearchableElementMetadata
-                        {
-                            PageName = pageName,
-                            AutomationId = uid,
-                            ControlType = "TextBlock",
+                            Type = entryType,
+                            ParentElementName = parentElementName,
+                            ElementName = elementName,
+                            ElementUid = elementUid,
                         });
                     }
                 }
@@ -158,50 +124,36 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
             return elements;
         }
 
-        public static string GetAutomationId(XElement element, XNamespace x)
+        public static string GetElementName(XElement element, XNamespace x)
         {
-            // First try AutomationProperties.AutomationId
-            var automationId = element.Attribute("AutomationProperties.AutomationId")?.Value;
-            if (!string.IsNullOrEmpty(automationId))
-            {
-                return automationId;
-            }
+            // Get Name attribute (we call it ElementName in our indexing system)
+            var name = element.Attribute("Name")?.Value;
+            return name;
+        }
 
-            // Then try x:Name
-            var name = element.Attribute(x + "Name")?.Value;
-            if (!string.IsNullOrEmpty(name))
-            {
-                return name;
-            }
-
-            // Finally try x:Uid
+        public static string GetElementUid(XElement element, XNamespace x)
+        {
+            // Try x:Uid
             var uid = element.Attribute(x + "Uid")?.Value;
             return uid;
         }
 
-        public static bool IsLikelyHeader(XElement textBlock)
+        public static string GetParentElementName(XElement element, XNamespace x)
         {
-            // Check if TextBlock has styling that suggests it's a header
-            var style = textBlock.Attribute("Style")?.Value;
-            if (!string.IsNullOrEmpty(style) &&
-                (style.Contains("Subtitle") || style.Contains("Title") || style.Contains("Header")))
+            // Check if the parent is a SettingsExpander
+            var parent = element.Parent;
+            while (parent != null)
             {
-                return true;
-            }
-
-            // Check parent element - headers are often in specific containers
-            var parent = textBlock.Parent;
-            if (parent != null && (parent.Name.LocalName == "StackPanel" || parent.Name.LocalName == "Grid"))
-            {
-                // Check if it's the first child (often headers come first)
-                var firstChild = parent.Elements().FirstOrDefault();
-                if (firstChild == textBlock)
+                if (parent.Name.LocalName == "SettingsExpander")
                 {
-                    return true;
+                    // Return the parent's Name attribute
+                    return parent.Attribute("Name")?.Value ?? string.Empty;
                 }
+
+                parent = parent.Parent;
             }
 
-            return false;
+            return string.Empty;
         }
     }
 
@@ -211,8 +163,12 @@ namespace Microsoft.PowerToys.Settings.UI.XamlIndexBuilder
     {
         public string PageName { get; set; }
 
-        public string AutomationId { get; set; }
+        public EntryType Type { get; set; }
 
-        public string ControlType { get; set; }
+        public string ParentElementName { get; set; }
+
+        public string ElementName { get; set; }
+
+        public string ElementUid { get; set; }
     }
 }

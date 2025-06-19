@@ -48,7 +48,6 @@
                     x:Uid="MouseWithoutBorders_KeySettings"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
-                        x:Name="MouseWithoutBorders_ConnectSettings"
                         x:Uid="MouseWithoutBorders_SecurityKey"
                         Name="MouseWithoutBordersSecurityKey"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8D7;}"

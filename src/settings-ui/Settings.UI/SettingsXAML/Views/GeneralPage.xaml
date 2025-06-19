@@ -472,7 +472,6 @@
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard
                             x:Uid="GeneralPage_ReportBugPackage"
-                            Name="GeneralPageReportBugPackage"
                             HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}"
                             Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                             <ProgressRing
