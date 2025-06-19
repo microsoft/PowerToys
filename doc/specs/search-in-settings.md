@@ -1,4 +1,10 @@
-# PowerToys Settings – Search Index (Hard-sealed)
+# Search in powertoys settings
+
+> To address https://github.com/microsoft/PowerToys/issues/8060
+
+## Goal
+To keep users productivity within powertoys, we propose a search functionality in settings page.
+So that users can find relevance quickly when they need to locate and tweak a settings easily and quickly.
 
 ## 1. What to index
 
@@ -23,7 +29,6 @@ SettingsPageControl
 Each SettingsCard should have an x:Uid for localization and indexing. The associated display strings are defined in the .resw files:
 
 {x:Uid}.Header – The visible label/title of the setting.
-
 {x:Uid}.Description – (optional) The tooltip or explanatory text.
 
 The index should be built around these SettingsCard elements and their x:Uid-bound resources, as they represent the actual settings users will search for.
@@ -31,7 +36,11 @@ The index should be built around these SettingsCard elements and their x:Uid-bou
 ---
 
 ## 2. How to Navigate
+When user launch in settings, they will be in the shellPage.
+![shellPage](./shellpage.png)
+Modules are grouped in two levels, a group, and a sub-group. We need to know the parent of module page, then expand it, and do page and in page navigation.
 
+Here is the data structure supporting the experaience.
 ### Entry
 ```csharp
 enum EntryType
@@ -64,6 +73,9 @@ Type GetPageTypeFromPageName(string PageName)
     var assembly = typeof(GeneralPage).Assembly;
     return assembly.GetType($"Microsoft.PowerToys.Settings.UI.Views.{PageName}");
 }
+
+parent = pageType.GetParent();
+parent.Expand();
 
 NavigationService.Navigate(PageType, ElementName，ParentElementName);
 ```
@@ -215,5 +227,3 @@ flowchart TD
 ```
 
 2. CmdPal page is not in scope of this effort, that needs additional effort&design to launch and search within cmdpal settings page.
-
-3. 
