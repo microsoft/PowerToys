@@ -1,10 +1,20 @@
 # File Locksmith
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/file-locksmith)
+
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-File%20Locksmith%22)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-File%20Locksmith%22%20label%3AIssue-Bug)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-File+Locksmith%22)
+
 ## Overview
 
 File Locksmith is a utility in PowerToys that shows which processes are locking or using a specific file. This helps users identify what's preventing them from deleting, moving, or modifying files by revealing the processes that have handles to those files.
 
 ## Architecture
+
+![Diagram](../images/filelocksmith/diagram.png)
 
 File Locksmith follows a similar architecture to the ImageResizer and NewPlus modules. It consists of:
 

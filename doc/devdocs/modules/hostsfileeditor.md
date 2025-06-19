@@ -14,7 +14,7 @@ The Hosts File Editor module provides a convenient way to edit the system's host
 
 ## Code Structure
 
-![Code structure](../images/hostsfileeditor/code%20structure.png)
+![Diagram](../images/hostsfileeditor/diagram.png)
 
 The Hosts File Editor module is structured into three primary components:
 
