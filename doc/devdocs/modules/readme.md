@@ -8,6 +8,7 @@ This section contains documentation for individual PowerToys modules, including 
 |--------|-------------|---------------|
 | Environment Variables | Tool for managing user and system environment variables | [Architecture & Implementation](environmentvariables.md) |
 | FancyZones | Window manager utility for custom window layouts | [Architecture & Implementation](fancyzones.md), [Debugging Tools](fancyzones-tools.md) |
+| File Locksmith | Tool for finding processes that lock files | [Architecture & Implementation](filelocksmith.md) |
 | Hosts File Editor | Tool for managing the system hosts file | [Architecture & Implementation](hostsfileeditor.md) |
 | Keyboard Manager | Tool for remapping keys and keyboard shortcuts | [Documentation](keyboardmanager/README.md) |
 | NewPlus | Context menu extension for creating new files in File Explorer | [Architecture & Implementation](newplus.md) |
