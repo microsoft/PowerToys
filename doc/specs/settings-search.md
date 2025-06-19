@@ -124,6 +124,10 @@ So, the entry is good enough for search&navigation, now We need to build all the
 
 Most of the entry properties are static, and in runtime, the `SettingsCard` is compied into native winUI3 controls <small>(I suppose, please correct here if it's wrong)</small>, it's hard to locate all the `SettingsCard`, and performance is terrible if we do dfs for all the pages' elements.
 
+## 4.1 Future settings
+To be able to be auto indexed and searchable, you need to wrap the setting in SettingsCard, and give it a name, UID,
+then it can be automatically picked up.
+
 ### Build time indexing
 We can rely on xmal file parsing to get all the SettingsCard Entries. 
 And we don't want xaml file to be brought into production bundle.
