@@ -41,6 +41,12 @@ Most of the sub-modules (Find My Mouse, Mouse Highlighter, and Mouse Pointer Cro
 
 - Mouse Highlighter has a reported bug where the highlight color stays on after toggling opacity to 0
 
+## UI Test Automation
+
+Mouse Utilities is currently undergoing a UI Test migration process to improve automated testing coverage. You can track the progress of this migration at:
+
+[Mouse Utils UI Test Migration Progress](https://github.com/microsoft/PowerToys/blob/feature/UITestAutomation/src/modules/MouseUtils/MouseUtils.UITests/Release-Test-Checklist-Migration-Progress.md)
+
 ## See Also
 
 For more detailed implementation information, please refer to the individual utility documentation pages linked above.

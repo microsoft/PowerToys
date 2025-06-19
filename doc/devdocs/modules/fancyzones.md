@@ -247,6 +247,12 @@ UI tests are implemented using [Windows Application Driver](https://github.com/m
 
 >Note: notifications or other application windows, that are shown above the window under test, can disrupt the testing process.
 
+### UI Test Automation
+
+FancyZones is currently undergoing a UI Test migration process to improve automated testing coverage. You can track the progress of this migration at:
+
+[FancyZones UI Test Migration Progress](https://github.com/microsoft/PowerToys/blob/feature/UITestAutomation/src/modules/fancyzones/UITests-FancyZonesEditor/release-test-checklist.md)
+
 ### Testing Strategy
 
 #### Unit Tests

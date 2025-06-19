@@ -99,6 +99,12 @@ The module is loaded by the PowerToys runner from:
 | Consider loopback addresses as duplicates | `UserSettings()->LoopbackDuplicates` |
 | Encoding Setting | `UserSettings()->Encoding` |
 
+## UI Test Automation
+
+Hosts File Editor is currently undergoing a UI Test migration process to improve automated testing coverage. You can track the progress of this migration at:
+
+[Hosts File Editor UI Test Migration Progress](https://github.com/microsoft/PowerToys/blob/feature/UITestAutomation/src/modules/Hosts/Hosts.UITests/Release-Test-Checklist-Migration-Progress.md)
+
 ## How to Build and Debug
 
 1. Build PowerToys Project in debug mode
