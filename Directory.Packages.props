@@ -5,7 +5,8 @@
   <ItemGroup>
     <PackageVersion Include="AdaptiveCards.ObjectModel.WinUI3" Version="2.0.0-beta" />
     <PackageVersion Include="AdaptiveCards.Rendering.WinUI3" Version="2.1.0-beta" />
-    <PackageVersion Include="AdaptiveCards.Templating" Version="2.0.2" />
+    <PackageVersion Include="AdaptiveCards.Templating" Version="2.0.5" />
+    <PackageVersion Include="Microsoft.Bot.AdaptiveExpressions.Core" Version="4.23.0" />
     <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.17" />
     <PackageVersion Include="CommunityToolkit.Common" Version="8.4.0" />
@@ -19,7 +20,7 @@
     <PackageVersion Include="CommunityToolkit.WinUI.Converters" Version="8.2.250402" />
     <PackageVersion Include="CommunityToolkit.WinUI.Extensions" Version="8.2.250402" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
-    <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
+    <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" Version="0.1.250513-build.2126" />
     <PackageVersion Include="ControlzEx" Version="6.0.0" />
     <PackageVersion Include="HelixToolkit" Version="2.24.0" />
     <PackageVersion Include="HelixToolkit.Core.Wpf" Version="2.24.0" />

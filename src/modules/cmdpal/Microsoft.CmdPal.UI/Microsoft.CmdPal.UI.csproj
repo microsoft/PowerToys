@@ -14,7 +14,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-
     <Version>$(CmdPalVersion)</Version>
 
     <!-- OutputPath is set in CmdPal.Branding.props  -->
@@ -31,6 +30,7 @@
 	    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
 	    <PublishAot>true</PublishAot>
 	    <EnableMsixTooling>true</EnableMsixTooling>
+		<TrimmerSingleWarn>false</TrimmerSingleWarn>
     </PropertyGroup>	
 
   <PropertyGroup>
@@ -82,6 +82,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
+    <PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
@@ -98,9 +99,6 @@
 
     <PackageReference Include="System.Private.Uri" />
     <PackageReference Include="System.Text.Json" />
-    <PackageReference Include="AdaptiveCards.ObjectModel.WinUI3" GeneratePathProperty="true" />
-    <PackageReference Include="AdaptiveCards.Rendering.WinUI3" GeneratePathProperty="True" />
-    <PackageReference Include="AdaptiveCards.Templating" />
     <!-- LOAD BEARING: GeneratePathProperty=true on BOTH the AC dependencies. Don't forget the AdaptiveCardsWorkaround below -->
     <PackageReference Include="System.Text.RegularExpressions" />
   </ItemGroup>
@@ -113,21 +111,6 @@
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
   </ItemGroup>
-
-	<!-- <AdaptiveCardsWorkaround> -->
-	<!-- Workaround for Adaptive Cards not supporting correct RIDs when using .NET 8.
-       Don't forget GeneratePathProperty on the AdaptiveCards PackageReference's above -->
-	<PropertyGroup>
-		<AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
-	</PropertyGroup>
-	<ItemGroup>
-		<CsWinRTInputs Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\lib\uap10.0\AdaptiveCards.ObjectModel.WinUI3.winmd" />
-		<Content Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.ObjectModel.WinUI3.dll" Link="AdaptiveCards.ObjectModel.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
-	</ItemGroup>
-	<ItemGroup>
-		<CsWinRTInputs Include="$(PkgAdaptiveCards_Rendering_WinUI3)\lib\uap10.0\AdaptiveCards.Rendering.WinUI3.winmd" />
-		<Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" Link="AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
-	</ItemGroup>
 	
   <ItemGroup>
 	<RdXmlFile Include="rd.xml" />
@@ -202,13 +185,6 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
-
-  <!-- <AdaptiveCardsWorkaround> -->
-  <!-- Workaround for Adaptive Cards not supporting correct RIDs when using .NET 8.
-       Don't forget GeneratePathProperty on the AdaptiveCards PackageReference's above -->
-  <PropertyGroup>
-    <AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
-  </PropertyGroup>
   <ItemGroup>
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
