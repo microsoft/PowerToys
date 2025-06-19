@@ -1,6 +1,12 @@
 # Hosts File Editor
 
-[Learn](https://learn.microsoft.com/en-us/windows/powertoys/hosts-file-editor)
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/hosts-file-editor)
+
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Hosts%20File%20Editor%22)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Hosts%20File%20Editor%22%20label%3AIssue-Bug)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Hosts+File+Editor%22)
 
 ## Overview
 
