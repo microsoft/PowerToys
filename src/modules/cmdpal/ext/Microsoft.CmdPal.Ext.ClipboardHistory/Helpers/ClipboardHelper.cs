@@ -63,7 +63,8 @@ internal static class ClipboardHelper
                 ClipboardThreadQueue.EnqueueTask(() =>
                 {
                     Clipboard.SetContent(output);
-                    Flush();
+
+                    // Flush();
                     ExtensionHost.LogMessage(new LogMessage() { Message = "Copied text to clipboard" });
                 });
             }

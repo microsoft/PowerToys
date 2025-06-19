@@ -4,10 +4,9 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Messages;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-
-using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Commands;
 
@@ -37,8 +36,22 @@ internal sealed partial class PasteCommand : InvokableCommand
     {
         ClipboardHelper.SetClipboardContent(_clipboardItem, _clipboardFormat);
         HideWindow();
+
+        // Get the title of the current foreground window
+        var foregroundWindow = NativeMethods.GetForegroundWindow();
+        if (foregroundWindow == 0)
+        {
+            return CommandResult.ShowToast("No active window to paste into.");
+        }
+
+        // now get it's title
+        var title = NativeMethods.GetWindowTitle(foregroundWindow);
+
+        ExtensionHost.LogMessage($"Pasting into window: '{title}'");
+
         ClipboardHelper.SendPasteKeyCombination();
-        Clipboard.DeleteItemFromHistory(_clipboardItem.Item);
+
+        // Clipboard.DeleteItemFromHistory(_clipboardItem.Item);
         return CommandResult.ShowToast("Pasting");
     }
 }
