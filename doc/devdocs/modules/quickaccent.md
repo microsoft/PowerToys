@@ -57,9 +57,10 @@ This component:
 
 The Quick Accent is activated when:
 1. A user presses and holds a character key (e.g., 'a')
-2. After a brief delay (around 300ms), the accent toolbar appears
-3. The user can select an accented variant using the trigger key
-4. Upon releasing the keys, the selected accented character is inserted
+2. User presses the trigger key
+3. After a brief delay (around 300ms per setting), the accent toolbar appears
+4. The user can select an accented variant using the trigger key
+5. Upon releasing the keys, the selected accented character is inserted
 
 ### Character Sets
 
