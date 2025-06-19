@@ -33,6 +33,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<DashboardListItem> AllModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
+        public ObservableCollection<DashboardListItem> AllActiveModulesWithShortcuts { get; set; } = new ObservableCollection<DashboardListItem>();
+
+        public ObservableCollection<DashboardListItem> AllActiveModulesWithButtons { get; set; } = new ObservableCollection<DashboardListItem>();
+
         public ObservableCollection<DashboardListItem> ActiveModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<DashboardListItem> DisabledModules { get; set; } = new ObservableCollection<DashboardListItem>();
@@ -64,6 +68,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             AllModules = new ObservableCollection<DashboardListItem>(_allModules);
             ActiveModules = new ObservableCollection<DashboardListItem>(_allModules.Where(x => x.IsEnabled));
+
+            AllActiveModulesWithShortcuts = new ObservableCollection<DashboardListItem>(_allModules.Where(x => x.IsEnabled && x.DashboardModuleItems.Any(item => item is DashboardModuleShortcutItem)));
+            AllActiveModulesWithButtons = new ObservableCollection<DashboardListItem>(_allModules.Where(x => x.IsEnabled && x.DashboardModuleItems.Any(item => item is DashboardModuleButtonItem)));
+
             DisabledModules = new ObservableCollection<DashboardListItem>(_allModules.Where(x => !x.IsEnabled));
 
             UpdatingSettings updatingSettingsConfig = UpdatingSettings.LoadSettings();

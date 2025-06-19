@@ -123,7 +123,10 @@
                     x:Uid="Shell_Dashboard"
                     helpers:NavHelper.NavigateTo="views:DashboardPage"
                     Icon="{ui:FontIcon Glyph=&#xE80F;}" />
-
+                <NavigationViewItem
+                Content="Dashboard 2"
+                helpers:NavHelper.NavigateTo="views:DashboardPage2"
+                Icon="{ui:FontIcon Glyph=&#xE80F;}" />
                 <NavigationViewItem x:Uid="Shell_General" helpers:NavHelper.NavigateTo="views:GeneralPage">
                     <NavigationViewItem.Icon>
                         <AnimatedIcon>
