@@ -123,8 +123,13 @@ public partial class MainListPage : DynamicListPage,
             // with a list of all our commands & apps.
             if (_filteredItems == null)
             {
-                IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
-                _filteredItems = commands.Concat(apps);
+                _filteredItems = commands;
+
+                if (_tlcManager.CommandProviders.Any(static t => t is { Id: AllAppsCommandProvider.WellKnownId, IsActive: true }))
+                {
+                    IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
+                    _filteredItems = _filteredItems.Concat(apps);
+                }
             }
 
             // Produce a list of everything that matches the current filter.
