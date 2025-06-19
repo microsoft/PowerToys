@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls">
+
+    <Style BasedOn="{StaticResource DefaultOpacityMaskViewStyle}" TargetType="controls:OpacityMaskView" />
+
+    <Style x:Key="DefaultOpacityMaskViewStyle" TargetType="controls:OpacityMaskView">
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:OpacityMaskView">
+                    <Grid
+                        x:Name="PART_RootGrid"
+                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                        <Border
+                            x:Name="PART_MaskContainer"
+                            Child="{TemplateBinding OpacityMask}"
+                            IsHitTestVisible="False" />
+                        <ContentPresenter
+                            x:Name="PART_ContentPresenter"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

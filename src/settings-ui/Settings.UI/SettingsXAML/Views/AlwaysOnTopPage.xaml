@@ -15,7 +15,7 @@
         IsTabStop="False"
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/AlwaysOnTop.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+            <StackPanel Orientation="Vertical">
                 <tkcontrols:SettingsCard
                     x:Uid="AlwaysOnTop_EnableToggleControl_HeaderText"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AlwaysOnTop.png}"

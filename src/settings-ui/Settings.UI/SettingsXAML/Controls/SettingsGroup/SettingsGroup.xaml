@@ -8,7 +8,7 @@
             <Setter.Value>
                 <ItemsPanelTemplate>
                     <StackPanel
-                        ChildrenTransitions="{StaticResource SettingsCardsAnimations}"
+                    
                         Orientation="Vertical"
                         Spacing="{StaticResource SettingsCardSpacing}" />
                 </ItemsPanelTemplate>

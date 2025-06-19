@@ -11,15 +11,68 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <x:Double x:Key="PageMaxWidth">1000</x:Double>
-        <tkconverters:DoubleToVisibilityConverter
-            x:Name="doubleToVisibilityConverter"
-            FalseValue="Collapsed"
-            GreaterThan="0"
-            TrueValue="Visible" />
+
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <LinearGradientBrush x:Key="OverlayLinearGradient" StartPoint="0.5,0" EndPoint="0.5,1">
+                        <GradientStop Offset="0" Color="#FFFFFFFF" />
+                        <GradientStop Offset="0.55" Color="#FFFFFFFF" />
+                        <GradientStop Offset="0.65" Color="#99FFFFFF" />
+                        <GradientStop Offset="0.70" Color="#66FFFFFF" />
+                        <GradientStop Offset="0.80" Color="#19FFFFFF" />
+                        <GradientStop Offset="0.85" Color="#00FFFFFF" />
+                        <GradientStop Offset="1" Color="#00FFFFFF" />
+                    </LinearGradientBrush>
+                    <RadialGradientBrush x:Key="OverlayRadialGradient" Center="0.5,0.5" MappingMode="RelativeToBoundingBox" RadiusX="0.92" RadiusY="0.8200000000000001" SpreadMethod="Pad">
+                        <GradientStop Offset="0" Color="#FFFFFFFF" />
+                        <GradientStop Offset="0.05" Color="#FFFFFFFF" />
+                        <GradientStop Offset="0.35" Color="#FFFFFFFF" />
+                        <GradientStop Offset="0.55" Color="#00FFFFFF" />
+                        <GradientStop Offset="0.95" Color="#00FFFFFF" />
+                        <GradientStop Offset="1" Color="#00FFFFFF" />
+                    </RadialGradientBrush>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <LinearGradientBrush x:Key="OverlayLinearGradient" StartPoint="0.5,0" EndPoint="0.5,1">
+                        <GradientStop Offset="0" Color="#FF000000" />
+                        <GradientStop Offset="0.55" Color="#FF000000" />
+                        <GradientStop Offset="0.85" Color="#00000000" />
+                        <GradientStop Offset="1" Color="#00000000" />
+                    </LinearGradientBrush>
+                    <RadialGradientBrush x:Key="OverlayRadialGradient" MappingMode="RelativeToBoundingBox" RadiusX="0.8" RadiusY="0.6" SpreadMethod="Pad">
+                        <GradientStop Offset="0" Color="#FF000000" />
+                        <GradientStop Offset="0.30" Color="#FF000000" />
+                        <GradientStop Offset="0.80" Color="#00000000" />
+                        <GradientStop Offset="1" Color="#00000000" />
+                    </RadialGradientBrush>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <LinearGradientBrush x:Key="OverlayLinearGradient" StartPoint="0.5,0" EndPoint="0.5,1">
+                        <GradientStop Offset="0" Color="#FF000000" />
+                        <GradientStop Offset="0.55" Color="#FF000000" />
+                        <GradientStop Offset="0.95" Color="#00000000" />
+                    </LinearGradientBrush>
+                    <RadialGradientBrush x:Key="OverlayRadialGradient" Center="0.5,0.5" MappingMode="RelativeToBoundingBox" RadiusX="0.92" RadiusY="0.8200000000000001" SpreadMethod="Pad">
+                        <GradientStop Offset="0" Color="#FF000000" />
+                        <GradientStop Offset="0.05" Color="#FF000000" />
+                        <GradientStop Offset="0.35" Color="#FF000000" />
+                        <GradientStop Offset="0.55" Color="#FF000000" />
+                        <GradientStop Offset="0.95" Color="#00000000" />
+                        <GradientStop Offset="1" Color="#00000000" />
+                    </RadialGradientBrush>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+            <x:Double x:Key="PageMaxWidth">1000</x:Double>
+            <tkconverters:DoubleToVisibilityConverter
+                x:Name="doubleToVisibilityConverter"
+                FalseValue="Collapsed"
+                GreaterThan="0"
+                TrueValue="Visible" />
+        </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Padding="20,0,0,0" RowSpacing="24">
+    <Grid Padding="20,0,0,0" RowSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -27,6 +80,7 @@
         <TextBlock
             x:Name="Header"
             MaxWidth="{StaticResource PageMaxWidth}"
+            Margin="-12,0,0,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             AutomationProperties.HeadingLevel="1"
@@ -52,6 +106,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
