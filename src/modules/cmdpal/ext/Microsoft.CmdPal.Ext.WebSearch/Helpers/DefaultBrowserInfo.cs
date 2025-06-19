@@ -79,7 +79,7 @@ public static class DefaultBrowserInfo
             try
             {
                 var progId = GetRegistryValue(
-                    @"HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoiceLatest",
+                    @"HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoiceLatest\ProgId",
                     "ProgId")
                     ?? GetRegistryValue(
                         @"HKEY_CURRENT_USER\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice",
