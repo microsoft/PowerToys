@@ -227,7 +227,6 @@ namespace Peek.FilePreviewer.Previewers
             })).ToArray();
 
             Task.WaitAll(tasks);
-            HandlerFactories.Clear();
         }
 
         private static string? GetPreviewHandlerGuid(string fileExt)
