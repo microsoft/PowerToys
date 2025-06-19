@@ -16,6 +16,7 @@ namespace EnvironmentVariablesUILib
 {
     public sealed partial class EnvironmentVariablesMainPage : Page
     {
+        private const string ValueListSeparator = ";";
         private sealed class RelayCommandParameter
         {
             public RelayCommandParameter(Variable variable, VariablesSet set)
@@ -440,7 +441,7 @@ namespace EnvironmentVariablesUILib
                 variable.ValuesList.Move(index, index - 1);
             }
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = string.Join(ValueListSeparator, variable.ValuesList?.Select(x => x.Text).ToArray());
             EditVariableDialogValueTxtBox.Text = newValues;
         }
 
@@ -461,7 +462,7 @@ namespace EnvironmentVariablesUILib
                 variable.ValuesList.Move(index, index + 1);
             }
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = string.Join(ValueListSeparator, variable.ValuesList?.Select(x => x.Text).ToArray());
             EditVariableDialogValueTxtBox.Text = newValues;
         }
 
@@ -476,7 +477,7 @@ namespace EnvironmentVariablesUILib
             var variable = EditVariableDialog.DataContext as Variable;
             variable.ValuesList.Remove(listItem);
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = string.Join(ValueListSeparator, variable.ValuesList?.Select(x => x.Text).ToArray());
             EditVariableDialogValueTxtBox.Text = newValues;
         }
 
@@ -492,7 +493,7 @@ namespace EnvironmentVariablesUILib
             var index = variable.ValuesList.IndexOf(listItem);
             variable.ValuesList.Insert(index, new Variable.ValuesListItem { Text = string.Empty });
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = string.Join(ValueListSeparator, variable.ValuesList?.Select(x => x.Text).ToArray());
             EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
             EditVariableDialogValueTxtBox.Text = newValues;
             EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
@@ -510,7 +511,7 @@ namespace EnvironmentVariablesUILib
             var index = variable.ValuesList.IndexOf(listItem);
             variable.ValuesList.Insert(index + 1, new Variable.ValuesListItem { Text = string.Empty });
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = string.Join(ValueListSeparator, variable.ValuesList?.Select(x => x.Text).ToArray());
             EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
             EditVariableDialogValueTxtBox.Text = newValues;
             EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
@@ -532,7 +533,7 @@ namespace EnvironmentVariablesUILib
             listItem.Text = (sender as TextBox)?.Text;
             var variable = EditVariableDialog.DataContext as Variable;
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = string.Join(ValueListSeparator, variable.ValuesList?.Select(x => x.Text).ToArray());
             EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
             EditVariableDialogValueTxtBox.Text = newValues;
             EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
@@ -553,7 +554,7 @@ namespace EnvironmentVariablesUILib
         {
             if (EditVariableDialog.DataContext is Variable variable && variable.ValuesList != null)
             {
-                var newValues = string.Join(";", variable.ValuesList.Select(x => x.Text));
+                var newValues = string.Join(ValueListSeparator, variable.ValuesList.Select(x => x.Text));
                 EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
                 EditVariableDialogValueTxtBox.Text = newValues;
                 EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
