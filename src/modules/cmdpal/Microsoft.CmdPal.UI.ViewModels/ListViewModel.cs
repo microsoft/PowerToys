@@ -373,6 +373,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                }
 
                TextToSuggest = item.TextToSuggest;
+               WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(item.TextToSuggest));
            });
 
         _lastSelectedItem = item;
@@ -425,6 +426,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
                WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
 
                WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
+
+               WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(string.Empty));
 
                TextToSuggest = string.Empty;
            });
