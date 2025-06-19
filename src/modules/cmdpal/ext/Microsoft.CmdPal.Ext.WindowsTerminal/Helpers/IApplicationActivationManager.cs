@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 
@@ -18,14 +19,13 @@ public enum ActivateOptions
 }
 
 // ApplicationActivationManager
-[ComImport]
+[GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 [Guid("2e941141-7f97-4756-ba1d-9decde894a3d")]
-[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-public interface IApplicationActivationManager
+public partial interface IApplicationActivationManager
 {
-    IntPtr ActivateApplication([In] string appUserModelId, [In] string arguments, [In] ActivateOptions options, [Out] out uint processId);
+    void ActivateApplication(string appUserModelId, string arguments, ActivateOptions options, out uint processId);
 
-    IntPtr ActivateForFile([In] string appUserModelId, [In] IntPtr /*IShellItemArray* */ itemArray, [In] string verb, [Out] out uint processId);
+    void ActivateForFile(string appUserModelId, IntPtr /*IShellItemArray* */ itemArray, string verb, out uint processId);
 
-    IntPtr ActivateForProtocol([In] string appUserModelId, [In] IntPtr /* IShellItemArray* */itemArray, [Out] out uint processId);
+    void ActivateForProtocol(string appUserModelId, IntPtr /* IShellItemArray* */itemArray, out uint processId);
 }

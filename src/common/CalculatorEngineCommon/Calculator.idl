@@ -1,0 +1,10 @@
+namespace CalculatorEngineCommon
+{
+    [default_interface]
+    runtimeclass Calculator
+    {
+        Calculator();
+        Calculator(Windows.Foundation.Collections.IPropertySet constants);
+        String EvaluateExpression(String expression);
+    }
+}

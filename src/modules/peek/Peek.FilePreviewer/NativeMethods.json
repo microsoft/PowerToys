@@ -1,4 +1,5 @@
 ﻿{
-    "$schema": "https://aka.ms/CsWin32.schema.json",
-    "public": false
+  "$schema": "https://aka.ms/CsWin32.schema.json",
+  "public": false,
+  "className": "PInvoke_FilePreviewer"
 }
