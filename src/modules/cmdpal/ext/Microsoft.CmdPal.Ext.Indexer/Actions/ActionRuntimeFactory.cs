@@ -5,12 +5,8 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Microsoft.CmdPal.Ext.Indexer.Native;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.System.Com;
+using ManagedCsWin32;
 using WinRT;
-using WinRT.Interop;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Data;
 
@@ -29,7 +25,7 @@ internal static class ActionRuntimeFactory
             Guid classId = Guid.Parse(ActionRuntimeClsidStr);
             Guid iid = IActionRuntimeIID;
 
-            var hresult = NativeMethods.CoCreateInstance(ref Unsafe.AsRef(in classId), IntPtr.Zero, NativeHelpers.CLSCTXLOCALSERVER, ref iid, out abiPtr);
+            var hresult = Ole32.CoCreateInstance(ref Unsafe.AsRef(in classId), IntPtr.Zero, CLSCTX.LocalServer, ref iid, out abiPtr);
             Marshal.ThrowExceptionForHR((int)hresult);
 
             return MarshalInterface<global::Windows.AI.Actions.ActionRuntime>.FromAbi(abiPtr);
