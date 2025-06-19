@@ -85,6 +85,14 @@
 - At least 2 monitors are recommended
 - One monitor should be able to use different DPI settings
 
+### Fuzzing Testing
+- Security team requires fuzzing testing for modules that handle file I/O or user input
+- Helps identify vulnerabilities and bugs by feeding random, invalid, or unexpected data
+- PowerToys integrates with Microsoft's OneFuzz service for automated testing
+- Both .NET (C#) and C++ modules have different fuzzing implementation approaches
+- New modules handling file I/O or user input should implement fuzzing tests
+- For detailed setup instructions, see [Fuzzing Testing in PowerToys](../tools/fuzzingtesting.md)
+
 ### Testing Process
 - For reporting bugs during the release candidate testing:
   1. Discuss in team chat

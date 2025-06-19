@@ -73,6 +73,6 @@ The definition of the interface used by the [`runner`](/src/runner) to manage th
 
 The common lib, as the name suggests, contains code shared by multiple PowerToys components and modules, e.g. [json parsing](/src/common/utils/json.h) and [IPC primitives](/src/common/interop/two_way_pipe_message_ipc.h).
 
-### [`Settings`](../settingsv2/)
+### [`Settings`](settings/readme.md)
 
 Settings v2 is our current settings implementation. Please head over to the dev docs that describe the current settings system.
