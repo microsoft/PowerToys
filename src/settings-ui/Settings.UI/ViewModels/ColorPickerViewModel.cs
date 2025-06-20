@@ -182,6 +182,51 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int PrimaryClickBehavior
+        {
+            get => (int)_colorPickerSettings.Properties.PrimaryClickAction;
+
+            set
+            {
+                if (value != (int)_colorPickerSettings.Properties.PrimaryClickAction)
+                {
+                    _colorPickerSettings.Properties.PrimaryClickAction = (ColorPickerClickAction)value;
+                    OnPropertyChanged(nameof(PrimaryClickBehavior));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int MiddleClickBehavior
+        {
+            get => (int)_colorPickerSettings.Properties.MiddleClickAction;
+
+            set
+            {
+                if (value != (int)_colorPickerSettings.Properties.MiddleClickAction)
+                {
+                    _colorPickerSettings.Properties.MiddleClickAction = (ColorPickerClickAction)value;
+                    OnPropertyChanged(nameof(MiddleClickBehavior));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int SecondaryClickBehavior
+        {
+            get => (int)_colorPickerSettings.Properties.SecondaryClickAction;
+
+            set
+            {
+                if (value != (int)_colorPickerSettings.Properties.SecondaryClickAction)
+                {
+                    _colorPickerSettings.Properties.SecondaryClickAction = (ColorPickerClickAction)value;
+                    OnPropertyChanged(nameof(SecondaryClickBehavior));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool ShowColorName
         {
             get => _colorPickerSettings.Properties.ShowColorName;

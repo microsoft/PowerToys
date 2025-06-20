@@ -12,6 +12,8 @@ internal sealed class Icons
 
     internal static IconInfo FileExplorer { get; } = IconHelpers.FromRelativePath("Assets\\FileExplorer.png");
 
+    internal static IconInfo Actions { get; } = IconHelpers.FromRelativePath("Assets\\Actions.png");
+
     internal static IconInfo OpenFile { get; } = new("\uE8E5"); // OpenFile
 
     internal static IconInfo Document { get; } = new("\uE8A5"); // Document

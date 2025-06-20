@@ -53,6 +53,9 @@ parameters:
   - name: runTests
     type: boolean
     default: true
+  - name: buildTests
+    type: boolean
+    default: true
   - name: useVSPreview
     type: boolean
     default: false
@@ -99,7 +102,7 @@ jobs:
             ${{ else }}:
               OutputBuildPlatform: ${{ platform }}
   variables:
-    MakeAppxPath: 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x86\MakeAppx.exe'
+    MakeAppxPath: 'C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x86\MakeAppx.exe'
     # Azure DevOps abhors a vacuum
     # If these are blank, expansion will fail later on... which will result in direct substitution of the variable *names*
     # later on. We'll just... set them to a single space and if we need to, check IsNullOrWhiteSpace.
@@ -110,7 +113,7 @@ jobs:
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    ${{ if eq(parameters.runTests, true) }}:
+    ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
       MSBuildMainBuildTargets: Build;Test
     ${{ else }}:
       MSBuildMainBuildTargets: Build
@@ -332,6 +335,7 @@ jobs:
           /p:VCRTForwarders-IncludeDebugCRT=false
           /p:PowerToysRoot=$(Build.SourcesDirectory)
           /p:PublishProfile=InstallationPublishProfile.pubxml
+          /p:TargetFramework=net9.0-windows10.0.26100.0
           /bl:$(LogOutputDirectory)\publish-${{ join('_',split(project, '/')) }}.binlog
           $(RestoreAdditionalProjectSourcesArg)
         platform: $(BuildPlatform)
@@ -394,10 +398,7 @@ jobs:
         testAssemblyVer2: |
           **\KeyboardManagerEngineTest.dll
           **\KeyboardManagerEditorTest.dll
-          **\UnitTests-CommonLib.dll
-          **\PowerRenameUnitTests.dll
-          **\UnitTests-FancyZones.dll
-          **\\WorkspacesLibUnitTests.dll
+          **\*UnitTest*.dll
           !**\obj\**
 
   - pwsh: |-
@@ -531,7 +532,7 @@ jobs:
     displayName: Stage GPO files
 
   # Running the tests may result in future jobs consuming artifacts out of this build
-  - ${{ if eq(parameters.runTests, true) }}:
+  - ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
     - task: CopyFiles@2
       displayName: Stage entire build output
       inputs:

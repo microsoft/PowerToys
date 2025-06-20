@@ -454,11 +454,25 @@
                                 <Button x:Uid="GeneralPage_ViewDiagnosticDataViewerInfoButton" Click="Click_ViewDiagnosticDataViewerRestart" />
                             </InfoBar.ActionButton>
                         </InfoBar>
-                        <tkcontrols:SettingsCard x:Uid="GeneralPage_ReportBugPackage" HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}">
+                        <tkcontrols:SettingsCard
+                            x:Uid="GeneralPage_ReportBugPackage"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}"
+                            Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource ReverseBoolToVisibilityConverter}, Mode=OneWay}">
                             <Button
                                 x:Uid="GeneralPageReportBugPackage"
                                 HorizontalAlignment="Right"
-                                Click="BugReportToolClicked" />
+                                Click="BugReportToolClicked"
+                                IsEnabled="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard
+                            x:Uid="GeneralPage_ReportBugPackage"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xEBE8;}"
+                            Visibility="{x:Bind ViewModel.IsBugReportRunning, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                            <ProgressRing
+                                Width="24"
+                                Height="24"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center" />
                         </tkcontrols:SettingsCard>
                     </StackPanel>
                 </controls:SettingsGroup>

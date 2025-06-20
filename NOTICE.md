@@ -1427,6 +1427,37 @@ EXHIBIT A -Mozilla Public License.
 
 ## Utility: Registry Preview
 
+### HexBox.WinUI
+
+We use HexBox.WinUI to show a preview of binary values.
+
+**Source**: https://github.com/hotkidfamily/HexBox.WinUI
+
+```
+MIT License
+
+Copyright (c) 2019 Filip Jeremic
+Copyright (c) 2024~2025 hotkidfamily@gmail.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ### Monaco Editor
 
 **Source**: https://github.com/Microsoft/monaco-editor
@@ -1457,11 +1488,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+
 ## NuGet Packages used by PowerToys
 
 - AdaptiveCards.ObjectModel.WinUI3 2.0.0-beta
 - AdaptiveCards.Rendering.WinUI3 2.1.0-beta
-- AdaptiveCards.Templating 2.0.2
+- AdaptiveCards.Templating 2.0.5
 - Appium.WebDriver 4.4.5
 - Azure.AI.OpenAI 1.0.0-beta.17
 - CommunityToolkit.Common 8.4.0
@@ -1486,6 +1518,7 @@ SOFTWARE.
 - Markdig.Signed 0.34.0
 - MessagePack 3.1.3
 - Microsoft.Bcl.AsyncInterfaces 9.0.6
+- Microsoft.Bot.AdaptiveExpressions.Core 4.23.0
 - Microsoft.CodeAnalysis.NetAnalyzers 9.0.0
 - Microsoft.Data.Sqlite 9.0.6
 - Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16
@@ -1501,9 +1534,9 @@ SOFTWARE.
 - Microsoft.Web.WebView2 1.0.2903.40
 - Microsoft.Win32.SystemEvents 9.0.6
 - Microsoft.Windows.Compatibility 9.0.6
-- Microsoft.Windows.CsWin32 0.2.46-beta
+- Microsoft.Windows.CsWin32 0.3.183
 - Microsoft.Windows.CsWinRT 2.2.0
-- Microsoft.Windows.SDK.BuildTools 10.0.22621.2428
+- Microsoft.Windows.SDK.BuildTools 10.0.26100.4188
 - Microsoft.WindowsAppSDK 1.7.250513003
 - Microsoft.WindowsPackageManager.ComInterop 1.10.340
 - Microsoft.Xaml.Behaviors.WinUI.Managed 2.0.9
@@ -1517,6 +1550,7 @@ SOFTWARE.
 - ReverseMarkdown 4.1.0
 - ScipBe.Common.Office.OneNote 3.0.1
 - SharpCompress 0.37.2
+- SkiaSharp.Views.WinUI 2.88.9
 - StreamJsonRpc 2.21.69
 - StyleCop.Analyzers 1.2.0-beta.556
 - System.CodeDom 9.0.6
