@@ -1493,7 +1493,7 @@ SOFTWARE.
 
 - AdaptiveCards.ObjectModel.WinUI3 2.0.0-beta
 - AdaptiveCards.Rendering.WinUI3 2.1.0-beta
-- AdaptiveCards.Templating 2.0.2
+- AdaptiveCards.Templating 2.0.5
 - Appium.WebDriver 4.4.5
 - Azure.AI.OpenAI 1.0.0-beta.17
 - CommunityToolkit.Common 8.4.0
@@ -1518,6 +1518,7 @@ SOFTWARE.
 - Markdig.Signed 0.34.0
 - MessagePack 3.1.3
 - Microsoft.Bcl.AsyncInterfaces 9.0.6
+- Microsoft.Bot.AdaptiveExpressions.Core 4.23.0
 - Microsoft.CodeAnalysis.NetAnalyzers 9.0.0
 - Microsoft.Data.Sqlite 9.0.6
 - Microsoft.Diagnostics.Tracing.TraceEvent 3.1.16
