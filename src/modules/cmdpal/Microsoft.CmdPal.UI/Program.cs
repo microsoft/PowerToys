@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -19,6 +20,7 @@ namespace Microsoft.CmdPal.UI;
 // https://github.com/microsoft/WindowsAppSDK-Samples/tree/main/Samples/AppLifecycle/Instancing/cs2/cs-winui-packaged/CsWinUiDesktopInstancing
 internal sealed class Program
 {
+    private static DispatcherQueueSynchronizationContext? uiContext;
     private static App? app;
 
     // LOAD BEARING
@@ -71,8 +73,8 @@ internal sealed class Program
         {
             Microsoft.UI.Xaml.Application.Start((p) =>
             {
-                Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext context = new(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
-                SynchronizationContext.SetSynchronizationContext(context);
+                uiContext = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
+                SynchronizationContext.SetSynchronizationContext(uiContext);
                 app = new App();
             });
         }
@@ -127,9 +129,7 @@ internal sealed class Program
             if (thisApp.AppWindow is not null and
                 MainWindow mainWindow)
             {
-                mainWindow.HandleLaunch(args);
-
-                // mainWindow.Summon(string.Empty);
+                uiContext?.Post(_ => mainWindow.HandleLaunch(args), null);
             }
         }
     }
