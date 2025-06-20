@@ -2848,6 +2848,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
     <value>Zone appearance</value>
   </data>
+  <data name="LearnMore.Text" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Header" xml:space="preserve">
     <value>Geometric Code</value>
     <comment>File type, do not translate</comment>
@@ -3955,6 +3958,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccessTxt.Text" xml:space="preserve">
     <value>Quick access</value>
   </data>
+  <data name="UpdateAvailable.Text" xml:space="preserve">
+    <value>Update available</value>
+  </data>
   <data name="FileExplorerPreview_Toggle_Monaco_Max_File_Size.Header" xml:space="preserve">
     <value>Maximum file size to preview</value>
     <comment>Size refers to the disk space used by a file</comment>
@@ -4227,10 +4233,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Title of the settings window when running as administrator</comment>
   </data>
   <data name="DashboardTitle.Text" xml:space="preserve">
-    <value>Dashboard</value>
+    <value>Home</value>
   </data>
   <data name="Shell_Dashboard.Content" xml:space="preserve">
-    <value>Dashboard</value>
+    <value>Home</value>
   </data>
   <data name="Peek_Preview_GroupSettings.Header" xml:space="preserve">
     <value>Preview</value>

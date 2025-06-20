@@ -11,8 +11,6 @@
     mc:Ignorable="d">
 
     <UserControl.Resources>
-        <x:Double x:Key="PageMaxWidth">1000</x:Double>
-        <x:Double x:Key="PageHeaderMaxWidth">1020</x:Double>
         <tkconverters:DoubleToVisibilityConverter
             x:Name="doubleToVisibilityConverter"
             FalseValue="Collapsed"

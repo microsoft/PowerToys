@@ -46,6 +46,7 @@
             <Thickness x:Key="InfoBarContentRootPadding">16,0,0,0</Thickness>
             <x:Double x:Key="SettingActionControlMinWidth">240</x:Double>
 
+            <x:Double x:Key="PageMaxWidth">1000</x:Double>
 
             <Style TargetType="ListViewItem">
                 <Setter Property="Margin" Value="0,0,0,2" />
