@@ -394,6 +394,12 @@ void Highlighter::StartDrawing()
 {
     Logger::info("Starting draw mode.");
     Trace::StartHighlightingSession();
+
+    if (m_spotlightMode && m_alwaysColor.A != 0)
+    {
+        Trace::StartSpotlightSession();
+    }
+
     m_visible = true;
 
     // HACK: Draw with 1 pixel off. Otherwise Windows glitches the task bar transparency when a transparent window fill the whole screen.
