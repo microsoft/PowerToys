@@ -1,5 +1,13 @@
 # Text Extractor
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/text-extractor)
+
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Text%20Extractor%22)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Text%20Extractor%22)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Text+Extractor%22)
+
 ## Overview
 Text Extractor is a PowerToys utility that enables users to extract and copy text from anywhere on the screen, including inside images and videos. The module uses Optical Character Recognition (OCR) technology to recognize text in visual content. This module is based on Joe Finney's Text Grab.
 

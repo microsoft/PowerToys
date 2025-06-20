@@ -1,10 +1,12 @@
 # FancyZones
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/fancyzones)
+
 ## Quick Links
 
 [All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AProduct-FancyZones)<br>
-[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AProduct-FancyZones%20label%3AIssue-Bug%20)<br>
-[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+FancyZone)
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3AProduct-FancyZones)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3AProduct-FancyZones)
 
 ## Overview
 

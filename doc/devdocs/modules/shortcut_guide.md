@@ -1,9 +1,12 @@
 # Shortcut Guide
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/shortcut-guide)
+
 ## Quick Links
 
-[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22Product-Shortcut%20Guide%22)
-[PRs](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen++label%3A%22Product-Shortcut+Guide%22+)
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Shortcut%20Guide%22)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Shortcut%20Guide%22)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Shortcut+Guide%22+)
 
 ## Overview
 Shortcut Guide is a PowerToy that displays an overlay of available keyboard shortcuts when the Windows key is pressed and held. It provides a visual reference for Windows key combinations, helping users discover and utilize built-in Windows shortcuts.

@@ -1,5 +1,13 @@
 # Color Picker
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/color-picker)
+
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Color%20Picker%22)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Color%20Picker%22)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen++label%3A%22Product-Color+Picker%22)
+
 ## Overview
 Color Picker is a system-wide color picking utility for Windows that allows users to pick colors from any screen and copy them to the clipboard in a configurable format.
 

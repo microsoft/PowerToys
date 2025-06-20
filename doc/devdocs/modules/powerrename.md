@@ -1,5 +1,13 @@
 # PowerRename
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/powerrename)
+
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AProduct-PowerRename)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3AProduct-PowerRename)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3AProduct-PowerRename)
+
 PowerRename is a Windows shell extension that enables batch renaming of files using search and replace or regular expressions.
 
 ## Overview

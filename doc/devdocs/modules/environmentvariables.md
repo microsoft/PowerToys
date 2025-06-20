@@ -1,9 +1,12 @@
 # Environment Variables
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/environment-variables)
+
 ## Quick Links
 
-[Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22Product-Environment%20Variables%22)<br>
-[PRs](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+Environment+Variable+is%3Aopen) <br>
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Environment%20Variables%22)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Environment%20Variables%22)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Environment+Variables%22)
 [Checklist](https://github.com/microsoft/PowerToys/blob/releaseChecklist/doc/releases/tests-checklist-template.md?plain=1#L744)
 
 ## Overview

@@ -1,5 +1,13 @@
 # Crop and Lock
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/crop-and-lock)
+
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AProduct-CropAndLock)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3AProduct-CropAndLock)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3AProduct-CropAndLock)
+
 ## Overview
 
 The Crop and Lock module in PowerToys allows users to crop a current application into a smaller window or create a thumbnail. This utility enhances productivity by enabling users to focus on specific parts of an application window.

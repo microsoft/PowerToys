@@ -6,6 +6,7 @@ This section contains documentation for individual PowerToys modules, including 
 
 | Module | Description |
 |--------|-------------|
+| [Advanced Paste](advancedpaste.md) | Tool for enhanced clipboard pasting with formatting options |
 | [Always on Top](alwaysontop.md) | Tool for pinning windows to stay on top of other windows |
 | [Awake](awake.md) | Tool to keep your computer awake without modifying power settings |
 | [Color Picker](colorpicker.md) | Tool for selecting and managing colors from the screen |
@@ -13,6 +14,7 @@ This section contains documentation for individual PowerToys modules, including 
 | [Crop and Lock](cropandlock.md) | Tool for cropping application windows into smaller windows or thumbnails |
 | [Environment Variables](environmentvariables.md) | Tool for managing user and system environment variables |
 | [FancyZones](fancyzones.md) ([debugging tools](fancyzones-tools.md)) | Window manager utility for custom window layouts |
+| [File Explorer add-ons](fileexploreraddons.md) | Extensions for enhancing Windows File Explorer functionality |
 | [File Locksmith](filelocksmith.md) | Tool for finding processes that lock files |
 | [Hosts File Editor](hostsfileeditor.md) | Tool for managing the system hosts file |
 | [Image Resizer](imageresizer.md) | Tool for quickly resizing images within File Explorer |
@@ -28,17 +30,8 @@ This section contains documentation for individual PowerToys modules, including 
 | [Screen Ruler](screenruler.md) | Tool for measuring pixel distances and color boundaries on screen |
 | [Shortcut Guide](shortcut_guide.md) | Tool for displaying Windows keyboard shortcuts when holding the Windows key |
 | [Text Extractor](textextractor.md) | Tool for extracting text from images and screenshots |
+| [Workspaces](workspaces.md) | Tool for saving and restoring window layouts for different projects |
 | [ZoomIt](zoomit.md) | Screen zoom and annotation tool |
-
-## Modules with Missing Documentation
-
-The following modules currently lack comprehensive documentation. Contributions to document these modules are welcome:
-
-| Module | Description |
-|--------|-------------|
-| Advanced Paste | Tool for enhanced clipboard pasting with formatting options |
-| File Explorer add-ons | Extensions for enhancing Windows File Explorer functionality |
-| Workspaces | Tool for saving and restoring window layouts for different projects |
 
 ## Adding New Module Documentation
 

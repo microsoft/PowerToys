@@ -1,5 +1,13 @@
 # Awake
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/awake)
+
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AProduct-Awake)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20%20label%3AProduct-Awake)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen++label%3A%22Product-Awake%22+)
+
 ## Overview
 Awake is a PowerToys utility designed to keep your computer awake without permanently modifying system power settings. It prevents the computer from sleeping and can keep the monitor on, providing a convenient alternative to changing system power configurations.
 

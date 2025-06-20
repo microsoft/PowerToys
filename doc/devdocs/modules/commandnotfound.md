@@ -1,5 +1,13 @@
 # Command Not Found
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/cmd-not-found)
+
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AProduct-CommandNotFound)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3AProduct-CommandNotFound)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3AProduct-CommandNotFound)
+
 ## Overview
 Command Not Found is a PowerToys module that suggests package installations when you attempt to run a command that isn't available on your system. It integrates with the Windows command line to provide helpful suggestions for installing missing commands through package managers.
 

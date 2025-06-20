@@ -1,9 +1,13 @@
 # Quick Accent
 
+
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/quick-accent)
+
 ## Quick Links
 
-[All Issues](https://github.com/microsoft/PowerToys/issues?q=state%3Aopen%20label%3A%22Product-Quick%20Accent%22)
-[PRs](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+label%3A%22Product-Quick+Accent%22+)
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Quick%20Accent%22)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Quick%20Accent%22)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Quick+Accent%22)
 
 ## Overview
 

@@ -1,5 +1,13 @@
 # Always on Top
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/always-on-top)
+
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Always%20On%20Top%22)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20%20label%3A%22Product-Always%20On%20Top%22)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen++label%3A%22Product-Always+On+Top%22+)
+
 ## Overview
 
 The Always on Top module allows users to pin windows on top of others, ensuring they remain visible even when switching between applications. The module provides visual indicators (customizable borders) to identify which windows are pinned.

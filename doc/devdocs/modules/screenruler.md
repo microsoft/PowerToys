@@ -1,9 +1,12 @@
 # Screen Ruler
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/screen-ruler)
+
 ## Quick Links
 
-[All Issues](https://github.com/microsoft/PowerToys/labels/Product-Screen%20Ruler)
-[PRs](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+screen+ruler)
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Screen%20Ruler%22)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Screen%20Ruler%22)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Screen+Ruler%22)
 
 ## Overview
 

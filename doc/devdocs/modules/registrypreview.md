@@ -1,9 +1,13 @@
 # Registry Preview Module
 
+
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/registry-preview)
+
 ## Quick Links
 
-[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue%20state%3Aopen%20registry%20preview)<br>
-[PRs](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Registry+Preview%22) <br>
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Registry%20Preview%22)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Registry%20Preview%22)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Registry+Preview%22)
 [CheckList](https://github.com/microsoft/PowerToys/blob/releaseChecklist/doc/releases/tests-checklist-template.md?plain=1#L641)
 
 ## Overview

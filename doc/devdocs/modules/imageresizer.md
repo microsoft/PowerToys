@@ -1,5 +1,13 @@
 # Image Resizer
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/image-resizer)
+
+## Quick Links
+
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Image%20Resizer%22)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Image%20Resizer%22)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Image+Resizer%22)
+
 Image Resizer is a Windows shell extension that enables batch resizing of images directly from File Explorer.
 
 ## Overview

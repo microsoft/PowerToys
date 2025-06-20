@@ -1,9 +1,12 @@
 # NewPlus Module
 
+[Public overview - Microsoft Learn](https://learn.microsoft.com/en-us/windows/powertoys/newplus)
+
 ## Quick Links
 
-[Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue%20state%3Aopen%20label%3AProduct-New%2B)<br>
-[PRs](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3AProduct-New%2B+)
+[All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AProduct-New%2B)<br>
+[Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3AProduct-New%2B)<br>
+[Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3AProduct-New%2B+)
 
 ## Overview
 
