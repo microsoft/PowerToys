@@ -6,6 +6,8 @@ This section contains documentation for individual PowerToys modules, including 
 
 | Module | Description |
 |--------|-------------|
+| [Always on Top](alwaysontop.md) | Tool for pinning windows to stay on top of other windows |
+| [Crop and Lock](cropandlock.md) | Tool for cropping application windows into smaller windows or thumbnails |
 | [Environment Variables](environmentvariables.md) | Tool for managing user and system environment variables |
 | [FancyZones](fancyzones.md) ([debugging tools](fancyzones-tools.md)) | Window manager utility for custom window layouts |
 | [File Locksmith](filelocksmith.md) | Tool for finding processes that lock files |

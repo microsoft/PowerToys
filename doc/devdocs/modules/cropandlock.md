@@ -1,0 +1,30 @@
+# Crop and Lock
+
+## Overview
+
+The Crop and Lock module in PowerToys allows users to crop a current application into a smaller window or create a thumbnail. This utility enhances productivity by enabling users to focus on specific parts of an application window.
+
+## Features
+
+### Thumbnail Mode
+Creates a window showing the selected area of the original window. Changes in the original window are reflected in the thumbnail.
+
+### Reparent Mode
+Creates a window that replaces the original window, showing only the selected area. The application is controlled through the cropped window.
+
+## Code Structure
+
+### Project Layout
+The Crop and Lock module is part of the PowerToys solution. All the logic-related settings are in the main.cpp. The main implementations are in ThumbnailCropAndLockWindow and ReparentCropAndLockWindow. ChildWindow and OverlayWindow distinguish the two different modes of windows implementations.
+
+### Key Files
+- **ThumbnailCropAndLockWindow.cpp**: Defines the UI for the thumbnail mode.
+- **OverlayWindow.cpp**: Thumbnail module type's window concrete implementation.
+- **ReparentCropAndLockWindow.cpp**: Defines the UI for the reparent mode.
+- **ChildWindow.cpp**: Reparent module type's window concrete implementation.
+
+## Known Issues
+
+- Cropping maximized or full-screen windows in "Reparent" mode might not work properly.
+- Some UWP apps may not respond well to being cropped in "Reparent" mode.
+- Applications with sub-windows or tabs can have compatibility issues in "Reparent" mode.
