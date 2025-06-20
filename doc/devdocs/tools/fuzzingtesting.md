@@ -55,8 +55,8 @@ The `OneFuzzConfig.json` file provides critical information for deploying fuzzin
   ],
   "adoTemplate": [
     {
-      "AssignedTo": "YOUR_MICROSOFT_EMAIL",  // Must be changed to PowerToys@microsoft.com before merging into the main branch
-      "jobNotificationEmail": "YOUR_MICROSOFT_EMAIL" // Must be changed to PowerToys@microsoft.com before merging into the main branch
+      "AssignedTo": "PowerToys@microsoft.com",
+      "jobNotificationEmail": "PowerToys@microsoft.com"
     }
   ],
   "oneFuzzJobs": [
@@ -89,7 +89,7 @@ Modify the patterns in the job steps within [job-fuzz.yml](https://github.com/mi
   displayName: Download artifacts
   artifact: $(ArtifactName)
   patterns: |-
-    **/tests/YourModule.FuzzTests/**    // Must be changed to "*.FuzzTests" before merging into the main branch
+    **/tests/*.FuzzTests/**
 ```
 
 ## Setting Up C++ Fuzzing Tests
