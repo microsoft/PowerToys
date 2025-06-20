@@ -8,6 +8,7 @@ This section contains documentation for individual PowerToys modules, including 
 |--------|-------------|
 | [Always on Top](alwaysontop.md) | Tool for pinning windows to stay on top of other windows |
 | [Color Picker](colorpicker.md) | Tool for selecting and managing colors from the screen |
+| [Command Not Found](commandnotfound.md) | Tool suggesting package installations for missing commands |
 | [Crop and Lock](cropandlock.md) | Tool for cropping application windows into smaller windows or thumbnails |
 | [Environment Variables](environmentvariables.md) | Tool for managing user and system environment variables |
 | [FancyZones](fancyzones.md) ([debugging tools](fancyzones-tools.md)) | Window manager utility for custom window layouts |
@@ -34,7 +35,6 @@ The following modules currently lack comprehensive documentation. Contributions 
 |--------|-------------|
 | Advanced Paste | Tool for enhanced clipboard pasting with formatting options |
 | Awake | Tool to keep your computer awake without modifying power settings |
-| Command Not Found | Tool suggesting package installations for missing commands |
 | File Explorer add-ons | Extensions for enhancing Windows File Explorer functionality |
 | Image Resizer | Tool for quickly resizing images within File Explorer |
 | Text Extractor | Tool for extracting text from images and screenshots |
