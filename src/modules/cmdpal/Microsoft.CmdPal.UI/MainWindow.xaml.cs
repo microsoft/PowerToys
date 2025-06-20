@@ -421,24 +421,30 @@ public sealed partial class MainWindow : WindowEx,
 
         try
         {
-            if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
+            if (activatedEventArgs.Kind == ExtendedActivationKind.StartupTask)
             {
-                if (protocolArgs.Uri.ToString() is string uri)
+                return;
+            }
+
+            if (activatedEventArgs.Kind == ExtendedActivationKind.Protocol)
+            {
+                if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
                 {
-                    // was the URI "x-cmdpal://background" ?
-                    if (uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
+                    if (protocolArgs.Uri.ToString() is string uri)
                     {
-                        // we're running, we don't want to activate our window. bail
-                        return;
-                    }
-                    else if (uri.StartsWith("x-cmdpal://settings", StringComparison.OrdinalIgnoreCase))
-                    {
-                        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
-                        return;
+                        // was the URI "x-cmdpal://background" ?
+                        if (uri.StartsWith("x-cmdpal://background", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // we're running, we don't want to activate our window. bail
+                            return;
+                        }
+                        else if (uri.StartsWith("x-cmdpal://settings", StringComparison.OrdinalIgnoreCase))
+                        {
+                            WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+                            return;
+                        }
                     }
                 }
-
-                return;
             }
         }
         catch (COMException ex)
@@ -448,7 +454,7 @@ public sealed partial class MainWindow : WindowEx,
             Logger.LogError("COM exception when activating the application", ex);
         }
 
-        Activate();
+        Summon(string.Empty);
     }
 
     public void Summon(string commandId) =>
