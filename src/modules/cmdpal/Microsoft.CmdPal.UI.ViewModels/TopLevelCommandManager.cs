@@ -26,6 +26,7 @@ public partial class TopLevelCommandManager : ObservableObject,
 
     private readonly List<CommandProviderWrapper> _builtInCommands = [];
     private readonly List<CommandProviderWrapper> _extensionCommandProviders = [];
+    private readonly Lock _commandProvidersLock = new();
 
     TaskScheduler IPageContext.Scheduler => _taskScheduler;
 
@@ -41,14 +42,26 @@ public partial class TopLevelCommandManager : ObservableObject,
     [ObservableProperty]
     public partial bool IsLoading { get; private set; } = true;
 
-    public IEnumerable<CommandProviderWrapper> CommandProviders => _builtInCommands.Concat(_extensionCommandProviders);
+    public IEnumerable<CommandProviderWrapper> CommandProviders
+    {
+        get
+        {
+            lock (_commandProvidersLock)
+            {
+                return _builtInCommands.Concat(_extensionCommandProviders).ToList();
+            }
+        }
+    }
 
     public async Task<bool> LoadBuiltinsAsync()
     {
         var s = new Stopwatch();
         s.Start();
 
-        _builtInCommands.Clear();
+        lock (_commandProvidersLock)
+        {
+            _builtInCommands.Clear();
+        }
 
         // Load built-In commands first. These are all in-proc, and
         // owned by our ServiceProvider.
@@ -56,7 +69,11 @@ public partial class TopLevelCommandManager : ObservableObject,
         foreach (var provider in builtInCommands)
         {
             CommandProviderWrapper wrapper = new(provider, _taskScheduler);
-            _builtInCommands.Add(wrapper);
+            lock (_commandProvidersLock)
+            {
+                _builtInCommands.Add(wrapper);
+            }
+
             var commands = await LoadTopLevelCommandsFromProvider(wrapper);
             lock (TopLevelCommands)
             {
@@ -185,6 +202,7 @@ public partial class TopLevelCommandManager : ObservableObject,
         IsLoading = true;
         var extensionService = _serviceProvider.GetService<IExtensionService>()!;
         await extensionService.SignalStopExtensionsAsync();
+
         lock (TopLevelCommands)
         {
             TopLevelCommands.Clear();
@@ -210,7 +228,11 @@ public partial class TopLevelCommandManager : ObservableObject,
         extensionService.OnExtensionRemoved -= ExtensionService_OnExtensionRemoved;
 
         var extensions = (await extensionService.GetInstalledExtensionsAsync()).ToImmutableList();
-        _extensionCommandProviders.Clear();
+        lock (_commandProvidersLock)
+        {
+            _extensionCommandProviders.Clear();
+        }
+
         if (extensions != null)
         {
             await StartExtensionsAndGetCommands(extensions);
@@ -247,9 +269,9 @@ public partial class TopLevelCommandManager : ObservableObject,
         // Wait for all extensions to start
         var wrappers = (await Task.WhenAll(startTasks)).Where(wrapper => wrapper != null).Select(w => w!).ToList();
 
-        foreach (var wrapper in wrappers)
+        lock (_commandProvidersLock)
         {
-            _extensionCommandProviders.Add(wrapper!);
+            _extensionCommandProviders.AddRange(wrappers);
         }
 
         // Load the commands from the providers in parallel
@@ -374,5 +396,14 @@ public partial class TopLevelCommandManager : ObservableObject,
     {
         var errorMessage = $"A bug occurred in {$"the \"{extensionHint}\"" ?? "an unknown's"} extension's code:\n{ex.Message}\n{ex.Source}\n{ex.StackTrace}\n\n";
         CommandPaletteHost.Instance.Log(errorMessage);
+    }
+
+    internal bool IsProviderActive(string id)
+    {
+        lock (_commandProvidersLock)
+        {
+            return _builtInCommands.Any(wrapper => wrapper.Id == id && wrapper.IsActive)
+                   || _extensionCommandProviders.Any(wrapper => wrapper.Id == id && wrapper.IsActive);
+        }
     }
 }

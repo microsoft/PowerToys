@@ -124,8 +124,7 @@ public partial class MainListPage : DynamicListPage,
             if (_filteredItems == null)
             {
                 _filteredItems = commands;
-
-                if (_tlcManager.CommandProviders.Any(static t => t is { Id: AllAppsCommandProvider.WellKnownId, IsActive: true }))
+                if (_tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId))
                 {
                     IEnumerable<IListItem> apps = AllAppsCommandProvider.Page.GetItems();
                     _filteredItems = _filteredItems.Concat(apps);
