@@ -5,6 +5,7 @@
 using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
@@ -418,7 +419,7 @@ public sealed partial class MainWindow : WindowEx,
             return;
         }
 
-        if (activatedEventArgs.Kind == Microsoft.Windows.AppLifecycle.ExtendedActivationKind.Protocol)
+        try
         {
             if (activatedEventArgs.Data is IProtocolActivatedEventArgs protocolArgs)
             {
@@ -439,6 +440,12 @@ public sealed partial class MainWindow : WindowEx,
 
                 return;
             }
+        }
+        catch (COMException ex)
+        {
+            // Accessing properties activatedEventArgs.Kind and activatedEventArgs.Data might cause COMException
+            // if the args are not valid or not passed correctly.
+            Logger.LogError("COM exception when activating the application", ex);
         }
 
         Activate();
