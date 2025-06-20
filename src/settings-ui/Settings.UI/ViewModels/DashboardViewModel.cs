@@ -31,13 +31,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public Func<string, int> SendConfigMSG { get; }
 
+        public ObservableCollection<DashboardListItem> AllModules { get; set; } = new ObservableCollection<DashboardListItem>();
+
         public ObservableCollection<DashboardListItem> ActiveModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<DashboardListItem> DisabledModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
         public bool UpdateAvailable { get; set; }
-
-        private List<DashboardListItem> _allModules;
 
         private ISettingsRepository<GeneralSettings> _settingsRepository;
         private GeneralSettings generalSettingsConfig;
@@ -53,15 +53,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            _allModules = new List<DashboardListItem>();
-
             foreach (ModuleType moduleType in Enum.GetValues<ModuleType>())
             {
                 AddDashboardListItem(moduleType);
             }
 
-            ActiveModules = new ObservableCollection<DashboardListItem>(_allModules.Where(x => x.IsEnabled));
-            DisabledModules = new ObservableCollection<DashboardListItem>(_allModules.Where(x => !x.IsEnabled));
+            ActiveModules = new ObservableCollection<DashboardListItem>(AllModules.Where(x => x.IsEnabled));
+            DisabledModules = new ObservableCollection<DashboardListItem>(AllModules.Where(x => !x.IsEnabled));
 
             UpdatingSettings updatingSettingsConfig = UpdatingSettings.LoadSettings();
             UpdateAvailable = updatingSettingsConfig != null && (updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToInstall || updatingSettingsConfig.State == UpdatingSettings.UpdatingState.ReadyToDownload);
@@ -70,7 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void AddDashboardListItem(ModuleType moduleType)
         {
             GpoRuleConfigured gpo = ModuleHelper.GetModuleGpoConfiguration(moduleType);
-            _allModules.Add(new DashboardListItem()
+            AllModules.Add(new DashboardListItem()
             {
                 Tag = moduleType,
                 Label = resourceLoader.GetString(ModuleHelper.GetModuleLabelResourceName(moduleType)),
@@ -143,7 +141,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 DisabledModules.Clear();
 
                 generalSettingsConfig = _settingsRepository.SettingsConfig;
-                foreach (DashboardListItem item in _allModules)
+                foreach (DashboardListItem item in AllModules)
                 {
                     item.IsEnabled = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, item.Tag);
                     if (item.IsEnabled)
@@ -215,7 +213,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleTextItem() { Label = resourceLoader.GetString("Awake_ShortDescription") },
+                // new DashboardModuleTextItem() { Label = resourceLoader.GetString("Awake_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -333,7 +331,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleTextItem() { Label = resourceLoader.GetString("ImageResizer_ShortDescription") },
+                // new DashboardModuleTextItem() { Label = resourceLoader.GetString("ImageResizer_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -392,7 +390,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleTextItem() { Label = resourceLoader.GetString("MouseWithoutBorders_ShortDescription") },
+                // new DashboardModuleTextItem() { Label = resourceLoader.GetString("MouseWithoutBorders_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -433,7 +431,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleTextItem() { Label = resourceLoader.GetString("PowerRename_ShortDescription") },
+                // new DashboardModuleTextItem() { Label = resourceLoader.GetString("PowerRename_ShortDescription") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -529,7 +527,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleTextItem() { Label = resourceLoader.GetString("NewPlus_Product_Description/Description") },
+                // new DashboardModuleTextItem() { Label = resourceLoader.GetString("NewPlus_Product_Description/Description") },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }

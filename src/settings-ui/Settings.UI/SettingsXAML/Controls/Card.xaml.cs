@@ -5,7 +5,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls
+namespace Microsoft.PowerToys.Settings.UI.Controls
 {
     public sealed partial class Card : UserControl
     {
@@ -34,28 +34,12 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls
             set => SetValue(ContentProperty, value);
         }
 
-        public static readonly DependencyProperty TitlePaddingProperty = DependencyProperty.Register(nameof(TitlePadding), typeof(Thickness), typeof(Card), new PropertyMetadata(defaultValue: new Thickness(12, 12, 16, 12)));
-
-        public Thickness TitlePadding
-        {
-            get => (Thickness)GetValue(TitlePaddingProperty);
-            set => SetValue(TitlePaddingProperty, value);
-        }
-
         public static readonly DependencyProperty DividerVisibilityProperty = DependencyProperty.Register(nameof(DividerVisibility), typeof(Visibility), typeof(Card), new PropertyMetadata(defaultValue: null));
 
         public Visibility DividerVisibility
         {
             get => (Visibility)GetValue(DividerVisibilityProperty);
             set => SetValue(DividerVisibilityProperty, value);
-        }
-
-        public static readonly DependencyProperty IconProperty = DependencyProperty.Register(nameof(Icon), typeof(IconElement), typeof(Card), new PropertyMetadata(defaultValue: null, OnVisualPropertyChanged));
-
-        public IconElement Icon
-        {
-            get => (IconElement)GetValue(IconProperty);
-            set => SetValue(IconProperty, value);
         }
 
         public Card()
@@ -74,9 +58,7 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls
 
         private void SetVisualStates()
         {
-            VisualStateManager.GoToState(this, Icon != null ? "IconVisible" : "IconCollapsed", true);
-
-            if (string.IsNullOrEmpty(Title) && Icon == null && TitleContent == null)
+            if (string.IsNullOrEmpty(Title) && TitleContent == null)
             {
                 VisualStateManager.GoToState(this, "TitleGridCollapsed", true);
                 DividerVisibility = Visibility.Collapsed;

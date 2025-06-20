@@ -2848,7 +2848,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="FancyZones_Zone_Appearance.Header" xml:space="preserve">
     <value>Zone appearance</value>
   </data>
-  <data name="LearnMore.Content" xml:space="preserve">
+  <data name="LearnMore.Text" xml:space="preserve">
     <value>Learn more</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_GCODE.Header" xml:space="preserve">
@@ -3164,9 +3164,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AlwaysOnTop_ShortDescription" xml:space="preserve">
     <value>Pin a window</value>
   </data>
-  <data name="Awake_ShortDescription" xml:space="preserve">
-    <value>Keep your PC awake</value>
-  </data>
   <data name="ColorPicker_ShortDescription" xml:space="preserve">
     <value>Pick a color</value>
   </data>
@@ -3185,9 +3182,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="FindMyMouse_ShortDescription" xml:space="preserve">
     <value>Find the mouse</value>
   </data>
-  <data name="ImageResizer_ShortDescription" xml:space="preserve">
-    <value>Resize images from right-click context menu</value>
-  </data>
   <data name="MouseHighlighter_ShortDescription" xml:space="preserve">
     <value>Highlight clicks</value>
   </data>
@@ -3196,9 +3190,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="MouseCrosshairs_ShortDescription" xml:space="preserve">
     <value>Draw crosshairs centered on the mouse pointer</value>
-  </data>
-  <data name="MouseWithoutBorders_ShortDescription" xml:space="preserve">
-    <value>Move your cursor across multiple devices</value>
   </data>
   <data name="AdvancedPaste_ShortDescription" xml:space="preserve">
     <value>An AI powered tool to put your clipboard content into any format you need, focused towards developer workflows.</value>
@@ -3211,9 +3202,6 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Peek_ShortDescription" xml:space="preserve">
     <value>Quick and easy previewer</value>
-  </data>
-  <data name="PowerRename_ShortDescription" xml:space="preserve">
-    <value>Rename files and folders from right-click context menu</value>
   </data>
   <data name="Run_ShortDescription" xml:space="preserve">
     <value>A quick launcher</value>
@@ -3988,7 +3976,7 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccessTxt.Text" xml:space="preserve">
     <value>Quick access</value>
   </data>
-  <data name="UpdateAvailable.Title" xml:space="preserve">
+  <data name="UpdateAvailable.Text" xml:space="preserve">
     <value>Update available</value>
   </data>
   <data name="FileExplorerPreview_Toggle_Monaco_Max_File_Size.Header" xml:space="preserve">
@@ -4267,16 +4255,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Title of the settings window when running as administrator</comment>
   </data>
   <data name="DashboardTitle.Text" xml:space="preserve">
-    <value>Dashboard</value>
+    <value>Home</value>
   </data>
   <data name="Shell_Dashboard.Content" xml:space="preserve">
-    <value>Dashboard</value>
-  </data>
-  <data name="DisabledModules.Text" xml:space="preserve">
-    <value>Disabled modules</value>
-  </data>
-  <data name="EnabledModules.Text" xml:space="preserve">
-    <value>Enabled modules</value>
+    <value>Home</value>
   </data>
   <data name="Peek_Preview_GroupSettings.Header" xml:space="preserve">
     <value>Preview</value>
@@ -4420,10 +4402,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="NewPlus_Product_Name.Content" xml:space="preserve">
     <value>New+</value>
     <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
-  </data>
-  <data name="NewPlus_Product_Description.Description" xml:space="preserve">
-    <value>Create files and folders from a personalized set of templates</value>
-    <comment>New+ product description</comment>
   </data>
   <data name="NewPlus_Learn_More.Text" xml:space="preserve">
     <value>Learn more about New+</value>

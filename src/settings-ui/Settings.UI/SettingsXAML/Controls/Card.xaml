@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <UserControl
-    x:Class="Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Card"
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.Card"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Padding="8"
     HorizontalContentAlignment="Stretch"
@@ -25,30 +25,16 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid x:Name="TitleGrid" Padding="{x:Bind TitlePadding, Mode=OneWay}">
+        <Grid x:Name="TitleGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Viewbox
-                x:Name="IconHolder"
-                Width="16"
-                Height="16"
-                Margin="0,0,12,0">
-                <ContentPresenter
-                    VerticalAlignment="Center"
-                    AutomationProperties.AccessibilityView="Raw"
-                    Content="{x:Bind Icon, Mode=OneWay}"
-                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-            </Viewbox>
-
             <TextBlock
-                Grid.Column="1"
-                Margin="0,-1,0,0"
+                Margin="20,0,0,0"
                 VerticalAlignment="Center"
-                FontSize="14"
                 FontWeight="SemiBold"
+                Style="{StaticResource SubtitleTextBlockStyle}"
                 Text="{x:Bind Title, Mode=OneWay}" />
             <ContentPresenter
                 Grid.Column="2"
@@ -64,7 +50,6 @@
             Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
             Visibility="{x:Bind DividerVisibility, Mode=OneWay}" />
 
-
         <ContentPresenter
             Grid.Row="2"
             Margin="{x:Bind Padding, Mode=OneWay}"
@@ -72,14 +57,6 @@
             VerticalAlignment="{x:Bind VerticalContentAlignment, Mode=OneWay}"
             Content="{x:Bind Content, Mode=OneWay}" />
         <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="IconVisibilityStates">
-                <VisualState x:Name="IconVisible" />
-                <VisualState x:Name="IconCollapsed">
-                    <VisualState.Setters>
-                        <Setter Target="IconHolder.Visibility" Value="Collapsed" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
             <VisualStateGroup x:Name="TitleGridVisibilityStates">
                 <VisualState x:Name="TitleGridVisible" />
                 <VisualState x:Name="TitleGridCollapsed">
