@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.ObjectModel;
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -71,6 +71,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             PrimaryLinksControl.Focus(FocusState.Programmatic);
+        }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var result = await OobeDialog.ShowAsync();
         }
     }
 }

@@ -5,13 +5,13 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:oobe="using:Microsoft.PowerToys.Settings.UI.OOBE.Views"
     xmlns:tk7controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
     <UserControl.Resources>
-
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
@@ -69,6 +69,7 @@
                 FalseValue="Collapsed"
                 GreaterThan="0"
                 TrueValue="Visible" />
+            <x:Double x:Key="ContentDialogMaxWidth">640</x:Double>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -115,13 +116,41 @@
                         MaxWidth="160"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Top"
-                        CornerRadius="4">
+                        CornerRadius="8">
                         <Image AutomationProperties.AccessibilityView="Raw">
                             <Image.Source>
                                 <BitmapImage UriSource="{x:Bind ModuleImageSource}" />
                             </Image.Source>
                         </Image>
                     </Border>
+
+                    <ContentDialog x:Name="OobeDialog">
+                        <oobe:OobeAdvancedPaste />
+                    </ContentDialog>
+                    <Button
+                        Grid.Column="2"
+                        Margin="0,-4,12,0"
+                        VerticalAlignment="Top"
+                        Click="Button_Click"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon
+                                FontSize="20"
+                                Foreground="{ThemeResource AccentTextFillColorTertiaryBrush}"
+                                Glyph="&#xE946;" />
+                            <StackPanel Grid.Column="1" Orientation="Vertical">
+                                <TextBlock FontWeight="SemiBold" Text="How to use" />
+                                <TextBlock
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Text="Tips and tricks" />
+                            </StackPanel>
+                        </Grid>
+                    </Button>
 
                     <StackPanel x:Name="DescriptionPanel" Grid.Column="1">
                         <TextBlock
