@@ -220,7 +220,6 @@ public class UWPApplication : IProgram
 
             Span<char> outBuffer = stackalloc char[1024];
             var source = $"@{{{packageFullName}? {parsed}}}";
-            void** reserved = null;
 
             try
             {
