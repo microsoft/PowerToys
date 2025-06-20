@@ -5,7 +5,6 @@
   <PropertyGroup>
     <AssemblyTitle>UnitTests-BgcodePreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys UnitTests-BgcodePreviewHandler</AssemblyDescription>
-    <AssemblyTitle>UnitTests-BgcodePreviewHandler</AssemblyTitle>
     <Description>PowerToys UnitTests-BgcodePreviewHandler</Description>
     <ProjectGuid>{99CA1509-FB73-456E-AFAF-AB89C017BD72}</ProjectGuid>
     <RootNamespace>PdfPreviewHandlerUnitTests</RootNamespace>

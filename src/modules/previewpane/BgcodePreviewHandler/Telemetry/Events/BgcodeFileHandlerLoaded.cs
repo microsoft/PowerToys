@@ -10,7 +10,7 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace Microsoft.PowerToys.PreviewHandler.Bgcode.Telemetry.Events
 {
     /// <summary>
-    /// A telemetry event to be raised when a svg file has been viewed in the preview pane.
+    /// A telemetry event to be raised when a bgcode file has been viewed in the preview pane.
     /// </summary>
     [EventData]
     public class BgcodeFileHandlerLoaded : EventBase, IEvent
