@@ -2,7 +2,7 @@
 
 ## Overview
 
-Fuzzing is an automated testing technique that helps identify vulnerabilities and bugs by feeding random, invalid, or unexpected data into the application. This is especially important for PowerToys modules that handle file input/output or user input, such as Hosts File Editor, Registry Preview, Fancy Zones, and others.
+Fuzzing is an automated testing technique that helps identify vulnerabilities and bugs by feeding random, invalid, or unexpected data into the application. This is especially important for PowerToys modules that handle file input/output or user input, such as Hosts File Editor, Registry Preview, and others.
 
 PowerToys integrates Microsoft's OneFuzz service to systematically discover edge cases and unexpected behaviors that could lead to crashes or security vulnerabilities. Fuzzing testing is a requirement from the security team to ensure robust and secure modules.
 
@@ -55,8 +55,8 @@ The `OneFuzzConfig.json` file provides critical information for deploying fuzzin
   ],
   "adoTemplate": [
     {
-      "AssignedTo": "YOUR_MICROSOFT_EMAIL",
-      "jobNotificationEmail": "YOUR_MICROSOFT_EMAIL"
+      "AssignedTo": "YOUR_MICROSOFT_EMAIL",  // Must be changed to PowerToys@microsoft.com before merging into the main branch
+      "jobNotificationEmail": "YOUR_MICROSOFT_EMAIL" // Must be changed to PowerToys@microsoft.com before merging into the main branch
     }
   ],
   "oneFuzzJobs": [
@@ -89,7 +89,7 @@ Modify the patterns in the job steps within [job-fuzz.yml](https://github.com/mi
   displayName: Download artifacts
   artifact: $(ArtifactName)
   patterns: |-
-    **/tests/YourModule.FuzzTests/**
+    **/tests/YourModule.FuzzTests/**    // Must be changed to "*.FuzzTests" before merging into the main branch
 ```
 
 ## Setting Up C++ Fuzzing Tests
