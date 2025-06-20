@@ -22,8 +22,6 @@ namespace ManagedCommon
         private static readonly string Debug = "Debug";
         private static readonly string TraceFlag = "Trace";
 
-        private static readonly Assembly Assembly = Assembly.GetExecutingAssembly();
-
         private static readonly string Version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "Unknown";
 
         /// <summary>
