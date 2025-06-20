@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using Microsoft.CmdPal.Ext.Bookmarks.Models;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
 
