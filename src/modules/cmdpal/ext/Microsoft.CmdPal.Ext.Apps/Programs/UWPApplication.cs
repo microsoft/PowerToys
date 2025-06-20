@@ -218,13 +218,13 @@ public class UWPApplication : IProgram
                 return string.Empty;
             }
 
-            var capacity = 1024U;
-            PWSTR outBuffer = new PWSTR((char*)(void*)Marshal.AllocHGlobal((int)capacity * sizeof(char)));
+            Span<char> outBuffer = stackalloc char[1024];
             var source = $"@{{{packageFullName}? {parsed}}}";
+            void** reserved = null;
 
             try
             {
-                PInvoke.SHLoadIndirectString(source, outBuffer.AsSpan()).ThrowOnFailure();
+                PInvoke.SHLoadIndirectString(source, outBuffer).ThrowOnFailure();
 
                 var loaded = outBuffer.ToString();
                 return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
@@ -234,7 +234,7 @@ public class UWPApplication : IProgram
                 try
                 {
                     var sourceFallback = $"@{{{packageFullName}?{parsedFallback}}}";
-                    PInvoke.SHLoadIndirectString(sourceFallback, outBuffer.AsSpan()).ThrowOnFailure();
+                    PInvoke.SHLoadIndirectString(sourceFallback, outBuffer).ThrowOnFailure();
                     var loaded = outBuffer.ToString();
                     return string.IsNullOrEmpty(loaded) ? string.Empty : loaded;
                 }
@@ -243,13 +243,6 @@ public class UWPApplication : IProgram
                     // ProgramLogger.Exception($"Unable to load resource {resourceReference} from {packageFullName}", new InvalidOperationException(), GetType(), packageFullName);
                     return string.Empty;
                 }
-                finally
-                {
-                }
-            }
-            finally
-            {
-                Marshal.FreeHGlobal((IntPtr)outBuffer.Value);
             }
         }
         else
