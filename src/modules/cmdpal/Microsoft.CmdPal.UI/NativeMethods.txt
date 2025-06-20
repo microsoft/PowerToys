@@ -48,3 +48,7 @@ MessageBox
 DwmGetWindowAttribute
 DwmSetWindowAttribute
 DWM_CLOAKED_APP
+
+CoWaitForMultipleObjects
+INFINITE
+CWMO_FLAGS 

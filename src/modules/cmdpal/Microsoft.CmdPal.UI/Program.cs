@@ -9,6 +9,7 @@ using Microsoft.PowerToys.Telemetry;
 using Microsoft.Windows.AppLifecycle;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.System.Com;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Microsoft.CmdPal.UI;
@@ -94,10 +95,27 @@ internal sealed class Program
         {
             isRedirect = true;
             PowerToysTelemetry.Log.WriteEvent(new ReactivateInstance());
-            keyInstance.RedirectActivationToAsync(args).AsTask().ConfigureAwait(false);
+            RedirectActivationTo(args, keyInstance);
         }
 
         return isRedirect;
+    }
+
+    private static void RedirectActivationTo(AppActivationArguments args, AppInstance keyInstance)
+    {
+        // Do the redirection on another thread, and use a non-blocking
+        // wait method to wait for the redirection to complete.
+        var redirectSemaphore = new Semaphore(0, 1);
+        Task.Run(() =>
+        {
+            keyInstance.RedirectActivationToAsync(args).AsTask().Wait();
+            redirectSemaphore.Release();
+        });
+        _ = PInvoke.CoWaitForMultipleObjects(
+            (uint)CWMO_FLAGS.CWMO_DEFAULT,
+            PInvoke.INFINITE,
+            [new HANDLE(redirectSemaphore.SafeWaitHandle.DangerousGetHandle())],
+            out _);
     }
 
     private static void OnActivated(object? sender, AppActivationArguments args)
