@@ -1,4 +1,4 @@
-LIBRARY "PowerToysSetupCustomActionsVNext"
+LIBRARY "PowerToysSetupCustomActions"
 
 EXPORTS
 	LaunchPowerToysCA
@@ -20,6 +20,7 @@ EXPORTS
 	InstallDSCModuleCA
 	InstallCmdPalPackageCA
 	UnApplyModulesRegistryChangeSetsCA
+	UnRegisterCmdPalPackageCA
 	UnRegisterContextMenuPackagesCA
 	UninstallEmbeddedMSIXCA
 	UninstallDSCModuleCA

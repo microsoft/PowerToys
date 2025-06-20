@@ -3,6 +3,9 @@ Param(
     [Parameter(Mandatory = $True, Position = 1)]
     [string]$monacoWxsFile
 )
+$monacoBackupFile = Join-Path (Split-Path $monacoWxsFile) "MonacoBackup.wxs"Add commentMore actions
+$fileWxs = Get-Content $monacoBackupFile;
+Set-Content -Path $monacoWxsFile -Value $fileWxs
 
 $fileWxs = Get-Content $monacoWxsFile;
 

@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
@@ -20,11 +18,11 @@
     </DirectoryRef>
 
     <ComponentGroup Id="AwakeComponentGroup">
-      <Component Id="RemoveAwakeFolder" Guid="95D7774C-69A3-48A3-B417-1BD9664BE974" Directory="INSTALLFOLDER" >
+      <Component Id="RemoveAwakeFolder" Guid="95D7774C-69A3-48A3-B417-1BD9664BE974" Directory="INSTALLFOLDER">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="RemoveAwakeFolder" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="RemoveAwakeFolder" Value="" KeyPath="yes" />
         </RegistryKey>
-        <RemoveFolder Id="RemoveFolderAwakeImagesFolder" Directory="AwakeImagesFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderAwakeImagesFolder" Directory="AwakeImagesFolder" On="uninstall" />
       </Component>
     </ComponentGroup>
 

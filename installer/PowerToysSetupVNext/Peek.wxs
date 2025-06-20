@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
@@ -17,11 +15,11 @@
     </DirectoryRef>
 
     <ComponentGroup Id="PeekComponentGroup">
-      <Component Id="RemovePeekFolder" Guid="EF9422D7-FF0A-4887-968A-E61B53ACD23A" Directory="PeekAssetsFolder" >
+      <Component Id="RemovePeekFolder" Guid="EF9422D7-FF0A-4887-968A-E61B53ACD23A" Directory="PeekAssetsFolder">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="RemovePeekFolder" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="RemovePeekFolder" Value="" KeyPath="yes" />
         </RegistryKey>
-        <RemoveFolder Id="RemoveFolderPeekAssetsFolder" Directory="PeekAssetsFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderPeekAssetsFolder" Directory="PeekAssetsFolder" On="uninstall" />
       </Component>
     </ComponentGroup>
 

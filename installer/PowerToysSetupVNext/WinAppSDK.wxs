@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
@@ -9,15 +7,15 @@
 
   <Fragment>
     <DirectoryRef Id="WinUI3AppsMicrosoftUIXamlAssetsInstallFolder" FileSource="$(var.BinDir)WinUI3Apps\Microsoft.UI.Xaml\Assets">
-      <Component Id="WinUI3AppsMicrosoftUIXamlAssets_NoiseAsset_256x256_PNG.png" Win64="yes" Guid="39889494-838A-4B9A-BD0A-105A1F0161BF">
+      <Component Id="WinUI3AppsMicrosoftUIXamlAssets_NoiseAsset_256x256_PNG.png" Guid="39889494-838A-4B9A-BD0A-105A1F0161BF" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="WinUI3AppsMicrosoftUIXamlAssets_NoiseAsset_256x256_PNG" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="WinUI3AppsMicrosoftUIXamlAssets_NoiseAsset_256x256_PNG" Value="" KeyPath="yes" />
         </RegistryKey>
         <File Id="WinUI3AppsMicrosoftUIXamlAssetsFile_NoiseAsset_256x256_PNG.png" Source="$(var.BinDir)WinUI3Apps\Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png" />
       </Component>
-      <Component Id="WinUI3AppsMicrosoftUIXamlAssets_map.html" Win64="yes" Guid="A970464C-A5BC-43DB-ACB3-7D83CF3047B3">
+      <Component Id="WinUI3AppsMicrosoftUIXamlAssets_map.html" Guid="A970464C-A5BC-43DB-ACB3-7D83CF3047B3" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="WinUI3AppsMicrosoftUIXamlAssets_map" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="WinUI3AppsMicrosoftUIXamlAssets_map" Value="" KeyPath="yes" />
         </RegistryKey>
         <File Id="WinUI3AppsMicrosoftUIXamlAssetsFile_map.html" Source="$(var.BinDir)WinUI3Apps\Microsoft.UI.Xaml\Assets\map.html" />
       </Component>
@@ -319,12 +317,9 @@
       <?define IdSafeLanguage = $(var.Language)?>
       <?define CompGUIDPrefix = 51B656B3-2D45-49D8-9871-F0A1C8BEEE?>
       <?endif?>
-      <Component
-          Id="WinUI3Apps_WinAppSDKLoc_$(var.IdSafeLanguage)_Component"
-          Directory="WinAppSDKLoc$(var.IdSafeLanguage)WinUI3AppsInstallFolder"
-          Guid="$(var.CompGUIDPrefix)01">
+      <Component Id="WinUI3Apps_WinAppSDKLoc_$(var.IdSafeLanguage)_Component" Directory="WinAppSDKLoc$(var.IdSafeLanguage)WinUI3AppsInstallFolder" Guid="$(var.CompGUIDPrefix)01">
           <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-            <RegistryValue Type="string" Name="WinUI3Apps_WinAppSDKLoc_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes"/>
+            <RegistryValue Type="string" Name="WinUI3Apps_WinAppSDKLoc_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes" />
           </RegistryKey>
           <File Id="WinUI3Apps_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlMui_File" Source="$(var.BinDir)WinUI3Apps\$(var.Language)\Microsoft.ui.xaml.dll.mui" />
           <File Id="WinUI3Apps_WinAppSDKLoc_$(var.IdSafeLanguage)_XamlPhoneMui_File" Source="$(var.BinDir)WinUI3Apps\$(var.Language)\Microsoft.UI.Xaml.Phone.dll.mui" />
@@ -332,9 +327,9 @@
       <?undef IdSafeLanguage?>
       <?undef CompGUIDPrefix?>
       <?endforeach?>
-      <Component Id="RemoveWinAppSDKFolder" Guid="1BBAA49F-3B2E-455C-A615-EEB079CB9A8B" Directory="WinUI3AppsInstallFolder" >
+      <Component Id="RemoveWinAppSDKFolder" Guid="1BBAA49F-3B2E-455C-A615-EEB079CB9A8B" Directory="WinUI3AppsInstallFolder">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="RemoveWinAppSDKFolder" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="RemoveWinAppSDKFolder" Value="" KeyPath="yes" />
         </RegistryKey>
       <?foreach Language in $(var.WinAppSDKLocLanguageList)?>
       <?if $(var.Language) = af-ZA?>
@@ -452,11 +447,11 @@
       <?else?>
       <?define IdSafeLanguage = $(var.Language)?>
       <?endif?>
-        <RemoveFolder Id="RemoveFolderWinAppSDKLoc$(var.IdSafeLanguage)WinUI3AppsInstallFolder" Directory="WinAppSDKLoc$(var.IdSafeLanguage)WinUI3AppsInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderWinAppSDKLoc$(var.IdSafeLanguage)WinUI3AppsInstallFolder" Directory="WinAppSDKLoc$(var.IdSafeLanguage)WinUI3AppsInstallFolder" On="uninstall" />
       <?undef IdSafeLanguage?>
       <?endforeach?>
-        <RemoveFolder Id="RemoveFolderWinUI3AppsMicrosoftUIXamlInstallFolder" Directory="WinUI3AppsMicrosoftUIXamlInstallFolder" On="uninstall"/>
-        <RemoveFolder Id="RemoveFolderWinUI3AppsMicrosoftUIXamlAssetsInstallFolder" Directory="WinUI3AppsMicrosoftUIXamlAssetsInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderWinUI3AppsMicrosoftUIXamlInstallFolder" Directory="WinUI3AppsMicrosoftUIXamlInstallFolder" On="uninstall" />
+        <RemoveFolder Id="RemoveFolderWinUI3AppsMicrosoftUIXamlAssetsInstallFolder" Directory="WinUI3AppsMicrosoftUIXamlAssetsInstallFolder" On="uninstall" />
       </Component>
       <ComponentRef Id="WinUI3AppsMicrosoftUIXamlAssets_NoiseAsset_256x256_PNG.png" />
       <ComponentRef Id="WinUI3AppsMicrosoftUIXamlAssets_map.html" />

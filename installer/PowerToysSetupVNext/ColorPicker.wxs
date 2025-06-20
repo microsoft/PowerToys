@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
@@ -19,11 +17,11 @@
     </DirectoryRef>
 
     <ComponentGroup Id="ColorPickerComponentGroup">
-      <Component Id="RemoveColorPickerFolder" Guid="18C0C18C-F38A-4C88-B22C-9222F3A5B2EB" Directory="INSTALLFOLDER" >
+      <Component Id="RemoveColorPickerFolder" Guid="18C0C18C-F38A-4C88-B22C-9222F3A5B2EB" Directory="INSTALLFOLDER">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="RemoveColorPickerFolder" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="RemoveColorPickerFolder" Value="" KeyPath="yes" />
         </RegistryKey>
-        <RemoveFolder Id="RemoveFolderColorPickerAssetsFolder" Directory="ColorPickerAssetsFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderColorPickerAssetsFolder" Directory="ColorPickerAssetsFolder" On="uninstall" />
       </Component>
     </ComponentGroup>
 

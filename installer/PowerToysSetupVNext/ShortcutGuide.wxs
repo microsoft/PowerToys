@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
-     xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" >
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
@@ -18,12 +16,12 @@
     </DirectoryRef>
 
     <!-- Shortcut guide -->
-    <ComponentGroup Id="ShortcutGuideComponentGroup" >
-      <Component Id="RemoveShortcutGuideFolder" Guid="AD1ABC55-B593-4A60-A86A-BA8C0ED493A5" Directory="ShortcutGuideSvgsInstallFolder" >
+    <ComponentGroup Id="ShortcutGuideComponentGroup">
+      <Component Id="RemoveShortcutGuideFolder" Guid="AD1ABC55-B593-4A60-A86A-BA8C0ED493A5" Directory="ShortcutGuideSvgsInstallFolder">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="RemoveShortcutGuideFolder" Value="" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="RemoveShortcutGuideFolder" Value="" KeyPath="yes" />
         </RegistryKey>
-        <RemoveFolder Id="RemoveFolderShortcutGuideSvgsInstallFolder" Directory="ShortcutGuideSvgsInstallFolder" On="uninstall"/>
+        <RemoveFolder Id="RemoveFolderShortcutGuideSvgsInstallFolder" Directory="ShortcutGuideSvgsInstallFolder" On="uninstall" />
       </Component>
     </ComponentGroup>
 
