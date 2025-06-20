@@ -7,6 +7,7 @@ This section contains documentation for individual PowerToys modules, including 
 | Module | Description |
 |--------|-------------|
 | [Always on Top](alwaysontop.md) | Tool for pinning windows to stay on top of other windows |
+| [Awake](awake.md) | Tool to keep your computer awake without modifying power settings |
 | [Color Picker](colorpicker.md) | Tool for selecting and managing colors from the screen |
 | [Command Not Found](commandnotfound.md) | Tool suggesting package installations for missing commands |
 | [Crop and Lock](cropandlock.md) | Tool for cropping application windows into smaller windows or thumbnails |
@@ -14,6 +15,7 @@ This section contains documentation for individual PowerToys modules, including 
 | [FancyZones](fancyzones.md) ([debugging tools](fancyzones-tools.md)) | Window manager utility for custom window layouts |
 | [File Locksmith](filelocksmith.md) | Tool for finding processes that lock files |
 | [Hosts File Editor](hostsfileeditor.md) | Tool for managing the system hosts file |
+| [Image Resizer](imageresizer.md) | Tool for quickly resizing images within File Explorer |
 | [Keyboard Manager](keyboardmanager/README.md) | Tool for remapping keys and keyboard shortcuts |
 | [Mouse Utilities](mouseutils/readme.md) | Collection of tools to enhance mouse and cursor functionality |
 | [Mouse Without Borders](mousewithoutborders.md) | Tool for controlling multiple computers with a single mouse and keyboard |
@@ -35,9 +37,7 @@ The following modules currently lack comprehensive documentation. Contributions 
 | Module | Description |
 |--------|-------------|
 | Advanced Paste | Tool for enhanced clipboard pasting with formatting options |
-| Awake | Tool to keep your computer awake without modifying power settings |
 | File Explorer add-ons | Extensions for enhancing Windows File Explorer functionality |
-| Image Resizer | Tool for quickly resizing images within File Explorer |
 | Workspaces | Tool for saving and restoring window layouts for different projects |
 
 ## Adding New Module Documentation
