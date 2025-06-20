@@ -25,6 +25,7 @@ This section contains documentation for individual PowerToys modules, including 
 | [Registry Preview](registrypreview.md) | Tool for visualizing and editing Registry files |
 | [Screen Ruler](screenruler.md) | Tool for measuring pixel distances and color boundaries on screen |
 | [Shortcut Guide](shortcut_guide.md) | Tool for displaying Windows keyboard shortcuts when holding the Windows key |
+| [Text Extractor](textextractor.md) | Tool for extracting text from images and screenshots |
 | [ZoomIt](zoomit.md) | Screen zoom and annotation tool |
 
 ## Modules with Missing Documentation
@@ -37,7 +38,6 @@ The following modules currently lack comprehensive documentation. Contributions 
 | Awake | Tool to keep your computer awake without modifying power settings |
 | File Explorer add-ons | Extensions for enhancing Windows File Explorer functionality |
 | Image Resizer | Tool for quickly resizing images within File Explorer |
-| Text Extractor | Tool for extracting text from images and screenshots |
 | Workspaces | Tool for saving and restoring window layouts for different projects |
 
 ## Adding New Module Documentation
