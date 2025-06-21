@@ -25,7 +25,7 @@ struct Highlighter
     static Highlighter* instance;
     void Terminate();
     void SwitchActivationMode();
-    void ApplySettings(MouseHighlighterSettings settings);
+    void ApplySettings(MouseHighlighterSettings settings, bool isUpdate = false);
 
 private:
     enum class MouseButton
@@ -388,7 +388,8 @@ void Highlighter::SwitchActivationMode()
     PostMessage(m_hwnd, WM_SWITCH_ACTIVATION_MODE, 0, 0);
 }
 
-void Highlighter::ApplySettings(MouseHighlighterSettings settings) {
+void Highlighter::ApplySettings(MouseHighlighterSettings settings, bool isUpdate)
+{
     m_radius = static_cast<float>(settings.radius);
     m_fadeDelay_ms = settings.fadeDelayMs;
     m_fadeDuration_ms = settings.fadeDurationMs;
@@ -397,6 +398,13 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings) {
     m_alwaysColor = settings.alwaysColor;
     m_leftPointerEnabled = settings.leftButtonColor.A != 0;
     m_rightPointerEnabled = settings.rightButtonColor.A != 0;
+
+    if (isUpdate) {
+        if (settings.alwaysColor.A == 0 && m_alwaysPointerEnabled)
+        {
+            instance->ClearDrawingPoint(MouseButton::None);
+        }
+    }
     m_alwaysPointerEnabled = settings.alwaysColor.A != 0;
 }
 
@@ -511,7 +519,7 @@ void MouseHighlighterApplySettings(MouseHighlighterSettings settings)
     if (Highlighter::instance != nullptr)
     {
         Logger::info("Applying settings.");
-        Highlighter::instance->ApplySettings(settings);
+        Highlighter::instance->ApplySettings(settings, true);
     }
 }
 
