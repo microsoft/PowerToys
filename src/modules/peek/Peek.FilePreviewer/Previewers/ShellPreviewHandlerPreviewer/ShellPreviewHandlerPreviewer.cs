@@ -1,11 +1,10 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -214,19 +213,10 @@ namespace Peek.FilePreviewer.Previewers
 
         public static void ReleaseHandlerFactories()
         {
-            var tasks = HandlerFactories.Values.Select(f => Task.Run(() =>
+            foreach (var factory in HandlerFactories.Values)
             {
-                try
-                {
-                    f.LockServer(false);
-                    Marshal.FinalReleaseComObject(f);
-                }
-                catch
-                {
-                }
-            })).ToArray();
-
-            Task.WaitAll(tasks);
+                Marshal.FinalReleaseComObject(factory);
+            }
         }
 
         private static string? GetPreviewHandlerGuid(string fileExt)
