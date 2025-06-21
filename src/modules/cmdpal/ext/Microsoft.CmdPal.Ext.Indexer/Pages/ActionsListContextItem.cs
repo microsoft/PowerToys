@@ -2,10 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Commands;
 using Microsoft.CmdPal.Ext.Indexer.Data;
 using Microsoft.CmdPal.Ext.Indexer.Properties;
@@ -41,9 +43,17 @@ internal sealed partial class ActionsListContextItem : CommandContextItem
 
     private void UpdateMoreCommands()
     {
-        try
+        // TODO! probably should OS version check to make sure that
+        // we're on an OS version that supports actions
+        //
+        // wait no that's weird - we're already inside of a
+        // ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4)
+        // check here.
+        //
+        // so I don't know why this is an invalid cast down in GetActionsForInputs
+        lock (UpdateMoreCommandsLock)
         {
-            lock (UpdateMoreCommandsLock)
+            try
             {
                 if (actionRuntime == null)
                 {
@@ -54,7 +64,19 @@ internal sealed partial class ActionsListContextItem : CommandContextItem
                 actionRuntime.ActionCatalog.Changed -= ActionCatalog_Changed;
                 actionRuntime.ActionCatalog.Changed += ActionCatalog_Changed;
             }
+            catch
+            {
+                actionRuntime = null;
+            }
+        }
 
+        if (actionRuntime == null)
+        {
+            return;
+        }
+
+        try
+        {
             var extension = System.IO.Path.GetExtension(fullPath).ToLower(CultureInfo.InvariantCulture);
             ActionEntity entity = null;
             if (extension != null)
@@ -77,7 +99,9 @@ internal sealed partial class ActionsListContextItem : CommandContextItem
             lock (actions)
             {
                 actions.Clear();
-                foreach (var actionInstance in actionRuntime.ActionCatalog.GetActionsForInputs([entity]))
+                ActionEntity[] inputs = [entity];
+                var actionsInstances = actionRuntime.ActionCatalog.GetActionsForInputs(inputs);
+                foreach (var actionInstance in actionsInstances)
                 {
                     actions.Add(new CommandContextItem(new ExecuteActionCommand(actionInstance)));
                 }
@@ -85,9 +109,9 @@ internal sealed partial class ActionsListContextItem : CommandContextItem
                 MoreCommands = [.. actions];
             }
         }
-        catch
+        catch (Exception e)
         {
-            actionRuntime = null;
+            Logger.LogError("Error getting actions", e);
         }
     }
 }
