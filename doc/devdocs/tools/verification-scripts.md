@@ -18,6 +18,7 @@ This script checks the preview handler registration for the following file types
 * .svgz
 * .pdf
 * .gcode
+* .bgcode
 * .stl
 * .txt
 * .ini

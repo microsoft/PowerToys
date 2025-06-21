@@ -54,6 +54,8 @@ properties:
           EnablePdfThumbnail: false
           EnableGcodePreview: false
           EnableGcodeThumbnail: false
+          EnableBgcodePreview: false
+          EnableBgcodeThumbnail: false
           EnableStlThumbnail: false
           EnableQoiPreview: false
           EnableQoiThumbnail: false
