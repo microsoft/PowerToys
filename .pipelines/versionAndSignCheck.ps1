@@ -9,6 +9,7 @@ Param(
 $DirPath = $targetDir; #this file is in pipeline, we need root.
 $items = Get-ChildItem -Path $DirPath -File -Include *.exe, *.dll, *.ttf, PTCustomActions -Recurse -Force -ErrorAction SilentlyContinue
 $versionExceptions = @(
+    "AdaptiveCards.Templating.dll",
     "Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll",
     "Microsoft.Windows.ApplicationModel.Resources.Projection.dll",
     "Microsoft.Windows.ApplicationModel.WindowsAppRuntime.Projection.dll",
