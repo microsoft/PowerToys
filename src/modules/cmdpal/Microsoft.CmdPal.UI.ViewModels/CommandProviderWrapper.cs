@@ -40,6 +40,8 @@ public sealed class CommandProviderWrapper
 
     public CommandSettingsViewModel? Settings { get; private set; }
 
+    public bool IsActive { get; private set; }
+
     public string ProviderId
     {
         get
@@ -124,12 +126,14 @@ public sealed class CommandProviderWrapper
     {
         if (!isValid)
         {
+            IsActive = false;
             return;
         }
 
         var settings = serviceProvider.GetService<SettingsModel>()!;
 
-        if (!GetProviderSettings(settings).IsEnabled)
+        IsActive = GetProviderSettings(settings).IsEnabled;
+        if (!IsActive)
         {
             return;
         }
