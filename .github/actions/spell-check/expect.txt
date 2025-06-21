@@ -286,6 +286,7 @@ CVal
 cvd
 CVirtual
 CVS
+CWMO
 cxfksword
 CXSCREEN
 CXSMICON
