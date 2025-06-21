@@ -1,9 +1,10 @@
-﻿<Page
+﻿<helper:NavigatablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.NewPlusPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helper="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:local="clr-namespace:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
@@ -19,6 +20,7 @@
                 Spacing="2">
                 <tkcontrols:SettingsCard
                     x:Uid="NewPlus_Enable_Toggle"
+                    Name="NewPlusEnableToggle"
                     HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/NewPlus.png}"
                     IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                     <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
@@ -37,6 +39,7 @@
                 <controls:SettingsGroup x:Uid="NewPlus_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="NewPlus_Templates_Location"
+                        Name="NewPlusTemplatesLocation"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
                         Command="{x:Bind ViewModel.OpenCurrentNewTemplateFolder}"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF12B;}"
@@ -65,7 +68,7 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle" IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_File_Extension_Toggle" Name="NewPlusHideFileExtensionToggle" IsEnabled="{x:Bind ViewModel.IsHideFileExtSettingsCardEnabled, Mode=OneWay}">
                         <ToggleSwitch x:Uid="HideFileExtensionToggle" IsOn="{x:Bind ViewModel.HideFileExtension, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <InfoBar
@@ -78,7 +81,7 @@
                             <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
                         </InfoBar.IconSource>
                     </InfoBar>
-                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle">
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Hide_Starting_Digits_Toggle" Name="NewPlusHideStartingDigitsToggle">
                         <ToggleSwitch x:Uid="HideStartingDigitsToggle" IsOn="{x:Bind ViewModel.HideStartingDigits, Mode=TwoWay}" />
                         <tkcontrols:SettingsCard.Description>
                             <TextBlock x:Uid="NewPlus_Hide_Starting_Digits_Description" />
@@ -87,7 +90,7 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="NewPlus_behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="NewPlus_Behaviour_Replace_Variables_Toggle" IsEnabled="{x:Bind ViewModel.IsReplaceVariablesSettingsCardEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="NewPlus_Behaviour_Replace_Variables_Toggle" Name="NewPlusBehaviourReplaceVariablesToggle" IsEnabled="{x:Bind ViewModel.IsReplaceVariablesSettingsCardEnabled, Mode=OneWay}">
                         <StackPanel Orientation="Horizontal" Spacing="4">
                             <ToggleSwitch x:Uid="ReplaceVariablesToggle" IsOn="{x:Bind ViewModel.ReplaceVariables, Mode=TwoWay}" />
                             <Button
@@ -206,4 +209,4 @@
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 
-</Page>
+</helper:NavigatablePage>

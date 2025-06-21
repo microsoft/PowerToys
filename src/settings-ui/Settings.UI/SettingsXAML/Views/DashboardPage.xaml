@@ -1,4 +1,4 @@
-﻿<Page
+﻿<local:NavigatablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.DashboardPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,6 +6,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
@@ -14,7 +15,7 @@
     DataContext="DashboardViewModel"
     mc:Ignorable="d">
 
-    <Page.Resources>
+    <local:NavigatablePage.Resources>
         <DataTemplate x:Key="KeyVisualTemplate">
             <controls:KeyVisual
                 VerticalAlignment="Center"
@@ -281,7 +282,7 @@
                 </Button.Flyout>
             </Button>
         </DataTemplate>
-    </Page.Resources>
+    </local:NavigatablePage.Resources>
     <Grid Margin="16,0,0,0" RowSpacing="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -502,4 +503,4 @@
 
         </ScrollViewer>
     </Grid>
-</Page>
+</local:NavigatablePage>
