@@ -1,4 +1,4 @@
-LIBRARY "PowerToysSetupCustomActions"
+LIBRARY "PowerToysSetupCustomActionsVNext"
 
 EXPORTS
 	LaunchPowerToysCA

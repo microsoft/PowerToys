@@ -20,7 +20,7 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PowerToysInstallerVNext", "
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "PowerToysBootstrapperVNext", "PowerToysSetupVNext\PowerToysBootstrapperVNext.wixproj", "{DA4E9744-80BE-424C-B0F5-AFD8757DB575}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToysSetupCustomActionsVNext", "PowerToysSetupCustomActionsVNext\PowerToysSetupCustomActionsVNext.vcxproj", "{B3A354B0-1E54-4B55-A962-FB5AF9330C19}"Add commentMore actions
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PowerToysSetupCustomActionsVNext", "PowerToysSetupCustomActionsVNext\PowerToysSetupCustomActionsVNext.vcxproj", "{B3A354B0-1E54-4B55-A962-FB5AF9330C19}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

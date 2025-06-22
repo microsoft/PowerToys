@@ -6,8 +6,8 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{32f3882b-f2d6-4586-b5ed-11e39e522bd3}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>PowerToysSetupCustomActions</RootNamespace>
-    <ProjectName>PowerToysSetupCustomActions</ProjectName>
+    <RootNamespace>PowerToysSetupCustomActionsVNext</RootNamespace>
+    <ProjectName>PowerToysSetupCustomActionsVNext</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" Condition="Exists('$(VCTargetsPath)\Microsoft.Cpp.Default.props')" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
