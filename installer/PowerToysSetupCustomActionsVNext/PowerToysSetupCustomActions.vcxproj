@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{32f3882b-f2d6-4586-b5ed-11e39e522bd3}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>PowerToysSetupCustomActions</RootNamespace>
+    <ProjectName>PowerToysSetupCustomActions</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" Condition="Exists('$(VCTargetsPath)\Microsoft.Cpp.Default.props')" />
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="..\..\deps\spdlog.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)'=='Debug'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)'=='Release'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup\</OutDir>
+    <OutDir Condition=" '$(PerUser)' == 'true' ">$(Platform)\$(Configuration)\UserSetup\</OutDir>
+    <IntDir Condition=" '$(PerUser)' != 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\MachineSetup\obj\</IntDir>
+    <IntDir Condition=" '$(PerUser)' == 'true' ">$(SolutionDir)$(ProjectName)\$(Platform)\$(Configuration)\UserSetup\obj\</IntDir>
+    <!-- The CMD script below checks this value, and it is **CASE SENSITIVE** -->
+    <NormalizedPerUserValue>false</NormalizedPerUserValue>
+    <NormalizedPerUserValue Condition=" '$(PerUser)' == 'true' ">true</NormalizedPerUserValue>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\..\src\common\Telemetry;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <PreBuildEvent>
+      <Command>
+      call cmd /C "copy ""$(ProjectDir)DepsFilesLists.h"" ""$(ProjectDir)DepsFilesLists.h.bk"""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\AdvancedPaste.wxs"" ""$(ProjectDir)..\PowerToysSetup\AdvancedPaste.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Awake.wxs"" ""$(ProjectDir)..\PowerToysSetup\Awake.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs"" ""$(ProjectDir)..\PowerToysSetup\BaseApplications.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\CmdPal.wxs"" ""$(ProjectDir)..\PowerToysSetup\CmdPal.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetup\ColorPicker.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Core.wxs"" ""$(ProjectDir)..\PowerToysSetup\Core.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\EnvironmentVariables.wxs"" ""$(ProjectDir)..\PowerToysSetup\EnvironmentVariables.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FileExplorerPreview.wxs"" ""$(ProjectDir)..\PowerToysSetup\FileExplorerPreview.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\FileLocksmith.wxs"" ""$(ProjectDir)..\PowerToysSetup\FileLocksmith.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Hosts.wxs"" ""$(ProjectDir)..\PowerToysSetup\Hosts.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ImageResizer.wxs"" ""$(ProjectDir)..\PowerToysSetup\ImageResizer.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs"" ""$(ProjectDir)..\PowerToysSetup\KeyboardManager.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\MouseWithoutBorders.wxs"" ""$(ProjectDir)..\PowerToysSetup\MouseWithoutBorders.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\NewPlus.wxs"" ""$(ProjectDir)..\PowerToysSetup\NewPlus.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Peek.wxs"" ""$(ProjectDir)..\PowerToysSetup\Peek.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\PowerRename.wxs"" ""$(ProjectDir)..\PowerToysSetup\PowerRename.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Product.wxs"" ""$(ProjectDir)..\PowerToysSetup\Product.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\RegistryPreview.wxs"" ""$(ProjectDir)..\PowerToysSetup\RegistryPreview.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Resources.wxs"" ""$(ProjectDir)..\PowerToysSetup\Resources.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Run.wxs"" ""$(ProjectDir)..\PowerToysSetup\Run.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Settings.wxs"" ""$(ProjectDir)..\PowerToysSetup\Settings.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\ShortcutGuide.wxs"" ""$(ProjectDir)..\PowerToysSetup\ShortcutGuide.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Tools.wxs"" ""$(ProjectDir)..\PowerToysSetup\Tools.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinAppSDK.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\WinUI3Applications.wxs"" ""$(ProjectDir)..\PowerToysSetup\WinUI3Applications.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetup\Workspaces.wxs"" ""$(ProjectDir)..\PowerToysSetup\Workspaces.wxs.bk""""
+      if not "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform)
+      if "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetup\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(NormalizedPerUserValue)
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\AdvancedPaste.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\AdvancedPaste.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Awake.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Awake.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\BaseApplications.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\BaseApplications.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\ColorPicker.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Core.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Core.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\EnvironmentVariables.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\EnvironmentVariables.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\FileExplorerPreview.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\FileExplorerPreview.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\FileLocksmith.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\FileLocksmith.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Hosts.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Hosts.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\ImageResizer.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\ImageResizer.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\KeyboardManager.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\KeyboardManager.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\MouseWithoutBorders.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\MouseWithoutBorders.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\NewPlus.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\NewPlus.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Peek.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Peek.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\PowerRename.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\PowerRename.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Product.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Product.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\RegistryPreview.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\RegistryPreview.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Resources.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Resources.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Run.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Run.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Settings.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Settings.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\ShortcutGuide.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\ShortcutGuide.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Tools.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Tools.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\WinAppSDK.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\WinUI3Applications.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\WinUI3Applications.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Workspaces.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Workspaces.wxs.bk""""
+      if not "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform)
+      if "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(NormalizedPerUserValue)
+      </Command>
+      <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX3 based installer</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(RunBuildEvents)'=='false'">
+    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>inc;..\..\src\;..\..\src\common\Telemetry;telemetry;$(WixSdkPath)VS2017\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/await /Zc:twoPhase- /Wv:18 %(AdditionalOptions)</AdditionalOptions>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>Userenv.lib;Wtsapi32.lib;WindowsApp.lib;Newdev.lib;Crypt32.lib;msi.lib;wcautil.lib;Psapi.lib;Pathcch.lib;comsupp.lib;taskschd.lib;Secur32.lib;msi.lib;dutil.lib;wcautil.lib;Version.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>CustomAction.def</ModuleDefinitionFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(WixSdkPath)VS2017\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;CUSTOMACTIONTEST_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="CustomAction.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CustomAction.def" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DepsFilesLists.h" />
+    <ClInclude Include="RcResource.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Telemetry\ProjectTelemetry.h" />
+    <ClInclude Include="Telemetry\TraceLoggingDefines.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\common\logger\logger.vcxproj">
+      <Project>{d9b8fc84-322a-4f9f-bbb9-20915c47ddfd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+      <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
+</Project>
