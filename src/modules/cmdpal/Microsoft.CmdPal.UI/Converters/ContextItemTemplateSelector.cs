@@ -30,6 +30,8 @@ internal sealed partial class ContextItemTemplateSelector : DataTemplateSelector
             if (item is SeparatorContextItemViewModel)
             {
                 li.IsEnabled = false;
+                li.AllowFocusWhenDisabled = false;
+                li.AllowFocusOnInteraction = false;
                 dataTemplate = Separator;
             }
             else

@@ -135,12 +135,12 @@
                         </GroupStyle.HeaderTemplate>
                     </GroupStyle>
                 </ListView.GroupStyle>-->
-                <!--<ListView.ContextFlyout>
+                <ListView.ContextFlyout>
                     <Flyout
                         Placement="BottomEdgeAlignedLeft">
                         <cpcontrols:ContextMenu />
                     </Flyout>
-                </ListView.ContextFlyout>-->
+                </ListView.ContextFlyout>
                 </ListView>
             </controls:Case>
             <controls:Case Value="True">
