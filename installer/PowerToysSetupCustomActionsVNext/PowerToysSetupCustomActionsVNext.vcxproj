@@ -1,15 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build"
-  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\WixToolset.WcaUtil.5.0.2\build\WixToolset.WcaUtil.props" Condition="Exists('..\packages\WixToolset.WcaUtil.5.0.2\build\WixToolset.WcaUtil.props')" />
+  <Import Project="..\packages\WixToolset.DUtil.5.0.2\build\WixToolset.DUtil.props" Condition="Exists('..\packages\WixToolset.DUtil.5.0.2\build\WixToolset.DUtil.props')" />
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{32f3882b-f2d6-4586-b5ed-11e39e522bd3}</ProjectGuid>
+    <ProjectGuid>{B3A354B0-1E54-4B55-A962-FB5AF9330C19}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PowerToysSetupCustomActionsVNext</RootNamespace>
     <ProjectName>PowerToysSetupCustomActionsVNext</ProjectName>
   </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" Condition="Exists('$(VCTargetsPath)\Microsoft.Cpp.Default.props')" />
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
@@ -55,7 +56,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\AdvancedPaste.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\AdvancedPaste.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Awake.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Awake.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\BaseApplications.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\BaseApplications.wxs.bk""""
-      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\CmdPal.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\CmdPal.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\CmdPal.wxs"" ""$(ProjectDir)..\PowerToysSetup\CmdPal.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\ColorPicker.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\ColorPicker.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Core.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Core.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\EnvironmentVariables.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\EnvironmentVariables.wxs.bk""""
@@ -81,7 +82,7 @@
       if not "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform)
       if "$(NormalizedPerUserValue)" == "true" call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform) -installscopeperuser $(NormalizedPerUserValue)
       </Command>
-      <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX VNext based installer</Message>
+      <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX3 based installer</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <PropertyGroup Condition="'$(RunBuildEvents)'=='false'">
@@ -90,7 +91,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>inc;..\..\src\;..\..\src\common\Telemetry;telemetry;$(WixSdkPath)VS2017\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>inc;..\..\src\;..\..\src\common\Telemetry;telemetry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/await /Zc:twoPhase- /Wv:18 %(AdditionalOptions)</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -105,7 +106,7 @@
       <PreprocessorDefinitions>WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(WixSdkPath)VS2017\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(NUGET_PACKAGES)\wixtoolset.wcautil\5.0.2\build\native\v14\$(Platform);$(NUGET_PACKAGES)\wixtoolset.dutil\5.0.2\build\native\v14\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
@@ -176,5 +177,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\packages\WixToolset.DUtil.5.0.2\build\WixToolset.DUtil.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WixToolset.DUtil.5.0.2\build\WixToolset.DUtil.props'))" />
+    <Error Condition="!Exists('..\packages\WixToolset.WcaUtil.5.0.2\build\WixToolset.WcaUtil.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WixToolset.WcaUtil.5.0.2\build\WixToolset.WcaUtil.props'))" />
   </Target>
 </Project>
