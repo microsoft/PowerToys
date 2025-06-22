@@ -53,11 +53,19 @@ public sealed partial class ContextMenu : UserControl,
     {
         var result = ViewModel?.CheckKeybinding(msg.Ctrl, msg.Alt, msg.Shift, msg.Win, msg.Key);
 
-        if (result != null)
+        if (result == ContextKeybindingResult.Hide)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(result.Command.Model, result.Model));
-            WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
             msg.Handled = true;
+            WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+        }
+        else if (result == ContextKeybindingResult.KeepOpen)
+        {
+            UpdateUiForStackChange();
+            msg.Handled = true;
+        }
+        else if (result == ContextKeybindingResult.Unhandled)
+        {
+            msg.Handled = false;
         }
     }
 
@@ -65,8 +73,11 @@ public sealed partial class ContextMenu : UserControl,
     {
         if (e.ClickedItem is CommandContextItemViewModel item)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
-            WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+            if (InvokeCommand(item) == ContextKeybindingResult.Hide)
+            {
+                WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+            }
+
             UpdateUiForStackChange();
         }
     }
@@ -86,12 +97,19 @@ public sealed partial class ContextMenu : UserControl,
 
         var result = ViewModel?.CheckKeybinding(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
 
-        if (result != null)
+        if (result == ContextKeybindingResult.Hide)
         {
-            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(result.Command.Model, result.Model));
+            e.Handled = true;
             WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
             UpdateUiForStackChange();
+        }
+        else if (result == ContextKeybindingResult.KeepOpen)
+        {
             e.Handled = true;
+        }
+        else if (result == ContextKeybindingResult.Unhandled)
+        {
+            e.Handled = false;
         }
     }
 
@@ -126,16 +144,32 @@ public sealed partial class ContextMenu : UserControl,
         {
             if (CommandsDropdown.SelectedItem is CommandContextItemViewModel item)
             {
-                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(item.Command.Model, item.Model));
-                WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
-                UpdateUiForStackChange();
+                if (InvokeCommand(item) == ContextKeybindingResult.Hide)
+                {
+                    WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+                }
+                else
+                {
+                    UpdateUiForStackChange();
+                }
+
                 e.Handled = true;
             }
         }
         else if (e.Key == VirtualKey.Escape ||
             (e.Key == VirtualKey.Left && altPressed))
         {
-            WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+            if (ViewModel.CanPopContextStack())
+            {
+                ViewModel.PopContextStack();
+                UpdateUiForStackChange();
+            }
+            else
+            {
+                WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+                WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+            }
+
             e.Handled = true;
         }
 
@@ -181,4 +215,6 @@ public sealed partial class ContextMenu : UserControl,
         CommandsDropdown.SelectedIndex = 0;
         ContextFilterBox.Focus(FocusState.Programmatic);
     }
+
+    private ContextKeybindingResult InvokeCommand(CommandItemViewModel command) => ViewModel.InvokeCommand(command);
 }

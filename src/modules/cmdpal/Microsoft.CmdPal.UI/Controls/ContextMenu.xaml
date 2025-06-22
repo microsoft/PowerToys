@@ -93,17 +93,11 @@
 
             <!-- Template for context item separators -->
             <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="viewmodels:SeparatorContextItemViewModel">
-                <StackPanel Margin="0,8,8,0" Orientation="Vertical">
+                <StackPanel Margin="0,0,0,0" Orientation="Vertical">
                     <Border
-                        Margin="8,0,0,0"
-                        BorderBrush="{ThemeResource TextFillColorSecondaryBrush}"
-                        BorderThickness="0,0,0,2">
-                        <TextBlock
-                            Margin="-8,0,0,8"
-                            FontWeight="SemiBold"
-                            IsTextSelectionEnabled="True"
-                            Text=" "
-                            TextWrapping="WrapWholeWords" />
+                        Margin="0,0,0,0"
+                        BorderBrush="{ThemeResource MenuFlyoutSeparatorThemeBrush}"
+                        BorderThickness="0,0,0,1">
                     </Border>
                 </StackPanel>
             </DataTemplate>
