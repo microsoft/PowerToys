@@ -25,7 +25,6 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
                 case DashboardModuleButtonItem: return ButtonTemplate;
                 case DashboardModuleShortcutItem: return ShortcutTemplate;
                 case DashboardModuleTextItem: return TextTemplate;
-                case DashboardModuleKBMItem: return KBMTemplate;
                 default: return TextTemplate;
             }
         }
