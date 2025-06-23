@@ -3,7 +3,6 @@
   <Import Project="..\packages\WixToolset.WcaUtil.5.0.2\build\WixToolset.WcaUtil.props" Condition="Exists('..\packages\WixToolset.WcaUtil.5.0.2\build\WixToolset.WcaUtil.props')" />
   <Import Project="..\packages\WixToolset.DUtil.5.0.2\build\WixToolset.DUtil.props" Condition="Exists('..\packages\WixToolset.DUtil.5.0.2\build\WixToolset.DUtil.props')" />
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.240111.5\build\native\Microsoft.Windows.CppWinRT.props')" />
-  <Import Project="..\wix.props" Condition="Exists('..\wix.props')" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B3A354B0-1E54-4B55-A962-FB5AF9330C19}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -106,7 +105,11 @@
       <PreprocessorDefinitions>WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
+<<<<<<< HEAD
       <AdditionalLibraryDirectories>$(NUGET_PACKAGES)\wixtoolset.wcautil\5.0.2\build\native\v14\$(Platform);$(NUGET_PACKAGES)\wixtoolset.dutil\5.0.2\build\native\v14\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+=======
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+>>>>>>> f09399a9f (fix)
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
