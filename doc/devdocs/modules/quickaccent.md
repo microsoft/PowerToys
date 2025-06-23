@@ -83,3 +83,22 @@ The module includes multiple language-specific character sets and special charac
 - Potential refinements to the activation timing mechanism
 - Additional language and special character sets
 - Improved UI positioning in different application contexts
+
+## Debugging
+
+To debug the Quick Accent module, follow these steps:
+
+0. Get familiar with the overall [Debugging Process](../development/debugging.md) for PowerToys.
+1. **Build** the entire PowerToys solution in Visual Studio
+2. Navigate to the **PowerAccent** folder in Solution Explorer
+3. Open the file you want to debug and set **breakpoints** at the relevant locations
+4. Find the **runner** project in the root of the solution
+5. Right-click on the **runner** project and select "*Set as Startup Project*"
+6. Start debugging by pressing `F5` or clicking the "*Start*" button
+7. When the PowerToys Runner launches, **enable** the Quick Accent module in the UI
+8. Use the Visual Studio Debug menu or press `Ctrl+Alt+P` to open "*Reattach to Process*"
+9. Find and select "**PowerToys.PowerAccent.exe**" in the process list
+10. Trigger the action in Quick Accent that should hit your breakpoint
+11. Verify that the debugger breaks at your breakpoint and you can inspect variables and step through code
+
+This process allows you to debug the Quick Accent module while it's running as part of the full PowerToys application.

@@ -2,6 +2,27 @@
 
 This document covers techniques and tools for debugging PowerToys.
 
+## Pre-Debugging Setup
+
+Before you can start debugging PowerToys, you need to set up your development environment:
+
+1. Fork the repository and clone it to your machine
+2. Navigate to the repository root directory
+3. Run `git submodule update --init --recursive` to initialize all submodules
+4. Change directory to `.config` and run `winget configure .\configuration.vsEnterprise.winget` (pick the configuration file that matches your Visual Studio distribution)
+
+### Optional: Building Outside Visual Studio
+
+You can build the entire solution from the command line, which is sometimes faster than building within Visual Studio:
+
+1. Open Developer Command Prompt for VS 2022
+2. Navigate to the repository root directory
+3. Run the following command(don't forget to set the correct platform):
+   ```
+   msbuild -restore -p:RestorePackagesConfig=true -p:Platform=ARM64 -m PowerToys.sln
+   ```
+4. This process should complete in approximately 13-14 minutes for a full build
+
 ## Debugging Techniques
 
 ### Visual Studio Debugging
@@ -21,7 +42,7 @@ The Shell Process Debugging Tool is a Visual Studio extension that helps debug m
 
 #### Debugging Setup Process
 
-1. Install "Debug Child Processes" Visual Studio extension
+1. Install ["Debug Child Processes"](https://marketplace.visualstudio.com/items?itemName=vsdbgplat.MicrosoftChildProcessDebuggingPowerTool2022) Visual Studio extension
 2. Configure which processes to debug and what debugger to use for each
 3. Start PowerToys from Visual Studio
 4. The extension will automatically attach to specified child processes when launched
