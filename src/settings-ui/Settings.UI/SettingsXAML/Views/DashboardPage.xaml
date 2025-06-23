@@ -15,26 +15,6 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <DataTemplate x:Key="KeyVisualTemplate">
-            <controls:KeyVisual
-                VerticalAlignment="Center"
-                AutomationProperties.AccessibilityView="Raw"
-                Content="{Binding}"
-                IsTabStop="False"
-                VisualType="TextOnly" />
-        </DataTemplate>
-        <DataTemplate x:Key="CommaTemplate">
-            <StackPanel Background="{ThemeResource SystemFillColorSolidAttentionBackground}">
-                <TextBlock
-                    Margin="4,0"
-                    VerticalAlignment="Bottom"
-                    Text="," />
-            </StackPanel>
-        </DataTemplate>
-        <converters:KeyVisualTemplateSelector
-            x:Key="KeyVisualTemplateSelector"
-            CommaTemplate="{StaticResource CommaTemplate}"
-            KeyVisualTemplate="{StaticResource KeyVisualTemplate}" />
         <converters:ModuleItemTemplateSelector
             x:Key="ModuleItemTemplateSelector"
             ActivationTemplate="{StaticResource ModuleItemActivationTemplate}"
@@ -52,15 +32,7 @@
             FalseValue="Visible"
             TrueValue="Collapsed" />
 
-        <DataTemplate x:Key="ModuleItemTextTemplate" x:DataType="viewModels:DashboardModuleTextItem">
-            <TextBlock
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind Label, Mode=OneWay}"
-                TextWrapping="WrapWholeWords" />
-        </DataTemplate>
-
-        <DataTemplate x:Key="ModuleItemButtonTemplate" x:DataType="viewModels:DashboardModuleButtonItem">
+        <DataTemplate x:Key="ModuleItemButtonTemplate" x:DataType="viewmodels:DashboardModuleButtonItem">
             <Button
                 HorizontalAlignment="Stretch"
                 Click="{x:Bind ButtonClickHandler, Mode=OneWay}"
@@ -71,40 +43,41 @@
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" MinWidth="1" />
                 </Grid.ColumnDefinitions>
-                <Border
-                    Padding="8,4"
-                    HorizontalAlignment="Right"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="{StaticResource ControlCornerRadius}">
-                    <ItemsControl
-                        AutomationProperties.AccessibilityView="Raw"
-                        IsTabStop="False"
-                        ItemsSource="{x:Bind Shortcut, Mode=OneWay}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="12" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
+                <ItemsControl
+                    Grid.Column="1"
+                    AutomationProperties.AccessibilityView="Raw"
+                    IsTabStop="False"
+                    ItemsSource="{x:Bind Shortcut, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border
+                                Padding="4,1,4,1"
+                                BorderBrush="{ThemeResource ControlStrongStrokeColorDisabledBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource ControlCornerRadius}">
                                 <controls:KeyVisual
                                     VerticalAlignment="Center"
                                     AutomationProperties.AccessibilityView="Raw"
                                     Content="{Binding}"
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     IsTabStop="False"
                                     VisualType="TextOnly" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Border>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
                 <TextBlock
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind Label, Mode=OneWay}"
                     TextWrapping="WrapWholeWords" />
             </Grid>
@@ -116,13 +89,12 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="1" Text="{x:Bind Activation, Mode=OneWay}" />
                 <TextBlock
                     VerticalAlignment="Center"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind Label, Mode=OneWay}"
                     TextWrapping="WrapWholeWords" />
+                <TextBlock Grid.Column="1" Text="{x:Bind Activation, Mode=OneWay}" />
             </Grid>
         </DataTemplate>
     </Page.Resources>
@@ -198,26 +170,26 @@
                         VerticalAlignment="Top">
                         <ItemsRepeater Grid.Row="2" ItemsSource="{x:Bind ViewModel.ShortcutModules, Mode=OneWay}">
                             <ItemsRepeater.Layout>
-                                <StackLayout Orientation="Vertical" Spacing="0" />
+                                <StackLayout Orientation="Vertical" Spacing="16" />
                             </ItemsRepeater.Layout>
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="viewmodels:DashboardListItem">
-                                    <Grid BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,0">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                        </Grid.RowDefinitions>
-                                        <StackPanel
-                                            Margin="0,8,0,0"
-                                            Orientation="Horizontal"
-                                            Spacing="8">
-                                            <Image Width="16" Source="{x:Bind Icon, Mode=OneWay}" />
-                                            <TextBlock Text="{x:Bind Label, Mode=OneWay}" />
-                                        </StackPanel>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="32" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Image
+                                            Width="16"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Top"
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            Source="{x:Bind Icon, Mode=OneWay}"
+                                            ToolTipService.ToolTip="{x:Bind Label}" />
                                         <ItemsControl
-                                            Grid.Row="1"
-                                            Margin="24,4,0,16"
-                                            IsTabStop="False" ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
+                                            Grid.Column="1"
+                                            IsTabStop="False"
+                                            ItemTemplateSelector="{StaticResource ModuleItemTemplateSelector}"
                                             ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
@@ -263,6 +235,7 @@
                                         Tag="{x:Bind Tag}">
                                         <tkcontrols:SettingsCard.Resources>
                                             <x:Double x:Key="SettingsCardWrapThreshold">0</x:Double>
+                                            <x:Double x:Key="SettingsCardHeaderIconMaxSize">16</x:Double>
                                         </tkcontrols:SettingsCard.Resources>
                                         <tkcontrols:SettingsCard.Header>
                                             <StackPanel Orientation="Horizontal">
