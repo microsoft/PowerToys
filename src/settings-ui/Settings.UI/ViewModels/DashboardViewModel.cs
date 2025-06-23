@@ -77,21 +77,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             });
         }
 
-        private KeyboardManagerProfile GetKBMProfile()
-        {
-            KeyboardManagerSettings kbmSettings = GetKBMSettings();
-            const string PowerToyName = KeyboardManagerSettings.ModuleName;
-            string fileName = kbmSettings.Properties.ActiveConfiguration.Value + JsonFileType;
-            return new SettingsUtils().GetSettingsOrDefault<KeyboardManagerProfile>(PowerToyName, fileName);
-        }
-
-        private KeyboardManagerSettings GetKBMSettings()
-        {
-            var settingsUtils = new SettingsUtils();
-            ISettingsRepository<KeyboardManagerSettings> moduleSettingsRepository = SettingsRepository<KeyboardManagerSettings>.GetInstance(settingsUtils);
-            return moduleSettingsRepository.SettingsConfig;
-        }
-
         private void EnabledChangedOnUI(DashboardListItem dashboardListItem)
         {
             Views.ShellPage.UpdateGeneralSettingsCallback(dashboardListItem.Tag, dashboardListItem.IsEnabled);
@@ -269,7 +254,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     default: activation = resourceLoader.GetString("MouseUtils_FindMyMouse_ActivationDoubleControlPress/Content"); break;
                 }
 
-                list.Add(new DashboardModuleActivationItem() { Label = resourceLoader.GetString("Dashboard_Activation"), Activation = shortDescription });
+                list.Add(new DashboardModuleActivationItem() { Label = resourceLoader.GetString("Dashboard_Activation"), Activation = activation });
             }
 
             return new ObservableCollection<DashboardModuleItem>(list);
