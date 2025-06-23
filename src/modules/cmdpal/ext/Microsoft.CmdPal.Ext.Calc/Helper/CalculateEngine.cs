@@ -121,15 +121,6 @@ public static class CalculateEngine
 
         var formatted = rounded.ToString("G29", CultureInfo.InvariantCulture);
 
-        if (formatted.Contains('.'))
-        {
-            formatted = formatted.TrimEnd('0');
-            if (formatted.EndsWith('.'))
-            {
-                formatted = formatted.TrimEnd('.');
-            }
-        }
-
         return formatted;
     }
 }
