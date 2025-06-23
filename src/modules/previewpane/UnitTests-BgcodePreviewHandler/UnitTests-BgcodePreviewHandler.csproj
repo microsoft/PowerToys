@@ -7,7 +7,7 @@
     <AssemblyDescription>PowerToys UnitTests-BgcodePreviewHandler</AssemblyDescription>
     <Description>PowerToys UnitTests-BgcodePreviewHandler</Description>
     <ProjectGuid>{99CA1509-FB73-456E-AFAF-AB89C017BD72}</ProjectGuid>
-    <RootNamespace>PdfPreviewHandlerUnitTests</RootNamespace>
+    <RootNamespace>BgcodePreviewHandlerUnitTests</RootNamespace>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
