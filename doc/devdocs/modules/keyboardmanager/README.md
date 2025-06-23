@@ -14,3 +14,4 @@ The devdocs for Keyboard Manager have been divided into the following modules:
 2. [Keyboard Event Handlers](keyboardeventhandlers.md)
 3. [Keyboard Manager UI](keyboardmanagerui.md)
 4. [Keyboard Manager Common](keyboardmanagercommon.md)
+5. [Debugging Guide](debug.md)
