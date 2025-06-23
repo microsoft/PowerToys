@@ -5,10 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using System.Text;
-
+using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.WindowWalker.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Win32;
@@ -49,20 +50,12 @@ public class VirtualDesktopHelper
     /// </summary>
     private readonly List<Guid> _availableDesktops = [];
 
-#pragma warning disable SA1306 // Field names should begin with lower-case letter
-    private readonly uint CLSCTXINPROCALL = 0x17;
-#pragma warning restore SA1306 // Field names should begin with lower-case letter
-
     /// <summary>
     /// Id of the current visible Desktop.
     /// </summary>
     private Guid _currentDesktop;
 
     private static readonly CompositeFormat VirtualDesktopHelperDesktop = System.Text.CompositeFormat.Parse(Properties.Resources.VirtualDesktopHelper_Desktop);
-
-    private Guid iVirtualDesktopManagerCLSID = new("aa509086-5ca9-4c25-8f95-589d3c07b48a");
-
-    private Guid iVirtualDesktopManagerIID = new("a5cd92ff-29be-454c-8d04-d82879fb3f1b");
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VirtualDesktopHelper"/> class.
@@ -74,13 +67,7 @@ public class VirtualDesktopHelper
 
         try
         {
-            var hr = NativeMethods.CoCreateInstance(ref this.iVirtualDesktopManagerCLSID, nint.Zero, CLSCTXINPROCALL, ref iVirtualDesktopManagerIID, out var virtualDesktopManagerPtr);
-            if (hr != 0)
-            {
-                throw new ArgumentException($"Failed to create IVirtualDesktopManager instance. HR: 0x{hr:X}");
-            }
-
-            _virtualDesktopManager = (IVirtualDesktopManager)cw.GetOrCreateObjectForComInstance(virtualDesktopManagerPtr, CreateObjectFlags.None);
+            _virtualDesktopManager = ComHelper.CreateComInstance<IVirtualDesktopManager>(ref Unsafe.AsRef(in CLSID.VirtualDesktopManager), CLSCTX.InProcServer);
         }
         catch (COMException ex)
         {

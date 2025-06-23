@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\..\Common.Dotnet.AotCompatibility.props" />
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.Apps</RootNamespace>
     <Nullable>enable</Nullable>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+	<DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +20,7 @@
     <PackageReference Include="WyHash" />
 
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-
+	<ProjectReference Include="..\..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
   </ItemGroup>
 
@@ -48,5 +50,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="NativeMethods.txt" />
+    <AdditionalFiles Include="NativeMethods.json" />
   </ItemGroup>
 </Project>

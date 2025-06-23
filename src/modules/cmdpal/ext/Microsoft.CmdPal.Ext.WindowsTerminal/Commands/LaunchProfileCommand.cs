@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
+using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -32,20 +34,16 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
 
     private void Launch(string id, string profile)
     {
-        ComWrappers cw = new StrategyBasedComWrappers();
+        IApplicationActivationManager appManager;
 
-        var hr = NativeHelpers.CoCreateInstance(ref NativeHelpers.ApplicationActivationManagerCLSID, IntPtr.Zero, NativeHelpers.CLSCTXINPROCALL, ref NativeHelpers.ApplicationActivationManagerIID, out var appManagerPtr);
-        if (hr != 0)
+        try
         {
-            throw new ArgumentException($"Failed to create IApplicationActivationManager instance. HR: 0x{hr:X}");
+            appManager = ComHelper.CreateComInstance<IApplicationActivationManager>(ref Unsafe.AsRef(in CLSID.ApplicationActivationManager), CLSCTX.InProcServer);
         }
-
-        var appManager = (IApplicationActivationManager)cw.GetOrCreateObjectForComInstance(
-            appManagerPtr, CreateObjectFlags.None);
-
-        if (appManager == null)
+        catch (Exception e)
         {
-            throw new ArgumentException("Failed to get IApplicationActivationManager interface");
+            Logger.LogError($"Failed to create IApplicationActivationManager instance. ex: {e.Message}");
+            throw;
         }
 
         const ActivateOptions noFlags = ActivateOptions.None;

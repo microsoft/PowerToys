@@ -47,7 +47,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [Weather](https://github.com/ruslanlap/PowerToysRun-Weather) | [ruslanlap](https://github.com/ruslanlap) | Get real-time weather information directly from PowerToys Run. |
 | [Pomodoro](https://github.com/ruslanlap/PowerToysRun-Pomodoro) | [ruslanlap](https://github.com/ruslanlap) | Manage Pomodoro productivity sessions directly from PowerToys Run. |
 | [Definition](https://github.com/ruslanlap/PowerToysRun-Definition) | [ruslanlap](https://github.com/ruslanlap) | Lookup word definitions, phonetics, and synonyms directly in PowerToys Run. |
-| [RandomGen](https://github.com/ruslanlap/PowerToysRun-RandomGen) | [ruslanlap](https://github.com/ruslanlap) | 🎲 Generate random data instantly with a single keystroke. Perfect for developers, testers, designers, and anyone who needs quick access to random data. Features include secure passwords, PINs, names, business data, dates, numbers, GUIDs, color codes, and more. Especially useful for designers who need random color codes and placeholder content. | 
+| [RandomGen](https://github.com/ruslanlap/PowerToysRun-RandomGen) | [ruslanlap](https://github.com/ruslanlap) | 🎲 Generate random data instantly with a single keystroke. Perfect for developers, testers, designers, and anyone who needs quick access to random data. Features include secure passwords, PINs, names, business data, dates, numbers, GUIDs, color codes, and more. Especially useful for designers who need random color codes and placeholder content. |
 
 ## Extending software plugins
 
@@ -72,4 +72,3 @@ Below are community created plugins that target a website or software.  They are
 | [Firefox Bookmark](https://github.com/8LWXpg/PowerToysRun-FirefoxBookmark) | [8LWXpg](https://github.com/8LWXpg) | Open bookmarks in Firefox based browser |
 | [Linear](https://github.com/vednig/powertoys-linear) | [vednig](https://github.com/vednig) | Create Linear Issues directly from Powertoys Run |
 | [SpeedTest](https://github.com/ruslanlap/PowerToysRun-SpeedTest) | [ruslanlap](https://github.com/ruslanlap) | One-command internet speed tests with real-time results, modern UI, and shareable links. |
-
