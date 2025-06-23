@@ -36,3 +36,10 @@ The Crop and Lock module is part of the PowerToys solution. All the logic-relate
 - Cropping maximized or full-screen windows in "Reparent" mode might not work properly.
 - Some UWP apps may not respond well to being cropped in "Reparent" mode.
 - Applications with sub-windows or tabs can have compatibility issues in "Reparent" mode.
+
+## Debug
+1. build the entire project
+2. launch the built Powertoys
+3. select CropAndLock as the startup project in VS
+4. In the debug button, choose "Attach to process". ![image](https://github.com/user-attachments/assets/a7624ec2-63f1-4720-9540-a916b0ada282)
+5. Attach to CropAndLock.![image](https://github.com/user-attachments/assets/08aa0465-596c-4494-9daa-e96b234f9997)
