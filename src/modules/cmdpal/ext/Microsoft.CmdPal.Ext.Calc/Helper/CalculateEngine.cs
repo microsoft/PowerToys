@@ -84,9 +84,7 @@ public static class CalculateEngine
 
         var decimalResult = Convert.ToDecimal(result, cultureInfo);
 
-        // Remove trailing zeros from the decimal string representation (e.g., "1.2300" -> "1.23")
-        // This is necessary because the value extracted from exprtk may contain unnecessary trailing zeros.
-        var roundedResult = Convert.ToDecimal(FormatMax15Digits(decimalResult), cultureInfo);
+        var roundedResult = FormatMax15Digits(decimalResult, cultureInfo);
 
         return new CalculateResult()
         {
@@ -110,7 +108,7 @@ public static class CalculateEngine
     ///   100000.9999999999 → "100001"
     ///   1234567890123.45  → "1234567890123.45"
     /// </summary>
-    private static string FormatMax15Digits(decimal value)
+    private static decimal FormatMax15Digits(decimal value, CultureInfo cultureInfo)
     {
         var absValue = Math.Abs(value);
         var integerDigits = absValue >= 1 ? (int)Math.Floor(Math.Log10((double)absValue)) + 1 : 1;
@@ -119,8 +117,8 @@ public static class CalculateEngine
 
         var rounded = Math.Round(value, maxDecimalDigits, MidpointRounding.AwayFromZero);
 
-        var formatted = rounded.ToString("G29", CultureInfo.InvariantCulture);
+        var formatted = rounded.ToString("G29", cultureInfo);
 
-        return formatted;
+        return Convert.ToDecimal(formatted, cultureInfo);
     }
 }
