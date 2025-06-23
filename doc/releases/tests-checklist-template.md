@@ -50,6 +50,7 @@
  - [ ] File Locksmith
  - [ ] Registry Preview
  - [ ] Environment Variables
+ - [ ] ZoomIt
 
 ## [General Settings](tests-checklist-template-settings-section.md)
 
