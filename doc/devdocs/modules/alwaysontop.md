@@ -89,3 +89,10 @@ The module provides a user interface for configuring settings in the PowerToys S
 2. Open PowerToys.sln in Visual Studio
 3. Select the Release configuration and build the solution
 4. Run PowerToys.exe from the output directory to test the module
+
+### Debug
+1. build the entire project
+2. launch the built Powertoys
+3. select AlwaysOnTop as the startup project in VS
+4. In the debug button, choose "Attach to process". ![image](https://github.com/user-attachments/assets/a7624ec2-63f1-4720-9540-a916b0ada282)
+5. Attach to AlwaysOnTop.![image](https://github.com/user-attachments/assets/815c0f89-8fd1-48d6-b7fd-0e4a92e222d0)
