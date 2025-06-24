@@ -18,12 +18,8 @@
         <converters:ModuleItemTemplateSelector
             x:Key="ModuleItemTemplateSelector"
             ActivationTemplate="{StaticResource ModuleItemActivationTemplate}"
-            ButtonTemplate="{StaticResource ModuleItemButtonTemplate}"
             ShortcutTemplate="{StaticResource ModuleItemShortcutTemplate}" />
         <tkconverters:CollectionVisibilityConverter x:Key="CollectionVisibilityConverter" />
-        <Style x:Name="KeysListViewContainerStyle" TargetType="ListViewItem">
-            <Setter Property="IsTabStop" Value="False" />
-        </Style>
         <converters:UpdateStateToBoolConverter x:Key="UpdateStateToBoolConverter" />
         <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <tkconverters:BoolNegationConverter x:Key="BoolNegationConverter" />
@@ -39,11 +35,11 @@
                 Content="{x:Bind ButtonTitle}" />
         </DataTemplate>
 
-        <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewModels:DashboardModuleShortcutItem">
-            <Grid ColumnSpacing="12">
+        <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
+            <Grid MinHeight="36" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" MinWidth="148" />
+                    <ColumnDefinition Width="Auto" MinWidth="140" />
                 </Grid.ColumnDefinitions>
                 <ItemsControl
                     Grid.Column="1"
@@ -53,48 +49,51 @@
                     ItemsSource="{x:Bind Shortcut, Mode=OneWay}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="4" />
+                            <StackPanel Orientation="Horizontal" Spacing="2" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <controls:KeyVisual
-                                MinHeight="32"
                                 Padding="8,4,8,4"
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"
                                 Content="{Binding}"
                                 FontSize="12"
-                                FontWeight="SemiBold"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 IsTabStop="False" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
                 <TextBlock
                     VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Text="{x:Bind Label, Mode=OneWay}"
                     TextWrapping="WrapWholeWords" />
             </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="ModuleItemActivationTemplate" x:DataType="viewmodels:DashboardModuleActivationItem">
-            <Grid ColumnSpacing="12">
+            <Grid MinHeight="36" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" MinWidth="140" />
                 </Grid.ColumnDefinitions>
                 <TextBlock
                     VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Text="{x:Bind Label, Mode=OneWay}"
                     TextWrapping="WrapWholeWords" />
-                <TextBlock Grid.Column="1" Text="{x:Bind Activation, Mode=OneWay}" />
+                <TextBlock
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind Activation, Mode=OneWay}"
+                    TextWrapping="WrapWholeWords" />
             </Grid>
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Margin="16,0,0,0" RowSpacing="24">
+    <Grid Margin="16,0,0,0" RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -104,42 +103,92 @@
         <TextBlock
             x:Uid="DashboardTitle"
             MaxWidth="{StaticResource PageMaxWidth}"
+            Margin="1,0,0,0"
             VerticalAlignment="Center"
             Style="{StaticResource TitleTextBlockStyle}" />
-
         <Grid
-            Grid.Row="1"
+            Grid.Row="1" Padding="0,0,20,0"
             MaxWidth="{StaticResource PageMaxWidth}"
             ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Button
-                Grid.Column="2"
-                Click="SWVersionButtonClicked"
-                Style="{StaticResource SubtleButtonStyle}"
-                Visibility="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Button Padding="0,0,8,0" Click="WhatsNewButton_Click" Style="{StaticResource SubtleButtonStyle}">
+                <!--  Visibility="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"  -->
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <FontIcon
-                        AutomationProperties.AccessibilityView="Raw"
-                        FontSize="20"
-                        Foreground="{ThemeResource AccentTextFillColorTertiaryBrush}"
-                        Glyph="&#xE895;" />
-                    <StackPanel Grid.Column="1" Orientation="Vertical">
-                        <TextBlock x:Uid="UpdateAvailable" FontWeight="SemiBold" />
+                    <Grid CornerRadius="{StaticResource OverlayCornerRadius}">
+                        <Image Width="120" Source="ms-appx:///Assets/Settings/Modules/PT.png" />
+                        <Grid Background="{ThemeResource SmokeFillColorDefaultBrush}" />
+                    </Grid>
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Orientation="Vertical">
+                        <TextBlock FontWeight="SemiBold" Text="Learn what's new" />
                         <TextBlock
-                            x:Uid="LearnMore"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Style="{StaticResource CaptionTextBlockStyle}" />
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="Version 0.91" />
                     </StackPanel>
                 </Grid>
             </Button>
+            <StackPanel
+                x:Name="TopButtonPanel"
+                Grid.Column="1"
+                Orientation="Horizontal"
+                Spacing="16">
+                <Button Style="{StaticResource SubtleButtonStyle}">
+                    <!--  Visibility="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"  -->
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontSize="20"
+                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                            Glyph="&#xE814;" />
+                        <StackPanel Grid.Column="1" Orientation="Vertical">
+                            <TextBlock FontWeight="SemiBold" Text="Shortcut conflicts" />
+                            <TextBlock
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Text="2 conflicts found" />
+                        </StackPanel>
+                    </Grid>
+                </Button>
+                <Button Click="SWVersionButtonClicked" Style="{StaticResource SubtleButtonStyle}">
+                    <!--  Visibility="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"  -->
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontSize="20"
+                            Foreground="{ThemeResource AccentTextFillColorTertiaryBrush}"
+                            Glyph="&#xE895;" />
+                        <StackPanel Grid.Column="1" Orientation="Vertical">
+                            <TextBlock x:Uid="UpdateAvailable" FontWeight="SemiBold" />
+                            <TextBlock
+                                x:Uid="LearnMore"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}" />
+                        </StackPanel>
+                    </Grid>
+                </Button>
+            </StackPanel>
         </Grid>
 
         <ScrollViewer x:Name="MainScrollViewer" Grid.Row="2">
@@ -147,6 +196,7 @@
                 <!--  This grid is required to ensure that the content is horizontally aligned  -->
                 <Grid
                     MaxWidth="{StaticResource PageMaxWidth}"
+                    Padding="0,0,20,48"
                     ColumnSpacing="16"
                     RowSpacing="16">
                     <Grid.ColumnDefinitions>
@@ -158,14 +208,68 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <controls:Card Title="Quick launch" VerticalAlignment="Top" />
+                    <controls:Card Title="Quick launch" VerticalAlignment="Top">
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.ActionModules, Mode=OneWay}">
+                            <ItemsRepeater.Layout>
+                                <tkcontrols:WrapLayout />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="viewmodels:DashboardListItem">
+                                    <Grid>
+                                        <ItemsControl
+                                            Grid.Column="1"
+                                            IsTabStop="False"
+                                            ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="viewmodels:DashboardModuleButtonItem">
+                                                    <Button
+                                                        AutomationProperties.Name="{x:Bind ButtonTitle}"
+                                                        Click="{x:Bind ButtonClickHandler}"
+                                                        Style="{StaticResource SubtleButtonStyle}"
+                                                        ToolTipService.ToolTip="{x:Bind ButtonDescription}">
+                                                        <Button.Content>
+                                                            <Grid>
+                                                                <Grid.RowDefinitions>
+                                                                    <RowDefinition Height="*" />
+                                                                    <RowDefinition Height="Auto" />
+                                                                </Grid.RowDefinitions>
+                                                                <Image
+                                                                    Width="16"
+                                                                    HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"
+                                                                    Source="/Assets/Settings/Icons/AdvancedPaste.png" />
+                                                                <TextBlock
+                                                                    Grid.Row="1"
+                                                                    FontSize="12"
+                                                                    Text="{x:Bind ButtonTitle}"
+                                                                    TextAlignment="Center" />
+                                                            </Grid>
+
+                                                        </Button.Content>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Spacing="0" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                    </controls:Card>
                     <controls:Card
                         Title="Shortcuts"
                         Grid.Row="1"
                         VerticalAlignment="Top">
-                        <ItemsRepeater Grid.Row="2" ItemsSource="{x:Bind ViewModel.ShortcutModules, Mode=OneWay}">
+                        <ItemsRepeater
+                            Grid.Row="2"
+                            Margin="12,0,0,0"
+                            ItemsSource="{x:Bind ViewModel.ShortcutModules, Mode=OneWay}">
                             <ItemsRepeater.Layout>
-                                <StackLayout Orientation="Vertical" Spacing="16" />
+                                <StackLayout Orientation="Vertical" Spacing="0" />
                             </ItemsRepeater.Layout>
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="viewmodels:DashboardListItem">
@@ -176,6 +280,7 @@
                                         </Grid.ColumnDefinitions>
                                         <Image
                                             Width="16"
+                                            Margin="0,10,0,0"
                                             HorizontalAlignment="Left"
                                             VerticalAlignment="Top"
                                             AutomationProperties.AccessibilityView="Raw"
@@ -188,7 +293,7 @@
                                             ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
-                                                    <StackPanel Spacing="4" />
+                                                    <StackPanel Spacing="0" />
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
                                         </ItemsControl>
@@ -198,6 +303,7 @@
                         </ItemsRepeater>
                     </controls:Card>
                     <controls:Card
+                        x:Name="ModulesCard"
                         Title="Modules"
                         Grid.RowSpan="2"
                         Grid.Column="1"
@@ -284,5 +390,27 @@
                 </Grid>
             </Grid>
         </ScrollViewer>
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState>
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="840" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <VisualState>
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="TopButtonPanel.(Grid.Row)" Value="1" />
+                        <Setter Target="TopButtonPanel.Margin" Value="0,16,0,0" />
+                        <Setter Target="TopButtonPanel.(Grid.Column)" Value="0" />
+                        <Setter Target="ModulesCard.(Grid.Column)" Value="0" />
+                        <Setter Target="ModulesCard.(Grid.Row)" Value="2" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>
