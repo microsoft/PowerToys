@@ -276,66 +276,64 @@ Repeat the previous subsections steps after enabling `Allow zones to span across
 
 Find My Mouse:
   * Enable FindMyMouse. Then, without moving your mouse:
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
-    - [ ] Press any other key and verify the overlay disappears.
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
-    - [ ] Press a mouse button and verify the overlay disappears.
+    - [X] Press Left Ctrl twice and verify the overlay appears.
+    - [X] Press any other key and verify the overlay disappears.
   * Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice.
   * Enable FindMyMouse. Then, without moving your mouse:
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
+    - [X] Press Left Ctrl twice and verify the overlay appears.
   * Enable the "Do not activate on game mode" option. Start playing a game that uses CG native full screen.
-    - [ ] Verify the overlay no longer appears when you press Left Ctrl twice.
+    - [X] Verify the overlay no longer appears when you press Left Ctrl twice.
   * Disable the "Do not activate on game mode" option. Start playing the same game.
-    - [ ] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
+    - [X] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
   * Test the different settings and verify they apply:
-    - [ ] Overlay opacity
-    - [ ] Background color
-    - [ ] Spotlight color
-    - [ ] Spotlight radius
-    - [ ] Spotlight initial zoom (1x vs 9x will show the difference)
-    - [ ] Animation duration
-    - [ ] Change activation method to shake and activate by shaking your mouse pointer
-    - [ ] Excluded apps
+    - [X] Overlay opacity
+    - [X] Background color
+    - [X] Spotlight color
+    - [X] Spotlight radius
+    - [X] Spotlight initial zoom (1x vs 9x will show the difference)
+    - [X] Animation duration
+    - [X] Change activation method to shake and activate by shaking your mouse pointer
+    - [X] Excluded apps
 
 Mouse Highlighter:
   * Enable Mouse Highlighter. Then:
-    - [ ] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
-    - [ ] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [ ] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [ ] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
-    - [ ] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
+    - [X] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
+    - [X] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [X] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [X] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
+    - [X] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
   * Test the different settings and verify they apply:
-    - [ ] Change activation shortcut and test it
-    - [ ] Left button highlight color
-    - [ ] Right button highlight color
-    - [ ] Opacity
-    - [ ] Radius
-    - [ ] Fade delay
-    - [ ] Fade duration
+    - [X] Change activation shortcut and test it
+    - [X] Left button highlight color
+    - [X] Right button highlight color
+    - [X] Opacity
+    - [X] Radius
+    - [X] Fade delay
+    - [X] Fade duration
 
 Mouse Pointer Crosshairs:
   * Enable Mouse Pointer Crosshairs. Then:
-    - [ ] Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
-    - [ ] Press the activation shortcut again and verify the crosshairs disappear.
-    - [ ] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
+    - [X] Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
+    - [X] Press the activation shortcut again and verify the crosshairs disappear.
+    - [X] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
   * Test the different settings and verify they apply:
-    - [ ] Change activation shortcut and test it
-    - [ ] Crosshairs color
-    - [ ] Crosshairs opacity
-    - [ ] Crosshairs center radius
-    - [ ] Crosshairs thickness
-    - [ ] Crosshairs border color
-    - [ ] Crosshairs border size
+    - [X] Change activation shortcut and test it
+    - [X] Crosshairs color
+    - [X] Crosshairs opacity
+    - [X] Crosshairs center radius
+    - [X] Crosshairs thickness
+    - [X] Crosshairs border color
+    - [X] Crosshairs border size
 
 Mouse Jump:
   * Enable Mouse Jump. Then:
-    - [ ] Press the activation shortcut and verify the screens preview appears.
-    - [ ] Change activation shortcut and verify that new shorctut triggers Mouse Jump.
-    - [ ] Click around the screen preview and ensure that mouse cursor jumped to clicked location.
-    - [ ] Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
-    - [ ] Change scaling of screens and confirm that Mouse Jump still works correctly.
-    - [ ] Unplug additional monitors and confirm that Mouse Jump still works correctly.
-    - [ ] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
+    - [X] Press the activation shortcut and verify the screens preview appears.
+    - [X] Change activation shortcut and verify that new shorctut triggers Mouse Jump.
+    - [X] Click around the screen preview and ensure that mouse cursor jumped to clicked location.
+    - [X] Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
+    - [X] Change scaling of screens and confirm that Mouse Jump still works correctly.
+    - [X] Unplug additional monitors and confirm that Mouse Jump still works correctly.
+    - [X] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
 
 ## Awake
  - [X] Try out the features and see if they work, no list at this time.
