@@ -74,19 +74,19 @@
 
 ## [FancyZones Editor](tests-checklist-template-fancyzones-section.md)
 
-- [ ] Open editor from the settings
-- [ ] Open editor with a shortcut
-- [ ] Create a new layout (grid and canvas)
-- [ ] Duplicate a template and a custom layout
-- [ ] Delete layout
-- [ ] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
-- [ ] Edit canvas layout: zones size and position, create or delete zones.
-- [ ] Edit grid layout: split, merge, resize zones.
-- [ ] Check `Save and apply` and `Cancel` buttons behavior after editing.
-- [ ] Assign a layout to each monitor.
-- [ ] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
-- [ ] Assign horizontal and vertical default layouts
-- [ ] Test duplicate layout focus
+- [X] Open editor from the settings
+- [X] Open editor with a shortcut
+- [X] Create a new layout (grid and canvas)
+- [X] Duplicate a template and a custom layout
+- [X] Delete layout
+- [X] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
+- [X] Edit canvas layout: zones size and position, create or delete zones.
+- [X] Edit grid layout: split, merge, resize zones.
+- [X] Check `Save and apply` and `Cancel` buttons behavior after editing.
+- [X] Assign a layout to each monitor.
+- [X] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
+- [X] Assign horizontal and vertical default layouts
+- [X] Test duplicate layout focus
    * Select any layout X in 'Templates' or 'Custom' section by click left mouse button
    * Mouse right button click on any layout Y in 'Templates' or 'Custom' sections
    * Duplicate it by clicking 'Create custom layout' (Templates section) or 'Duplicate' in 'Custom' section
@@ -95,14 +95,14 @@
 ## [FancyZones](tests-checklist-template-fancyzones-section.md)
 
 ### Appearance
-- [ ] Change colors, opacity and `Show zone number` options. Verify they're applied.
+- [X] Change colors, opacity and `Show zone number` options. Verify they're applied.
 
 ### Excluded apps
-- [ ] Exclude some apps, verify that they're not applicable to a zone.
+- [X] Exclude some apps, verify that they're not applicable to a zone.
 
 ### Dragging
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Start dragging a window, then press shift. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
+- [X] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Start dragging a window, then press shift. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
+- [X] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
 - [ ]  `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` on. Zones are shown immediately when dragging a window and hidden when you click a non-primary mouse button or press shift.
 - [ ] `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` off. Zones are shown immediately when dragging a window, hidden when you press shift.
 - [ ] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
