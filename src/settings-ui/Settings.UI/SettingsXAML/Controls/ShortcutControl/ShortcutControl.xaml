@@ -17,36 +17,38 @@
                 Padding="0"
                 Click="OpenDialogButton_Click"
                 CornerRadius="8">
-                <StackPanel
-                    Margin="12,6,12,6"
-                    Orientation="Horizontal"
-                    Spacing="16">
-                    <ItemsControl
-                        x:Name="PreviewKeysControl"
-                        VerticalAlignment="Center"
-                        IsEnabled="{Binding ElementName=EditButton, Path=IsEnabled}"
-                        IsTabStop="False">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="4" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <controls:KeyVisual
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.AccessibilityView="Raw"
-                                    Content="{Binding}"
-                                    IsTabStop="False"
-                                    VisualType="Small" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                    <FontIcon
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        FontSize="16"
-                        Glyph="&#xE70F;" />
-                </StackPanel>
+                <Grid Margin="12,6,12,6">
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <ItemsControl
+                            x:Name="PreviewKeysControl"
+                            VerticalAlignment="Center"
+                            IsEnabled="{Binding ElementName=EditButton, Path=IsEnabled}"
+                            IsTabStop="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="4" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <controls:KeyVisual
+                                        VerticalAlignment="Center"
+                                        AutomationProperties.AccessibilityView="Raw"
+                                        Content="{Binding}"
+                                        Padding="12,8,12,8"
+                                        IsTabStop="False"
+                                        Style="{StaticResource AccentKeyVisualStyle}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <FontIcon
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            FontSize="14"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xE70F;" />
+                    </StackPanel>
+                    <!--<TextBlock Text="No shortcut configured" />-->
+                </Grid>
             </Button>
         </StackPanel>
     </Grid>
