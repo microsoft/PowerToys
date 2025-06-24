@@ -25,7 +25,7 @@
    * Install **previous version** on a clean machine and update with new per-machine version. Ensure that it is installed in Program files and that registry entries are under **HKLM**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
    * Try installing per-user version over already installed per-machine version and ensure that proper error message is shown.
    * Remove PowerToys and install per-user version. Ensure that it is installed in <APPDATA>/Local/PowerToys and that registry entries are under **HKCU**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
-   * Create a new user and install per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
+   * Create a new user and ins ontall per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
 
 ## [General Settings](tests-checklist-template-settings-section.md)
 
@@ -341,14 +341,14 @@ Mouse Jump:
  - [ ] Try out the features and see if they work, no list at this time.
 
 ## Always on Top
- - [ ] Pin/unpin a window, verify it's topmost/not topmost.
- - [ ] Pin/unpin a window, verify the border appeared/disappeared.
- - [ ] Switch virtual desktop, verify border doesn't show up on another desktop.
- - [ ] Minimize and maximize pinned window, verify the border looks as usual.
- - [ ] Change border color and thickness.
- - [ ] Verify if sound is played according to the sound setting.
- - [ ] Exclude app, try to pin it.
- - [ ] Exclude already pinned app, verify it was unpinned.
+ - [X] Pin/unpin a window, verify it's topmost/not topmost.
+ - [X] Pin/unpin a window, verify the border appeared/disappeared.
+ - [X] Switch virtual desktop, verify border doesn't show up on another desktop.
+ - [X] Minimize and maximize pinned window, verify the border looks as usual.
+ - [X] Change border color and thickness.
+ - [X] Verify if sound is played according to the sound setting.
+ - [X] Exclude app, try to pin it.
+ - [X] Exclude already pinned app, verify it was unpinned.
  - [ ] Try to pin the app in the Game Mode.
 
 ## GPO
@@ -430,12 +430,12 @@ Mouse Jump:
 
 ## Crop And Lock
  * Thumbnail mode
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [X] Test with win32 app
+   - [X] Test with packaged app
    
  * Reparent mode (there are known issues where reparent mode doesn't work for some apps)
-   - [ ] Test with win32 app
-   - [ ] Test with packaged app
+   - [X] Test with win32 app
+   - [X] Test with packaged app
 
 ## DSC
  * You need to have some prerequisites installed:
