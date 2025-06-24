@@ -80,6 +80,11 @@
  - [ ] Change some settings in some PowerToys.
  - [ ] Restore the settings in the General tab and verify the Settings you've applied were reset.
 
+**Tray Icon show/hide:**
+ - [ ] In the General toggle "show tray icon", make sure the tray icon show/hide in system tray
+
+
+
 ## Color Picker
 * Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
   - [ ] when PowerToys is running unelevated on start-up
