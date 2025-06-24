@@ -23,6 +23,12 @@ public partial class BuiltInsCommandProvider : CommandProvider
         [
             new CommandItem(openSettings) { Subtitle = Properties.Resources.builtin_open_settings_subtitle },
             new CommandItem(_newExtension) { Title = _newExtension.Title, Subtitle = Properties.Resources.builtin_new_extension_subtitle },
+            new ListItem(new CommandWithParams() { Name = "Invoke with params 2" })
+            {
+                Title = "Do a thing with a string",
+                Subtitle = "This command requires more input",
+                Icon = new IconInfo("\uE961"),
+            }
         ];
 
     public override IFallbackCommandItem[] FallbackCommands() =>
@@ -40,4 +46,36 @@ public partial class BuiltInsCommandProvider : CommandProvider
     }
 
     public override void InitializeWithHost(IExtensionHost host) => BuiltinsExtensionHost.Instance.Initialize(host);
+
+    internal sealed partial class CommandWithParams : InvokableCommand, IInvokableCommandWithParameters
+    {
+        public ICommandParameter[] Parameters => [new TextParam("Test")];
+
+        public ICommandResult InvokeWithArgs(object sender, ICommandArgument[] args)
+        {
+            if (args.Length > 0)
+            {
+                var arg = args[0];
+                var msg = $"Arg {arg.Name} = {arg.Value}";
+                var toast = new ToastStatusMessage(new StatusMessage() { Message = msg, State = MessageState.Success });
+                toast.Show();
+            }
+            else
+            {
+                var toast = new ToastStatusMessage(new StatusMessage() { Message = "didn't work homes", State = MessageState.Error });
+                toast.Show();
+            }
+
+            return CommandResult.KeepOpen();
+        }
+    }
+
+    internal sealed partial class TextParam(string name, bool required = true) : ICommandParameter
+    {
+        public string Name => name;
+
+        public bool Required => required;
+
+        public ParameterType Type => ParameterType.Text;
+    }
 }

@@ -168,6 +168,46 @@ internal sealed partial class SampleListPage : ListPage
             {
                 Title = "Get the name of the Foreground window",
             },
+            new ListItem(new CommandWithParams() { Name = "Invoke with params" })
+            {
+                Title = "Do a thing with a string",
+                Subtitle = "This command requires more input",
+                Icon = new IconInfo("\uE961"),
+            }
         ];
+    }
+
+    internal sealed partial class CommandWithParams : Command, IInvokableCommandWithParameters
+    {
+        public ICommandParameter[] Parameters => [new TextParam("Test")];
+
+        public ICommandResult Invoke(object sender) => throw new System.NotImplementedException();
+
+        public ICommandResult InvokeWithArgs(object sender, ICommandArgument[] args)
+        {
+            if (args.Length > 0)
+            {
+                var arg = args[0];
+                var msg = $"Arg {arg.Name} = {arg.Value}";
+                var toast = new ToastStatusMessage(new StatusMessage() { Message = msg, State = MessageState.Success });
+                toast.Show();
+            }
+            else
+            {
+                var toast = new ToastStatusMessage(new StatusMessage() { Message = "didn't work homes", State = MessageState.Error });
+                toast.Show();
+            }
+
+            return CommandResult.KeepOpen();
+        }
+    }
+
+    internal sealed partial class TextParam(string name, bool required = true) : ICommandParameter
+    {
+        public string Name => name;
+
+        public bool Required => required;
+
+        public ParameterType Type => ParameterType.Text;
     }
 }

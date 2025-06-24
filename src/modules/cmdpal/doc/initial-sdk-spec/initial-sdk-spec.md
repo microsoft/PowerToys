@@ -1410,8 +1410,8 @@ interface IDetailsLink requires IDetailsData {
     Windows.Foundation.Uri Link { get; };
     String Text { get; };
 }
-interface IDetailsCommand requires IDetailsData {
-    ICommand Command { get; };
+interface IDetailsCommands requires IDetailsData {
+    ICommand[] Commands { get; };
 }
 [uuid("58070392-02bb-4e89-9beb-47ceb8c3d741")]
 interface IDetailsSeparator requires IDetailsData {}
@@ -2111,14 +2111,42 @@ for highly complex action chaining.
 
 I had originally started to spec this out as:
 
-```cs
+```c#
+
+
+enum ParameterType
+{
+    Text,
+    File,
+    Files,
+    Enum,
+    Entity
+};
+
+interface ICommandParameter
+{
+    ParameterType Type { get; };
+    String Name { get; };
+    Boolean Required{ get; };
+    // TODO! values for enums?
+    // TODO! dynamic values for enums? like GetValues(string query)
+    // TODO! files might want to restrict types? but now we're a file picker and need that whole API
+};
+
+interface ICommandArgument
+{
+    String Name { get; };
+    Object Value { get; };
+};
+
 interface IInvokableCommandWithParameters requires ICommand {
-    ActionParameters Parameters { get; };
-    CommandResult InvokeWithArgs(ActionArguments args);
-}
+    ICommandParameter[] Parameters { get; };
+    ICommandResult InvokeWithArgs(Object sender, ICommandArgument[] args);
+};
+
 ```
 
-And `ActionParameters` would be a set of `{ type, name, required}` structs,
+And `CommandParameters` would be a set of `{ type, name, required }` structs,
 which would specify the parameters that the action needs. Simple types would be
 `string`, `file`, `file[]`, `enum` (with possible values), etc.
 

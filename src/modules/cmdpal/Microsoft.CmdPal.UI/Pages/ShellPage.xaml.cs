@@ -229,6 +229,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     // See RootFrame_Navigated event handler.
                 });
             }
+            else if (command is IInvokableCommandWithParameters commandWithParams)
+            {
+                Logger.LogDebug($"Invoking command with args");
+
+                // HandleInvokeCommand(message, commandWithParams);
+            }
             else if (command is IInvokableCommand invokable)
             {
                 Logger.LogDebug($"Invoking command");

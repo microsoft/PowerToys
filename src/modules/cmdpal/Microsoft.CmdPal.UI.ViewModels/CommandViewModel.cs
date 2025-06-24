@@ -29,6 +29,8 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
     public IconInfoViewModel Icon { get; private set; }
 
+    private bool HasParameters { get; set; }
+
     public CommandViewModel(ICommand? command, WeakReference<IPageContext> pageContext)
         : base(pageContext)
     {
@@ -51,6 +53,18 @@ public partial class CommandViewModel : ExtensionObjectViewModel
 
         Id = model.Id ?? string.Empty;
         Name = model.Name ?? string.Empty;
+
+        if (model is IInvokableCommandWithParameters)
+        {
+            HasParameters = true;
+        }
+
+        HasParameters = model switch
+        {
+            IInvokableCommandWithParameters withParams => true,
+            _ => false,
+        };
+
         IsFastInitialized = true;
     }
 
