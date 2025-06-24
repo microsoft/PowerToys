@@ -10,8 +10,6 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
 {
     public partial class ModuleItemTemplateSelector : DataTemplateSelector
     {
-        public DataTemplate ButtonTemplate { get; set; }
-
         public DataTemplate ShortcutTemplate { get; set; }
 
         public DataTemplate ActivationTemplate { get; set; }
@@ -20,7 +18,6 @@ namespace Microsoft.PowerToys.Settings.UI.Converters
         {
             switch (item)
             {
-                case DashboardModuleButtonItem: return ButtonTemplate;
                 case DashboardModuleShortcutItem: return ShortcutTemplate;
                 case DashboardModuleActivationItem: return ActivationTemplate;
                 default: return ActivationTemplate;

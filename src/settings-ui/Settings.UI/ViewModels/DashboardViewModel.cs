@@ -8,7 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Windows.Threading;
-
+using CommunityToolkit.WinUI.Controls;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<DashboardListItem> ShortcutModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
-        public ObservableCollection<DashboardListItem> ButtonModules { get; set; } = new ObservableCollection<DashboardListItem>();
+        public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
 
         public bool UpdateAvailable { get; set; }
 
@@ -106,7 +106,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void GetShortcutModules()
         {
             ShortcutModules.Clear();
-            ButtonModules.Clear();
+            ActionModules.Clear();
 
             foreach (var x in AllModules.Where(x => x.IsEnabled))
             {
@@ -117,6 +117,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (filteredItems.Count != 0)
                 {
                     ShortcutModules.Add(new DashboardListItem
+                    {
+                        EnabledChangedCallback = x.EnabledChangedCallback,
+                        Icon = x.Icon,
+                        IsLocked = x.IsLocked,
+                        Label = x.Label,
+                        Tag = x.Tag,
+                        IsEnabled = x.IsEnabled,
+                        DashboardModuleItems = new ObservableCollection<DashboardModuleItem>(filteredItems),
+                    });
+                }
+            }
+
+            foreach (var x in AllModules.Where(x => x.IsEnabled))
+            {
+                var filteredItems = x.DashboardModuleItems
+                    .Where(m => m is DashboardModuleButtonItem)
+                    .ToList();
+
+                if (filteredItems.Count != 0)
+                {
+                    ActionModules.Add(new DashboardListItem
                     {
                         EnabledChangedCallback = x.EnabledChangedCallback,
                         Icon = x.Icon,
@@ -174,7 +195,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("CmdPal_ShortDescription"), Shortcut = hotkey.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("CmdPal_ActivationDescription"), Shortcut = hotkey.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -216,15 +237,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ISettingsRepository<FancyZonesSettings> moduleSettingsRepository = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils());
             var settings = moduleSettingsRepository.SettingsConfig;
-            string activationMode = $"{resourceLoader.GetString(settings.Properties.FancyzonesShiftDrag.Value ? "FancyZones_ShiftDragCheckBoxControl_Header/Content" : "FancyZones_ActivationNoShiftDrag")}.";
-            if (settings.Properties.FancyzonesMouseSwitch.Value)
-            {
-                activationMode += $" {resourceLoader.GetString("FancyZones_MouseDragCheckBoxControl_Header/Content")}.";
-            }
+            string activationMode = $"{resourceLoader.GetString(settings.Properties.FancyzonesShiftDrag.Value ? "FancyZones_ActivationShiftDrag" : "FancyZones_ActivationNoShiftDrag")}.";
 
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleActivationItem() { Label = resourceLoader.GetString("Dashboard_Activation"), Activation = activationMode },
+                new DashboardModuleActivationItem() { Label = resourceLoader.GetString("Activate_Zones"), Activation = activationMode },
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("FancyZones_OpenEditor"), Shortcut = settings.Properties.FancyzonesEditorHotkey.Value.GetKeysList() },
                 new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("FancyZones_LaunchEditorButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("FancyZones_LaunchEditorButtonControl/Description"), ButtonGlyph = "\uEB3C", ButtonClickHandler = FancyZoneLaunchClicked },
             };
@@ -449,20 +466,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG("{\"action\":{\"Workspaces\":{\"action_name\":\"LaunchEditor\", \"value\":\"\"}}}");
         }
 
-        private void KbmKeyLaunchClicked(object sender, RoutedEventArgs e)
-        {
-            var settingsUtils = new SettingsUtils();
-            var kbmViewModel = new KeyboardManagerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, KeyboardManagerPage.FilterRemapKeysList);
-            kbmViewModel.OnRemapKeyboard();
-        }
-
-        private void KbmShortcutLaunchClicked(object sender, RoutedEventArgs e)
-        {
-            var settingsUtils = new SettingsUtils();
-            var kbmViewModel = new KeyboardManagerViewModel(settingsUtils, SettingsRepository<GeneralSettings>.GetInstance(settingsUtils), ShellPage.SendDefaultIPCMessage, KeyboardManagerPage.FilterRemapKeysList);
-            kbmViewModel.OnEditShortcut();
-        }
-
         private void RegistryPreviewLaunchClicked(object sender, RoutedEventArgs e)
         {
             var actionName = "Launch";
@@ -471,20 +474,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void DashboardListItemClick(object sender)
         {
-            Button button = sender as Button;
-            if (button == null)
+            if (sender is SettingsCard card && card.Tag is ModuleType moduleType)
             {
-                return;
+                NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
             }
-
-            if (!(button.Tag is ModuleType))
-            {
-                return;
-            }
-
-            ModuleType moduleType = (ModuleType)button.Tag;
-
-            NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
         }
     }
 }
