@@ -3,9 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Linq;
-
 using AdvancedPaste.Models;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.PowerToys.Telemetry.Events;
@@ -13,6 +13,7 @@ using Microsoft.PowerToys.Telemetry.Events;
 namespace AdvancedPaste.Telemetry;
 
 [EventData]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
 public class AdvancedPasteSemanticKernelFormatEvent(bool cacheUsed, bool isSavedQuery, int promptTokens, int completionTokens, string modelName, string actionChain) : EventBase, IEvent
 {
     public static string FormatActionChain(IEnumerable<ActionChainItem> actionChain) => FormatActionChain(actionChain.Select(item => item.Format));
