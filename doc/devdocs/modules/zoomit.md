@@ -125,6 +125,14 @@ The integration of ZoomIt into PowerToys involved these key steps:
    - Adding signing for new binaries
    - Fixing analyzer errors and code quality issues
 
+## Debug Instructions
+1. Build the entire PowerToys solution at least once.
+2. Set `runner` as the startup project and start debugging.
+3. Once the PowerToys Settings app is running and ensure ZoomIt is activated.
+4. Set `ZoomIt` as the startup project in Visual Studio.
+5. Press `Ctrl + Alt + P` and attach ZoomIt to the process.
+6. You should now be able to set breakpoints and step through the code.
+
 ## Special Implementation Details
 
 ### Font Selection
