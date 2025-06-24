@@ -187,7 +187,7 @@ public class UWPApplication : IProgram
         }
         catch (Exception ex)
         {
-            Logger.LogError($"Unable to load resource {errorContext} : {ex.Message}");
+            Logger.LogError($"Unable to load resource {source} : {errorContext} : {ex.Message}");
             return string.Empty;
         }
     }
