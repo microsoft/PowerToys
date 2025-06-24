@@ -43,10 +43,11 @@
             <Grid ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" MinWidth="1" />
+                    <ColumnDefinition Width="Auto" MinWidth="148" />
                 </Grid.ColumnDefinitions>
                 <ItemsControl
                     Grid.Column="1"
+                    HorizontalAlignment="Left"
                     AutomationProperties.AccessibilityView="Raw"
                     IsTabStop="False"
                     ItemsSource="{x:Bind Shortcut, Mode=OneWay}">
@@ -57,21 +58,15 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border
-                                Padding="4,1,4,1"
-                                BorderBrush="{ThemeResource ControlStrongStrokeColorDisabledBrush}"
-                                BorderThickness="1"
-                                CornerRadius="{StaticResource ControlCornerRadius}">
-                                <controls:KeyVisual
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.AccessibilityView="Raw"
-                                    Content="{Binding}"
-                                    FontSize="11"
-                                    FontWeight="SemiBold"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    IsTabStop="False"
-                                    VisualType="TextOnly" />
-                            </Border>
+                            <controls:KeyVisual
+                                MinHeight="32"
+                                Padding="8,4,8,4"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Content="{Binding}"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                IsTabStop="False" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

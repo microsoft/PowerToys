@@ -34,12 +34,12 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <controls:KeyVisual
-                        Height="56"
+                        Height="56" Padding="20,8,20,8"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"
-                        IsError="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
-                        IsTabStop="False"
-                        VisualType="Large" />
+                        FontSize="20" Style="{StaticResource AccentKeyVisualStyle}"
+                        IsInvalid="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay}"
+                        IsTabStop="False" />
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
