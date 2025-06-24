@@ -824,8 +824,11 @@
   <data name="FancyZones_ShiftDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Hold Shift key to activate zones while dragging a window</value>
   </data>
+  <data name="FancyZones_ActivationShiftDrag" xml:space="preserve">
+    <value>Hold Shift key</value>
+  </data>
   <data name="FancyZones_ActivationNoShiftDrag" xml:space="preserve">
-    <value>Drag windows to activate zones</value>
+    <value>Drag a window</value>
   </data>
   <data name="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Show zones on all monitors while dragging a window</value>
@@ -3162,10 +3165,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Pick a color</value>
   </data>
   <data name="CropAndLock_Thumbnail" xml:space="preserve">
-    <value>Thumbnail</value>
+    <value>Crop and create a thumbnail</value>
   </data>
   <data name="CropAndLock_Reparent" xml:space="preserve">
-    <value>Reparent</value>
+    <value>Crop an application's window into a cropped window</value>
   </data>
   <data name="FancyZones_OpenEditor" xml:space="preserve">
     <value>Open editor</value>
@@ -3177,7 +3180,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Find the mouse</value>
   </data>
   <data name="MouseHighlighter_ShortDescription" xml:space="preserve">
-    <value>Highlight clicks</value>
+    <value>Turn on clicks highlighter</value>
   </data>
   <data name="MouseJump_ShortDescription" xml:space="preserve">
     <value>Quickly move the mouse pointer</value>
@@ -3195,10 +3198,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Learn more</value>
   </data>
   <data name="Peek_ShortDescription" xml:space="preserve">
-    <value>Quick and easy previewer</value>
+    <value>Preview file</value>
   </data>
   <data name="Run_ShortDescription" xml:space="preserve">
-    <value>A quick launcher</value>
+    <value>Launch Run</value>
   </data>
   <data name="PowerAccent_ShortDescription" xml:space="preserve">
     <value>An alternative way to type accented characters</value>
@@ -3208,17 +3211,20 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>{Locked="Windows"}</comment>
   </data>
   <data name="ScreenRuler_ShortDescription" xml:space="preserve">
-    <value>Measure pixels on your screen</value>
+    <value>Start measurement</value>
   </data>
   <data name="ShortcutGuide_ShortDescription" xml:space="preserve">
-    <value>Show a help overlay with Windows shortcuts</value>
+    <value>Launch Shortcut Guide</value>
     <comment>{Locked="Windows"}</comment>
   </data>
   <data name="PowerOcr_ShortDescription" xml:space="preserve">
-    <value>A convenient way to copy text from anywhere on screen</value>
+    <value>Start text extraction</value>
   </data>
   <data name="Dashboard_Activation" xml:space="preserve">
     <value>Activation</value>
+  </data>
+  <data name="Activate_Zones" xml:space="preserve">
+    <value>Activate zones</value>
   </data>
   <data name="DashboardKBMShowMappingsButton.Content" xml:space="preserve">
     <value>Show remappings</value>
@@ -4492,7 +4498,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Workspaces</value>
   </data>
   <data name="Workspaces_ShortDescription" xml:space="preserve">
-    <value>Create and launch Workspaces</value>
+    <value>Open editor</value>
   </data>
   <data name="Shell_ZoomIt.Content" xml:space="preserve">
     <value>ZoomIt</value>
@@ -4918,6 +4924,9 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="CmdPal_ShortDescription" xml:space="preserve">
     <value>A better quick launcher</value>
+  </data>
+   <data name="CmdPal_ActivationDescription" xml:space="preserve">
+    <value>Launch Command Palette</value>
   </data>
   <data name="CmdPal_Enable_CmdPal.Header" xml:space="preserve">
     <value>Enable Command Palette</value>
