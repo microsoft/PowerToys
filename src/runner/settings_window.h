@@ -38,3 +38,4 @@ void close_settings_window();
 void open_oobe_window();
 void open_scoobe_window();
 void open_flyout();
+void send_message_to_settings_window(std::wstring text);

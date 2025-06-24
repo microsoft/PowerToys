@@ -12,6 +12,7 @@
 #include <common/utils/elevation.h>
 #include <common/version/version.h>
 #include <common/utils/resources.h>
+#include "settings_window.h"
 
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
 static std::wstring settings_theme = L"system";
@@ -77,8 +78,7 @@ json::JsonObject load_general_settings()
 GeneralSettings get_general_settings()
 {
     const bool is_user_admin = check_user_is_admin();
-    GeneralSettings settings
-    {
+    GeneralSettings settings{
         .showSystemTrayIcon = show_tray_icon,
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
@@ -164,7 +164,8 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
     else
     {
         delete_auto_start_task_for_this_user();
-        if (gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_enabled || gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_not_configured) {
+        if (gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_enabled || gpo_run_as_startup == powertoys_gpo::gpo_rule_configured_not_configured)
+        {
             create_auto_start_task_for_this_user(run_as_elevated);
         }
     }
@@ -224,6 +225,10 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
         show_tray_icon = general_configs.GetNamedBoolean(L"show_tray_icon");
         // Update tray icon visibility when setting is toggled
         set_tray_icon_visible(show_tray_icon);
+
+        json::JsonObject message;
+        message.SetNamedValue(L"show_tray_icon", winrt::Windows::Data::Json::JsonValue::CreateBooleanValue(show_tray_icon));
+        send_message_to_settings_window(message.Stringify().c_str());
     }
 
     if (save)
