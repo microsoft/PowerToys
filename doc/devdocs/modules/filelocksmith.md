@@ -103,11 +103,53 @@ The UI is built with WinUI 3 and uses MVVM architecture:
 
 To build and debug the File Locksmith module:
 
+0. **Build FileLocksmith module**
+   - Open the solution in Visual Studio
+   - Build the entire solution
+   - Build the `FileLocksmith` project
+
 1. **Get Certificate Thumbprint**
+   ```powershell
+   New-SelfSignedCertificate -Subject "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" `
+    -KeyUsage DigitalSignature `
+    -Type CodeSigningCert `
+    -FriendlyName "PowerToys SelfCodeSigning" `
+    -CertStoreLocation "Cert:\CurrentUser\My"
+
+   Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.FriendlyName -like "*PowerToys*" }
+    ```
 
 2. **Sign the MSIX package**
    ```
-   SignTool sign /fd SHA256 /sha1 <THUMBPRINT> "C:\Users\%currentuser%\source\repos\PowerToys\x64\Debug\WinUI3Apps\FileLocksmithContextMenuPackage.msix"
+   SignTool sign /fd SHA256 /sha1 <THUMBPRINT> "C:\Users\$env:USERNAME\source\repos\PowerToys\x64\Debug\WinUI3Apps\FileLocksmithContextMenuPackage.msix"
+   ```
+   SignTool might be not in your PATH, so you may need to specify the full path to it, e.g., `C:\Program Files (x86)\Windows Kits\10\bin\<version>\x64\signtool.exe`.
+
+   **commands example**:
+   ```powershell
+      PS C:\Users\gkhmyznikov> New-SelfSignedCertificate -Subject "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" `
+      >>     -KeyUsage DigitalSignature `
+      >>     -Type CodeSigningCert `
+      >>     -FriendlyName "PowerToys SelfSigned" `
+      >>     -CertStoreLocation "Cert:\CurrentUser\My"
+
+         PSParentPath: Microsoft.PowerShell.Security\Certificate::CurrentUser\My
+
+      Thumbprint                                Subject              EnhancedKeyUsageList
+      ----------                                -------              --------------------
+      1AA018C2B06B60EAFEE452ADE403306F39058FF5  CN=Microsoft Corpor… Code Signing
+
+      PS C:\Users\gkhmyznikov> Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.FriendlyName -like "*PowerToys*" }
+
+         PSParentPath: Microsoft.PowerShell.Security\Certificate::CurrentUser\My
+
+      Thumbprint                                Subject              EnhancedKeyUsageList
+      ----------                                -------              --------------------
+      1AA018C2B06B60EAFEE452ADE403306F39058FF5  CN=Microsoft Corpor… Code Signing
+
+      PS C:\Users\gkhmyznikov> & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe" sign /fd SHA256 /sha1 1AA018C2B06B60EAFEE452ADE403306F39058FF5 "C:\Users\$env:USERNAME\Develop\GitHub\PowerToys\x64\Debug\WinUI3Apps\FileLocksmithContextMenuPackage.msix"
+      Done Adding Additional Store
+      Successfully signed: C:\Users\gkhmyznikov\Develop\GitHub\PowerToys\x64\Debug\WinUI3Apps\FileLocksmithContextMenuPackage.msix
    ```
 
 3. **Remove old version**
@@ -118,8 +160,8 @@ To build and debug the File Locksmith module:
 
 4. **Replace current MSIX with debug version**
    ```
-   cp "C:\Users\%currentuser%\source\repos\PowerToys\x64\Debug\WinUI3Apps\FileLocksmithContextMenuPackage.msix" "C:\Users\%currentuser%\AppData\Local\PowerToys\WinUI3Apps\"
-   cp "C:\Users\%currentuser%\source\repos\PowerToys\x64\Debug\WinUI3Apps\FileLocksmithContextMenuPackage.dll" "C:\Users\%currentuser%\AppData\Local\PowerToys\WinUI3Apps\"
+   cp "C:\Users\$env:USERNAME\source\repos\PowerToys\x64\Debug\WinUI3Apps\FileLocksmithContextMenuPackage.msix" "C:\Users\$env:USERNAME\AppData\Local\PowerToys\WinUI3Apps\"
+   cp "C:\Users\$env:USERNAME\source\repos\PowerToys\x64\Debug\WinUI3Apps\FileLocksmithContextMenuPackage.dll" "C:\Users\$env:USERNAME\AppData\Local\PowerToys\WinUI3Apps\"
    ```
 
 5. **Restart Explorer**
