@@ -504,7 +504,8 @@ Mouse Jump:
 * To verify that the launcher works correctly with different apps, try to capture and launch:   
    - [ ] Non-packaged app, e.g., VisualStudio code
       - [ ] As admin
-      - [ ] With CLI args 
+      - [ ] With CLI args
+      - [ ] PWA apps installed from different profile(Currently only edge and chrome are supported for pwa apps)
     - [ ] Packaged app, e.g. Terminal
       - [ ] As admin
       - [ ] With CLI args
