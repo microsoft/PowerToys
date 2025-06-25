@@ -152,10 +152,10 @@
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
   <data name="MeasureTool_DefaultMeasureStyle.Header" xml:space="preserve">
-    <value>Default measure style</value>
+    <value>Default mode</value>
   </data>
   <data name="MeasureTool_DefaultMeasureStyle.Description" xml:space="preserve">
-    <value>The utility will start having the selected style activated</value>
+    <value>The measuring mode that is used when activated</value>
   </data>
   <data name="MeasureTool_DefaultMeasureStyle_None.Content" xml:space="preserve">
     <value>None</value>
@@ -804,7 +804,7 @@
     <comment>launches the FancyZones layout editor application</comment>
   </data>
   <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
-    <value>Make dragged window transparent</value>
+    <value>Make the dragged window transparent</value>
   </data>
   <data name="FancyZones_MouseDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Use a non-primary mouse button to toggle zone activation</value>
@@ -2724,23 +2724,23 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Animations are disabled in your system settings.</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Header" xml:space="preserve">
-    <value>Shake minimum distance</value>
+    <value>Minimum shake distance</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingMinimumDistance.Description" xml:space="preserve">
-    <value>The minimum distance for mouse shaking activation, for adjusting sensitivity</value>
+    <value>The minimum distance the mouse must move to be considered a shake. Lower values increase sensitivity.</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Header" xml:space="preserve">
-    <value>Shake Interval (ms)</value>
+    <value />
     <comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Description" xml:space="preserve">
-    <value>The span of time during which we track mouse movement to detect shaking, for adjusting sensitivity</value>
+    <value>Time window used to monitor mouse movement for shake detection. Shorter intervals may detect quicker shakes.</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingFactor.Header" xml:space="preserve">
-    <value>Shake factor (percent)</value>
+    <value>Shake sensitivity factor (percent)</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingFactor.Description" xml:space="preserve">
-    <value>Mouse shaking is detected by checking how much the mouse pointer has travelled when compared to the diagonal of the movement area. Reducing this factor increases sensitivity.</value>
+    <value>Determines how far the pointer must move, relative to the screen diagonal, to count as a shake. Lower values make it more sensitive.</value>
   </data>
   <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
     <value>Mouse Highlighter</value>
@@ -2906,13 +2906,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Reparent shortcut</value>
   </data>
   <data name="CropAndLock_ReparentActivation_Shortcut.Description" xml:space="preserve">
-    <value>Shortcut to crop an application's window into a cropped window. This is experimental and can cause issues with some applications, since the cropped window will contain the original application window.</value>
+    <value>Creates a cropped version of an application’s window by embedding the original app into a new window. This is experimental and may cause issues due to the reparenting behavior.</value>
   </data>
   <data name="CropAndLock_ThumbnailActivation_Shortcut.Header" xml:space="preserve">
     <value>Thumbnail shortcut</value>
   </data>
   <data name="CropAndLock_ThumbnailActivation_Shortcut.Description" xml:space="preserve">
-    <value>Shortcut to crop and create a thumbnail of another window. The application isn't controllable through the thumbnail but it'll have less compatibility issues. </value>
+    <value>Creates a cropped, non-interactive thumbnail of another window. Improves app compatibility.</value>
   </data>
   <data name="CropAndLock.SecondaryLinksHeader" xml:space="preserve">
     <value>Attribution</value>
@@ -2979,12 +2979,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="AlwaysOnTop_GameMode.Content" xml:space="preserve">
     <value>Do not activate when Game Mode is on</value>
     <comment>Game Mode is a Windows feature</comment>
-  </data>
-  <data name="AlwaysOnTop_SoundTitle.Header" xml:space="preserve">
-    <value>Sound</value>
-  </data>
-  <data name="AlwaysOnTop_Sound.Content" xml:space="preserve">
-    <value>Play a sound when pinning a window</value>
   </data>
   <data name="AlwaysOnTop_Behavior.Header" xml:space="preserve">
     <value>Behavior</value>
@@ -3078,7 +3072,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>When enabled, you will be prompted to confirm before moving files to the Recycle Bin.</value>
   </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
-    <value>Disable round corners when window is snapped</value>
+    <value>Disable rounded corners when a window is snapped</value>
   </data>
   <data name="PowerLauncher_SearchQueryTuningEnabled.Description" xml:space="preserve">
     <value>Fine tune results ordering</value>
@@ -3111,7 +3105,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Global sort order score modifier</value>
   </data>
   <data name="AlwaysOnTop_RoundCorners.Content" xml:space="preserve">
-    <value>Enable round corners</value>
+    <value>Enable rounded corners</value>
   </data>
   <data name="LearnMore_QuickAccent.Text" xml:space="preserve">
     <value>Learn more about Quick Accent</value>
@@ -5057,7 +5051,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Generate bug report package</value>
   </data>
   <data name="GeneralPage_ReportBugPackage.Description" xml:space="preserve">
-    <value>Log files will be zipped to your Desktop</value>
+    <value>Log files will be zipped to your desktop</value>
   </data>
   <data name="GeneralPageReportBugPackage.Content" xml:space="preserve">
     <value>Generate package</value>
@@ -5067,5 +5061,8 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="BugReportUnderConstruction" xml:space="preserve">
     <value>Bug report package is being created</value>
+  </data>
+  <data name="AlwaysOnTop_Sound.HEader" xml:space="preserve">
+    <value>Play a sound when pinning a window</value>
   </data>
 </root>
