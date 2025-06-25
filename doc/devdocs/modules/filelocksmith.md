@@ -161,7 +161,7 @@ To build and debug the File Locksmith module:
 4. **Replace current MSIX with debug version**
    ```
    cp "C:\Users\$env:USERNAME\source\repos\PowerToys\x64\Debug\WinUI3Apps\FileLocksmithContextMenuPackage.msix" "C:\Users\$env:USERNAME\AppData\Local\PowerToys\WinUI3Apps\"
-   cp "C:\Users\$env:USERNAME\source\repos\PowerToys\x64\Debug\WinUI3Apps\FileLocksmithContextMenuPackage.dll" "C:\Users\$env:USERNAME\AppData\Local\PowerToys\WinUI3Apps\"
+   cp "C:\Users\$env:USERNAME\source\repos\PowerToys\x64\Debug\WinUI3Apps\FileLocksmithContextMenu.dll" "C:\Users\$env:USERNAME\AppData\Local\PowerToys\WinUI3Apps\"
    ```
 
 5. **Restart Explorer**
