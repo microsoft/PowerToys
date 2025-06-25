@@ -104,7 +104,7 @@ The UI is built with WinUI 3 and uses MVVM architecture:
 To build and debug the File Locksmith module:
 
 0. **Build FileLocksmith module**
-   - Uninstall the existing production builds of PowerToys
+   - (Optional) Uninstall the existing production builds of PowerToys
    - Open the solution in Visual Studio
    - Build the entire solution
    - Build the `FileLocksmith` project
@@ -179,10 +179,13 @@ To build and debug the File Locksmith module:
    - Set the breakpoint in [dllmain.cpp](/src/modules/FileLocksmith/FileLocksmithContextMenu/dllmain.cpp#L116)
    - Open the **Attach to Process** dialog in Visual Studio
    - Right-click a file in File Explorer
-   - Attach the debugger to **dllhost.exe** with **FileLocksmith** Title to debug the shell extension
+   - Attach the debugger to `dllhost.exe` with **FileLocksmith** Title to debug the shell extension
    ![Attach to Process](../images/filelocksmith/debug.png)
    - Right-click (fast) a file again and select *"Unlock with File Locksmith"*
-   - Attach the debugger to **PowerToys.FileLocksmithUI.exe** to debug the UI
+   - Attach the debugger to `PowerToys.FileLocksmithUI.exe` to debug the UI
+
+7. **Alternative Debugging Method**
+   - You can set the `FileLocksmithUI` as startup project directly in Visual Studio, which will launch the UI without needing to go through the shell extension. This is useful for debugging the UI logic without the shell extension overhead.
 
 ## Known Issues
 
