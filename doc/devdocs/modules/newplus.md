@@ -62,30 +62,46 @@ This implementation differs from some other modules like ImageResizer which regi
 
 ### Debugging the Windows 11 Handler
 
-Debugging the Windows 11 handler is more complex because it requires signing the MSIX package:
+Debugging the Windows 11 handler requires signing the MSIX package:
 
 1. Build PowerToys to get the MSIX packages
-2. Create a self-signed certificate (if you don't already have one):
+
+2. **Create certificate** (if you don't already have one):
    ```powershell
-   New-SelfSignedCertificate -Type Custom -Subject "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" -KeyUsage DigitalSignature -FriendlyName "PowerToys Test Certificate" -CertStoreLocation "Cert:\CurrentUser\My" -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
-   ```
-   
-3. Export the certificate to a PFX file:
-   ```powershell
-   $password = ConvertTo-SecureString -String "test123" -Force -AsPlainText
-   Export-PfxCertificate -cert "Cert:\CurrentUser\My\<THUMBPRINT>" -FilePath test_cert_newplus.pfx -Password $password
+   New-SelfSignedCertificate -Subject "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" `
+    -KeyUsage DigitalSignature `
+    -Type CodeSigningCert `
+    -FriendlyName "PowerToys SelfCodeSigning" `
+    -CertStoreLocation "Cert:\CurrentUser\My"
    ```
 
-4. Install the certificate in the Trusted Root Certification Authorities store (double-click the PFX file and follow the wizard)
+3. **Get the certificate thumbprint**:
+   ```powershell
+   $cert = Get-ChildItem -Path Cert:\CurrentUser\My | Where-Object { $_.FriendlyName -like "*PowerToys*" }
+   $cert.Thumbprint
+   ```
 
-![wizard 1](../images/newplus/wizard1.png)
-![wizard 2](../images/newplus/wizard2.png)
-![wizard 3](../images/newplus/wizard3.png)
-![wizard 4](../images/newplus/wizard4.png)
+4. **Install the certificate in the Trusted Root** (requires admin Terminal):
+   ```powershell
+   Export-Certificate -Cert $cert -FilePath "$env:TEMP\PowerToysCodeSigning.cer"
+   Import-Certificate -FilePath "$env:TEMP\PowerToysCodeSigning.cer" -CertStoreLocation Cert:\LocalMachine\Root
+   ```
+
+   Alternatively, you can manually install the certificate using the Certificate Import Wizard:
+
+   ![wizard 1](../images/newplus/wizard1.png)
+   ![wizard 2](../images/newplus/wizard2.png)
+   ![wizard 3](../images/newplus/wizard3.png)
+   ![wizard 4](../images/newplus/wizard4.png)
 
 5. Sign the MSIX package:
-   ```
+   ```powershell
    SignTool sign /fd SHA256 /sha1 <THUMBPRINT> "x:\GitHub\PowerToys\x64\Debug\WinUI3Apps\NewPlusPackage.msix"
+   ```
+   
+   Note: SignTool might not be in your PATH, so you may need to specify the full path, e.g.:
+   ```powershell
+   & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe" sign /fd SHA256 /sha1 <THUMBPRINT> "x:\GitHub\PowerToys\x64\Debug\WinUI3Apps\NewPlusPackage.msix"
    ```
 
 6. Check if the NewPlus package is already installed and remove it if necessary:
@@ -94,19 +110,26 @@ Debugging the Windows 11 handler is more complex because it requires signing the
    Remove-AppxPackage Microsoft.PowerToys.NewPlusContextMenu_<VERSION>_neutral__8wekyb3d8bbwe
    ```
 
-7. Replace the files in the PowerToys installation:
-   - Copy your signed debug `NewPlusPackage.msix` to the PowerToys installation directory
-   - Copy your debug `PowerToys.NewPlus.ShellExtension.dll` to the same location
+7. Install the new signed MSIX package (optional if launching PowerToys settings first):
+   ```powershell
+   Add-AppxPackage -Path "x:\GitHub\PowerToys\x64\Debug\WinUI3Apps\NewPlusPackage.msix" -ExternalLocation "x:\GitHub\PowerToys\x64\Debug\WinUI3Apps"
+   ```
+   
+   Note: If you prefer, you can simply launch PowerToys settings and enable the NewPlus module, which will install the MSIX package for you.
 
-8. Run PowerToys (which will install the package as part of enabling the module)
+8. Restart Explorer to ensure the new context menu handler is loaded:
+   ```powershell
+   taskkill /f /im explorer.exe && start explorer.exe
+   ```
 
-9. Restart Explorer to ensure the new context menu handler is loaded
+9. Run Visual Studio as administrator (optional)
 
-10. Run Visual Studio as administrator
+10. Set breakpoints in the code (e.g., in [shell_context_menu.cpp#L45](/src/modules/NewPlus/NewShellExtensionContextMenu/shell_context_menu.cpp#L45))
 
-11. Set breakpoints in the code (e.g., in `GetState()`)
+11. Right-click in File Explorer and attach the debugger to the `DllHost.exe` process (with NewPlus title) that loads when the context menu is invoked
+![alt text](../images/newplus/debug.png)
 
-12. Right-click in File Explorer and attach the debugger to the `DllHost.exe` process that loads when the context menu is invoked
+12. Right-click again (quickly) after attaching the debugger to trigger the breakpoint
 
 Note: The DllHost process loads the DLL only when the context menu is triggered and unloads after, making debugging challenging. For easier development, consider using logging or message boxes instead of breakpoints.
 
