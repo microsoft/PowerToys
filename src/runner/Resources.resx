@@ -180,9 +180,6 @@
     <value>Exit</value>
     <comment>Exit as a verb, as in Exit the application</comment>
   </data>
-  <data name="SHOW_TRAY_ICON_MENU_TEXT" xml:space="preserve">
-    <value>Show icon</value>
-  </data>
   <data name="SUBMIT_BUG_TEXT" xml:space="preserve">
     <value>Report bug</value>
   </data>
