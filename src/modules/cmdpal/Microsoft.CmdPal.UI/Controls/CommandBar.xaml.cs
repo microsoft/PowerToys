@@ -51,19 +51,42 @@ public sealed partial class CommandBar : UserControl,
             return;
         }
 
-        var options = new FlyoutShowOptions
+        if (message.Element == null)
         {
-            ShowMode = FlyoutShowMode.Standard,
-        };
-        MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
+            _ = DispatcherQueue.TryEnqueue(
+                () =>
+                {
+                ContextMenuFlyout.ShowAt(
+                    MoreCommandsButton,
+                    new FlyoutShowOptions()
+                    {
+                        ShowMode = FlyoutShowMode.Standard,
+                        Placement = FlyoutPlacementMode.TopEdgeAlignedRight,
+                    });
+                });
+        }
+        else
+        {
+            _ = DispatcherQueue.TryEnqueue(
+            () =>
+            {
+            ContextMenuFlyout.ShowAt(
+                message.Element!,
+                new FlyoutShowOptions()
+                {
+                    ShowMode = FlyoutShowMode.Standard,
+                    Placement = (FlyoutPlacementMode)message.FlyoutPlacementMode!,
+                    Position = message.Point,
+                });
+            });
+        }
     }
 
     public void Receive(CloseContextMenuMessage message)
     {
-        if (MoreCommandsButton.Flyout.IsOpen)
+        if (ContextMenuFlyout.IsOpen)
         {
-            MoreCommandsButton.Flyout.Hide();
-            return;
+            ContextMenuFlyout.Hide();
         }
     }
 
@@ -82,15 +105,7 @@ public sealed partial class CommandBar : UserControl,
         }
         else if (result == ContextKeybindingResult.KeepOpen)
         {
-            if (!MoreCommandsButton.Flyout.IsOpen)
-            {
-                var options = new FlyoutShowOptions
-                {
-                    ShowMode = FlyoutShowMode.Standard,
-                };
-                MoreCommandsButton.Flyout.ShowAt(MoreCommandsButton, options);
-            }
-
+            WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
             msg.Handled = true;
         }
         else if (result == ContextKeybindingResult.Unhandled)
@@ -127,9 +142,8 @@ public sealed partial class CommandBar : UserControl,
         e.Handled = true;
     }
 
-    private void Flyout_Closed(object sender, object e)
+    private void MoreCommandsButton_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
-        WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+        WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
     }
 }

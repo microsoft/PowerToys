@@ -305,7 +305,20 @@ public sealed partial class ListPage : Page,
                 ItemsList.SelectedItem = item;
             }
 
-            ItemsList.ContextFlyout.ShowAt(this);
+            ViewModel?.UpdateSelectedItemCommand.Execute(item);
+
+            var pos = e.GetPosition(element);
+
+            _ = DispatcherQueue.TryEnqueue(
+                () =>
+                    {
+                        WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
+                            new OpenContextMenuMessage(
+                                element,
+                                Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                                pos,
+                                ContextMenuFilterLocation.Top));
+                    });
         }
     }
 }

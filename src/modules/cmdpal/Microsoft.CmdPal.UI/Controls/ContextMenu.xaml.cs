@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Ext.System;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -57,6 +59,7 @@ public sealed partial class ContextMenu : UserControl,
         {
             msg.Handled = true;
             WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
+            UpdateUiForStackChange();
         }
         else if (result == ContextKeybindingResult.KeepOpen)
         {
@@ -116,6 +119,7 @@ public sealed partial class ContextMenu : UserControl,
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         var prop = e.PropertyName;
+
         if (prop == nameof(ContextMenuViewModel.FilteredItems))
         {
             UpdateUiForStackChange();
@@ -148,10 +152,8 @@ public sealed partial class ContextMenu : UserControl,
                 {
                     WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
                 }
-                else
-                {
-                    UpdateUiForStackChange();
-                }
+
+                UpdateUiForStackChange();
 
                 e.Handled = true;
             }
@@ -168,6 +170,7 @@ public sealed partial class ContextMenu : UserControl,
             {
                 WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>();
                 WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+                UpdateUiForStackChange();
             }
 
             e.Handled = true;

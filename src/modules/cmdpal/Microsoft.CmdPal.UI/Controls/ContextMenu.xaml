@@ -10,6 +10,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewmodels="using:Microsoft.CmdPal.UI.ViewModels"
     Background="Transparent"
@@ -19,10 +20,7 @@
         <ResourceDictionary>
             <cmdpalUI:KeyChordToStringConverter x:Key="KeyChordToStringConverter" />
 
-            <StackLayout
-                x:Name="VerticalStackLayout"
-                Orientation="Vertical"
-                Spacing="4" />
+            <Grid x:Name="GridLayout" RowSpacing="4" />
 
             <cmdpalUI:ContextItemTemplateSelector
                 x:Key="ContextItemTemplateSelector"
@@ -38,6 +36,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
+
                     <cpcontrols:IconBox
                         Width="16"
                         Height="16"
@@ -68,6 +67,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
+
                     <cpcontrols:IconBox
                         Width="16"
                         Height="16"
@@ -91,49 +91,76 @@
                 </Grid>
             </DataTemplate>
 
-            <!-- Template for context item separators -->
+            <!--  Template for context item separators  -->
             <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="viewmodels:SeparatorContextItemViewModel">
                 <StackPanel Margin="0,0,0,0" Orientation="Vertical">
                     <Border
                         Margin="0,0,0,0"
                         BorderBrush="{ThemeResource MenuFlyoutSeparatorThemeBrush}"
-                        BorderThickness="0,0,0,1">
-                    </Border>
+                        BorderThickness="0,0,0,1" />
                 </StackPanel>
             </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <StackPanel>
+    <Grid x:Name="ContextMenuGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
 
-        <ListView
-            x:Name="CommandsDropdown"
-            MinWidth="248"
-            Margin="-16,-12,-16,-12"
-            IsItemClickEnabled="True"
-            ItemClick="CommandsDropdown_ItemClick"
-            ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
-            ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
-            KeyDown="CommandsDropdown_KeyDown"
-            SelectionMode="Single">
-            <ListView.ItemContainerStyle>
-                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                    <Setter Property="MinHeight" Value="0" />
-                    <Setter Property="Padding" Value="12,7,12,7" />
-                </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemContainerTransitions>
-                <TransitionCollection />
-            </ListView.ItemContainerTransitions>
-        </ListView>
-
+        <StackPanel x:Name="CommandsPanel">
+            <ListView
+                x:Name="CommandsDropdown"
+                MinWidth="248"
+                IsItemClickEnabled="True"
+                ItemClick="CommandsDropdown_ItemClick"
+                ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
+                ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+                KeyDown="CommandsDropdown_KeyDown"
+                SelectionMode="Single">
+                <ListView.ItemContainerStyle>
+                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                        <Setter Property="MinHeight" Value="0" />
+                        <Setter Property="Padding" Value="12,7,12,7" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemContainerTransitions>
+                    <TransitionCollection />
+                </ListView.ItemContainerTransitions>
+            </ListView>
+        </StackPanel>
         <TextBox
             x:Name="ContextFilterBox"
             x:Uid="ContextFilterBox"
-            Margin="-12,12,-12,-12"
             KeyDown="ContextFilterBox_KeyDown"
             PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
             TextChanged="ContextFilterBox_TextChanged" />
-
-    </StackPanel>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="ContextMenuOrder">
+                <VisualState x:Name="FilterOnTop">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind ViewModel.FilterOnTop, Mode=OneWay}" To="True" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="CommandsPanel.(Grid.Row)" Value="1" />
+                        <Setter Target="ContextFilterBox.(Grid.Row)" Value="0" />
+                        <Setter Target="CommandsDropdown.Margin" Value="-16,0,-16,-13" />
+                        <Setter Target="ContextFilterBox.Margin" Value="-12,-10,-12,3" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="FilterOnBottom">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind ViewModel.FilterOnTop, Mode=OneWay}" To="False" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="CommandsPanel.(Grid.Row)" Value="0" />
+                        <Setter Target="ContextFilterBox.(Grid.Row)" Value="1" />
+                        <Setter Target="CommandsDropdown.Margin" Value="-16,-12,-16,-12" />
+                        <Setter Target="ContextFilterBox.Margin" Value="-12,14,-12,-9" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
 </UserControl>

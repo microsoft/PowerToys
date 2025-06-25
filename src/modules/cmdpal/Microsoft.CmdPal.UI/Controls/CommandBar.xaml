@@ -33,6 +33,10 @@
                 Orientation="Vertical"
                 Spacing="4" />
 
+            <Flyout x:Name="ContextMenuFlyout">
+                <cpcontrols:ContextMenu />
+            </Flyout>
+
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -192,18 +196,9 @@
                 Content="{ui:FontIcon Glyph=&#xE712;,
                                       FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}"
+                Tapped="MoreCommandsButton_Tapped"
                 ToolTipService.ToolTip="Ctrl+K"
-                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}">
-                <Button.Flyout>
-                    <Flyout
-                        Closed="Flyout_Closed"
-                        Placement="TopEdgeAlignedRight">
-
-                        <cpcontrols:ContextMenu />
-
-                    </Flyout>
-                </Button.Flyout>
-            </Button>
+                Visibility="{x:Bind ViewModel.ShouldShowContextMenu, Mode=OneWay}" />
         </StackPanel>
     </Grid>
 </UserControl>

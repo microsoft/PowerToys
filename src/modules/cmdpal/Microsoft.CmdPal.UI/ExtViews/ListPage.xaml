@@ -82,7 +82,7 @@
                         TextWrapping="NoWrap"
                         Visibility="{x:Bind Subtitle, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
                 </StackPanel>
-                
+
                 <ItemsControl
                     Grid.RowSpan="2"
                     Grid.Column="2"
@@ -116,31 +116,25 @@
                     IsDoubleTapEnabled="True"
                     IsItemClickEnabled="True"
                     ItemClick="ItemsList_ItemClick"
-                    RightTapped="ItemsList_RightTapped"
                     ItemTemplate="{StaticResource ListItemViewModelTemplate}"
                     ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
+                    RightTapped="ItemsList_RightTapped"
                     SelectionChanged="ItemsList_SelectionChanged">
                     <ListView.ItemContainerTransitions>
                         <TransitionCollection />
                     </ListView.ItemContainerTransitions>
                     <!--<ListView.GroupStyle>
-                    <GroupStyle HidesIfEmpty="True">
-                        <GroupStyle.HeaderTemplate>
-                            <DataTemplate>
-                                <TextBlock
-                                    Margin="0,16,0,0"
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="{Binding Key, Mode=OneWay}" />
-                            </DataTemplate>
-                        </GroupStyle.HeaderTemplate>
-                    </GroupStyle>
-                </ListView.GroupStyle>-->
-                <ListView.ContextFlyout>
-                    <Flyout
-                        Placement="BottomEdgeAlignedLeft">
-                        <cpcontrols:ContextMenu />
-                    </Flyout>
-                </ListView.ContextFlyout>
+                        <GroupStyle HidesIfEmpty="True">
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock
+                                        Margin="0,16,0,0"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding Key, Mode=OneWay}" />
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ListView.GroupStyle>-->
                 </ListView>
             </controls:Case>
             <controls:Case Value="True">

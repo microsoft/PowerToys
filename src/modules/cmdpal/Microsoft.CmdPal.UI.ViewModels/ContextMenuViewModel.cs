@@ -14,7 +14,8 @@ using Windows.System;
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ContextMenuViewModel : ObservableObject,
-    IRecipient<UpdateCommandBarMessage>
+    IRecipient<UpdateCommandBarMessage>,
+    IRecipient<OpenContextMenuMessage>
 {
     public ICommandBarContext? SelectedItem
     {
@@ -41,16 +42,30 @@ public partial class ContextMenuViewModel : ObservableObject,
     [ObservableProperty]
     public partial ObservableCollection<IContextItemViewModel> FilteredItems { get; set; } = [];
 
+    [ObservableProperty]
+    public partial bool FilterOnTop { get; set; } = false;
+
     private string _lastSearchText = string.Empty;
 
     public ContextMenuViewModel()
     {
         WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
+        WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
     }
 
     public void Receive(UpdateCommandBarMessage message)
     {
         SelectedItem = message.ViewModel;
+    }
+
+    public void Receive(OpenContextMenuMessage message)
+    {
+        FilterOnTop = message.ContextMenuFilterLocation == ContextMenuFilterLocation.Top;
+
+        ResetContextMenu();
+
+        OnPropertyChanging(nameof(FilterOnTop));
+        OnPropertyChanged(nameof(FilterOnTop));
     }
 
     private void SetSelectedItem(ICommandBarContext? value)
@@ -205,6 +220,19 @@ public partial class ContextMenuViewModel : ObservableObject,
     private void PushContextStack(IEnumerable<IContextItemViewModel> commands)
     {
         ContextMenuStack.Add(commands.ToList());
+        OnPropertyChanging(nameof(CurrentContextMenu));
+        OnPropertyChanged(nameof(CurrentContextMenu));
+
+        ListHelpers.InPlaceUpdateList(FilteredItems, [.. CurrentContextMenu!]);
+    }
+
+    private void ResetContextMenu()
+    {
+        while (ContextMenuStack.Count > 1)
+        {
+            ContextMenuStack.RemoveAt(ContextMenuStack.Count - 1);
+        }
+
         OnPropertyChanging(nameof(CurrentContextMenu));
         OnPropertyChanged(nameof(CurrentContextMenu));
 
