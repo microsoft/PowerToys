@@ -7,11 +7,11 @@
 
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] System tray menu items
- - [ ] Settings
- - [ ] OOBE (What's new)
+ - [x] System tray menu items
+ - [x] Settings
+ - [x] OOBE (What's new)
  - [ ] Keyboard Manager Editor
- - [ ] Color Picker (check the tooltips)
+ - [x] Color Picker (check the tooltips)
  - [ ] FancyZones Editor
  - [ ] Power Rename (new WinUI 3 may not be localized)
  - [ ] PowerToys Run ("Start typing" string is localized, for example)
@@ -22,161 +22,161 @@
  - [ ] File Locksmith
  - [ ] Registry Preview
  - [ ] Environment Variables
- - [ ] ZoomIt
+ - [x] ZoomIt
 
 ## [General Settings](tests-checklist-template-settings-section.md)
 
 **Admin mode:**
- - [ ] restart PT and verify it runs as user
- - [ ] restart as admin and set "Always run as admin"
- - [ ] restart PT and verify it  runs as admin
+ - [x] restart PT and verify it runs as user
+ - [x] restart as admin and set "Always run as admin"
+ - [x] restart PT and verify it  runs as admin
  * if it's not on, turn on "Run at startup"
- - [ ] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
+ - [x] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
  * turn Always run as admin" off
- - [ ] reboot the machine and verify it now runs as user
+ - [x] reboot the machine and verify it now runs as user
 
 **Modules on/off:**
- - [ ] turn off all the modules and verify all module are off
- - [ ] restart PT and verify that all module are still off in the settings page and they are actually inactive
- - [ ] turn on all the module, all module are now working
- - [ ] restart PT and verify that all module are still on in the settings page and they are actually working
+ - [x] turn off all the modules and verify all module are off
+ - [x] restart PT and verify that all module are still off in the settings page and they are actually inactive
+ - [x] turn on all the module, all module are now working
+ - [x] restart PT and verify that all module are still on in the settings page and they are actually working
 
 **Quick access tray icon flyout:**
- - [ ] Use left click on the system tray icon and verify the flyout appears. (It'll take a bit the first time)
- - [ ] Try to launch a module from the launch screen in the flyout.
- - [ ] Try disabling a module in the all apps screen in the flyout, make it a module that's launchable from the launch screen. Verify that the module is disabled and that it also disappeared from the launch screen in the flyout.
- - [ ] Open the main settings screen on a module page. Verify that when you disable/enable the module on the flyout, that the Settings page is updated too.
+ - [x] Use left click on the system tray icon and verify the flyout appears. (It'll take a bit the first time)
+ - [x] Try to launch a module from the launch screen in the flyout.
+ - [x] Try disabling a module in the all apps screen in the flyout, make it a module that's launchable from the launch screen. Verify that the module is disabled and that it also disappeared from the launch screen in the flyout.
+ - [x] Open the main settings screen on a module page. Verify that when you disable/enable the module on the flyout, that the Settings page is updated too.
 
 **Settings backup/restore:**
- - [ ] In the General tab, create a backup of the settings.
- - [ ] Change some settings in some PowerToys.
- - [ ] Restore the settings in the General tab and verify the Settings you've applied were reset.
+ - [x] In the General tab, create a backup of the settings.
+ - [x] Change some settings in some PowerToys.
+ - [x] Restore the settings in the General tab and verify the Settings you've applied were reset.
 
 **Tray Icon show/hide:**
- - [ ] In the General toggle "show tray icon", make sure the tray icon show/hide in system tray
+ - [x] In the General toggle "show tray icon", make sure the tray icon show/hide in system tray
 
 
 
 ## Color Picker
 * Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
-  - [ ] when PowerToys is running unelevated on start-up
-  - [ ] when PowerToys is running as admin on start-up
-  - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
-- [ ] Change `Activate Color Picker shortcut` and check the new shortcut is working
-- [ ] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
-- [ ] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
-- [ ] Try to copy color formats to the clipboard from the Editor
-- [ ] Check `Show color name` and verify if color name is shown in the Color picker
-- [ ] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
-- [ ] Select a color from the history in the Editor
-- [ ] Remove color from the history in the Editor
-- [ ] Open the Color Picker from the Editor
-- [ ] Open Adjust color from the Editor
-- [ ] Check Color Picker logs for errors
+  - [x] when PowerToys is running unelevated on start-up
+  - [x] when PowerToys is running as admin on start-up
+  - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
+- [x] Change `Activate Color Picker shortcut` and check the new shortcut is working
+- [x] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
+- [x] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
+- [x] Try to copy color formats to the clipboard from the Editor
+- [x] Check `Show color name` and verify if color name is shown in the Color picker
+- [x] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
+- [x] Select a color from the history in the Editor
+- [x] Remove color from the history in the Editor
+- [x] Open the Color Picker from the Editor
+- [x] Open Adjust color from the Editor
+- [x] Check Color Picker logs for errors
 
 
 ## OOBE
  * Quit PowerToys
  * Delete %localappdata%\Microsoft\PowerToys
- - [ ] Start PowerToys and verify OOBE opens
+ - [x] Start PowerToys and verify OOBE opens
  * Change version saved on `%localappdata%\Microsoft\PowerToys\last_version.txt`
- - [ ] Start PowerToys and verify OOBE opens in the "What's New" page
+ - [x] Start PowerToys and verify OOBE opens in the "What's New" page
  * Visit each OOBE section and for each section:
-   - [ ] open the Settings for that module
-   - [ ] verify the Settings work as expected (toggle some controls on/off etc.)
-   - [ ] close the Settings
-   - [ ] if it's available, test the `Launch module name` button
+   - [x] open the Settings for that module
+   - [x] verify the Settings work as expected (toggle some controls on/off etc.)
+   - [x] close the Settings
+   - [x] if it's available, test the `Launch module name` button
  * Close OOBE
- - [ ] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
+ - [x] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
 
 ## [Mouse Utils](tests-checklist-template-mouse-utils-section.md)
 
 Find My Mouse:
   * Enable FindMyMouse. Then, without moving your mouse:
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
-    - [ ] Press any other key and verify the overlay disappears.
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
-    - [ ] Press a mouse button and verify the overlay disappears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press any other key and verify the overlay disappears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press a mouse button and verify the overlay disappears.
   * Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice.
   * Enable FindMyMouse. Then, without moving your mouse:
-    - [ ] Press Left Ctrl twice and verify the overlay appears.
+    - [x] Press Left Ctrl twice and verify the overlay appears.
   * Enable the "Do not activate on game mode" option. Start playing a game that uses CG native full screen.
     - [ ] Verify the overlay no longer appears when you press Left Ctrl twice.
   * Disable the "Do not activate on game mode" option. Start playing the same game.
     - [ ] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
   * Test the different settings and verify they apply:
-    - [ ] Overlay opacity
-    - [ ] Background color
-    - [ ] Spotlight color
-    - [ ] Spotlight radius
-    - [ ] Spotlight initial zoom (1x vs 9x will show the difference)
-    - [ ] Animation duration
-    - [ ] Change activation method to shake and activate by shaking your mouse pointer
-    - [ ] Excluded apps
+    - [x] Overlay opacity
+    - [x] Background color
+    - [x] Spotlight color
+    - [x] Spotlight radius
+    - [x] Spotlight initial zoom (1x vs 9x will show the difference)
+    - [x] Animation duration
+    - [x] Change activation method to shake and activate by shaking your mouse pointer
+    - [x] Excluded apps
 
 Mouse Highlighter:
   * Enable Mouse Highlighter. Then:
-    - [ ] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
-    - [ ] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [ ] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [ ] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
-    - [ ] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
+    - [x] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
+    - [x] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [x] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
+    - [x] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
+    - [x] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
   * Test the different settings and verify they apply:
-    - [ ] Change activation shortcut and test it
-    - [ ] Left button highlight color
-    - [ ] Right button highlight color
-    - [ ] Opacity
-    - [ ] Radius
-    - [ ] Fade delay
-    - [ ] Fade duration
+    - [x] Change activation shortcut and test it
+    - [x] Left button highlight color
+    - [x] Right button highlight color
+    - [x] Opacity
+    - [x] Radius
+    - [x] Fade delay
+    - [x] Fade duration
 
 Mouse Pointer Crosshairs:
   * Enable Mouse Pointer Crosshairs. Then:
-    - [ ] Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
-    - [ ] Press the activation shortcut again and verify the crosshairs disappear.
-    - [ ] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
+    - [x] Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
+    - [x] Press the activation shortcut again and verify the crosshairs disappear.
+    - [x] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
   * Test the different settings and verify they apply:
-    - [ ] Change activation shortcut and test it
-    - [ ] Crosshairs color
-    - [ ] Crosshairs opacity
-    - [ ] Crosshairs center radius
-    - [ ] Crosshairs thickness
-    - [ ] Crosshairs border color
-    - [ ] Crosshairs border size
+    - [x] Change activation shortcut and test it
+    - [x] Crosshairs color
+    - [x] Crosshairs opacity
+    - [x] Crosshairs center radius
+    - [x] Crosshairs thickness
+    - [x] Crosshairs border color
+    - [x] Crosshairs border size
 
 Mouse Jump:
   * Enable Mouse Jump. Then:
-    - [ ] Press the activation shortcut and verify the screens preview appears.
-    - [ ] Change activation shortcut and verify that new shorctut triggers Mouse Jump.
-    - [ ] Click around the screen preview and ensure that mouse cursor jumped to clicked location.
-    - [ ] Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
-    - [ ] Change scaling of screens and confirm that Mouse Jump still works correctly.
-    - [ ] Unplug additional monitors and confirm that Mouse Jump still works correctly.
-    - [ ] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
+    - [x] Press the activation shortcut and verify the screens preview appears.
+    - [x] Change activation shortcut and verify that new shorctut triggers Mouse Jump.
+    - [x] Click around the screen preview and ensure that mouse cursor jumped to clicked location.
+    - [x] Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
+    - [x] Change scaling of screens and confirm that Mouse Jump still works correctly.
+    - [x] Unplug additional monitors and confirm that Mouse Jump still works correctly.
+    - [x] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
 
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [x] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled.
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is not enabled.
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is enabled.
-   - [ ] Open settings and verify the module is enabled and you can't disable it.
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is enabled.
+   - [x] Open settings and verify the module is enabled and you can't disable it.
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [x] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (No context menu entry)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module is not enabled. (No context menu entry)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
 
 ## DSC
@@ -185,41 +185,41 @@ Mouse Jump:
    - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
    - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
  * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [ ] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
-   - [ ] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
-   - [ ] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
-   - [ ] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+   - [x] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
+   - [x] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
+   - [x] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
+   - [x] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
+   - [x] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [x] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
 
 ## [Advanced Paste](tests-checklist-template-advanced-paste-section.md)
   NOTES:
     When using Advanced Paste, make sure that window focused while starting/using Advanced paste is text editor or has text input field focused (e.g. Word).
  * Paste As Plain Text
-   - [ ] Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.).
-   - [ ] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
-   - [ ] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
-   - [ ] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
-   - [ ] Copy some rich text again.
-   - [ ] Open Advanced Paste window using hotkey, click Paste as Plain Text button and confirm that plain text without any formatting is pasted.
-   - [ ] Copy some rich text again.
-   - [ ] Open Advanced Paste window using hotkey, press Ctrl + 1 and confirm that plain text without any formatting is pasted.
+   - [x] Copy some rich text (e.g word of the text is different color, another work is bold, underlined, etd.).
+   - [x] Paste the text using standard Windows Ctrl + V shortcut and ensure that rich text is pasted (with all colors, formatting, etc.)
+   - [x] Paste the text using Paste As Plain Text activation shortcut and ensure that plain text without any formatting is pasted.
+   - [x] Paste again the text using standard Windows Ctrl + V shortcut and ensure the text is now pasted plain without formatting as well.
+   - [x] Copy some rich text again.
+   - [x] Open Advanced Paste window using hotkey, click Paste as Plain Text button and confirm that plain text without any formatting is pasted.
+   - [x] Copy some rich text again.
+   - [x] Open Advanced Paste window using hotkey, press Ctrl + 1 and confirm that plain text without any formatting is pasted.
  * Paste As Markdown
-   - [ ] Open Settings and set Paste as Markdown directly hotkey
-   - [ ] Copy some text (e.g. some HTML text - convertible to Markdown)
-   - [ ] Paste the text using set hotkey and confirm that pasted text is converted to markdown
-   - [ ] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
-   - [ ] Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
-   - [ ] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
-   - [ ] Open Advanced Paste window using hotkey, press Ctrl + 2 and confirm that pasted text is converted to markdown
+   - [x] Open Settings and set Paste as Markdown directly hotkey
+   - [x] Copy some text (e.g. some HTML text - convertible to Markdown)
+   - [x] Paste the text using set hotkey and confirm that pasted text is converted to markdown
+   - [x] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
+   - [x] Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
+   - [x] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted Markdown text will be picked up from clipboard and converted again to nested Markdown).
+   - [x] Open Advanced Paste window using hotkey, press Ctrl + 2 and confirm that pasted text is converted to markdown
  * Paste As JSON
-   - [ ] Open Settings and set Paste as JSON directly hotkey
-   - [ ] Copy some XML or CSV text (or any other text, it will be converted to simple JSON object)
-   - [ ] Paste the text using set hotkey and confirm that pasted text is converted to JSON
-   - [ ] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
-   - [ ] Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
-   - [ ] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
-   - [ ] Open Advanced Paste window using hotkey, press Ctrl + 3 and confirm that pasted text is converted to markdown
+   - [x] Open Settings and set Paste as JSON directly hotkey
+   - [x] Copy some XML or CSV text (or any other text, it will be converted to simple JSON object)
+   - [x] Paste the text using set hotkey and confirm that pasted text is converted to JSON
+   - [x] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
+   - [x] Open Advanced Paste window using hotkey, click Paste as markdown button and confirm that pasted text is converted to markdown
+   - [x] Copy some text (same as in the previous step or different. If nothing is coppied between steps, previously pasted JSON text will be picked up from clipboard and converted again to nested JSON).
+   - [x] Open Advanced Paste window using hotkey, press Ctrl + 3 and confirm that pasted text is converted to markdown
  * Paste as custom format using AI
    - [ ] Open Settings, navigate to Enable Paste with AI and set OpenAI key.
    - [ ] Copy some text to clipboard. Any text.
@@ -229,53 +229,53 @@ Mouse Jump:
    - [ ] Open Settings and disable Custom format preview. Open Advanced Paste window with hotkey, enter some query and press enter. Observe that result is now pasted right away, without showing the preview first.
    - [ ] Open Settings and Disable Enable Paste with AI. Open Advanced Paste window with hotkey and observe that Custom Input text box is now disabled.
  * Clipboard History
-   - [ ] Open Settings and Enable clipboard history (if not enabled already). Open Advanced Paste window with hotkey, click Clipboard history and try deleting some entry. Check OS clipboard history (Win+V), and confirm that the same entry no longer exist.
-   - [ ] Open Advanced Paste window with hotkey, click Clipboard history, and click any entry (but first). Observe that entry is put on top of clipboard history. Check OS clipboard history (Win+V), and confirm that the same entry is on top of the clipboard.
-   - [ ] Open Settings and Disable clipboard history. Open Advanced Paste window with hotkey and observe that Clipboard history button is disabled.
+   - [x] Open Settings and Enable clipboard history (if not enabled already). Open Advanced Paste window with hotkey, click Clipboard history and try deleting some entry. Check OS clipboard history (Win+V), and confirm that the same entry no longer exist.
+   - [x] Open Advanced Paste window with hotkey, click Clipboard history, and click any entry (but first). Observe that entry is put on top of clipboard history. Check OS clipboard history (Win+V), and confirm that the same entry is on top of the clipboard.
+   - [x] Open Settings and Disable clipboard history. Open Advanced Paste window with hotkey and observe that Clipboard history button is disabled.
  * Disable Advanced Paste, try different Advanced Paste hotkeys and confirm that it's disabled and nothing happens.
 
 
 ## New+
  * Enable New+ in Settings.
-   - [ ] Verify NewPlus menu is in Explorer context menu. (Windows 11 tier 1 context menu only. May need Explorer restart.)
+   - [x] Verify NewPlus menu is in Explorer context menu. (Windows 11 tier 1 context menu only. May need Explorer restart.)
  * Disable New+ in Settings.
-   - [ ] Verify NewPlus menu is not in Explorer context menu.
+   - [x] Verify NewPlus menu is not in Explorer context menu.
  * Choose a different path for template folder.
-   - [ ] Verify the folder is created and empty.
-   - [ ] Copy a file to the templates folder, verify it's added to the New+ context menu and that if you select it the file is created.
-   - [ ] Copy a folder with files inside to the templates folder, verify it's added to the New+ context menu and that if you select it the folder and files inside are created.
-   - [ ] Delete all files and folders from inside the templates folder. Verify that no templates are available in the context menu.
-   - [ ] Disable and re-Enable New+ while the templates folder is still empty. Verify the default templates were copied over and are available in the context menu.
+   - [x] Verify the folder is created and empty.
+   - [x] Copy a file to the templates folder, verify it's added to the New+ context menu and that if you select it the file is created.
+   - [x] Copy a folder with files inside to the templates folder, verify it's added to the New+ context menu and that if you select it the folder and files inside are created.
+   - [x] Delete all files and folders from inside the templates folder. Verify that no templates are available in the context menu.
+   - [x] Disable and re-Enable New+ while the templates folder is still empty. Verify the default templates were copied over and are available in the context menu.
  * Test some Settings:
-   - [ ] Test the "Hide template filename extension" option in Settings.
-   - [ ] Test the "Hide template filename starting digits, spaces and dots" option in Settings.
+   - [x] Test the "Hide template filename extension" option in Settings.
+   - [x] Test the "Hide template filename starting digits, spaces and dots" option in Settings.
 
 ## [ZoomIt](tests-checklist-template-zoomit-section.md)
 
  * Enable ZoomIt in Settings.
-   - [ ] Verify ZoomIt tray icon appears in the tray icons, and that when you left-click or right-click, it just shows the 4 action entries: "Break Timer", "Draw", "Zoom" and "Record".
-   - [ ] Turn the "Show tray icon" option off and verify the tray icon is gone.
-   - [ ] Turn the "Show tray icon" option on and verify the tray icon is back.
+   - [x] Verify ZoomIt tray icon appears in the tray icons, and that when you left-click or right-click, it just shows the 4 action entries: "Break Timer", "Draw", "Zoom" and "Record".
+   - [x] Turn the "Show tray icon" option off and verify the tray icon is gone.
+   - [x] Turn the "Show tray icon" option on and verify the tray icon is back.
  * Test the base modes through a shortcuts:
-   - [ ] Press the Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse. You can exit Zoom by pressing Escape or the Hotkey again.
-   - [ ] Press the Live Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse, while the screen still updates instead of showing a still image. You can exit Live Zoom by pressing the Hotkey again.
-   - [ ] Press the Draw without Zoom Hotkey and verify you can draw. You can leave this mode by pressing the Escape.
-   - [ ] Select a text file as the Input file for Demo Type, focus notepad and press the Demo Type hotkey. It should start typing the text file. You can exit Demo Type by pressing Escape.
-   - [ ] Press the Start Break Timer Hotkey and verify it starts the Timer. You can exit by pressing Escape.
-   - [ ] Press the Record Toggle Hotkey to start recording a screen. Press the Record Toggle Hotkey again to exit the mode and save the recording to a file.
-   - [ ] Press the Snip Toggle Hotkey to take a snip of the screen. Paste it to Paint to verify a snip was taken.
+   - [x] Press the Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse. You can exit Zoom by pressing Escape or the Hotkey again.
+   - [x] Press the Live Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse, while the screen still updates instead of showing a still image. You can exit Live Zoom by pressing the Hotkey again.
+   - [x] Press the Draw without Zoom Hotkey and verify you can draw. You can leave this mode by pressing the Escape.
+   - [x] Select a text file as the Input file for Demo Type, focus notepad and press the Demo Type hotkey. It should start typing the text file. You can exit Demo Type by pressing Escape.
+   - [x] Press the Start Break Timer Hotkey and verify it starts the Timer. You can exit by pressing Escape.
+   - [x] Press the Record Toggle Hotkey to start recording a screen. Press the Record Toggle Hotkey again to exit the mode and save the recording to a file.
+   - [x] Press the Snip Toggle Hotkey to take a snip of the screen. Paste it to Paint to verify a snip was taken.
  * Test some Settings to verify the types are being passed correctly to ZoomIt:
-   - [ ] Change the "Animate zoom in and zoom out" setting and activate Zoom mode to verify it applies.
-   - [ ] Change the "Specify the initial level of magnification when zooming in" and activate Zoom mode to verify it applies.
-   - [ ] Change the Type Font to another font. Enter Break mode to quickly verify the font changed.
-   - [ ] Change the Demo Type typing speed and verify the change applies.
-   - [ ] Change the timer Opacity for Break mode and verify that the change applies.
-   - [ ] Change the timer Position for Break mode and verify that the change applies.
-   - [ ] Select a Background Image file as background for Break mode and verify that the change applies.
-   - [ ] Turn on "Play Sound on Expiration", select a sound file, aset the timer to 1 minute, activate the Break Mode and verify the sound plays after 1 minute. (Alarm1.wav from "C:\Windows\Media" should be long enough to notice)
-   - [ ] Open the Microphone combo box in the Record section and verify it lists your microphones.
+   - [x] Change the "Animate zoom in and zoom out" setting and activate Zoom mode to verify it applies.
+   - [x] Change the "Specify the initial level of magnification when zooming in" and activate Zoom mode to verify it applies.
+   - [x] Change the Type Font to another font. Enter Break mode to quickly verify the font changed.
+   - [x] Change the Demo Type typing speed and verify the change applies.
+   - [x] Change the timer Opacity for Break mode and verify that the change applies.
+   - [x] Change the timer Position for Break mode and verify that the change applies.
+   - [x] Select a Background Image file as background for Break mode and verify that the change applies.
+   - [x] Turn on "Play Sound on Expiration", select a sound file, aset the timer to 1 minute, activate the Break Mode and verify the sound plays after 1 minute. (Alarm1.wav from "C:\Windows\Media" should be long enough to notice)
+   - [x] Open the Microphone combo box in the Record section and verify it lists your microphones.
  * Test the tray icon actions:
-   - [ ] Verify pressing "Break Timer" enters Break mode.
-   - [ ] Verify pressing "Draw" enters Draw mode.
-   - [ ] Verify pressing "Zoom" enters Zoom mode.
-   - [ ] Verify pressing "Record" enters Record mode.
+   - [x] Verify pressing "Break Timer" enters Break mode.
+   - [x] Verify pressing "Draw" enters Draw mode.
+   - [x] Verify pressing "Zoom" enters Zoom mode.
+   - [x] Verify pressing "Record" enters Record mode.
