@@ -96,9 +96,9 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
                 MoreCommands = [.. actions];
             }
         }
-        catch
+        catch (Exception ex)
         {
-            actionRuntime = null;
+            Logger.LogError($"Error updating commands: {ex.Message}");
         }
     }
 
