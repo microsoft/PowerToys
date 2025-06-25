@@ -12,7 +12,6 @@
 #include <common/utils/elevation.h>
 #include <common/version/version.h>
 #include <common/utils/resources.h>
-#include "settings_window.h"
 
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
 static std::wstring settings_theme = L"system";
