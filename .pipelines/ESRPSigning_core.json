@@ -22,6 +22,7 @@
             "CalculatorEngineCommon.dll",
             "PowerToys.ManagedTelemetry.dll",
             "PowerToys.ManagedCommon.dll",
+            "PowerToys.ManagedCsWin32.dll",
             "PowerToys.Common.UI.dll",
             "PowerToys.Settings.UI.Lib.dll",
             "PowerToys.GPOWrapper.dll",
