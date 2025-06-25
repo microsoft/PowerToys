@@ -77,7 +77,8 @@ json::JsonObject load_general_settings()
 GeneralSettings get_general_settings()
 {
     const bool is_user_admin = check_user_is_admin();
-    GeneralSettings settings{
+    GeneralSettings settings
+    {
         .showSystemTrayIcon = show_tray_icon,
         .isElevated = is_process_elevated(),
         .isRunElevated = run_as_elevated,
