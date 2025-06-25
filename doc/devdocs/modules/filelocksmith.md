@@ -104,6 +104,7 @@ The UI is built with WinUI 3 and uses MVVM architecture:
 To build and debug the File Locksmith module:
 
 0. **Build FileLocksmith module**
+   - Uninstall the existing production builds of PowerToys
    - Open the solution in Visual Studio
    - Build the entire solution
    - Build the `FileLocksmith` project
