@@ -46,8 +46,8 @@ betsegaw
 bricelam
 bsky
 CCcat
-chenmy
 chemwolf
+chenmy
 Chinh
 chrdavis
 Chrzan
@@ -65,8 +65,8 @@ Deondre
 DHowett
 ductdo
 Essey
-Feng
 ethanfangg
+Feng
 ferraridavide
 foxmsft
 frankychen
@@ -77,6 +77,7 @@ Galaxi
 Garside
 Gershaft
 Giordani
+Gleb
 Gokce
 gordon
 Griese
@@ -90,12 +91,15 @@ Hemmerlein
 hlaueriksson
 Horvalds
 Howett
+hotkidfamily
 htcfreek
 Huynh
 Ionut
 jamrobot
 Jaswal
+Jaylyn
 jefflord
+Jeremic
 Jordi
 jyuwono
 kai
@@ -105,6 +109,7 @@ Kantarci
 Karthick
 kaylacinnamon
 kevinguo
+Khmyznikov
 Krigun
 Lambson
 Laute
@@ -148,11 +153,13 @@ ricardosantos
 riri
 ritchielawrence
 robmikh
+ruslanlap
 Russinovich
 Rutkas
 ryanbodrug
 saahmedm
 sachaple
+Sameerjs
 Santossio
 Schoen
 Sekan
@@ -168,9 +175,11 @@ Tadele
 talynone
 Taras
 TBM
+Teutsch
 tilovell
 Triet
 urnotdfs
+vednig
 waaverecords
 wang
 Whuihuan
@@ -189,9 +198,6 @@ zhaopy
 zhaoqpcn
 Zoltan
 Zykova
-Sameerjs
-ruslanlap
-vednig
 
 # OTHERS
 
@@ -218,6 +224,7 @@ openai
 Quickime
 regedit
 roslyn
+Skia
 Spotify
 Vanara
 wangyi

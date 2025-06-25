@@ -14,7 +14,7 @@ body:
   attributes:
     label: Microsoft PowerToys version
     placeholder: 0.70.0
-    description: Hover over system tray icon or look at Settings
+    description: Hover over the system tray icon or look at Settings
   validations:
     required: true
 - type: dropdown
@@ -65,7 +65,7 @@ body:
 - type: textarea
   attributes: 
     label: ❌ Actual phrase(s)
-    placeholder: What is there? Please include a screenshot as that is extremely helpful.
+    placeholder: What is there? Please include a screenshot, as that is extremely helpful.
   validations:
     required: true
 - type: textarea
