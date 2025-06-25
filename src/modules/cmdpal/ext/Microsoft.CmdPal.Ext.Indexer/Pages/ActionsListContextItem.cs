@@ -45,14 +45,17 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
     {
         lock (UpdateMoreCommandsLock)
         {
-            try
+            if (actionRuntime == null)
             {
-                ActionRuntimeManager.WaitForRuntimeAsync().Wait();
-                actionRuntime = ActionRuntimeManager.Instance;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to get ActionRuntime: {ex.Message}");
+                try
+                {
+                    ActionRuntimeManager.WaitForRuntimeAsync().Wait();
+                    actionRuntime = ActionRuntimeManager.Instance;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to get ActionRuntime: {ex.Message}");
+                }
             }
 
             if (actionRuntime == null)
