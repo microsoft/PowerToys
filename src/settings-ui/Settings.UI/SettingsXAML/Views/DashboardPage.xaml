@@ -28,13 +28,6 @@
             FalseValue="Visible"
             TrueValue="Collapsed" />
 
-        <DataTemplate x:Key="ModuleItemButtonTemplate" x:DataType="viewmodels:DashboardModuleButtonItem">
-            <Button
-                HorizontalAlignment="Stretch"
-                Click="{x:Bind ButtonClickHandler, Mode=OneWay}"
-                Content="{x:Bind ButtonTitle}" />
-        </DataTemplate>
-
         <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
             <Grid MinHeight="36" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
@@ -107,8 +100,9 @@
             VerticalAlignment="Center"
             Style="{StaticResource TitleTextBlockStyle}" />
         <Grid
-            Grid.Row="1" Padding="0,0,20,0"
+            Grid.Row="1"
             MaxWidth="{StaticResource PageMaxWidth}"
+            Padding="0,0,20,0"
             ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -118,7 +112,10 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Button Padding="0,0,8,0" Click="WhatsNewButton_Click" Style="{StaticResource SubtleButtonStyle}">
+            <Button
+                Padding="0,0,8,0"
+                Click="WhatsNewButton_Click"
+                Style="{StaticResource SubtleButtonStyle}">
                 <!--  Visibility="{x:Bind ViewModel.UpdateAvailable, Mode=OneWay}"  -->
                 <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
@@ -209,9 +206,9 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <controls:Card Title="Quick launch" VerticalAlignment="Top">
-                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.ActionModules, Mode=OneWay}">
+                        <ItemsRepeater Margin="12,0,12,12" ItemsSource="{x:Bind ViewModel.ActionModules, Mode=OneWay}">
                             <ItemsRepeater.Layout>
-                                <tkcontrols:WrapLayout />
+                                <tkcontrols:WrapLayout HorizontalSpacing="16" VerticalSpacing="24" />
                             </ItemsRepeater.Layout>
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="viewmodels:DashboardListItem">
@@ -222,31 +219,25 @@
                                             ItemsSource="{x:Bind DashboardModuleItems, Mode=OneWay}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate x:DataType="viewmodels:DashboardModuleButtonItem">
-                                                    <Button
-                                                        AutomationProperties.Name="{x:Bind ButtonTitle}"
-                                                        Click="{x:Bind ButtonClickHandler}"
-                                                        Style="{StaticResource SubtleButtonStyle}"
-                                                        ToolTipService.ToolTip="{x:Bind ButtonDescription}">
-                                                        <Button.Content>
-                                                            <Grid>
-                                                                <Grid.RowDefinitions>
-                                                                    <RowDefinition Height="*" />
-                                                                    <RowDefinition Height="Auto" />
-                                                                </Grid.RowDefinitions>
-                                                                <Image
-                                                                    Width="16"
-                                                                    HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Center"
-                                                                    Source="/Assets/Settings/Icons/AdvancedPaste.png" />
-                                                                <TextBlock
-                                                                    Grid.Row="1"
-                                                                    FontSize="12"
-                                                                    Text="{x:Bind ButtonTitle}"
-                                                                    TextAlignment="Center" />
-                                                            </Grid>
-
-                                                        </Button.Content>
-                                                    </Button>
+                                                    <controls:FlyoutMenuButton AutomationProperties.Name="{x:Bind ButtonTitle}" Click="{x:Bind ButtonClickHandler}">
+                                                        <controls:FlyoutMenuButton.Content>
+                                                            <TextBlock
+                                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                                Text="{x:Bind ButtonTitle}"
+                                                                TextAlignment="Center"
+                                                                TextWrapping="Wrap" />
+                                                        </controls:FlyoutMenuButton.Content>
+                                                        <controls:FlyoutMenuButton.Icon>
+                                                            <Image Width="24">
+                                                                <Image.Source>
+                                                                    <BitmapImage UriSource="{x:Bind ButtonGlyph}" />
+                                                                </Image.Source>
+                                                            </Image>
+                                                        </controls:FlyoutMenuButton.Icon>
+                                                        <ToolTipService.ToolTip>
+                                                            <ToolTip Content="{x:Bind ButtonDescription}" />
+                                                        </ToolTipService.ToolTip>
+                                                    </controls:FlyoutMenuButton>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                             <ItemsControl.ItemsPanel>
