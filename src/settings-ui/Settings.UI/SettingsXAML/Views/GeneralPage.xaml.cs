@@ -89,8 +89,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.InitializeReportBugLink();
 
             // Register IPC handler for bug report status
-            ShellPage.ShellHandler.IPCResponseHandleList.Add(HandleBugReportStatusResponse);
-            ShellPage.ShellHandler.IPCResponseHandleList.Add(HandleTrayIconStatus);
+            ShellPage.ShellHandler.IPCResponseHandleList.Add(HandleBugReportStatusResponse);            // Register cleanup on unload
             this.Unloaded += GeneralPage_Unloaded;
 
             CheckBugReportStatus();
@@ -220,30 +219,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void HandleTrayIconStatus(JsonObject response)
-        {
-            if (response.ContainsKey("show_tray_icon"))
-            {
-                var show_icon = response.GetNamedBoolean("show_tray_icon");
-
-                // Update UI on the UI thread
-                this.DispatcherQueue.TryEnqueue(() =>
-                {
-                    ViewModel.ShowSysTrayIcon = show_icon;
-                });
-            }
-        }
-
         private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
         {
+            CleanupBugReportHandlers();
+        }
+
+        private void CleanupBugReportHandlers()
+        {
+            // Remove IPC handler
             if (ShellPage.ShellHandler?.IPCResponseHandleList != null)
             {
                 ShellPage.ShellHandler.IPCResponseHandleList.Remove(HandleBugReportStatusResponse);
-            }
-
-            if (ShellPage.ShellHandler?.IPCResponseHandleList != null)
-            {
-                ShellPage.ShellHandler.IPCResponseHandleList.Remove(HandleTrayIconStatus);
             }
         }
     }

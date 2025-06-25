@@ -193,7 +193,4 @@
   <data name="TRAY_ICON_ADMIN_TOOLTIP" xml:space="preserve">
     <value>Administrator</value>
   </data>
-  <data name="HIDE_TRAY_ICON_MENU_TEXT" xml:space="preserve">
-    <value>Hide tray icon</value>
-  </data>
 </root>

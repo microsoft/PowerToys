@@ -225,10 +225,6 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
         show_tray_icon = general_configs.GetNamedBoolean(L"show_tray_icon");
         // Update tray icon visibility when setting is toggled
         set_tray_icon_visible(show_tray_icon);
-
-        json::JsonObject message;
-        message.SetNamedValue(L"show_tray_icon", winrt::Windows::Data::Json::JsonValue::CreateBooleanValue(show_tray_icon));
-        send_message_to_settings_window(message.Stringify().c_str());
     }
 
     if (save)

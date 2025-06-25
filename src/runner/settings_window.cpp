@@ -828,11 +828,3 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
 
     return ESettingsWindowNames::Dashboard;
 }
-
-void send_message_to_settings_window(std::wstring text)
-{
-    std::unique_lock lock{ ipc_mutex };
-    if (current_settings_ipc)
-
-        current_settings_ipc->send(text);
-}
