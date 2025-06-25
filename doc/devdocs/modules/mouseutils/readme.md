@@ -115,6 +115,8 @@ Allows quick mouse cursor repositioning to any screen location through a grid-ba
 
 ### Find My Mouse, Mouse Highlighter, and Mouse Pointer Crosshairs
 - Debug by attaching to the Runner process directly
+- Set breakpoints in the respective utility code files (e.g., `FindMyMouse.cpp`, `MouseHighlighter.cpp`, `InclusiveCrosshairs.cpp`)
+- Call the respective utility by using the activation shortcut (e.g., double Ctrl press for Find My Mouse)
 - During debugging, visual effects may appear glitchy due to the debugger's overhead
 
 ### Mouse Jump
