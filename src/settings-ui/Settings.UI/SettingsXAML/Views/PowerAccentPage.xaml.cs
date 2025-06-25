@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class PowerAccentPage : Page, IRefreshablePage
+    public sealed partial class PowerAccentPage : NavigatablePage, IRefreshablePage
     {
         private PowerAccentViewModel ViewModel { get; set; }
 

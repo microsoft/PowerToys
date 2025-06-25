@@ -20,7 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// Dashboard Settings Page.
     /// </summary>
-    public sealed partial class DashboardPage : Page, IRefreshablePage
+    public sealed partial class DashboardPage : NavigatablePage, IRefreshablePage
     {
         /// <summary>
         /// Gets or sets view model.

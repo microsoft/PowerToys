@@ -4,7 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
+using Common.Search;
+using Common.Search.FuzzSearch;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Services;
@@ -13,6 +18,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.Data.Json;
 using Windows.System;
 using WinRT.Interop;
@@ -125,6 +131,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public static bool IsUserAnAdmin { get; set; }
 
         private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
+        private List<string> _searchSuggestions = new();
+        private ISearchService<NavigationViewItem> _searchService;
+        private List<SearchHit> _currentSearchResults = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ShellPage"/> class.
@@ -155,8 +164,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 foreach (var child in parent.MenuItems.OfType<NavigationViewItem>())
                 {
                     _navViewParentLookup.TryAdd(child.GetValue(NavHelper.NavigateToProperty) as Type, parent);
+                    _searchSuggestions.Add(child.Content?.ToString());
                 }
             }
+
+            _searchService = new FuzzSearchService<NavigationViewItem>(ViewModel.NavItems, (NavigationViewItem item) => item.Content.ToString());
         }
 
         public static int SendDefaultIPCMessage(string msg)
@@ -289,11 +301,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void OobeButton_Click(object sender, RoutedEventArgs e)
-        {
-            OpenOobeWindowCallback();
-        }
-
         private bool navigationViewInitialStateProcessed; // avoid announcing initial state of the navigation pane.
 
         private void NavigationView_PaneOpened(NavigationView sender, object args)
@@ -368,12 +375,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 Type pageType = selectedItem.GetValue(NavHelper.NavigateToProperty) as Type;
 
-                if (_navViewParentLookup.TryGetValue(pageType, out var parentItem) && !parentItem.IsExpanded)
+                if (pageType != null && _navViewParentLookup.TryGetValue(pageType, out var parentItem) && !parentItem.IsExpanded)
                 {
                     parentItem.IsExpanded = true;
+                    ViewModel.Expanding = parentItem;
+                    NavigationService.Navigate(pageType);
                 }
-
-                NavigationService.Navigate(pageType);
             }
         }
 
@@ -437,6 +444,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void ShellPage_Loaded(object sender, RoutedEventArgs e)
         {
             SetTitleBar();
+            Task.Run(SearchIndexService.BuildIndex);
         }
 
         private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
@@ -471,6 +479,94 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // Invoke the exit command from the tray icon
             IntPtr hWnd = NativeMethods.FindWindow(ptTrayIconWindowClass, ptTrayIconWindowClass);
             NativeMethods.SendMessage(hWnd, NativeMethods.WM_COMMAND, ID_EXIT_MENU_COMMAND, 0);
+        }
+
+        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                var query = sender.Text;
+
+                _currentSearchResults = SearchIndexService.Search(query, 10);
+
+                var suggestions = _currentSearchResults
+                    .Select(hit => $"{hit.Caption} ({hit.Module})")
+                    .ToList();
+
+                sender.ItemsSource = suggestions.Distinct().Take(15);
+            }
+        }
+
+        private void CtrlF_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            SearchBox.Focus(FocusState.Programmatic);
+        }
+
+        private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            // var sortedItems = ViewModel.NavItems
+            //    .Select(item => item.Content)
+            //    .OrderBy(content => content);
+
+            // SearchBox.ItemsSource = sortedItems;
+            // SearchBox.IsSuggestionListOpen = true;
+        }
+
+        private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            var queryText = args.QueryText?.Trim();
+            if (string.IsNullOrWhiteSpace(queryText))
+            {
+                return;
+            }
+
+            // First try to find a match in our detailed search results
+            var selectedText = args.ChosenSuggestion?.ToString() ?? queryText;
+            var searchHit = _currentSearchResults.FirstOrDefault(hit =>
+                selectedText.Equals($"{hit.Caption} ({hit.Module})", StringComparison.OrdinalIgnoreCase));
+
+            if (searchHit.PageType != null)
+            {
+                // Navigate to the specific page from search results
+                var matchedNavItem = ViewModel.NavItems
+                    .FirstOrDefault(item =>
+                        (item.GetValue(NavHelper.NavigateToProperty) as Type) == searchHit.PageType);
+                if (matchedNavItem != null)
+                {
+                    NavigateToItem(matchedNavItem, searchHit.ElementName, searchHit.ParentElementName);
+                    return;
+                }
+            }
+        }
+
+        private void NavigateToItem(NavigationViewItem item, string elementName = null, string parentElementName = null)
+        {
+            var pageType = item.GetValue(NavHelper.NavigateToProperty) as Type;
+
+            if (pageType != null && _navViewParentLookup.TryGetValue(pageType, out var parentItem))
+            {
+                parentItem.IsExpanded = true;
+                if (ViewModel.Expanding != null && ViewModel.Expanding != parentItem)
+                {
+                    ViewModel.Expanding.IsExpanded = false;
+                }
+
+                ViewModel.Expanding = parentItem;
+            }
+
+            ViewModel.Selected = item;
+
+            if (pageType != null)
+            {
+                // Create navigation parameters if element name is provided
+                object navigationParameter = null;
+                if (!string.IsNullOrEmpty(elementName))
+                {
+                    navigationParameter = new NavigationParams(elementName, parentElementName);
+                }
+
+                NavigationService.Navigate(pageType, navigationParameter);
+            }
         }
     }
 }
