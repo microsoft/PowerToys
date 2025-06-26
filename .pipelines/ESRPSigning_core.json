@@ -54,7 +54,6 @@
             "PowerToys.Awake.exe",
             "PowerToys.Awake.dll",
 
-            "fancyzones.dll",
             "PowerToys.FancyZonesEditor.exe",
             "PowerToys.FancyZonesEditor.dll",
             "PowerToys.FancyZonesEditorCommon.dll",
@@ -67,7 +66,6 @@
             "PowerToys.GcodeThumbnailProvider.dll",
             "PowerToys.GcodeThumbnailProvider.exe",
             "PowerToys.GcodeThumbnailProviderCpp.dll",
-            "PowerToys.ManagedTelemetry.dll",
             "PowerToys.MarkdownPreviewHandler.dll",
             "PowerToys.MarkdownPreviewHandler.exe",
             "PowerToys.MarkdownPreviewHandlerCpp.dll",
