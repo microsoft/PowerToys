@@ -20,8 +20,6 @@
         <ResourceDictionary>
             <cmdpalUI:KeyChordToStringConverter x:Key="KeyChordToStringConverter" />
 
-            <Grid x:Name="GridLayout" RowSpacing="4" />
-
             <cmdpalUI:ContextItemTemplateSelector
                 x:Key="ContextItemTemplateSelector"
                 Critical="{StaticResource CriticalContextMenuViewModelTemplate}"
@@ -30,24 +28,23 @@
 
             <!--  Template for context items in the context item menu  -->
             <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
-                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
+                <Grid AutomationProperties.Name="{x:Bind Title}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-
                     <cpcontrols:IconBox
                         Width="16"
                         Height="16"
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
-                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                        SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
                         Grid.Column="1"
                         VerticalAlignment="Center"
-                        Text="{x:Bind Title, Mode=OneWay}" />
+                        Text="{x:Bind Title}" />
                     <TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
@@ -55,50 +52,48 @@
                         VerticalAlignment="Center"
                         Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
                         Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                        Text="{x:Bind RequestedShortcut, Converter={StaticResource KeyChordToStringConverter}}" />
                 </Grid>
             </DataTemplate>
 
             <!--  Template for context items flagged as critical  -->
             <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="viewmodels:CommandContextItemViewModel">
-                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
+                <Grid AutomationProperties.Name="{x:Bind Title}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-
                     <cpcontrols:IconBox
                         Width="16"
                         Height="16"
                         Margin="4,0,0,0"
                         HorizontalAlignment="Left"
                         Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                        SourceKey="{x:Bind Icon}"
                         SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
                     <TextBlock
                         Grid.Column="1"
                         VerticalAlignment="Center"
                         Style="{StaticResource ContextItemTitleTextBlockCriticalStyle}"
-                        Text="{x:Bind Title, Mode=OneWay}" />
+                        Text="{x:Bind Title}" />
                     <TextBlock
                         Grid.Column="2"
                         Margin="16,0,0,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Style="{StaticResource ContextItemCaptionTextBlockCriticalStyle}"
-                        Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
+                        Text="{x:Bind RequestedShortcut, Converter={StaticResource KeyChordToStringConverter}}" />
                 </Grid>
             </DataTemplate>
 
             <!--  Template for context item separators  -->
             <DataTemplate x:Key="SeparatorContextMenuViewModelTemplate" x:DataType="viewmodels:SeparatorContextItemViewModel">
-                <StackPanel Margin="0,0,0,0" Orientation="Vertical">
-                    <Border
-                        Margin="0,0,0,0"
-                        BorderBrush="{ThemeResource MenuFlyoutSeparatorThemeBrush}"
-                        BorderThickness="0,0,0,1" />
-                </StackPanel>
+                <Rectangle
+                    Fill="{ThemeResource MenuFlyoutSeparatorThemeBrush}"
+                    Height="1"
+                    Margin="-16, -12, -12, -12"
+                    />
             </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -122,7 +117,7 @@
                 <ListView.ItemContainerStyle>
                     <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
                         <Setter Property="MinHeight" Value="0" />
-                        <Setter Property="Padding" Value="12,7,12,7" />
+                        <Setter Property="Padding" Value="12, 8"/>
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListView.ItemContainerTransitions>
@@ -134,6 +129,7 @@
             x:Name="ContextFilterBox"
             x:Uid="ContextFilterBox"
             KeyDown="ContextFilterBox_KeyDown"
+            Margin="4"
             PreviewKeyDown="ContextFilterBox_PreviewKeyDown"
             TextChanged="ContextFilterBox_TextChanged" />
         <VisualStateManager.VisualStateGroups>
@@ -145,8 +141,7 @@
                     <VisualState.Setters>
                         <Setter Target="CommandsPanel.(Grid.Row)" Value="1" />
                         <Setter Target="ContextFilterBox.(Grid.Row)" Value="0" />
-                        <Setter Target="CommandsDropdown.Margin" Value="-16,0,-16,-13" />
-                        <Setter Target="ContextFilterBox.Margin" Value="-12,-10,-12,3" />
+                        <Setter Target="CommandsDropdown.Margin" Value="0, 0, 0, 4" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="FilterOnBottom">
@@ -156,8 +151,7 @@
                     <VisualState.Setters>
                         <Setter Target="CommandsPanel.(Grid.Row)" Value="0" />
                         <Setter Target="ContextFilterBox.(Grid.Row)" Value="1" />
-                        <Setter Target="CommandsDropdown.Margin" Value="-16,-12,-16,-12" />
-                        <Setter Target="ContextFilterBox.Margin" Value="-12,14,-12,-9" />
+                        <Setter Target="CommandsDropdown.Margin" Value="0, 4, 0, 0" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
