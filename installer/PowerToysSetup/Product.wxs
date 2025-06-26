@@ -200,7 +200,14 @@
           Installed AND (REMOVE="ALL")
       </Custom>
       <?endif?>
-      <Custom Action="TerminateProcesses" Before="InstallValidate" />
+      <!-- Terminate PowerToys processes before uninstall validation -->
+      <Custom Action="TerminateProcesses" Before="InstallValidate">
+        Installed AND (REMOVE="ALL")
+      </Custom>
+      <!-- Terminate PowerToys processes before removing files during uninstall -->
+      <Custom Action="TerminateProcesses" Before="RemoveFiles">
+        Installed AND (REMOVE="ALL")
+      </Custom>
       <Custom Action="LaunchPowerToys" Before="InstallFinalize">NOT Installed</Custom>
 
       <!-- Clean Video Conference Mute registry keys that might be around from previous installations. We've deprecated this utility since then. -->
