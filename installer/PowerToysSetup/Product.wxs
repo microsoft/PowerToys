@@ -205,7 +205,7 @@
         Installed AND (REMOVE="ALL")
       </Custom>
       <!-- Terminate PowerToys processes before removing files during uninstall -->
-      <Custom Action="TerminateProcesses" Before="RemoveFiles">
+      <Custom Action="TerminateProcessesBeforeRemoval" Before="RemoveFiles">
         Installed AND (REMOVE="ALL")
       </Custom>
       <Custom Action="LaunchPowerToys" Before="InstallFinalize">NOT Installed</Custom>
@@ -234,6 +234,13 @@
 
     <CustomAction
       Id="TerminateProcesses"
+      Return="ignore"
+      Execute="immediate"
+      BinaryKey="PTCustomActions"
+      DllEntry="TerminateProcessesCA" />
+
+    <CustomAction
+      Id="TerminateProcessesBeforeRemoval"
       Return="ignore"
       Execute="immediate"
       BinaryKey="PTCustomActions"
