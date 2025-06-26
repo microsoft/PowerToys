@@ -11,11 +11,13 @@
             "PowerToys.ActionRunner.exe",
             "PowerToys.Update.exe",
             "PowerToys.BackgroundActivatorDLL.dll",
+
             "PowerToys.exe",
             "PowerToys.FilePreviewCommon.dll",
             "PowerToys.Interop.dll",
             "Tools\\PowerToys.BugReportTool.exe",
             "StylesReportTool\\PowerToys.StylesReportTool.exe",
+
             "CalculatorEngineCommon.dll",
             "PowerToys.ManagedTelemetry.dll",
             "PowerToys.ManagedCommon.dll",
@@ -30,6 +32,7 @@
             "PowerToys.AlwaysOnTopModuleInterface.dll",
 
             "PowerToys.CmdNotFoundModuleInterface.dll",
+
 
             "PowerToys.ColorPicker.dll",
             "PowerToys.ColorPickerUI.dll",
@@ -50,6 +53,7 @@
             "PowerToys.Awake.exe",
             "PowerToys.Awake.dll",
 
+
             "PowerToys.FancyZonesEditor.exe",
             "PowerToys.FancyZonesEditor.dll",
             "PowerToys.FancyZonesEditorCommon.dll",
@@ -62,6 +66,7 @@
             "PowerToys.GcodeThumbnailProvider.dll",
             "PowerToys.GcodeThumbnailProvider.exe",
             "PowerToys.GcodeThumbnailProviderCpp.dll",
+            "PowerToys.ManagedTelemetry.dll",
             "PowerToys.MarkdownPreviewHandler.dll",
             "PowerToys.MarkdownPreviewHandler.exe",
             "PowerToys.MarkdownPreviewHandlerCpp.dll",
@@ -130,6 +135,7 @@
             "PowerToys.PowerLauncher.dll",
             "PowerToys.PowerLauncher.exe",
             "PowerToys.PowerLauncher.Telemetry.dll",
+
             "Wox.Infrastructure.dll",
             "Wox.Plugin.dll",
             "RunPlugins\\Calculator\\Microsoft.PowerToys.Run.Plugin.Calculator.dll",
@@ -268,13 +274,16 @@
                 "Mono.Cecil.Pdb.dll",
                 "Mono.Cecil.Rocks.dll",
                 "Newtonsoft.Json.dll",
+
                 "NLog.dll",
                 "HtmlAgilityPack.dll",
                 "Markdig.Signed.dll",
                 "HelixToolkit.dll",
                 "HelixToolkit.Core.Wpf.dll",
                 "Mages.Core.dll",
+
                 "NLog.Extensions.Logging.dll",
+
                 "concrt140_app.dll",
                 "msvcp140_1_app.dll",
                 "msvcp140_2_app.dll",
@@ -284,6 +293,7 @@
                 "vcomp140_app.dll",
                 "vcruntime140_1_app.dll",
                 "vcruntime140_app.dll",
+
                 "UnicodeInformation.dll",
                 "Microsoft.Web.WebView2.Core.dll",
                 "Microsoft.Web.WebView2.WinForms.dll",
@@ -311,6 +321,7 @@
                 "Testably.Abstractions.FileSystem.Interface.dll",
                 "WinUI3Apps\\Testably.Abstractions.FileSystem.Interface.dll",
                 "ColorCode.Core.dll", 
+
                 "UnitsNet.dll",
                 "UtfUnknown.dll",
                 "Wpf.Ui.dll"
