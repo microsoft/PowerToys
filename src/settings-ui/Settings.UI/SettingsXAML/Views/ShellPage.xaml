@@ -79,7 +79,7 @@
                 Margin="0,0,148,0"
                 Padding="0"
                 Click="TitleBarShutDownBtn_Click"
-                Content="{ui:FontIcon Glyph=&#xe713;,
+                Content="{ui:FontIcon Glyph=&#xE7E8;,
                                       FontSize=16}"
                 Style="{StaticResource SubtleButtonStyle}" />
         </Grid>
