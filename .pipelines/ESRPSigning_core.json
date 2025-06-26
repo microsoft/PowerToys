@@ -33,14 +33,12 @@
             "PowerToys.CmdNotFound.dll",
 
             "PowerToys.ColorPicker.dll",
-            "PowerToys.ColorPickerUI.dll",
             "PowerToys.ColorPickerUI.exe",
 
             "PowerToys.CropAndLockModuleInterface.dll",
             "PowerToys.CropAndLock.exe",
 
             "PowerToys.PowerOCRModuleInterface.dll",
-            "PowerToys.PowerOCR.dll",
             "PowerToys.PowerOCR.exe",
 
             "PowerToys.AdvancedPasteModuleInterface.dll",
@@ -49,7 +47,6 @@
 
             "PowerToys.AwakeModuleInterface.dll",
             "PowerToys.Awake.exe",
-            "PowerToys.Awake.dll",
 
             "PowerToys.FancyZonesEditor.exe",
             "PowerToys.FancyZonesEditor.dll",
@@ -57,39 +54,28 @@
             "PowerToys.FancyZonesModuleInterface.dll",
             "PowerToys.FancyZones.exe",
 
-            "PowerToys.GcodePreviewHandler.dll",
             "PowerToys.GcodePreviewHandler.exe",
             "PowerToys.GcodePreviewHandlerCpp.dll",
-            "PowerToys.GcodeThumbnailProvider.dll",
             "PowerToys.GcodeThumbnailProvider.exe",
             "PowerToys.GcodeThumbnailProviderCpp.dll",
-            "PowerToys.MarkdownPreviewHandler.dll",
             "PowerToys.MarkdownPreviewHandler.exe",
             "PowerToys.MarkdownPreviewHandlerCpp.dll",
-            "PowerToys.MonacoPreviewHandler.dll",
             "PowerToys.MonacoPreviewHandler.exe",
             "PowerToys.MonacoPreviewHandlerCpp.dll",
-            "PowerToys.PdfPreviewHandler.dll",
             "PowerToys.PdfPreviewHandler.exe",
             "PowerToys.PdfPreviewHandlerCpp.dll",
-            "PowerToys.PdfThumbnailProvider.dll",
             "PowerToys.PdfThumbnailProvider.exe",
             "PowerToys.PdfThumbnailProviderCpp.dll",
             "PowerToys.powerpreview.dll",
             "PowerToys.PreviewHandlerCommon.dll",
-            "PowerToys.QoiPreviewHandler.dll",
             "PowerToys.QoiPreviewHandler.exe",
             "PowerToys.QoiPreviewHandlerCpp.dll",
-            "PowerToys.QoiThumbnailProvider.dll",
             "PowerToys.QoiThumbnailProvider.exe",
             "PowerToys.QoiThumbnailProviderCpp.dll",
-            "PowerToys.StlThumbnailProvider.dll",
             "PowerToys.StlThumbnailProvider.exe",
             "PowerToys.StlThumbnailProviderCpp.dll",
-            "PowerToys.SvgPreviewHandler.dll",
             "PowerToys.SvgPreviewHandler.exe",
             "PowerToys.SvgPreviewHandlerCpp.dll",
-            "PowerToys.SvgThumbnailProvider.dll",
             "PowerToys.SvgThumbnailProvider.exe",
             "PowerToys.SvgThumbnailProviderCpp.dll",
 
@@ -117,7 +103,6 @@
             "WinUI3Apps\\PowerToys.EnvironmentVariables.exe",
 
             "PowerToys.ImageResizer.exe",
-            "PowerToys.ImageResizer.dll",
             "PowerToys.ImageResizerExt.dll",
             "PowerToys.ImageResizerContextMenu.dll",
             "ImageResizerContextMenuPackage.msix",
@@ -128,7 +113,6 @@
             "PowerToys.KeyboardManagerEditorLibraryWrapper.dll",
 
             "PowerToys.Launcher.dll",
-            "PowerToys.PowerLauncher.dll",
             "PowerToys.PowerLauncher.exe",
             "PowerToys.PowerLauncher.Telemetry.dll",
             "Wox.Infrastructure.dll",
@@ -193,9 +177,7 @@
             "PowerToys.WorkspacesLauncher.exe",
             "PowerToys.WorkspacesWindowArranger.exe",
             "PowerToys.WorkspacesEditor.exe",
-            "PowerToys.WorkspacesEditor.dll",
             "PowerToys.WorkspacesLauncherUI.exe",
-            "PowerToys.WorkspacesLauncherUI.dll",
             "PowerToys.WorkspacesModuleInterface.dll",
             "PowerToys.WorkspacesCsharpLibrary.dll",
 
