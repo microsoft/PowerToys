@@ -22,7 +22,7 @@ public partial class IndexerCommandsProvider : CommandProvider
         Icon = Icons.FileExplorer;
         if (ApiInformation.IsApiContractPresent("Windows.AI.Actions.ActionsContract", 4))
         {
-            _ = ActionRuntimeManager.InitializeAsync();
+            _ = ActionRuntimeManager.InstanceAsync;
         }
     }
 

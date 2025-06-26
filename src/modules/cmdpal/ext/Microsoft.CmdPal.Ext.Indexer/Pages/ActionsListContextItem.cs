@@ -47,15 +47,7 @@ internal sealed partial class ActionsListContextItem : CommandContextItem, IDisp
         {
             if (actionRuntime == null)
             {
-                try
-                {
-                    ActionRuntimeManager.WaitForRuntimeAsync().Wait();
-                    actionRuntime = ActionRuntimeManager.Instance;
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"Failed to get ActionRuntime: {ex.Message}");
-                }
+                actionRuntime = ActionRuntimeManager.InstanceAsync.GetAwaiter().GetResult();
             }
 
             if (actionRuntime == null)

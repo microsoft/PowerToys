@@ -12,66 +12,36 @@ namespace Microsoft.CmdPal.Ext.Indexer.Data;
 
 public static class ActionRuntimeManager
 {
-    private static readonly SemaphoreSlim _initLock = new(1, 1);
-    private static readonly TaskCompletionSource<ActionRuntime> _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private static readonly Lazy<Task<ActionRuntime>> _lazyRuntime = new(InitializeAsync);
 
-    private static ActionRuntime _instance;
-    private static bool _isInitialized;
+    public static Task<ActionRuntime> InstanceAsync => _lazyRuntime.Value;
 
-    public static bool IsInitialized => _isInitialized;
-
-    public static ActionRuntime Instance =>
-        _isInitialized ? _instance : throw new InvalidOperationException("ActionRuntime has not been initialized yet. Call InitializeAsync first.");
-
-    public static Task<ActionRuntime> WaitForRuntimeAsync() => _tcs.Task;
-
-    public static async Task InitializeAsync()
+    private static async Task<ActionRuntime> InitializeAsync()
     {
-        if (_isInitialized)
-        {
-            return;
-        }
+        // If we tried 3 times and failed, should we think the action runtime is not working?
+        // then we should not use it anymore.
+        const int maxAttempts = 3;
 
-        await _initLock.WaitAsync();
-
-        try
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            if (_isInitialized)
+            try
             {
-                return;
+                var runtime = ActionRuntimeFactory.CreateActionRuntime();
+                await Task.Delay(500);
+
+                return runtime;
             }
-
-            // If we tried 3 times and failed, should we think the action runtime is not working?
-            // then we should not use it anymore.
-            const int maxAttempts = 3;
-
-            for (var attempt = 1; attempt <= maxAttempts; attempt++)
+            catch (Exception ex)
             {
-                try
-                {
-                    var runtime = ActionRuntimeFactory.CreateActionRuntime();
-                    await Task.Delay(500);
+                Logger.LogError($"Attempt {attempt} to initialize ActionRuntime failed: {ex.Message}");
 
-                    _instance = runtime;
-                    _tcs.SetResult(runtime);
-                    return;
-                }
-                catch (Exception ex)
+                if (attempt == maxAttempts)
                 {
-                    if (attempt == maxAttempts)
-                    {
-                        Logger.LogError($"Failed to initialize ActionRuntime: {ex.Message}");
-                        _tcs.TrySetException(new InvalidOperationException(
-                            $"Failed to initialize ActionRuntime after {maxAttempts} attempts.", ex));
-                        return;
-                    }
+                    Logger.LogError($"Failed to initialize ActionRuntime: {ex.Message}");
                 }
             }
         }
-        finally
-        {
-            _isInitialized = true;
-            _initLock.Release();
-        }
+
+        return null;
     }
 }
