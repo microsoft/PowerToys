@@ -234,7 +234,7 @@
     <value>Security key</value>
   </data>
   <data name="MouseWithoutBorders_SecurityKey.Description" xml:space="preserve">
-    <value>The key must be auto generated in one machine by clicking on New Key, then typed in other machines</value>
+    <value>To set up, generate the key on one machine, and enter it manually on other machines.</value>
   </data>
   <data name="MouseWithoutBorders_NewKey.Content" xml:space="preserve">
     <value>New key</value>
@@ -361,7 +361,7 @@
     <value>Hide the mouse cursor at the top edge of the screen when switching to other machine. This option also steals the focus from any full-screen app to ensure the keyboard input is redirected.</value>
   </data>
   <data name="MouseWithoutBorders_DrawMouseCursor.Description" xml:space="preserve">
-    <value>Mouse cursor may not be visible in Windows 10 and later versions of Windows when there is no physical mouse attached.</value>
+    <value>The mouse cursor may not appear on Windows 10 and later if no physical mouse is connected.</value>
   </data>
   <data name="MouseWithoutBorders_ValidateRemoteMachineIP.Description" xml:space="preserve">
     <value>Reverse DNS lookup to validate machine IP Address.</value>
@@ -2710,7 +2710,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Spotlight initial zoom</value>
   </data>
   <data name="MouseUtils_FindMyMouse_SpotlightInitialZoom.Description" xml:space="preserve">
-    <value>Spotlight zoom factor at animation start</value>
+    <value>Spotlight zoom factor at the start of the animation</value>
   </data>
   <data name="MouseUtils_FindMyMouse_AnimationDurationMs.Header" xml:space="preserve">
     <value>Animation duration (ms)</value>
@@ -2730,7 +2730,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>The minimum distance the mouse must move to be considered a shake. Lower values increase sensitivity.</value>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Header" xml:space="preserve">
-    <value />
+    <value>Shake detection interval (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ShakingIntervalMs.Description" xml:space="preserve">
@@ -3055,10 +3055,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Behavior</value>
   </data>
   <data name="Peek_AlwaysRunNotElevated.Header" xml:space="preserve">
-    <value>Always run not elevated, even when PowerToys is elevated</value>
+    <value>Always run without elevation (even if PowerToys is elevated)</value>
   </data>
   <data name="Peek_AlwaysRunNotElevated.Description" xml:space="preserve">
-    <value>Tries to run Peek without elevated permissions, to fix access to network shares. You need to disable and re-enable Peek for changes to this value to take effect.</value>
+    <value>Runs Peek without admin permissions to improve access to network shares.
+Note: To apply this change, you must disable and re-enable Peek.</value>
     <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="Peek_CloseAfterLosingFocus.Header" xml:space="preserve">
@@ -3066,10 +3067,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="Peek_ConfirmFileDelete.Header" xml:space="preserve">
-    <value>Ask for confirmation before deleting files</value>
+    <value>Confirm before deleting files</value>
   </data>
   <data name="Peek_ConfirmFileDelete.Description" xml:space="preserve">
-    <value>When enabled, you will be prompted to confirm before moving files to the Recycle Bin.</value>
+    <value>You'll be asked to confirm before files are moved to the Recycle Bin</value>
   </data>
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable rounded corners when a window is snapped</value>
@@ -3309,7 +3310,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>ms = milliseconds</comment>
   </data>
   <data name="QuickAccent_InputTimeMs.Description" xml:space="preserve">
-    <value>Hold the key down for this much time to make the accent menu appear (ms)</value>
+    <value>How long a key must be held before the accent menu appears</value>
     <comment>ms = milliseconds</comment>
   </data>
   <data name="QuickAccent_ExcludedApps.Description" xml:space="preserve">
@@ -3640,7 +3641,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Hosts File Editor" is a product name</comment>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Header" xml:space="preserve">
-    <value>Position of additional content</value>
+    <value>Placement of additional content</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition_Bottom.Content" xml:space="preserve">
     <value>Bottom</value>
@@ -3668,7 +3669,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>"Hosts File Editor" is the name of the utility</comment>
   </data>
   <data name="Hosts_Toggle_LaunchAdministrator.Description" xml:space="preserve">
-    <value>Needs to be launched as administrator in order to make changes to the hosts file</value>
+    <value>Required in order to make changes to the hosts file</value>
   </data>
   <data name="Hosts_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Launch as administrator</value>
@@ -3710,7 +3711,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Environment Variables</value>
   </data>
   <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Description" xml:space="preserve">
-    <value>Needs to be launched as administrator in order to make changes to the system environment variables</value>
+    <value>Required in order to make changes to the system environment variables</value>
   </data>
   <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Launch as administrator</value>
@@ -3751,7 +3752,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>This setting is managed by your organization.</value>
   </data>
   <data name="Hosts_AdditionalLinesPosition.Description" xml:space="preserve">
-    <value>Additional content includes the file header and lines that can't parse</value>
+    <value>Includes items like the file header and any lines that can’t be parsed</value>
   </data>
   <data name="TextExtractor_Languages.Header" xml:space="preserve">
     <value>Preferred language</value>
@@ -4049,7 +4050,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Activation shortcut</value>
   </data>
   <data name="MouseUtils_MouseJump_ThumbnailSize.Header" xml:space="preserve">
-    <value>Thumbnail Size</value>
+    <value>Thumbnail size</value>
   </data>
   <data name="MouseUtils_MouseJump_ThumbnailSize_Description_Prefix.Text" xml:space="preserve">
     <value>Constrain thumbnail image size to a maximum of</value>
@@ -4184,11 +4185,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Launch Registry Preview</value>
   </data>
   <data name="RegistryPreview_DefaultRegApp.Header" xml:space="preserve">
-    <value>Default app</value>
-  </data>
-  <data name="RegistryPreview_DefaultRegApp.Description" xml:space="preserve">
-    <value>Make Registry Preview default app for opening .reg files</value>
-    <comment>Registry Preview is app name. Do not localize.</comment>
+    <value>Make Registry Preview the default app for opening .reg files</value>
   </data>
   <data name="AdvancedPaste_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
@@ -4455,15 +4452,15 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>Display options label</comment>
   </data>
   <data name="NewPlus_Hide_File_Extension_Toggle.Header" xml:space="preserve">
-    <value>Hide template filename extension</value>
+    <value>Hide the file extension in template names</value>
     <comment>Template file name extension settings toggle</comment>
   </data>
   <data name="NewPlus_Hide_Starting_Digits_Toggle.Header" xml:space="preserve">
-    <value>Hide template filename starting digits, spaces, and dots</value>
+    <value>Hide leading digits, spaces, and dots in template filenames</value>
     <comment>Template filename starting digits settings toggle</comment>
   </data>
   <data name="NewPlus_Hide_Starting_Digits_Description.Text" xml:space="preserve">
-    <value>This option is useful when using digits, spaces and dots at the beginning of filenames to control the display order of templates</value>
+    <value>Ignores digits, spaces, and dots at the start of filenames—useful for sorting templates without showing those characters</value>
     <comment>Template filename starting digits settings toggle</comment>
   </data>
   <data name="NewPlus_behavior.Header" xml:space="preserve">
