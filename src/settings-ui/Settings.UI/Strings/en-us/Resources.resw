@@ -4185,7 +4185,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Launch Registry Preview</value>
   </data>
   <data name="RegistryPreview_DefaultRegApp.Header" xml:space="preserve">
-    <value>Make Registry Preview the default app for opening .reg files</value>
+    <value>Make Registry Preview the default app for .reg files</value>
   </data>
   <data name="AdvancedPaste_ShortcutWarning.Title" xml:space="preserve">
     <value>Using this shortcut may prevent non-text paste actions (e.g. images, files) or built-in paste plain text actions in other applications from functioning.</value>
@@ -5059,7 +5059,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   <data name="BugReportUnderConstruction" xml:space="preserve">
     <value>Bug report package is being created</value>
   </data>
-  <data name="AlwaysOnTop_Sound.HEader" xml:space="preserve">
+  <data name="AlwaysOnTop_Sound.Header" xml:space="preserve">
     <value>Play a sound when pinning a window</value>
   </data>
 </root>
