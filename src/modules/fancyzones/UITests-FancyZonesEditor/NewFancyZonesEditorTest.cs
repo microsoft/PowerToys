@@ -26,7 +26,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         public class TestCaseFirstLaunch : UITestBase
         {
             public TestCaseFirstLaunch()
-                : base(PowerToysModule.FancyZone)
+                : base(PowerToysModule.FancyZone, WindowSize.UnSpecified)
             {
             }
 

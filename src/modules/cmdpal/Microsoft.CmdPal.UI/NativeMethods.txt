@@ -35,9 +35,14 @@ WM_WINDOWPOSCHANGING
 RegisterWindowMessageW
 GetModuleHandleW
 ExtractIconEx
+TRACK_POPUP_MENU_FLAGS
+WM_COMMAND
 WM_RBUTTONUP
 WM_LBUTTONUP
 WM_LBUTTONDBLCLK
+CreatePopupMenu
+TrackPopupMenuEx
+InsertMenu
 
 MessageBox
 DwmGetWindowAttribute

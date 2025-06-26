@@ -70,6 +70,12 @@ namespace Microsoft.FancyZonesEditor.UITests.Utils
             }
         }
 
+        // For get app zone history data
+        public string GetData()
+        {
+            return ReadFile(_file);
+        }
+
         private string ReadFile(string fileName)
         {
             var attempts = 0;

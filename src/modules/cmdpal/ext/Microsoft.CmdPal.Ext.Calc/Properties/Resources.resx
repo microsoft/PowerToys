@@ -199,4 +199,7 @@
   <data name="calculator_copy_binary" xml:space="preserve">
     <value>Copy binary</value>
   </data>
+  <data name="calculator_expression_empty" xml:space="preserve">
+    <value>Please enter an expression</value>
+  </data>
 </root>
