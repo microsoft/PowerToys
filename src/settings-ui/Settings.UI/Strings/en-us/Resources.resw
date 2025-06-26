@@ -274,7 +274,7 @@
     <value>Adding a firewall rule might help solve connection issues.</value>
   </data>
   <data name="MouseWithoutBorders_RunAsAdminText.Title" xml:space="preserve">
-    <value>You need to run as administrator to modify this setting.</value>
+    <value>This setting can only be changed when running as administrator</value>
   </data>
   <data name="MouseWithoutBorders_ServiceUserUninstallWarning.Title" xml:space="preserve">
     <value>If PowerToys is installed as a user, uninstalling/upgrading may require the Mouse Without Borders service to be removed manually later.</value>
@@ -1304,7 +1304,7 @@
     <value>Always run as administrator</value>
   </data>
   <data name="GeneralSettings_AlwaysRunAsAdminText.Description" xml:space="preserve">
-    <value>You need to run as administrator to use this setting</value>
+    <value>This setting can only be changed when running as administrator</value>
   </data>
   <data name="GeneralSettings_RunningAsUserText" xml:space="preserve">
     <value>Running as user</value>
@@ -1465,7 +1465,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Preview Pane and File Explorer are app/feature names in Windows. 'Alt + P' is a shortcut</comment>
   </data>
   <data name="FileExplorerPreview_RunAsAdminRequired.Title" xml:space="preserve">
-    <value>You need to run as administrator to modify these settings.</value>
+    <value>This setting can only be changed when running as administrator</value>
   </data>
   <data name="FileExplorerPreview_RebootRequired.Title" xml:space="preserve">
     <value>A reboot may be required for changes to these settings to take effect</value>
@@ -2056,7 +2056,7 @@ Take a moment to preview the various utilities listed or view our comprehensive 
     <value>Diagnostic data</value>
   </data>
   <data name="Oobe_Overview_EnableDataDiagnostics.Description" xml:space="preserve">
-    <value>Helps inform bug fixes, performance, and product decisions</value>
+    <value>Helps us make PowerToys faster, more stable, and better over time</value>
   </data>
   <data name="Oobe_WhatsNew_DataDiagnostics_InfoBar.Header" xml:space="preserve">
     <value>Turn on diagnostic data to help us improve PowerToys?</value>
@@ -2840,7 +2840,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Windows default</value>
   </data>
   <data name="ColorModeHeader.Header" xml:space="preserve">
-    <value>App theme</value>
+    <value>Theme</value>
   </data>
   <data name="FancyZones_Zone_Appearance.Description" xml:space="preserve">
     <value>Customize the way zones look</value>
@@ -3058,8 +3058,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Always run without elevation (even if PowerToys is elevated)</value>
   </data>
   <data name="Peek_AlwaysRunNotElevated.Description" xml:space="preserve">
-    <value>Runs Peek without admin permissions to improve access to network shares.
-Note: To apply this change, you must disable and re-enable Peek.</value>
+    <value>Runs Peek without admin permissions to improve access to network shares. To apply this change, you must disable and re-enable Peek.</value>
     <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="Peek_CloseAfterLosingFocus.Header" xml:space="preserve">
@@ -3789,7 +3788,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Experimentation</value>
   </data>
   <data name="GeneralPage_EnableExperimentation.Description" xml:space="preserve">
-    <value>Note: Only Windows Insider builds may be selected for experimentation</value>
+    <value>Only Windows Insider builds may be selected for experimentation</value>
     <comment>{Locked="Windows Insider"}</comment>
   </data>
   <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
@@ -3798,29 +3797,14 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="General_DiagnosticsAndFeedback.Header" xml:space="preserve">
     <value>Diagnostics &amp; feedback</value>
   </data>
-  <data name="GeneralPage_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
-    <value>Learn more about the logged information and how it's used</value>
-  </data>
   <data name="GeneralPage_EnableDataDiagnostics.Header" xml:space="preserve">
     <value>Diagnostic data</value>
   </data>
-  <data name="GeneralPage_EnableDataDiagnostics.Description" xml:space="preserve">
-    <value>Helps inform bug fixes, performance, and improvements</value>
-  </data>
-  <data name="GeneralPage_ViewDiagnosticData.Header" xml:space="preserve">
-    <value>View diagnostic data</value>
+  <data name="GeneralPage_EnableDataDiagnosticsText.Text" xml:space="preserve">
+    <value>Helps us make PowerToys faster, more stable, and better over time</value>
   </data>
   <data name="GeneralPage_EnableViewDiagnosticData.Header" xml:space="preserve">
-    <value>Enable viewing</value>
-  </data>
-  <data name="GeneralPage_EnableViewDiagnosticData.Description" xml:space="preserve">
-    <value>May use up to 1 GB or more of disk space on your PC</value>
-  </data>
-  <data name="GeneralPage_ViewDiagnosticDataViewer.Header" xml:space="preserve">
-    <value>Diagnostic data viewer</value>
-  </data>
-  <data name="GeneralPage_ViewDiagnosticDataViewer.Description" xml:space="preserve">
-    <value>Generates diagnostic data in .xml format; folder may include .etl files as well</value>
+    <value>Save logs to this device</value>
   </data>
   <data name="Shell_AdvancedPaste.Content" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -4312,7 +4296,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Show the release notes after an update</value>
   </data>
   <data name="ShowSystemTrayIcon.Description" xml:space="preserve">
-    <value>This settings page is accessible by running the PowerToys executable again</value>
+    <value>To access settings, run the PowerToys executable again</value>
   </data>
   <data name="ShowSystemTrayIcon.Header" xml:space="preserve">
     <value>Show system tray icon</value>
@@ -4847,7 +4831,7 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
     <value>Open settings</value>
   </data>
   <data name="LanguageHeader.Header" xml:space="preserve">
-    <value>Application language</value>
+    <value>Language</value>
   </data>
   <data name="LanguageHeader.Description" xml:space="preserve">
     <value>PowerToys matches your Windows language by default</value>
@@ -5061,5 +5045,11 @@ To record a specific window, enter the hotkey with the Alt key in the opposite m
   </data>
   <data name="AlwaysOnTop_Sound.Header" xml:space="preserve">
     <value>Play a sound when pinning a window</value>
+  </data>
+  <data name="GeneralPage_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
+    <value>Learn more about the logged information and how it's used</value>
+  </data>
+  <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
+    <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
 </root>
