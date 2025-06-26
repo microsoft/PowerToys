@@ -413,12 +413,15 @@
                         IsExpanded="True">
                         <tkcontrols:SettingsExpander.Description>
                             <StackPanel Orientation="Vertical">
-                                <TextBlock x:Uid="GeneralPage_EnableDataDiagnosticsText" Style="{StaticResource SecondaryTextStyle}" />
+                                <TextBlock
+                                    x:Uid="GeneralPage_EnableDataDiagnosticsText"
+                                    Style="{StaticResource SecondaryTextStyle}"
+                                    TextWrapping="WrapWholeWords" />
                                 <HyperlinkButton
                                     x:Uid="GeneralPage_DiagnosticsAndFeedback_Link"
                                     Margin="0,2,0,0"
                                     FontWeight="SemiBold"
-                                    NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentatio" />
+                                    NavigateUri="https://aka.ms/powertoys-data-and-privacy-documentation" />
                             </StackPanel>
                         </tkcontrols:SettingsExpander.Description>
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableDataDiagnostics, Mode=TwoWay}" />
@@ -427,7 +430,10 @@
                                 <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableViewDataDiagnostics, Mode=TwoWay}" />
                                 <tkcontrols:SettingsCard.Description>
                                     <StackPanel Orientation="Vertical">
-                                        <TextBlock x:Uid="GeneralPage_EnableViewDiagnosticDataText" Style="{StaticResource SecondaryTextStyle}" />
+                                        <TextBlock
+                                            x:Uid="GeneralPage_EnableViewDiagnosticDataText"
+                                            Style="{StaticResource SecondaryTextStyle}"
+                                            TextWrapping="WrapWholeWords" />
                                         <HyperlinkButton
                                             Margin="0,2,0,0"
                                             Click="ViewDiagnosticData_Click"
