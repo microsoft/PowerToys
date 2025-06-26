@@ -71,24 +71,17 @@
                     TextWrapping="NoWrap"
                     Visibility="Collapsed" />
             </StackPanel>
-            <StackPanel
+            <Button
+                x:Uid="TitleBarShutDownBtn"
                 Grid.Column="1"
+                Width="36"
+                Height="36"
                 Margin="0,0,148,0"
-                HorizontalAlignment="Right"
-                Orientation="Horizontal">
-                <Button
-                    x:Name="ShutDownBtn"
-                    Height="48"
-                    Click="ExitPTItem_Tapped"
-                    Style="{StaticResource SubtleButtonStyle}">
-                    <FontIcon FontSize="16" Glyph="&#xE7E8;" />
-                    <ToolTipService.ToolTip>
-                        <ToolTip>
-                            <TextBlock x:Uid="AppTitleBarShutDown_Tooltip" />
-                        </ToolTip>
-                    </ToolTipService.ToolTip>
-                </Button>
-            </StackPanel>
+                Padding="0"
+                Click="TitleBarShutDownBtn_Click"
+                Content="{ui:FontIcon Glyph=&#xe713;,
+                                      FontSize=16}"
+                Style="{StaticResource SubtleButtonStyle}" />
         </Grid>
         <NavigationView
             x:Name="navigationView"
