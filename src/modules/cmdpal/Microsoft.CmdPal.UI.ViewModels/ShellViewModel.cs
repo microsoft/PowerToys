@@ -41,7 +41,14 @@ public partial class ShellViewModel(IServiceProvider _serviceProvider, TaskSched
             {
                 if (oldValue is IDisposable disposable)
                 {
-                    disposable.Dispose();
+                    try
+                    {
+                        disposable.Dispose();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError(ex.ToString());
+                    }
                 }
             }
         }
