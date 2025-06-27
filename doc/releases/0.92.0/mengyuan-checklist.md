@@ -25,354 +25,83 @@
    * Install **previous version** on a clean machine and update with new per-machine version. Ensure that it is installed in Program files and that registry entries are under **HKLM**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
    * Try installing per-user version over already installed per-machine version and ensure that proper error message is shown.
    * Remove PowerToys and install per-user version. Ensure that it is installed in <APPDATA>/Local/PowerToys and that registry entries are under **HKCU**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
-   * Create a new user and ins ontall per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
+   * Create a new user and install per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
 
-## [General Settings](tests-checklist-template-settings-section.md)
+## Functional tests
 
-**Admin mode:**
- - [ ] restart PT and verify it runs as user
- - [ ] restart as admin and set "Always run as admin"
- - [ ] restart PT and verify it  runs as admin
- * if it's not on, turn on "Run at startup"
- - [ ] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
- * turn Always run as admin" off
- - [ ] reboot the machine and verify it now runs as user
-
-**Modules on/off:**
- - [ ] turn off all the modules and verify all module are off
- - [ ] restart PT and verify that all module are still off in the settings page and they are actually inactive
- - [ ] turn on all the module, all module are now working
- - [ ] restart PT and verify that all module are still on in the settings page and they are actually working
-
-**Quick access tray icon flyout:**
- - [ ] Use left click on the system tray icon and verify the flyout appears. (It'll take a bit the first time)
- - [ ] Try to launch a module from the launch screen in the flyout.
- - [ ] Try disabling a module in the all apps screen in the flyout, make it a module that's launchable from the launch screen. Verify that the module is disabled and that it also disappeared from the launch screen in the flyout.
- - [ ] Open the main settings screen on a module page. Verify that when you disable/enable the module on the flyout, that the Settings page is updated too.
-
-**Settings backup/restore:**
- - [ ] In the General tab, create a backup of the settings.
- - [ ] Change some settings in some PowerToys.
- - [ ] Restore the settings in the General tab and verify the Settings you've applied were reset.
-
-## Color Picker
-* Enable the Color Picker in settings and ensure that the hotkey brings up Color Picker
-  - [ ] when PowerToys is running unelevated on start-up
-  - [ ] when PowerToys is running as admin on start-up
-  - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in the settings
-- [ ] Change `Activate Color Picker shortcut` and check the new shortcut is working
-- [ ] Try all three `Activation behavior`s(`Color Picker with editor mode enabled`, `Editor`, `Color Picker only`)
-- [ ] Change `Color format for clipboard` and check if the correct format is copied from the Color picker
-- [ ] Try to copy color formats to the clipboard from the Editor
-- [ ] Check `Show color name` and verify if color name is shown in the Color picker
-- [ ] Enable one new format, disable one existing format, reorder enabled formats and check if settings are populated to the Editor
-- [ ] Select a color from the history in the Editor
-- [ ] Remove color from the history in the Editor
-- [ ] Open the Color Picker from the Editor
-- [ ] Open Adjust color from the Editor
-- [ ] Check Color Picker logs for errors
-
-## [FancyZones Editor](tests-checklist-template-fancyzones-section.md)
-
-- [X] Open editor from the settings
-- [X] Open editor with a shortcut
-- [X] Create a new layout (grid and canvas)
-- [X] Duplicate a template and a custom layout
-- [X] Delete layout
-- [X] Edit templates (number of zones, spacing, distance to highlight adjacent zones). Verify after reopening the editor that saved settings are kept the same.
-- [X] Edit canvas layout: zones size and position, create or delete zones.
-- [X] Edit grid layout: split, merge, resize zones.
-- [X] Check `Save and apply` and `Cancel` buttons behavior after editing.
-- [X] Assign a layout to each monitor.
-- [X] Assign keys to quickly switch layouts (custom layouts only), `Win + Ctrl + Alt + number`.
-- [X] Assign horizontal and vertical default layouts
-- [X] Test duplicate layout focus
-   * Select any layout X in 'Templates' or 'Custom' section by click left mouse button
-   * Mouse right button click on any layout Y in 'Templates' or 'Custom' sections
-   * Duplicate it by clicking 'Create custom layout' (Templates section) or 'Duplicate' in 'Custom' section
-   * Expect the layout Y is duplicated
-
-## [FancyZones](tests-checklist-template-fancyzones-section.md)
-
-### Appearance
-- [X] Change colors, opacity and `Show zone number` options. Verify they're applied.
-
-### Excluded apps
-- [X] Exclude some apps, verify that they're not applicable to a zone.
-
-### Dragging
-- [X] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Start dragging a window, then press shift. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [X] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` off. Press shift first, then start dragging a window. Zones are shown when dragging a window with shift pressed, hidden when you released shift or snapped zone.
-- [X]  `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` on. Zones are shown immediately when dragging a window and hidden when you click a non-primary mouse button or press shift.
-- [X] `Hold Shift key to activate zones while dragging` off, `Use a non-primary mouse button to toggle zone activation` off. Zones are shown immediately when dragging a window, hidden when you press shift.
-- [X] `Hold Shift key to activate zones while dragging` on, `Use a non-primary mouse button to toggle zone activation` on. Zones aren't shown immediately, only when shift is pressed or when a non-primary mouse click changes the state.  
-- [X] `Show zones on all monitor whilw dragging a window` - turn on,off, verify behavior.
-- [X] Create a canvas layout with overlapping zones, check zone activation behavior with all `When multiple zones overlap` options
-- [X] `Make dragged window transparent` - turn on, off, verify behavior
-
-### Snapping
-Disable FZ and clear `app-zone-history.json` before starting. FancyZones should be disabled, otherwise, it'll save cashed values back to the file.
-
-- [X] Snap a window to a zone by dragging, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
-- [X] Snap a window to a zone by a keyboard shortcut, verify `app-zone-history.json` contains info about the window position on the corresponding work area.
-- [X] Snap a window to another monitor, verify `app-zone-history.json` contains positions about zones on both monitors.
-- [X] Snap a window to several zones, verify zone numbers in the json file are correct.
-- [X] Snap a window to a zone, unsnap it, verify this app was removed from the json file.
-- [X] Snap the same window to a zone on two different monitors or virtual desktops. Then unsnap from one of them, verify that info about unsnapped zone was removed from `app-zone-history.json`. Verify info about the second monitor/virtual desktop is kept.  
-- [X] Enable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify the window changed its size to original.
-- [X] Disable `Restore the original size of windows when unsnapping`, snap window, unsnap window, verify window size wasn't changed.
-- [X] Disable `Restore the original size of windows when unsnapping`, snap window, enable `Restore the original size of windows when unsnapping`, unsnap window, verify window size wasn't changed. 
-- [X] Launch PT in user mode, try to assign a window with administrator privileges to a zone. Verify the notification is shown.
-- [X] Launch PT in administrator mode, assign a window with administrator privileges.
-- [X] Enable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer, Notepad++ search window), verify it can be snapped to a zone.
-- [X] Disable `Allow child windows snapping`, drag any child window (e.g. Solution Explorer, Notepad++ search window), verify it can't be snapped to a zone.
-* Open `Task view` , right-click on the window, check the `Show this window on all desktops` or the `Show windows from this app on all desktops` option to turn it on.
-    - [X] Turn Show this window on all desktops on, verify you can snap this window to a zone.
-    - [X] Turn Show windows from this app on all desktops on, verify you can snap this window to a zone.
-
-### Snapped window behavior
-- [X] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone, change the screen resolution or scaling, verify window changed its size and position.
-- [X] `Keep windows in their zones when the screen resolution changes` on, snap a window to a zone on the secondary monitor. Disconnect the secondary monitor (the window will be moved to the primary monitor). Reconnect the secondary monitor. Verify the window returned to its zone. 
-- [X] `Keep windows in their zones when the screen resolution changes` off, snap a window to a zone, change the screen resolution or scaling, verify window didn't change its size and position.
-
-Enable `During zone layout changes, windows assigned to a zone will match new size/positions` and prepare layouts with 1 and 3 zones where zone size/positions are different.
-- [X] Snap a window to zone 1, change the layout, verify window changed its size/position.
-- [X] Snap a window to zone 3, change the layout, verify window didn't change its size/position because another layout doesn't have a zone with this zone number.
-- [X] Snap a window to zones 1-2, change the layout, verify window changed its size/position to fit zone 1.
-- [X] Snap a window to zones 1-2, change the layout (the window will be snapped to zone 1), then return back to the previous layout, verify the window snapped to 1-2 zones.
-- [X] Disable `During zone layout changes, windows assigned to a zone will match new size/positions`, snap window to zone 1, change layout, verify window didn't change its size/position
-
-Enable `Move newly created windows to their last known zone`.
-- [X] Snap a window to the primary monitor, close and reopen the window. Verify it's snapped to its zone.
-- [X] Snap a window to zones on the primary and secondary monitors. Close and reopen the app. Verify it's snapped to the zone on the active monitor.
-- [X] Snap a window to the secondary monitor (use a different app or unsnap the window from the zone on the primary monitor), close and reopen the window. Verify it's snapped to its zone. 
-- [X] Snap a window, turn off FancyZones, move that window, turn FZ on. Verify window returned to its zone.
-- [X] Move unsnapped window to a secondary monitor, switch virtual desktop and return back. Verify window didn't change its position and size.
-- [X] Snap a window, then resize it (it's still snapped, but doesn't fit the zone). Switch the virtual desktop and return back, verify window didn't change its size.
-- [X] Snap a popup window (e.g. Teams), close and reopen it, verify the window appears in its zone.
-- [X] Snap Visual Studio Code to a zone, and open any menu. Verify the menu is where it's supposed to be and not on the top left corner of the zone.
-
-Enable `Move newly created windows to the current active monitor`.
-- [X] Open a window that wasn't snapped anywhere, verify it's opened on the active monitor.
-- [X] Open a window that was snapped on the current virtual desktop and current monitor, verify it's opened in its zone.
-- [X] Open a window that was snappen on the current virtual desktop and another monitor, verify it's opened on the active monitor.
-- [X] Open a window that was snapped on another virtual desktop, verify it's opened on the active monitor.
-
-### Switch between windows in the current zone
-Enable `Switch between windows in the current zone` (default shortcut is `Win + PgUp/PgDown`)
-- [X] Snap several windows to one zone, verify switching works.
-- [X] Snap several windows to one zone, switch virtual desktop, return back, verify window switching works.
-- [X] Disable `Switch between windows in the current zone`, verify switching doesn't work.
-  
-### Override Windows Snap
-- [X] Disable `Override Windows Snap`, verify it's disabled.
-
-Enable `Override Windows Snap`.
-Select Move windows based on `Zone index`.
-- [X] Open the previously not snapped window, press `Win`+`LeftArrow` / `Win`+`RightArrow`, verify it's snapped to a first/last zone.
-- [X] Verify `Win`+`LeftArrow` moves the window to a zone with the previous index.
-- [X] Verify `Win`+`RightArrow` moves the window to a zone with the next index.
-- [X] Verify `Win`+`ArrowUp` and `Win`+`ArrowDown` work as usual.
-
-- [X] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` doesn't move the window to any zone when the window is in the first zone.
-- [X] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` doesn't move the window to any zone when the window is in the last zone.
-
-One monitor:
-- [X] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` and `Win`+`RightArrow` cycles the window between zones.
-- [X] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` and `Win`+`RightArrow` cycles the window between zones.
-
-Two and more monitors:
-- [X] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles window position moving it from the first zone on the current monitor to the last zone of the left (or rightmost, if the current monitor is leftmost) monitor.
-- [X] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles window position moving it from the last zone on the current monitor to the first zone of the right (or leftmost, if the current monitor is rightmost) monitor.
-
-Select Move windows based on `Relative position`.
-- [X] Open the previously not snapped window, press `Win`+`Arrow`, verify it's snapped.
-- [X] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow`. Verify the window is snapped to all zones.
-- [x] Extend the window using `Ctrl`+`Alt`+`Win`+`Arrow` and return it back using the opposite arrow. Verify it could be reverted while you hold `Ctrl`+`Alt`+`Win`.
-
-- [X] `Move windows between zones across all monitors` disabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within one monitor.
-- [X] `Move windows between zones across all monitors` disabled. Verify `Win`+`RightArrow` cycles the window position to the right within one monitor.
-- [X] `Move windows between zones across all monitors` disabled. Verify `Win`+`UpArrow` cycles the window position up within one monitor.
-- [X] `Move windows between zones across all monitors` disabled. Verify `Win`+`DownArrow` cycles the window position down within one monitor.
-
-- [X] `Move windows between zones across all monitors` enabled. Verify `Win`+`LeftArrow` cycles the window position to the left (from the leftmost zone moves to the rightmost in the same row) within all monitors.
-- [X] `Move windows between zones across all monitors` enabled. Verify `Win`+`RightArrow` cycles the window position to the right within all monitors.
-- [X] `Move windows between zones across all monitors` enabled. Verify `Win`+`UpArrow` cycles the window position up within all monitors.
-- [X] `Move windows between zones across all monitors` enabled. Verify `Win`+`DownArrow` cycles the window position down within all monitors.
-
-### Layout apply
-Enable `Enable quick layout switch`, assign numbers to custom layouts.
-- [X] Switch with `Win` + `Ctrl` + `Alt` + `key`.
-- [X] Switch with just a key while dragging a window.
-- [X] Turn `Flash zones when switching layout` on/off, verify it's flashing/not flashing after pressing the shortcut.
-- [X] Disable `Enable quick layout switch`, verify shortcuts don't work.
-- [X] Disable spacing on any grid layout, verify that there is no space between zones while dragging a window.
-- [X] Create a new virtual desktop, verify that there are the same layouts as applied to the previous virtual desktop.
-- [X] After creating a virtual desktop apply another layout or edit the applied one. Verify that the other virtual desktop layout wasn't changed.
-- [X] Delete an applied custom layout in the Editor, verify that there is no layout applied instead of it.
-- [X] Apply a grid layout, change the screen resolution or scaling, verify that the assigned layout fits the screen. NOTE: canvas layout could not fit the screen if it was created on a monitor with a different resolution.
-
-### Layout reset
-* Test layout resetting.
-Before testing 
-   * Remove all virtual desktops 
-   * Remove `CurrentVirtualDesktop` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\SessionInfo\1\VirtualDesktops` 
-   * Remove `VirtualDesktopIDs` from `\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\VirtualDesktops`
-
-- [X] Test screen locking
-   * Set custom layouts on each monitor
-   * Lock screen / unplug monitor / plug monitor
-   * Verify that layouts weren't reset to defaults
-   
-- [X] Test restart
-   * Set custom layouts on each monitor
-   * Restart the computer
-   * Verify that layouts weren't reset to defaults
-
-- [X] Test applying default layouts on reset
-   * Set default horizontal and vertical layouts
-   * Delete `applied-layouts.json`
-   * Verify that selected default layout is applied according to configuration
-
-### Span zones across monitors
-- [X] Switch between `Allow zones to span across monitors` on and off. Verify that layouts are applied correctly in both cases.
-
-Repeat the previous subsections steps after enabling `Allow zones to span across monitors`
-- [X] Dragging
-- [X] Snapping
-- [X] Snapped window behavior
-- [X] Switch between windows in the current zone
-- [X] Override Windows Snap
-- [X] Layout apply
-- [X] Layout reset
-      
-## Shortcut Guide
- * Run PowerToys as user:
-   - [X] Verify `Win + Shift + /` opens the guide
-   - [X] Change the hotkey to a different shortcut (e.g. `Win + /`) and verify it works
-   - [X] Set Shortcut Guide to start with a Windows key press and verify it works.
- * Restore the `Win + Shift + /` hotkey.
-   - [X] Open the guide and close it pressing `Esc`
-   - [X] Open the guide and close it pressing and releasing the `Win` key
- * With PowerToys running as a user, open an elevated app and keep it on foreground:
-   - [X] Verify `Win + Shift + /` opens the guide
-   - [X] Verify some of the shortcuts shown in the guide work and the guide is closed when pressed
-
-## OOBE
- * Quit PowerToys
- * Delete %localappdata%\Microsoft\PowerToys
- - [ ] Start PowerToys and verify OOBE opens
- * Change version saved on `%localappdata%\Microsoft\PowerToys\last_version.txt`
- - [ ] Start PowerToys and verify OOBE opens in the "What's New" page
- * Visit each OOBE section and for each section:
-   - [ ] open the Settings for that module
-   - [ ] verify the Settings work as expected (toggle some controls on/off etc.)
-   - [ ] close the Settings
-   - [ ] if it's available, test the `Launch module name` button
- * Close OOBE
- - [ ] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
-
-## [Mouse Utils](tests-checklist-template-mouse-utils-section.md)
-
-Find My Mouse:
-  * Enable FindMyMouse. Then, without moving your mouse:
-    - [X] Press Left Ctrl twice and verify the overlay appears.
-    - [X] Press any other key and verify the overlay disappears.
-  * Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice.
-  * Enable FindMyMouse. Then, without moving your mouse:
-    - [X] Press Left Ctrl twice and verify the overlay appears.
-  * Enable the "Do not activate on game mode" option. Start playing a game that uses CG native full screen.
-    - [X] Verify the overlay no longer appears when you press Left Ctrl twice.
-  * Disable the "Do not activate on game mode" option. Start playing the same game.
-    - [X] Verify the overlay appears when you press Left Ctrl twice. (though it'll likely minimize the game)
-  * Test the different settings and verify they apply:
-    - [X] Overlay opacity
-    - [X] Background color
-    - [X] Spotlight color
-    - [X] Spotlight radius
-    - [X] Spotlight initial zoom (1x vs 9x will show the difference)
-    - [X] Animation duration
-    - [X] Change activation method to shake and activate by shaking your mouse pointer
-    - [X] Excluded apps
-
-Mouse Highlighter:
-  * Enable Mouse Highlighter. Then:
-    - [X] Press the activation shortcut and press left and right click somewhere, verifying the hightlights are applied.
-    - [X] With left mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [X] With right mouse button pressed, drag the mouse and verify the hightlight is dragged with the pointer.
-    - [X] Press the activation shortcut again and verify no highlights appear when the mouse buttons are clicked.
-    - [X] Disable Mouse Highlighter and verify that the module is not activated when you press the activation shortcut.
-  * Test the different settings and verify they apply:
-    - [X] Change activation shortcut and test it
-    - [X] Left button highlight color
-    - [X] Right button highlight color
-    - [X] Opacity
-    - [X] Radius
-    - [X] Fade delay
-    - [X] Fade duration
-
-Mouse Pointer Crosshairs:
-  * Enable Mouse Pointer Crosshairs. Then:
-    - [X] Press the activation shortcut and verify the crosshairs appear, and that they follow the mouse around.
-    - [X] Press the activation shortcut again and verify the crosshairs disappear.
-    - [X] Disable Mouse Pointer Crosshairs and verify that the module is not activated when you press the activation shortcut.
-  * Test the different settings and verify they apply:
-    - [X] Change activation shortcut and test it
-    - [X] Crosshairs color
-    - [X] Crosshairs opacity
-    - [X] Crosshairs center radius
-    - [X] Crosshairs thickness
-    - [X] Crosshairs border color
-    - [X] Crosshairs border size
-
-Mouse Jump:
-  * Enable Mouse Jump. Then:
-    - [X] Press the activation shortcut and verify the screens preview appears.
-    - [X] Change activation shortcut and verify that new shorctut triggers Mouse Jump.
-    - [X] Click around the screen preview and ensure that mouse cursor jumped to clicked location.
-    - [X] Reorder screens in Display settings and confirm that Mouse Jump reflects the change and still works correctly.
-    - [X] Change scaling of screens and confirm that Mouse Jump still works correctly.
-    - [X] Unplug additional monitors and confirm that Mouse Jump still works correctly.
-    - [X] Disable Mouse Jump and verify that the module is not activated when you press the activation shortcut.
+## Localization
+ Change the Windows language to a language different than English. Then verify if the following screens change their language:
+ - [X] System tray menu items
+ - [X] Settings
+ - [X] OOBE (What's new)
+ - [X] Keyboard Manager Editor
+ - [X] Color Picker (check the tooltips)
+ - [X] FancyZones Editor
+ - [X] Power Rename (new WinUI 3 may not be localized)
+ - [X] PowerToys Run ("Start typing" string is localized, for example)
+ - [X] Image Resizer
+ - [ ] Shortcut Guide (Windows controls are localized)
+ - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
+ - [X] Hosts File Editor
+ - [ ] File Locksmith
+ - [X] Registry Preview
+ - [X] Environment Variables
 
 ## Awake
  - [X] Try out the features and see if they work, no list at this time.
+## Hosts File Editor
+ * Launch Host File Editor:
+   - [X] Verify the application exits if "Quit" is clicked on the initial warning.
+   - [X] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
+   - [X] Enable and disable lines and verify they are applied to the file.
+   - [X] Add a new entry and verify it's applied.
+   - [X] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
+   - [X] Try to filter for lines and verify you can find them.
+   - [X] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
+ * Test the different settings and verify they are applied:
+   - [X] Launch as Administrator.
+   - [X] Show a warning at startup.
+   - [X] Additional lines position.
 
-## Always on Top
- - [X] Pin/unpin a window, verify it's topmost/not topmost.
- - [X] Pin/unpin a window, verify the border appeared/disappeared.
- - [X] Switch virtual desktop, verify border doesn't show up on another desktop.
- - [X] Minimize and maximize pinned window, verify the border looks as usual.
- - [X] Change border color and thickness.
- - [X] Verify if sound is played according to the sound setting.
- - [X] Exclude app, try to pin it.
- - [X] Exclude already pinned app, verify it was unpinned.
- - [ ] Try to pin the app in the Game Mode.
+## File Locksmith
+ * Start the PowerToys installer executable and let it stay in the initial screen.
+   - [X] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
+   - [X] End the tasks in File Locksmith UI and verify that closes the installer.
+   - [X] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
+   - [X] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
+ * Start the PowerToys installer executable again and let it stay in the initial screen.
+   - [X] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
+   - [X] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
+ * Restart PowerToys as admin.
+   - [X] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
+   - [X] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
+ - [X] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
+ - [X] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [X] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled.
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [X] Verify the module is not enabled.
+   - [X] Open settings and verify the module is not enabled and you can't enable it.
+   - [X] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [X] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [X] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is enabled.
-   - [ ] Open settings and verify the module is enabled and you can't disable it.
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [X] Verify the module is enabled.
+   - [X] Open settings and verify the module is enabled and you can't disable it.
+   - [X] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [X] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (No context menu entry)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [X] Verify the module is not enabled. (No context menu entry)
+   - [X] Open settings and verify the module is not enabled and you can't enable it.
+   - [X] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [X] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [X] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
-   
+
 ## [Mouse Without Borders](tests-checklist-template-mouse-without-borders-section.md)
  * Install PowerToys on two PCs in the same local network:
    - [X] Verify that PowerToys is properly installed on both PCs.
@@ -383,21 +112,21 @@ Mouse Jump:
    - [X] Press "Connect" and verify that the machine layout now includes two PC tiles, each displaying their respective PC names.
    
  * Verify Connection Status:
-   - [X] Ensure that the border of the remote PC turns green, indicating a successful connection.
-   - [X] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
+   - [ ] Ensure that the border of the remote PC turns green, indicating a successful connection.
+   - [ ] Enter an incorrect security key and verify that the border of the remote PC turns red, indicating a failed connection.
    
  * Test Remote Mouse/Keyboard Control:
-   - [X] With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
-   - [X] Test remote mouse/keyboard control across all four PCs, if available. Verify that inputs are correctly registered on each connected PC when the mouse is active there.
+   - [ ] With the PCs connected, test the mouse/keyboard control from one PC to another. Verify that the mouse/keyboard inputs are correctly registered on the other PC.
+   - [ ] Test remote mouse/keyboard control across all four PCs, if available. Verify that inputs are correctly registered on each connected PC when the mouse is active there.
    
  * Test Remote Control with Elevated Apps:
-   - [X] Open an elevated app on one of the PCs. Verify that without "Use Service" enabled, PowerToys does not control the elevated app.
-   - [X] Enable "Use Service" in MWB's settings. Verify that PowerToys can now control the elevated app remotely. Verify that MWB processes are running as LocalSystem, while the MWB helper process is running non-elevated.
-   - [X] Toggle "Use Service" again, verify that each time you do that, the MWB processes are restarted.
-   - [X] Run PowerToys elevated on one of the machines, verify that you can control elevated apps remotely now on that machine.
+   - [ ] Open an elevated app on one of the PCs. Verify that without "Use Service" enabled, PowerToys does not control the elevated app.
+   - [ ] Enable "Use Service" in MWB's settings. Verify that PowerToys can now control the elevated app remotely. Verify that MWB processes are running as LocalSystem, while the MWB helper process is running non-elevated.
+   - [ ] Toggle "Use Service" again, verify that each time you do that, the MWB processes are restarted.
+   - [ ] Run PowerToys elevated on one of the machines, verify that you can control elevated apps remotely now on that machine.
 
 * Test Module Enable Status:
-   - [X] For all combinations of "Use Service"/"Run PowerToys as admin", try enabling/disabling MWB module and verify that it's indeed being toggled using task manager.
+   - [ ] For all combinations of "Use Service"/"Run PowerToys as admin", try enabling/disabling MWB module and verify that it's indeed being toggled using task manager.
    
  * Test Disconnection/Reconnection:
    - [X] Disconnect one of the PCs from network. Verify that the machine layout updates to reflect the disconnection. 
@@ -426,27 +155,18 @@ Mouse Jump:
  * Test Settings:
    - [X] Change the rest of available settings on MWB page and verify that each setting works as described.
 
-## Crop And Lock
- * Thumbnail mode
-   - [X] Test with win32 app
-   - [X] Test with packaged app
-   
- * Reparent mode (there are known issues where reparent mode doesn't work for some apps)
-   - [X] Test with win32 app
-   - [X] Test with packaged app
-
 ## DSC
  * You need to have some prerequisites installed:
    - PowerShell >= 7.2 .
    - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
    - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
  * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [ ] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
-   - [ ] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
+   - [X] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
+   - [X] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
    - [ ] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
    - [ ] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+   - [X] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [X] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
 
 ## [Workspaces](tests-checklist-template-workspaces-section.md)
 * Settings
@@ -456,9 +176,10 @@ Mouse Jump:
    - [X] Disable the module and and verify it won't launch by the shortcut.
 
 * Snapshot tool: try with elevated and non-elevated PT
-   * Open non-packaged apps,Edge(1st screen), VisualStudioCode (second screen)
-   * Open packaged apps, e.g., Notepad(Open, second screen), Settings(minimized)
-   * Run any app as an administrator. Terminal(Admin)
+   * Open non-packaged apps, everything, edge.
+   * Open packaged apps, e.g., Notepad.
+   * Run any app as an administrator - terminal.
+   * Minimize any app - terminal(non-admin).
    * Click `Create Workspace`.
    * Open any other window.
    * Click `Capture`
@@ -470,7 +191,7 @@ Mouse Jump:
    - [X] Verify that the new Workspace appears in the list after capturing.
    - [X] Verify that the new Workspace doesn't appear after canceling the Capture.
    - [X] Verify `Search` filters Workspaces (by workspace name or app name).
-   - [x] Verify `SortBy` works.
+   - [X] Verify `SortBy` works.
    - [X] Verify `SortBy` keeps its value when you close and open the editor again.
    - [X] Verify `Remove` removes the Workspace from the list.
    - [X] Verify `Edit` opens the Workspace editing page.
@@ -501,8 +222,7 @@ Mouse Jump:
 * To verify that the launcher works correctly with different apps, try to capture and launch:   
    - [X] Non-packaged app, e.g., VisualStudio code
       - [X] As admin
-      - [X] With CLI args
-      - [X] PWA apps installed from different profile(Currently only edge and chrome are supported for pwa apps)
+      - [X] With CLI args 
     - [X] Packaged app, e.g. Terminal
       - [X] As admin
       - [X] With CLI args
@@ -511,32 +231,43 @@ Mouse Jump:
    - [X] Create a Workspace with one monitor connected, connect the second monitor, launch the Workspace, verify apps are opened on the first one, as captured.
    - [X] Create a Workspace with two monitors connected, disconnect a monitor, verify apps are opened on the remaining one.
 
-## [ZoomIt](tests-checklist-template-zoomit-section.md)
-
- * Enable ZoomIt in Settings.
-   - [X] Verify ZoomIt tray icon appears in the tray icons, and that when you left-click or right-click, it just shows the 4 action entries: "Break Timer", "Draw", "Zoom" and "Record".
-   - [X] Turn the "Show tray icon" option off and verify the tray icon is gone.
-   - [X] Turn the "Show tray icon" option on and verify the tray icon is back.
- * Test the base modes through a shortcuts:
-   - [X] Press the Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse. You can exit Zoom by pressing Escape or the Hotkey again.
-   - [X] Press the Live Zoom Toggle Hotkey and verify ZoomIt zooms in on the mouse, while the screen still updates instead of showing a still image. You can exit Live Zoom by pressing the Hotkey again.
-   - [X] Press the Draw without Zoom Hotkey and verify you can draw. You can leave this mode by pressing the Escape.
-   - [X] Select a text file as the Input file for Demo Type, focus notepad and press the Demo Type hotkey. It should start typing the text file. You can exit Demo Type by pressing Escape.
-   - [X] Press the Start Break Timer Hotkey and verify it starts the Timer. You can exit by pressing Escape.
-   - [X] Press the Record Toggle Hotkey to start recording a screen. Press the Record Toggle Hotkey again to exit the mode and save the recording to a file.
-   - [X] Press the Snip Toggle Hotkey to take a snip of the screen. Paste it to Paint to verify a snip was taken.
- * Test some Settings to verify the types are being passed correctly to ZoomIt:
-   - [X] Change the "Animate zoom in and zoom out" setting and activate Zoom mode to verify it applies.
-   - [X] Change the "Specify the initial level of magnification when zooming in" and activate Zoom mode to verify it applies.
-   - [X] Change the Type Font to another font. Enter Break mode to quickly verify the font changed.
-   - [X] Change the Demo Type typing speed and verify the change applies.
-   - [X] Change the timer Opacity for Break mode and verify that the change applies.
-   - [X] Change the timer Position for Break mode and verify that the change applies.
-   - [X] Select a Background Image file as background for Break mode and verify that the change applies.
-   - [X] Turn on "Play Sound on Expiration", select a sound file, aset the timer to 1 minute, activate the Break Mode and verify the sound plays after 1 minute. (Alarm1.wav from "C:\Windows\Media" should be long enough to notice)
-   - [X] Open the Microphone combo box in the Record section and verify it lists your microphones.
- * Test the tray icon actions:
-   - [X] Verify pressing "Break Timer" enters Break mode.
-   - [X] Verify pressing "Draw" enters Draw mode.
-   - [X] Verify pressing "Zoom" enters Zoom mode.
-   - [X] Verify pressing "Record" enters Record mode.
+## [Command Palette](tests-checklist-template-command-palette-section.md)
+ * Check if Command Palette successfully install/uninstall with PowerToys.
+   - [ ] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
+   - [ ] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+ * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
+   - [ ] when PowerToys is running unelevated on start-up
+   - [ ] when PowerToys is running as admin on start-up
+   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+ * Check that each of the plugins is working:
+   - [ ] Installed Apps - launch a Win32 application
+   - [ ] Installed Apps - launch a Win32 application as admin
+   - [ ] Installed Apps - launch a packaged application
+   - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [ ] File Search - open a file on the disk.
+   - [ ] File Search - find a file and copy file path.
+   - [ ] File Search - find a file and open containing folder.
+   - [ ] Run Commands - execute a command. (e.g. `ping google.com`).
+   - [ ] Windows Walker - Switch to another opening window.
+   - [ ] Windows Walker - Switch to another opening window when powertoys run as admin.
+   - [ ] WinGet - Search and install application through WinGet. (eg. `vscode`)
+   - [ ] Web Search - Search anything by this extension.
+   - [ ] Windows Terminal Profiles - Open profile.
+   - [ ] Windows Terminal Profiles - Open profile as Admin.
+   - [ ] Windows Settings - Open settings from extension.
+   - [ ] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [ ] Registry - navigate through the registry tree and copy key path.
+   - [ ] Windows Service - start, stop, restart windows service.
+   - [ ] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
+   - [ ] Windows System Command - test `lock`.
+   - [ ] Windows System Command - test `empty recycle bin`.
+   - [ ] Windows System Command - test `shutdown`.
+   - [ ] Windows System Command - Click your network adapter item and paste the result at notepad.
+   - [ ] Bookmark - Add bookmarks to command palette.
+   - [ ] Bookmark - Open your bookmarks (in Command Palette).
+ - [ ] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
+ * Test Extensions Manager
+   - [ ] Enable/disable extensions and verify changes are picked up by Command Palette
+   - [ ] Change `Global hot key` and verify changes are picked up by Command Palette
+   - [ ] Change `Alias` and verify changes picked up by Command Palette
+   - [ ] Disable all extensions and verify the warning message is shown (Currently not support).
