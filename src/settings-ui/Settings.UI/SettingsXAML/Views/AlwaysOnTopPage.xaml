@@ -67,20 +67,34 @@
                                 <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.FrameColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameOpacity" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
-                                <Slider
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    Maximum="100"
-                                    Minimum="0"
-                                    Value="{x:Bind ViewModel.FrameOpacity, Mode=TwoWay}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Slider
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{x:Bind ViewModel.FrameOpacity, Mode=TwoWay}" />
+                                    <TextBlock
+                                        Margin="5,0,0,0"
+                                        Width="20" 
+                                        VerticalAlignment="Center" 
+                                        Text="{x:Bind ViewModel.FrameOpacity, Mode=OneWay}" />
+                                </StackPanel>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_FrameThickness" IsEnabled="{x:Bind ViewModel.FrameEnabled, Mode=OneWay}">
-                                <Slider
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    LargeChange="5"
-                                    Maximum="30"
-                                    Minimum="1"
-                                    SmallChange="1"
-                                    Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}" />
+                                <StackPanel Orientation="Horizontal">
+                                    <Slider
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        LargeChange="5"
+                                        Maximum="30"
+                                        Minimum="1"
+                                        SmallChange="1"
+                                        Value="{x:Bind ViewModel.FrameThickness, Mode=TwoWay}" />
+                                    <TextBlock
+                                        Margin="5,0,0,0"
+                                        Width="20" 
+                                        VerticalAlignment="Center" 
+                                        Text="{x:Bind ViewModel.FrameThickness, Mode=OneWay}" />
+                                </StackPanel>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.Windows11, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <CheckBox x:Uid="AlwaysOnTop_RoundCorners" IsChecked="{x:Bind ViewModel.RoundCornersEnabled, Mode=TwoWay}" />
