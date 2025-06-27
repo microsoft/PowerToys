@@ -9,15 +9,6 @@
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
-
-    <UserControl.Resources>
-        <tkconverters:DoubleToVisibilityConverter
-            x:Name="doubleToVisibilityConverter"
-            FalseValue="Collapsed"
-            GreaterThan="0"
-            TrueValue="Visible" />
-    </UserControl.Resources>
-
     <Grid Padding="20,0,0,0" RowSpacing="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -111,7 +102,7 @@
                     MaxWidth="{StaticResource PageMaxWidth}"
                     AutomationProperties.Name="{x:Bind SecondaryLinksHeader}"
                     Orientation="Vertical"
-                    Visibility="{x:Bind SecondaryLinks.Count, Converter={StaticResource doubleToVisibilityConverter}}">
+                    Visibility="{x:Bind SecondaryLinks.Count, Converter={StaticResource DoubleToVisibilityConverter}}">
                     <TextBlock
                         Margin="2,8,0,0"
                         AutomationProperties.HeadingLevel="Level2"
