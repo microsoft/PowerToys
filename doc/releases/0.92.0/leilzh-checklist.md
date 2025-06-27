@@ -15,7 +15,7 @@
     * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
  * install the new version (it will uninstall the old version and install the new version)
  - [x] verify the settings are preserved and FancyZones configuration is still the same
- - [ ] test installing as SYSTEM (LocalSystem account)
+ - [x] test installing as SYSTEM (LocalSystem account)
    * Remove current PowerToys.
    * Download PsTools from https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
    * Run PowerToys installer with psexec tool `psexec.exe -sid <path_to_installer_exe`
@@ -27,266 +27,187 @@
    * Remove PowerToys and install per-user version. Ensure that it is installed in <APPDATA>/Local/PowerToys and that registry entries are under **HKCU**/Software/Classes/PowerToys. Go trhough different modules and ensure that they are working correctly.
    * Create a new user and install per-user version there as well. Go trhough different modules and ensure that they are working correctly. Ensure that changing settings for one user does not change settings of other user.
 
-## Functional tests
-
- Regressions:
- - [ ] https://github.com/microsoft/PowerToys/issues/1414#issuecomment-593529038
- - [ ] https://github.com/microsoft/PowerToys/issues/1524
-
 ## Localization
  Change the Windows language to a language different than English. Then verify if the following screens change their language:
- - [ ] System tray menu items
- - [ ] Settings
- - [ ] OOBE (What's new)
- - [ ] PowerToys Run ("Start typing" string is localized, for example)
- - [ ] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
- - [ ] Hosts File Editor
- - [ ] File Locksmith
- - [ ] Registry Preview
- - [ ] Environment Variables
- - [ ] ZoomIt
+ - [x] System tray menu items
+ - [x] Settings
+ - [x] OOBE (What's new)
+ - [x] PowerToys Run ("Start typing" string is localized, for example)
+ - [x] File Explorer menu entries for Image Resizer, Power Rename and FileLocksmith
+ - [x] Hosts File Editor
 
 ## [General Settings](tests-checklist-template-settings-section.md)
 
 **Admin mode:**
- - [ ] restart PT and verify it runs as user
- - [ ] restart as admin and set "Always run as admin"
- - [ ] restart PT and verify it  runs as admin
+ - [x] restart PT and verify it runs as user
+ - [x] restart as admin and set "Always run as admin"
+ - [x] restart PT and verify it  runs as admin
  * if it's not on, turn on "Run at startup"
- - [ ] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
+ - [x] reboot the machine and verify PT runs as admin (it should not prompt the UAC dialog)
  * turn Always run as admin" off
- - [ ] reboot the machine and verify it now runs as user
+ - [x] reboot the machine and verify it now runs as user
 
 **Modules on/off:**
- - [ ] turn off all the modules and verify all module are off
- - [ ] restart PT and verify that all module are still off in the settings page and they are actually inactive
- - [ ] turn on all the module, all module are now working
- - [ ] restart PT and verify that all module are still on in the settings page and they are actually working
+ - [x] turn off all the modules and verify all module are off
+ - [x] restart PT and verify that all module are still off in the settings page and they are actually inactive
+ - [x] turn on all the module, all module are now working
+ - [x] restart PT and verify that all module are still on in the settings page and they are actually working
 
 **Quick access tray icon flyout:**
- - [ ] Use left click on the system tray icon and verify the flyout appears. (It'll take a bit the first time)
- - [ ] Try to launch a module from the launch screen in the flyout.
- - [ ] Try disabling a module in the all apps screen in the flyout, make it a module that's launchable from the launch screen. Verify that the module is disabled and that it also disappeared from the launch screen in the flyout.
- - [ ] Open the main settings screen on a module page. Verify that when you disable/enable the module on the flyout, that the Settings page is updated too.
+ - [x] Use left click on the system tray icon and verify the flyout appears. (It'll take a bit the first time)
+ - [x] Try to launch a module from the launch screen in the flyout.
+ - [x] Try disabling a module in the all apps screen in the flyout, make it a module that's launchable from the launch screen. Verify that the module is disabled and that it also disappeared from the launch screen in the flyout.
+ - [x] Open the main settings screen on a module page. Verify that when you disable/enable the module on the flyout, that the Settings page is updated too.
 
 **Settings backup/restore:**
- - [ ] In the General tab, create a backup of the settings.
- - [ ] Change some settings in some PowerToys.
- - [ ] Restore the settings in the General tab and verify the Settings you've applied were reset.
+ - [x] In the General tab, create a backup of the settings.
+ - [x] Change some settings in some PowerToys.
+ - [x] Restore the settings in the General tab and verify the Settings you've applied were reset.
 
 ## File Explorer Add-ons
  * Running as user:
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane shows the correct content
+   - [x] verify the README.md Preview Pane shows the correct content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane works for the SVG files
-   - [ ] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the SVG files
+   - [x] verify the Icon Preview works for the SVG file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the PDF file
-   - [ ] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
+   - [x] verify the Icon Preview works for the PDF file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane works for the gcode file
-   - [ ] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
+   - [x] verify Preview Pane works for the gcode file
+   - [x] verify the Icon Preview works for the gcode file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
+   - [x] verify the Icon Preview works for the stl file (loop through different icon preview sizes)
    * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane works for source files (shows syntax highlighting)
+   - [x] verify Preview Pane works for source files (shows syntax highlighting)
  * Running as admin (or user since recently):
    * open the Settings and turn off the Preview Pane and Icon Previous toggles
    * go to PowerToys repo root
-   - [ ] verify the README.md Preview Pane doesn't show any content
+   - [x] verify the README.md Preview Pane doesn't show any content
    * go to PowerToys repo and visit src\modules\ShortcutGuide\ShortcutGuide\svgs
-   - [ ] verify Preview Pane doesn't show the preview for the SVG files
+   - [x] verify Preview Pane doesn't show the preview for the SVG files
    * the Icon Preview for the existing SVG will still show since the icons are cached (you can also use `cleanmgr.exe` to clean all thumbnails cached in your system). You may need to restart the machine for this setting to apply as well.
-   - [ ] copy and paste one of the SVG file and verify the new file show the generic SVG icon
+   - [x] copy and paste one of the SVG file and verify the new file show the generic SVG icon
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-PdfPreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the PDF file
+   - [x] verify Preview Pane doesn't show the preview for the PDF file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-GcodePreviewHandler\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the gcode file
+   - [x] verify Preview Pane doesn't show the preview for the gcode file
    * go to PowerToys repo and visit src\modules\previewpane\UnitTests-StlThumbnailProvider\HelperFiles
-   - [ ] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
+   - [x] verify Preview Pane doesn't show the preview for the stl file (a generated thumbnail would show when there's no preview)
    * go to PowerToys repo and visit src\runner
-   - [ ] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
+   - [x] verify Preview Pane doesn't show the preview for source code files or that it's a default previewer instead of Monaco
 
 ## [PowerToys Run](tests-checklist-template-powertoys-runner-section.md)
 
  * Enable PT Run in settings and ensure that the hotkey brings up PT Run
-   - [ ] when PowerToys is running unelevated on start-up
-   - [ ] when PowerToys is running as admin on start-up
-   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+   - [x] when PowerToys is running unelevated on start-up
+   - [x] when PowerToys is running as admin on start-up
+   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
-   - [ ] Program - launch a Win32 application
-   - [ ] Program - launch a Win32 application as admin
-   - [ ] Program - launch a packaged application
-   - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] Windows Search - open a file on the disk.
-   - [ ] Windows Search - find a file and copy file path.
-   - [ ] Windows Search - find a file and open containing folder.
-   - [ ] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space (e.g. `> ping localhost`).
-   - [ ] Folder - Search and open a sub-folder on entering the path.
-   - [ ] Uri - launch a web page on entering the uri.
-   - [ ] Window walker - Switch focus to a running window.
-   - [ ] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
-   - [ ] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
-   - [ ] Registry - navigate through the registry tree and copy key path.
-   - [ ] System - test `lock`.
-   - [ ] System - test `empty recycle bin`.
-   - [ ] System - test `shutdown`.
+   - [x] Program - launch a Win32 application
+   - [x] Program - launch a Win32 application as admin
+   - [x] Program - launch a packaged application
+   - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [x] Windows Search - open a file on the disk.
+   - [x] Windows Search - find a file and copy file path.
+   - [x] Windows Search - find a file and open containing folder.
+   - [x] Shell - execute a command. Enter the action keyword `>`, followed by the query, both with and without space (e.g. `> ping localhost`).
+   - [x] Folder - Search and open a sub-folder on entering the path.
+   - [x] Uri - launch a web page on entering the uri.
+   - [x] Window walker - Switch focus to a running window.
+   - [x] Service - start, stop, restart windows service. Enter the action keyword `!` to get the list of services.
+   - [x] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [x] Registry - navigate through the registry tree and copy key path.
+   - [x] System - test `lock`.
+   - [x] System - test `empty recycle bin`.
+   - [x] System - test `shutdown`.
 
- - [ ] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
+ - [x] Disable PT Run and ensure that the hotkey doesn't bring up PT Run.
 
- - [ ] Test tab navigation.
+ - [x] Test tab navigation.
 
  * Test Plugin Manager
-   - [ ] Enable/disable plugins and verify changes are picked up by PT Run
-   - [ ] Change `Direct activation phrase` and verify changes are picked up by PT Run
-   - [ ] Change `Include in global result` and verify changes picked up by PT Run
-   - [ ] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message is shown.
-   - [ ] Disable all plugins and verify the warning message is shown.
+   - [x] Enable/disable plugins and verify changes are picked up by PT Run
+   - [x] Change `Direct activation phrase` and verify changes are picked up by PT Run
+   - [x] Change `Include in global result` and verify changes picked up by PT Run
+   - [x] Clear `Direct activation phrase` and uncheck `Include in global result`. Verify a warning message is shown.
+   - [x] Disable all plugins and verify the warning message is shown.
 
 ## OOBE
  * Quit PowerToys
  * Delete %localappdata%\Microsoft\PowerToys
- - [ ] Start PowerToys and verify OOBE opens
+ - [x] Start PowerToys and verify OOBE opens
  * Change version saved on `%localappdata%\Microsoft\PowerToys\last_version.txt`
- - [ ] Start PowerToys and verify OOBE opens in the "What's New" page
+ - [x] Start PowerToys and verify OOBE opens in the "What's New" page
  * Visit each OOBE section and for each section:
-   - [ ] open the Settings for that module
-   - [ ] verify the Settings work as expected (toggle some controls on/off etc.)
-   - [ ] close the Settings
-   - [ ] if it's available, test the `Launch module name` button
+   - [x] open the Settings for that module
+   - [x] verify the Settings work as expected (toggle some controls on/off etc.)
+   - [x] close the Settings
+   - [x] if it's available, test the `Launch module name` button
  * Close OOBE
- - [ ] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
+ - [x] Open the Settings and from the General page open OOBE using the `Welcome to PowerToys` link
 
 ## Hosts File Editor
  * Launch Host File Editor:
-   - [ ] Verify the application exits if "Quit" is clicked on the initial warning.
-   - [ ] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
-   - [ ] Enable and disable lines and verify they are applied to the file.
-   - [ ] Add a new entry and verify it's applied.
-   - [ ] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
-   - [ ] Try to filter for lines and verify you can find them.
-   - [ ] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
+   - [x] Verify the application exits if "Quit" is clicked on the initial warning.
+   - [x] Launch Host File Editor again and click "Accept". The module should not close. Open the hosts file (`%WinDir%\System32\Drivers\Etc`) in a text editor that auto-refreshes so you can see the changes applied by the editor in real time. (VSCode is an editor like this, for example)
+   - [x] Enable and disable lines and verify they are applied to the file.
+   - [x] Add a new entry and verify it's applied.
+   - [x] Add manually an entry with more than 9 hosts in hosts file (Windows limitation) and verify it is split correctly on loading and the info bar is shown.
+   - [x] Try to filter for lines and verify you can find them.
+   - [x] Click the "Open hosts file" button and verify it opens in your default editor. (likely Notepad)
  * Test the different settings and verify they are applied:
-   - [ ] Launch as Administrator.
-   - [ ] Show a warning at startup.
-   - [ ] Additional lines position.
-
-## File Locksmith
- * Start the PowerToys installer executable and let it stay in the initial screen.
-   - [ ] Right-click the executable file, select "What's using this file?" and verify it shows up. (2 entries will show, since the installer starts two processes)
-   - [ ] End the tasks in File Locksmith UI and verify that closes the installer.
-   - [ ] Start the installer executable again and press the Refresh button in File Locksmith UI. It should find new processes using the files.
-   - [ ] Close the installer window and verify the processes are delisted from the File Locksmith UI. Close the window
- * Start the PowerToys installer executable again and let it stay in the initial screen.
-   - [ ] Right click the directory where the executable is located, select "What's using this file?" and verify it shows up. 
-   - [ ] Right click the drive where the executable is located, select "What's using this file?" and verify it shows up. You can close the PowerToys installer now.
- * Restart PowerToys as admin.
-   - [ ] Right click "Program Files", select "What's using this file?" and verify "PowerToys.exe" doesn't show up.
-   - [ ] Press the File Locksmith "Restart as an administrator" button and verify "PowerToys.exe" shows up.
- - [ ] Right-click the drive where Windows is installed, select "What's using this file?" and scroll down and up, verify File Locksmith doesn't crash with all those entries being shown. Repeat after clicking the File Locksmith "Restart as an administrator" button.
- - [ ] Disable File Locksmith in Settings and verify the context menu entry no longer appears.
+   - [x] Launch as Administrator.
+   - [x] Show a warning at startup.
+   - [x] Additional lines position.
 
 ## GPO
  * Copy the "PowerToys.admx" file to your Policy Definition template folder. (Example: C:\Windows\PolicyDefinitions) and copy the "PowerToys.adml" file to the matching language folder in your Policy Definition folder. (Example: C:\Windows\PolicyDefinitions\en-US)
-   - [ ] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
+   - [x] Open the "Local Group Policy Editor" on Windows and verify there is a "Microsoft PowerToys" folder in Administrative Templates for both Computer Configuration and User Configuration.
  * In GPO, disable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled.
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
-   - [ ] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is not enabled.
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open FancyZones Editor directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module can't be launched from the quick launcher system tray flyout launcher screen (FancyZones editor in this case).
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, enable a module that can run as a standalone (FancyZones sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is enabled.
-   - [ ] Open settings and verify the module is enabled and you can't disable it.
-   - [ ] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
+   - [x] Verify the module is enabled.
+   - [x] Open settings and verify the module is enabled and you can't disable it.
+   - [x] Verify the module can't be enabled/disabled from the quick launcher system tray flyout.
  * In GPO, try to set different settings in the Computer and User Configurations for a PowerToy. Restart PowerToys.
-   - [ ] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
+   - [x] Verify that the setting in Computer Configuration has priority over the setting in User Configuration.
  * In GPO, disable a module that has a context menu entry (File Locksmith sounds good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (No context menu entry)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
-   - [ ] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
+   - [x] Verify the module is not enabled. (No context menu entry)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Try to open File Locksmith directly from the install folder and verify it doesn't run and adds a message to the log saying it didn't run because of GPO.
  * In GPO, disable a module that is a Preview Handler (Markdown Preview is good for this). Restart PowerToys.
-   - [ ] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
-   - [ ] Open settings and verify the module is not enabled and you can't enable it.
+   - [x] Verify the module is not enabled. (Markdown files won't appear in the preview pane)
+   - [x] Open settings and verify the module is not enabled and you can't enable it.
  * Remember to reset all you Settings to Not Configured after the tests, both in Conputer and User Configurations.
-
-## Registry Preview
- * Open Registry Editor, add new registry key with 1 string value and 1 binary value in e.g. HKLM/Software/Classes/PowerToysTest. Right click new registry key->export and export it to file.
- * Launch Registry Preview by right-clicking exported .reg file->'Preview'. Then:
-   - [ ] Edit file content. Ensure that visual try is being re-populated while typing. Save the file by pressing Save file button. Confirm that file is properly saved by pressing Edit file... button which will open file in Notepad. Try saving file using Save file as... button.
-   - [ ] Edit file externaly (e.g. in Notepad) and save it there. Pres Reload from file button and ensure that file content and visual tree are reloaded and show new content.
-   - [ ] Select some registry key with registry values in visual tree and ensure that registry values are shown properly in bottom-right area.
-   - [ ] Try opening different registry file by pressing Open file button.
-   - [ ] Delete newly created registry key from first step manually in Registry Editor, then try writing registry changes to registry by pressing Write to Registry button in Registry Preview. *Be careful what you are writing!* 
-   
- * Open Registry Preview Settings. Then:
-   - [ ] Disable Registry Preview and ensure that Preview context menu option for .reg files no longer appears.
-   - [ ] Try to launch Registry Preview from it's OOBE page while Registry Preview is disabled and ensure that it does not start.
-   - [ ] Enable Registry Preview again and ensure that Preview context menu option for .reg files appears and that it starts Registry Preview correctly. 
-   - [ ] Try to launch Registry Preview from it's Settings page and ensure that it is launched properly.
-   - [ ] Try to launch Registry Preview from it's OOBE page and ensure that it is launched properly.
-   - [ ] Enable Default app setting. Verify that .reg files are opened with Registry Preview by default. Disable Default app setting. Verify that Registry Editor is now default app.
 
 ## [Peek](tests-checklist-template-peek-section.md)
  * Open different files to check that they're shown properly
-   - [ ] Image
-   - [ ] Text or dev file
-   - [ ] Markdown file
-   - [ ] PDF
-   - [ ] HTML
-   - [ ] Archive files (.zip, .tar, .rar)
-   - [ ] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
+   - [x] Image
+   - [x] Text or dev file
+   - [x] Markdown file
+   - [x] PDF
+   - [x] HTML
+   - [x] Archive files (.zip, .tar, .rar)
+   - [x] Any other not mentioned file (.exe for example) to verify the unsupported file view is shown
    
  * Pinning/unpinning
-   - [ ] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
-   - [ ] Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
-   - [ ] Unpin the window, switch to a different file, verify the window is moved to the default place.
-   - [ ] Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
+   - [x] Pin the window, switch between images of different size, verify the window stays at the same place and the same size.
+   - [x] Pin the window, close and reopen Peek, verify the new window is opened at the same place and the same size as before.
+   - [x] Unpin the window, switch to a different file, verify the window is moved to the default place.
+   - [x] Unpin the window, close and reopen Peek, verify the new window is opened on the default place.
 
 * Open with a default program
-   - [ ] By clicking a button.
-   - [ ] By pressing enter. 
+   - [x] By clicking a button.
+   - [x] By pressing enter. 
   
- - [ ] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
- - [ ] Open multiple files, verify you can switch only between selected files.
- - [ ] Change the shortcut, verify the new one works.
-
-## Environment Variables
- * NOTE: Make backup of USER and SYSTEM Path and TMP variables before testing so you can revert those is something goes wrong!
- * Open Environment Variables settings
-   - [ ] Launch as administrator ON - Launch Environment Variables and confirm that SYSTEM variables ARE editable and Add variable button is enabled
-   - [ ] Launch as administrator OFF - Launch Environment Variables and confirm that SYSTEM variables ARE NOT editable and Add variable button is disabled
-
- * User/System variables
-   - [ ] Add new User variable. Open OS Environment variables window and confirm that added variable is there. Also, confirm that it's added to "Applied variables" list.
-   - [ ] Edit one User variable. Open OS Environment variables window and confirm that variable is changed. Also, confirm that change is applied to "Applied variables" list.
-   - [ ] Remove one User variable. Open OS Environment variables window and confirm that variable is removed. Also, confirm that variable is removed from "Applied variables" list.
-   - Repeat the steps for System variables.
-
- * Profiles - Basic tests
-   - [ ] Add new profile with no variables and name it "Test_profile_1" (referenced below by name)
-   - [ ] Edit "Test_profile_1": Add one new variable to profile e.g. name: "profile_1_variable_1" value: "profile_1_value_1"
-   - [ ] Add new profile "Test_profile_2": From "Add profile dialog" add two new variables (profile_2_variable_1:profile_2_value_1 and profile_2_variable_2:profile_2_value_2). Set profile to enabled and click Save. Open OS Environment variables window and confirm that all variables from the profile are applied correctly. Also, confirm that "Applied variables" list contains all variables from the profile.
-   - [ ] Apply "Test_profile_1" while "Test_profile_2" is still aplpied. Open OS Environment variables window and confirm that all variables from Test_profile_2 are unapplied and that all variables from Test_profile_1 are applied. Also, confirm that state of "Applied variables" list is updated correctly.
-   - [ ] Unapply applied profile. Open OS Environment variables window and confirm that all variables from the profile are unapplied correctly. Also, confirm that "Applied variables" list does not contain variables from the profile.
-
- * Overriding existing variable
-   - [ ] To "Test_profile_1" add one existing variable from USER variables, e.g. TMP. After adding, change it's value to e.g "test_TMP" (or manually add variable named TMP with value test_TMP).
-   - [ ] Apply "Test_profile_1". Open OS Environment variables window and confirm that TMP variable in USER variables has value "test_TMP". Confirm that there is backup variable "TMP_PowerToys_Test_profile_1" with original value of TMP var. Also, confirm that "Applied variables" list is updated correctly - there is TMP profile variable, and backup User variable..
-   - [ ] Unapply "Test_profile_1". Open OS Environment variables window and confirm that TMP variable in USER variable has original value and that there is no backup variable. Also, confirm that "Applied variables" list is updated correctly.
-
- * PATH variable
-   - [ ] In "Applied variables" list confirm that PATH variable is shown properly: value of USER Path concatenated to the end of SYSTEM Path.
-   - [ ] To "Test_profile_1" add variable named PATH with value "path1;path2;path3" and click Save. Confirm that PATH variable in profile is shown as list (list of 3 values and not as path1;path2;path3).
-   - [ ] Edit PATH variable from "Test_profile_1". Try different options from ... menu (Delete, Move up, Move down, etc...). Click Save.
-   - [ ] Apply "Test_profile_1". Open OS Environment variables window and confirm that profile is applied correctly - Path value and backup variable. Also, in "Applied variables" list check that Path variable has correct value: value of profile PATH concatenated to the end of SYSTEM Path.
-
- * Loading profiles on startup
-   - [ ] Close the app and reopen it. Confirm that the state of the app is the same as before closing.
-
- - [ ] "Test_profile_1" should still be applied (if not apply it). Delete "Test_profile_1". Confirm that profile is unapplied (both in OS Environment variables window and "Applied variables" list).
- - [ ] Delete "Test_profile_2". Check profiles.json file and confirm that both profiles are gone.
+ - [x] Switch between files in the folder using `LeftArrow` and `RightArrow`, verify you can switch between all files in the folder.
+ - [x] Open multiple files, verify you can switch only between selected files.
+ - [x] Change the shortcut, verify the new one works.
 
 ## DSC
  * You need to have some prerequisites installed:
@@ -294,50 +215,50 @@
    - PSDesiredStateConfiguration 2.0.7 or higher `Install-Module -Name PSDesiredStateConfiguration`.
    - WinGet [version v1.6.2631 or later](https://github.com/microsoft/winget-cli/releases). (You'll likely have this one already)
  * Open a PowerShell 7 instance and navigate to the sample scripts from PowerToys (`src/dsc/Microsoft.PowerToys.Configure/examples/`).
-   - [ ] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
-   - [ ] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
-   - [ ] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
-   - [ ] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
-   - [ ] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
-   - [ ] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
+   - [x] Run `winget configure .\disableAllModules.winget`. Open PowerToys Settings and verify all modules are disabled.
+   - [x] Run `winget configure .\enableAllModules.winget`. Open PowerToys Settings and verify all modules are enabled.
+   - [x] Run `winget configure .\configureLauncherPlugins.winget`. Open PowerToys Settings and verify all PowerToys Run plugins are enabled, and the Program plugin is not global and its Activation Keyword has changed to "P:".
+   - [x] Run `winget configure .\configuration.winget`. Open PowerToys Settings the Settings have been applied. File Locksmith is disabled. Shortcut Guide is disabled with an overlay opacity set to 50. FancyZones is enabled with the Editor hotkey set to "Shift+Ctrl+Alt+F".
+   - [x] If you run a winget configure command above and PowerToys is running, it will eventually close and automatically reopen after the configuration process is done.
+   - [x] If you run a winget configure command above and PowerToys is not running, it won't automatically reopen after the configuration process is done.
 
 ## [Command Palette](tests-checklist-template-command-palette-section.md)
  * Check if Command Palette successfully install/uninstall with PowerToys.
-   - [ ] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
-   - [ ] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
+   - [x] Install PowerToys. Then check if Command Palette exist in the System Settings/App/Installed Apps.
+   - [x] UnInstall PowerToys. Then check if Command Palette doesn't exist in the System Settings/App/Installed Apps.
  * Enable Command Palette in settings and ensure that the hotkey brings up Command Palette
-   - [ ] when PowerToys is running unelevated on start-up
-   - [ ] when PowerToys is running as admin on start-up
-   - [ ] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
+   - [x] when PowerToys is running unelevated on start-up
+   - [x] when PowerToys is running as admin on start-up
+   - [x] when PowerToys is restarted as admin, by clicking the restart as admin button in settings.
  * Check that each of the plugins is working:
-   - [ ] Installed Apps - launch a Win32 application
-   - [ ] Installed Apps - launch a Win32 application as admin
-   - [ ] Installed Apps - launch a packaged application
-   - [ ] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
-   - [ ] File Search - open a file on the disk.
-   - [ ] File Search - find a file and copy file path.
-   - [ ] File Search - find a file and open containing folder.
-   - [ ] Run Commands - execute a command. (e.g. `ping google.com`).
-   - [ ] Windows Walker - Switch to another opening window.
-   - [ ] Windows Walker - Switch to another opening window when powertoys run as admin.
-   - [ ] WinGet - Search and install application through WinGet. (eg. `vscode`)
-   - [ ] Web Search - Search anything by this extension.
-   - [ ] Windows Terminal Profiles - Open profile.
-   - [ ] Windows Terminal Profiles - Open profile as Admin.
-   - [ ] Windows Settings - Open settings from extension.
-   - [ ] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
-   - [ ] Registry - navigate through the registry tree and copy key path.
-   - [ ] Windows Service - start, stop, restart windows service.
+   - [x] Installed Apps - launch a Win32 application
+   - [x] Installed Apps - launch a Win32 application as admin
+   - [x] Installed Apps - launch a packaged application
+   - [x] Calculator - ensure a mathematical input returns a correct response and is copied on enter.
+   - [x] File Search - open a file on the disk.
+   - [x] File Search - find a file and copy file path.
+   - [x] File Search - find a file and open containing folder.
+   - [x] Run Commands - execute a command. (e.g. `ping google.com`).
+   - [x] Windows Walker - Switch to another opening window.
+   - [x] Windows Walker - Switch to another opening window when powertoys run as admin.
+   - [x] WinGet - Search and install application through WinGet. (eg. `vscode`)
+   - [x] Web Search - Search anything by this extension.
+   - [x] Windows Terminal Profiles - Open profile.
+   - [x] Windows Terminal Profiles - Open profile as Admin.
+   - [x] Windows Settings - Open settings from extension.
+   - [x] Registry - navigate through the registry tree and open registry editor. Enter the action keyword `:` to get the root keys.
+   - [x] Registry - navigate through the registry tree and copy key path.
+   - [x] Windows Service - start, stop, restart windows service.
    - [ ] Time And Date - type `now`, `year`, `week` and verify the result is correct. 
-   - [ ] Windows System Command - test `lock`.
-   - [ ] Windows System Command - test `empty recycle bin`.
-   - [ ] Windows System Command - test `shutdown`.
-   - [ ] Windows System Command - Click your network adapter item and paste the result at notepad.
-   - [ ] Bookmark - Add bookmarks to command palette.
-   - [ ] Bookmark - Open your bookmarks (in Command Palette).
- - [ ] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
+   - [x] Windows System Command - test `lock`.
+   - [x] Windows System Command - test `empty recycle bin`.
+   - [x] Windows System Command - test `shutdown`.
+   - [x] Windows System Command - Click your network adapter item and paste the result at notepad.
+   - [x] Bookmark - Add bookmarks to command palette.
+   - [x] Bookmark - Open your bookmarks (in Command Palette).
+ - [x] Disable Command Palette and ensure that the hotkey doesn't bring up Command Palette.
  * Test Extensions Manager
-   - [ ] Enable/disable extensions and verify changes are picked up by Command Palette
-   - [ ] Change `Global hot key` and verify changes are picked up by Command Palette
-   - [ ] Change `Alias` and verify changes picked up by Command Palette
-   - [ ] Disable all extensions and verify the warning message is shown (Currently not support).
+   - [x] Enable/disable extensions and verify changes are picked up by Command Palette
+   - [x] Change `Global hot key` and verify changes are picked up by Command Palette
+   - [x] Change `Alias` and verify changes picked up by Command Palette
+   - [x] Disable all extensions and verify the warning message is shown (Currently not support).
