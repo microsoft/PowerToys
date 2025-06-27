@@ -14,8 +14,8 @@
     * create a virtual desktop and apply the custom grid layout
     * if you have a second monitor apply different templates layouts for the primary desktop and for the second virtual desktop
  * install the new version (it will uninstall the old version and install the new version)
- - [ ] verify the settings are preserved and FancyZones configuration is still the same
- - [ ] test installing as SYSTEM (LocalSystem account)
+ - [X] verify the settings are preserved and FancyZones configuration is still the same
+ - [X] test installing as SYSTEM (LocalSystem account)
    * Remove current PowerToys.
    * Download PsTools from https://learn.microsoft.com/en-us/sysinternals/downloads/psexec
    * Run PowerToys installer with psexec tool `psexec.exe -sid <path_to_installer_exe`
